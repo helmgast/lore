@@ -31,8 +31,8 @@
         <h3><a class="brand" href="{{ url_for('homepage') }}">Raconteur <small>a story engine</small></a></h3>
         
         <ul class="nav">
-          <li{% block social_active %}{% endblock %}><a href="{{ url_for('social') }}">Social</a></li>
-          <li{% block scenarios_active %}{% endblock %}><a href="{{ url_for('social') }}">Scenarios</a></li>
+          <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
+          <li{% block scenarios_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Scenarios</a></li>
           <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
         </ul>
         <ul class="nav pull-right" >
@@ -40,7 +40,7 @@
           <li><a href="{{ url_for('auth.login') }}">log in</a></li>
           <li><a href="{{ url_for('join') }}">join</a></li>
           {% else %}
-          <li><span class="navtext">Welcome </span><a href="{{ url_for('user_list') }}">{{ user.username }}!</a></li> 
+          <li><span class="navtext">Welcome </span><a href="{{ url_for('social.user_list') }}">{{ user.username }}!</a></li> 
           {% if user.admin %}<li><a href="{{ url_for('admin.index') }}">admin dashboard</a></li>{% endif %}
           <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
           {% endif %}          

@@ -6,11 +6,11 @@
   {% if user %}
     {% if person.username != user.username %}
       {% if user|is_following(person) %}
-        <form action="{{ url_for('user_unfollow', username=person.username) }}" method="post">
+        <form action="{{ url_for('social.user_unfollow', username=person.username) }}" method="post">
           <input type="submit" value="- Un-follow" />
         </form>
       {% else %}
-        <form action="{{ url_for('user_follow', username=person.username) }}" method="post">
+        <form action="{{ url_for('social.user_follow', username=person.username) }}" method="post">
           <input type="submit" value="+ Follow" />
         </form>
       {% endif %}

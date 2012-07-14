@@ -3,13 +3,15 @@ from admin import admin
 from api import api
 from models import *
 from views import *
-from world import world
+from world import world, create_tables as world_tables
+from social import social, create_tables as social_tables
 
 admin.setup()
 api.setup()
 app.register_blueprint(world, url_prefix='/world')
-print world.root_path
+app.register_blueprint(social, url_prefix='/social')
 
 if __name__ == '__main__':
-    create_tables()
+    world_tables()
+    social_tables()
     app.run(debug=True) # Debug will reload code automatically, so no need to restart server

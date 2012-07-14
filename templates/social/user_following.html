@@ -5,7 +5,7 @@
 {% block content %}
   <ul>
     {% for person in user.following() %}
-      <li><a href="{{ url_for('user_detail', username=person.username) }}">{{ person.username }}</a></li>
+      <li><a href="{{ url_for('social.user_detail', username=person.username) }}">{{ person.username }}</a></li>
     {% endfor %}
   </ul>
   {% include "includes/pagination.html" %}

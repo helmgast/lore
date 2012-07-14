@@ -1,11 +1,10 @@
 import datetime
 
 from flask import request, redirect, url_for, render_template, flash
-from flask_peewee.utils import get_object_or_404, object_list
 
 from app import app
 from auth import auth
-from models import User, Message, Relationship
+from models import User
 
 @app.route('/')
 def homepage():
@@ -14,21 +13,6 @@ def homepage():
     #    return private_timeline()
     #else:
     #    return public_timeline()
-
-@app.route('/social/')
-@auth.login_required
-def social():
-    user = auth.get_logged_in_user()
-    messages = Message.select().where(
-        user__in=user.following()
-    ).order_by(('pub_date', 'desc'))
-    print messages
-    return object_list('social/social.html', messages, 'message_list')
-
-@app.route('/public/')
-def public_timeline():
-    messages = Message.select().order_by(('pub_date', 'desc'))
-    return object_list('social/public_messages.html', messages, 'message_list')
 
 # Page to sign up, takes both GET and POST so that it can save the form
 @app.route('/join/', methods=['GET', 'POST'])
@@ -51,62 +35,3 @@ def join():
             return redirect(url_for('homepage'))
 
     return render_template('join.html')
-
-@app.route('/following/')
-@auth.login_required
-def following():
-    user = auth.get_logged_in_user()
-    return object_list('social/user_following.html', user.following(), 'user_list')
-
-@app.route('/followers/')
-@auth.login_required
-def followers():
-    user = auth.get_logged_in_user()
-    return object_list('social/user_followers.html', user.followers(), 'user_list')
-
-@app.route('/users/')
-def user_list():
-    users = User.select().order_by('username')
-    return object_list('social/user_list.html', users, 'user_list')
-
-@app.route('/users/<username>/')
-def user_detail(username):
-    user = get_object_or_404(User, username=username)
-    messages = user.message_set.order_by(('pub_date', 'desc'))
-    return object_list('social/user_detail.html', messages, 'message_list', person=user)
-
-@app.route('/users/<username>/follow/', methods=['POST'])
-@auth.login_required
-def user_follow(username):
-    user = get_object_or_404(User, username=username)
-    Relationship.get_or_create(
-        from_user=auth.get_logged_in_user(),
-        to_user=user,
-    )
-    flash('You are now following %s' % user.username)
-    return redirect(url_for('user_detail', username=user.username))
-
-@app.route('/users/<username>/unfollow/', methods=['POST'])
-@auth.login_required
-def user_unfollow(username):
-    user = get_object_or_404(User, username=username)
-    Relationship.delete().where(
-        from_user=auth.get_logged_in_user(),
-        to_user=user,
-    ).execute()
-    flash('You are no longer following %s' % user.username)
-    return redirect(url_for('user_detail', username=user.username))
-
-@app.route('/create/', methods=['GET', 'POST'])
-@auth.login_required
-def create():
-    user = auth.get_logged_in_user()
-    if request.method == 'POST' and request.form['content']:
-        message = Message.create(
-            user=user,
-            content=request.form['content'],
-        )
-        flash('Your message has been created')
-        return redirect(url_for('user_detail', username=user.username))
-
-    return render_template('social/create.html')

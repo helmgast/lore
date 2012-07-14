@@ -5,15 +5,6 @@ from flask_peewee.auth import BaseUser
 from peewee import *
 
 from app import db
-
-def create_tables():
-    User.create_table(fail_silently=True)
-    Relationship.create_table(fail_silently=True)
-    Message.create_table(fail_silently=True)
-    Note.create_table(fail_silently=True)
-    Group.create_table(fail_silently=True)
-    GroupMaster.create_table(fail_silently=True)
-    GroupPlayer.create_table(fail_silently=True)
     
 class User(db.Model, BaseUser):
     username = CharField()

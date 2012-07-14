@@ -12,6 +12,9 @@ from app import db
 from api import api
 from auth import auth
 
+def create_tables():
+  Article.create_table(fail_silently=True)
+
 class Article(db.Model):
     name = CharField()
     content = TextField()
@@ -28,7 +31,6 @@ class Article(db.Model):
         return super(Article, self).save()
 
 world = Blueprint('world', __name__, template_folder='templates')
-Article.create_table(fail_silently=True)
 
 @world.route('/')
 @auth.login_required
