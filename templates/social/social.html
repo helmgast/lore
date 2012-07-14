@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content_title %}Social{% endblock %}
+{% block content_tagline %}bringing you closer to other gamers{% endblock %}
+{% block social_active %} class="active"{% endblock %}
+
+{% block sidebar %}
+  <h3>Navigation</h3>
+    <ul class="nav nav-list">
+      <li><a href="{{ url_for('social') }}"><i class="icon-book"></i>Main</a></li>
+      <li><a href="{{ url_for('user_list') }}"><i class="icon-book"></i>Gamers</a></li>
+      <li><a href="{{ url_for('following') }}"><i class="icon-book"></i>Following</a></li>
+      <li><a href="{{ url_for('followers') }}"><i class="icon-book"></i>Followers</a></li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <ul>
+    {% for message in message_list %}
+      <li>{% include "includes/message.html" %}</li>
+    {% endfor %}
+  </ul>
+  {% include "includes/pagination.html" %}
+{% endblock %}

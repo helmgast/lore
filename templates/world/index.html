@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}World{% endblock %}
+ 
+{% block content_title %}World{% endblock %}
+
+{% block content %}
+  <ul>
+    <li>Testing</li>
+    {% for article in object_list %}
+    <li><a href="{{ url_for('world.detail', name=article.name) }}">{{ article.name }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% include "world/pagination.html" %}
+{% endblock %}
