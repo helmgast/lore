@@ -1,6 +1,13 @@
-{% if page > 1 %}
-  <a class="previous" href="./?page={{ page - 1 }}">Previous</a>
-{% endif %}
-{% if pagination.get_pages() > page %}
-  <a class="next" href="./?page={{ page + 1 }}">Next</a>
+{% if pagination.get_pages() > 1 %}
+  <div class="pagination">
+    <ul>
+      <li{% if page-1 == 0 %} class="disabled"{% endif %}><a href="./?page={{ page - 1 }}">«</a></li>
+      {% if page-2 >= 1 %}<li><a href="./?page={{ page - 2 }}">{{ page - 2 }}</a></li>{% endif %}
+      {% if page-1 >= 1 %}<li><a href="./?page={{ page - 1 }}">{{ page - 1 }}</a></li>{% endif %}
+      <li class="active"><a href="./?page={{ page }}">{{ page }}</a></li>
+      {% if page+1 <= pagination.get_pages() %}<li><a href="./?page={{ page + 1 }}">{{ page + 1 }}</a></li>{% endif %}
+      {% if page+2 <= pagination.get_pages()  %}<li><a href="./?page={{ page + 2 }}">{{ page + 2 }}</a></li>{% endif %}
+      <li{% if page+1 > pagination.get_pages() %} class="disabled"{% endif %}><a class="next" href="./?page={{ page + 1 }}">»</a></li>
+    </ul>
+  </div>
 {% endif %}
