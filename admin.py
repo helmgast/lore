@@ -6,8 +6,8 @@ from flask_peewee.filters import QueryFilter
 
 from app import app, db
 from auth import auth
-from models import User, Message, Note, Relationship
-
+from models import User, Message, Note, Relationship, Group, GroupMaster, GroupPlayer
+from world import Article
 
 class NotePanel(AdminPanel):
     template_name = 'admin/notes.html'
@@ -61,5 +61,7 @@ auth.register_admin(admin)
 admin.register(Relationship)
 admin.register(Message, MessageAdmin)
 admin.register(Note, NoteAdmin)
+admin.register(Group)
+admin.register(Article)
 admin.register_panel('Notes', NotePanel)
 admin.register_panel('User stats', UserStatsPanel)

@@ -6,7 +6,15 @@ from peewee import *
 
 from app import db
 
-
+def create_tables():
+    User.create_table(fail_silently=True)
+    Relationship.create_table(fail_silently=True)
+    Message.create_table(fail_silently=True)
+    Note.create_table(fail_silently=True)
+    Group.create_table(fail_silently=True)
+    GroupMaster.create_table(fail_silently=True)
+    GroupPlayer.create_table(fail_silently=True)
+    
 class User(db.Model, BaseUser):
     username = CharField()
     password = CharField()
@@ -33,11 +41,27 @@ class User(db.Model, BaseUser):
             from_user=self,
             to_user=user
         ).exists()
-
-    def gravatar_url(self, size=80):
+        
+    def gravatar_url(self, size=40):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
+class Group(db.Model):
+    name = CharField()
+    
+    def masters(self):
+        return User.select().join(GroupMaster).where(master=self)
+            
+    def players(self):
+        return User.select().join(GroupPlayer).where(player=self)
+    
+class GroupMaster(db.Model):
+    group = ForeignKeyField(Group)
+    master = ForeignKeyField(User)
+
+class GroupPlayer(db.Model):
+    group = ForeignKeyField(Group)
+    player = ForeignKeyField(User)    
 
 class Relationship(db.Model):
     from_user = ForeignKeyField(User, related_name='relationships')
@@ -46,7 +70,6 @@ class Relationship(db.Model):
     def __unicode__(self):
         return 'Relationship from %s to %s' % (self.from_user, self.to_user)
 
-
 class Message(db.Model):
     user = ForeignKeyField(User)
     content = TextField()
@@ -54,7 +77,6 @@ class Message(db.Model):
     
     def __unicode__(self):
         return '%s: %s' % (self.user, self.content)
-
 
 class Note(db.Model):
     user = ForeignKeyField(User)

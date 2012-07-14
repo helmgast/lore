@@ -1,22 +1,17 @@
-from flask import Flask
-
-# flask-peewee bindings
+from flask import Flask, Markup
 from flask_peewee.db import Database
+from re import compile
 
-
-app = Flask(__name__)
-app.config.from_object('config.Configuration')
-
-db = Database(app)
-
-
-def create_tables():
-    User.create_table()
-    Relationship.create_table()
-    Message.create_table()
-    Note.create_table()
-
+app = Flask(__name__) # Creates new flask instance, named to app (this module)
+app.config.from_object('config.Configuration') # Load config from config.py
+db = Database(app) # Initiate the peewee DB layer
 
 @app.template_filter('is_following')
 def is_following(from_user, to_user):
     return from_user.is_following(to_user)
+    
+wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
+
+@app.template_filter('wikify')
+def wikify(s):
+    return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
