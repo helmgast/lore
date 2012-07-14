@@ -18,7 +18,7 @@
   {% else %}
     <p><a href="{{ url_for('auth.login', next=request.path) }}">Log-in to follow</a></p>
   {% endif %}
-  <ul>
+  <ul class="unstyled">
     {% for message in message_list %}
       <li>{% include "includes/message.html" %}</li>
     {% endfor %}

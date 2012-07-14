@@ -33,7 +33,7 @@ class User(db.Model, BaseUser):
             to_user=user
         ).exists()
         
-    def gravatar_url(self, size=40):
+    def gravatar_url(self, size=48):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 

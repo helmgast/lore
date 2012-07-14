@@ -1,0 +1,19 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Real name</th>
+    </tr>
+  </thead>
+  <tbody>
+      {% for person in user_list %}
+      <tr class="user-tablerow">
+        <td><a href="{{ url_for('social.user_detail', username=person.username) }}">
+          <img class="avatar" src="{{ person.gravatar_url() }}" />
+          <strong class="message_name">{{person.username}}</strong>
+        </a></td>
+        <td>Real name</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

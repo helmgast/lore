@@ -17,7 +17,9 @@
 {% block content %}
   Here you can interact with other gamers, create and manage your game groups,
   events, etc.
-  <ul>
+  
+  <h3>Messages</h3>
+  <ul class="unstyled">
     {% for message in message_list %}
       <li>{% include "includes/message.html" %}</li>
     {% endfor %}

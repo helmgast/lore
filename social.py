@@ -44,7 +44,7 @@ def followers():
 @social.route('/users/')
 def user_list():
     users = User.select().order_by('username')
-    return object_list('social/user_list.html', users, 'user_list')
+    return object_list('social/all_users.html', users, 'user_list')
 
 @social.route('/users/<username>/')
 def user_detail(username):
