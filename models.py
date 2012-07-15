@@ -10,6 +10,7 @@ class User(db.Model, BaseUser):
     username = CharField()
     password = CharField()
     email = CharField()
+    realname = CharField()
     join_date = DateTimeField(default=datetime.datetime.now)
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
@@ -33,18 +34,25 @@ class User(db.Model, BaseUser):
             to_user=user
         ).exists()
         
+    def master_in_groups(self):
+      return Group.select().join(GroupMaster).where(master=self)
+      
+    def player_in_groups(self):
+      return Group.select().join(GroupPlayer).where(player=self)
+              
     def gravatar_url(self, size=48):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
             (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
 class Group(db.Model):
     name = CharField()
+    location = CharField()
     
     def masters(self):
-        return User.select().join(GroupMaster).where(master=self)
+        return User.select().join(GroupMaster).where(group=self)
             
     def players(self):
-        return User.select().join(GroupPlayer).where(player=self)
+        return User.select().join(GroupPlayer).where(group=self)
     
 class GroupMaster(db.Model):
     group = ForeignKeyField(Group)

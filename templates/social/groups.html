@@ -1,0 +1,40 @@
+{% extends "social/social.html" %}
+
+{% block content_title %}Groups{% endblock %}
+
+{% block content %}
+
+  <div class="row-fluid">
+    <h2>My groups</h2>
+    {% for groupm in my_master_groups %}
+    <div class="span4">
+      <h3>{{ groupm.name }}</h3>
+      {% set user_list = groupm.players() %}
+      {% include "includes/user_list.html" %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row-fluid">
+    <div class="span4">
+      <h3>All groups</h3>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Group name</th>
+            <th>Location</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr class="user-tablerow">
+              <td><strong>{{group.name}}</strong></td>
+              <td>{{group.location}}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include "includes/pagination.html" %}
+    </div>
+  </div>
+{% endblock %}

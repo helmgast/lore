@@ -43,7 +43,7 @@ table.table-striped td.links .inline li:last-child a {
 
 .avatar         { position: absolute; -webkit-border-radius: 5px; -moz-border-radius: 5px;border-radius: 5px;}
 .message        { width: 300px; height: 56px}
-.message_name { margin-left: 56px}
+.message_name, .message_content { margin-left: 56px}
 .user-tablerow  {height: 60px}
 
 /* helpers */
