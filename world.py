@@ -1,19 +1,17 @@
 import datetime
-import re
 
-from flask import request, redirect, url_for, render_template, Blueprint, flash, Markup
+from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form
 
-from flask_peewee.rest import RestResource
 from flask_peewee.utils import get_object_or_404, object_list
 
 from app import db
-from api import api
 from auth import auth
 
 def create_tables():
-  Article.create_table(fail_silently=True)
+    Article.create_table(fail_silently=True)
+
 
 class Article(db.Model):
     name = CharField()
@@ -39,6 +37,7 @@ def index():
     qr = Article.select()
     return object_list('world/index.html', qr)
 
+
 @world.route('/<name>/', methods=['GET', 'POST'])
 @auth.login_required
 def detail(name):
@@ -63,6 +62,7 @@ def detail(name):
 
     return render_template('world/detail.html', article=article, form=form)
 
+
 @world.route('/<name>/delete/', methods=['GET', 'POST'])
 @auth.login_required
 def delete(name):
@@ -72,3 +72,4 @@ def delete(name):
         return redirect(url_for('world.index'))
 
     return render_template('world/delete.html', article=article)
+

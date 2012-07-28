@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ generator.name }}{% endblock %}
+
+{% block content_title %}{{ generator.name }}{% endblock %}
+
+{% block content %}
+    <div class="generator">
+        <ul>
+            {% for outputItem in outputList %}
+                <li>{{ outputItem }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
