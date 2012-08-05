@@ -61,6 +61,7 @@ def group_detail(groupname):
 def user_detail(username):
     user = get_object_or_404(User, username=username)
     messages = user.message_set.order_by(('pub_date', 'desc'))
+    print messages
     return object_list('social/user_detail.html', messages, 'message_list', person=user)
 
 @social.route('/users/<username>/follow/', methods=['POST'])

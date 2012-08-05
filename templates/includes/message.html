@@ -4,6 +4,7 @@
       <img class="avatar" src="{{ message.user.gravatar_url() }}" />
       <strong class="message_name">{{message.user.username}}</strong>
     </a>
+    <small>{{ message.pub_date.strftime('%Y-%m-%d %H:%m') }}</small>
     <p class="message_content">{{ message.content|urlize }}</p>
   </div>
 </div>

@@ -6,6 +6,7 @@ from peewee import *
 
 from app import db
 
+# A user in the system
 class User(db.Model, BaseUser):
     username = CharField()
     password = CharField()
@@ -44,7 +45,8 @@ class User(db.Model, BaseUser):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' %\
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
-
+# A gamer group, e.g. people who regularly play together. Has game masters
+# and players
 class Group(db.Model):
     name = CharField()
     location = CharField()
@@ -55,17 +57,17 @@ class Group(db.Model):
     def players(self):
         return User.select().join(GroupPlayer).where(group=self)
 
-
+# The relationship between a user as a game master and a group
 class GroupMaster(db.Model):
     group = ForeignKeyField(Group)
     master = ForeignKeyField(User)
 
-
+# The relationship between a user as a player and group
 class GroupPlayer(db.Model):
     group = ForeignKeyField(Group)
     player = ForeignKeyField(User)
 
-
+# The directional relationship between two users, e.g. from_user follows to_user
 class Relationship(db.Model):
     from_user = ForeignKeyField(User, related_name='relationships')
     to_user = ForeignKeyField(User, related_name='related_to')
@@ -73,7 +75,7 @@ class Relationship(db.Model):
     def __unicode__(self):
         return 'Relationship from %s to %s' % (self.from_user, self.to_user)
 
-
+# A message from a user (to everyone)
 class Message(db.Model):
     user = ForeignKeyField(User)
     content = TextField()
@@ -82,10 +84,29 @@ class Message(db.Model):
     def __unicode__(self):
         return '%s: %s' % (self.user, self.content)
 
-
+# A private note from a user
 class Note(db.Model):
     user = ForeignKeyField(User)
     message = TextField()
     status = IntegerField(choices=((1, 'live'), (2, 'deleted')), null=True)
     created_date = DateTimeField(default=datetime.datetime.now)
 
+# All material related to a certain story.
+class Scenario(db.Model):
+    name = CharField()
+    world = CharField() # The game world this belongs to
+
+# A part of a Scenario, that can be in current focus of a game
+class Scene(db.Model):
+    scenario = ForeignKeyField(Scenario)
+    name = CharField()
+    order = IntegerField() # The integer order between scenes
+    act = CharField() # For larger scenarios, this scene belongs to which act
+        
+# A game session that was or will be held, e.g. the instance between a scenario
+# and a group at a certain date
+class Session(db.Model):
+    group = ForeignKeyField(Group)
+    play_date = DateTimeField()
+    scenario = ForeignKeyField(Scenario)
+    
