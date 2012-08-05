@@ -36,8 +36,7 @@
                 <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
                 <li{% block scenarios_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Scenarios</a></li>
                 <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
-                <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a>
-                </li>
+                <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
             </ul>
             <ul class="nav pull-right">
                 {% if not session.logged_in %}

@@ -12,7 +12,6 @@ from auth import auth
 def create_tables():
     Article.create_table(fail_silently=True)
 
-
 class Article(db.Model):
     name = CharField()
     content = TextField()

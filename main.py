@@ -1,10 +1,12 @@
 from app import app
+from views import *
 from admin import admin
 from api import api
 from world import world
 from social import social
 from generator import generator
 import model_setup
+import sys
 
 admin.setup()
 api.setup()
@@ -16,5 +18,8 @@ if __name__ == '__main__':
 #    world_tables()
 #    social_tables()
 #    generator_tables()
+  if len(sys.argv) > 1 and sys.argv[1] == "reset":
+    print "Resetting data models"
     model_setup.setup_models()
-    app.run(debug=True) # Debug will reload code automatically, so no need to restart server
+    exit()
+  app.run(debug=True) # Debug will reload code automatically, so no need to restart server

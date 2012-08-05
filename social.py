@@ -21,7 +21,6 @@ def index():
     messages = Message.select().where(
         user__in=user.following()
     ).order_by(('pub_date', 'desc'))
-    print messages
     return object_list('social/social.html', messages, 'message_list')
 
 @social.route('/public/')

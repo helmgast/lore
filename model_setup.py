@@ -2,10 +2,11 @@
 
 from models import *
 from generator import *
+from world import *
 from flask_peewee.utils import make_password
 
 def setup_models():
-    User.drop_table()
+    User.drop_table(fail_silently=True)
     User.create_table()
 
     mf = User.create(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
@@ -53,7 +54,8 @@ def setup_models():
     User.create(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson')
 
-    Message.drop_table()
+    # Make sure you use unicode strings by prefixing with u''
+    Message.drop_table(fail_silently=True)
     Message.create_table()
     Message.create(user=jg, content=u'Kul spel sist!')
     Message.create(user=vs, content=u'Min karaktär dog, helvete!')
@@ -61,7 +63,16 @@ def setup_models():
     Message.create(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?')
     Message.create(user=ar, content=u'Jag tar med ölen')
 
-    Relationship.drop_table()
+    Note.drop_table(fail_silently=True)
+    Note.create_table()
+    Note.create(user=ks, content="Note to self, don't do it")
+    
+    Article.drop_table(fail_silently=True)
+    Article.create_table()
+    a = Article(name="Mundana", content=u'Mundana är en värld')
+    a.save()
+    
+    Relationship.drop_table(fail_silently=True)
     Relationship.create_table()
     Relationship.create(from_user=mf, to_user=nf)
     Relationship.create(from_user=nf, to_user=mf)
@@ -75,19 +86,19 @@ def setup_models():
     Relationship.create(from_user=mb, to_user=vs)
     Relationship.create(from_user=ar, to_user=mb)
 
-    Group.drop_table()
+    Group.drop_table(fail_silently=True)
     Group.create_table()
     ng = Group.create(name='Nero', location='Gothenburg')
     mg = Group.create(name='Nemesis', location='Gothenburg')
     kg = Group.create(name='Kulthack', location='Gothenburg')
 
-    GroupMaster.drop_table()
+    GroupMaster.drop_table(fail_silently=True)
     GroupMaster.create_table()
     GroupMaster.create(group=ng, master=mf)
     GroupMaster.create(group=mg, master=nf)
     GroupMaster.create(group=kg, master=rl)
 
-    GroupPlayer.drop_table()
+    GroupPlayer.drop_table(fail_silently=True)
     GroupPlayer.create_table()
     GroupPlayer.create(group=ng, player=nf)
     GroupPlayer.create(group=ng, player=ar)
@@ -105,10 +116,10 @@ def setup_models():
     GroupPlayer.create(group=kg, player=pn)
     GroupPlayer.create(group=kg, player=ks)
 
-    GeneratorRepeatRule.drop_table()
+    GeneratorRepeatRule.drop_table(fail_silently=True)
     GeneratorRepeatRule.create_table()
-
-    StringGenerator.drop_table()
+    
+    StringGenerator.drop_table(fail_silently=True)
     StringGenerator.create_table()
     StringGenerator.create(name="Default Generator")
 
