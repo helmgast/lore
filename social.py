@@ -50,7 +50,12 @@ def groups():
     user = auth.get_logged_in_user() 
     my_master_groups = user.master_in_groups()
     groups = Group.select().order_by('name')
-    return object_list('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)   
+    return object_list('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)
+    
+@social.route('/groups/<groupname>/')
+def group_detail(groupname):
+    group = get_object_or_404(Group, name=groupname)
+    return render_template('social/group_detail.html', group=group)
     
 @social.route('/users/<username>/')
 def user_detail(username):

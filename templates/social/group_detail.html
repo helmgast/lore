@@ -1,0 +1,14 @@
+{% extends "social/social.html" %}
+
+{% block content_title %}Group{% endblock %}
+
+{% block content %}
+
+  <div class="row-fluid">
+    <div class="span4">
+      <h3>{{ group.name }}</h3>
+      {% include "includes/group_list.html" %}
+    </div>
+  </div>
+
+{% endblock %}

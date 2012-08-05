@@ -6,11 +6,10 @@
 
   <div class="row-fluid">
     <h2>My groups</h2>
-    {% for groupm in my_master_groups %}
+    {% for group in my_master_groups %}
     <div class="span4">
-      <h3>{{ groupm.name }}</h3>
-      {% set user_list = groupm.players() %}
-      {% include "includes/user_list.html" %}
+      <h3>{{ group.name }}</h3>
+      {% include "includes/group_list.html" %}
     </div>
     {% endfor %}
   </div>
@@ -28,7 +27,7 @@
         <tbody>
             {% for group in groups %}
             <tr class="user-tablerow">
-              <td><strong>{{group.name}}</strong></td>
+              <td><strong><a href="{{ url_for('social.group_detail', groupname=group.name) }}">{{group.name}}</a></strong></td>
               <td>{{group.location}}</td>
             </tr>
           {% endfor %}
