@@ -43,7 +43,8 @@
                     <li><a href="{{ url_for('auth.login') }}">log in</a></li>
                     <li><a href="{{ url_for('join') }}">join</a></li>
                 {% else %}
-                    <li><span class="navtext">Welcome </span><a
+                    <li class="navbar-text">Welcome</span>
+                    <li><a
                             href="{{ url_for('social.user_list') }}">{{ user.username }}!</a></li>
                     {% if user.admin %}
                         <li><a href="{{ url_for('admin.index') }}">admin dashboard</a></li>{% endif %}

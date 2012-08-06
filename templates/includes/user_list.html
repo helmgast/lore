@@ -3,6 +3,7 @@
     <tr>
       <th>Username</th>
       <th>Real name</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -13,6 +14,15 @@
           <strong class="message_name">{{person.username}}</strong>
         </a></td>
         <td>{{person.realname}}</td>
+        <td>
+        <ul class="nav nav-pills">
+          <li class="active">
+            <a href="#">Follow</a>
+          </li>
+          <li><a href="#">Add to group</a></li>
+          <li><a href="#">Send message</a></li>
+        </ul>
+        </td>
       </tr>
     {% endfor %}
   </tbody>

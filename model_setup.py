@@ -69,8 +69,12 @@ def setup_models():
     
     Article.drop_table(fail_silently=True)
     Article.create_table()
-    a = Article(name="Mundana", content=u'Mundana är en värld')
+    a = Article(title="Mundana", content=u'Mundana är en värld')
     a.save()
+    
+    Metadata.drop_table(fail_silently=True)
+    Metadata.create_table()
+    Metadata.create(article=a, key='test', value='testvalue')
     
     Relationship.drop_table(fail_silently=True)
     Relationship.create_table()
