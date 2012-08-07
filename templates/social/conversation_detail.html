@@ -1,0 +1,28 @@
+{% extends "social/social.html" %}
+
+{% block content %}
+  <form action="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}" method=post>
+    <dl>
+      <dt>Message:</dt>
+      <dd><textarea name="content"></textarea></dd>
+      <dd><input type="submit" value="Create" /></dd>
+    </dl>
+  </form>
+  <ul class="unstyled">
+    {% for message in message_list %}
+      <li>{% include "includes/message.html" %}</li>
+    {% endfor %}
+  </ul>
+  {% include "includes/pagination.html" %}
+{% endblock %}
+
+{% block content_title %}
+{%set other_users = [] %}
+
+{% for m in message_list %}
+  {% if m.user != user %}
+    {% if other_users.append(m.user.username) %}{% endif %}
+  {% endif %}
+{% endfor %}
+Conversation with {{ other_users|join(',')|truncate(20) }}
+{% endblock %}

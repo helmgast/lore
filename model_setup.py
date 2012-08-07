@@ -53,19 +53,6 @@ def setup_models():
         realname='User Userson')
     User.create(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson')
-
-    # Make sure you use unicode strings by prefixing with u''
-    Message.drop_table(fail_silently=True)
-    Message.create_table()
-    Message.create(user=jg, content=u'Kul spel sist!')
-    Message.create(user=vs, content=u'Min karaktär dog, helvete!')
-    Message.create(user=ks, content=u'När får jag vara med då?')
-    Message.create(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?')
-    Message.create(user=ar, content=u'Jag tar med ölen')
-
-    Note.drop_table(fail_silently=True)
-    Note.create_table()
-    Note.create(user=ks, content="Note to self, don't do it")
     
     Article.drop_table(fail_silently=True)
     Article.create_table()
@@ -119,7 +106,27 @@ def setup_models():
     GroupPlayer.create(group=kg, player=mb)
     GroupPlayer.create(group=kg, player=pn)
     GroupPlayer.create(group=kg, player=ks)
+    
+    Conversation.drop_table(fail_silently=True)
+    Conversation.create_table()
+    c1 = Conversation.create()
+    
+    ConversationMembers.drop_table(fail_silently=True)
+    ConversationMembers.create_table()
+    ConversationMembers.create(conversation=c1, member=mf)
+    ConversationMembers.create(conversation=c1, member=nf)
+    
+    # Make sure you use unicode strings by prefixing with u''
+    Message.drop_table(fail_silently=True)
+    Message.create_table()
 
+    Message.create(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1)
+    Message.create(user=jg, content=u'Kul spel sist!')
+    Message.create(user=vs, content=u'Min karaktär dog, helvete!')
+    Message.create(user=ks, content=u'När får jag vara med då?')
+    Message.create(user=ar, content=u'Jag tar med ölen')
+    Message.create(user=mf, content=u'Visst, inga problem1', conversation=c1)    
+    
     GeneratorRepeatRule.drop_table(fail_silently=True)
     GeneratorRepeatRule.create_table()
     

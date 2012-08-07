@@ -1,0 +1,26 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Conversation</th>
+      <th>Last activity</th>
+      <th>Members</th>
+    </tr>
+  </thead>
+  <tbody>
+      {% for conversation in conversation_list %}
+      <tr>
+        <td>
+        {% for m in conversation.last_message() %}
+        <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{m.content}}</em></a>
+        {% endfor %}</td>
+        <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%m')}}</td>
+        <td>
+          {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}
+          {% for member in conversation.members() %}
+            {{ comma() }}<a href="{{ url_for('social.user_detail', username=member.username) }}">{{ member.username }}</a>
+          {% endfor %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

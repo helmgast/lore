@@ -12,6 +12,7 @@ class User(db.Model, BaseUser):
     password = CharField()
     email = CharField()
     realname = CharField()
+    location = CharField()
     join_date = DateTimeField(default=datetime.datetime.now)
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
@@ -19,11 +20,13 @@ class User(db.Model, BaseUser):
     def __unicode__(self):
         return self.username
 
+    # Users that this user follows
     def following(self):
         return User.select().join(
             Relationship, on='to_user_id'
         ).where(from_user=self).order_by('username')
 
+    # Users that follows this user
     def followers(self):
         return User.select().join(
             Relationship, on='from_user_id'
@@ -75,22 +78,31 @@ class Relationship(db.Model):
     def __unicode__(self):
         return 'Relationship from %s to %s' % (self.from_user, self.to_user)
 
+class Conversation(db.Model):
+    #creator = ForeignKeyField(User)
+    modified_date = DateTimeField(default=datetime.datetime.now)
+    
+    def members(self):
+        return User.select().join(ConversationMembers).where(conversation=self)
+        
+    def last_message(self):
+        return Message.select().where(conversation=self).order_by(('pub_date', 'desc')).limit(1)
+        
+class ConversationMembers(db.Model):
+    member = ForeignKeyField(User)
+    conversation = ForeignKeyField(Conversation)
+        
 # A message from a user (to everyone)
 class Message(db.Model):
     user = ForeignKeyField(User)
     content = TextField()
     pub_date = DateTimeField(default=datetime.datetime.now)
+    conversation = ForeignKeyField(Conversation)
+    #readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
 
     def __unicode__(self):
         return '%s: %s' % (self.user, self.content)
-
-# A private note from a user
-class Note(db.Model):
-    user = ForeignKeyField(User)
-    message = TextField()
-    status = IntegerField(choices=((1, 'live'), (2, 'deleted')), null=True)
-    created_date = DateTimeField(default=datetime.datetime.now)
-
+            
 # All material related to a certain story.
 class Scenario(db.Model):
     name = CharField()
