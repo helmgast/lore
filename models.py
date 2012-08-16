@@ -104,21 +104,70 @@ class Message(db.Model):
         return '%s: %s' % (self.user, self.content)
             
 # All material related to a certain story.
-class Scenario(db.Model):
+class Campaign(db.Model):
     name = CharField()
     world = CharField() # The game world this belongs to
-
+    group = ForeignKeyField(Group)
+    rule_system = CharField()
+    archived = BooleanField() # If the campaign is archived
+    
 # A part of a Scenario, that can be in current focus of a game
 class Scene(db.Model):
-    scenario = ForeignKeyField(Scenario)
+    campaign = ForeignKeyField(Campaign)
     name = CharField()
     order = IntegerField() # The integer order between scenes
     act = CharField() # For larger scenarios, this scene belongs to which act
-        
+                
 # A game session that was or will be held, e.g. the instance between a scenario
 # and a group at a certain date
 class Session(db.Model):
-    group = ForeignKeyField(Group)
-    play_date = DateTimeField()
-    scenario = ForeignKeyField(Scenario)
-    
+    play_start = DateTimeField()
+    play_end = DateTimeField()
+    campaign = ForeignKeyField(Campaign)
+    location = CharField() # Location of the session
+
+# Lists users present at a particular session
+class SessionPresentUser(db.Model):
+    present_user = ForeignKeyField(User)
+    session = ForeignKeyField(Session)
+            
+'''
+@ link to
+& embed
+# revision
+World:Mundana
+    &Text:...  (always a leaf node)
+    &Media:... (also always a leaf node)
+    @Place:Consaber
+        @Place:Nantien
+            @Person:Tiamel
+            @Place:Nant
+                #rev67
+                #rev66
+                ...
+    Event:Calniafestivalen
+    Scenario:Calniatrubbel
+        &Text:...
+        @Scene:1
+            @/mundana/consaber/nantien
+            @/mundana/
+        @Scene:2
+        @Scene:3
+    Character:Taldar
+
+Semantical structure
+World:Mundana
+    Place:Consaber mundana/consaber
+        Place:Nantien mundana/consaber/nantien
+            Person:Tiamel mundana/consaber/nantien/tiamel
+            Place:Nant mundana/consaber/
+    Event:Calniafestivalen
+    Scenario:Calniatrubbel
+        Scene:1
+            @/mundana/consaber/nantien
+            @/mundana/
+        Scene:2
+        Scene:3
+    Character:Taldar
+
+'''

@@ -134,4 +134,14 @@ def setup_models():
     StringGenerator.create_table()
     StringGenerator.create(name="Default Generator")
 
+    Campaign.drop_table(fail_silently=True)
+    Campaign.create_table()
 
+    Scene.drop_table(fail_silently=True)
+    Scene.create_table()
+    
+    Session.drop_table(fail_silently=True)
+    Session.create_table()
+    
+    SessionPresentUser.drop_table(fail_silently=True)
+    SessionPresentUser.create_table()

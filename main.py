@@ -5,6 +5,7 @@ from api import api
 from world import world
 from social import social
 from generator import generator
+from campaign import campaign
 import model_setup
 import sys
 
@@ -13,6 +14,7 @@ api.setup()
 app.register_blueprint(world, url_prefix='/world')
 app.register_blueprint(generator, url_prefix='/generator')
 app.register_blueprint(social, url_prefix='/social')
+app.register_blueprint(campaign, url_prefix='/campaign')
 
 if __name__ == '__main__':
 #    world_tables()

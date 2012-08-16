@@ -1,16 +1,115 @@
 {% extends "base.html" %}
 
-{% block content_title %}Home{% endblock %}
+{% block container %}  
+<div class="container">
+  {{ self.hero_box() }} {# Can't define a block twice, this will print below definition of hero_box #}
+  {{ self.content() }}
+</div>
+{% endblock %}
 
 {% block hero_box %}
   <div class="hero-unit">
-  <h1>Welcome to Raconteur</h1>
-  <p>Raconteur - a person who tells anecdotes in a skillful and amusing way</p>
-  <p>This is the digital engine to keep stories going - role-playing, fiction, TV-series.</p>
-  <p>
-    <a class="btn btn-primary btn-large">
-      Learn more
-    </a>
-  </p>
-</div>
+    <h1>Welcome to Raconteur</h1>
+    <p>Raconteur - a person who tells anecdotes in a skillful and amusing way</p>
+    <p>This is the digital engine to keep stories going - role-playing, fiction, TV-series.</p>
+    <p>
+      <a class="btn btn-primary btn-large">
+        Learn more
+      </a>
+      <a class="btn btn-success btn-large">
+        Join us!
+      </a>
+    </p>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <h1>For game masters</h1>
+  <div class="row">
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_009_magic.png">
+      <h3>Plan your campaigns and game sessions</h3>
+      <p>
+      Not only schedule sessions, but create and organize the content you need,
+      such as handouts, images, music, texts, etc. Use it as your notes for playing,
+      but also easily share it on a screen or with the players during a session!
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_043_group.png">
+      <h3>Manage your group and find new players</h3>
+      <p>
+      Manage your groups and campaigns. Find new players based on their location
+      and preferences and invite them! Easily communicate with the whole group.
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_351_book_open.png">
+      <h3>Read and write about the game world</h3>
+      <p>
+       The game is a wiki, and you can both build your own content, and merge it
+       with the official content. Together with other game masters, you are constantly
+       evolving the game world!
+      </p>
+    </div>   
+  </div>
+  <h1>For players</h1>
+  <div class="row">
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_162_ipad.png">
+      <h3>Use on your phone or tablet at the gaming table!</h3>
+      <p>
+       Have your character digitally on your phone, and update instantly as you
+       increase in level or evolve your character.
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_159_picture.png">
+      <h3>See what's in a scene</h3>
+      <p>
+       Access all the content for a scene in the game, such as NPC portraits,
+       maps, articles, etc. Excellent to read up and make use of those times
+       your character is not active in the game.
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_010_envelope.png">
+      <h3>Send messages and take notes</h3>
+      <p>
+        Use a super-simple messaging function to send secret notes to the game
+        master, other players or to take shorter side discussions. Let your
+        character events be auto-shared with the others. Take easy notes.
+      </p>
+    </div>   
+  </div>
+  <h1>For game authors</h1>
+  <div class="row">
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_071_book.png">
+      <h3>Publish your game digitally and interactively!</h3>
+      <p>
+        People use laptops, tablets and phones at the game sessions all the time.
+        Let people read and browse your game right there. Go beyond boring PDFs
+        and offer content with hyperlinks and videos.
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_340_globe.png">
+      <h3>Offer a world that changes as player's explore it</h3>
+      <p>
+       Your game can be an instant wiki, where people can edit and even things
+       that happen in sessions can be auto-posted back to the world. Your game
+       world is alive!
+      </p>
+    </div>
+    <div class="span4">
+      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_326_share.png">
+      <h3>Build a social community around your game</h3>
+      <p>
+       Build a social following around your game, that doesn't limit you to only
+       one platform. Make it easy for people to share articles and game sessions
+       on their social networks.
+      </p>
+    </div>   
+  </div>
 {% endblock %}

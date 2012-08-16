@@ -38,6 +38,12 @@ table.table-striped td.links .inline li:last-child a {
   border-right: medium none;
 }
 
+.bs-icon {
+  float: left;
+  margin: 7px 10px 0 0;
+  opacity: .8;
+}
+
 .avatar         { position: absolute; -webkit-border-radius: 5px; -moz-border-radius: 5px;border-radius: 5px;}
 .message        { width: 300px; height: 56px}
 .message_name, .message_content { margin-left: 56px}
