@@ -23,7 +23,6 @@ form.modeladmin-filters select.field { margin-right: 10px; }
 
 div.form-wrapper { width: 100%; overflow: auto; }
 
-form textarea { height: 150px; }
 form input[type="text"].datetime-widget { width: 100px; margin-right: 10px; }
 
 div.sidebar li.active { font-weight: bold; }
@@ -40,14 +39,32 @@ table.table-striped td.links .inline li:last-child a {
 
 .bs-icon {
   float: left;
-  margin: 7px 10px 0 0;
+  margin: 18px 10px 0 0;
   opacity: .8;
 }
 
 .avatar         { position: absolute; -webkit-border-radius: 5px; -moz-border-radius: 5px;border-radius: 5px;}
 .message        { width: 300px; height: 56px}
+.bubble {
+  margin-left: 200px;
+  padding: 5px;
+  margin-bottom: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  -webkit-border-radius: 10px;
+     -moz-border-radius: 10px;
+          border-radius: 10px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+.ownbubble {
+  margin-left: 0px;
+  background-color: #e5ffe5;
+}
 .message_name, .message_content { margin-left: 56px}
 .user-tablerow  {height: 60px}
+.
 
 /* helpers */
 .hidden { display: none; }

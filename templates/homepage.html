@@ -1,13 +1,12 @@
 {% extends "base.html" %}
 
-{% block container %}  
-<div class="container">
-  {{ self.hero_box() }} {# Can't define a block twice, this will print below definition of hero_box #}
+{% block container_class %}container{% endblock %}  
+
+{% block mainblock %}
   {{ self.content() }}
-</div>
 {% endblock %}
 
-{% block hero_box %}
+{% block content %}
   <div class="hero-unit">
     <h1>Welcome to Raconteur</h1>
     <p>Raconteur - a person who tells anecdotes in a skillful and amusing way</p>
@@ -21,9 +20,7 @@
       </a>
     </p>
   </div>
-{% endblock %}
-
-{% block content %}
+  
   <h1>For game masters</h1>
   <div class="row">
     <div class="span4">
@@ -57,7 +54,7 @@
   <div class="row">
     <div class="span4">
       <img class="bs-icon" src="/static/img/glyphicons/glyphicons_162_ipad.png">
-      <h3>Use on your phone or tablet at the gaming table!</h3>
+      <h3>Use on your phone or tablet when gaming!</h3>
       <p>
        Have your character digitally on your phone, and update instantly as you
        increase in level or evolve your character.
@@ -65,7 +62,7 @@
     </div>
     <div class="span4">
       <img class="bs-icon" src="/static/img/glyphicons/glyphicons_159_picture.png">
-      <h3>See what's in a scene</h3>
+      <h3>See handouts for the current scene</h3>
       <p>
        Access all the content for a scene in the game, such as NPC portraits,
        maps, articles, etc. Excellent to read up and make use of those times

@@ -1,4 +1,6 @@
-<div class="message">
+<div class="message
+{% if conversation %} bubble{% endif %}
+{% if user.username == message.user.username %} ownbubble {% endif %}">
   <div class="message-content">
     <a href="{{ url_for('social.user_detail', username=message.user.username) }}">
       <img class="avatar" src="{{ message.user.gravatar_url() }}" />
