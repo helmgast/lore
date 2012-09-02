@@ -110,11 +110,19 @@ def setup_models():
     Conversation.drop_table(fail_silently=True)
     Conversation.create_table()
     c1 = Conversation.create()
+    c2 = Conversation.create()
+    c3 = Conversation.create()
     
     ConversationMembers.drop_table(fail_silently=True)
     ConversationMembers.create_table()
     ConversationMembers.create(conversation=c1, member=mf)
     ConversationMembers.create(conversation=c1, member=nf)
+    
+    ConversationMembers.create(conversation=c2, member=mf)
+    ConversationMembers.create(conversation=c2, member=mb)
+    
+    ConversationMembers.create(conversation=c3, member=nf)
+    ConversationMembers.create(conversation=c3, member=ks)    
     
     # Make sure you use unicode strings by prefixing with u''
     Message.drop_table(fail_silently=True)
@@ -125,8 +133,11 @@ def setup_models():
     Message.create(user=vs, content=u'Min karaktär dog, helvete!')
     Message.create(user=ks, content=u'När får jag vara med då?')
     Message.create(user=ar, content=u'Jag tar med ölen')
-    Message.create(user=mf, content=u'Visst, inga problem1', conversation=c1)    
-    
+    Message.create(user=mf, content=u'Visst, inga problem1', conversation=c1)
+    Message.create(user=mf, content=u'Vi borde testa raconteur snart!', conversation=c2)
+    Message.create(user=mb, content=u'Definitivt!', conversation=c2)
+    Message.create(user=nf, content=u'Hallå?', conversation=c3)
+        
     GeneratorRepeatRule.drop_table(fail_silently=True)
     GeneratorRepeatRule.create_table()
     

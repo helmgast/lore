@@ -1,0 +1,5 @@
+<form action="{{ url_for('social.user_message', username=user.username) }}" method=post>
+  <label>Write message</label>
+  <textarea rows="4" name="content"></textarea>
+  <button type="submit" class="btn btn-primary">Send</button>
+</form>

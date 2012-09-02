@@ -10,9 +10,14 @@
       {% for conversation in conversation_list %}
       <tr>
         <td>
-        {% for m in conversation.last_message() %}
-        <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{m.content}}</em></a>
-        {% endfor %}</td>
+        {% if conversation.last_message() %}
+          {% for m in conversation.last_message() %}
+            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{m.content}}</em></a>
+          {% endfor %}
+        {% else %}
+            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> (empty) </em></a>         
+        {% endif %}
+        </td>
         <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%m')}}</td>
         <td>
           {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}

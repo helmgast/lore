@@ -17,15 +17,70 @@
         <td>{{person.realname}}</td>
         <td>{{person.location}}</td>
         <td>
-        <ul class="nav nav-pills">
-          <li class="active">
-            <a href="#">Follow</a>
-          </li>
-          <li><a href="#">Add to group</a></li>
-          <li><a href="#">Send message</a></li>
-        </ul>
+        <div class="btn-toolbar">
+        {% if user %}
+          {% if person.username != user.username %}
+            <div class="btn-toolbar btn-alternative">
+            <button class="btn btn-small ajax-btn{% if not user|is_following(person) %} hide{% endif %}""
+              href="{{ url_for('social.user_unfollow', username=person.username) }}">Unfollow</button>
+            <button type="button" class="btn btn-small btn-primary ajax-btn{% if user|is_following(person) %} hide{% endif %}"
+              href="{{ url_for('social.user_follow', username=person.username) }}">Follow...&nbsp;&nbsp;</button> 
+            </div>
+            <div class="btn-group">
+            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+              Add to group<span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              {% for group in mastered_groups %}
+                <li>
+                {% if person.username in group_players and group.id in group_players[person.username] %}
+                  <a href="#"><strong>{{ group.name }}</strong> <small class="hidden-menuitem">(remove?)</small></a>
+                {% elif person.username in group_masters and group.id in group_masters[person.username] %}
+                  {{ group.name }} <small class="hidden-menuitem">(master)</small>
+                {% else %}
+                  <a href="#" data-toggle="modal" data-target="#addtogroup_modal"
+                  data-action="{{ url_for('social.group_detail', groupname=group.name) }}"
+                  data-player="{{person.username}}"
+                  data-modaltext="Are you sure you want to add {{person.username}} to {{group.name}}?">
+                  {{ group.name }} <small class="hidden-menuitem">(add?)</small></a>
+                {% endif %}
+                </li>
+              {% endfor %}
+              {% if mastered_groups %}<li class="divider"></li>{% endif %}
+              <li><a href="#">New group...</a></li>
+            </ul>
+            </div>
+          <button data-toggle="modal" data-target="#sendmessage_modal"
+            href="{{ url_for('social.conversation_new', recipients=person.username, modal=True, fixed_recipients=True) }}"
+            class="btn btn-small btn-primary">Send message</button>
+          {% else %}
+          <button class="btn disabled">It's you!</button>
+          {% endif %}
+ 
+        {% endif %}
+        </div>
         </td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+<div class="modal hide fade" id="sendmessage_modal">
+  <div class="modal-blody">
+    <p>One fine body…</p>
+  </div>
+</div>
+<div class="modal hide fade" id="addtogroup_modal">
+  <div class="modal-blody">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Add member to group</h3>
+    </div>
+    <div class="modal-body">
+    Add member to group?
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+      <button class="btn btn-primary">Add member</button>
+    </div>
+  </div>
+</div>

@@ -1,27 +1,40 @@
 {% extends "social/social.html" %}
 
-{% block content %}
-  <form action="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}" method=post>
-    <label>Write message</label>
-    <textarea rows="4" name="content"></textarea>
-    <button type="submit" class="btn btn-primary">Send</button>
-  </form>
-  <ul class="unstyled">
-    {% for message in message_list %}
-      <li>{% include "includes/message.html" %}</li>
-    {% endfor %}
-  </ul>
-  {% include "includes/pagination.html" %}
+{% block content_title %}
+Conversation with {{ recipients|join(', ')|truncate(20) }}
 {% endblock %}
 
-{% block content_title %}
-{%set other_users = [] %}
-{% set conversation = True %}
+{% block content_tagline %}{% endblock %}
 
-{% for m in message_list %}
-  {% if m.user != user %}
-    {% if other_users.append(m.user.username) %}{% endif %}
-  {% endif %}
-{% endfor %}
-Conversation with {{ other_users|join(',')|truncate(20) }}
+{% if conversation %}
+  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id) %}
+  {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
+{% else %}
+  {% set action_url = url_for('social.conversation_new') %}
+{% endif %}
+
+{% block content %}
+<form class="modal-form" action="{{ action_url }}" method="post">
+{# note, Jinja seem to autoescape class names, so no need for "" #}
+  <div{{ ' class=modal-body' if modal }}>
+  {% if conversation %}
+    {% include "includes/pagination.html" %}
+    <ul class="unstyled">
+      {% set is_conversation = True %}
+      {% for message in message_list|reverse %}
+        <li>{% include "includes/message.html" %}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}  
+  </div>
+  <div{{ ' class=modal-footer' if modal }}>
+    <textarea class="message" rows="4" name="content" autofocus></textarea>
+    <select name="recipients" multiple="multiple"{{ ' class=hide' if fixed_recipients }}>
+      {% for r in recipients %}
+      <option selected="selected">{{ r }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Send</button>
+  </div>
+</form>
 {% endblock %}

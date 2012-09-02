@@ -754,7 +754,7 @@
     this.options = options
     this.$element = $(element)
       .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this))
-    this.options.remote && this.$element.find('.modal-body').load(this.options.remote)
+    this.options.remote && this.$element.find('.modal-blody').load(this.options.remote)
   }
 
   Modal.prototype = {
@@ -772,7 +772,7 @@
         this.$element.trigger(e)
 
         if (this.isShown || e.isDefaultPrevented()) return
-
+        
         $('body').addClass('modal-open')
 
         this.isShown = true
@@ -925,7 +925,12 @@
       var $this = $(this)
         , data = $this.data('modal')
         , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option)
-      if (!data) $this.data('modal', (data = new Modal(this, options)))
+     if (!data) {
+          $this.data('modal', (data = new Modal(this, options)))
+     } else {
+          $.extend(data.options, options)
+     }
+
       if (typeof option == 'string') data[option]()
       else if (options.show) data.show()
     })
@@ -948,7 +953,7 @@
       var $this = $(this)
         , href = $this.attr('href')
         , $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) //strip for ie7
-        , option = $target.data('modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
+        , option = $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
 
       e.preventDefault()
 

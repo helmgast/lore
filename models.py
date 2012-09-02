@@ -31,12 +31,51 @@ class User(db.Model, BaseUser):
         return User.select().join(
             Relationship, on='from_user_id'
         ).where(to_user=self).order_by('username')
-
+    
     def is_following(self, user):
         return Relationship.filter(
             from_user=self,
             to_user=user
         ).exists()
+    
+    def get_or_create_conversation_with(self, recipients):
+        conversation_query = self.get_conversations_with(recipients)
+        # Pick only one, and the most recent, in case there are many
+        conversation_query = conversation_query.order_by(('modified_date','desc')).paginate(1,1)
+        print conversation_query.sql()
+        convs = [c for c in conversation_query]
+        if not convs: # empty list
+            conversation = Conversation.create()
+            print "New conversation %i" % (conversation.id)
+            members = [self]+recipients # merge lists
+            conversation.add_members(members)
+        else:
+            conversation = convs[0]
+        return conversation
+        
+    def get_conversations_with(self, recipients):
+        # A private conversation is one which is only between this user
+        # and the given recipients, with no other users
+        if not recipients:
+            raise ValueError('Empty list of recipients')
+        if not isinstance(recipients, list) or not isinstance(recipients[0], User):
+            raise TypeError('Expects a list of User')
+        print "recipients is list of %s, first item is %s" % (type(recipients[0]), recipients[0])
+        member_ids = [self.id]+[i.id for i in recipients]
+
+        # Select Conversation first because we ultimately want to return a Conversation object
+        # But we want to join it with Conversation members and only pick those where
+        # the conversation has either this user or the defined recipient in the conversation
+        sq = Conversation.select().join(ConversationMembers).where(member__in=member_ids)
+        # However, that will give us conversations which may have just one or some of the
+        # recipients. We ONLY want those conversations where all and
+        # only all are members, so we group by and count members in the conversation
+        sq = sq.group_by('conversation_id').having('count(member_id) = %i' % len(member_ids))
+        # Resulting SQL query is:
+        # SELECT t1."id", t1."modified_date" FROM "conversation" AS t1 INNER JOIN "conversationmembers"
+        # AS t2 ON t1."id" = t2."conversation_id" WHERE t2."member_id" IN (?,?)
+        # GROUP BY t2."conversation_id" HAVING count(member_id) = 2
+        return sq
 
     def master_in_groups(self):
         return Group.select().join(GroupMaster).where(master=self)
@@ -87,6 +126,11 @@ class Conversation(db.Model):
         
     def last_message(self):
         return Message.select().where(conversation=self).order_by(('pub_date', 'desc')).limit(1)
+        
+    def add_members(self, members):
+        for m in members:
+            cm = ConversationMembers.create(member=m, conversation=self)
+            print "Created conversation member with member %s and conv %s" % (m.id, self.id)
         
 class ConversationMembers(db.Model):
     member = ForeignKeyField(User)
