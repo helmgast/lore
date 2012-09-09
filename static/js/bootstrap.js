@@ -953,7 +953,7 @@
       var $this = $(this)
         , href = $this.attr('href')
         , $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) //strip for ie7
-        , option = $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
+        , option = $.extend({ remote: !/#/.test(href) && href, caller: $this }, $target.data(), $this.data())
 
       e.preventDefault()
 

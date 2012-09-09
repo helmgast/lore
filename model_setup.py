@@ -80,8 +80,11 @@ def setup_models():
     Group.drop_table(fail_silently=True)
     Group.create_table()
     ng = Group.create(name='Nero', location='Gothenburg')
+    ng.save()
     mg = Group.create(name='Nemesis', location='Gothenburg')
+    mg.save()
     kg = Group.create(name='Kulthack', location='Gothenburg')
+    kg.save()
 
     GroupMaster.drop_table(fail_silently=True)
     GroupMaster.create_table()

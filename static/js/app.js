@@ -1,65 +1,80 @@
 $(document).ready(function() {
 
-  function follow() {
-    var btn = $(this);
+  function serializeObject(form) {
+    var o = {};
+    var a = form.serializeArray();
+    $.each(a, function() {
+      if (o[this.name] !== undefined) {
+        if (!o[this.name].push) {
+          o[this.name] = [o[this.name]];
+        }
+          o[this.name].push(this.value || '');
+        } else {
+          o[this.name] = this.value || '';
+        }
+    });
+    return o;
+  };
+  
+  jQuery.extend( {
+    dictreplace: function(s, d) {
+      if (s && d) {
+        var p = s.split("__")
+        for (i=1; i<p.length;i=i+2) {
+          if (d[p[i]]) {
+            p[i] = d[p[i]]
+          }
+        }
+        return p.join('')
+      }
+      return s
+    } 
+  });  
+
+  function changestate(e) {
+    e.preventDefault()
+    var btn = $(e.target);
     btn.button('loading')
-    $.ajax({url: btn.attr('href'), type: "POST", success: function() {
-//      btn.button('reset') // there is a bug which makes this reset prevent disabling
-      //btn.removeClass('btn-primary ajax-btn');
-      btn.siblings().show()
-      btn.hide()
-      btn.button('reset')
-      //btn.off('click', follow)
-      }})
+    $.post(btn.attr('href'), '', function() {
+        btn.button('reset')
+        var s = parseInt(btn.data('state'))+1
+        btn.trigger('nextstate', {state: s, resources: btn.data('resources')})
+      }).error(function() {
+        btn.html('Failed!').addClass('btn-danger')
+        setTimeout(function() {btn.removeClass('btn-danger').button('reset')},2000)
+      })
   }
+  $('.comp').on('click', changestate); 
 
-  $('.ajax-btn').on('click', follow);
-
-  $('#addtogroup_modal').on('show', function (e) {
-    $this = $(e.target)
-    $this.find('.modal-body').html($this.data('modal').options.modaltext)
-    console.log($this.data('modal').options.modaltext)
-    return true
-  })
-  
-  $('#addtogroup_modal .btn-primary').on('click', function (e) {
-    $m = $('#addtogroup_modal').data('modal')
-    $.post($m.options.action, 'players='+$m.options.player)
-    //$('#addtogroup_modal').
-    return false
-  })
-  
-  $('#sendmessage_modal').on('show', function(e) {
-    var m = $(e.target).data('modal')
-    var blody = m.$element.find('.modal-blody')
-    m.options.remote && blody.load(m.options.remote)
-  })
+  function modalstate(e) {
+    var $t = $(e.target);
+    var $m = $t.data('modal')
+    // Trigger state on modal, but take it from data(state) which has been set by
+    // the calling button (as an option)
+    $t.trigger('nextstate', {state: $m.options.state, resources: $m.options.resources })
+    $t.on('submit', 'form', function() { // form here means a delegate selector, so we can catch
+      var $f =$(this)
+      $.post($f.attr('action'), $f.serialize(), function(data) {
+        // success, find the calling button and send it to next state
+        var $c = $($t.data('modal').options.caller)
+        var s = parseInt($c.data('state'))+1
+        $c.trigger('nextstate', {state: s, form: serializeObject($f), resources: $c.data('resources')})
+        $t.html(data)
+        if ($m.options.autoclose) {
+          setTimeout(function() {$t.modal('hide')},2000)      
+        }
+      }).error(function() {
+        $t.html('<div class="modal-header"><div class="alert alert-block alert-error">'+
+                '<p>Request failed!</p></div></div>')
+        setTimeout(function() {$t.modal('hide')},2000)
+      })
+      return false
+    })}
+  $('.modal').on('show', modalstate); 
   
   $('#sendmessage_modal').on('shown', function(e) {
-    $m = $(e.target).find('.modal-body')
-    //$m.prop('scrollTop', $m.prop('scrollHeight') - $m.height())
-    $m.animate({scrollTop: $m.prop('scrollHeight') - $m.height()}, 500)    
+    var $m = $(e.target).find('.modal-body')
+    $m.animate({scrollTop: $m.prop('scrollHeight') - $m.height()}, 500)
   })
-  
-  function post_ajax(e) {
-    // Need to attach this to modal main div, as the form is recreated every click
-    // so we pick up the form from the event target, not "this"
-    $this = $(this);
-    $form = $(e.target);
-    if($form.size() > 0) {
-      $form = $($form[0]);
-      console.log("Posting "+$form.serialize()+" to "+$form.attr('action'));
-      $.post($form.attr('action'), $form.serialize(), function(data){
-        $this.html(data);
-      }).error(function() {
-        $this.html('<div class="alert alert-error">Could not send message!</div>')
-      });
-      return false;
-    } else {
-      return true;
-    }
-  }
 
-  //$('.modal-blody').on('submit', post_ajax(e));
-  
 });

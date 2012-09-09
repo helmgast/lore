@@ -26,7 +26,28 @@
         </a></td>
         <td>{{person.realname}}</td>
         <td>Player</td>
+        <td>
+          <a href="#" data-toggle="modal" data-target="#changegroup_modal"
+            data-action="{{ url_for('social.group_removeplayers', groupslug=group.slug, modal=True) }}"
+            data-player="{{person.username}}" data-modalheader="Remove?"
+            data-modalbody="Are you sure you want to remove {{person.username}} from {{group.name}}?">
+            <small>(remove?)</small></a>
+        </td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<div class="modal hide fade" id="changegroup_modal">
+  <div class="modal-blody">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Add member to group</h3>
+    </div>
+    <div class="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+      <button class="btn btn-primary">Confirm</button>
+    </div>
+  </div>
+</div>

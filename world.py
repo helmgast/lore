@@ -33,7 +33,7 @@ class Article(db.Model):
     def __unicode__(self):
         return self.title
 
-    def save(self):
+    def save(self, ):
         self.slug = slugify(self.title)
         self.modified_date = datetime.datetime.now()
         return super(Article, self).save()

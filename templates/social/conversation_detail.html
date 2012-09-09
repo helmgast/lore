@@ -7,13 +7,13 @@ Conversation with {{ recipients|join(', ')|truncate(20) }}
 {% block content_tagline %}{% endblock %}
 
 {% if conversation %}
-  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id) %}
+  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id, modal=modal) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
 {% else %}
-  {% set action_url = url_for('social.conversation_new') %}
+  {% set action_url = url_for('social.conversation_new', modal=modal) %}
 {% endif %}
 
-{% block content %}
+{% block content %}{% block modal_body %}
 <form class="modal-form" action="{{ action_url }}" method="post">
 {# note, Jinja seem to autoescape class names, so no need for "" #}
   <div{{ ' class=modal-body' if modal }}>
@@ -37,4 +37,4 @@ Conversation with {{ recipients|join(', ')|truncate(20) }}
     <button type="submit" class="btn btn-primary">Send</button>
   </div>
 </form>
-{% endblock %}
+{% endblock %}{% endblock %}

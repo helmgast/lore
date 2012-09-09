@@ -79,7 +79,7 @@ def conversation_new():
             content=request.form['content'],
             conversation=conversation
         )
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id))
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
     else:
         abort(400) # No recipients, so who would the conversation be with?
  
@@ -103,7 +103,7 @@ def conversation_detail(conv_id):
         )
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id))
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
     return object_list('social/conversation_detail.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)    
     
 @social.route('/following/')
@@ -153,39 +153,97 @@ def groups():
     return object_list('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)
 
 @social.route('/groups/new', methods=['GET', 'POST'])
+@auth.login_required
 def group_new():
     user = auth.get_logged_in_user()
     # We expect ?modal or ?modal=true
     modal = request.args.has_key('modal')
-    
-    if request.method == 'GET' and request.args.get('members'):
+    if request.method == 'GET':
+        form = GroupForm()
+        return render_template('social/group_detail.html', form=form)        
         # We expect a comma separated arg, e.g. ?recipients=user1,
-        return "None"
-    elif request.method == 'POST' and request.form['members']:
-        return "None"
+    elif request.method == 'POST':
+        # This POST sets attributes of the normal GroupForm direct fields
+        form = GroupForm(request.form)
+        if form.validate():
+            group = Group.create()
+            form.populate_obj(group)
+            group.save()
+            flash('Your changes have been saved')
+            return redirect(url_for('.group_detail', groupslug=group.slug))
+        else:
+            flash('There were errors with your submission')
+            return redirect(url_for('.group_detail', groupslug=group.slug))
     else:
         abort(400) # No members in url or form params
         
-@social.route('/groups/<groupname>/', methods=['GET', 'POST'])
-def group_detail(groupname):
-    group = get_object_or_404(Group, name=groupname)
-    current_players = group.players()
+@social.route('/groups/<groupslug>/', methods=['GET', 'POST'])
+def group_detail(groupslug):
+    group = get_object_or_404(Group, slug=groupslug)
+    modal = request.args.has_key('modal')
     if request.method == 'GET':
-        return render_template('social/group_detail.html', group=group)
-    elif request.method == 'POST' and request.form.getlist('players'):
-        players = request.form.getlist('players')
-        print players
-        p_query = User.select().where(username__in=players)
-        players = [p for p in p_query]
-        print players
-        for p in players:
-            if p not in current_players:
-                GroupPlayer.create(group=group, player=p)
-        #flash('Added players %s') % [p.username for p in players]
-        return redirect(url_for('.group_detail', groupname=group.name))
+        form = GroupForm(obj=group)
+        print "Rendering modal? %s" % modal
+        return render_template('social/group_detail.html', group=group, form=form, modal=modal)
+    elif request.method == 'POST': 
+        if matches_form(GroupForm, request.form):
+            # This POST sets attributes of the normal GroupForm direct fields
+            form = GroupForm(request.form, obj=group)
+            if form.validate():
+                form.populate_obj(group)
+                group.save()
+                flash('Your changes have been saved')
+                return redirect(url_for('.group_detail', groupslug=group.slug))
+        flash('There were errors with your submission')
+        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))              
+
+@social.route('/groups/<groupslug>/addmasters', methods=['POST'])
+@auth.login_required
+def group_addmasters(groupslug):
+    return change_group_members(groupslug, request, add=True, master=True)
+
+@social.route('/groups/<groupslug>/removemasters', methods=['POST'])
+@auth.login_required
+def group_removemasters(groupslug):
+    return change_group_members(groupslug, request, add=False, master=True)
+        
+@social.route('/groups/<groupslug>/addplayers', methods=['POST'])
+@auth.login_required
+def group_addplayers(groupslug):
+    return change_group_members(groupslug, request, add=True, master=False)
+        
+@social.route('/groups/<groupslug>/removeplayers', methods=['POST'])
+@auth.login_required
+def group_removeplayers(groupslug):
+    return change_group_members(groupslug, request, add=False, master=False)
+
+def change_group_members(groupslug, r, add, master):
+    formdata = r.form
+    modal = r.args.has_key('modal')
+    if master and formdata.has_key('masters'):
+        group = get_object_or_404(Group, slug=groupslug)
+        masters = list(User.select().where(username__in=formdata.getlist('masters')))
+        if not masters:
+            abort(400)
+        elif add:
+            flash('Added master(s) %s' % [u.username for u in group.addMasters(masters)], 'success')
+        else:
+            flash('Removed master(s) %s' % [u.username for u in group.removeMasters(masters)], 'success')
+        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))
+    elif not master and formdata.has_key('players'):
+        group = get_object_or_404(Group, slug=groupslug)
+        players = list(User.select().where(username__in=formdata.getlist('players')))
+        if not players:
+            abort(400)
+        elif add:
+            flash('Added player(s) %s' % [u.username for u in group.addPlayers(players)], 'success')
+        else:
+            flash('Removed player(s) %s' % [u.username for u in group.removePlayers(players)], 'success')
+        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))                
     else:
-        abort(400)
-    
+        flash('There were errors with your submission')
+        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal)) 
+                
 @social.route('/users/<username>/')
 def user_detail(username):
     user = get_object_or_404(User, username=username)

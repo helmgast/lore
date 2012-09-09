@@ -27,7 +27,7 @@
         <tbody>
             {% for group in groups %}
             <tr class="user-tablerow">
-              <td><strong><a href="{{ url_for('social.group_detail', groupname=group.name) }}">{{group.name}}</a></strong></td>
+              <td><strong><a href="{{ url_for('social.group_detail', groupslug=group.slug) }}">{{group.name}}</a></strong></td>
               <td>{{group.location}}</td>
             </tr>
           {% endfor %}

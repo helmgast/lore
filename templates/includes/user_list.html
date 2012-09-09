@@ -1,3 +1,71 @@
+{% macro render_button(type, states, resources, index=1, target=None, autoclose=None) -%}
+  <{{type|safe}} class="{{ states[index]['class'] }}"
+    href="{{ states[index]['href']|dictreplace(resources) }}" title="{{ states[index]['title']|dictreplace(resources) }}"
+    data-state="{{index}}" {{ 'data-toggle=modal data-target='+target if target}} {{'data-autoclose=True' if autoclose }}
+    data-resources='{{resources|tojson}}'
+    >{{ states[index]['html']|dictreplace(resources)|safe }}</{{type|safe}}>
+{%- endmacro %}
+
+{% macro render_states(selector, states) -%}
+  <script type="text/javascript">
+  $('{{selector}}').bind('nextstate', function(e, data) {
+    $t = $(e.target)
+    if (data.state > {{states|length}}) { // Reset state counter
+      data.state = 1
+    }
+    $t.data('state',data.state)
+    switch(data.state) {
+      {%- for k in states.keys() %}
+      case {{k}}:
+        {%- for k,v in states[k].iteritems() %}
+        {%- if k=='html'%}
+          {%- if v.startswith("/") or v.startswith("http") %}
+            $t.load(jQuery.dictreplace('{{v|safe}}',data.resources))
+          {% else %}
+            $t.html(jQuery.dictreplace('{{v|safe}}',data.resources))
+          {% endif -%}
+        {%- else %}
+          $t.attr('{{k}}',jQuery.dictreplace('{{v|safe}}',data.resources))
+        {% endif -%}
+        {% endfor -%}
+        break;
+      {% endfor -%}
+    }
+  })
+  </script>
+{%- endmacro %}
+
+{% set follow_states = {
+  1: {'class':'comp btn btn-small btn-primary follow', 'title':'Follow?','href':url_for('social.user_follow', username='__user__'),'html':'Follow ...'},
+  2: {'class':'comp btn btn-small follow', 'title':'Unfollow?', 'href':url_for('social.user_unfollow', username='__user__'),'html':'Unfollow'}
+} %}
+
+{% set changemember_modal_states ={
+  1: {'html':'<div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h3>Add __user__ to __groupname__</h3></div>'+
+            '<form action="'+url_for('social.group_addplayers', groupslug='__group__')+'"><div class="modal-body">Are you sure you want to add <strong>__user__</strong>?</div>'+
+            '<input type="hidden" class="hide" name="players" value="__user__" />'+
+            '<div class="modal-footer"><button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button><button type="submit" class="btn btn-primary">Confirm</button></div></form>'},
+  2: {'html':'<form action="'+url_for('social.group_removeplayers', groupslug='__group__')+'"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h3>Remove __user__ from __groupname__</h3></div>'+
+            '<div class="modal-body">Are you sure you want to remove <strong>__user__</strong>?</div>'+
+            '<input type="hidden" class="hide" name="players" value="__user__" />'+
+            '<div class="modal-footer"><button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button><button type="submit" class="btn btn-primary">Confirm</button></div></form>'},
+}%}
+
+{% set changemember_states ={
+  1: {'class':'changemember', 'title':'Add __user__ to __groupname__?','href':url_for('social.group_addplayers', groupslug='__group__', modal=True),
+  'html':'__groupname__ <small class="hidden-menuitem">(add?)</small>'},
+  2: {'class':'changemember', 'title':'Remove __user__ from __groupname__?', 'href':url_for('social.group_removeplayers', groupslug='__group__', modal=True),
+  'html':'<strong>__groupname__</strong> <small class="hidden-menuitem">(remove?)</small>'}
+}%}
+
+{% set sendmessage_modal_states ={
+  1: {'html': url_for('social.conversation_new', recipients='__user__', modal=True, fixed_recipients=True) }
+}%}
+
+{% set newgroup_modal_states ={
+  1: {'html': url_for('social.group_new', modal=True) }
+}%}
+
 <table class="table table-striped">
   <thead>
     <tr>
@@ -20,34 +88,28 @@
         <div class="btn-toolbar">
         {% if user %}
           {% if person.username != user.username %}
-            <div class="btn-toolbar btn-alternative">
-            <button class="btn btn-small ajax-btn{% if not user|is_following(person) %} hide{% endif %}""
-              href="{{ url_for('social.user_unfollow', username=person.username) }}">Unfollow</button>
-            <button type="button" class="btn btn-small btn-primary ajax-btn{% if user|is_following(person) %} hide{% endif %}"
-              href="{{ url_for('social.user_follow', username=person.username) }}">Follow...&nbsp;&nbsp;</button> 
-            </div>
+            {% set resources={'user':person.username}%}
+            {{ render_button('button', follow_states, resources, 1 if not user|is_following(person) else 2 ) }}
             <div class="btn-group">
             <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
               Add to group<span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
               {% for group in mastered_groups %}
+                {% set resources={'user':person.username, 'group':group.slug, 'groupname':group.name}%}
                 <li>
                 {% if person.username in group_players and group.id in group_players[person.username] %}
-                  <a href="#"><strong>{{ group.name }}</strong> <small class="hidden-menuitem">(remove?)</small></a>
+                  {{ render_button('a',changemember_states, resources, 2, '#changemember_modal', True) }}
                 {% elif person.username in group_masters and group.id in group_masters[person.username] %}
                   {{ group.name }} <small class="hidden-menuitem">(master)</small>
                 {% else %}
-                  <a href="#" data-toggle="modal" data-target="#addtogroup_modal"
-                  data-action="{{ url_for('social.group_detail', groupname=group.name) }}"
-                  data-player="{{person.username}}"
-                  data-modaltext="Are you sure you want to add {{person.username}} to {{group.name}}?">
-                  {{ group.name }} <small class="hidden-menuitem">(add?)</small></a>
+                  {{ render_button('a',changemember_states, resources, 1, '#changemember_modal', True) }}
                 {% endif %}
                 </li>
               {% endfor %}
               {% if mastered_groups %}<li class="divider"></li>{% endif %}
-              <li><a href="#">New group...</a></li>
+              <li>{{render_button('a',{1:{'href':url_for('social.group_new'), 'html': 'New group...','title':'New group'}}, resources, 1, '#newgroup_modal', True)}}
+              </li>
             </ul>
             </div>
           <button data-toggle="modal" data-target="#sendmessage_modal"
@@ -69,18 +131,21 @@
     <p>One fine body…</p>
   </div>
 </div>
-<div class="modal hide fade" id="addtogroup_modal">
+
+<div class="modal hide fade" id="changemember_modal">
   <div class="modal-blody">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-      <h3>Add member to group</h3>
-    </div>
-    <div class="modal-body">
-    Add member to group?
-    </div>
-    <div class="modal-footer">
-      <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-      <button class="btn btn-primary">Add member</button>
     </div>
   </div>
 </div>
+
+<div class="modal hide fade" id="newgroup_modal">
+  <div class="modal-blody">
+    </div>
+  </div>
+</div>
+
+{{ render_states('.follow', follow_states) }}
+{{ render_states('.changemember', changemember_states) }}
+{{ render_states('#changemember_modal', changemember_modal_states)}}
+{{ render_states('#sendmessage_modal', sendmessage_modal_states)}}
+{{ render_states('#newgroup_modal', newgroup_modal_states)}}

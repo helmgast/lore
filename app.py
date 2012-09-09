@@ -17,3 +17,14 @@ wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 @app.template_filter('wikify')
 def wikify(s):
     return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+
+@app.template_filter('dictreplace')
+def dictreplace(s, d):
+    if d and len(d) > 0:
+        parts = s.split("__")
+        # Looking for variables __key__ in s.
+        # Splitting on __ makes every 2nd part a key, starting with index 1 (not 0)
+        for i in range(1,len(parts),2):
+            parts[i] = d[parts[i]] # Replace with dict content
+        return ''.join(parts)
+    return s
