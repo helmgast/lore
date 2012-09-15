@@ -1,4 +1,4 @@
-from models import User
+from models import User, GeneratorInputList, GeneratorInputItem
 
 __author__ = 'Niklas'
 
@@ -8,96 +8,76 @@ from wtfpeewee.orm import model_form
 
 from flask_peewee.utils import  object_list
 import random
+import itertools
 
 from app import db
-
-def create_tables():
-    StringGenerator.create_table(fail_silently=True)
-    GeneratorRepeatRule.create_table(fail_silently=True)
-
-
-class StringGenerator(db.Model):
-    name = CharField()
-    description = TextField()
-    generator = None
-
-    def __unicode__(self):
-        return self.name
 
 generator = Blueprint('generator', __name__, template_folder='templates')
 
 @generator.route('/')
 def index():
-    print "Index"
-    qr = StringGenerator.select()
-    return object_list('generator/index.html', qr)
+    return render_template('generator/index.html', list=generator_dictionary.keys(), sizes=generator_sizes)
 
+@generator.route('/<name>/<num_results>')
+def generate(name, num_results=10):
+    # Lookup factory function which upon calls creates a string generator
+    generator_factory_function = generator_dictionary.get(name)
 
-@generator.route('/<name>/generate')
-def generate(name):
-    try:
-        generator = StringGenerator.get(name=name)
-    except StringGenerator.DoesNotExist:
-        generator = StringGenerator(name=name)
+    if generator_factory_function is None:
+        return render_template('generator/generate.html', outputList=["Generator '"+name+"' does not exist"])
+        
+    # Merge functions into one output function, which is a generator
+    out_gen = generator_factory_function()
+    
+    # Produce some number of unique entries and sort them
+    outputList = produce_sorted_list(out_gen, int(num_results))
 
-    repeat_rule = GeneratorRepeatRule.create(num_results=10, max_repeats=100)
-    item_qualifier = NonDuplicateQualifier()
-    generator_factory = ItemGeneratorFactory();
-    simpleGenerator = ListGenerator(repeat_rule, item_qualifier, generator_factory)
+    # Render output
+    return render_template('generator/generate.html', name=name, outputList=outputList)
 
-    inputList = [u.realname for u in User.select()]
-    outputList = simpleGenerator.generateList(inputList)
-    return render_template('generator/generate.html', generator=generator, outputList=outputList)
+def produce_sorted_list(iterable, list_size):
+    return sorted(itertools.islice(unique_everseen(iterable), list_size))
 
+def create_output_generator(iterables):
+    def anon_func():
+        return u''.join([gen() for gen in iterables])
+    while True:
+        yield anon_func()
 
-class ItemGeneratorFactory():
-    def createGenerator(self, inputList):
-        # Use ID to differentiate between impls?
-        return RandomChoiceGenerator(inputList)
+def unique_everseen(iterable):
+    seen = set()
+    seen_add = seen.add
+    for element in itertools.ifilterfalse(seen.__contains__, iterable):
+        seen_add(element)
+        yield element
 
-# Decides how to produce one input from some input list
-class RandomChoiceGenerator():
-    def __init__(self, arg1):
-        self.inputList = arg1
+def create_generator(inputList, odds = 1.0):
+    def anon_func():
+        if random.random() < odds:
+            return random.choice(inputList)
+        else:
+            return u''
+    return anon_func
 
-    def generateItem(self):
-        return random.choice(self.inputList);
+def lookup_generator(generatorObject):
+    # Use ID to differentiate between impls?
+    def anon_func():
+        if random.random() < odds:
+            return random.choice(inputList)
+        else:
+            return u''
+    return anon_func
 
-# Decides if an output entry is good enough, such as duplicate, lenght, etc
-class NonDuplicateQualifier():
-    def is_qualified(self, output, outputList):
-        return output not in outputList
+def korhiv_generator():
+    l1 = [i.content for i in GeneratorInputList.get(name=u'Korhiv start letter').items()]
+    l2 = [i.content for i in GeneratorInputList.get(name=u'Korhiv middle syllables').items()]
+    l3 = [i.content for i in GeneratorInputList.get(name=u'Korhiv end syllables').items()]
+    
+    r1 = create_generator(l1, 0.5)
+    r2 = create_generator(l2)
+    r3 = create_generator(l3)
 
-# Decides repetition of generator, what the desired output size is as well as maximum number of tries (if generator fails to produce qualified results)
-class GeneratorRepeatRule(db.Model):
-    num_results = IntegerField()
-    max_repeats = IntegerField()
+    return create_output_generator([r1, r2, r3])
 
-    def is_qualified(self, outputList):
-        return len(outputList) >= self.num_results;
-
-    def __unicode__(self):
-        return "Results: " + self.num_results
-
-
-# Wrapper class for creating several entries, ie a list
-class ListGenerator():
-    def __init__(self, arg1, arg2, arg3):
-        self.repeat_rule = arg1
-        self.item_qualifier = arg2
-        self.generator_factory = arg3
-
-    def generateList(self, inputList):
-        outputList = []
-        counter = 0
-        item_generator = self.generator_factory.createGenerator(inputList)
-        while self.may_continue(self.repeat_rule, outputList, counter):
-            output = item_generator.generateItem()
-            counter += 1
-            if self.item_qualifier.is_qualified(output, outputList):
-                outputList.append(output)
-        return outputList
-
-    def may_continue(self, outputQualifier, outputList, current_repeats):
-        return len(outputList) < outputQualifier.num_results and\
-               current_repeats < outputQualifier.max_repeats
+generator_dictionary = {'korhiv' : korhiv_generator}
+generator_sizes = [10,20,50,100]

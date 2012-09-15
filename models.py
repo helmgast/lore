@@ -234,6 +234,25 @@ class SessionPresentUser(db.Model):
     present_user = ForeignKeyField(User)
     session = ForeignKeyField(Session)
             
+class GeneratorInputList(db.Model):
+    name = CharField()
+
+    def items(self):
+        return GeneratorInputItem.select().where(input_list=self)
+
+class GeneratorInputItem(db.Model):
+    input_list = ForeignKeyField(GeneratorInputList)
+    content = CharField()
+
+class StringGenerator(db.Model):
+    name = CharField()
+    description = TextField()
+    generator = None
+
+    def __unicode__(self):
+        return self.name
+
+
 '''
 @ link to
 & embed
