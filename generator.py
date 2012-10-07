@@ -18,7 +18,7 @@ def create_tables():
 
 class StringGenerator(db.Model):
     name = CharField()
-    description = TextField()
+    description = TextField(null=True)
     generator = None
 
     def __unicode__(self):

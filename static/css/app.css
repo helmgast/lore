@@ -37,6 +37,10 @@ table.table-striped td.links .inline li:last-child a {
   border-right: medium none;
 }
 
+table.table-narrow {
+  width: inherit;
+}
+
 .bs-icon {
   float: left;
   margin: 18px 10px 0 0;
@@ -91,7 +95,94 @@ table.table-striped td.links .inline li:last-child a {
   font-size: 80%;
 }
 .user-tablerow  {height: 60px}
-.
+
+.modal form {
+  margin-bottom: 0px;
+}
+
+.typeahead-list {
+  border: 1px solid #CCC;
+  border-radius: 3px;
+  height: 20px;
+  width: 400px;
+  border-spacing: 4px 5px;
+  font-size: 12px;
+  margin-left: 0px;
+  display: table;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.typeahead-focus {
+  border-color: rgba(82, 168, 236, 0.8);
+  outline: 0;
+  outline: thin dotted \9;
+  /* IE6-9 */
+
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+}
+
+.typeahead-input {
+  display: table-cell;
+  width: 100%;
+}
+
+.typeahead-input input {
+  border: none;
+  padding: 0px;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  margin: 0px;
+  width: 100%;
+  font-size: 12px;
+}
+
+.typeahead-input input:focus {
+  outline: 0;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.typeahead-item {
+  position: relative;
+  padding: 0 5px;
+  -moz-border-radius: 9px;
+  -webkit-border-radius: 9px;
+  border-radius: 9px;
+  border: 1px solid #CAD8F3;
+  background: #DEE7F8;
+  cursor: default;
+  display: table-cell;
+  margin-right: 5px;
+}
+
+.typeahead-item:hover {
+  background: #ccc;
+}
+
+a .icon-ok {
+  margin-left: -15px;
+  margin-right: 2px;
+}
+
+.m_deselected .icon-ok {
+  visibility: hidden;
+}
+
+.m_action:hover .icon-ok {
+  visibility: visible;
+  background-position: -24px -96px; /* minus */
+}
+
+.m_deselected:hover .icon-ok {
+  visibility: visible;
+  background-position: 0 -96px; /* plus */
+}
 
 /* helpers */
 .hidden { display: none; }

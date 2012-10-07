@@ -1,4 +1,5 @@
-{% extends "social/social.html" %}
+{% if not modal %}{% extends "social/social.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% block content_title %}Message from {{ person.username }}{% endblock %}
 

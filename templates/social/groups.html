@@ -9,7 +9,8 @@
     {% for group in my_master_groups %}
     <div class="span4">
       <h3>{{ group.name }}</h3>
-      {% include "includes/group_list.html" %}
+      {% set members=group.members() %}
+      {% include "social/group_member_view.html" %}
     </div>
     {% endfor %}
   </div>

@@ -1,0 +1,36 @@
+{% macro render_button(type, states, resources, index=1, target=None, autoclose=None) -%}
+  <{{type|safe}} class="{{ states[index]['class'] }}"
+    href="{{ states[index]['href']|dictreplace(resources) if states[index]['href'] }}" title="{{ states[index]['title']|dictreplace(resources) }}"
+    data-state="{{index}}" {{ 'data-toggle=modal data-target='+target if target}} {{'data-autoclose=True' if autoclose }}
+    data-resources='{{resources|tojson}}'
+    >{{ states[index]['html']|dictreplace(resources)|safe }}</{{type|safe}}>
+{%- endmacro %}
+
+{% macro render_states(selector, states) -%}
+  <script type="text/javascript">
+  $('{{selector}}').bind('nextstate', function(e, data) {
+    $t = $(e.target)
+    if (data.state > {{states|length}}) { // Reset state counter
+      data.state = 1
+    }
+    $t.data('state',data.state)
+    switch(data.state) {
+      {%- for k in states.keys() %}
+      case {{k}}:
+        {%- for k,v in states[k].iteritems() %}
+        {%- if k=='html'%}
+          {%- if v.startswith("/") or v.startswith("http") %}
+            $t.load(jQuery.dictreplace('{{v|safe}}',data.resources))
+          {% else %}
+            $t.html(jQuery.dictreplace('{{v|safe}}',data.resources))
+          {% endif -%}
+        {%- else %}
+          $t.attr('{{k}}',jQuery.dictreplace('{{v|safe}}',data.resources))
+        {% endif -%}
+        {% endfor -%}
+        break;
+      {% endfor -%}
+    }
+  })
+  </script>
+{%- endmacro %}

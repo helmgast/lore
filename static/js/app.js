@@ -30,51 +30,120 @@ $(document).ready(function() {
       return s
     } 
   });  
-
-  function changestate(e) {
-    e.preventDefault()
-    var btn = $(e.target);
-    btn.button('loading')
-    $.post(btn.attr('href'), '', function() {
-        btn.button('reset')
-        var s = parseInt(btn.data('state'))+1
-        btn.trigger('nextstate', {state: s, resources: btn.data('resources')})
-      }).error(function() {
-        btn.html('Failed!').addClass('btn-danger')
-        setTimeout(function() {btn.removeClass('btn-danger').button('reset')},2000)
-      })
-  }
-  $('.comp').on('click', changestate); 
-
-  function modalstate(e) {
-    var $t = $(e.target);
-    var $m = $t.data('modal')
-    // Trigger state on modal, but take it from data(state) which has been set by
-    // the calling button (as an option)
-    $t.trigger('nextstate', {state: $m.options.state, resources: $m.options.resources })
-    $t.on('submit', 'form', function() { // form here means a delegate selector, so we can catch
-      var $f =$(this)
-      $.post($f.attr('action'), $f.serialize(), function(data) {
-        // success, find the calling button and send it to next state
-        var $c = $($t.data('modal').options.caller)
-        var s = parseInt($c.data('state'))+1
-        $c.trigger('nextstate', {state: s, form: serializeObject($f), resources: $c.data('resources')})
-        $t.html(data)
-        if ($m.options.autoclose) {
-          setTimeout(function() {$t.modal('hide')},2000)      
-        }
-      }).error(function() {
-        $t.html('<div class="modal-header"><div class="alert alert-block alert-error">'+
-                '<p>Request failed!</p></div></div>')
-        setTimeout(function() {$t.modal('hide')},2000)
-      })
-      return false
-    })}
-  $('.modal').on('show', modalstate); 
   
   $('#sendmessage_modal').on('shown', function(e) {
     var $m = $(e.target).find('.modal-body')
     $m.animate({scrollTop: $m.prop('scrollHeight') - $m.height()}, 500)
   })
+  
+  // Extends Typeahead with a different updater() function
+  var extended_typeahead = {
+    // remove the name and space from the username
+    updater: function(item) { return item.replace(/ \(.*\)/,'') },
+    matcher: function(item) { 
+      var it=item.toLowerCase(), pre=it.split(" ")[0], qu = this.query.toLowerCase()
+      return !~this.options.exclude.indexOf(pre) && ~it.indexOf(qu) // not in exclude and in query
+    }
+  }
+  $.extend(true, $.fn.typeahead.Constructor.prototype, extended_typeahead)
+
+  $('.typeahead-input input').keydown(function(e) {
+    if (e.which == 188 && e.target.value.length > 0) {
+      $(e.target).parent().before('<li class="typeahead-item">'+e.target.value+'<input type="hidden" name="players" value="'+e.target.value+'" /></li>')
+      e.target.value=''
+      return false
+    } else if (e.which == 8 && e.target.value.length == 0) {
+      $(e.target).parent().prev().remove()
+      return false
+    }
+    return true;
+  })
+  .focus(function(e) {
+    var $t = $(this)
+    $t.parent().parent().addClass('typeahead-focus')
+    var el, els = $($t.data('exclude-view')).find('.m_field[name="username"]'), s ="";
+    for (var i = els.length - 1; i >= 0; i--) {
+      el = $(els[i]); s += (el.data('value') ? el.data('value') : el.html()) + ",";
+    }
+    $t.data('typeahead').options.exclude = s.toLowerCase()
+    return true;
+  })
+  .blur(function(e) {
+    $(this).parent().parent().removeClass('typeahead-focus')
+    return true;
+  });
+  
+  $('.typeahead-item').on('click','.typeahead-item', function(e) {
+    $(this).remove()
+  });
+
+  function post_action($t) {
+    var vars, type = $t.data('action-type'), href=$t.attr('href'),
+      action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
+      href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal', //attach modal param
+      action_parent = $t.parents('.m_instance, .m_field, .m_view').first();
+    if(type==='modal') {
+      vars = $('#themodal').find('form').serialize()
+    } else if (type==='inplace') {
+      //vars = $t.parents('form').serialize()
+    } else {
+      vars = action_parent.find('input, textarea').serialize()
+    }
+    $t.button('reset') // reset button
+    $.post(href, vars, function(data) {
+      var $d = $(data)
+      if(type==='modal') { // show response in modal
+        $('#themodal').html(data)
+        setTimeout(function() {$('#themodal').modal('hide')},3000)
+      } else if (type==='inline') {
+        $('.page-header').after($d.find('.alerts'));
+      }
+      var action_re = new RegExp(action+'([^/]*\\/?)$') // replace the action part of the url, leaving args or trailing slash intact
+      switch(action) {
+        case 'new':
+        case 'add':  
+        action_parent.find('.m_instance').last().after($d.find('#changes').html()); break;
+        case 'edit': break;
+        case 'remove': 
+        case 'delete': action_parent.remove(); break;// remove the selected instance
+        case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
+        case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
+        default:
+      }
+    }).error(function(xhr, errorType, exception) {
+      if(type==='modal') { $('#themodal').modal('hide') }
+      var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
+      alert( "There was an error: " + errorMessage );
+    });
+  }
+
+  function handle_action(e) {
+    var $t = $(e.currentTarget); // current to make sure we capture the button with .m_action, not children of it
+    if (!$t.hasClass('disabled')) { // if not disabled, means no action is current with this button
+      $t.button('loading') // disables the button until we're done
+      // preparations
+      switch ($t.data('action-type')) {
+        case 'modal':
+          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal' //attach modal param
+          $('#themodal').data('modal').options.caller = $t
+          $('#themodal').load(href).modal('show'); break;
+        case 'inplace': break;// replace instance with form
+        default: // post directly
+          post_action($t);
+      }
+    }
+    e.preventDefault()
+  }
+
+  $('#themodal').modal({show:false})
+  $('#themodal').on('submit', 'form', function(e) {
+    var $t = $(e.delegateTarget).data('modal').options.caller
+    post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
+    e.preventDefault(); return false;
+  }).on('hide', function(e) {
+    var $t = $(e.delegateTarget).data('modal').options.caller
+    $t.button('reset') // reset state
+  }); 
+  $('.m_action').on('click', handle_action)
 
 });

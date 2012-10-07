@@ -1,7 +1,11 @@
-from flask import Flask, Markup
+from flask import Flask, Markup, flash, render_template
 from flask_peewee.db import Database
 from re import compile
 from flaskext.markdown import Markdown
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 app = Flask(__name__) # Creates new flask instance, named to app (this module)
 app.config.from_object('config.Configuration') # Load config from config.py
@@ -20,6 +24,7 @@ def wikify(s):
 
 @app.template_filter('dictreplace')
 def dictreplace(s, d):
+    #print "Replacing %s with %s" % (s,d)
     if d and len(d) > 0:
         parts = s.split("__")
         # Looking for variables __key__ in s.
@@ -28,3 +33,10 @@ def dictreplace(s, d):
             parts[i] = d[parts[i]] # Replace with dict content
         return ''.join(parts)
     return s
+
+def generate_flash(action, name, model_identifiers):
+    flash('%s %s%s %s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers)), 'success')
+
+def error_response(msg, level='error'):
+    flash(msg, level)
+    return render_template('includes/partial.html')

@@ -10,10 +10,9 @@
       {% for conversation in conversation_list %}
       <tr>
         <td>
-        {% if conversation.last_message() %}
-          {% for m in conversation.last_message() %}
-            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{m.content}}</em></a>
-          {% endfor %}
+        {% set lastmsg = conversation.last_message() %}
+        {% if lastmsg %}
+            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
         {% else %}
             <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> (empty) </em></a>         
         {% endif %}

@@ -1,0 +1,8 @@
+<div class="alerts">
+{% for category, message in get_flashed_messages(with_categories=true) %}
+<div class="alert alert-block alert-{{ category }}">
+    <a class="close" data-dismiss="alert" href="#">×</a>
+    <p>{{ message }}</p>
+</div>
+{% endfor %}
+</div>

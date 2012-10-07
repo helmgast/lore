@@ -16,12 +16,12 @@ class Article(db.Model):
     title = CharField()
     slug = CharField() # URL-friendly name
     content = TextField()
-    status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')))
-    category = IntegerField(choices=((1, 'world'), (2, 'person'), (3, 'rule')))
+    status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
+    #category = IntegerField(choices=((1, 'world'), (2, 'person'), (3, 'rule')))
     created_date = DateTimeField(default=datetime.datetime.now)
     modified_date = DateTimeField()
-    style = CharField() # URI to stylesheet to activate when displaying
-    image = CharField() # URI to an image-ID that shows up as icon, thumbnail, etc
+    style = CharField(null=True) # URI to stylesheet to activate when displaying
+    image = CharField(null=True) # URI to an image-ID that shows up as icon, thumbnail, etc
     
     # For self-referring keys, we need this line as the object self is not created
     # when creating this. See http://peewee.readthedocs.org/en/latest/peewee/fields.html#self-referential-foreign-keys

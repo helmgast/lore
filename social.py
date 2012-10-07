@@ -1,6 +1,8 @@
 from flask_peewee.utils import object_list, get_object_or_404
-from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
+from flask import abort, request, g, redirect, url_for, render_template, flash, Blueprint
 from auth import auth
+from api import api_json
+from app import error_response, generate_flash
 from models import *
 
 def create_tables():
@@ -27,14 +29,14 @@ def public_timeline():
     messages = Message.select().where(conversation=0).order_by(('pub_date', 'desc'))
     return object_list('social/public_messages.html', messages, 'message_list')
 
-@social.route('/conversation/', methods=['GET'])
+@social.route('/conversations/', methods=['GET'])
 @auth.login_required
-def conversation():
+def conversations():
     user = auth.get_logged_in_user()
     conversations = Conversation.select().join(ConversationMembers).where( member=user)
-    return object_list('social/conversation.html', conversations, 'conversation_list')
+    return object_list('social/conversations.html', conversations, 'conversation_list')
 
-@social.route('/conversation/new/', methods=['GET', 'POST'])
+@social.route('/conversations/new/', methods=['GET', 'POST'])
 @auth.login_required
 def conversation_new():
     user = auth.get_logged_in_user()
@@ -62,7 +64,7 @@ def conversation_new():
             return redirect(url_for('.conversation_detail', conv_id=convs[0].id, modal=modal))
         else: # No conversation exists, give empty form
             # If true, we will not show recipients chooser, same render setting as when having a conversation
-            return render_template('social/conversation_detail.html', recipients=recipients, modal=modal, fixed_recipients=request.args.has_key('fixed_recipients'))
+            return render_template('social/conversation_page.html', recipients=recipients, modal=modal, fixed_recipients=request.args.has_key('fixed_recipients'))
 
     elif request.method == 'POST' and request.form['recipients'] and request.form['content']:
         # We expect one or more values with key recipients, e.g recipients=user1, recipients=user2
@@ -84,7 +86,7 @@ def conversation_new():
         abort(400) # No recipients, so who would the conversation be with?
  
         
-@social.route('/conversation/<conv_id>/', methods=['GET', 'POST'])
+@social.route('/conversations/<conv_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def conversation_detail(conv_id):
     user = auth.get_logged_in_user()
@@ -104,7 +106,7 @@ def conversation_detail(conv_id):
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
         return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
-    return object_list('social/conversation_detail.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)    
+    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)    
     
 @social.route('/following/')
 @auth.login_required
@@ -122,134 +124,130 @@ def followers():
 def user_list():
     user = auth.get_logged_in_user()
     if user:
-        mastered_groups = user.master_in_groups()
-        # For faster use in template, create dict for each username and which
-        # group they belong to (as master or as player)
-        for g in mastered_groups:
-            group_masters = {}
-            group_players = {}
-            for u in g.masters():
-                # Set to True to mark they are masters
-                if u.username in group_masters:
-                    group_masters[u.username].append(g.id)
-                else:
-                    group_masters[u.username] = [g.id]
-            for u in g.players():
-                # Set to False to mark they are not masters
-                if u.username in group_players:
-                    group_players[u.username].append(g.id)
-                else:
-                    group_players[u.username] = [g.id]
-        del group_masters[user.username] # remove ourselves, no need to check that again!
+        mastered_groups = Group.select().join(GroupMember).where(member=user,status=GROUP_MASTER)
+        # For each user in the groups mastered by current user, 
+        mastered_members = dict()
+        for gm in GroupMember.select().where(group__in=mastered_groups):
+            if gm.member.username != user.username: # remove ourselves, no need to check that again!
+                mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
     users = User.select().order_by('username')
-    
-    return object_list('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, group_masters=group_masters, group_players=group_players)
+    return object_list('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, mastered_members=mastered_members)
 
 @social.route('/groups/')
 def groups():
     user = auth.get_logged_in_user() 
-    my_master_groups = user.master_in_groups()
+    my_master_groups = Group.select().join(GroupMember).where(member=user,status=GROUP_MASTER)
     groups = Group.select().order_by('name')
     return object_list('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)
 
 @social.route('/groups/new', methods=['GET', 'POST'])
 @auth.login_required
 def group_new():
-    user = auth.get_logged_in_user()
-    # We expect ?modal or ?modal=true
-    modal = request.args.has_key('modal')
-    if request.method == 'GET':
-        form = GroupForm()
-        return render_template('social/group_detail.html', form=form)        
-        # We expect a comma separated arg, e.g. ?recipients=user1,
-    elif request.method == 'POST':
-        # This POST sets attributes of the normal GroupForm direct fields
-        form = GroupForm(request.form)
-        if form.validate():
-            group = Group.create()
-            form.populate_obj(group)
-            group.save()
-            flash('Your changes have been saved')
-            return redirect(url_for('.group_detail', groupslug=group.slug))
-        else:
-            flash('There were errors with your submission')
-            return redirect(url_for('.group_detail', groupslug=group.slug))
-    else:
-        abort(400) # No members in url or form params
+    return edit_group(request)
         
+@social.route('/groups/<groupslug>/delete', methods=['GET', 'POST'])
+@auth.login_required
+def group_delete(groupslug):
+    group = get_object_or_404(Group, slug=groupslug)
+    user = auth.get_logged_in_user()
+    masters = list(group.masters())
+    #print "if not user=%s or not user in masters=%s or len(list(masters))>1=%s" % (not user, not user in masters, len(masters)>1) 
+    if not user or not user in masters or len(masters)>1:
+        return error_response('You need to be logged in and the only master of this group to delete it')
+    if request.method == 'GET':            
+        return render_template('includes/change_members.html', \
+            url=url_for('social.group_delete',groupslug=groupslug), action='delete', \
+            instances={'group':[group.slug]})
+    elif request.method == 'POST':
+        for gm in group.members():
+            gm.delete_instance()
+        group.delete_instance()
+        return redirect(url_for('social.groups'))
+
 @social.route('/groups/<groupslug>/', methods=['GET', 'POST'])
 def group_detail(groupslug):
     group = get_object_or_404(Group, slug=groupslug)
+    return edit_group(request, group)
+    
+def edit_group(request, group=None):
     modal = request.args.has_key('modal')
+    user = auth.get_logged_in_user()
+    edit_allowed = user and (not group or user in group.masters()) # user exist and is master or the group is new
     if request.method == 'GET':
-        form = GroupForm(obj=group)
-        print "Rendering modal? %s" % modal
-        return render_template('social/group_detail.html', group=group, form=form, modal=modal)
+        form = GroupForm(obj=group) if edit_allowed else None
+        return render_template('social/group_page.html', group=group, form=form, modal=modal)
     elif request.method == 'POST': 
+        if not edit_allowed:
+            return error_response('You need to be logged in and master of this group to edit')
         if matches_form(GroupForm, request.form):
-            # This POST sets attributes of the normal GroupForm direct fields
+            is_newgroup = not group
             form = GroupForm(request.form, obj=group)
             if form.validate():
+                if is_newgroup: # We're creating a new group
+                    group = Group()
                 form.populate_obj(group)
                 group.save()
+                if is_newgroup: # Add current user as master for created group
+                    group.addMasters([user]) 
+                edit_group_members(group, request, add=True, master=False)
                 flash('Your changes have been saved')
                 return redirect(url_for('.group_detail', groupslug=group.slug))
-        flash('There were errors with your submission')
-        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))              
+        return error_response('There were errors with your submission')
+        #return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal, partial=True))
 
-@social.route('/groups/<groupslug>/addmasters', methods=['POST'])
+@social.route('/groups/<groupslug>/members/<action>', methods=['GET','POST'])
 @auth.login_required
-def group_addmasters(groupslug):
-    return change_group_members(groupslug, request, add=True, master=True)
+def group_members_change(groupslug, action):
+    group = get_object_or_404(Group, slug=groupslug)
+    user = auth.get_logged_in_user()
+    if user not in group.masters():
+        return error_response('Logged in user %s is not master of group %s so cannot %s' % (user.username, group.name, action))
+    if request.method == 'GET':
+        masters = User.select().where(username__in=request.args.getlist('masters')) if request.args.has_key('masters') else None
+        players = User.select().where(username__in=request.args.getlist('players')) if request.args.has_key('players') else None
+        if not masters and not players:
+            return error_response('No players or masters given for %s' % action)
+        return render_template('includes/change_members.html', \
+            url=url_for('social.group_members_change',groupslug=groupslug, action=action), action=action, \
+            instances={'masters':masters, 'players':players})
+    else: # POST
+        if not request.form.has_key('masters') and not request.form.has_key('players'):
+            return error_response('No players or masters given for %s' % action)
+        changes, resp = edit_group_members(group, request, add=(action=="add"), master=False)
+        if resp:
+            return resp
+        return render_template('social/group_member_view.html', members=changes, group=group, form=True, partial=True)
 
-@social.route('/groups/<groupslug>/removemasters', methods=['POST'])
-@auth.login_required
-def group_removemasters(groupslug):
-    return change_group_members(groupslug, request, add=False, master=True)
-        
-@social.route('/groups/<groupslug>/addplayers', methods=['POST'])
-@auth.login_required
-def group_addplayers(groupslug):
-    return change_group_members(groupslug, request, add=True, master=False)
-        
-@social.route('/groups/<groupslug>/removeplayers', methods=['POST'])
-@auth.login_required
-def group_removeplayers(groupslug):
-    return change_group_members(groupslug, request, add=False, master=False)
-
-def change_group_members(groupslug, r, add, master):
+def edit_group_members(group, r, add, master):
     formdata = r.form
     modal = r.args.has_key('modal')
-    if master and formdata.has_key('masters'):
-        group = get_object_or_404(Group, slug=groupslug)
+    changes = []
+    if formdata.has_key('masters'):
         masters = list(User.select().where(username__in=formdata.getlist('masters')))
         if not masters:
-            abort(400)
-        elif add:
-            flash('Added master(s) %s' % [u.username for u in group.addMasters(masters)], 'success')
-        else:
-            flash('Removed master(s) %s' % [u.username for u in group.removeMasters(masters)], 'success')
-        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))
-    elif not master and formdata.has_key('players'):
-        group = get_object_or_404(Group, slug=groupslug)
+            return [],error_response('None of the given users %s to %s are recognized' % (formdata.getlist('masters'), 'add' if add else 'remove'))
+        masters = group.addMembers(masters, GROUP_MASTER) if add else group.removeMembers(masters)
+        generate_flash('Added' if add else 'Removed','master',[gm.member.username for gm in masters])
+        changes.extend(masters)
+    if formdata.has_key('players'):
         players = list(User.select().where(username__in=formdata.getlist('players')))
         if not players:
-            abort(400)
-        elif add:
-            flash('Added player(s) %s' % [u.username for u in group.addPlayers(players)], 'success')
-        else:
-            flash('Removed player(s) %s' % [u.username for u in group.removePlayers(players)], 'success')
-        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal))                
-    else:
-        flash('There were errors with your submission')
-        return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal)) 
-                
+            return [],error_response('None of the given users %s to %s are recognized' % (formdata.getlist('players'), 'add' if add else 'remove'))
+        players = group.addMembers(players, GROUP_PLAYER) if add else group.removeMembers(players)
+        generate_flash('Added' if add else 'Removed','player',[gm.member.username for gm in players])
+        changes.extend(players)
+    return changes, None
+
+@social.route('/test')
+def test():
+    flash("Testing testing")
+    return render_template('includes/flash.html', base=False)
+
 @social.route('/users/<username>/')
 def user_detail(username):
     user = get_object_or_404(User, username=username)
     messages = user.message_set.order_by(('pub_date', 'desc'))
-    print messages
-    return object_list('social/user_detail.html', messages, 'message_list', person=user)
+    return object_list('social/user_detail.html', messages, 'message_list', person=user, modal=request.args.has_key('modal'))
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required
@@ -261,7 +259,7 @@ def user_follow(username):
     )
     flash('You are now following %s' % user.username)
     # Note point "." before redirect route, it refers to function in this blueprint (e.g social)
-    return redirect(url_for('.user_detail', username=user.username))
+    return redirect(url_for('.user_detail', username=user.username, modal=request.args.has_key('modal')))
 
 @social.route('/users/<username>/unfollow/', methods=['POST'])
 @auth.login_required
@@ -272,4 +270,4 @@ def user_unfollow(username):
         to_user=user,
     ).execute()
     flash('You are no longer following %s' % user.username)
-    return redirect(url_for('.user_detail', username=user.username))
+    return redirect(url_for('.user_detail', username=user.username, modal=request.args.has_key('modal')))

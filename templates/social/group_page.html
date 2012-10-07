@@ -1,0 +1,34 @@
+{% if not modal %}{% extends "social/social.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
+
+{% block content_title %}{{'New ' if not group}}Group{% endblock %}
+
+{% block content_tagline %}{% endblock %}
+
+{% if group %}
+  {% set action_url = url_for('social.group_detail', groupslug=group.slug, modal=modal) %}
+  {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
+{% else %}
+  {% set action_url = url_for('social.group_new', modal=modal) %}
+{% endif %}
+
+{% block content %}{% block modal_body %}
+<div class="m_view">
+  {% if form %}<form method="post" action="{{action_url}}">{% endif %}
+    <div{{ ' class=modal-body' if modal }}>
+    <h3>{{ group.name if group else "New group" }}</h3>
+    {% set members=group.members() if group else [] %}
+    {% include "social/group_member_view.html" %}
+  {% if form %}
+    {% for field in form %}
+      <p>{{ field.label }} {{ field }}</p>
+    {% endfor %}
+    </div>
+    <div{{ ' class=modal-footer' if modal }}>
+      <p><button type="submit">Save</button> or <a href="{{ url_for('social.groups') }}">cancel</a></p>
+      {% if group %}<button type="button" class="btn btn-danger m_action" href="{{ url_for('social.group_delete', groupslug=group.slug) }}" data-action-type="modal">Delete</button>{% endif %}
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}{% endblock %}

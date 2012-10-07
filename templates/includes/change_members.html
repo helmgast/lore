@@ -1,0 +1,18 @@
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	<h3>{{action|capitalize}} {{field}}?</h3>
+</div>
+<form action="{{ url }}">
+	<div class="modal-body">Are you sure you want to {{action}} 
+		{% for k,v in instances.items() -%}
+		{% if v %}{{k}} <strong>{{v|join(', ')}}</strong>,{% endif %}
+		{%- endfor -%}?
+	</div>
+	{%- for k,v in instances.items() -%}
+	{% if v %}<input type="hidden" class="hide" name="{{k}}" value="{{v|join(', ')}}" />{% endif %}
+	{%- endfor -%}
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		<button type="submit" class="btn btn-primary">Confirm</button>
+	</div>
+</form>
