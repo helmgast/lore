@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}{{ generator.name }}{% endblock %}
+{% block title %}{{ name }}{% endblock %}
 
-{% block content_title %}{{ generator.name }}{% endblock %}
+{% block content_title %}{{ name }}{% endblock %}
 {% block generator_active %} class="active"{% endblock %}
 
 {% block content %}
     <div class="generator">
-        <ul>
+        <ol>
             {% for outputItem in outputList %}
                 <li>{{ outputItem }}</li>
             {% endfor %}
-        </ul>
+        </ol>
     </div>
 {% endblock %}
