@@ -21,9 +21,7 @@ class UserStatsPanel(AdminPanel):
             'messages': messages_this_week,
         }
 
-
 admin = Admin(app, auth)
-
 
 class MessageAdmin(ModelAdmin):
     columns = ('user', 'content', 'pub_date',)
@@ -34,4 +32,5 @@ admin.register(Relationship)
 admin.register(Message, MessageAdmin)
 admin.register(Group)
 admin.register(Article)
+admin.register(GroupMember)
 admin.register_panel('User stats', UserStatsPanel)

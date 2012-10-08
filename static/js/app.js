@@ -81,7 +81,7 @@ $(document).ready(function() {
     var vars, type = $t.data('action-type'), href=$t.attr('href'),
       action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
       href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal', //attach modal param
-      action_parent = $t.parents('.m_instance, .m_field, .m_view').first();
+      action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
     if(type==='modal') {
       vars = $('#themodal').find('form').serialize()
     } else if (type==='inplace') {
@@ -91,20 +91,22 @@ $(document).ready(function() {
     }
     $t.button('reset') // reset button
     $.post(href, vars, function(data) {
-      var $d = $(data)
+      var $d = $(data), $a = $d.filter('#alerts')
       if(type==='modal') { // show response in modal
         $('#themodal').html(data)
         setTimeout(function() {$('#themodal').modal('hide')},3000)
-      } else if (type==='inline') {
-        $('.page-header').after($d.find('.alerts'));
+      } else if ($a.children().length > 0) {
+        $t.popover({trigger: 'manual', content:$a.html(), 
+          template:'<div class="popover alert-popover"><div class="popover-inner"></div><div class="arrow"></div></div>'})
+        $t.popover('show')
+        $('body').one('click', function() {$t.popover('destroy')})
       }
       var action_re = new RegExp(action+'([^/]*\\/?)$') // replace the action part of the url, leaving args or trailing slash intact
       switch(action) {
-        case 'new':
-        case 'add':  
-        action_parent.find('.m_instance').last().after($d.find('#changes').html()); break;
+        case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
+        case 'new': action_parent.find('.m_instance').last().after($d.find('#changes').html()); break;
         case 'edit': break;
-        case 'remove': 
+        case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
         case 'delete': action_parent.remove(); break;// remove the selected instance
         case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
         case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
@@ -144,6 +146,6 @@ $(document).ready(function() {
     var $t = $(e.delegateTarget).data('modal').options.caller
     $t.button('reset') // reset state
   }); 
-  $('.m_action').on('click', handle_action)
+  $('body').on('click', '.m_action', handle_action)
 
 });

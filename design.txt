@@ -63,7 +63,7 @@ HEADER
 <MODEL VIEW>
 FOOTER
 
-- Partial: An HTML or JSON representation of one or many instances of same Model, to be inserted dynamically on the client.
+- Partial: An HTML or JSON representation of one or many instances of same Model, to be inserted dynamically on the client. This can for example return only one row relating to a particular model (e.g. if we add a new model instance to the list, this will return only that model HTML)
 <MODEL VIEW> (without e.g. header and footer markup)
 
 We want to avoid duplicating the template code needed. We want to also avoid, where possible, splitting up the content too much. The more generic parts of the page are higher up in the hierarchy, and the more specific (dense) parts are towards the Instance.
@@ -89,6 +89,27 @@ However, some pages will include many different model views. So when we render t
 					{% if not partial %}
 						<model view actions, footer>
 					{% endif %}
+
+MODEL VIEW HTML STRUCTURE
+So a Model View is a dynamic view of model instances. It can be a single instance, or a collection of them (e.g. list). 
+.m_view
+	.m_instance // descendant of m_view, shows an instance of the model (e.g. a row in a table)
+		.m_field/ descendant of m_instance, holds a particular field of the instance. Can also be a collection.
+		.m_collection // if a view is instance an instance, it is a sub-view, e.g. of items in a collection field.
+				// actions here work on the inner view, and does not know about the enclosing larger view
+				// in sub-views, it is normally not legal to do new or delete. E.g. if a user has two groups, 
+				// our intention is not normally to create or delete a group but instead to add or remove it from the user
+			.m_instance //
+				.m_action   // if we are inside an instance, add or remove will either completely remove the instance tag or add
+							// a new instance tag
+			.m_selection
+				.m_action	// if we are inside a selection, add or remove will select and deselect the instance in place, instead
+							// of removing/adding it
+			.m_action
+		.m_selector // a selector is different from a view, in that when we add and remove items, we simply select or deselect
+					// which means to leave the item in place but change it's rendering
+	.m_action // descendant of m_view, button or a that invokes an action on the whole view, normally "add" or custom actions
+
 
 <div .m_list>
 	<div .m_instance #id>

@@ -127,6 +127,9 @@ class Group(db.Model):
     description = CharField()
     conversation = ForeignKeyField(Conversation)
     
+    def __unicode__(self):
+        return self.slug
+
     # Need to add *args, **kwargs for some arcane reason
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -145,13 +148,13 @@ class Group(db.Model):
     def addMembers(self, newmembers, type):
         if not newmembers or not isinstance(newmembers[0], User):
             raise TypeError("Need a list of Users, got %s of type %s" % (newmembers, type(newmembers)))
-        if not type in [GROUP_MASTER, GROUP_PLAYER, GROUP_INVITED]:
+        if not type in STATUSES.keys():
             raise TypeError("type need to be one predefined integers, see models.py")
-        members_dict = dict([[gm.member,gm] for gm in GroupMember.select().where(group=self)])
+        members_dict = dict([[gm.member.id,gm] for gm in GroupMember.select().where(group=self)])
         edited = []
         for u in newmembers:
-            if u in members_dict:
-                if members_dict[u].status == GROUP_PLAYER:
+            if u.id in members_dict:
+                if type==GROUP_MASTER and members_dict[u].status == GROUP_PLAYER:
                     members_dict[u].status = GROUP_MASTER
                     edited.append(members_dict[u])
             else:
@@ -164,7 +167,7 @@ class Group(db.Model):
         removed = []
         for gm in GroupMember.select().where(group=self,member__in=members):
             removed.append(gm)
-            cm = ConversationMembers.select().where(conversation=self.conversation, member=gm.member)
+            cm = ConversationMembers.get(conversation=self.conversation, member=gm.member)
             gm.delete_instance()
             cm.delete_instance() # Remove the user from the group conversation as well
         return removed
@@ -180,6 +183,9 @@ class GroupMember(db.Model):
     member = ForeignKeyField(User)
     status = IntegerField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player'), (GROUP_INVITED, 'invited')))
     
+    def __unicode__(self):
+        return "%s, %s in %s" % (self.member, self.status_text(), self.group)
+
     def save(self, *args, **kwargs):
         print self.group.conversation, self.group.conversation.members()
         if self.member not in self.group.conversation.members():

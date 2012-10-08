@@ -213,10 +213,21 @@ def group_members_change(groupslug, action):
     else: # POST
         if not request.form.has_key('masters') and not request.form.has_key('players'):
             return error_response('No players or masters given for %s' % action)
-        changes, resp = edit_group_members(group, request, add=(action=="add"), master=False)
-        if resp:
-            return resp
-        return render_template('social/group_member_view.html', members=changes, group=group, form=True, partial=True)
+        changes, err = edit_group_members(group, request, add=(action=="add"), master=False)
+        if err: # There was an error
+            return err
+        if request.args.get('view') == 'm_group_member_selector' and len(changes)==1: #this option only works if there is one member changed
+            # Todo, this is a hack. We want to render one person added or removed. The partial template we use normally used in user_list.html
+            # and uses a hash list to quickly render. Here we have to reverse engineer it to achieve the desired outcome...
+            mastered_members = dict()
+            if action=='add': # if we remove we keep it empty to render it as non-added
+                mastered_members['%s_%s' % (changes[0].member.username, group.id)] =changes[0] 
+            print mastered_members
+            return render_template('social/group_member_selector.html', mastered_groups=[group], mastered_members=mastered_members, person=changes[0].member, partial=True)
+        elif request.args.get('view') == 'm_group_member_view':
+            return render_template('social/group_member_view.html', members=changes, group=group, form=True, partial=True)
+        else:
+            return error_response('Need to specify which type of view this request comes from')
 
 def edit_group_members(group, r, add, master):
     formdata = r.form
@@ -227,6 +238,8 @@ def edit_group_members(group, r, add, master):
         if not masters:
             return [],error_response('None of the given users %s to %s are recognized' % (formdata.getlist('masters'), 'add' if add else 'remove'))
         masters = group.addMembers(masters, GROUP_MASTER) if add else group.removeMembers(masters)
+        if not masters:
+            return [],error_response('None of the given users %s could be %s' % (formdata.getlist('masters'), 'added' if add else 'removed'))
         generate_flash('Added' if add else 'Removed','master',[gm.member.username for gm in masters])
         changes.extend(masters)
     if formdata.has_key('players'):
@@ -234,6 +247,8 @@ def edit_group_members(group, r, add, master):
         if not players:
             return [],error_response('None of the given users %s to %s are recognized' % (formdata.getlist('players'), 'add' if add else 'remove'))
         players = group.addMembers(players, GROUP_PLAYER) if add else group.removeMembers(players)
+        if not players:
+            return [],error_response('None of the given users %s could be %s' % (formdata.getlist('players'), 'added' if add else 'removed'))
         generate_flash('Added' if add else 'Removed','player',[gm.member.username for gm in players])
         changes.extend(players)
     return changes, None
