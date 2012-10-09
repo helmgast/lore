@@ -230,5 +230,13 @@ a .icon-ok {
   border-right-color: #dff0d8 !important;
 }
 
+.alert-message+.arrow {
+  border-right-color: #fcf8e3 !important;
+}
+
+.m_userdetail table {
+  margin-bottom: 0px;
+}
+
 /* helpers */
 .hidden { display: none; }

@@ -49,16 +49,14 @@ def conversation_new():
         recipients = []
         for r in request.args.getlist('recipients'):
             recipients.extend([r.strip() for r in r.split(',')])
-        print recipients
         r_query = User.select().where(username__in=recipients)
         recipients = [r for r in r_query] # Iterate now to get a list, not a query object
         print "Found recipients %s from request param %s" % (recipients, request.args.getlist('recipients'))
         # Get most recent conversation if there is one
-        convs = user.get_conversations_with(recipients).order_by(('modified_date','desc')).paginate(1,1)
-        print convs.sql()
-        convs = [c for c in convs] # Iterate to fetch actual results
+        convs = list(user.get_most_recent_conversation_with(recipients))
         print convs
         if convs: #not empty
+            print "Conversation: %s, id %s and date %s" % (convs[0], str(convs[0].id), str(convs[0].modified_date))
             # Send us on to the actual conversation to continue!
             print url_for('.conversation_detail', conv_id=convs[0].id, modal=modal)
             return redirect(url_for('.conversation_detail', conv_id=convs[0].id, modal=modal))
@@ -75,7 +73,13 @@ def conversation_new():
         recipients = [r for r in r_query] # Iterate now to get a list, not a query object
         print "Found recipients %s from request param %s" % (recipients, request.args.getlist('recipients'))
         # Will try to create a new conversation if none already exists
-        conversation = user.get_or_create_conversation_with(recipients)
+        # Get most recent conversation if there is one
+        convs = list(user.get_most_recent_conversation_with(recipients))
+        if convs:
+            conversation = convs[0]
+        else:
+            conversation = Conversation.create()
+            conversation.add_members([user]+recipients) # merge lists
         message = Message.create(
             user=user,
             content=request.form['content'],
@@ -106,32 +110,7 @@ def conversation_detail(conv_id):
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
         return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
-    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)    
-    
-@social.route('/following/')
-@auth.login_required
-def following():
-    user = auth.get_logged_in_user()
-    return object_list('social/user_following.html', user.following(), 'user_list')
-
-@social.route('/followers/')
-@auth.login_required
-def followers():
-    user = auth.get_logged_in_user()
-    return object_list('social/user_followers.html', user.followers(), 'user_list')
-
-@social.route('/users/')
-def user_list():
-    user = auth.get_logged_in_user()
-    if user:
-        mastered_groups = Group.select().join(GroupMember).where(member=user,status=GROUP_MASTER)
-        # For each user in the groups mastered by current user, 
-        mastered_members = dict()
-        for gm in GroupMember.select().where(group__in=mastered_groups):
-            if gm.member.username != user.username: # remove ourselves, no need to check that again!
-                mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
-    users = User.select().order_by('username')
-    return object_list('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, mastered_members=mastered_members)
+    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)
 
 @social.route('/groups/')
 def groups():
@@ -258,11 +237,47 @@ def test():
     flash("Testing testing")
     return render_template('includes/flash.html', base=False)
 
+@social.route('/following/')
+@auth.login_required
+def following():
+    user = auth.get_logged_in_user()
+    return object_list('social/user_following.html', user.following(), 'user_list')
+
+@social.route('/followers/')
+@auth.login_required
+def followers():
+    user = auth.get_logged_in_user()
+    return object_list('social/user_followers.html', user.followers(), 'user_list')
+
+@social.route('/users/')
+def user_list():
+    user = auth.get_logged_in_user()
+    if user:
+        mastered_groups = Group.select().join(GroupMember).where(member=user,status=GROUP_MASTER)
+        # For each user in the groups mastered by current user, 
+        mastered_members = dict()
+        for gm in GroupMember.select().where(group__in=mastered_groups):
+            if gm.member.username != user.username: # remove ourselves, no need to check that again!
+                mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
+    users = User.select().order_by('username')
+    return object_list('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, mastered_members=mastered_members)
+
 @social.route('/users/<username>/')
 def user_detail(username):
     user = get_object_or_404(User, username=username)
+    logged_in = auth.get_logged_in_user()
+    if logged_in:
+        mastered_groups = Group.select().join(GroupMember).where(member=logged_in,status=GROUP_MASTER)
+        # For each user in the groups mastered by current user, 
+        mastered_members = dict()
+        for gm in GroupMember.select().where(group__in=mastered_groups):
+            if gm.member.username != logged_in.username: # remove ourselves, no need to check that again!
+                mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
+    
     messages = user.message_set.order_by(('pub_date', 'desc'))
-    return object_list('social/user_detail.html', messages, 'message_list', person=user, modal=request.args.has_key('modal'))
+    groups = Group.select().join(GroupMember).where(member=user)
+    return object_list('social/user_detail.html', messages, 'message_list', person=user, groups=groups, 
+        mastered_groups=mastered_groups, mastered_members=mastered_members, modal=request.args.has_key('modal'))
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required

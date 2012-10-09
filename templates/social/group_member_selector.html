@@ -1,0 +1,22 @@
+{% if partial %}{% extends "includes/partial.html" %}{% endif -%}
+{# needs vars mastered_groups, mastered_members, person #}
+
+<ul class="dropdown-menu m_field">
+  {%- block partial -%}
+  {% for group in mastered_groups %}
+    {% set gm_hash=person.username~"_"~group.id %} {# to lookup in dict #}
+    {%- if gm_hash in mastered_members -%}
+      {%- if mastered_members[gm_hash].status > 1 -%}
+        <li class="m_selector"><a href="{{url_for('social.group_members_change',groupslug=group.slug,action='remove',players=person.username, view='m_group_member_selector')}}" class="m_action" data-action-type="modal">
+      {%- else -%}
+        <li class="m_selector disabled"><a>{% endif -%}
+      <i class="icon-ok"></i>{{ group.name }} <small class="hidden-menuitem">({{mastered_members[gm_hash].status_text()}})</small></a>
+    {% else %}
+      <li class="m_selector"><a href="{{url_for('social.group_members_change',groupslug=group.slug,action='add',players=person.username, view='m_group_member_selector')}}" class="m_action m_deselected" data-action-type="modal"><i class="icon-ok"></i>{{ group.name }}</a>
+    {% endif %}
+    </li>
+  {% endfor %}
+  {%- endblock -%}
+  {% if mastered_groups %}<li class="divider"></li>{% endif %}
+  <li><a href="{{url_for('social.group_new')}}">New group...</a></li>
+</ul>

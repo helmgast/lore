@@ -135,9 +135,6 @@ def setup_models():
     Message.create(user=mf, content=u'Vi borde testa raconteur snart!', conversation=c2)
     Message.create(user=mb, content=u'Definitivt!', conversation=c2)
     Message.create(user=nf, content=u'Hallå?', conversation=c3)
-        
-    GeneratorRepeatRule.drop_table(fail_silently=True)
-    GeneratorRepeatRule.create_table()
     
     StringGenerator.drop_table(fail_silently=True)
     StringGenerator.create_table()

@@ -80,7 +80,6 @@ $(document).ready(function() {
   function post_action($t) {
     var vars, type = $t.data('action-type'), href=$t.attr('href'),
       action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
-      href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal', //attach modal param
       action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
     if(type==='modal') {
       vars = $('#themodal').find('form').serialize()
@@ -90,8 +89,20 @@ $(document).ready(function() {
       vars = action_parent.find('input, textarea').serialize()
     }
     $t.button('reset') // reset button
-    $.post(href, vars, function(data) {
+    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal', vars, function(data) { // always add modal to the actual request
       var $d = $(data), $a = $d.filter('#alerts')
+      var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
+      switch(action) {
+        case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
+        case 'new': action_parent.find('.m_instance').last().after($d.filter('#changes').html()); break;
+        case 'edit': break;
+        case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
+        case 'delete': action_parent.remove(); break;// remove the selected instance
+        case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
+        case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
+        default:
+      }
+
       if(type==='modal') { // show response in modal
         $('#themodal').html(data)
         setTimeout(function() {$('#themodal').modal('hide')},3000)
@@ -101,17 +112,7 @@ $(document).ready(function() {
         $t.popover('show')
         $('body').one('click', function() {$t.popover('destroy')})
       }
-      var action_re = new RegExp(action+'([^/]*\\/?)$') // replace the action part of the url, leaving args or trailing slash intact
-      switch(action) {
-        case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-        case 'new': action_parent.find('.m_instance').last().after($d.find('#changes').html()); break;
-        case 'edit': break;
-        case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-        case 'delete': action_parent.remove(); break;// remove the selected instance
-        case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
-        case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
-        default:
-      }
+
     }).error(function(xhr, errorType, exception) {
       if(type==='modal') { $('#themodal').modal('hide') }
       var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
