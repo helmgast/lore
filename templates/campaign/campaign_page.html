@@ -1,0 +1,36 @@
+{% if not modal %}{% extends "campaign/campaign.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
+
+{% block content_title %}{{'New ' if not campaign}}Campaign{% endblock %}
+
+{% block content_tagline %}{{ campaign.name if campaign }}{% endblock %}
+
+{% if campaign %}
+  {% set action_url = url_for('campaign.campaign_detail', slug=campaign.slug, modal=modal) %}
+{% else %}
+  {% set action_url = url_for('campaign.campaign_new', modal=modal) %}
+{% endif %}
+
+{% block content %}{% block modal_body %}
+{% if form %}<form method="post" action="{{action_url}}">{% endif %}
+<div class="row m_inplace m_view{{ ' modal-body' if modal }}">
+  <div class="span6">
+      <div class="well">{{ form.description if form else campaign.description }}</div>
+      <dl class="dl-horizontal">
+        <dt>Name</dt>
+        <dd>{{ form.name if form else campaign.name }}</dd>
+        <dt>Group</dt>
+        <dd>{% if form %}{{ form.group }}{% else %}<a href="{{ url_for('social.group_detail', groupslug=campaign.group.slug) }}">{{campaign.group}}</a>{% endif %}</dd>
+        <dt>World</dt>
+        <dd>{{ form.world if form else campaign.world }}</dd>
+        <dt>Rules</dt>
+        <dd>{{ form.rule_system if form else campaign.rule_system }}</dd>
+      </dl>
+  </div>
+</div>
+{% if form %}<div class="row form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="{{action_url}}" class="btn">Cancel</a>
+    </div></form>{% endif %}
+
+{% endblock %}{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "campaign/campaign.html" %}
+
+{% block content_title %}Sessions{% endblock %}
+{% block content_tagline %}upcoming and already done{% endblock %}
+{% block campaign_active %} class="active"{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span6">
+    <div id="calendar"></div>
+    <script type="text/javascript">
+$(document).ready(function(){
+          var evnts = function(){
+              return {
+                      "event":
+                          [
+                          {% for s in sessions %}
+                          {"date":"{{s.play_start}}","title":"{{s.campaign.name}}","id":"{{s.id}}"},
+                          {% endfor %}
+                          ]
+                      }
+          };
+         $('#calendar').Calendar({ 'events': evnts, 'weekStart': 1 })
+         .on('changeDay', function(event){
+            $('#sessionform').load('{{ url_for('campaign.session_new', modal=True) }}'+'&play_start='+
+              event.year.valueOf() +'-'+ event.month.valueOf() +'-'+ event.day.valueOf())
+          })
+         .on('onEvent', function(event) { 
+            if(event.id){ $('#sessionform').load('{{ url_for('campaign.sessions') }}'+event.id+'?modal') }
+          })
+      });
+    </script>
+  </div>
+  <div class="span6" id="sessionform">
+    <h3 id="test">Book sessions</h3>
+  </div>
+</div>
+<div class="row">
+  <h3>Past events</h3>
+  <table class="table table-striped m_view">
+    <thead>
+      <tr>
+        <th>Campaign</th>
+        <th>Group</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Present</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+        <tr><td>{{s.campaign.name}}</td><td><a href="{{ url_for('social.group_detail', groupslug=s.campaign.group.slug) }}">{{s.campaign.group}}</a></td><td>{{s.play_start}}</td><td>{{s.play_end}}</td><td>{{s.location}}</td><td>{{s.description}}</td><td></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+  <script type="text/javascript">
+  $('#sessionform').load('{{ url_for('campaign.session_new', modal=True) }}')
+  </script>
+{% endblock %}

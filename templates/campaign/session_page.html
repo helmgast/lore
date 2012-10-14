@@ -1,0 +1,36 @@
+{% if not modal %}{% extends "campaign/campaign.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
+
+{% block content_title %}{{'New ' if not the_session}}Session{% endblock %}
+
+{% block content_tagline %}{{ the_session.campaign.name if the_session }}{% endblock %}
+
+{% if the_session %}
+  {% set action_url = url_for('campaign.session_detail', id=the_session.id, modal=modal) %}
+{% else %}
+  {% set action_url = url_for('campaign.session_new', modal=modal) %}
+{% endif %}
+
+{% block content %}{% block modal_body %}
+{% if form %}<form method="post" action="{{action_url}}">{% endif %}
+<div class="row m_inplace m_view{{ ' modal-body' if modal }}">
+  <div class="span6">
+    <table class="table">
+      <tr><td><strong>Campaign</strong></td>
+      <td>{{ form.campaign if form else the_session.campaign }}</td></tr>
+      <tr><td><strong>Location</strong></td>
+      <td><small>{{ form.location if form else the_session.location }}</small></td></tr>
+      <tr><td><strong>Start time</strong></td>
+      <td>{{ form.play_start if form else the_session.play_start }}</td></tr>
+      <tr><td><strong>End time</strong></td>
+      <td>{{ form.play_end if form else the_session.play_end }}</td></tr>
+    </table>
+    <div class="well">{{ form.description(rows=10) if form else the_session.description }}</div>
+  </div>
+</div>
+{% if form %}<div class="row form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="{{url_for('campaign.session_detail', id=the_session.id)}}" class="btn">Cancel</a>
+    </div></form>{% endif %}
+
+{% endblock %}{% endblock %}
