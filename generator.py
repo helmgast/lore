@@ -24,7 +24,7 @@ def generate(name, num_results=10):
     generator_factory_function = generator_dictionary.get(name)
 
     if generator_factory_function is None:
-        return render_template('generator/generate.html', outputList=["Generator '"+name+"' does not exist"])
+        return render_template('generator/generate.html', name=name, outputList=["Generator '"+name+"' does not exist"])
         
     # Merge functions into one output function, which is a generator
     out_gen = generator_factory_function()
