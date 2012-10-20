@@ -28,7 +28,7 @@ class Article(db.Model):
     parent = ForeignKeyField('self', related_name='children', null=True)
 
     class Meta:
-        ordering = (('modified_date', 'desc'),)
+        order_by = ('modified_date',)
 
     def __unicode__(self):
         return self.title

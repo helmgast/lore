@@ -1,5 +1,5 @@
 {% include "includes/flash.html" %}
-<div class="modal-header"><h3>{% block content_title %}{% endblock %}</h3></div>
+<div class="modal-header"><h3>{% block content_title %}{% endblock %}<small> {% block content_tagline %}{% endblock %}</small></h3></div>
 {% block modal_body%}{% endblock %}
 <script id="changes" type="text/x-jquery-tmpl">
 {% block partial %}{% endblock %}

@@ -4,55 +4,66 @@
 {% block content_title %}{{ person.username }}{% endblock %}
 {% block content_tagline %}{{ person.realname }}{% endblock %}
 
-
 {% block content %}
-<div class="row m_instance m_userdetail">
+{% if form %}<form method="post">{% endif %}
+<div class="row m_instance m_userdetail m_inplace">
   <div class="span5">
     <div class="row">
       <div class="span4">
         <img src="{{ person.gravatar_url(128) }}" class="img-polaroid"/>
+        {% if form %}<p class="pagination-centered"><a href="http://www.gravatar.com/site/signup/{{person.email}}">Change</a></p>{% endif %}
+        <h4 class="pagination-centered">{{ person.exp }} XP</h4>
       </div>
       <div class="span8">
         <table class="table">
+          {% if user and user.id==person.id %}
+          <tr><td><strong>Name</strong></td>
+          <td>{{ form.realname if form else person.realname }}</td></tr>
+          <tr><td><strong>Email</strong></td>
+          <td><small>{{ form.email if form else person.email }}</small></td></tr>
+          <tr><td><strong>Password</strong></td>
+          <td><input id="password" name="password" type="text" value=""><input id="password" name="password" type="text" value=""></td></tr>     
+          {% endif %}
           <tr><td><strong>Location</strong></td>
-          <td>{{ person.location }}</td></tr>
+          <td>{{ form.location if form else person.location }}</td></tr>
           <tr><td><strong>Joined</strong></td>
           <td>{{ person.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
           <tr><td><strong>Following</strong></td>
-          <td>5</td></tr>
+          <td><span class="badge">{{person.following().count() }}</span></td></tr>
           <tr><td><strong>Followers</strong></td>
-          <td>5</td></tr>
+          <td><span class="badge">{{person.followers().count() }}</span></td></tr>
         </table>
-      </div>
-    </div>
-    <div class="btn-toolbar">
-    {% if user %}
-      {% if person.username != user.username %}
-        <button type="button" class="btn btn-small m_action
-          {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
-          {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
-          {% endif %}</button>
-        <div class="btn-group">
-        <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-          Add to group<span class="caret"></span>
-        </a>
-        {% include "social/group_member_selector.html" %}
+        <div class="btn-toolbar">
+        {% if user %}
+          {% if person.username != user.username %}
+            <button type="button" class="btn btn-small m_action
+              {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
+              {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
+              {% endif %}</button>
+            <div class="btn-group">
+              <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+              Add to group<span class="caret"></span></a>
+              {% include "social/group_member_selector.html" %}
+            </div>
+            <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
+          {% endif %}
+        {% endif %}
         </div>
-      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
-      {% else %}
-      <button class="btn disabled">It's you!</button>
-      {% endif %}
-    {% endif %}
+      </div>
     </div>
   </div> 
   <div class="span5">
-    <div class="well">{{lipsum(1)}}
+    <div class="well">{{ form.description if form else person.description }}
     </div>
   </div>
 </div>
+{% if form %}<div class="row form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="{{url_for('social.user_detail', username=person.username)}}" class="btn">Cancel</a>
+    </div></form>{% endif %}
 <div class="row">
   <div class="span5">
-  <h3>Groups</h3>
+  <h4>Groups</h4>
   {% if groups.count() > 0 %}
   <table class="table table-striped">
     <thead>
@@ -78,7 +89,7 @@
   </div>
   <div class="span5">
     {% if message_list.count() > 0  %}
-    <h3>Messages to followers</h3>
+    <h4>Messages to followers</h4>
       <ul class="unstyled">
       {% for message in message_list %}
         <li>{% include "includes/message.html" %}</li>

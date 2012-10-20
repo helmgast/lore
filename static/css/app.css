@@ -238,5 +238,17 @@ a .icon-ok {
   margin-bottom: 0px;
 }
 
+.m_inplace input, .m_inplace textarea {
+  margin-bottom: 0px;
+  width: 100%;
+  -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+  -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+  box-sizing: border-box; 
+}
+
+.form-actions {
+  margin-top: 0px;
+}
+
 /* helpers */
 .hidden { display: none; }

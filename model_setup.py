@@ -8,9 +8,35 @@ from flask_peewee.utils import make_password
 def setup_models():
     User.drop_table(fail_silently=True)
     User.create_table()
+    ConversationMembers.drop_table(fail_silently=True)
+    ConversationMembers.create_table()
+    Article.drop_table(fail_silently=True)
+    Article.create_table()
+    Metadata.drop_table(fail_silently=True)
+    Metadata.create_table()
+    Relationship.drop_table(fail_silently=True)
+    Relationship.create_table()
+    Conversation.drop_table(fail_silently=True)
+    Conversation.create_table()
+    Group.drop_table(fail_silently=True)
+    Group.create_table()
+    GroupMember.drop_table(fail_silently=True)
+    GroupMember.create_table()
+    Message.drop_table(fail_silently=True)
+    Message.create_table()
+    Campaign.drop_table(fail_silently=True)
+    Campaign.create_table()
+    Scene.drop_table(fail_silently=True)
+    Scene.create_table()
+    Session.drop_table(fail_silently=True)
+    Session.create_table()
+    SessionPresentUser.drop_table(fail_silently=True)
+    SessionPresentUser.create_table()
 
+
+#mf = User.create(username='admin', password='a', email='ripperdoc@gmail.com', active=True, admin=True, realname='Martin F', description='Always games in a hat. Has a cat.')
     mf = User.create(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
-        admin=True, realname='Martin F')
+        admin=True, realname='Martin F', description='Always games in a hat. Has a cat.')
     nf = User.create(username='niklas', password=make_password('niklas'), email='user@user.com', active=True,
         admin=False, realname='Niklas F')
     pf = User.create(username='per', password=make_password('per'), email='user@user.com', active=True, admin=False,
@@ -54,17 +80,11 @@ def setup_models():
     User.create(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson')
     
-    Article.drop_table(fail_silently=True)
-    Article.create_table()
     a = Article(title="Mundana", content=u'Mundana är en värld')
     a.save()
     
-    Metadata.drop_table(fail_silently=True)
-    Metadata.create_table()
     Metadata.create(article=a, key='test', value='testvalue')
     
-    Relationship.drop_table(fail_silently=True)
-    Relationship.create_table()
     Relationship.create(from_user=mf, to_user=nf)
     Relationship.create(from_user=nf, to_user=mf)
     Relationship.create(from_user=rj, to_user=vs)
@@ -77,14 +97,11 @@ def setup_models():
     Relationship.create(from_user=mb, to_user=vs)
     Relationship.create(from_user=ar, to_user=mb)
 
-    Conversation.drop_table(fail_silently=True)
-    Conversation.create_table()
     c1 = Conversation.create()
     c2 = Conversation.create()
     c3 = Conversation.create()
     
-    ConversationMembers.drop_table(fail_silently=True)
-    ConversationMembers.create_table()
+
     ConversationMembers.create(conversation=c1, member=mf)
     ConversationMembers.create(conversation=c1, member=nf)
     
@@ -94,8 +111,6 @@ def setup_models():
     ConversationMembers.create(conversation=c3, member=nf)
     ConversationMembers.create(conversation=c3, member=ks)
 
-    Group.drop_table(fail_silently=True)
-    Group.create_table()
     ng = Group.create(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor')
     ng.save()
     mg = Group.create(name='Nemesis', location='Gothenburg', description=u'Test')
@@ -103,8 +118,6 @@ def setup_models():
     kg = Group.create(name='Kulthack', location='Gothenburg', description=u'Test')
     kg.save()
 
-    GroupMember.drop_table(fail_silently=True)
-    GroupMember.create_table()
     GroupMember.create(group=ng, member=mf, status=GROUP_MASTER).save()
     GroupMember.create(group=mg, member=nf, status=GROUP_MASTER).save()
     GroupMember.create(group=kg, member=rl, status=GROUP_MASTER).save()
@@ -123,9 +136,6 @@ def setup_models():
     GroupMember.create(group=kg, member=ks, status=GROUP_PLAYER).save()
     
     # Make sure you use unicode strings by prefixing with u''
-    Message.drop_table(fail_silently=True)
-    Message.create_table()
-
     Message.create(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1)
     Message.create(user=jg, content=u'Kul spel sist!')
     Message.create(user=vs, content=u'Min karaktär dog, helvete!')
@@ -139,18 +149,21 @@ def setup_models():
     StringGenerator.drop_table(fail_silently=True)
     StringGenerator.create_table()
     StringGenerator.create(name="Default Generator")
-
-    Campaign.drop_table(fail_silently=True)
-    Campaign.create_table()
-
-    Scene.drop_table(fail_silently=True)
-    Scene.create_table()
     
-    Session.drop_table(fail_silently=True)
-    Session.create_table()
-    
-    SessionPresentUser.drop_table(fail_silently=True)
-    SessionPresentUser.create_table()
+    scmp = Campaign.create(name="Spelveckan", world="Mundana", group=ng, rule_system="Eon", description="Deep drama at the beginning of July each year.")
+    dcmp = Campaign.create(name="DoD Forever", world="Ereb", group=mg, rule_system="Solar System", description="The story without ending")
+    kcmp = Campaign.create(name="Kult AW", world="Kult", group=kg, rule_system="AW", description="Drama in victorian England at the edge of reality")
+    ycmp = Campaign.create(name="Yerlog", world="Mundana", group=ng, rule_system="Eon", description="Time to take over the world!")
+
+    s1 = Scene.create(campaign=scmp, name="Intro", order=1)
+    s2 = Scene.create(campaign=scmp, name="The old man in the taverna", order=2, parent=s1)
+    s3 = Scene.create(campaign=scmp, name="Going to the cave", order=3)
+    s4 = Scene.create(campaign=scmp, name="Not finding the way", order=4)
+    s5 = Scene.create(campaign=scmp, name="The general comes all over", order=5)
+
+    Session.create(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), campaign=scmp, location=u'Snöflingeg')
+    Session.create(play_start=datetime.datetime(2012,10,22,18,0), play_end=datetime.datetime(2012,10,22,23,0), campaign=dcmp, location=u'Snöflingeg')
+    Session.create(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), campaign=kcmp, location=u'Åby')
     
     GeneratorInputList.drop_table(fail_silently=True)
     GeneratorInputList.create_table()

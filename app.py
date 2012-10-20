@@ -34,8 +34,10 @@ def dictreplace(s, d):
         return ''.join(parts)
     return s
 
-def generate_flash(action, name, model_identifiers):
-    flash('%s %s%s %s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers)), 'success')
+def generate_flash(action, name, model_identifiers, dest=''):
+    s = '%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), ' to %s' % dest if dest else '')
+    flash(s, 'success')
+    return s
 
 def error_response(msg, level='error'):
     flash(msg, level)

@@ -25,12 +25,50 @@
         <dd>{{ form.world if form else campaign.world }}</dd>
         <dt>Rules</dt>
         <dd>{{ form.rule_system if form else campaign.rule_system }}</dd>
+        <dt>Sessions</dt>
+        <dd><span class="badge">{{campaign.sessions.count() }}</span></dd>
       </dl>
   </div>
 </div>
+
+<h3>Scenes <small>(reorder the tree of scenes as you like!)</small></h3>
+{% import 'includes/scene.html' as m %}
+<div class="dd" id="nestable">
+    <ol class="dd-list">
+    {% for scene in scenes recursive %}
+    <li class="dd-item dd3-item" data-id="{{scene.id}}" id="scene{{scene.id}}">
+        <div class="dd-handle dd3-handle">Drag</div>
+        <div class="dd3-content">
+            {{ m.render_scene(scene, None) }}
+        </div>
+        {% if scene.children.count() >0 %}
+            <ol class="dd-list">{{loop(scene.ordered_children())}}</ol>
+        {% endif %}
+    </li>
+    {% endfor %}
+    </ol>
+    <input type="hidden" name="scene_tree" value="" />
+</div>
+<div>
+{{ m.render_scene(None, sceneform) }}
+</div>
+
 {% if form %}<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{action_url}}" class="btn">Cancel</a>
+    <a href="{{url_for('campaign.campaigns')}}" class="btn">Cancel</a>
     </div></form>{% endif %}
 
+<script type="text/javascript">
+$(document).ready(function () {
+    $('#nestable').nestable()
+    $('form').on('submit', function(e) {
+        if (window.JSON) {
+            $('#nestable input').val(window.JSON.stringify($('#nestable').nestable('serialize')));
+        } else {
+            console.log('JSON browser support required for this demo.');
+        }
+        return true
+    })
+})   
+</script>
 {% endblock %}{% endblock %}

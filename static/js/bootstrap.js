@@ -1285,14 +1285,16 @@
         , title = this.getTitle()
         , content = this.getContent()
 
-      // TODO Martin hacked
-      if (title) {
-        $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
-      } else {
-        $tip.find('.popover-title').remove()
-      }
+      // // TODO Martin hacked
+      // if (title) {
+      //   $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
+      // } else {
+      //   $tip.find('.popover-title').remove()
+      // }
       
-      $tip.find('.popover-inner').replaceWith(content)
+      // $tip.find('.popover-inner').replaceWith(content)
+      $tip.find(this.options.title_selector)[this.options.html ? 'html' : 'text'](title)
+      $tip.find(this.options.content_selector)[this.options.html ? 'html' : 'text'](content)
 
       $tip.removeClass('fade top bottom left right in')
     }
@@ -1345,6 +1347,8 @@
     placement: 'right'
   , trigger: 'click'
   , content: ''
+  , title_selector: '.popover-title'
+  , content_selector: '.popover-content > *'
   , template: '<div class="popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"><p></p></div></div></div>'
   })
 

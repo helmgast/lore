@@ -107,7 +107,7 @@ $(document).ready(function() {
         $('#themodal').html(data)
         setTimeout(function() {$('#themodal').modal('hide')},3000)
       } else if ($a.children().length > 0) {
-        $t.popover({trigger: 'manual', content:$a.html(), 
+        $t.popover({trigger: 'manual', content:$a.html(), content_selector: '.popover-inner',
           template:'<div class="popover alert-popover"><div class="popover-inner"></div><div class="arrow"></div></div>'})
         $t.popover('show')
         $('body').one('click', function() {$t.popover('destroy')})
@@ -148,5 +148,7 @@ $(document).ready(function() {
     $t.button('reset') // reset state
   }); 
   $('body').on('click', '.m_action', handle_action)
+
+  $('.date-widget').datepicker({format: 'yyyy-mm-dd'});
 
 });

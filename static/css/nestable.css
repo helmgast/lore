@@ -19,6 +19,15 @@ p { line-height: 1.5em; }
  * Nestable
  */
 
+ol {
+  counter-reset: section;
+}
+        
+ol li { counter-increment: section; }
+ol .scene_counter {font-size: 12px; color:#888;}
+            
+ol .scene_counter:after  { content: " " counters(section, "."); }
+
 .dd { position: relative; display: block; margin: 0; padding: 0; max-width: 600px; list-style: none; font-size: 13px; line-height: 20px; }
 
 .dd-list { display: block; position: relative; margin: 0; padding: 0; list-style: none; }
@@ -85,7 +94,7 @@ p { line-height: 1.5em; }
 }
 #nestable2 .dd-handle:hover { background: #bbb; }
 #nestable2 .dd-item > button:before { color: #fff; }
-*/
+
 @media only screen and (min-width: 700px) { 
 
     .dd { float: left; width: 48%; }
@@ -93,13 +102,16 @@ p { line-height: 1.5em; }
 
 }
 
-.dd-hover > .dd-handle { background: #2ea8e5 !important; }
+collapsed - down
+else - up
 
+.dd-hover > .dd-handle { background: #2ea8e5 !important; }
+*/
 /**
  * Nestable Draggable Handles
  */
 
-.dd3-content { display: block; height: 30px; margin: 5px 0; padding: 5px 10px 5px 40px; color: #333; text-decoration: none; font-weight: bold; border: 1px solid #ccc;
+.dd3-content { display: block; margin: 5px 0; padding: 5px 10px 5px 40px; border: 1px solid #ccc;
     background: #fafafa;
     background: -webkit-linear-gradient(top, #fafafa 0%, #eee 100%);
     background:    -moz-linear-gradient(top, #fafafa 0%, #eee 100%);
@@ -108,9 +120,21 @@ p { line-height: 1.5em; }
             border-radius: 3px;
     box-sizing: border-box; -moz-box-sizing: border-box;
 }
-.dd3-content:hover { color: #2ea8e5; background: #fff; }
+.dd3-content h3 {
+    color: #333; text-decoration: none; font-weight: bold; font-size: 16px; display: inline; margin-bottom: 0px; line-height: 20px;
+}
 
-.dd-dragel > .dd3-item > .dd3-content { margin: 0; }
+.dd3-content > .btn-group {
+    float: right;
+}
+
+.dd3-content .collapsed i {
+    background-position: -313px -119px; /* chevron-down */
+}
+
+/*.dd3-content:hover { color: #2ea8e5; background: #fff; }*/
+
+/*.dd-dragel > .dd3-item > .dd3-content { margin: 0; }*/
 
 .dd3-item > button { margin-left: 30px; }
 
