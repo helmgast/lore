@@ -3,6 +3,9 @@
 from models import *
 from flask_peewee.utils import make_password
 
+def altor_date(year, month, day):
+    return year*360+(month-1)*30+(day-1)
+
 def setup_models():
     User.drop_table(fail_silently=True)
     User.create_table()
@@ -46,10 +49,26 @@ def setup_models():
     Session.create_table()
     SessionPresentUser.drop_table(fail_silently=True)
     SessionPresentUser.create_table()
-
-    World.create(name="Mundana")
-    World.create(name="Altor")
     
+
+
+    mundana = World.create(name="Mundana")
+    altor = World.create(name="Altor")
+    
+    MediaArticle.create(mime_type="image/jpg",
+                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
+                        article=Article.create(type=ARTICLE_MEDIA,
+                                               title=u"Ljusbringaren",
+                                               content=u"No content",
+                                               world=altor))
+    PersonArticle.create(born=altor_date(1653,3,4),
+                         died=altor_date(1891,12,3),
+                         gender=GENDER_MALE,
+                         occupation=u"Ljusbringaren",
+                         article=Article.create(type=ARTICLE_PERSON,
+                                                title=u"Ljusbringaren",
+                                                content=u"No content",
+                                                world=altor))
 
 #mf = User.create(username='admin', password='a', email='ripperdoc@gmail.com', active=True, admin=True, realname='Martin F', description='Always games in a hat. Has a cat.')
     mf = User.create(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,

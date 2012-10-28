@@ -321,7 +321,7 @@ class World(db.Model):
 
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
 
-class Article (db.Model):
+class Article(db.Model):
     type = IntegerField(default=ARTICLE_DEFAULT, choices=((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event')))
     title = CharField()
     slug = CharField() # URL-friendly name
@@ -333,13 +333,14 @@ class Article (db.Model):
     metadata = TextField() # JSON
     # thumbnail
 
-class MediaArticle (db.Model):
+class MediaArticle(db.Model):#, Article):
+    article = ForeignKeyField(Article)
     mime_type = CharField()
     url = CharField()
 
 GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
 
-class PersonArticle (db.Model):
+class PersonArticle(db.Model):#, Article):
     article = ForeignKeyField(Article)
     born = IntegerField()
     died = IntegerField()
@@ -347,39 +348,39 @@ class PersonArticle (db.Model):
     # otherNames = CharField()
     occupation = CharField()
 
-class FractionArticle (db.Model):
+class FractionArticle(db.Model):#, Article):
     article = ForeignKeyField(Article)
 
-class PlaceArticle (db.Model):
+class PlaceArticle(db.Model):#, Article):
     article = ForeignKeyField(Article)
     coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
     coordinate_y = FloatField() # 
     location_type = CharField() # building, city, domain, point_of_interest
 
-class EventArticle (db.Model):
+class EventArticle(db.Model):#, Article):
     article = ForeignKeyField(Article)
     from_date = IntegerField()
     to_date = IntegerField()
 
-class RelationTypes (db.Model):
+class RelationTypes(db.Model):
     name = CharField() # human friendly name
     # code = CharField() # parent, child, reference, 
     # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
     # from_type = # type of article from
     # to_type = # type of article to 
 
-class ArticleRelations (db.Model):
+class ArticleRelations(db.Model):
     from_article = ForeignKeyField(Article)
     to_article = ForeignKeyField(Article)
     relation_type = ForeignKeyField(RelationTypes)
     # twosided = False, True
 
-# class ArticleRights (db.Model):
+# class ArticleRights(db.Model):
     # user = ForeignKeyField(User)
     # article = ForiegnKeyField(Article)
     # right = ForiegnKeyField(UserRights)
 
-# class UserRights (db.Model):
+# class UserRights(db.Model):
     # right = # owner, editor, reader
 
 
