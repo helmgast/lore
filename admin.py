@@ -7,7 +7,6 @@ from flask_peewee.filters import QueryFilter
 from app import app, db
 from auth import auth
 from models import *
-from world import Article
 
 class UserStatsPanel(AdminPanel):
     template_name = 'admin/user_stats.html'

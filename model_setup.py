@@ -1,8 +1,6 @@
 # coding=utf-8
 
 from models import *
-from generator import *
-from world import *
 from flask_peewee.utils import make_password
 
 def setup_models():
@@ -10,10 +8,26 @@ def setup_models():
     User.create_table()
     ConversationMembers.drop_table(fail_silently=True)
     ConversationMembers.create_table()
+    World.drop_table(fail_silently=True)
+    World.create_table()
     Article.drop_table(fail_silently=True)
     Article.create_table()
-    Metadata.drop_table(fail_silently=True)
-    Metadata.create_table()
+    MediaArticle.drop_table(fail_silently=True)
+    MediaArticle.create_table()
+    PersonArticle.drop_table(fail_silently=True)
+    PersonArticle.create_table()
+    FractionArticle.drop_table(fail_silently=True)
+    FractionArticle.create_table()
+    PlaceArticle.drop_table(fail_silently=True)
+    PlaceArticle.create_table()
+    EventArticle.drop_table(fail_silently=True)
+    EventArticle.create_table()
+    RelationTypes.drop_table(fail_silently=True)
+    RelationTypes.create_table()
+    ArticleRelations.drop_table(fail_silently=True)
+    ArticleRelations.create_table()
+    #Metadata.drop_table(fail_silently=True)
+    #Metadata.create_table()
     Relationship.drop_table(fail_silently=True)
     Relationship.create_table()
     Conversation.drop_table(fail_silently=True)
@@ -33,6 +47,9 @@ def setup_models():
     SessionPresentUser.drop_table(fail_silently=True)
     SessionPresentUser.create_table()
 
+    World.create(name="Mundana")
+    World.create(name="Altor")
+    
 
 #mf = User.create(username='admin', password='a', email='ripperdoc@gmail.com', active=True, admin=True, realname='Martin F', description='Always games in a hat. Has a cat.')
     mf = User.create(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
@@ -83,11 +100,6 @@ def setup_models():
         realname='User Userson')
     User.create(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson')
-    
-    a = Article(title="Mundana", content=u'Mundana är en värld')
-    a.save()
-    
-    Metadata.create(article=a, key='test', value='testvalue')
     
     Relationship.create(from_user=mf, to_user=nf)
     Relationship.create(from_user=nf, to_user=mf)
@@ -173,15 +185,11 @@ def setup_models():
     Message.create(user=mb, content=u'Definitivt!', conversation=c2)
     Message.create(user=nf, content=u'Hallå?', conversation=c3)
     
-    StringGenerator.drop_table(fail_silently=True)
-    StringGenerator.create_table()
-    StringGenerator.create(name="Default Generator")
-    
-    scmp = Campaign.create(name="Spelveckan", world="Mundana", group=ng, rule_system="Eon", description="Deep drama at the beginning of July each year.")
-    cd4k = Campaign.create(name="Den Fjärde Konfluxen", world="Chronopia", group=mg, rule_system="Drakar & Demoner", description="Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.")
-    cd6k = Campaign.create(name="Den Sjätte Konfluxen", world="Chronopia", group=mg, rule_system="Fate", description="Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.")
-    kcmp = Campaign.create(name="Kult AW", world="Kult", group=kg, rule_system="AW", description="Drama in victorian England at the edge of reality")
-    ycmp = Campaign.create(name="Yerlog", world="Mundana", group=ng, rule_system="Eon", description="Time to take over the world!")
+    scmp = Campaign.create(name=u"Spelveckan", world=u"Mundana", group=ng, rule_system=u"Eon", description=u"Deep drama at the beginning of July each year.")
+    cd4k = Campaign.create(name=u"Den Fjärde Konfluxen", world=u"Chronopia", group=mg, rule_system=u"Drakar & Demoner", description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.")
+    cd6k = Campaign.create(name=u"Den Sjätte Konfluxen", world=u"Chronopia", group=mg, rule_system=u"Fate", description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.")
+    kcmp = Campaign.create(name=u"Kult AW", world=u"Kult", group=kg, rule_system=u"AW", description=u"Drama in victorian England at the edge of reality")
+    ycmp = Campaign.create(name=u"Yerlog", world=u"Mundana", group=ng, rule_system=u"Eon", description=u"Time to take over the world!")
 
     s1 = Scene.create(campaign=scmp, name="Intro", order=1)
     s2 = Scene.create(campaign=scmp, name="The old man in the taverna", order=2, parent=s1)
@@ -231,6 +239,10 @@ def setup_models():
     Session.create(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), campaign=cd6k, location=u'Mölndalsvägen')
     Session.create(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), campaign=cd6k, location=u'Mölndalsvägen')
 
+    StringGenerator.drop_table(fail_silently=True)
+    StringGenerator.create_table()
+    StringGenerator.create(name="Default Generator")
+    
     GeneratorInputList.drop_table(fail_silently=True)
     GeneratorInputList.create_table()
     GeneratorInputItem.drop_table(fail_silently=True)

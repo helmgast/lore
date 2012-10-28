@@ -12,37 +12,6 @@ from auth import auth
 def create_tables():
     Article.create_table(fail_silently=True)
 
-class Article(db.Model):
-    title = CharField()
-    slug = CharField() # URL-friendly name
-    content = TextField()
-    status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
-    #category = IntegerField(choices=((1, 'world'), (2, 'person'), (3, 'rule')))
-    created_date = DateTimeField(default=datetime.datetime.now)
-    modified_date = DateTimeField()
-    style = CharField(null=True) # URI to stylesheet to activate when displaying
-    image = CharField(null=True) # URI to an image-ID that shows up as icon, thumbnail, etc
-    
-    # For self-referring keys, we need this line as the object self is not created
-    # when creating this. See http://peewee.readthedocs.org/en/latest/peewee/fields.html#self-referential-foreign-keys
-    parent = ForeignKeyField('self', related_name='children', null=True)
-
-    class Meta:
-        order_by = ('modified_date',)
-
-    def __unicode__(self):
-        return self.title
-
-    def save(self, ):
-        self.slug = slugify(self.title)
-        self.modified_date = datetime.datetime.now()
-        return super(Article, self).save()
-        
-class Metadata(db.Model): # Metadata to any article
-    article = ForeignKeyField(Article)
-    key = CharField()
-    value = CharField()
-
 world = Blueprint('world', __name__, template_folder='templates')
 
 @world.route('/')

@@ -312,6 +312,110 @@ class StringGenerator(db.Model):
     def __unicode__(self):
         return self.name
 
+class World(db.Model):
+    name = CharField()
+    # startyear = 0
+    # daysperyear = 360
+    # datestring = "day %i in the year of %i" 
+    # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
+
+ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
+
+class Article (db.Model):
+    type = IntegerField(default=ARTICLE_DEFAULT, choices=((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event')))
+    title = CharField()
+    slug = CharField() # URL-friendly name
+    content = TextField()
+    # publish_status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
+    created_date = DateTimeField(default=datetime.datetime.now)
+    # modified_date = DateTimeField()
+    world = ForeignKeyField(World)
+    metadata = TextField() # JSON
+    # thumbnail
+
+class MediaArticle (db.Model):
+    mime_type = CharField()
+    url = CharField()
+
+GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
+
+class PersonArticle (db.Model):
+    article = ForeignKeyField(Article)
+    born = IntegerField()
+    died = IntegerField()
+    gender = IntegerField(default=GENDER_UNKNOWN, choices=((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female')))
+    # otherNames = CharField()
+    occupation = CharField()
+
+class FractionArticle (db.Model):
+    article = ForeignKeyField(Article)
+
+class PlaceArticle (db.Model):
+    article = ForeignKeyField(Article)
+    coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_y = FloatField() # 
+    location_type = CharField() # building, city, domain, point_of_interest
+
+class EventArticle (db.Model):
+    article = ForeignKeyField(Article)
+    from_date = IntegerField()
+    to_date = IntegerField()
+
+class RelationTypes (db.Model):
+    name = CharField() # human friendly name
+    # code = CharField() # parent, child, reference, 
+    # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
+    # from_type = # type of article from
+    # to_type = # type of article to 
+
+class ArticleRelations (db.Model):
+    from_article = ForeignKeyField(Article)
+    to_article = ForeignKeyField(Article)
+    relation_type = ForeignKeyField(RelationTypes)
+    # twosided = False, True
+
+# class ArticleRights (db.Model):
+    # user = ForeignKeyField(User)
+    # article = ForiegnKeyField(Article)
+    # right = ForiegnKeyField(UserRights)
+
+# class UserRights (db.Model):
+    # right = # owner, editor, reader
+
+
+# relation examples
+#class Article(db.Model):
+#    title = CharField()
+#    slug = CharField() # URL-friendly name
+#    content = TextField()
+#    status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
+#    #category = IntegerField(choices=((1, 'world'), (2, 'person'), (3, 'rule')))
+#    created_date = DateTimeField(default=datetime.datetime.now)
+#    modified_date = DateTimeField()
+#    style = CharField(null=True) # URI to stylesheet to activate when displaying
+#    image = CharField(null=True) # URI to an image-ID that shows up as icon, thumbnail, etc
+#    
+#    # For self-referring keys, we need this line as the object self is not created
+#    # when creating this. See http://peewee.readthedocs.org/en/latest/peewee/fields.html#self-referential-foreign-keys
+#    parent = ForeignKeyField('self', related_name='children', null=True)
+#
+#    class Meta:
+#        order_by = ('modified_date',)
+#
+#    def __unicode__(self):
+#        return self.title
+#
+#    def save(self, ):
+#        self.slug = slugify(self.title)
+#        self.modified_date = datetime.datetime.now()
+#        return super(Article, self).save()
+#        
+#class Metadata(db.Model): # Metadata to any article
+#    article = ForeignKeyField(Article)
+#    key = CharField()
+#    value = CharField()
+#
+
 
 '''
 @ link to
