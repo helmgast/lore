@@ -333,14 +333,14 @@ class Article(db.Model):
     metadata = TextField() # JSON
     # thumbnail
 
-class MediaArticle(db.Model):#, Article):
+class MediaArticle(db.Model):
     article = ForeignKeyField(Article)
     mime_type = CharField()
     url = CharField()
 
 GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
 
-class PersonArticle(db.Model):#, Article):
+class PersonArticle(db.Model):
     article = ForeignKeyField(Article)
     born = IntegerField()
     died = IntegerField()
@@ -348,16 +348,16 @@ class PersonArticle(db.Model):#, Article):
     # otherNames = CharField()
     occupation = CharField()
 
-class FractionArticle(db.Model):#, Article):
+class FractionArticle(db.Model):
     article = ForeignKeyField(Article)
 
-class PlaceArticle(db.Model):#, Article):
+class PlaceArticle(db.Model):
     article = ForeignKeyField(Article)
     coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
     coordinate_y = FloatField() # 
     location_type = CharField() # building, city, domain, point_of_interest
 
-class EventArticle(db.Model):#, Article):
+class EventArticle(db.Model):
     article = ForeignKeyField(Article)
     from_date = IntegerField()
     to_date = IntegerField()
