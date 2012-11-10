@@ -278,4 +278,32 @@ Modal page: (to be inserted in a modal popup or iframe)
 - footer
 
 Partial page: (an HTML snippet to be inserted into a model view)
+
+
+WORLD
+
+
+Types of articles
+
+- Person
+Metadata:
+++ Gender
+++ Born
+++ Home -> Place
+++ Images -> URL
+
+- Place
+++ Type (country, building, etc)
+++ Born
+++ Inside -> Place
+++ Contains -> Place*
+
+- Event
+
+- Item
+
+- Other
+
+
+
 - instance(s)

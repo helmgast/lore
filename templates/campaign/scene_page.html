@@ -1,0 +1,6 @@
+{% if not modal %}{% extends "campaign/campaign.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
+
+{% block content_title %}{{'New ' if not the_session}}Session{% endblock %}
+
+{% block content_tagline %}{{ the_session.campaign.name if the_session }}{% endblock %}

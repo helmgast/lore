@@ -1,20 +1,22 @@
 from flask_peewee.utils import object_list, get_object_or_404
-from flask import abort, request, g, redirect, url_for, render_template, flash, Blueprint
+from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
 from auth import auth
-from api import api_json
-from app import error_response, generate_flash
+from resource import ResourceHandler
 from models import *
 
-def create_tables():
-    User.create_table(fail_silently=True)
-    Relationship.create_table(fail_silently=True)
-    Message.create_table(fail_silently=True)
-    Note.create_table(fail_silently=True)
-    Group.create_table(fail_silently=True)
-    GroupMaster.create_table(fail_silently=True)
-    GroupPlayer.create_table(fail_silently=True)
-
 social = Blueprint('social', __name__, template_folder='templates')
+
+class GroupHandler(ResourceHandler):
+    model_class = Group
+    form_class = model_form(model_class, exclude=['slug', 'conversation'])
+
+    def allowed(self, op, user, instance=None):
+        if user:
+            if op=='view' or op=='new':
+                return True
+            else:
+                return user in instance.masters() # user need to be a master to edit
+        return False
 
 @social.route('/')
 @auth.login_required
@@ -120,7 +122,8 @@ def groups():
 @social.route('/groups/new', methods=['GET', 'POST'])
 @auth.login_required
 def group_new():
-    return edit_group(request)
+    rh = GroupHandler('social/group_page.html')
+    return rh.handle_request('new')
         
 @social.route('/groups/<groupslug>/delete', methods=['GET', 'POST'])
 @auth.login_required
@@ -143,8 +146,8 @@ def group_delete(groupslug):
 
 @social.route('/groups/<groupslug>/', methods=['GET', 'POST'])
 def group_detail(groupslug):
-    group = get_object_or_404(Group, Group.slug == groupslug)
-    return edit_group(request, group)
+    rh = GroupHandler('social/group_page.html', get_object_or_404(Group, Group.slug == groupslug))
+    return rh.handle_request('edit')
     
 def edit_group(request, group=None):
     modal = request.args.has_key('modal')
@@ -209,7 +212,6 @@ def group_members_change(groupslug, action):
 
 def edit_group_members(user, group, r, add, master):
     formdata = r.form
-    modal = r.args.has_key('modal')
     changes = []
     if formdata.has_key('masters'):
         masters = list(User.select().where(User.username << formdata.getlist('masters')))
@@ -264,31 +266,8 @@ def user_list():
 @social.route('/users/<username>/', methods=['GET','POST'])
 def user_detail(username):
     user = get_object_or_404(User, User.username == username)
-    logged_in = auth.get_logged_in_user()
-    edit_allowed = logged_in.id==user.id
-    if request.method == 'GET':
-        if logged_in:
-            mastered_groups = Group.select().join(GroupMember).where(GroupMember.member == logged_in, GroupMember.status == GROUP_MASTER)
-            # For each user in the groups mastered by current user, 
-            mastered_members = dict()
-            for gm in GroupMember.select().where(GroupMember.group << mastered_groups):
-                if gm.member.username != logged_in.username: # remove ourselves, no need to check that again!
-                    mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
-        form = UserForm(obj=user) if edit_allowed else None
-        messages = Message.select().where(Message.user == user).order_by(Message.pub_date.desc())
-        groups = Group.select().join(GroupMember).where(GroupMember.member == user)
-        return object_list('social/user_detail.html', messages, 'message_list', person=user, groups=groups, form=form, 
-            mastered_groups=mastered_groups, mastered_members=mastered_members, modal=request.args.has_key('modal'))
-    elif request.method == 'POST':
-        if not edit_allowed:
-            return error_response('You need to be logged in as %s to edit %s' % (username, username))
-        form = UserForm(request.form, obj=user)
-        if form.validate():
-            form.populate_obj(user)
-            user.save()
-            flash('Your changes have been saved')
-            return redirect(url_for('.user_detail', username=user.username))
-        return error_response('There were errors with your submission')
+    ri = ResourceHandler(User, 'social/user_detail.html', user)
+    return ri.handle_request('edit')
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required

@@ -3,6 +3,7 @@ import datetime
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form
+from models import Article
 
 from flask_peewee.utils import get_object_or_404, object_list, slugify
 

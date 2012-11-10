@@ -1,11 +1,11 @@
 {% if not modal %}{% extends "social/social.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
-
+{% set person = resource.instance if resource.instance %}
 {% block content_title %}{{ person.username }}{% endblock %}
 {% block content_tagline %}{{ person.realname }}{% endblock %}
 
 {% block content %}
-{% if form %}<form method="post">{% endif %}
+{% if resource.op == 'edit' or resource.op == 'new' %}<form method="post">{% endif %}
 <div class="row m_instance m_userdetail m_inplace">
   <div class="span5">
     <div class="row">
@@ -16,16 +16,16 @@
       </div>
       <div class="span8">
         <table class="table">
-          {% if user and user.id==person.id %}
+          {% if resource.op == 'edit' or resource.op == 'new' %}
           <tr><td><strong>Name</strong></td>
-          <td>{{ form.realname if form else person.realname }}</td></tr>
+          <td>{{ resource.field('realname') }}</td></tr>
           <tr><td><strong>Email</strong></td>
-          <td><small>{{ form.email if form else person.email }}</small></td></tr>
+          <td><small>{{ resource.field('email') }}</small></td></tr>
           <tr><td><strong>Password</strong></td>
           <td><input id="password" name="password" type="text" value=""><input id="password" name="password" type="text" value=""></td></tr>     
           {% endif %}
           <tr><td><strong>Location</strong></td>
-          <td>{{ form.location if form else person.location }}</td></tr>
+          <td>{{ resource.field('location') }}</td></tr>
           <tr><td><strong>Joined</strong></td>
           <td>{{ person.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
           <tr><td><strong>Following</strong></td>
@@ -34,36 +34,35 @@
           <td><span class="badge">{{person.followers().count() }}</span></td></tr>
         </table>
         <div class="btn-toolbar">
-        {% if user %}
-          {% if person.username != user.username %}
-            <button type="button" class="btn btn-small m_action
-              {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
-              {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
-              {% endif %}</button>
-            <div class="btn-group">
-              <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-              Add to group<span class="caret"></span></a>
-              {% include "social/group_member_selector.html" %}
-            </div>
-            <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
-          {% endif %}
+        {% if resource.op == 'view' %}
+          <button type="button" class="btn btn-small m_action
+            {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
+            {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
+            {% endif %}</button>
+          <div class="btn-group">
+            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+            Add to group<span class="caret"></span></a>
+            {% include "social/group_member_selector.html" %}
+          </div>
+          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
         {% endif %}
         </div>
       </div>
     </div>
   </div> 
   <div class="span5">
-    <div class="well">{{ form.description if form else person.description }}
+    <div class="well">{{ resource.field('description') }}
     </div>
   </div>
 </div>
-{% if form %}<div class="row form-actions">
+{% if resource.op == 'edit' or resource.op == 'new' %}<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
     <a href="{{url_for('social.user_detail', username=person.username)}}" class="btn">Cancel</a>
     </div></form>{% endif %}
 <div class="row">
   <div class="span5">
   <h4>Groups</h4>
+  {% set groups = user.groups() %}
   {% if groups.count() > 0 %}
   <table class="table table-striped">
     <thead>
@@ -88,6 +87,7 @@
   {% else %}Not member of any groups yet!{% endif %}
   </div>
   <div class="span5">
+    {% set message_list = user.messages() %}
     {% if message_list.count() > 0  %}
     <h4>Messages to followers</h4>
       <ul class="unstyled">

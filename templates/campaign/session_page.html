@@ -1,36 +1,37 @@
 {% if not modal %}{% extends "campaign/campaign.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
-{% block content_title %}{{'New ' if not the_session}}Session{% endblock %}
-
-{% block content_tagline %}{{ the_session.campaign.name if the_session }}{% endblock %}
-
-{% if the_session %}
-  {% set action_url = url_for('campaign.session_detail', id=the_session.id, modal=modal) %}
-{% else %}
+{% if resource.op == 'new' %}
   {% set action_url = url_for('campaign.session_new', modal=modal) %}
+  {% set title = 'New session' %}
+{% else %}
+  {% set action_url = url_for('campaign.session_detail', id=resource.instance.id, modal=modal) %}
+  {% set title = 'Session' %}
+  {% set tagline = resource.instance.campaign.name %}
 {% endif %}
 
+{% block content_title %}{{ title }}{% endblock %}
+{% block content_tagline %}{{ tagline }}{% endblock %}
+
 {% block content %}{% block modal_body %}
-{% if form %}<form method="post" action="{{action_url}}">{% endif %}
+{% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if modal }}">
   <div class="span6">
     <table class="table">
       <tr><td><strong>Campaign</strong></td>
-      <td>{{ form.campaign if form else the_session.campaign }}</td></tr>
+      <td>{{ resource.field('campaign') }}</td></tr>
       <tr><td><strong>Location</strong></td>
-      <td><small>{{ form.location if form else the_session.location }}</small></td></tr>
+      <td><small>{{ resource.field('location') }}</small></td></tr>
       <tr><td><strong>Start time</strong></td>
-      <td>{{ form.play_start if form else the_session.play_start }}</td></tr>
+      <td>{{ resource.field('play_start') }}</td></tr>
       <tr><td><strong>End time</strong></td>
-      <td>{{ form.play_end if form else the_session.play_end }}</td></tr>
+      <td>{{ resource.field('play_end') }}</td></tr>
     </table>
-    <div class="well">{{ form.description(rows=10) if form else the_session.description }}</div>
+    <div class="well">{{ resource.field('description', rows=10) }}</div>
   </div>
 </div>
-{% if form %}<div class="row form-actions">
+{% if resource.form %}<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('campaign.session_detail', id=the_session.id)}}" class="btn">Cancel</a>
+    <a href="{{url_for('campaign.sessions')}}" class="btn">Cancel</a>
     </div></form>{% endif %}
-
 {% endblock %}{% endblock %}

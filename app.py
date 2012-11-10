@@ -1,7 +1,8 @@
-from flask import Flask, Markup, flash, render_template
+from flask import Flask, Markup, flash
 from flask_peewee.db import Database
 from re import compile
 from flaskext.markdown import Markdown
+
 try:
     import simplejson as json
 except ImportError:
@@ -33,12 +34,3 @@ def dictreplace(s, d):
             parts[i] = d[parts[i]] # Replace with dict content
         return ''.join(parts)
     return s
-
-def generate_flash(action, name, model_identifiers, dest=''):
-    s = '%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), ' to %s' % dest if dest else '')
-    flash(s, 'success')
-    return s
-
-def error_response(msg, level='error'):
-    flash(msg, level)
-    return render_template('includes/partial.html')
