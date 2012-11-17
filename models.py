@@ -328,9 +328,9 @@ class World(db.Model):
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
-
+ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
 class Article(db.Model):
-    type = IntegerField(default=ARTICLE_DEFAULT, choices=((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event')))
+    type = IntegerField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
     title = CharField()
     slug = CharField() # URL-friendly name
     content = TextField()
@@ -340,6 +340,10 @@ class Article(db.Model):
     world = ForeignKeyField(World)
     metadata = TextField() # JSON
     # thumbnail
+
+    def type_name(self):
+        return ARTICLE_TYPES[self.type][1]
+
 
 class MediaArticle(db.Model):
     article = ForeignKeyField(Article)
