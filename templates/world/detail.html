@@ -6,6 +6,7 @@
 
 {% block content %}
   <div class="article">
+    {{ article.type_name() }}, is person: {{ article.is_person() }}
     {% if article.id %}
       {{ article.content|wikify|markdown }}
     {% else %}

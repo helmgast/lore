@@ -332,7 +332,7 @@ ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICL
 class Article(db.Model):
     type = IntegerField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
     title = CharField()
-    slug = CharField() # URL-friendly name
+    slug = CharField(unique=True) # URL-friendly name
     content = TextField()
     # publish_status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
     created_date = DateTimeField(default=datetime.datetime.now)
@@ -340,6 +340,9 @@ class Article(db.Model):
     world = ForeignKeyField(World)
     metadata = TextField() # JSON
     # thumbnail
+
+    def is_person(self):
+        return ARTICLE_PERSON == self.type
 
     def type_name(self):
         return ARTICLE_TYPES[self.type][1]
