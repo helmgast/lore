@@ -5,7 +5,7 @@
 {% block content_tagline %}{{ person.realname }}{% endblock %}
 
 {% block content %}
-{% if resource.op == 'edit' or resource.op == 'new' %}<form method="post">{% endif %}
+{% if resource.form %}<form method="post">{% endif %}
 <div class="row m_instance m_userdetail m_inplace">
   <div class="span5">
     <div class="row">
@@ -16,7 +16,7 @@
       </div>
       <div class="span8">
         <table class="table">
-          {% if resource.op == 'edit' or resource.op == 'new' %}
+          {% if resource.form %}
           <tr><td><strong>Name</strong></td>
           <td>{{ resource.field('realname') }}</td></tr>
           <tr><td><strong>Email</strong></td>
@@ -55,7 +55,7 @@
     </div>
   </div>
 </div>
-{% if resource.op == 'edit' or resource.op == 'new' %}<div class="row form-actions">
+{% if resource.form %}<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
     <a href="{{url_for('social.user_detail', username=person.username)}}" class="btn">Cancel</a>
     </div></form>{% endif %}
@@ -76,7 +76,7 @@
     <tbody>
         {% for group in groups %}
         <tr class="user-tablerow">
-          <td><strong><a href="{{ url_for('social.group_detail', groupslug=group.slug) }}">{{group.name}}</a></strong></td>
+          <td><strong><a href="{{ url_for('social.group_detail', slug=group.slug) }}">{{group.name}}</a></strong></td>
           <td>{{group.location}}</td>
           <td><span class="badge badge-info">{{group.members().count() }}</span></td>
           <td>{{group.get_member(person).status_text()|capitalize }}</td>

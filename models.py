@@ -338,8 +338,11 @@ class Article(db.Model):
     created_date = DateTimeField(default=datetime.datetime.now)
     # modified_date = DateTimeField()
     world = ForeignKeyField(World)
-    metadata = TextField() # JSON
+    metadata = TextField(null=True) # JSON
     # thumbnail
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        return super(Article, self).save(*args, **kwargs)
 
 class MediaArticle(db.Model):
     article = ForeignKeyField(Article)
@@ -351,10 +354,10 @@ GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
 class PersonArticle(db.Model):
     article = ForeignKeyField(Article)
     born = IntegerField()
-    died = IntegerField()
+    died = IntegerField(null=True)
     gender = IntegerField(default=GENDER_UNKNOWN, choices=((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female')))
     # otherNames = CharField()
-    occupation = CharField()
+    occupation = CharField(null=True)
 
 class FractionArticle(db.Model):
     article = ForeignKeyField(Article)

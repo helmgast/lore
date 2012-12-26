@@ -2,12 +2,12 @@
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% set group = resource.instance %}
-{% if resource.op == 'new' %}
-  {% set title="New group" %}
+{% if resource.op_is_new() %}
+  {% set title = "New group" %}
   {% set action_url = url_for('social.group_new', modal=modal) %}
 {% else %}
   {% set tagline = group.name %}
-  {% set action_url = url_for('social.group_detail', groupslug=group.slug, modal=modal) %}
+  {% set action_url = url_for('social.group_detail', slug=group.slug, modal=modal) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
 {% endif %}
 
@@ -15,7 +15,7 @@
 {% block content_tagline %}{{tagline}}{% endblock %}
 
 {% block content %}{% block modal_body %}
-{% if resource.op == 'edit' or resource.op == 'new' %}<form method="post" action="{{action_url}}">{% endif %}
+{% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if modal }}">
   <div class="span6">
     <div class="well">{{ resource.field('description', rows=10) }}</div>
@@ -35,9 +35,10 @@
     {% include "social/group_member_view.html" %}
   </div>
 </div>
-{% if resource.op == 'edit' or resource.op == 'new' %}<div class="row form-actions">
+{% if resource.form %}<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('social.group_detail', groupslug=group.slug)}}" class="btn">Cancel</a>
+    <a href="{{url_for('social.group_detail', slug=group.slug)}}" class="btn">Cancel</a>
+    <a href="{{url_for('social.group_delete', slug=group.slug)}}" class="btn btn-danger">Delete</a>
     </div></form>{% endif %}
 
 {% endblock %}{% endblock %}

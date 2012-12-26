@@ -7,16 +7,28 @@ from models import *
 social = Blueprint('social', __name__, template_folder='templates')
 
 class GroupHandler(ResourceHandler):
-    model_class = Group
-    form_class = model_form(model_class, exclude=['slug', 'conversation'])
+    def get_redirect_url(self, instance):
+        return url_for(self.route, slug=instance.slug)
 
     def allowed(self, op, user, instance=None):
         if user:
-            if op=='view' or op=='new':
+            if op==ResourceHandler.VIEW or op==ResourceHandler.NEW:
                 return True
-            else:
+            elif op==ResourceHandler.EDIT:
                 return user in instance.masters() # user need to be a master to edit
+            elif op==ResourceHandler.DELETE:
+                return user in instance.masters() and instance.members().count() == 1 # the only remaining player
         return False
+
+    def after_post(self, op, user, instance=None):
+        if op == ResourceHandler.NEW:
+            instance.addMembers([user], GROUP_MASTER)
+
+grouphandler = GroupHandler(
+        Group,
+        model_form(Group, exclude=['slug', 'conversation']),
+        'social/group_page.html',
+        'social.group_detail')
 
 @social.route('/')
 @auth.login_required
@@ -122,13 +134,16 @@ def groups():
 @social.route('/groups/new', methods=['GET', 'POST'])
 @auth.login_required
 def group_new():
-    rh = GroupHandler('social/group_page.html')
-    return rh.handle_request('new')
+    return grouphandler.handle_request(ResourceHandler.NEW)
+
+@social.route('/groups/<slug>/', methods=['GET', 'POST'])
+def group_detail(slug):
+    return grouphandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Group, Group.slug == slug))
         
-@social.route('/groups/<groupslug>/delete', methods=['GET', 'POST'])
+@social.route('/groups/<slug>/delete', methods=['GET', 'POST'])
 @auth.login_required
-def group_delete(groupslug):
-    group = get_object_or_404(Group, Group.slug == groupslug)
+def group_delete(slug):
+    group = get_object_or_404(Group, Group.slug == slug)
     user = auth.get_logged_in_user()
     masters = list(group.masters())
     #print "if not user=%s or not user in masters=%s or len(list(masters))>1=%s" % (not user, not user in masters, len(masters)>1) 
@@ -136,7 +151,7 @@ def group_delete(groupslug):
         return error_response('You need to be logged in and the only master of this group to delete it')
     if request.method == 'GET':            
         return render_template('includes/change_members.html', \
-            url=url_for('social.group_delete',groupslug=groupslug), action='delete', \
+            url=url_for('social.group_delete',slug=slug), action='delete', \
             instances={'group':[group.slug]})
     elif request.method == 'POST':
         for gm in group.members():
@@ -144,11 +159,6 @@ def group_delete(groupslug):
         group.delete_instance()
         return redirect(url_for('social.groups'))
 
-@social.route('/groups/<groupslug>/', methods=['GET', 'POST'])
-def group_detail(groupslug):
-    rh = GroupHandler('social/group_page.html', get_object_or_404(Group, Group.slug == groupslug))
-    return rh.handle_request('edit')
-    
 def edit_group(request, group=None):
     modal = request.args.has_key('modal')
     user = auth.get_logged_in_user()
@@ -172,14 +182,14 @@ def edit_group(request, group=None):
                     user.log("created group %s" % group.slug)
                 edit_group_members(user, group, request, add=True, master=False)
                 flash('Your changes have been saved')
-                return redirect(url_for('.group_detail', groupslug=group.slug))
+                return redirect(url_for('.group_detail', slug=group.slug))
         return error_response('There were errors with your submission')
-        #return redirect(url_for('.group_detail', groupslug=group.slug, modal=modal, partial=True))
+        #return redirect(url_for('.group_detail', slug=group.slug, modal=modal, partial=True))
 
-@social.route('/groups/<groupslug>/members/<action>', methods=['GET','POST'])
+@social.route('/groups/<slug>/members/<action>', methods=['GET','POST'])
 @auth.login_required
-def group_members_change(groupslug, action):
-    group = get_object_or_404(Group, Group.slug == groupslug)
+def group_members_change(slug, action):
+    group = get_object_or_404(Group, Group.slug == slug)
     user = auth.get_logged_in_user()
     if user not in group.masters():
         return error_response('Logged in user %s is not master of group %s so cannot %s' % (user.username, group.name, action))
@@ -189,7 +199,7 @@ def group_members_change(groupslug, action):
         if not masters and not players:
             return error_response('No players or masters given for %s' % action)
         return render_template('includes/change_members.html', \
-            url=url_for('social.group_members_change',groupslug=groupslug, action=action), action=action, \
+            url=url_for('social.group_members_change',slug=slug, action=action), action=action, \
             instances={'masters':masters, 'players':players})
     else: # POST
         if not request.form.has_key('masters') and not request.form.has_key('players'):
@@ -267,7 +277,7 @@ def user_list():
 def user_detail(username):
     user = get_object_or_404(User, User.username == username)
     ri = ResourceHandler(User, 'social/user_detail.html', user)
-    return ri.handle_request('edit')
+    return ri.handle_request(ResourceHandler.EDIT)
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required

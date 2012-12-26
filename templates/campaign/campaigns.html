@@ -12,7 +12,7 @@
       <div class="well">{{ c.description }}</div>
       <dl class="dl-horizontal">
         <dt>Group</dt>
-        <dd><a href="{{ url_for('social.group_detail', groupslug=c.group.slug) }}">{{c.group}}</a></dd>
+        <dd><a href="{{ url_for('social.group_detail', slug=c.group.slug) }}">{{c.group}}</a></dd>
         <dt>World</dt>
         <dd>{{ c.world }}</dd>
         <dt>Rules</dt>

@@ -1,7 +1,7 @@
 {% if not modal %}{% extends "campaign/campaign.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
-{% if resource.op == 'new' %}
+{% if resource.op_is_new() %}
   {% set action_url = url_for('campaign.session_new', modal=modal) %}
   {% set title = 'New session' %}
 {% else %}

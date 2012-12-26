@@ -51,7 +51,7 @@
     </thead>
     <tbody>
       {% for s in sessions %}
-        <tr><td>{{s.campaign.name}}</td><td><a href="{{ url_for('social.group_detail', groupslug=s.campaign.group.slug) }}">{{s.campaign.group}}</a></td><td>{{s.play_start}}</td><td>{{s.play_end}}</td><td>{{s.location}}</td><td>{{s.description}}</td><td></td></tr>
+        <tr><td>{{s.campaign.name}}</td><td><a href="{{ url_for('social.group_detail', slug=s.campaign.group.slug) }}">{{s.campaign.group}}</a></td><td>{{s.play_start}}</td><td>{{s.play_end}}</td><td>{{s.location}}</td><td>{{s.description}}</td><td></td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -20,10 +20,10 @@
     <td>{{gm.status_text()}}</td>
     {% if form %}<td>
       {% if form and gm.status != 1 %}
-        <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', groupslug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
+        <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
           <i class="icon-remove"></i>
         </button>
-        {% if gm.status==2 %}<button type="button" class="btn btn-mini m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', groupslug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
+        {% if gm.status==2 %}<button type="button" class="btn btn-mini m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
           Make master?
         </button>{% endif %}
       {% endif %}
@@ -38,7 +38,7 @@
   <label>Add players</label>
   <ul class="typeahead-list typeahead-user">
     <li class="typeahead-input"><input class="typeahead-user-input" type="text" data-provide="typeahead" data-exclude-view=".m_view-groupmembers" /></li>
-  </ul><button type="button" class="btn btn-primary m_action" href="{{ url_for('social.group_members_change', groupslug=group.slug, action='add', view='m_group_member_view') }}">Add</button>
+  </ul><button type="button" class="btn btn-primary m_action" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', view='m_group_member_view') }}">Add</button>
 </td></tr></tfoot>
 <script>
   jQuery.getJSON('/api/username/', function(data) { $('.typeahead-user input').typeahead({source: data.objects}) })

@@ -4,74 +4,93 @@ from flask_peewee.utils import get_object_or_404
 from wtfpeewee.orm import model_form
 from models import Group, GroupMember, Campaign, Session, Scene, GROUP_MASTER
 from datetime import datetime, timedelta, date, time
-from resource import ResourceHandler
+from resource import ResourceHandler, ResourceInstance
 from json import loads
 
 campaign = Blueprint('campaign', __name__, template_folder='templates')
 
 class SessionHandler(ResourceHandler):
-    model_class = Session
-    form_class = model_form(model_class, exclude=[])
-    
-    def get_form(self, op):
-        if op=='new':
+    def get_resource_instance(self, op, user, instance=None):
+        if op==ResourceHandler.NEW:
             # set start time to tomorrow 18.00 if no play_start given, else set to 18.00 of the date given
             if request.args.has_key('play_start'):
                 play_start = datetime.strptime(request.args.get('play_start'),'%Y-%m-%d') + timedelta(hours=18)
             else:
                 play_start = datetime.combine(date.today()+timedelta(days=1), time(hour=18))
             play_end = play_start + timedelta(hours=5) # end 5 hours later
-            return self.form_class(obj=self.instance, play_start=play_start, play_end=play_end)
+            form = self.form_class(obj=self.instance, play_start=play_start, play_end=play_end)
         else:
-            return ResourceHandler.get_form(self, op)
+            form = self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None
+        return ResourceInstance(op, form, instance)
 
-    def allowed(op, user, instance=None):
+    def allowed(self, op, user, instance=None):
         if user:
-            if op=='view' or op=='new':
+            if op==ResourceHandler.VIEW or op==ResourceHandler.NEW:
                 return True
             else:
                 gms = GroupMember.select().where(GroupMember.group == instance.campaign.group, GroupMember.member == user)
                 return (gms.count() == 1) # user is in group and can edit
         return False
 
+sessionhandler = SessionHandler(
+        Session,
+        model_form(Session, exclude=[]),
+        'campaign/session_page.html.html',
+        'campaign.session_detail')
+
 class CampaignHandler(ResourceHandler):
-    model_class = Campaign
-    form_class = model_form(model_class, exclude=['slug'])
+    def get_resource_instance(self, op, user, instance=None):
+        form = self.form_class(obj=instance) if (op==ResourceHandler.EDIT or op==ResourceHandler.NEW) else None
+        ri = ResourceInstance(op, form, instance)
+        if op == ResourceHandler.EDIT or op==ResourceHandler.NEW:
+            mastered_groups = Group.select().join(GroupMember).where(GroupMember.member == user, GroupMember.status == GROUP_MASTER)
+            form.group.query = mastered_groups # set only mastered groups into the form select field
+            ri.scenes = Scene.select().where(Scene.campaign == instance, Scene.parent >> None).order_by(Scene.order.asc()) # >> None means 'is null'
+            ri.sceneform = scenehandler.form_class()
+        return ri
 
-    def prepare_get(self, op):
-        if op == 'edit' or op=='new':
-            mastered_groups = Group.select().join(GroupMember).where(GroupMember.member == self.user, GroupMember.status == GROUP_MASTER)
-            self.form.group.query = mastered_groups # set only mastered groups into the form select field
-            self.scenes = Scene.select().where(Scene.campaign == self.instance, Scene.parent >> None).order_by(Scene.order.asc()) # >> None means 'is null'
-            self.sceneform = SceneHandler.form_class()
+    def get_redirect_url(self, instance):
+        return url_for(self.route, slug=instance.slug)
 
-    def after_post(self, op):
+    def after_post(self, op, user, instance=None):
         if request.form.has_key('scene_tree'):
             scene_tree = loads(request.form.get('scene_tree'))
             print scene_tree
-            self.instance.load_scene_tree(scene_tree)
+            instance.load_scene_tree(scene_tree)
 
-    def allowed(op, user, instance=None):
+    def allowed(self, op, user, instance=None):
         if user:
-            if op=='view' or op=='new':
+            if op==ResourceHandler.VIEW or op==ResourceHandler.NEW:
                 return True
             else:
                 gms = GroupMember.select().where(GroupMember.group == instance.group, GroupMember.member == user, GroupMember.status == GROUP_MASTER)
                 return (gms.count() == 1) # user is master in group and can edit
         return False
 
-class SceneHandler(ResourceHandler):
-    model_class = Scene
-    form_class = model_form(model_class, exclude=['order', 'parent', 'campaign'])
+campaignhandler = CampaignHandler(
+        Campaign,
+        model_form(Campaign, exclude=['slug']),
+        'campaign/campaign_page.html',
+        'campaign.campaign_detail')
 
-    def allowed(op, user, instance=None):
+class SceneHandler(ResourceHandler):
+    def allowed(self, op, user, instance=None):
         if user:
-            if op=='view' or op=='new':
+            if op==ResourceHandler.VIEW or op==ResourceHandler.NEW:
                 return True
             else:
                 gms = GroupMember.select().where(GroupMember.group == instance.campaign.group, GroupMember.member == user, GroupMember.status == GROUP_MASTER)
                 return (gms.count() == 1) # user is master in group and can edit
         return False
+
+    def get_redirect_url(self, instance):
+        return url_for(self.route, slug=instance.slug)
+
+scenehandler = SceneHandler(
+    Scene,
+    model_form(Scene, exclude=['order', 'parent', 'campaign']),
+    'campaign/scene_page.html',
+    'campaign.scene_detail')
 
 @campaign.route('/')
 def index():
@@ -88,14 +107,12 @@ def sessions():
 @campaign.route('/sessions/new', methods=['GET', 'POST'])
 @auth.login_required
 def session_new():
-    rh = SessionHandler('campaign/session_page.html')
-    return rh.handle_request('new')
+    return scenehandler.handle_request(ResourceHandler.NEW)
 
 @campaign.route('/sessions/<id>', methods=['GET', 'POST'])
 @auth.login_required
 def session_detail(id):
-    rh = SessionHandler('campaign/session_page.html', get_object_or_404(Session, Session.id == id))
-    return rh.handle_request('edit')
+    return scenehandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Session, Session.id == id))
 
 @campaign.route('/campaigns/')
 def campaigns():
@@ -105,29 +122,23 @@ def campaigns():
 @auth.login_required
 @campaign.route('/campaigns/new', methods=['GET', 'POST'] )
 def campaign_new():
-    rh = CampaignHandler('campaign/campaign_page.html')
-    return rh.handle_request('new')
+    return campaignhandler.handle_request(ResourceHandler.NEW)
 
 @campaign.route('/campaigns/<slug>', methods=['GET', 'POST'] )
 def campaign_detail(slug):
-    rh = CampaignHandler('campaign/campaign_page.html', get_object_or_404(Campaign, Campaign.slug == slug))
-    return rh.handle_request('edit')
+    return campaignhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Campaign, Campaign.slug == slug))
 
 @auth.login_required
 @campaign.route('/campaigns/<slug>/scenes/new', methods=['GET', 'POST'] )
 def scene_new(slug):
-    rh = SceneHandler('campaign/scene_page.html')
-    return rh.handle_request('new')
+    return campaignhandler.handle_request(ResourceHandler.NEW)
 
 @campaign.route('/campaigns/<slug>/scenes/<id>', methods=['GET', 'POST'] )
 def scene_detail(slug, id):
-    rh = SceneHandler('campaign/scene_page.html', get_object_or_404(Scene, Scene.id == id))
-    return rh.handle_request('edit')
+    return campaignhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Scene, Scene.id == id))
 
 @auth.login_required
 @campaign.route('/campaigns/<slug>/scenes/<id>/delete', methods=['GET', 'POST'] )
 def scene_delete(slug, id):
-    rh = SceneHandler('campaign/scene_page.html', get_object_or_404(Scene, Scene.id == id))
-    return rh.handle_request('delete')
-
+    return scenehandler.handle_request(ResourceHandler.DELETE, get_object_or_404(Scene, Scene.id == id))
 

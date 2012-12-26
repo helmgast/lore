@@ -2,7 +2,7 @@
 	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
 	<h3>{{action|capitalize}} {{field}}?</h3>
 </div>
-<form action="{{ url }}">
+<form action="{{ url }}" method="post">
 	<div class="modal-body">Are you sure you want to {{action}} 
 		{% for k,v in instances.items() -%}
 		{% if v %}{{k}} <strong>{{v|join(', ')}}</strong>,{% endif %}

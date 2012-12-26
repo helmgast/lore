@@ -1,7 +1,7 @@
 {% if not modal %}{% extends "campaign/campaign.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
-{% if resource.op == 'new' %}
+{% if resource.op_is_new() %}
   {% set action_url = url_for('campaign.campaign_new', modal=modal) %}
   {% set title = 'New campaign' %}
 {% else %}
@@ -22,7 +22,7 @@
         <dt>Name</dt>
         <dd>{{ resource.field('name') }}</dd>
         <dt>Group</dt>
-        <dd>{% if resource.form %}{{ resource.form.group }}{% else %}<a href="{{ url_for('social.group_detail', groupslug=campaign.group.slug) }}">{{resource.instance.group}}</a>{% endif %}</dd>
+        <dd>{% if resource.form %}{{ resource.form.group }}{% else %}<a href="{{ url_for('social.group_detail', slug=resource.instance.group.slug) }}">{{resource.instance.group}}</a>{% endif %}</dd>
         <dt>World</dt>
         <dd>{{ resource.field('world') }}</dd>
         <dt>Rules</dt>
