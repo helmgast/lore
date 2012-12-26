@@ -7,7 +7,7 @@
 {% block content %}
   <ul>
     {% for article in object_list %}
-    <li><a href="{{ url_for('world.detail', title=article.title) }}">{{ article.title }}</a>
+    <li><a href="{{ url_for('world.detail', title=article.title) }}">{{ article.title }}</a>, {{ article.type_name() }} in {{ article.world.name }}
     </li>
     {% endfor %}
   </ul>
