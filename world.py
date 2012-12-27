@@ -16,12 +16,22 @@ def create_tables():
 world = Blueprint('world', __name__, template_folder='templates')
 
 @world.route('/')
-@auth.login_required
 def index():
-    print "Index"
+    qr = World.select()
+    return object_list('world/index.html', qr)
+
+@world.route('/browse')
+def browse():
     qr = Article.select()
     return object_list('world/index.html', qr)
 
+@world.route('/myworlds')
+def myworlds():
+    qr = Article.select()
+    return object_list('world/index.html', qr)
+
+@world.route('/myworlds')
+def world_detail(
 
 @world.route('/<title>/', methods=['GET', 'POST'])
 @auth.login_required

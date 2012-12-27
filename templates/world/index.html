@@ -4,6 +4,16 @@
 {% block content_tagline %}any fictional world at your fingertips{% endblock %}
 {% block world_active %} class="active"{% endblock %}
 
+{% block sidebar %}
+  <h3>Navigation</h3>
+    <ul class="nav nav-list">
+      <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>Main</a></li>
+      <li><a href="{{ url_for('world.browse') }}"><i class="icon-book"></i>Browse worlds</a></li>
+      <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>My worlds</a></li>
+    </ul>
+{% endblock %}
+
+
 {% block content %}
   <ul>
     {% for article in object_list %}
