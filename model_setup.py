@@ -50,10 +50,8 @@ def setup_models():
     SessionPresentUser.drop_table(fail_silently=True)
     SessionPresentUser.create_table()
     
-
-
-    mundana = World.create(name="Mundana")
-    altor = World.create(name="Altor")
+    mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
+    altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
     
     MediaArticle.create(mime_type="image/jpg",
                         url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
@@ -66,7 +64,7 @@ def setup_models():
                          gender=GENDER_MALE,
                          occupation=u"Ljusbringaren",
                          article=Article.create(type=ARTICLE_PERSON,
-                                                title=u"Ljusbringaren",
+                                                title=u"Ljusbringaren bild",
                                                 content=u"No content",
                                                 world=altor))
 

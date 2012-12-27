@@ -29,7 +29,7 @@
   <ul>
     <li><a href="javascript:void(0);" onclick="$('div.edit').toggle(); $('div.article').toggle();">Edit</a></li>
     {% if article.id %}
-      <li><a href="{{ url_for('world.delete', title=article.title) }}">Delete</a></li>
+      <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, title=article.title) }}">Delete</a></li>
     {% endif %}
   </ul>
 {% endblock %}

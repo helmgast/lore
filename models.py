@@ -321,7 +321,14 @@ class StringGenerator(db.Model):
         return self.name
 
 class World(db.Model):
-    name = CharField()
+    title = CharField()
+    slug = CharField(unique=True) # URL-friendly name
+    description = TextField(null=True)
+    publisher = CharField(null=True)
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        return super(World, self).save(*args, **kwargs)
+
     # startyear = 0
     # daysperyear = 360
     # datestring = "day %i in the year of %i" 
