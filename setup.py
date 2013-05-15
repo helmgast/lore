@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='Raceonteur', version='0.3',
+setup(name='Raconteur', version='0.3',
       description='OpenShift Python-2.7 Community Cartridge based application',
       author='Martin Frojd', author_email='ripperdoc@gmail.com',
       url='http://www.python.org/sigs/distutils-sig/',
