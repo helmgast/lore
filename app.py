@@ -39,7 +39,8 @@ import imp
 import os
 import sys
 
-import deploy
+if 'OPENSHIFT_INTERNAL_IP' in os.environ:
+  import deploy
 
 
 #
@@ -52,14 +53,17 @@ import deploy
 #  main():
 #
 if __name__ == '__main__':
-   ip   = os.environ['OPENSHIFT_INTERNAL_IP']
-   port = 8080
-   zapp = imp.load_source('application', 'wsgi/application')
+  if 'OPENSHIFT_INTERNAL_IP' in os.environ:
+    ip   = os.environ['OPENSHIFT_INTERNAL_IP']
+    port = 8080
+    zapp = imp.load_source('application', 'wsgi/application')
 
-   #  Use gevent if we have it, otherwise run a simple httpd server.
-   print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
-   try:
+    #  Use gevent if we have it, otherwise run a simple httpd server.
+    print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
+    try:
       deploy.run_gevent_server(zapp.application, ip, port)
-   except:
+    except:
       print 'gevent probably not installed - using default simple server ...'
       deploy.run_simple_httpd_server(zapp.application, ip, port)
+  else:
+    print "Running local"
