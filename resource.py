@@ -55,7 +55,7 @@ class ResourceHandler:
     def allowed(self, op, user, instance=None): # to be overriden
         return False
 
-    def handle_request(self, op, instance=None, redirect_url=None):
+    def handle_request(self, op, instance=None, redirect_url=None, **kwargs):
         if not instance and not op==self.NEW:
             raise TypeError("Cannot handle operation %s without instance" % op)
         # Boolean shorthands for if request is GET or POST
@@ -69,9 +69,9 @@ class ResourceHandler:
         print "Doing a %s, %s on %s" % (request.method, self.ops[op], instance)
         if GET:
             if op==self.DELETE:
-                return render_template('includes/change_members.html', action=op, instances={'instance':instance})
+                return render_template('includes/change_members.html', action=op, instances={'instance':instance}, **kwargs)
             else:
-                return render_template(self.template, resource=self.get_resource_instance(op, user, instance), modal=request.args.has_key('modal'))
+                return render_template(self.template, resource=self.get_resource_instance(op, user, instance), modal=request.args.has_key('modal'), **kwargs)
         elif POST:
             if op==self.EDIT or op==self.NEW:
                 # Create form object based on request and existing instance

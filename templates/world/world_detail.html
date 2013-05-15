@@ -3,11 +3,32 @@
 {% block content_title %}{{world.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+{% block sidebar %}
+  {{ super() }}
+  <h4>Alternativ</h4>
+    <ul class="nav nav-list">
+        <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>Popular</a></li>
+        <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>Browse</a></li>
+        <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>Latest changes</a></li>
+        <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>New article</a></li>
+    </ul>
+{% endblock %}
+
 {% block content %}
+    <div class="row">
+        <div class="span6">
+            <p class="well">{{ world.description }}</p>
+        </div>
+        <div class="span6">IMAGE</div>
+    </div>
+    <div class="row">
+    {% if object_list.count() == 0 %}No articles yet!{% else %}
     <ul>
         {% for article in object_list %}
-        <li><a href="{{ url_for('world.article_detail', title=article.title, worldslug=world.slug) }}">{{article.title}}</a></li>
+        <li><a href="{{ url_for('world.article_view', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a>[{{ article.type }}]</li>
         {% endfor %}
     </ul>
-  {% include "world/pagination.html" %}
+    {% endif %}
+    {% include "world/pagination.html" %}
+    </div>
 {% endblock %}

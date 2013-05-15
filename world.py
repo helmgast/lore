@@ -17,9 +17,7 @@ class WorldHandler(ResourceHandler):
         return url_for(self.route, slug=instance.slug)
 
     def allowed(self, op, user, instance=None):
-        if user:
-            return True
-        elif op == ResourceHandler.VIEW:
+        if op == ResourceHandler.VIEW: # currently only allow viewing
             return True
         else:
             return False
@@ -29,6 +27,24 @@ worldhandler = WorldHandler(
         model_form(World, exclude=['slug']),
         'world/world_page.html',
         'world.world_detail')
+
+class ArticleHandler(ResourceHandler):
+    def get_redirect_url(self, instance):
+        return url_for(self.route, slug=instance.slug)
+
+    def allowed(self, op, user, instance=None):
+        if op == ResourceHandler.VIEW:
+            return True
+        elif user:
+            return True
+        else:
+            return False
+
+articlehandler = ArticleHandler(
+        Article,
+        model_form(World, exclude=['slug', 'created_date']),
+        'world/article_detail.html',
+        'world.article_view')
 
 @world.route('/')
 def index():
@@ -46,32 +62,22 @@ def world_detail(slug):
     world_articles = Article.select().where(Article.world == world)
     return object_list('world/world_detail.html', world_articles, world=world)
 
-@world.route('/<worldslug>/<title>/', methods=['GET', 'POST'])
-@auth.login_required
-def article_detail(worldslug, title):
+@world.route('/<worldslug>/<slug>/')
+def article_view(worldslug, slug):
     world = get_object_or_404(World, World.slug == worldslug)
+    article = get_object_or_404(Article, Article.slug == slug)
+    return articlehandler.handle_request(ResourceHandler.VIEW, article, world=world)
 
-    WikiForm = model_form(Article, only=('title', 'content',))
+@world.route('/<worldslug>/<slug>/edit')
+def article_edit(worldslug, slug):
+    world = get_object_or_404(World, World.slug == worldslug)
+    article = get_object_or_404(Article, Article.slug == slug)
+    return articlehandler.handle_request(ResourceHandler.EDIT, article, world=world)
 
-    try:
-        article = Article.get(title=title)
-    except Article.DoesNotExist:
-        article = Article(title=title)
-
-    if request.method == 'POST':
-        form = WikiForm(request.form, obj=article)
-        if form.validate():
-            form.populate_obj(article)
-            article.save()
-            flash('Your changes have been saved')
-            return redirect(url_for('world.detail', title=article.title))
-        else:
-            flash('There were errors with your submission')
-    else:
-        form = WikiForm(obj=article)
-
-    return render_template('world/article_detail.html', article=article, form=form, world=world)
-
+@world.route('/<worldslug>/new')
+def article_new(worldslug):
+    world = get_object_or_404(World, World.slug == worldslug)
+    return articlehandler.handle_request(ResourceHandler.NEW, None, world=world)
 
 @world.route('<worldslug>/<title>/delete/', methods=['GET', 'POST'])
 @auth.login_required

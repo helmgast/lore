@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}{{ article.title }}{% endblock %}
+{% block title %}{{ instance.title }}{% endblock %}
  
-{% block content_title %}{{ article.title }}{% endblock %}
+{% block content_title %}{{ instance.title }}{% endblock %}
 
 {% block content %}
   <div class="article">
-    {{ article.type_name() }}, is person: {{ article.is_person() }}
-    {% if article.id %}
-      {{ article.content|wikify|markdown }}
+    {{ instance.type_name() }}, is person: {{ instance.is_person() }}
+    {% if instance.id %}
+      {{ instance.content|wikify|markdown }}
     {% else %}
       <p>It appears this article does not exist!</p>
     {% endif %}
@@ -16,7 +16,7 @@
 
   <div class="edit" style="display: none;">
     <form method="post" action="">
-      {% for field in form %}
+      {% for field in instance.form %}
         <p>{{ field.label }} {{ field }}</p>
       {% endfor %}
       <p><button type="submit">Save</button> or <a href="{{ url_for('world.index') }}">cancel</a></p>
