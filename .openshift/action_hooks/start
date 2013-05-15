@@ -1,0 +1,1 @@
+$OPENSHIFT_DATA_DIR/bin/uwsgi -s $OPENSHIFT_INTERNAL_IP:$OPENSHIFT_INTERNAL_PORT --socket-protocol http --pp $OPENSHIFT_REPO_DIR --module app -d $OPENSHIFT_PYTHON_LOG_DIR/app.log --pidfile $OPENSHIFT_TMP_DIR/uwsgi.pid

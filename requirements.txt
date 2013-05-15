@@ -1,6 +1,9 @@
+uWSGI==1.2.3
 flask
 werkzeug
 jinja2
 peewee
 wtforms
 wtf-peewee
+flask_peewee
+Flask-Markdown
