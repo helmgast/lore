@@ -2,6 +2,14 @@
 import imp
 import os
 import sys
+from flask import Flask
+myapp = Flask(__name__)
+myapp.config['PROPAGATE_EXCEPTIONS'] = True
+
+@myapp.route('/')
+def hello_world():
+    return "Hello World!"
+
 
 PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
 
@@ -26,7 +34,7 @@ def run_simple_httpd_server(app, ip, port=8080):
 #
 # IMPORTANT: Put any additional includes below this line.  If placed above this
 # line, it's possible required libraries won't be in your searchable path
-# 
+#
 
 
 #
@@ -40,7 +48,7 @@ if __name__ == '__main__':
    #  Use gevent if we have it, otherwise run a simple httpd server.
    print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
    try:
-      run_gevent_server(zapp.application, ip, port)
+      run_gevent_server(myapp, ip, port)
    except:
       print 'gevent probably not installed - using default simple server ...'
       run_simple_httpd_server(zapp.application, ip, port)
