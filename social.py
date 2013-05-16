@@ -1,6 +1,6 @@
 from flask_peewee.utils import object_list, get_object_or_404
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
-from auth import auth
+from app_shared import auth
 from resource import ResourceHandler
 from models import *
 

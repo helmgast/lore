@@ -2,8 +2,7 @@ import datetime
 
 from flask import request, redirect, url_for, render_template, flash
 
-from app import app
-from auth import auth
+from app_shared import app,auth
 from models import User
 
 @app.route('/')

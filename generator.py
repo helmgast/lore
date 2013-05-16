@@ -10,8 +10,6 @@ from flask_peewee.utils import  object_list
 import random
 import itertools
 
-from app import db
-
 generator = Blueprint('generator', __name__, template_folder='templates')
 
 @generator.route('/')

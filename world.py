@@ -5,10 +5,8 @@ from peewee import *
 from wtfpeewee.orm import model_form
 from models import Article, World
 from resource import ResourceHandler
-
+from app_shared import auth
 from flask_peewee.utils import get_object_or_404, object_list, slugify
-
-from auth import auth
 
 world = Blueprint('world', __name__, template_folder='templates')
 

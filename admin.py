@@ -1,11 +1,6 @@
 import datetime
-from flask import request, redirect
 
 from flask_peewee.admin import Admin, ModelAdmin, AdminPanel
-from flask_peewee.filters import QueryFilter
-
-from app import app, db
-from auth import auth
 from models import *
 
 class UserStatsPanel(AdminPanel):
@@ -20,16 +15,18 @@ class UserStatsPanel(AdminPanel):
             'messages': messages_this_week,
         }
 
-admin = Admin(app, auth)
-
 class MessageAdmin(ModelAdmin):
     columns = ('user', 'content', 'pub_date',)
     foreign_key_lookups = {'user': 'username'}
 
-auth.register_admin(admin)
-admin.register(Relationship)
-admin.register(Message, MessageAdmin)
-admin.register(Group)
-admin.register(Article)
-admin.register(GroupMember)
-admin.register_panel('User stats', UserStatsPanel)
+def create_admin(app, auth):
+    admin = Admin(app, auth)
+    auth.register_admin(admin)
+    admin.register(Relationship)
+    admin.register(Message, MessageAdmin)
+    admin.register(Group)
+    admin.register(Article)
+    admin.register(GroupMember)
+    admin.register_panel('User stats', UserStatsPanel)
+    admin.setup()
+    return admin
