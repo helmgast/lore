@@ -3,14 +3,15 @@ import os
 import sys
 from app_shared import app
 
-PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
+if 'OPENSHIFT_INTERNAL_IP' in os.environ:
+  PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
 
-try:
-   zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR,
-                           'virtenv', 'bin', 'activate_this.py')
-   execfile(zvirtenv, dict(__file__ = zvirtenv) )
-except IOError:
-   pass
+  try:
+     zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR,
+                             'virtenv', 'bin', 'activate_this.py')
+     execfile(zvirtenv, dict(__file__ = zvirtenv) )
+  except IOError:
+     pass
 
 def run_gevent_server(app, ip, port=8080):
    from gevent.pywsgi import WSGIServer
@@ -21,7 +22,7 @@ def run_simple_httpd_server(app, ip, port=8080):
    make_server(ip, port, app).serve_forever()
 
 def run():
-    ip   = os.environ['OPENSHIFT_INTERNAL_IP']
+    ip   = os.environ['OPENSHIFT_INTERNAL_IP'] if 'OPENSHIFT_INTERNAL_IP' in os.environ else '127.0.0.1'
     port = 8080
     #zapp = imp.load_source('application', 'wsgi/application')
 

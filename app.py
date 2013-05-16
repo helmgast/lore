@@ -1,7 +1,6 @@
 import os, sys
 
-if 'OPENSHIFT_INTERNAL_IP' in os.environ:
-  import deploy
+import deploy
 #
 # IMPORTANT: Put any additional includes below this line.  If placed above this
 # line, it's possible required libraries won't be in your searchable path
@@ -62,7 +61,7 @@ def dictreplace(s, d):
     return s
 
 if __name__ == '__main__':
-  if 'OPENSHIFT_INTERNAL_IP' in os.environ:
+  if True:#'OPENSHIFT_INTERNAL_IP' in os.environ:
     deploy.run()
   else:
     print "Running local"
