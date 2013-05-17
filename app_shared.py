@@ -13,9 +13,9 @@ class LocalConfiguration(object):
 
 class DeployConfiguration(object):
     DATABASE = {
-        'user': 'martin',
-        'password': 'admin',
-        'host':'127.0.0.1',
+        'user': 'admin',
+        'password': 'xzUqQfsuJlhN',
+        'host':'postgresql://$OPENSHIFT_POSTGRESQL_DB_HOST:$OPENSHIFT_POSTGRESQL_DB_PORT/',
         'name': 'raconteur',
         'engine': 'peewee.PostgresqlDatabase',
         'threadlocals': True,
