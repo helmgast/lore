@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_peewee.db import Database
 from flask_peewee.auth import Auth
+import os
 
 class LocalConfiguration(object):
     DATABASE = {
@@ -15,7 +16,7 @@ class DeployConfiguration(object):
     DATABASE = {
         'user': 'admin',
         'password': 'xzUqQfsuJlhN',
-        'host':'postgresql://$OPENSHIFT_POSTGRESQL_DB_HOST:$OPENSHIFT_POSTGRESQL_DB_PORT/',
+        'host':'postgresql://%s:%s/' % (os.environ['OPENSHIFT_POSTGRESQL_DB_HOST'],os.environ['OPENSHIFT_POSTGRESQL_DB_PORT']),
         'name': 'raconteur',
         'engine': 'peewee.PostgresqlDatabase',
         'threadlocals': True,
