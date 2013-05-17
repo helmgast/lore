@@ -16,7 +16,7 @@ import model_setup
 #  main():
 #
 if __name__ == '__main__':
-   os.environ['OPENSHIFT_INTERNAL_IP'] = '127.0.0.1'
+   #os.environ['OPENSHIFT_INTERNAL_IP'] = '127.0.0.1'
    if 'OPENSHIFT_INTERNAL_IP' in os.environ:
       deploy.run()
    else:
