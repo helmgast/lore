@@ -4,9 +4,7 @@ __author__ = 'Niklas'
 
 from flask import   render_template, Blueprint
 from peewee import *
-from wtfpeewee.orm import model_form
 
-from flask_peewee.utils import  object_list
 import random
 import itertools
 

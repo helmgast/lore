@@ -243,7 +243,7 @@ class Message(db.Model):
     user = ForeignKeyField(User)
     content = TextField()
     pub_date = DateTimeField(default=datetime.datetime.now)
-    conversation = ForeignKeyField(Conversation, default=0)
+    conversation = ForeignKeyField(Conversation, null=True)
     #readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
 
     def __unicode__(self):

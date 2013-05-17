@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-
+from gevent import monkey; monkey.patch_all()
 
 from raconteur_app import myapp
 myapp.config['PROPAGATE_EXCEPTIONS'] = True

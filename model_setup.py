@@ -2,53 +2,36 @@
 
 from models import *
 from flask_peewee.utils import make_password
+from peewee import drop_model_tables, create_model_tables
+from app_shared import db
 
 def altor_date(year, month, day):
     return year*360+(month-1)*30+(day-1)
 
 def setup_models():
-    User.drop_table(fail_silently=True)
-    User.create_table()
-    ConversationMembers.drop_table(fail_silently=True)
-    ConversationMembers.create_table()
-    World.drop_table(fail_silently=True)
-    World.create_table()
-    Article.drop_table(fail_silently=True)
-    Article.create_table()
-    MediaArticle.drop_table(fail_silently=True)
-    MediaArticle.create_table()
-    PersonArticle.drop_table(fail_silently=True)
-    PersonArticle.create_table()
-    FractionArticle.drop_table(fail_silently=True)
-    FractionArticle.create_table()
-    PlaceArticle.drop_table(fail_silently=True)
-    PlaceArticle.create_table()
-    EventArticle.drop_table(fail_silently=True)
-    EventArticle.create_table()
-    RelationTypes.drop_table(fail_silently=True)
-    RelationTypes.create_table()
-    ArticleRelations.drop_table(fail_silently=True)
-    ArticleRelations.create_table()
-    #Metadata.drop_table(fail_silently=True)
-    #Metadata.create_table()
-    Relationship.drop_table(fail_silently=True)
-    Relationship.create_table()
-    Conversation.drop_table(fail_silently=True)
-    Conversation.create_table()
-    Group.drop_table(fail_silently=True)
-    Group.create_table()
-    GroupMember.drop_table(fail_silently=True)
-    GroupMember.create_table()
-    Message.drop_table(fail_silently=True)
-    Message.create_table()
-    Campaign.drop_table(fail_silently=True)
-    Campaign.create_table()
-    Scene.drop_table(fail_silently=True)
-    Scene.create_table()
-    Session.drop_table(fail_silently=True)
-    Session.create_table()
-    SessionPresentUser.drop_table(fail_silently=True)
-    SessionPresentUser.create_table()
+    models = [
+        SessionPresentUser, 
+        Session,
+        Scene,
+        Campaign,
+        ConversationMembers,
+        GroupMember,
+        Message,
+        Relationship,
+        MediaArticle,
+        PersonArticle,
+        FractionArticle,
+        EventArticle,
+        RelationTypes,
+        PlaceArticle,
+        ArticleRelations,
+        Group,
+        Conversation,
+        User,
+        Article,
+        World]
+    drop_model_tables(models, fail_silently=True)
+    create_model_tables(models)
     
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
     altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
