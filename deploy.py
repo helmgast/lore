@@ -1,7 +1,7 @@
 import imp
 import os
 import sys
-from app import myapp
+from app_shared import myapp
 
 if 'OPENSHIFT_INTERNAL_IP' in os.environ:
   PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])

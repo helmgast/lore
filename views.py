@@ -2,10 +2,10 @@ import datetime
 
 from flask import request, redirect, url_for, render_template, flash
 
-from app_shared import app,auth
+from app_shared import myapp, auth
 from models import User
 
-@app.route('/')
+@myapp.route('/')
 def homepage():
   return render_template('homepage.html')
     #if auth.get_logged_in_user():
@@ -14,7 +14,7 @@ def homepage():
     #    return public_timeline()
 
 # Page to sign up, takes both GET and POST so that it can save the form
-@app.route('/join/', methods=['GET', 'POST'])
+@myapp.route('/join/', methods=['GET', 'POST'])
 def join():
     if request.method == 'POST' and request.form['username']:
         # Read username from the form that was posted in the POST request
