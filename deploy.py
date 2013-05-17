@@ -1,7 +1,7 @@
 import imp
 import os
 import sys
-from app_shared import app
+from app import myapp
 
 if 'OPENSHIFT_INTERNAL_IP' in os.environ:
   PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
@@ -22,14 +22,14 @@ def run_simple_httpd_server(app, ip, port=8080):
    make_server(ip, port, app).serve_forever()
 
 def run():
-    ip   = os.environ['OPENSHIFT_INTERNAL_IP'] if 'OPENSHIFT_INTERNAL_IP' in os.environ else '127.0.0.1'
-    port = 8080
-    #zapp = imp.load_source('application', 'wsgi/application')
+  ip   = os.environ['OPENSHIFT_INTERNAL_IP']
+  port = 8080
+  zapp = imp.load_source('application', 'wsgi/application')
 
-    #  Use gevent if we have it, otherwise run a simple httpd server.
-    print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
-    try:
-      run_gevent_server(app, ip, port)
-    except:
-      print 'gevent probably not installed - using default simple server ...'
-      run_simple_httpd_server(app, ip, port)
+  #  Use gevent if we have it, otherwise run a simple httpd server.
+  print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
+  try:
+    run_gevent_server(myapp, ip, port)
+  except:
+    print 'gevent probably not installed - using default simple server ...'
+    run_simple_httpd_server(zapp.application, ip, port)
