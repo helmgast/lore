@@ -36,10 +36,9 @@ if the_app == None:
     from deploy import DeployConfiguration
     the_app.config.from_object(DeployConfiguration)
   else:
-    the_app.config.from_object(Localonfiguration)
+    the_app.config.from_object(LocalConfiguration)
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
-  print the_app.config
   db = Database(the_app) # Initiate the peewee DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   

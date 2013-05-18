@@ -10,11 +10,17 @@ def error_response(msg, level='error'):
     flash(msg, level)
     return render_template('includes/partial.html')
 
+# A wrapper around the combination of a model instance, a form and an operation.
+# Is instantiated per request.
+# In templates it can be accessed by name 'resource' or by same name as the
+# modelclass in lowercase, e.g. 'article'.
+# The object exposes method field() to get a form field, falling back to just field value if no form
+# To access the underlying model object, one has to call e.g. article.instance.<attribute>
 class ResourceInstance:
     def __init__(self, op, form, instance):
-        self.op = op
-        self.form = form
-        self.instance = instance
+        self.op = op # type of operation
+        self.form = form # form class
+        self.instance = instance # actual model object instance
 
     def op_is_new(self):
         return self.op == ResourceHandler.NEW
@@ -25,6 +31,8 @@ class ResourceInstance:
         else: # print the form
             return getattr(self.form, name)(**kwargs)
 
+# A handler for resources that can be subclassed. Is instantiated only once
+# and will then act as a factory for ResourceInstances per request.
 class ResourceHandler:
     # four operations on model
     EDIT        = 1 # edit (view with form, and post to that form)
@@ -39,6 +47,7 @@ class ResourceHandler:
         self.form_class = form_class
         self.template = template
         self.route = route
+        self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
 
     def get_resource_instance(self, op, user, instance=None): # to be overriden
         return ResourceInstance(op, self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None, instance)
@@ -71,7 +80,11 @@ class ResourceHandler:
             if op==self.DELETE:
                 return render_template('includes/change_members.html', action=op, instances={'instance':instance}, **kwargs)
             else:
-                return render_template(self.template, resource=self.get_resource_instance(op, user, instance), modal=request.args.has_key('modal'), **kwargs)
+                # Add our arguments to any incoming arguments, kwargs is argument dictionary
+                kwargs['resource'] = self.get_resource_instance(op, user, instance) # make instance available named by 'resource'
+                kwargs[self.resource_name] = kwargs['resource'] # also make instance available named by class
+                kwargs['modal'] = request.args.has_key('modal')
+                return render_template(self.template, **kwargs)
         elif POST:
             if op==self.EDIT or op==self.NEW:
                 # Create form object based on request and existing instance
@@ -80,6 +93,8 @@ class ResourceHandler:
                     if op==self.NEW: # create an instance as we won't have one yet
                         instance = self.model_class()
                     self.form.populate_obj(instance)
+                    print request.form
+                    print instance.content
                     instance.save()
                     print instance
                     self.after_post(op, user, instance) # Run any subclassed operations to be done after post

@@ -1,35 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}{{ instance.title }}{% endblock %}
+{% block title %}{{ article.instance.title }}{% endblock %}
  
-{% block content_title %}{{ instance.title }}{% endblock %}
+{% block content_title %}{{ article.instance.title }}{% endblock %}
 
 {% block content %}
   <div class="article">
-    {{ instance.type_name() }}, is person: {{ instance.is_person() }}
-    {% if instance.id %}
-      {{ instance.content|wikify|markdown }}
+    {{ article.instance.type_name() }}, is person: {{ article.instance.is_person() }}
+    {% if article.instance.id %}
+      {{ article.instance.content|wikify|markdown }}
     {% else %}
       <p>It appears this article does not exist!</p>
     {% endif %}
   </div>
 
-  <div class="edit" style="display: none;">
-    <form method="post" action="">
-      {% for field in instance.form %}
+{% if article.form %}<form method="post" action="{{action_url}}">
+  <div class="edit">
+      {% for field in article.form %}
         <p>{{ field.label }} {{ field }}</p>
       {% endfor %}
-      <p><button type="submit">Save</button> or <a href="{{ url_for('world.index') }}">cancel</a></p>
-    </form>
   </div>
+<div class="row form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="{{url_for('world.index')}}" class="btn">Cancel</a>
+    </div></form>{% endif %}
+
 {% endblock %}
 
 {% block sidebar %}
   <h3>Page</h3>
   <ul>
-    <li><a href="javascript:void(0);" onclick="$('div.edit').toggle(); $('div.article').toggle();">Edit</a></li>
-    {% if article.id %}
-      <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, title=article.title) }}">Delete</a></li>
+    <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
+    {% if article.instance.id %}
+      <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}">Delete</a></li>
     {% endif %}
   </ul>
 {% endblock %}

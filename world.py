@@ -1,4 +1,3 @@
-
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form
@@ -27,7 +26,7 @@ worldhandler = WorldHandler(
 
 class ArticleHandler(ResourceHandler):
     def get_redirect_url(self, instance):
-        return url_for(self.route, slug=instance.slug)
+        return url_for(self.route, slug=instance.slug, worldslug=instance.world.slug)
 
     def allowed(self, op, user, instance=None):
         if op == ResourceHandler.VIEW:
@@ -39,7 +38,7 @@ class ArticleHandler(ResourceHandler):
 
 articlehandler = ArticleHandler(
         Article,
-        model_form(World, exclude=['slug', 'created_date']),
+        model_form(Article, exclude=['slug', 'created_date']),
         'world/article_detail.html',
         'world.article_view')
 
@@ -65,7 +64,7 @@ def article_view(worldslug, slug):
     article = get_object_or_404(Article, Article.slug == slug)
     return articlehandler.handle_request(ResourceHandler.VIEW, article, world=world)
 
-@world.route('/<worldslug>/<slug>/edit')
+@world.route('/<worldslug>/<slug>/edit', methods=['GET', 'POST'])
 def article_edit(worldslug, slug):
     world = get_object_or_404(World, World.slug == worldslug)
     article = get_object_or_404(Article, Article.slug == slug)
@@ -76,10 +75,10 @@ def article_new(worldslug):
     world = get_object_or_404(World, World.slug == worldslug)
     return articlehandler.handle_request(ResourceHandler.NEW, None, world=world)
 
-@world.route('<worldslug>/<title>/delete/', methods=['GET', 'POST'])
+@world.route('<worldslug>/<slug>/delete/', methods=['GET', 'POST'])
 @auth.login_required
-def article_delete(worldslug, title):
-    article = get_object_or_404(Article, title=title)
+def article_delete(worldslug, slug):
+    article = get_object_or_404(Article, slug=slug)
     if request.method == 'POST':
         article.delete_instance()
         return redirect(url_for('world.index'))

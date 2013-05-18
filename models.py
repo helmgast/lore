@@ -327,6 +327,8 @@ class World(db.Model):
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         return super(World, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return self.title+(' by '+self.publisher) if self.publisher else ''
 
     # startyear = 0
     # daysperyear = 360
@@ -355,6 +357,9 @@ class Article(db.Model):
 
     def type_name(self):
         return ARTICLE_TYPES[self.type][1]
+
+    def __unicode__(self):
+        return '%s [%s]' % (self.title, self.world.title)
 
 
 class MediaArticle(db.Model):
