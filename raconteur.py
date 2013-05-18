@@ -5,6 +5,7 @@ from flask_peewee.auth import Auth
 from flask_peewee.db import Database
 from re import compile
 from flaskext.markdown import Markdown
+import os
 
 try:
   import simplejson as json
@@ -25,12 +26,20 @@ auth = None
 
 if the_app == None:
   from app import is_debug, is_deploy
+  # is_deploy = True
+  # os.environ['OPENSHIFT_POSTGRESQL_DB_HOST']='127.0.0.1'
+  # os.environ['OPENSHIFT_POSTGRESQL_DB_PORT']='8080'
   the_app = Flask('raconteur') # Creates new flask instance
   print "App created"
   print the_app
-  the_app.config.from_object('deploy.DeployConfiguration' if is_deploy else __name__+'.LocalConfiguration')
+  if is_deploy:
+    from deploy import DeployConfiguration
+    the_app.config.from_object(DeployConfiguration)
+  else:
+    the_app.config.from_object(Localonfiguration)
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
+  print the_app.config
   db = Database(the_app) # Initiate the peewee DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   
