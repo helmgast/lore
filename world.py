@@ -1,11 +1,10 @@
-import datetime
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form
 from models import Article, World
 from resource import ResourceHandler
-from app_shared import auth
+from raconteur import auth
 from flask_peewee.utils import get_object_or_404, object_list, slugify
 
 world = Blueprint('world', __name__, template_folder='templates')

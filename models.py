@@ -5,7 +5,7 @@ from flask_peewee.auth import BaseUser
 from flask_peewee.utils import slugify
 from peewee import *
 from peewee import RawQuery
-from app_shared import db
+from raconteur import db
 
 # WTForms would treat the _absence_ of a field in POST data as a reason to
 # to set the data to empty. This is a problem if the same POST receives variations

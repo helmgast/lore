@@ -1,5 +1,5 @@
 from flask import request, render_template, flash, redirect, url_for
-from app_shared import auth
+from raconteur import auth
 
 def generate_flash(action, name, model_identifiers, dest=''):
     s = '%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), ' to %s' % dest if dest else '')

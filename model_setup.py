@@ -3,7 +3,6 @@
 from models import *
 from flask_peewee.utils import make_password
 from peewee import drop_model_tables, create_model_tables
-from app_shared import db
 
 def altor_date(year, month, day):
     return year*360+(month-1)*30+(day-1)
