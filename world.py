@@ -40,7 +40,7 @@ articlehandler = ArticleHandler(
         Article,
         model_form(Article, exclude=['slug', 'created_date']),
         'world/article_detail.html',
-        'world.article_view')
+        'world.article_detail')
 
 @world.route('/')
 def index():
@@ -59,7 +59,7 @@ def world_detail(slug):
     return object_list('world/world_detail.html', world_articles, world=world)
 
 @world.route('/<worldslug>/<slug>/')
-def article_view(worldslug, slug):
+def article_detail(worldslug, slug):
     world = get_object_or_404(World, World.slug == worldslug)
     article = get_object_or_404(Article, Article.slug == slug)
     return articlehandler.handle_request(ResourceHandler.VIEW, article, world=world)
@@ -70,18 +70,14 @@ def article_edit(worldslug, slug):
     article = get_object_or_404(Article, Article.slug == slug)
     return articlehandler.handle_request(ResourceHandler.EDIT, article, world=world)
 
-@world.route('/<worldslug>/new')
+@world.route('/<worldslug>/new', methods=['GET', 'POST'])
 def article_new(worldslug):
     world = get_object_or_404(World, World.slug == worldslug)
     return articlehandler.handle_request(ResourceHandler.NEW, None, world=world)
 
-@world.route('<worldslug>/<slug>/delete/', methods=['GET', 'POST'])
+@world.route('/<worldslug>/<slug>/delete/', methods=['GET', 'POST'])
 @auth.login_required
 def article_delete(worldslug, slug):
-    article = get_object_or_404(Article, slug=slug)
-    if request.method == 'POST':
-        article.delete_instance()
-        return redirect(url_for('world.index'))
-
-    return render_template('world/article_delete.html', article=article)
-
+    #world = get_object_or_404(World, World.slug == worldslug)
+    article = get_object_or_404(Article, Article.slug == slug)
+    return articlehandler.handle_request(ResourceHandler.DELETE, article, world=world, redirect_url=url_for('world.world_detail', slug=worldslug))

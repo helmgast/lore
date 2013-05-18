@@ -7,10 +7,9 @@
   {{ super() }}
   <h4>Alternativ</h4>
     <ul class="nav nav-list">
-        <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>Popular</a></li>
+        <li><a href="{{ url_for('world.article_new', worldslug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
         <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>Browse</a></li>
         <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>Latest changes</a></li>
-        <li><a href="{{ url_for('world.myworlds') }}"><i class="icon-book"></i>New article</a></li>
     </ul>
 {% endblock %}
 
@@ -25,7 +24,7 @@
     {% if object_list.count() == 0 %}No articles yet!{% else %}
     <ul>
         {% for article in object_list %}
-        <li><a href="{{ url_for('world.article_view', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a>[{{ article.type }}]</li>
+        <li><a href="{{ url_for('world.article_detail', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
         {% endfor %}
     </ul>
     {% endif %}

@@ -361,6 +361,12 @@ class Article(db.Model):
     def __unicode__(self):
         return '%s [%s]' % (self.title, self.world.title)
 
+ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
+ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
+class ArticleUsers(db.Model):
+    article = ForeignKeyField(Article)
+    user = ForeignKeyField(User)
+    type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
 
 class MediaArticle(db.Model):
     article = ForeignKeyField(Article)

@@ -78,7 +78,7 @@ class ResourceHandler:
         print "Doing a %s, %s on %s" % (request.method, self.ops[op], instance)
         if GET:
             if op==self.DELETE:
-                return render_template('includes/change_members.html', action=op, instances={'instance':instance}, **kwargs)
+                return render_template('includes/change_members.html', action=self.op_messages[op], instances={'instance':[instance]}, **kwargs)
             else:
                 # Add our arguments to any incoming arguments, kwargs is argument dictionary
                 kwargs['resource'] = self.get_resource_instance(op, user, instance) # make instance available named by 'resource'
@@ -111,5 +111,6 @@ class ResourceHandler:
                 flash("%s was successfully deleted" % s, 'success')
                 user.log("deleted %s" % s)
                 redirect_url = redirect_url if redirect_url else self.get_redirect_url(instance)
-                redirect(redirect_url)
+                print redirect_url
+                return redirect(redirect_url)
         return "Error"

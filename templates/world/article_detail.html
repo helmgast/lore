@@ -1,18 +1,27 @@
-{% extends "base.html" %}
+{% if not modal %}{% extends "world/worlds.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
 
-{% block title %}{{ article.instance.title }}{% endblock %}
+{% if article.op_is_new() %}
+  {% set action_url = url_for('world.article_new', worldslug=world.slug, modal=modal) %}
+  {% set tagline = world.title %}
+  {% set title = 'New article!' %}
+{% else %}
+  {% set action_url = url_for('world.article_edit', slug=article.instance.slug, worldslug=world.slug, modal=modal) %}
+  {% set tagline = world.title %}
+  {% set title = article.instance.title %}
+{% endif %}
+
+{% block content_title %}{{ title }}{% endblock %}
  
-{% block content_title %}{{ article.instance.title }}{% endblock %}
+{% block content_tagline %}{{ tagline }}{% endblock %}
 
 {% block content %}
+  {% if article.instance %}
   <div class="article">
-    {{ article.instance.type_name() }}, is person: {{ article.instance.is_person() }}
-    {% if article.instance.id %}
+      {{ article.instance.type_name() }}, is person: {{ article.instance.is_person() }}
       {{ article.instance.content|wikify|markdown }}
-    {% else %}
-      <p>It appears this article does not exist!</p>
-    {% endif %}
   </div>
+  {% endif %}
 
 {% if article.form %}<form method="post" action="{{action_url}}">
   <div class="edit">
@@ -28,11 +37,12 @@
 {% endblock %}
 
 {% block sidebar %}
-  <h3>Page</h3>
-  <ul>
-    <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
-    {% if article.instance.id %}
-      <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}">Delete</a></li>
-    {% endif %}
-  </ul>
+  {{ super() }}
+  <h4>Alternatives</h4>
+    <ul class="nav nav-list">
+      <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
+      {% if article.instance %}
+        <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}">Delete</a></li>
+      {% endif %}
+    </ul>
 {% endblock %}
