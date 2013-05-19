@@ -1,3 +1,7 @@
 *.pyc
 *.db
 .ropeproject
+/gevent.py
+/.settings
+/.project
+/.pydevproject
