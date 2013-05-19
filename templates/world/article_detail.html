@@ -1,12 +1,12 @@
-{% if not modal %}{% extends "world/world_detail.html" %}
+{% if not partial %}{% extends "world/world_detail.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% if article.op_is_new() %}
-  {% set action_url = url_for('world.article_new', worldslug=world.slug, modal=modal) %}
+  {% set action_url = url_for('world.article_new', worldslug=world.slug, partial=partial) %}
   {% set tagline = world.title %}
   {% set title = 'New article!' %}
 {% else %}
-  {% set action_url = url_for('world.article_edit', slug=article.instance.slug, worldslug=world.slug, modal=modal) %}
+  {% set action_url = url_for('world.article_edit', slug=article.instance.slug, worldslug=world.slug, partial=partial) %}
   {% set tagline = world.title %}
   {% set title = article.instance.title %}
 {% endif %}
@@ -42,7 +42,7 @@
     <ul class="nav nav-list">
       {% if article.instance %}
         <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
-        <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}">Delete</a></li>
+        <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}" class="m_action" data-action-type="modal">Delete</a></li>
       {% endif %}
     </ul>
 {% endblock %}

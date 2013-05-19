@@ -62,6 +62,7 @@ class ResourceHandler:
         pass
 
     def allowed(self, op, user, instance=None): # to be overriden
+        print "Warning: Allowed function called without being overriden"
         return False
 
     def handle_request(self, op, instance=None, redirect_url=None, **kwargs):
@@ -78,12 +79,14 @@ class ResourceHandler:
         print "Doing a %s, %s on %s" % (request.method, self.ops[op], instance)
         if GET:
             if op==self.DELETE:
-                return render_template('includes/confirm.html', action=self.op_messages[op], instances={'instance':[instance]}, **kwargs)
+                print request.url
+                return render_template('includes/confirm.html', url=request.base_url, #TODO, this will skip partial args, always intended? 
+                    action=self.op_messages[op], instances={'instance':[instance]}, **kwargs)
             else:
                 # Add our arguments to any incoming arguments, kwargs is argument dictionary
                 kwargs['resource'] = self.get_resource_instance(op, user, instance) # as default make instance available named by 'resource'
                 kwargs[self.resource_name] = kwargs['resource'] # also make instance available named by class
-                kwargs['modal'] = request.args.has_key('modal')
+                kwargs['partial'] = True if request.args.has_key('partial') else None
                 return render_template(self.template, **kwargs)
         elif POST:
             if op==self.EDIT or op==self.NEW:

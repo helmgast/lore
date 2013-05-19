@@ -3,6 +3,7 @@ from flask import Flask, Markup, render_template, request, redirect, url_for, fl
 from datetime import datetime
 from flask_peewee.auth import Auth
 from flask_peewee.db import Database
+from peewee import Model
 from re import compile
 from flaskext.markdown import Markdown
 import os
@@ -19,6 +20,16 @@ class LocalConfiguration(object): # basic configuration if running locally, uses
         'check_same_thread': False,
     }
     SECRET_KEY = 'shhhh'
+
+class RaconteurDB(Database):
+  def get_model_class(self):
+    class BaseModel(Model):
+        class Meta:
+            database = self.database
+        # def __unicode__(self): # plan to override string representations, gave up TODO
+        #     print "__str__ called"
+        #     return str(self)
+    return BaseModel
 
 the_app = None
 db = None
@@ -39,7 +50,7 @@ if the_app == None:
     the_app.config.from_object(LocalConfiguration)
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
-  db = Database(the_app) # Initiate the peewee DB layer
+  db = RaconteurDB(the_app) # Initiate the peewee DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   
   import model_setup

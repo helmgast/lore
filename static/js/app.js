@@ -31,11 +31,6 @@ $(document).ready(function() {
     } 
   });  
   
-  $('#sendmessage_modal').on('shown', function(e) {
-    var $m = $(e.target).find('.modal-body')
-    $m.animate({scrollTop: $m.prop('scrollHeight') - $m.height()}, 500)
-  })
-  
   // Extends Typeahead with a different updater() function
   var extended_typeahead = {
     // remove the name and space from the username
@@ -89,7 +84,7 @@ $(document).ready(function() {
       vars = action_parent.find('input, textarea').serialize()
     }
     $t.button('reset') // reset button
-    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal', vars, function(data) { // always add modal to the actual request
+    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'partial', vars, function(data) { // always add partial to the actual request
       var $d = $(data), $a = $d.filter('#alerts')
       var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
       switch(action) {
@@ -127,7 +122,7 @@ $(document).ready(function() {
       // preparations
       switch ($t.data('action-type')) {
         case 'modal':
-          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'modal' //attach modal param
+          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'partial' //attach partial param
           $('#themodal').data('modal').options.caller = $t
           $('#themodal').load(href).modal('show'); break;
         case 'inplace': break;// replace instance with form
@@ -140,9 +135,11 @@ $(document).ready(function() {
 
   $('#themodal').modal({show:false})
   $('#themodal').on('submit', 'form', function(e) {
-    var $t = $(e.delegateTarget).data('modal').options.caller
-    post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
-    e.preventDefault(); return false;
+    if (e.target.action.match(/[?&]partial/)) {
+      var $t = $(e.delegateTarget).data('modal').options.caller
+      post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
+      e.preventDefault(); return false;  
+    } // else, let the submit work as usual, redirecting the whole page
   }).on('hide', function(e) {
     var $t = $(e.delegateTarget).data('modal').options.caller
     $t.button('reset') // reset state

@@ -1,11 +1,11 @@
-{% if not modal %}{% extends "campaign/campaign.html" %}
+{% if not partial %}{% extends "campaign/campaign.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% if resource.op_is_new() %}
-  {% set action_url = url_for('campaign.campaign_new', modal=modal) %}
+  {% set action_url = url_for('campaign.campaign_new', partial=partial) %}
   {% set title = 'New campaign' %}
 {% else %}
-  {% set action_url = url_for('campaign.campaign_detail', slug=resource.instance.slug, modal=modal) %}
+  {% set action_url = url_for('campaign.campaign_detail', slug=resource.instance.slug, partial=partial) %}
   {% set title = 'Campaign' %}
   {% set tagline = resource.instance.name %}
 {% endif %}
@@ -15,7 +15,7 @@
 
 {% block content %}{% block modal_body %}
 {% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
-<div class="row m_inplace m_view{{ ' modal-body' if modal }}">
+<div class="row m_inplace m_view{{ ' modal-body' if partial }}">
   <div class="span6">
       <div class="well">{{ resource.field('description') }}</div>
       <dl class="dl-horizontal">

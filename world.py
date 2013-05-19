@@ -115,6 +115,7 @@ def world_browse(slug, groupby):
 def article_detail(worldslug, slug):
     world = get_object_or_404(World, World.slug == worldslug)
     article = get_object_or_404(Article, Article.slug == slug)
+    print world, article
     return articlehandler.handle_request(ResourceHandler.VIEW, article, world=world)
 
 @world.route('/<worldslug>/<slug>/edit', methods=['GET', 'POST'])

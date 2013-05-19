@@ -35,6 +35,9 @@ class Conversation(db.Model):
         for m in members:
             ConversationMembers.create(member=m, conversation=self)
             m.log("was added to conversation %s" % self.id)
+
+    def __unicode__(self):
+        return u'conversation'
     
 # A user in the system
 class User(db.Model, BaseUser):
@@ -358,8 +361,11 @@ class Article(db.Model):
     def type_name(self):
         return ARTICLE_TYPES[self.type][1]
 
+    def __str__(self):
+        return self.title
+
     def __unicode__(self):
-        return '%s [%s]' % (self.title, self.world.title)
+        return u'%s [%s]' % (self.title, self.world.title)
 
 ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))

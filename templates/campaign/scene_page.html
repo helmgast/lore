@@ -1,4 +1,4 @@
-{% if not modal %}{% extends "campaign/campaign.html" %}
+{% if not partial %}{% extends "campaign/campaign.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% block content_title %}{{'New ' if not the_session}}Session{% endblock %}

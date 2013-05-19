@@ -30,6 +30,17 @@ grouphandler = GroupHandler(
         'social/group_page.html',
         'social.group_detail')
 
+class UserHandler(ResourceHandler):
+    def allowed(self, op, user, instance=None):
+        if user:
+            if op==ResourceHandler.VIEW or op==ResourceHandler.NEW:
+                return True
+            elif op==ResourceHandler.EDIT:
+                return user==instance
+        return False
+
+userhandler = UserHandler(User, model_form(User), 'social/user_detail.html', 'social.user_detail')
+
 @social.route('/')
 @auth.login_required
 def index():
@@ -53,8 +64,8 @@ def conversations():
 @auth.login_required
 def conversation_new():
     user = auth.get_logged_in_user()
-    # We expect ?modal or ?modal=true
-    modal = request.args.has_key('modal')
+    # We expect ?partial
+    partial = True if request.args.has_key('partial') else None
     
     if request.method == 'GET' and request.args.get('recipients'):
         # We expect a comma separated arg, e.g. ?recipients=user1,user2 or
@@ -64,18 +75,18 @@ def conversation_new():
             recipients.extend([r.strip() for r in r.split(',')])
         r_query = User.select().where(User.username << recipients) # In recipients
         recipients = [r for r in r_query] # Iterate now to get a list, not a query object
-        print "Found recipients %s from request param %s" % (recipients, request.args.getlist('recipients'))
+        print "insocial>recipients is list of %s, first item is %s" % (type(recipients[0]), recipients[0])
         # Get most recent conversation if there is one
         convs = list(user.get_most_recent_conversation_with(recipients))
         print convs
         if convs: #not empty
-            print "Conversation: %s, id %s and date %s" % (convs[0], str(convs[0].id), str(convs[0].modified_date))
+            print "Conversation: %s, id %s and date %s" % (convs[0], convs[0].id, convs[0].modified_date)
             # Send us on to the actual conversation to continue!
-            print url_for('.conversation_detail', conv_id=convs[0].id, modal=modal)
-            return redirect(url_for('.conversation_detail', conv_id=convs[0].id, modal=modal))
+            print url_for('.conversation_detail', conv_id=convs[0].id, partial=partial)
+            return redirect(url_for('.conversation_detail', conv_id=convs[0].id, partial=partial))
         else: # No conversation exists, give empty form
             # If true, we will not show recipients chooser, same render setting as when having a conversation
-            return render_template('social/conversation_page.html', recipients=recipients, modal=modal, fixed_recipients=request.args.has_key('fixed_recipients'))
+            return render_template('social/conversation_page.html', recipients=recipients, partial=partial, fixed_recipients=request.args.has_key('fixed_recipients'))
 
     elif request.method == 'POST' and request.form['recipients'] and request.form['content']:
         # We expect one or more values with key recipients, e.g recipients=user1, recipients=user2
@@ -84,7 +95,7 @@ def conversation_new():
         recipients = request.form.getlist('recipients')
         r_query = User.select().where(User.username << request.form.getlist('recipients'))
         recipients = [r for r in r_query] # Iterate now to get a list, not a query object
-        print "Found recipients %s from request param %s" % (recipients, request.args.getlist('recipients'))
+        print u'Found recipients %s from request param %s' % (recipients, request.args.getlist('recipients'))
         # Will try to create a new conversation if none already exists
         # Get most recent conversation if there is one
         convs = list(user.get_most_recent_conversation_with(recipients))
@@ -98,7 +109,7 @@ def conversation_new():
             content=request.form['content'],
             conversation=conversation
         )
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, partial=partial))
     else:
         abort(400) # No recipients, so who would the conversation be with?
         
@@ -106,8 +117,8 @@ def conversation_new():
 @auth.login_required
 def conversation_detail(conv_id):
     user = auth.get_logged_in_user()
-    modal = request.args.has_key('modal')
-    
+    partial = True if request.args.has_key('partial') else None
+
     conversation = get_object_or_404(Conversation, Conversation.id==conv_id)
     messages = Message.select().where(Message.conversation == conv_id).order_by(Message.pub_date.desc())
     recipients = [r for r in conversation.members()]
@@ -121,8 +132,8 @@ def conversation_detail(conv_id):
         )
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id, modal=modal))
-    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, modal=modal)
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, partial=partial))
+    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, partial=partial)
 
 @social.route('/groups/')
 def groups():
@@ -160,12 +171,12 @@ def group_delete(slug):
         return redirect(url_for('social.groups'))
 
 def edit_group(request, group=None):
-    modal = request.args.has_key('modal')
+    partial = True if request.args.has_key('partial') else None
     user = auth.get_logged_in_user()
     edit_allowed = user and (not group or user in group.masters()) # user exist and is master or the group is new
     if request.method == 'GET':
         form = GroupForm(obj=group) if edit_allowed else None
-        return render_template('social/group_page.html', group=group, form=form, modal=modal)
+        return render_template('social/group_page.html', group=group, form=form, partial=partial)
     elif request.method == 'POST': 
         if not edit_allowed:
             return error_response('You need to be logged in and master of this group to edit')
@@ -184,7 +195,6 @@ def edit_group(request, group=None):
                 flash('Your changes have been saved')
                 return redirect(url_for('.group_detail', slug=group.slug))
         return error_response('There were errors with your submission')
-        #return redirect(url_for('.group_detail', slug=group.slug, modal=modal, partial=True))
 
 @social.route('/groups/<slug>/members/<action>', methods=['GET','POST'])
 @auth.login_required
@@ -276,8 +286,7 @@ def user_list():
 @social.route('/users/<username>/', methods=['GET','POST'])
 def user_detail(username):
     user = get_object_or_404(User, User.username == username)
-    ri = ResourceHandler(User, 'social/user_detail.html', user)
-    return ri.handle_request(ResourceHandler.EDIT)
+    return userhandler.handle_request(ResourceHandler.VIEW, user)
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required
@@ -289,7 +298,7 @@ def user_follow(username):
     logged_in.log('now following %s' % user.username)
     user.log('now being followed by %s' % logged_in.username)
     # Note point "." before redirect route, it refers to function in this blueprint (e.g social)
-    return redirect(url_for('.user_detail', username=user.username, modal=request.args.has_key('modal')))
+    return redirect(url_for('.user_detail', username=user.username, partial= True if request.args.has_key('partial') else None))
 
 @social.route('/users/<username>/unfollow/', methods=['POST'])
 @auth.login_required
@@ -300,4 +309,4 @@ def user_unfollow(username):
     flash('You are no longer following %s' % user.username)
     logged_in.log('now not following %s' % user.username)
     user.log('was unfollowed by %s' % logged_in.username)
-    return redirect(url_for('.user_detail', username=user.username, modal=request.args.has_key('modal')))
+    return redirect(url_for('.user_detail', username=user.username, partial = True if request.args.has_key('partial') else None))
