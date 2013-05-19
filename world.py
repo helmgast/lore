@@ -1,7 +1,7 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form
-from models import Article, World
+from models import Article, World, ArticleRelations
 from resource import ResourceHandler
 from raconteur import auth
 from itertools import groupby
@@ -82,6 +82,25 @@ articlehandler = ArticleHandler(
         'world/article_detail.html',
         'world.article_detail')
 
+class ArticleRelationsHandler(ResourceHandler):
+    def get_redirect_url(self, instance):
+        return url_for(self.route, slug=instance.slug, worldslug=instance.world.slug)
+
+    def allowed(self, op, user, instance=None):
+        if op == ResourceHandler.VIEW:
+            return True
+        elif user:
+            return True
+        else:
+            return False
+
+article_relations_handler = ArticleRelationsHandler(
+        ArticleRelations,
+        model_form(ArticleRelations),
+        'world/article_relations_detail.html',
+        'world.article_detail')
+
+
 @world.route('/')
 def index():
     qr = World.select()
@@ -135,3 +154,11 @@ def article_delete(worldslug, slug):
     #world = get_object_or_404(World, World.slug == worldslug)
     article = get_object_or_404(Article, Article.slug == slug)
     return articlehandler.handle_request(ResourceHandler.DELETE, article, world=world, redirect_url=url_for('world.world_detail', slug=worldslug))
+
+@world.route('/<worldslug>/<slug>/relate', methods=['GET', 'POST'])
+def article_relate(worldslug, slug):
+    world = get_object_or_404(World, World.slug == worldslug)
+    article = get_object_or_404(Article, Article.slug == slug)
+    relations = ArticleRelations.select().where(ArticleRelations.from_article == article).order_by(ArticleRelations.relation_type.asc());
+    return object_list('world/article_relations_detail.html', relations, world=world, article=article)
+

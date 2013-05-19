@@ -78,6 +78,7 @@
 
         <div class="span9">
             <div class="content">
+                {% block middle %}
                 {% block hero_box %}{% endblock %}
                 <div class="page-header">
                     <h1>{% block content_title %}{% endblock %}
@@ -87,6 +88,7 @@
                 {% include "includes/flash.html" %}
                 {% block pre_content %}{% endblock %}
                 {% block content %}{% endblock %}
+                {% endblock %}
             </div>
             <!-- /content -->
         </div>
