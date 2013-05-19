@@ -247,8 +247,16 @@ a .icon-ok {
 }
 
 .form-actions {
-  margin-top: 0px;
+  margin-top: 0px;  
 }
 
 /* helpers */
 .hidden { display: none; }
+
+textarea#content {
+  width: 600px;
+}
+
+textarea#metadata {
+  width: 200px;
+}

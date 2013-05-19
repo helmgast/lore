@@ -339,13 +339,13 @@ ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE,
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
 class Article(db.Model):
     type = IntegerField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
+    world = ForeignKeyField(World)
     title = CharField()
     slug = CharField(unique=True) # URL-friendly name
     content = TextField()
     # publish_status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
     created_date = DateTimeField(default=datetime.datetime.now)
     # modified_date = DateTimeField()
-    world = ForeignKeyField(World)
     metadata = TextField(null=True) # JSON
     # thumbnail
     def save(self, *args, **kwargs):
@@ -356,8 +356,11 @@ class Article(db.Model):
         return ARTICLE_PERSON == self.type
 
     def type_name(self):
-        return ARTICLE_TYPES[self.type][1]
+        return ARTICLE_TYPES[self.type][1].title()
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
     def __unicode__(self):
         return '%s [%s]' % (self.title, self.world.title)
 
@@ -374,14 +377,18 @@ class MediaArticle(db.Model):
     url = CharField()
 
 GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
-
+GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female'))
 class PersonArticle(db.Model):
     article = ForeignKeyField(Article)
     born = IntegerField()
     died = IntegerField(null=True)
-    gender = IntegerField(default=GENDER_UNKNOWN, choices=((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female')))
+    gender = IntegerField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
     # otherNames = CharField()
     occupation = CharField(null=True)
+
+    def gender_name(self):
+        return GENDER_TYPES[self.type][1].title()
+
 
 class FractionArticle(db.Model):
     article = ForeignKeyField(Article)

@@ -25,6 +25,6 @@ if __name__ == '__main__':
       print "Running local %s" % __name__
       if len(sys.argv) > 1 and sys.argv[1] == "reset":
          print "Resetting data models"
-         #setup_models()
+         raconteur.setup_models()
          exit()
       raconteur.the_app.run(debug=is_debug) # Debug will reload code automatically, so no need to restart server
