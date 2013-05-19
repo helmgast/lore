@@ -15,18 +15,30 @@
 
 {% block content %}
     <div class="row">
-        <div class="span6">
-            <p class="well">{{ world.description }}</p>
-        </div>
-        <div class="span6">IMAGE</div>
-    </div>
-    <div class="row">
     {% if object_list.count() == 0 %}No articles yet!{% else %}
-    <ul>
-        {% for article in object_list %}
-        <li><a href="{{ url_for('world.article_detail', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
+
+    {% if groupby=='type' %}
+        {% set groups = object_list|by_articletype %}
+    {% elif groupby=='title' %}
+        {% set groups = object_list|by_initials %}
+    {% elif groupby=='time' %}
+        {% set groups = object_list|by_time %}
+    {% endif %}
+    <dl>
+        {% for group in groups %}
+        <dt>{{ group.grouper|capitalize }}</dt>
+        <dd><ul class="unstyled">
+        {% for article in group.list %}
+            <li><a href="{{ url_for('world.article_detail', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a>
+                {%- if groupby=='title' -%}
+                    <small>{{" ["+article.type_name()+"]"}}</small>
+                {%- elif groupby=='time' -%}
+                    <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
+                {%- endif %}</li>
+            {% endfor %}
+        </ul></dd>
         {% endfor %}
-    </ul>
+    </dl>
     {% endif %}
     {% include "world/pagination.html" %}
     </div>

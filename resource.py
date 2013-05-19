@@ -78,10 +78,10 @@ class ResourceHandler:
         print "Doing a %s, %s on %s" % (request.method, self.ops[op], instance)
         if GET:
             if op==self.DELETE:
-                return render_template('includes/change_members.html', action=self.op_messages[op], instances={'instance':[instance]}, **kwargs)
+                return render_template('includes/confirm.html', action=self.op_messages[op], instances={'instance':[instance]}, **kwargs)
             else:
                 # Add our arguments to any incoming arguments, kwargs is argument dictionary
-                kwargs['resource'] = self.get_resource_instance(op, user, instance) # make instance available named by 'resource'
+                kwargs['resource'] = self.get_resource_instance(op, user, instance) # as default make instance available named by 'resource'
                 kwargs[self.resource_name] = kwargs['resource'] # also make instance available named by class
                 kwargs['modal'] = request.args.has_key('modal')
                 return render_template(self.template, **kwargs)

@@ -150,7 +150,7 @@ def group_delete(slug):
     if not user or not user in masters or len(masters)>1:
         return error_response('You need to be logged in and the only master of this group to delete it')
     if request.method == 'GET':            
-        return render_template('includes/change_members.html', \
+        return render_template('includes/confirm.html', \
             url=url_for('social.group_delete',slug=slug), action='delete', \
             instances={'group':[group.slug]})
     elif request.method == 'POST':
@@ -198,7 +198,7 @@ def group_members_change(slug, action):
         players = User.select().where(User.username << request.args.getlist('players')) if request.args.has_key('players') else None
         if not masters and not players:
             return error_response('No players or masters given for %s' % action)
-        return render_template('includes/change_members.html', \
+        return render_template('includes/confirm.html', \
             url=url_for('social.group_members_change',slug=slug, action=action), action=action, \
             instances={'masters':masters, 'players':players})
     else: # POST

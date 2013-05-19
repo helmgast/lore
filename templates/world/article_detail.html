@@ -1,4 +1,4 @@
-{% if not modal %}{% extends "world/worlds.html" %}
+{% if not modal %}{% extends "world/world_detail.html" %}
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% if article.op_is_new() %}
@@ -40,8 +40,8 @@
   {{ super() }}
   <h4>Alternatives</h4>
     <ul class="nav nav-list">
-      <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
       {% if article.instance %}
+        <li><a href="{{ url_for('world.article_edit', worldslug=world.slug, slug=article.instance.slug) }}">Edit</a></li>
         <li><a href="{{ url_for('world.article_delete', worldslug=world.slug, slug=article.instance.slug) }}">Delete</a></li>
       {% endif %}
     </ul>
