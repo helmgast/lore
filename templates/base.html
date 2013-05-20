@@ -15,9 +15,9 @@
     <meta name="viewport" content="width=device-width; initial-scale=1.0">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.responsive.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
 
@@ -36,30 +36,35 @@
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
             <a class="brand" href="{{ url_for('homepage') }}">Raconteur
                 <small>a story engine</small>
             </a>
-    
-            <ul class="nav">
-                <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
-                <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}">Campaign</a></li>
-                <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
-                <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
-            </ul>
-            <ul class="nav pull-right">
-                {% if not session.logged_in %}
-                    <li><a href="{{ url_for('auth.login') }}">log in</a></li>
-                    <li><a href="{{ url_for('join') }}">join</a></li>
-                {% else %}
-                    <li class="navbar-text">Welcome</span>
-                    <li><a
-                            href="{{ url_for('social.user_list') }}">{{ user.username }}!</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
-                    {% if user.admin %}
-                    <li><small><a href="{{ url_for('admin.index') }}">admin dashboard</a></small></li>
+            <div class ="nav-collapse collapse">
+                <ul class="nav">
+                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
+                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}">Campaign</a></li>
+                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
+                    <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
+                </ul>
+                <ul class="nav pull-right">
+                    {% if not session.logged_in %}
+                        <li><a href="{{ url_for('auth.login') }}">log in</a></li>
+                        <li><a href="{{ url_for('join') }}">join</a></li>
+                    {% else %}
+                        <li class="navbar-text">Welcome</span>
+                        <li><a href="{{ url_for('social.user_list') }}">{{ user.username }}!</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
+                        {% if user.admin %}
+                        <li><small><a href="{{ url_for('admin.index') }}">admin dashboard</a></small></li>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-            </ul>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
