@@ -98,7 +98,7 @@ In /edit?form=full, it will render as (simplified):
 
 ###MODEL VIEW HTML STRUCTURE
 So a Model View is a dynamic view of model instances. It can be a single instance, or a collection of them (e.g. list). 
-'''
+```
 .m_view
     .m_instance // descendant of m_view, shows an instance of the model (e.g. a row in a table)
         .m_field/ descendant of m_instance, holds a particular field of the instance. Can also be a collection.
@@ -150,7 +150,7 @@ So a Model View is a dynamic view of model instances. It can be a single instanc
     </div>
     <div .m_action></div>
 </div>
-'''
+```
 Questions
 - How to edit in place? How to edit when only parts of the fields are visible?
 - How to deal with multiple selects? Both "selected" and "available". Selected is the many-to-many field of an instance. Available is a "collection".
