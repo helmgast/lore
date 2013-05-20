@@ -202,6 +202,12 @@ a .icon-ok {
   display: none;
 }
 
+@media (max-width: 767px) {
+  .hero-unit h1 {
+    font-size: 38.5px;
+  }
+}
+
 /*
 .alert-popover {
   padding: 0px;
