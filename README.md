@@ -19,92 +19,81 @@ Based on approximate REST philosophy, every Model object in the system can be ac
 
 ##URL SCHEME
     /<model>s/?filterargs               GET:list all
-    /<model>s/new                       GET:form for new        POST:create new instance
-    /<model>s/<id>/(view)               GET:view of instance    POST: None
-    /<model>s/<id>/(view)               GET:form of instance    POST:Update instance
-    /<model>s/<id>/delete               GET:user prompt         POST:delete instance
+    /<model>s/new                       GET:form for new        POST: create new instance
+    /<model>s/<id>/                     GET:instance view/form  POST: Update Instance if form
+    /<model>s/<id>/view                 GET:view of instance    POST: None
+    /<model>s/<id>/edit                 GET:form of instance    POST: update instance
+    /<model>s/<id>/delete               GET:user prompt         POST: delete instance
     /<model>s/<id>/<collection>/add     GET:user prompt         POST: add Instances identified in args
     /<model>s/<id>/<collection>/remove  GET:user prompt         POST: remove Instances identified in args
     /<model>s/<id>/<custom>             GET:user prompt         POST:do it
 
 ###Formal REST (for reference, not fully used here case)
-GET    /people               list members
-POST   /people               create member
-GET    /people/1             retrieve member
-PUT    /people/1             update member
-DELETE /people/1             delete member
+    GET    /people               list members
+    POST   /people               create member
+    GET    /people/1             retrieve member
+    PUT    /people/1             update member
+    DELETE /people/1             delete member
 
 We use GET for non-state-changing operations, and POST for state changing operations. There are some variations and considerations to note:
-##GET
-GET .../?partial or ?partial=True
-: means server should only return partial HTML, ready to be inlined on calling page
-GET .../?json or ?json=True
-: means server should only return JSON representation
-GET .../?arg=1&arg=2
-: means if we are getting a form, prefill these values (parsed as if it was a form POST)
+###GET
+* GET <id>/ (without view, edit) This will either do a view or an edit depending on the access rights of the user. A shorthand.
+* GET <id>/?partial or ?partial=True means server should only return partial HTML, ready to be inlined on calling page
+* GET <id>/?json or ?json=True means server should only return JSON representation
+* GET <id>/?arg=1&arg=2 means if we are getting a form, prefill these values (parsed as if it was a form POST)
+* GET <id>/?form=xxx means that we are requesting a specific type of form, as most models can be represented by several.
 
-##POST
-POST .../?partial or ?partial=True
-: means we are posting form an inline form, and redirect destination should also be partial
+###POST
+* POST .../?partial or ?partial=True means we are posting form an inline form, and redirect destination should also be partial
 
-##Error
-If there is an error with a GET or POST, it should return error information using the flash() system. If the request was partial, it should return a partial. Else, it should return to the page it came from or other page defined.
+###Errors
+If there is an error with a GET or POST, it should return error information using the flash() system. If the request was partial, it should return a partial. Else, it should return to the page it came from or other page defined. This only includes errors that are not of HTTP nature, e.g. internal ones.
 
-HANDLER SCHEME
-Each URL pattern points to a handler, e.g. function, that performs business logic, database lookup (e.g. Model interaction) and starts rendering. Althouh each URL pattern has it's own function, not all are doing any specific operations - many redirect to a more generic handler.
+##ROUTE HANDLERs
+Each URL pattern - route - points to a handler, e.g. function, that performs business logic, database lookup (e.g. Model interaction) and starts rendering. Althouh each URL pattern has it's own function, not all are doing any specific operations - many redirect to a more generic handler.
 So, for most Models, the mapping will be like this:
-/<model>s/                          --> <model>_list()
+    /<model>s/                          --> <model>_list()
+    
+    /<model>s/new
+    /<model>s/<id>
+    /<model>s/<id>/delete               --> <model>_edit()
+    
+    /<model>s/<id>/<collection>/add     
+    /<model>s/<id>/<collection>/remove  --> <model>_<collection>_change()
 
-/<model>s/new
-/<model>s/<id>
-/<model>s/<id>/delete               --> <model>_edit()
+The reason is that the logic and the subsequent rendering will have many similarities for an Instance of a Model, as well as the removing or adding to a collection. *Note, this is not fully implemented and may vary!*
 
-/<model>s/<id>/<collection>/add     
-/<model>s/<id>/<collection>/remove  --> <model>_<collection>_change()
+##TEMPLATE SCHEME
+When we render, we have many different scenarios to deal with. We have the following type of template files:
+- Base-files. These are complete with header, footer, sidebar etc but inhering form parent category, ultimately base.html.
+- View-files. A view fills the main content part of a Base file with either a Instance, or a list of Instances. It is the response to e.g. /list, /view, etc. Most views are simply a 1-to-1 with an Instance view, e.g. user/edit for account form. As the template is very similar, the same view is used to show all operations /new, /view and /edit.
+- Instance-files. These are an atomic representation of an instance. Instance can be of different types, where the default is "full". Full will typically show all the non-internal fields of an Instance. "row" will be a minimal representation based to fit into a table, and "inline" will be small view/form intended to be shown in modals or similar. As the instance files are re-usable across views, the views should only refer to instance-files.
 
-The reason is that the logic and the subsequent rendering will have many similarities for an Instance of a Model, as well as the removing or adding to a collection.
+###Example
+Model Article consists of following fields:
+- title (char)
+- world (->model)
+- content (text)
+- type (choice)
+- persontype (<-model) (an associated model)
+- article relations (->*models) (collection of relations)
 
-TEMPLATE SCHEME
-When we render, we have many different scenarios to deal with. In general, a specific page can be served in three different ways:
-- Full page load with all needed parts included as needed.
-DOCUMENT (main HTML, header, footers)
-    SECTION (section content, sidebar, text, etc)
-        HEADER
-        <MODEL VIEW> (one or many dynamic views to interact with, e.g. lists, tables, etc.)
-            <INSTANCEs> (representations of an instance and the actions to take on it)
-        FOOTER
+In /view?form=fill it will render as:
+    Name: {{name}}
+    World: {{world}}
+    Content: {{contet}}
+    Type: {{type}}
+    Subform:Persontype
+    Subform:Relations
 
-- Modal view: the main content, without surrounding markup, that can be inserted into modal or iframe
-HEADER
-<MODEL VIEW>
-FOOTER
+In /edit?form=full, it will render as (simplified):
+    <input name=char/>
+    <select name=world/>
+    <textarea name=content/>
+    <select name=type/>
+    <?subform?/>
+    <multiselect name=relations>
 
-- Partial: An HTML or JSON representation of one or many instances of same Model, to be inserted dynamically on the client. This can for example return only one row relating to a particular model (e.g. if we add a new model instance to the list, this will return only that model HTML)
-<MODEL VIEW> (without e.g. header and footer markup)
-
-We want to avoid duplicating the template code needed. We want to also avoid, where possible, splitting up the content too much. The more generic parts of the page are higher up in the hierarchy, and the more specific (dense) parts are towards the Instance.
-We also want to support, when needed, dynamic rendering of Model Views. That means, that the Model View is rendered on client only based on JSON representation of the Model objects.
-However, some pages will include many different model views. So when we render the response, we cannot render Model View and let it extend all generic hierarchies. We will need to render the Modal view, while extending upwards and including downwards. So:
-
-- base.html
-    - <section>.html // e.g. "Social")
-        {% block something %}{% endblock %} // Variables to set later, e.g. Title, Flash, Script-load
-        - <page>.html // e.g. "Friends")
-            {% if not partial %}{% extends social.html %}
-            {% else %}{{ set some partial parameters }}{% endif %}
-            {% include modelA_view.html %}
-            Custom content
-            {% include modelB_view.html %}
-                - model_B_view.html
-                    {% if partial extend "partial.html" else %}
-                        <model view header>
-                    {% endif %}
-                    {% for instances %}
-                    <instance>
-                    {% endfor %}
-                    {% if not partial %}
-                        <model view actions, footer>
-                    {% endif %}
 
 MODEL VIEW HTML STRUCTURE
 So a Model View is a dynamic view of model instances. It can be a single instance, or a collection of them (e.g. list). 
@@ -166,7 +155,7 @@ Questions
 - How to deal with multiple selects? Both "selected" and "available". Selected is the many-to-many field of an instance. Available is a "collection".
 - How to deal with actions that changes state on themselves?
 
-Writeup
+##Instance-templates
 A page shows views of models. A view is a representation of 1 to n instances of a model, e.g. "User".
 The view is a HTML node in itself. All instances are children (not direct?) of the model view.
 Fields of the model instance is children nodes of the instance.
@@ -198,12 +187,12 @@ same ID, will be updated as well. (consider doing this lazily, e.g. only load th
 A model can also have custom actions. These also correspond to a URL for GET and POST. For example, "send message", "follow", etc. Usually these actions
 relate to what the current user can do with them. Custom actions will need to be defined to be handled on a per model view class basis.
 
-Type of action presentations:
+###Type of action presentations:
 One-click   If the actions needs no prompt nor user input, this button simply executes a POST to action URL and changes presentation accordingly.
 In-place    This all fields of an instance node into input fields in a form. This requires user input.
 Modal       This will launch a modal that essentially contains a form. This is for prompts or edits that cannot be made in place, or when we need to get             the form from the server.
 
-What is common between actions is this:
+###What is common between actions is this:
 - They are a A or BUTTON element with a href
 - When clicked/activated, they will trigger an event
 - The event will be caught by the encompassing model view
@@ -211,11 +200,10 @@ What is common between actions is this:
 - The action will be in the following states. Inactive -> Activated ->(POST)-> Success -> (GET) -> (change presentation) -> Inactive
 - An action can in some cases skip the inactive state, for example if it is a
 
-Server vs client role
+###Server vs client role
 The server will decide which actions are available and what filter or fields are shown. The client can not add or change this. It can only do incremental changes to what was given by the server. This means, no authorization or access control is done on the client. The server will validate the POST of each action and either accept or deny it. It will also have to send back information to the client on what it ended up deciding. That means, it has to respond with the resource resulting from the POST. For example, a new, add or remove can be interpreted differently in the server or cause some other state change in the model that has to be updated.
 
-
-Collection fields
+###Collection fields
 Most fields are single variable, e.g. a textstring or integer. But some are collection fields. This means that the field value is chosen as one or several items from a collection. Typical example is the multiselect component of a form. It can be groups that a user is member of, etc.
 The selected value(s) is the value of the field. In a form, each selected value will be added to the POST data. (TODO - treat the available values as a model view, meaning it can change during use, e.g. add or remove available groups).
 
@@ -223,7 +211,6 @@ When we add or remove in collections as actions. In some cases, we may only want
 
 v selected  (-)
 notselected (+) 
-
 
 USER LIST
 u.username  u.realname  u.location  LIST:Add to         (delete)    (edit)  (msg)
@@ -257,18 +244,3 @@ LIST
 COLLECTION
     (+) add
     (-) remove
-
-Partial HTML:
-+ Minimal logic on client
-- Server needs to know the exact formatting of requesting code, as one model can be represented in many ways
-- Little replication on server if done correctly
-
-JSON, rendered by functions on client
-+ Generic to handle on server (but may still need to "render" JSON differently for different pages)
-- Not really lightweight as we need to serve the functions to render along with each view at some point
-- Some replication as same template should create HTML as well as a function
-
-JSON, full blown model and template on client:
-+ Much less server logic required
-- Takes more time to load from client
-- May still not have the capabilities of manipulating models as on the server side
