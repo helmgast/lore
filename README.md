@@ -44,7 +44,7 @@ We use GET for non-state-changing operations, and POST for state changing operat
 * GET <id>/?form=xxx means that we are requesting a specific type of form, as most models can be represented by several.
 
 ###POST
-* POST .../?partial or ?partial=True means we are posting form an inline form, and redirect destination should also be partial
+* POST .../?partial or ?partial=True means we are posting from an inline form, and redirect destination should also be partial
 
 ###Errors
 If there is an error with a GET or POST, it should return error information using the flash() system. If the request was partial, it should return a partial. Else, it should return to the page it came from or other page defined. This only includes errors that are not of HTTP nature, e.g. internal ones.
@@ -79,6 +79,7 @@ Model Article consists of following fields:
 - article relations (->*models) (collection of relations)
 
 In /view?form=fill it will render as:
+    
     Name: {{name}}
     World: {{world}}
     Content: {{contet}}
@@ -87,6 +88,7 @@ In /view?form=fill it will render as:
     Subform:Relations
 
 In /edit?form=full, it will render as (simplified):
+    
     <input name=char/>
     <select name=world/>
     <textarea name=content/>
@@ -94,9 +96,9 @@ In /edit?form=full, it will render as (simplified):
     <?subform?/>
     <multiselect name=relations>
 
-
-MODEL VIEW HTML STRUCTURE
+###MODEL VIEW HTML STRUCTURE
 So a Model View is a dynamic view of model instances. It can be a single instance, or a collection of them (e.g. list). 
+'''
 .m_view
     .m_instance // descendant of m_view, shows an instance of the model (e.g. a row in a table)
         .m_field/ descendant of m_instance, holds a particular field of the instance. Can also be a collection.
@@ -114,7 +116,6 @@ So a Model View is a dynamic view of model instances. It can be a single instanc
         .m_selector // a selector is different from a view, in that when we add and remove items, we simply select or deselect
                     // which means to leave the item in place but change it's rendering
     .m_action // descendant of m_view, button or a that invokes an action on the whole view, normally "add" or custom actions
-
 
 <div .m_list>
     <div .m_instance #id>
@@ -149,7 +150,7 @@ So a Model View is a dynamic view of model instances. It can be a single instanc
     </div>
     <div .m_action></div>
 </div>
-
+'''
 Questions
 - How to edit in place? How to edit when only parts of the fields are visible?
 - How to deal with multiple selects? Both "selected" and "available". Selected is the many-to-many field of an instance. Available is a "collection".
