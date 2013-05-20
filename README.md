@@ -52,6 +52,7 @@ If there is an error with a GET or POST, it should return error information usin
 ##ROUTE HANDLERs
 Each URL pattern - route - points to a handler, e.g. function, that performs business logic, database lookup (e.g. Model interaction) and starts rendering. Althouh each URL pattern has it's own function, not all are doing any specific operations - many redirect to a more generic handler.
 So, for most Models, the mapping will be like this:
+    
     /<model>s/                          --> <model>_list()
     
     /<model>s/new
@@ -117,6 +118,29 @@ To make above work, we need to be able to:
   - Or, be able to keep multiple forms together and post them all at once? (e.g. if we create new objects, we can't save relationships before we save the parent)
 - Other things
   - We can't nest forms, so when we make a subform, we can't include the form tag, but if we load the subform elsewhere, it may need to include a form! How does the server know when form tags should be added or not?
+
+### Flow
+1. User visits Article page, GET article/
+2. If User is allowed to edit, respond as if GET article/edit.
+3. As no ?form was given, assume full form.
+4. If args are given that matches form field names, attempt to pre-fill form contents
+5. Load template article_full.html (or article_view.html if we need additional content outside of the Article itself)
+6. As no ?partial, article_full will inherit form world.html and so on.
+7. article_full will render itself, and it will include articlerelationship_row och person_article as subforms.
+8. ??? how to tell client side to change person_article to e.g. place_article if user makes change?
+9. As the two subforms are part of article_full, we will not need to display any fields to choose "article" - it's implicit.
+9. Full page is served to user
+10. User makes changes to the form. User presses button to add new articlerelationship.
+11. AJAX call GET /article/relationships/new?partial&form=row
+12. As we got the request as a field to article, we know that the form we serve also can have implicitly filled FromArticle as original article.
+13. We will load the articlerelationship_row.html, and as we got request for partial, we will not inherit from base.html but form partial.html
+14. We will respond with a form for a new ArticleRelationship, with FromArticle hidden/prefilled.
+15. Response is added dynamically to the bottom of the list (alphabetical order would be very complicated!)
+16. User can type in the details of the relationship as a normal form. When user is ok with edits, we could automatically POST the form in the background in order to create the relationship. The downside is that if the user changes their mind, we need to remove it again. Also, if we were working on a NEW article, there would be no real Article object to include in the Relationship. However, the client script doesn't know how to turn the form in a row into a static form to show it's completed. Either we leave the filled form as is, or we do a new roundtrip to server where we POST, attach magic id dummy to FromArticle, get redirected to a non-editable HTML snippet that we can insert back into the same place. However, we need to have jQuery remember that this change hasn't yet been commited!
+17. Finally, user saves the complete Article. We will need to include all subforms, and on server side, we need to be able to break them up into representations of separate objects again.
+
+Old content below
+---------------------------------------
 
 
 ###MODEL VIEW HTML STRUCTURE
