@@ -191,6 +191,18 @@ a .icon-ok {
   background-image: none;
 }
 
+/* makes alerts fill their popover parents if there */
+.popover-alert .alert {
+  margin: -9px -14px;
+  font-size: 14px;
+  padding: 9px;
+}
+/* removes x to close when in poppover */
+.popover-alert .alert .close {
+  display: none;
+}
+
+/*
 .alert-popover {
   padding: 0px;
 }
@@ -198,7 +210,7 @@ a .icon-ok {
 .alert-popover .alert {
   margin-bottom: 0px;
 }
-/*
+
 .alert-success {
   color: #468847;
   background-color: #dff0d8;
@@ -218,7 +230,7 @@ a .icon-ok {
   border-color: #bce8f1;
 }*/
 
-.alert-danger+.arrow, .alert-error+.arrow {
+.alert-error+.arrow+{
   border-right-color: #f2dede !important;
 }
 

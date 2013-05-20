@@ -832,7 +832,7 @@
     this.options = options
     this.$element = $(element)
       .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this))
-    this.options.remote && this.$element.find('.modal-blody').load(this.options.remote)
+    this.options.remote && this.$element.find('.modal-body').load(this.options.remote)
   }
 
   Modal.prototype = {
@@ -1453,16 +1453,8 @@
         , title = this.getTitle()
         , content = this.getContent()
 
-      // // TODO Martin hacked
-      // if (title) {
-      //   $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
-      // } else {
-      //   $tip.find('.popover-title').remove()
-      // }
-      
-      // $tip.find('.popover-inner').replaceWith(content)
-      $tip.find(this.options.title_selector)[this.options.html ? 'html' : 'text'](title)
-      $tip.find(this.options.content_selector)[this.options.html ? 'html' : 'text'](content)
+      $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
+      $tip.find('.popover-content')[this.options.html ? 'html' : 'text'](content)
 
       $tip.removeClass('fade top bottom left right in')
     }

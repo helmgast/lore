@@ -102,8 +102,8 @@ $(document).ready(function() {
         $('#themodal').html(data)
         setTimeout(function() {$('#themodal').modal('hide')},3000)
       } else if ($a.children().length > 0) {
-        $t.popover({trigger: 'manual', content:$a.html(), content_selector: '.popover-inner',
-          template:'<div class="popover alert-popover"><div class="popover-inner"></div><div class="arrow"></div></div>'})
+        $t.popover({trigger: 'manual', html:true, content:$a.html()+'<div class="arrow"></div>',
+          template:'<div class="popover popover-alert"><h3 class="popover-title"></h3><div class="popover-content"></div></div>'})
         $t.popover('show')
         $('body').one('click', function() {$t.popover('destroy')})
       }
