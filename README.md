@@ -96,6 +96,29 @@ In /edit?form=full, it will render as (simplified):
     <?subform?/>
     <multiselect name=relations>
 
+- Full forms can come as a complete HTML form with Submit and Cancel buttons.
+- Inline forms can come as smaller popups (if they are the same size as full form, one may as well call edit/?partial) or as parts of other forms. They can be loaded dynamically into pages or modals. They will not come with their own form and submit buttons, so need to be placed in a container classed .m_instance, so that we can use jQuery to figure out when to post parts of a form.
+- Row forms are assumed to exist within a table, or more generally speaking, a list of instances. The form could still work as normal, which means the user can edit the (exposed) fields of the instance, like an Excel-sheet. The top container of the form representing a unique instance should have the class *.m_instance*. As we cannot rely on normal form logic (it would post the whole page) we must use jQuery to post the contents of this form, and this has to be triggered from a submit event that either comes from the form itself (embedded save button) or that comes from a parent container (e.g. a save button in the top of the table). However, commonly the row form can be accessed as /view, which means it's static. However, it can still be part of operations, or rather the list can have operations: add and remove. Add should fetch a new row and append it as well as creating a relationship model instance, remove should take away the row and delete the corresponding relationship. The adding (visually) and the adding (technically, with POST) may happen at different times.
+- In-place editing. As we use the same template behind for both view and edit, it's fully possible to switch between them and load the contents using ?partial, no matter which form above it is. It's just a matter of changing /view to /edit and vice versa.
+
+###Making it work
+To make above work, we need to be able to:
+- Create at least one instance template per Model, up to 3 (e.g. if doing inline and row forms as well). These are coded once and placed in models/ dir.
+- For the ResourceHandler instantiation to create up to 3 form classes per Model, and to be able to be told which relationships should be considered part of the model forms, and what other fields to hide as well (internal only)
+- For the generic ResourceHandler handle_request on server to be able to detect:
+  - What form type was requested
+  - To be able to customize which fields to show if the arguments are given (e.g. customize the forms on the fly)
+  - Pre-filled args
+  - Hard-coded args (e.g. if a form is in a context where one of it's Model foreign keys is hard coded to the parent Model)
+  - Taking POSTs where we have to create NEW instances first, and relationship instances thereafter
+  - When we create new Instances that has associated Instances (e.g. relationships), we need to be able to do a GET for a new row (e.g. relation) to be added, but the server hasn't been told that such an instance exist yet. So either we have to be able to template it on client side only, or we have to be able to tell the server to do it for us, to create a dummy representation, with certain input.
+- For client side script to be able to
+  - Detect submit type actions on parts of forms and submit them separately
+  - Or, be able to keep multiple forms together and post them all at once? (e.g. if we create new objects, we can't save relationships before we save the parent)
+- Other things
+  - We can't nest forms, so when we make a subform, we can't include the form tag, but if we load the subform elsewhere, it may need to include a form! How does the server know when form tags should be added or not?
+
+
 ###MODEL VIEW HTML STRUCTURE
 So a Model View is a dynamic view of model instances. It can be a single instance, or a collection of them (e.g. list). 
 ```
@@ -209,39 +232,3 @@ Most fields are single variable, e.g. a textstring or integer. But some are coll
 The selected value(s) is the value of the field. In a form, each selected value will be added to the POST data. (TODO - treat the available values as a model view, meaning it can change during use, e.g. add or remove available groups).
 
 When we add or remove in collections as actions. In some cases, we may only want to show the selected items in the list. Sometimes we want to show all available, and simply select or deselect.
-
-v selected  (-)
-notselected (+) 
-
-USER LIST
-u.username  u.realname  u.location  LIST:Add to         (delete)    (edit)  (msg)
-                                    (-) Groupname (status)
-                                    (+) Groupname (status)
-(new)
-
-GROUP DETAIL
-
-MEMBER LIST:g.members[] 
-    (-) gm.member.username  gm.member.realname  gm.status
-    (+)
-g.name
-g.location
-g.description
-
-CONVERSATION LIST
-c.messages[0:20]    c.mod_date  c.members
-(new)
-
-FAMILY_TREE
-a.name  CHILDREN LIST:a.children[]
-        (-) a.name
-        (-) a.name
-        (+)
-
-LIST
-    new
-    delete
-    edit
-COLLECTION
-    (+) add
-    (-) remove
