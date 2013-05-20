@@ -2,6 +2,8 @@
 {% else %}{% extends "includes/partial.html" %}{% endif %}
 
 {% set group = resource.instance %}
+{% set members=group.members() if group else [] %}
+
 {% if resource.op_is_new() %}
   {% set title = "New group" %}
   {% set action_url = url_for('social.group_new', partial=partial) %}
@@ -25,13 +27,12 @@
       <tr><td><strong>Location</strong></td>
       <td><small>{{ resource.field('location') }}</small></td></tr>
       <tr><td><strong>Members</strong></td>
-      <td><span class="badge">0</span></td></tr>
+      <td><span class="badge">{{members.count() if group else 0}}</span></td></tr>
       <tr><td><strong>Meetings</strong></td>
       <td><span class="badge">0</span></td></tr>
     </table>
   </div>
   <div class="span6">
-    {% set members=group.members() if group else [] %}
     {% include "social/group_member_view.html" %}
   </div>
 </div>

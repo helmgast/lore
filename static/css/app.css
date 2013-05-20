@@ -202,6 +202,10 @@ a .icon-ok {
   display: none;
 }
 
+.hero-unit {
+  padding: 30px;
+}
+
 @media (max-width: 767px) {
   .hero-unit h1 {
     font-size: 38.5px;

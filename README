@@ -1,37 +1,54 @@
-MVC PATTERN
-On the server, there are rich Model classes that represent every entity. For many-to-many relationships, a separate Model is created.
+# RACONTEUR
+Raconteur is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends.
 
-Definitions: A Model is defined with Fields. An Instance is a Model with one set of specific data. Some Fields may be a Collection of other Model Instances, or a single reference to another Model Instance. All Model Instances have an Id, but most also have a Slug, which is a humanreadable identified based off the name or title of the Instance.
+# DESIGN
+On the server, there are Model classes that fully represent every entity in the system. The exception is that some Models represent only many-to-many relationships (meaning they are not an entity but a relationship).
 
-A Model can be acted upon. These are:
-Model->LIST: Return all (or filtered) list of Instances in Model.
-Model->NEW: Create a new Instance of the Model.
-Instance->VIEW: View an Instance of the Model.
-Instance->DELETE: Permanently delete an Instance of a Model (relationships to it may need to be dealt with)
-Instance->EDIT: Update fields in an Instance of a Model.
-Instance->Custom: Custom actions on this Instance.
-Instance->Collection->Add: Adds Instances to a Collection in this Instance.
-Instance->Collection->Remove: Adds Instances to a Collection in this Instance.
+Definitions: A Model is defined with Fields of various types. An Instance is a Model with one set of specific data. Some Fields may be a Collection of other Model Instances, or a single reference to another Model Instance. All Model Instances have an Id, but most also have a Slug, which is a humanreadable identified based off the name or title of the Instance.
 
-There are three layers to the application. On a URL level, we use a REST-like (but not correct) URL scheme that is based on the model name. It looks as follows:
+Based on approximate REST philosophy, every Model object in the system can be acted upon. These are supported operations:
 
-URL SCHEME
-/<model>s/                          GET:list all
-/<model>s/new                       GET:form for new        POST:create new instance
-/<model>s/<id>                      GET:view of instance    POST:Update instance (PUT) (DELETE)
-/<model>s/<id>/delete               GET:user prompts        POST:delete instance
-/<model>s/<id>/<custom>             GET:user prompt         POST:do it
-/<model>s/<id>/<collection>/add     GET:user prompt         POST: add Instances identified in args
-/<model>s/<id>/<collection>/remove  GET:user prompt         POST: remove Instances identified in args
+* Model->LIST: Return all (or filtered) list of Instances in Model.
+* Model->NEW: Create a new Instance of the Model.
+* Instance->VIEW: View an Instance of the Model.
+* Instance->DELETE: Permanently delete an Instance of a Model (relationships to it may need to be dealt with)
+* Instance->EDIT: Update fields in an Instance of a Model.
+* Instance->Collection->ADD: Adds Instances to a Collection in this Instance.
+* Instance->Collection->REMOVE: Adds Instances to a Collection in this Instance.
+* Instance->Custom: Custom actions on this Instance.
 
-Formal REST (ignored in this case)
+##URL SCHEME
+    /<model>s/?filterargs               GET:list all
+    /<model>s/new                       GET:form for new        POST:create new instance
+    /<model>s/<id>/(view)               GET:view of instance    POST: None
+    /<model>s/<id>/(view)               GET:form of instance    POST:Update instance
+    /<model>s/<id>/delete               GET:user prompt         POST:delete instance
+    /<model>s/<id>/<collection>/add     GET:user prompt         POST: add Instances identified in args
+    /<model>s/<id>/<collection>/remove  GET:user prompt         POST: remove Instances identified in args
+    /<model>s/<id>/<custom>             GET:user prompt         POST:do it
+
+###Formal REST (for reference, not fully used here case)
 GET    /people               list members
 POST   /people               create member
 GET    /people/1             retrieve member
 PUT    /people/1             update member
 DELETE /people/1             delete member
 
-We use GET for non-state-changing operations, and POST for state changing operations. The GET for a state changing operation normally responds with the form or user prompt that is needed before POSTing the update. The response to a POST is either an error, a redirection to the updated Instance VIEW, or the Instances that were changed in HTML or JSON format (to be inserted by the client in the appropriate place).
+We use GET for non-state-changing operations, and POST for state changing operations. There are some variations and considerations to note:
+##GET
+GET .../?partial or ?partial=True
+: means server should only return partial HTML, ready to be inlined on calling page
+GET .../?json or ?json=True
+: means server should only return JSON representation
+GET .../?arg=1&arg=2
+: means if we are getting a form, prefill these values (parsed as if it was a form POST)
+
+##POST
+POST .../?partial or ?partial=True
+: means we are posting form an inline form, and redirect destination should also be partial
+
+##Error
+If there is an error with a GET or POST, it should return error information using the flash() system. If the request was partial, it should return a partial. Else, it should return to the page it came from or other page defined.
 
 HANDLER SCHEME
 Each URL pattern points to a handler, e.g. function, that performs business logic, database lookup (e.g. Model interaction) and starts rendering. Althouh each URL pattern has it's own function, not all are doing any specific operations - many redirect to a more generic handler.
