@@ -35,6 +35,9 @@
 
 {% block content %}
   {% if article.form %}
+  	{% if article.instance.type == 2 %}
+		  	{% include "world/article_person_detail.html" %}
+		  {% endif %}
     <div class="edit">
       <div style="float: right">{{ article.form.metadata(rows=10) }}</div>
       {{ article.form.content(rows=30) }}<br/>

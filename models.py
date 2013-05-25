@@ -340,6 +340,34 @@ class World(db.Model):
 
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
+ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
+ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
+class MediaArticle(db.Model):
+    mime_type = CharField()
+    url = CharField()
+
+GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
+GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female'))
+class PersonArticle(db.Model):
+    born = IntegerField()
+    died = IntegerField(null=True)
+    gender = IntegerField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
+    # otherNames = CharField()
+    occupation = CharField(null=True)
+
+    def gender_name(self):
+        return GENDER_TYPES[self.type][1].title()
+
+
+class PlaceArticle(db.Model):
+    coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_y = FloatField() # 
+    location_type = CharField() # building, city, domain, point_of_interest
+
+class EventArticle(db.Model):
+    from_date = IntegerField()
+    to_date = IntegerField()
+
 class Article(db.Model):
     type = IntegerField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
     world = ForeignKeyField(World)
@@ -349,10 +377,27 @@ class Article(db.Model):
     # publish_status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
     created_date = DateTimeField(default=datetime.datetime.now)
     # modified_date = DateTimeField()
-    metadata = TextField(null=True) # JSON
     # thumbnail
+    metadata = TextField(null=True) # JSON
+
+    media = ForeignKeyField(MediaArticle, null=True)
+    person = ForeignKeyField(PersonArticle, null=True)
+    place = ForeignKeyField(PlaceArticle, null=True)
+    event = ForeignKeyField(EventArticle, null=True)
+    
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
+
+        if self.type == ARTICLE_MEDIA:
+          self.media = MediaArticle()
+        elif self.type == ARTICLE_PERSON:
+          self.person = PersonArticle(occupation = 'occupation')
+#          self.person.save(*args, **kwargs)
+        elif self.type == ARTICLE_PLACE:
+          self.place = PlaceArticle()
+        elif self.type == ARTICLE_EVENT:
+          self.event = EventArticle()
+        
         return super(Article, self).save(*args, **kwargs)
 
     def is_person(self):
@@ -367,45 +412,10 @@ class Article(db.Model):
     def __unicode__(self):
         return u'%s [%s]' % (self.title, self.world.title)
 
-ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
-ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
 class ArticleUsers(db.Model):
     article = ForeignKeyField(Article)
     user = ForeignKeyField(User)
     type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
-
-class MediaArticle(db.Model):
-    article = ForeignKeyField(Article)
-    mime_type = CharField()
-    url = CharField()
-
-GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
-GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female'))
-class PersonArticle(db.Model):
-    article = ForeignKeyField(Article)
-    born = IntegerField()
-    died = IntegerField(null=True)
-    gender = IntegerField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
-    # otherNames = CharField()
-    occupation = CharField(null=True)
-
-    def gender_name(self):
-        return GENDER_TYPES[self.type][1].title()
-
-
-class FractionArticle(db.Model):
-    article = ForeignKeyField(Article)
-
-class PlaceArticle(db.Model):
-    article = ForeignKeyField(Article)
-    coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
-    coordinate_y = FloatField() # 
-    location_type = CharField() # building, city, domain, point_of_interest
-
-class EventArticle(db.Model):
-    article = ForeignKeyField(Article)
-    from_date = IntegerField()
-    to_date = IntegerField()
 
 class RelationTypes(db.Model):
     name = CharField() # human friendly name
@@ -413,6 +423,7 @@ class RelationTypes(db.Model):
     # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
     # from_type = # type of article from
     # to_type = # type of article to 
+
 
 class ArticleRelations(db.Model):
     from_article = ForeignKeyField(Article)

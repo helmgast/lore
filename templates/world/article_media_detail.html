@@ -1,0 +1,9 @@
+{% if not modal %}{% extends "world/world_detail.html" %}
+{% else %}{% extends "includes/partial.html" %}{% endif %}
+
+{% block content %}
+  {{ super() }}
+  {% if article.form %}
+			<input type="filepicker-dragdrop" data-fp-multiple="true"/>
+  {% endif %}
+{% endblock %}

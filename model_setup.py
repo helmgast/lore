@@ -19,7 +19,6 @@ def setup_models():
         Relationship,
         MediaArticle,
         PersonArticle,
-        FractionArticle,
         EventArticle,
         RelationTypes,
         PlaceArticle,

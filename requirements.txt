@@ -7,3 +7,4 @@ wtforms
 wtf-peewee
 flask_peewee
 Flask-Markdown
+django-filepicker
