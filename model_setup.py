@@ -13,7 +13,7 @@ def setup_models():
         Session,
         Scene,
         Campaign,
-        ConversationMembers,
+        ConversationMember,
         GroupMember,
         Message,
         Relationship,
@@ -21,9 +21,9 @@ def setup_models():
         PersonArticle,
         FractionArticle,
         EventArticle,
-        RelationTypes,
+        RelationType,
         PlaceArticle,
-        ArticleRelations,
+        ArticleRelation,
         Group,
         Conversation,
         User,
@@ -137,14 +137,14 @@ def setup_models():
     c3 = Conversation.create()
     
 
-    ConversationMembers.create(conversation=c1, member=mf)
-    ConversationMembers.create(conversation=c1, member=nf)
+    ConversationMember.create(conversation=c1, member=mf)
+    ConversationMember.create(conversation=c1, member=nf)
     
-    ConversationMembers.create(conversation=c2, member=mf)
-    ConversationMembers.create(conversation=c2, member=mb)
+    ConversationMember.create(conversation=c2, member=mf)
+    ConversationMember.create(conversation=c2, member=mb)
     
-    ConversationMembers.create(conversation=c3, member=nf)
-    ConversationMembers.create(conversation=c3, member=ks)
+    ConversationMember.create(conversation=c3, member=nf)
+    ConversationMember.create(conversation=c3, member=ks)
 
     ng = Group.create(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor')
     ng.save()

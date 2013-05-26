@@ -34,6 +34,7 @@ class RaconteurDB(Database):
 the_app = None
 db = None
 auth = None
+admin = None
 
 if the_app == None:
   from app import is_debug, is_deploy
@@ -74,6 +75,7 @@ if the_app == None:
   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
+  #print the_app.url_map
 
 def setup_models():
   model_setup.setup_models()

@@ -38,16 +38,16 @@ Based on approximate REST philosophy, every Model object in the system can be ac
 We use GET for non-state-changing operations, and POST for state changing operations. There are some variations and considerations to note:
 ###GET
 * GET <id>/ (without view, edit) This will either do a view or an edit depending on the access rights of the user. A shorthand.
-* GET <id>/?partial or ?partial=True means server should only return partial HTML, ready to be inlined on calling page
+* GET <id>/?inline or ?inline=True means server should only return inline HTML, ready to be inlined on calling page
 * GET <id>/?json or ?json=True means server should only return JSON representation
 * GET <id>/?arg=1&arg=2 means if we are getting a form, prefill these values (parsed as if it was a form POST)
 * GET <id>/?form=xxx means that we are requesting a specific type of form, as most models can be represented by several.
 
 ###POST
-* POST .../?partial or ?partial=True means we are posting from an inline form, and redirect destination should also be partial
+* POST .../?inline or ?inline=True means we are posting from an inline form, and redirect destination should also be inline
 
 ###Errors
-If there is an error with a GET or POST, it should return error information using the flash() system. If the request was partial, it should return a partial. Else, it should return to the page it came from or other page defined. This only includes errors that are not of HTTP nature, e.g. internal ones.
+If there is an error with a GET or POST, it should return error information using the flash() system. If the request was inline, it should return a inline form. Else, it should return to the page it came from or other page defined. This only includes errors that are not of HTTP nature, e.g. internal ones.
 
 ##ROUTE HANDLERs
 Each URL pattern - route - points to a handler, e.g. function, that performs business logic, database lookup (e.g. Model interaction) and starts rendering. Althouh each URL pattern has it's own function, not all are doing any specific operations - many redirect to a more generic handler.
@@ -98,9 +98,9 @@ In /edit?form=full, it will render as (simplified):
     <multiselect name=relations>
 
 - Full forms can come as a complete HTML form with Submit and Cancel buttons.
-- Inline forms can come as smaller popups (if they are the same size as full form, one may as well call edit/?partial) or as parts of other forms. They can be loaded dynamically into pages or modals. They will not come with their own form and submit buttons, so need to be placed in a container classed .m_instance, so that we can use jQuery to figure out when to post parts of a form.
+- Inline forms can come as smaller popups (if they are the same size as full form, one may as well call edit/?inline) or as parts of other forms. They can be loaded dynamically into pages or modals. They will not come with their own form and submit buttons, so need to be placed in a container classed .m_instance, so that we can use jQuery to figure out when to post parts of a form.
 - Row forms are assumed to exist within a table, or more generally speaking, a list of instances. The form could still work as normal, which means the user can edit the (exposed) fields of the instance, like an Excel-sheet. The top container of the form representing a unique instance should have the class *.m_instance*. As we cannot rely on normal form logic (it would post the whole page) we must use jQuery to post the contents of this form, and this has to be triggered from a submit event that either comes from the form itself (embedded save button) or that comes from a parent container (e.g. a save button in the top of the table). However, commonly the row form can be accessed as /view, which means it's static. However, it can still be part of operations, or rather the list can have operations: add and remove. Add should fetch a new row and append it as well as creating a relationship model instance, remove should take away the row and delete the corresponding relationship. The adding (visually) and the adding (technically, with POST) may happen at different times.
-- In-place editing. As we use the same template behind for both view and edit, it's fully possible to switch between them and load the contents using ?partial, no matter which form above it is. It's just a matter of changing /view to /edit and vice versa.
+- In-place editing. As we use the same template behind for both view and edit, it's fully possible to switch between them and load the contents using ?inline, no matter which form above it is. It's just a matter of changing /view to /edit and vice versa.
 
 ###Making it work
 To make above work, we need to be able to:
@@ -125,15 +125,15 @@ To make above work, we need to be able to:
 3. As no ?form was given, assume full form.
 4. If args are given that matches form field names, attempt to pre-fill form contents
 5. Load template article_full.html (or article_view.html if we need additional content outside of the Article itself)
-6. As no ?partial, article_full will inherit form world.html and so on.
+6. As no ?inline, article_full will inherit form world.html and so on.
 7. article_full will render itself, and it will include articlerelationship_row och person_article as subforms.
 8. ??? how to tell client side to change person_article to e.g. place_article if user makes change?
 9. As the two subforms are part of article_full, we will not need to display any fields to choose "article" - it's implicit.
 9. Full page is served to user
 10. User makes changes to the form. User presses button to add new articlerelationship.
-11. AJAX call GET /article/relationships/new?partial&form=row
+11. AJAX call GET /article/relationships/new?inline&form=row
 12. As we got the request as a field to article, we know that the form we serve also can have implicitly filled FromArticle as original article.
-13. We will load the articlerelationship_row.html, and as we got request for partial, we will not inherit from base.html but form partial.html
+13. We will load the articlerelationship_row.html, and as we got request for inline, we will not inherit from base.html but form inline.html
 14. We will respond with a form for a new ArticleRelationship, with FromArticle hidden/prefilled.
 15. Response is added dynamically to the bottom of the list (alphabetical order would be very complicated!)
 16. User can type in the details of the relationship as a normal form. When user is ok with edits, we could automatically POST the form in the background in order to create the relationship. The downside is that if the user changes their mind, we need to remove it again. Also, if we were working on a NEW article, there would be no real Article object to include in the Relationship. However, the client script doesn't know how to turn the form in a row into a static form to show it's completed. Either we leave the filled form as is, or we do a new roundtrip to server where we POST, attach magic id dummy to FromArticle, get redirected to a non-editable HTML snippet that we can insert back into the same place. However, we need to have jQuery remember that this change hasn't yet been commited!

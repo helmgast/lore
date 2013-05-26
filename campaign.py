@@ -4,7 +4,7 @@ from flask_peewee.utils import get_object_or_404
 from wtfpeewee.orm import model_form
 from models import Group, GroupMember, Campaign, Session, Scene, GROUP_MASTER
 from datetime import datetime, timedelta, date, time
-from resource import ResourceHandler, ResourceInstance
+from resource import ResourceHandler, ResourceRequest
 from json import loads
 
 campaign = Blueprint('campaign', __name__, template_folder='templates')
@@ -21,7 +21,7 @@ class SessionHandler(ResourceHandler):
             form = self.form_class(obj=self.instance, play_start=play_start, play_end=play_end)
         else:
             form = self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None
-        return ResourceInstance(op, form, instance)
+        return ResourceRequest(op, form, instance)
 
     def allowed(self, op, user, instance=None):
         if user:
@@ -41,7 +41,7 @@ sessionhandler = SessionHandler(
 class CampaignHandler(ResourceHandler):
     def get_resource_instance(self, op, user, instance=None):
         form = self.form_class(obj=instance) if (op==ResourceHandler.EDIT or op==ResourceHandler.NEW) else None
-        ri = ResourceInstance(op, form, instance)
+        ri = ResourceRequest(op, form, instance)
         if op == ResourceHandler.EDIT or op==ResourceHandler.NEW:
             mastered_groups = Group.select().join(GroupMember).where(GroupMember.member == user, GroupMember.status == GROUP_MASTER)
             form.group.query = mastered_groups # set only mastered groups into the form select field

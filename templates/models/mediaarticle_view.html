@@ -1,0 +1,16 @@
+{#- MediaArticle, row form. Expects: action_url, typeform -#}
+{%if template_parent %}{% extends template_parent %}{% endif %}
+
+{% if not articletype %}{% set articletype = mediaarticle %}{% endif %}
+
+{% block content %}{% block inline %}
+<table class="table">
+  <tr>
+    <td><strong>MIME-type</strong></td>
+    <td>{{ articletype.form.mime_type if articletype.form else articletype.mime_type }}</td>
+</tr><tr>
+    <td><strong>URL</strong></td>
+    <td><small>{{ articletype.form.url if articletype.form else articletype.url }}</small></td>
+</tr>
+</table>
+{% endblock %}{% endblock %}

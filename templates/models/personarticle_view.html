@@ -1,0 +1,20 @@
+{#- PersonArticle, row form. Expects: action_url, typeform -#}
+{% if template_parent %}{% extends template_parent %}
+{% else %}{% extends "world/world.html" %}{% endif %}
+
+{% set articletype = personarticle if personarticle %}
+
+{% block content %}{% block inline %}
+<table class="table">
+  <tr>
+    <td><strong>Born</strong></td>
+    <td>{{ articletype.form.born if articletype.form else articletype.born }}</td>
+</tr><tr>
+    <td><strong>Died</strong></td>
+    <td><small>{{ articletype.form.died if articletype.form else articletype.died }}</small></td>
+</tr><tr>
+    <td><strong>Gender</strong></td> 
+    <td><small>{{ articletype.form.gender if articletype.form else articletype.gender }}</small></td>
+</tr>
+</table>
+{% endblock %}{% endblock %}

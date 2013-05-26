@@ -1,5 +1,5 @@
-{% if not partial %}{% extends "social/social.html" %}
-{% else %}{% extends "includes/partial.html" %}{% endif %}
+{% if not inline %}{% extends "social/social.html" %}
+{% else %}{% extends "includes/inline.html" %}{% endif %}
 {% set person = resource.instance if resource.instance %}
 {% block content_title %}{{ person.username }}{% endblock %}
 {% block content_tagline %}{{ person.realname }}{% endblock %}

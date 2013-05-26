@@ -26,7 +26,9 @@ def create_admin(app, auth):
     admin.register(Message, MessageAdmin)
     admin.register(Group)
     admin.register(Article)
+    admin.register(ArticleRelation)
     admin.register(GroupMember)
+    admin.register(World)
     admin.register_panel('User stats', UserStatsPanel)
     admin.setup()
     return admin

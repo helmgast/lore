@@ -57,15 +57,15 @@ def public_timeline():
 @auth.login_required
 def conversations():
     user = auth.get_logged_in_user()
-    conversations = Conversation.select().join(ConversationMembers).where( ConversationMembers.member == user)
+    conversations = Conversation.select().join(ConversationMember).where( ConversationMember.member == user)
     return object_list('social/conversations.html', conversations, 'conversation_list')
 
 @social.route('/conversations/new/', methods=['GET', 'POST'])
 @auth.login_required
 def conversation_new():
     user = auth.get_logged_in_user()
-    # We expect ?partial
-    partial = True if request.args.has_key('partial') else None
+    # We expect ?inline
+    inline = True if request.args.has_key('inline') else None
     
     if request.method == 'GET' and request.args.get('recipients'):
         # We expect a comma separated arg, e.g. ?recipients=user1,user2 or
@@ -82,11 +82,11 @@ def conversation_new():
         if convs: #not empty
             print "Conversation: %s, id %s and date %s" % (convs[0], convs[0].id, convs[0].modified_date)
             # Send us on to the actual conversation to continue!
-            print url_for('.conversation_detail', conv_id=convs[0].id, partial=partial)
-            return redirect(url_for('.conversation_detail', conv_id=convs[0].id, partial=partial))
+            print url_for('.conversation_detail', conv_id=convs[0].id, inline=inline)
+            return redirect(url_for('.conversation_detail', conv_id=convs[0].id, inline=inline))
         else: # No conversation exists, give empty form
             # If true, we will not show recipients chooser, same render setting as when having a conversation
-            return render_template('social/conversation_page.html', recipients=recipients, partial=partial, fixed_recipients=request.args.has_key('fixed_recipients'))
+            return render_template('social/conversation_page.html', recipients=recipients, inline=inline, fixed_recipients=request.args.has_key('fixed_recipients'))
 
     elif request.method == 'POST' and request.form['recipients'] and request.form['content']:
         # We expect one or more values with key recipients, e.g recipients=user1, recipients=user2
@@ -109,7 +109,7 @@ def conversation_new():
             content=request.form['content'],
             conversation=conversation
         )
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id, partial=partial))
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, inline=inline))
     else:
         abort(400) # No recipients, so who would the conversation be with?
         
@@ -117,7 +117,7 @@ def conversation_new():
 @auth.login_required
 def conversation_detail(conv_id):
     user = auth.get_logged_in_user()
-    partial = True if request.args.has_key('partial') else None
+    inline = True if request.args.has_key('inline') else None
 
     conversation = get_object_or_404(Conversation, Conversation.id==conv_id)
     messages = Message.select().where(Message.conversation == conv_id).order_by(Message.pub_date.desc())
@@ -132,8 +132,8 @@ def conversation_detail(conv_id):
         )
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
-        return redirect(url_for('.conversation_detail', conv_id=conversation.id, partial=partial))
-    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, partial=partial)
+        return redirect(url_for('.conversation_detail', conv_id=conversation.id, inline=inline))
+    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, inline=inline)
 
 @social.route('/groups/')
 def groups():
@@ -171,12 +171,12 @@ def group_delete(slug):
         return redirect(url_for('social.groups'))
 
 def edit_group(request, group=None):
-    partial = True if request.args.has_key('partial') else None
+    inline = True if request.args.has_key('inline') else None
     user = auth.get_logged_in_user()
     edit_allowed = user and (not group or user in group.masters()) # user exist and is master or the group is new
     if request.method == 'GET':
         form = GroupForm(obj=group) if edit_allowed else None
-        return render_template('social/group_page.html', group=group, form=form, partial=partial)
+        return render_template('social/group_page.html', group=group, form=form, inline=inline)
     elif request.method == 'POST': 
         if not edit_allowed:
             return error_response('You need to be logged in and master of this group to edit')
@@ -218,15 +218,15 @@ def group_members_change(slug, action):
         if err: # There was an error
             return err
         if request.args.get('view') == 'm_group_member_selector' and len(changes)==1: #this option only works if there is one member changed
-            # Todo, this is a hack. We want to render one person added or removed. The partial template we use normally used in user_list.html
+            # Todo, this is a hack. We want to render one person added or removed. The inline template we use normally used in user_list.html
             # and uses a hash list to quickly render. Here we have to reverse engineer it to achieve the desired outcome...
             mastered_members = dict()
             if action=='add': # if we remove we keep it empty to render it as non-added
                 mastered_members['%s_%s' % (changes[0].member.username, group.id)] =changes[0] 
             print mastered_members
-            return render_template('social/group_member_selector.html', mastered_groups=[group], mastered_members=mastered_members, person=changes[0].member, partial=True)
+            return render_template('social/group_member_selector.html', mastered_groups=[group], mastered_members=mastered_members, person=changes[0].member, inline=True)
         elif request.args.get('view') == 'm_group_member_view':
-            return render_template('social/group_member_view.html', members=changes, group=group, form=True, partial=True)
+            return render_template('social/group_member_view.html', members=changes, group=group, form=True, inline=True)
         else:
             return error_response('Need to specify which type of view this request comes from')
 
@@ -298,7 +298,7 @@ def user_follow(username):
     logged_in.log('now following %s' % user.username)
     user.log('now being followed by %s' % logged_in.username)
     # Note point "." before redirect route, it refers to function in this blueprint (e.g social)
-    return redirect(url_for('.user_detail', username=user.username, partial= True if request.args.has_key('partial') else None))
+    return redirect(url_for('.user_detail', username=user.username, inline= True if request.args.has_key('inline') else None))
 
 @social.route('/users/<username>/unfollow/', methods=['POST'])
 @auth.login_required
@@ -309,4 +309,4 @@ def user_unfollow(username):
     flash('You are no longer following %s' % user.username)
     logged_in.log('now not following %s' % user.username)
     user.log('was unfollowed by %s' % logged_in.username)
-    return redirect(url_for('.user_detail', username=user.username, partial = True if request.args.has_key('partial') else None))
+    return redirect(url_for('.user_detail', username=user.username, inline = True if request.args.has_key('inline') else None))

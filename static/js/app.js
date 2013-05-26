@@ -84,7 +84,7 @@ $(document).ready(function() {
       vars = action_parent.find('input, textarea').serialize()
     }
     $t.button('reset') // reset button
-    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'partial', vars, function(data) { // always add partial to the actual request
+    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function(data) { // always add inline to the actual request
       var $d = $(data), $a = $d.filter('#alerts')
       var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
       switch(action) {
@@ -122,7 +122,7 @@ $(document).ready(function() {
       // preparations
       switch ($t.data('action-type')) {
         case 'modal':
-          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'partial' //attach partial param
+          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
           $('#themodal').data('modal').options.caller = $t
           $('#themodal').load(href).modal('show'); break;
         case 'inplace': break;// replace instance with form
@@ -135,7 +135,7 @@ $(document).ready(function() {
 
   $('#themodal').modal({show:false})
   $('#themodal').on('submit', 'form', function(e) {
-    if (e.target.action.match(/[?&]partial/)) {
+    if (e.target.action.match(/[?&]inline/)) {
       var $t = $(e.delegateTarget).data('modal').options.caller
       post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
       e.preventDefault(); return false;  
@@ -147,5 +147,7 @@ $(document).ready(function() {
   $('body').on('click', '.m_action', handle_action)
 
   $('.date-widget').datepicker({format: 'yyyy-mm-dd'});
+
+  $('form select[data-role="chosen"]').chosen();
 
 });

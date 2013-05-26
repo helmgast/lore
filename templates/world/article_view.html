@@ -1,0 +1,59 @@
+{% if template_parent %}{% extends template_parent %}
+{% else %}{% extends "world/world.html" %}{% endif %}
+
+{% if article.op == 'new' %}
+  {% set tagline = world.title %}
+  {% set title = 'New article!' %}
+{% else %}
+  {% set tagline = article.model_obj.type_name() + " [" + world.title + "]" %}
+  {% set title = article.model_obj.title %}
+{% endif %}
+
+{% block content_title %}{{ title }}{% endblock %}
+ 
+{% block content_tagline %}{{ tagline }}{% endblock %}
+
+{% block sidebar %}
+  {{ super() }}
+  <h4>Alternatives</h4>
+    <ul class="nav nav-list">
+      {% if article.model_obj %}
+        <li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.model_obj.slug) }}">Edit</a></li>
+        <li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.model_obj.slug) }}" class="m_action" data-action-type="modal">Delete</a></li>
+      {% endif %}
+    </ul>
+{% endblock %}
+
+{% block content %}{% block inline %}
+{% if article.form %}
+  <form method="post" action="{{ action_url }}">
+  <div style="float: left">{{ article.form.title }}{{ article.form.type(class="m_action2") }}{{ article.form.world }}</div>
+  {% if article.model_obj.type > 0 %}
+    {% set articletype = article.make_request('edit', article.model_obj.type_name()+'article', article.model_obj.get_type()) %}
+    <div style="float: left">{% include "models/"+article.model_obj.type_name()+"article_view.html" %}</div>
+    {% endif %}
+  <div class="edit">
+    {{ article.form.content(rows=30, value="text") }}<br/>
+  </div>
+  <div class="row form-actions">
+    <button type="submit" class="btn btn-primary">Save changes</button>
+    <a href="{{ url_for('world.index') }}" class="btn">Cancel</a>
+  </div>
+  </form>
+{% else %}
+  <div class="article">
+  {{ article.model_obj.content|wikify|markdown }}
+  </div>
+{% endif %}
+{% endblock %}{% endblock %}
+
+{% block row %}
+
+{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+  $('.m_action2').on('change', function(e) { console.log('test'); })
+</script>
+{% endblock %}
