@@ -17,10 +17,11 @@ template_parent %}{% extends template_parent %} {% elif template_parent
 		<td>{{ article_form.mediaarticle.mime_type }}</td>
 	</tr>
 </table>
+{% if article and article.is_media() %}
 <p>
 	<img src="{{article.mediaarticle.url}}" />
 </p>
-{% endblock %}{% endblock %}
+{% endif %}{% endblock %}{% endblock %}
 
 <script type="text/javascript">
 	var $parent = $(".imageContainer");

@@ -453,6 +453,9 @@ class Article(db.Model):
     def is_person(self):
         return ARTICLE_PERSON == self.type
 
+    def is_media(self):
+        return ARTICLE_MEDIA == self.type
+
     def type_name(self):
         return ARTICLE_TYPES[self.type][1]
 
