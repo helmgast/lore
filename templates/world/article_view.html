@@ -51,6 +51,9 @@
   </form>
 {% else %}
   <div class="article">
+	{% if article.mediaarticle %}
+		<img src="{{article.mediaarticle.url}}"/>
+	{% endif %}
   {{ article.content|wikify|markdown }}
   </div>
 {% endif %}
