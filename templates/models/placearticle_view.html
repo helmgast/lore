@@ -1,20 +1,18 @@
 {#- PlaceArticle, row form. Expects: action_url, typeform -#}
 {% if template_parent %}{% extends template_parent %}
-{% else %}{% extends "world/world.html" %}{% endif %}
-
-{% set articletype = placearticle if placearticle %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
 
 {% block content %}{% block inline %}
 <table class="table">
   <tr>
     <td><strong>Coordinate X</strong></td>
-    <td>{{ articletype.form.coordinate_x if articletype.form else articletype.coordinate_x }}</td>
+    <td>{{ article_form.placearticle.coordinate_x }}</td>
 </tr><tr>
     <td><strong>Coordinate Y</strong></td>
-    <td><small>{{ articletype.form.coordinate_y if articletype.form else articletype.coordinate_y }}</small></td>
+    <td><small>{{ article_form.placearticle.coordinate_y }}</small></td>
 </tr><tr>
     <td><strong>Location Type</strong></td> 
-    <td><small>{{ articletype.form.location_type if articletype.form else articletype.location_type }}</small></td>
+    <td><small>{{ article_form.placearticle.location_type }}</small></td>
 </tr>
 </table>
 {% endblock %}{% endblock %}

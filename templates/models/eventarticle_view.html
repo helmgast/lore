@@ -1,17 +1,15 @@
 {#- EventArticle, row form. Expects: action_url, typeform -#}
 {% if template_parent %}{% extends template_parent %}
-{% else %}{% extends "world/world.html" %}{% endif %}
-
-{% set articletype = eventarticle if eventarticle %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
 
 {% block content %}{% block inline %}
 <table class="table">
   <tr>
     <td><strong>From</strong></td>
-    <td>{{ articletype.form.from_date if articletype.form else articletype.from_date }}</td>
+    <td>{{ article_form.eventarticle.from_date }}</td>
 </tr><tr>
     <td><strong>To</strong></td>
-    <td><small>{{ articletype.form.to_date if articletype.form else articletype.to_date }}</small></td>
+    <td><small>{{ article_form.eventarticle.to_date }}</small></td>
 </tr>
 </table>
 {% endblock %}{% endblock %}

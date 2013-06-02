@@ -358,8 +358,8 @@ class FractionArticle(db.Model):
     fraction_name = CharField()
 
 class PlaceArticle(db.Model):
-    coordinate_x = FloatField() # normalized position system, e.g. form 0 to 1 float, x and y
-    coordinate_y = FloatField() # 
+    coordinate_x = FloatField(null=True) # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_y = FloatField(null=True) # 
     location_type = CharField() # building, city, domain, point_of_interest
 
 class EventArticle(db.Model):
@@ -386,24 +386,69 @@ class Article(db.Model):
     metadata = TextField(null=True) # JSON
     # thumbnail
     
+    def set_type(self, new_type):
+        # Need to make sure there is an model_obj created for the new type
+        # and that the old type obj is removed
+        # We may have cases where there is no old obj.
+        if new_type==ARTICLE_MEDIA and not self.mediaarticle:
+            self.mediaarticle = MediaArticle()
+            self.mediaarticle.save()
+        elif new_type==ARTICLE_PERSON and not self.personarticle:
+            self.personarticle = PersonArticle()
+            self.personarticle.save()
+        elif new_type==ARTICLE_FRACTION and not self.fractionarticle:
+            self.fractionarticle = FractionArticle()
+            self.fractionarticle.save()
+        elif new_type==ARTICLE_PLACE and not self.placearticle:
+            self.placearticle = PlaceArticle()
+            self.placearticle.save()
+        elif new_type==ARTICLE_EVENT and not self.eventarticle:
+            self.eventarticle = EventArticle()
+            self.eventarticle.save()
+        print u"Changed type of %s from %s to %s" % (self, self.type_name(), ARTICLE_TYPES[new_type][1], )
+        type_obj = self.get_type()
+        if type_obj:
+            type_obj.delete_instance()
+        else:
+            print "Warning, should not have None for previous type %s" % self.type_name()
+        self.type = new_type
+        self.save()
+
+    def print_types(self):
+        s = "Type id: %d %s\n" % (self.type, self.type_name())
+        if self.mediaarticle:
+            s+= 'media id: %s, mime: %s\n' % (self.mediaarticle.id, self.mediaarticle.mime_type)
+        else:
+            s+=' no media article\n'
+        if self.personarticle:
+            s+= 'person id: %s, born %s\n' % (self.personarticle.id, self.personarticle.born)
+        else:
+            s+=' no person article\n'
+        return s
+
     def get_type(self):
-        print "Article is %s, %s" % (type, self.type_name())
-        if type==ARTICLE_MEDIA:
-            return mediaarticle
-        elif type==ARTICLE_PERSON:
-            return personarticle
-        elif type==ARTICLE_FRACTION:
-            return fractionarticle
-        elif type==ARTICLE_PLACE:
-            return placearticle
-        elif type==ARTICLE_EVENT:
-            return eventarticle
+        if self.type==ARTICLE_MEDIA:
+            return self.mediaarticle
+        elif self.type==ARTICLE_PERSON:
+            return self.personarticle
+        elif self.type==ARTICLE_FRACTION:
+            return self.fractionarticle
+        elif self.type==ARTICLE_PLACE:
+            return self.placearticle
+        elif self.type==ARTICLE_EVENT:
+            return self.eventarticle
         else:
             return None
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
         return super(Article, self).save(*args, **kwargs)
+
+    def delete_instance(self, recursive=False, delete_nullable=False):
+        # We need to delete the article_type first, because it has no reference back to this
+        # object, and would therefore not be caught by recursive delete on the row below
+        self.get_type().delete_instance(recursive=True)
+        return super(Article, self).delete_instance(recursive, delete_nullable)
 
     def is_person(self):
         return ARTICLE_PERSON == self.type
@@ -430,12 +475,23 @@ class RelationType(db.Model):
     # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
     # from_type = # type of article from
     # to_type = # type of article to 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
+    def __unicode__(self):
+        return u'%s' % self.name
 
 class ArticleRelation(db.Model):
     from_article = ForeignKeyField(Article, related_name='outgoing_relations')
     to_article = ForeignKeyField(Article, related_name='incoming_relations')
-    relation_type = ForeignKeyField(RelationType, 'relations')
+    relation_type = ForeignKeyField(RelationType, related_name='relations')
     # twosided = False, True
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
+    def __unicode__(self):
+        return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
 # class ArticleRights(db.Model):
     # user = ForeignKeyField(User)
@@ -445,33 +501,6 @@ class ArticleRelation(db.Model):
 # class UserRights(db.Model):
     # right = # owner, editor, reader
 
-
-# relation examples
-#class Article(db.Model):
-#    title = CharField()
-#    slug = CharField() # URL-friendly name
-#    content = TextField()
-#    status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
-#    #category = IntegerField(choices=((1, 'world'), (2, 'person'), (3, 'rule')))
-#    created_date = DateTimeField(default=datetime.datetime.now)
-#    modified_date = DateTimeField()
-#    style = CharField(null=True) # URI to stylesheet to activate when displaying
-#    image = CharField(null=True) # URI to an image-ID that shows up as icon, thumbnail, etc
-#    
-#    # For self-referring keys, we need this line as the object self is not created
-#    # when creating this. See http://peewee.readthedocs.org/en/latest/peewee/fields.html#self-referential-foreign-keys
-#    parent = ForeignKeyField('self', related_name='children', null=True)
-#
-#    class Meta:
-#        order_by = ('modified_date',)
-#
-#    def __unicode__(self):
-#        return self.title
-#
-#    def save(self, ):
-#        self.slug = slugify(self.title)
-#        self.modified_date = datetime.datetime.now()
-#        return super(Article, self).save()
 #        
 #class Metadata(db.Model): # Metadata to any article
 #    article = ForeignKeyField(Article)

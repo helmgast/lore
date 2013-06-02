@@ -1,0 +1,10 @@
+{#- ArticleRelation, row form. Expects: -#}
+{% if template_parent %}{% extends template_parent %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
+
+{% block content %}{% block inline %}
+{{ articlerelation_form.from_article if articlerelation_form else articlerelation.from_article }}
+{{ articlerelation_form.relation_type if articlerelation_form else articlerelation.relation_type }}
+{{ articlerelation_form.to_article if articlerelation_form else articlerelation.to_article }}
+
+{% endblock %}{% endblock %}

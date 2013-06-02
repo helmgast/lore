@@ -4,6 +4,8 @@ from wtfpeewee.orm import model_form
 from flask.views import View
 from flask_peewee.utils import get_object_or_404, object_list, slugify
 from raconteur import the_app
+from wtforms.compat import iteritems
+from wtforms.fields import FormField
 
 def generate_flash(action, name, model_identifiers, dest=''):
     s = '%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), ' to %s' % dest if dest else '')
@@ -152,146 +154,25 @@ class ResourceHandler:
 # article_form, articletype_form, relation_form
 # action_url['article'], action_url['articletype']
 
-# Redirect URL pattern
-# [GET, POST] article/new -> article/<news>/view (url_for(.article, article_slug=news))
-# [GET] article/list
-# [GET,POST] article/<s>/edit -> article/<s>/view
-# [GET] article/<s>/view
-# [GET, POST] article/<s>/delete -> article/
-
 class ModelRequest(View):
     methods = ['GET']
     def __init__(self, server, op):
         self.server = server
         self.op = op
-        self.model_obj = None # make sure it exists in object
-        self.form = None # make sure it exists in object
 
-    ## Gives us shortcut from template to access model_obj fields
-    def __getattr__(self, name):
-        if self.model_obj and hasattr(self.model_obj, name):
-            return getattr(self.model_obj, name)
+    def dispatch_request(self, **view_args):
+        if self.op in self.server.ops_by_identifier: # for view, edit, delete
+            model_obj = self.server.get_obj(view_args[self.server.identifier])
         else:
-            raise AttributeError("No %s attribute in model_obj" % name)
-
-    def get_obj(self, identifier):
-        if self.server.identifier == 'slug':
-            return get_object_or_404(self.server.model_class, self.server.model_class.slug == identifier)
-        else:
-            return get_object_or_404(self.server.model_class, self.server.model_class.id == identifier)
-
-    def get_url(self, op, verbose, **identifiers):
-        # Return an url for this Model class, given op, a model_obj (or identifier) and any parents.
-        # If no parents given, assume direct.
-        # should assume added operations
-        if self.identifiers:
-            identifiers.update(self.identifiers)
-        if self.server.model_name not in identifiers:
-            identifiers[self.server.model_identifier] = self.model_obj.identifier # if no identifier was given we can attempt to add it
-
-        # Make endpoint according to server rules. Assume instance if we get current model_identifier in identifiers
-        return url_for('.%s_%s' % (op, self.server.model_name), **identifiers)
-
-    def allowed(self, op, user, model_obj=None): # to be overriden
-        if op in ['list','view']:
-            return True
-        else:
-            print "According to default ModelServer, all state changing operations disallowed! Override method to change!"
-            return True ## TODO false
-
-    def make_request(self, op, model_name, model_obj=None, form_args={}):
-        server = ModelServer.servers[model_name]
-        if op not in server.ops_by_identifier:
-            raise ValueError("Op %s is not defined in this servers available options by identifier" % op)
-        if not model_obj:
-            op = 'new' # if no value was given, we must be creating a new
-        mr = server.model_request_class(server, op)
-        mr.model_obj = model_obj
-        if not mr.allowed(op, auth.get_logged_in_user(), model_obj):
-            return None
-        mr.prepare_form(form_args)
-        return mr
-
-    def prepare_form(self, form_args={}):
-        if self.op=='edit' or self.op=='new':
-            self.form = self.server.form_class(obj=self.model_obj)
-
-    def dispatch_request(self, **identifiers):
-        self.identifiers = identifiers
-        if not self.op:
-            if identifiers[self.server.model_identifier]: # no op, but we have identifier -> 'view'
-                self.op = 'view'
-            else:
-                self.op = 'list'
-        if self.op not in self.server.ops_by_identifier and self.op not in self.server.ops_by_model:
-            error_response("Operation %s not valid!" % self.op) # TODO make it into proper 404?
-        
-        ## Convert identifiers into model_objs
-        if self.op in self.server.ops_by_identifier:
-            # complete construction of this modelrequest (model_obj, form, etc)
-            self.model_obj = self.get_obj(identifiers[self.server.model_identifier])
-
-        ## Is user allowed?
-        user = auth.get_logged_in_user()
-        allowed = self.allowed(self.op, user, self.model_obj)
-        if not allowed:
-            return error_response("You are not allowed to %s %s" % (self.op, self.model_obj if self.model_obj else self.server.model_class))
-
+            model_obj = None
+        render_args = {}
+        for p in self.server.parents:
+            # Fetch model objects for all parents as well
+            render_args[p.model_name] = p.get_obj(view_args[p.model_identifier])
         if request.method == 'GET':
-            
-            ## Prepare forms and render view or form
-            self.prepare_form()
-
-            ## Prepare render_args
-            render_args = {self.server.model_name:self} # add this request
-            if request.args.has_key('inline'):
-                render_args['inline'] = True
-                render_args['template_parent'] = 'includes/inline.html'
-            elif request.args.has_key('row'):
-                render_args['row'] = True
-                render_args['template_parent'] = 'includes/row.html'
-
-            # Include adding parents to modelrequests
-            for k in identifiers.keys(): # remaining identifiers will be parent identifiers
-                if k != self.server.model_identifier and k in ModelServer.servers:
-                    print "Making new ModelRequest for %s" % k
-                    # TODO this is a hack, we prob only need model_obj, but can only create by first making dummy model_request
-                    mr = ModelServer.servers[k].model_request_class(ModelServer.servers[k], 'view')
-                    mr.model_obj = mr.get_obj(identifiers[k]) 
-                    render_args[ModelServer.servers[k].model_name] = mr
-
-            if self.op=='delete':
-                return render_template('includes/confirm.html', url=request.base_url, #TODO, this will skip partial args, always intended? 
-                    action=self.server.op_messages[self.op], model_objs={'model_obj':[self.model_obj]}, **render_args)
-            else:
-                #print encode(self.form.world, 'utf-8')
-                return render_template(self.server.templates[self.op], **render_args)
-
+            return self.server.render(self.op, model_obj, **render_args)
         elif request.method == 'POST':
-
-            ## Handle incoming data and commit to model
-            if self.op=='edit' or self.op=='new':
-                # Create form object based on request and existing model_obj
-                self.form = self.server.form_class(request.form, obj=self.model_obj)
-                print "In NEW resource %s %s %s" % (request.form, self.model_obj, self.server.form_class)
-                if self.form.validate():
-                    if self.op=='new': # create an model_obj as we won't have one yet
-                        self.model_obj = self.server.model_class()
-                    self.form.populate_obj(self.model_obj)
-                    self.model_obj.save()
-                    print "Now identifiers are %s" % identifiers
-                    identifiers[self.server.model_identifier]=getattr(self.model_obj,identifier) # for redirect URL, we will send to new identifier (if changed or new obj)
-                    flash("%s was successfully %s" % (self.model_obj, self.server.op_messages[self.op]), 'success')
-                    user.log("%s %s" % (self.server.op_messages[self.op], self.model_obj))
-                    return redirect(self.get_url('view',identifiers))
-                else:
-                    return error_response("Input data %s to %s %s did not validate" % (request.form, self.op, self.server.model_class))
-            elif self.op=='delete':
-                s = "%s" % self.model_obj
-                self.model_obj.delete_model_obj()
-                flash("%s was successfully deleted" % s, 'success')
-                user.log("deleted %s" % s)
-                return redirect(self.get_url('list',identifiers))
+            return self.server.commit(self.op, model_obj, **render_args)
 
 class ModelServer:
     servers = {} # class global variable to remember all servers created
@@ -301,7 +182,7 @@ class ModelServer:
     def get_model_name(model_class):
         return model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
 
-    def __init__(self, app, model_class, templates={}, parent=None, form_class=None, model_request_class=None): # should allow override formclass, template, route
+    def __init__(self, app, model_class, parent=None, form_class=None, templatepath=None, model_request_class=None): # should allow override formclass, template, route
         self.app = app
         self.endpoints = {}
         self.model_class = model_class
@@ -317,25 +198,116 @@ class ModelServer:
         else:
             self.form_class = form_class
         self.parent = parent
+        self.parents = parent.parents + [parent] if parent else []
+        if not templatepath:
+            self.templatepath = parent.templatepath if parent else 'models/'
+        else:
+            self.templatepath = templatepath
         self.templates = {
-            'list': 'models/%s_list.html' % self.model_name,
-            'new': 'models/%s_view.html' % self.model_name,
-            'view': 'models/%s_view.html' % self.model_name,
-            'edit': 'models/%s_view.html' % self.model_name,
+            'list': '%s%s_list.html' % (self.templatepath, self.model_name),
+            'new': '%s%s_view.html' % (self.templatepath, self.model_name),
+            'view': '%s%s_view.html' % (self.templatepath,self.model_name),
+            'edit': '%s%s_view.html' % (self.templatepath, self.model_name),
             'delete': 'includes/confirm.html',
+            'base': '%sbase.html' % self.templatepath
         }
         self.ops_by_model = ['list','new']
         self.ops_by_identifier = ['view','edit','delete']
-        self.templates.update(templates) # overwrite with any given parameters
 
+        ModelServer.servers[self.model_name] = self
+        ModelServer.servers[self.model_identifier] = self # also findable by identifier
+
+    def allowed(self, op, user, model_obj=None): # to be overriden
+        if op in ['list','view']:
+            return True
+        else:
+            print "According to default ModelServer, all state changing operations disallowed! Override method to change!"
+            return True ## TODO false
+
+    def get_obj(self, identifier):
+        if self.identifier == 'slug':
+            return get_object_or_404(self.model_class, self.model_class.slug == identifier)
+        else:
+            return get_object_or_404(self.model_class, self.model_class.id == identifier)
+
+    def get_form(self, op, model_obj=None, req_form=None, **kwargs):
+        if op=='edit' or op=='new':
+            return self.form_class(req_form, obj=model_obj, **kwargs)
+        else:
+            return None 
+
+# Redirect URL pattern
+# [GET, POST] article/new -> article/<new_slug>/view -> view_article, world_slug=..., article_slug=...
+# [GET] article/list (NO POST)
+# [GET,POST] article/<s>/edit -> article/<s>/view
+# [GET] article/<s>/view (NO POST)
+# [GET, POST] article/<s>/delete -> article/
+
+    def get_url(self, op, redir_args=None):
+        args = request.view_args
+        if redir_args:
+            args.update(redir_args)
+        endpoint = '.%s_%s' % (op, self.model_name)
+        print endpoint
+        return url_for(endpoint, **args)
+
+    def render(self, op, model_obj, form=None, **render_args):
+        render_args['op'] = op
+        if not form:
+             # let's assume that the render args, e.g. view args, can be useful to pre-fill the form!
+             # Below statement will pick the render args that match the parent model names, e.g. world, article
+            form_args = { key: render_args[key] for key in [p.model_name for p in self.parents]}
+            form = self.get_form(op, model_obj, **form_args)
+
+        render_args[self.model_name+'_form'] = form
+        
+        render_args[self.model_name] = model_obj
+        if request.args.has_key('inline'):
+            render_args['inline'] = True
+            render_args['template_parent'] = 'includes/inline.html'
+        elif request.args.has_key('row'):
+            render_args['row'] = True
+            render_args['template_parent'] = 'includes/row.html'
+
+        if op=='delete':
+            return render_template('includes/confirm.html', url=request.base_url, #TODO, this will skip inline args, always intended? 
+                action=op, model_objs={'model_obj':[model_obj]}, **render_args)
+        else:
+            return render_template(self.templates[op], **render_args)
+
+    def commit(self, op, model_obj, form=None, **model_objs):
+        user = auth.get_logged_in_user()
+        if op=='edit' or op=='new':
+            # Create form object based on request and existing model_obj
+            form = form if form else self.get_form(op, model_obj, request.form)
+            #print "In NEW resource %s %s %s" % (request.form, model_obj, self.form_class)
+            if form.validate():
+                if op=='new': # create an model_obj as we won't have one yet
+                    model_obj = self.model_class()
+                form.populate_obj(model_obj)
+                model_obj.save()
+                # print "After commit", model_obj.print_types()
+                flash("%s was successfully %s" % (model_obj, self.op_messages[op]), 'success')
+                user.log("%s %s" % (self.op_messages[op], model_obj))
+                # as slug/id may have been changed or just created, we need to add it to redirect args.
+                # model_identifier refers to either ...slug or ...id
+                redir_args = {self.model_identifier:getattr(model_obj, self.identifier)}
+                return redirect(self.get_url('view', redir_args))
+            else:
+                return error_response("Input data %s to %s %s did not validate because of %s" % (request.form, op, self.model_class, form.errors))
+        elif op=='delete':
+            s = "%s" % model_obj
+            model_obj.delete_instance()
+            flash("%s was successfully deleted" % s, 'success')
+            user.log("deleted %s" % s)
+            return redirect(self.get_url('list'))
+
+    def autoregister_urls(self):
         self.add_op('list', self.model_request_class, verbose=True, on_instance=False)
         self.add_op('new', self.model_request_class, verbose=True, on_instance=False, methods=['GET','POST'])
         self.add_op('view', self.model_request_class, verbose=True, on_instance=True)
         self.add_op('edit', self.model_request_class, verbose=True, on_instance=True, methods=['GET','POST'])
         self.add_op('delete', self.model_request_class, verbose=True, on_instance=True, methods=['GET','POST'])
-
-        ModelServer.servers[self.model_name] = self
-        ModelServer.servers[self.model_identifier] = self # also findable by identifier
 
     def add_op(self, op, mr_class, verbose=True, on_instance=True, methods=['GET']):
         # direct -> models/model/ + op and models/model/ + <slug>/ + op (model_direct, model_direct_on_instance)

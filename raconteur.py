@@ -66,7 +66,7 @@ if the_app == None:
   admin = create_admin(the_app, auth)
   api = create_api(the_app, auth)
 
-  from world import world
+  from world import world_app as world
   from social import social
   from generator import generator
   from campaign import campaign
