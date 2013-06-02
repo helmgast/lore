@@ -9,21 +9,26 @@ template_parent %}{% extends template_parent %} {% elif template_parent
 			data-fp-apikey="AJ0nNHF0uT7yP7zkI0d3Kz" /></td>
 	</tr>
 	<tr>
-		<td><strong>MIME-type</strong></td>
-		<td>{{ article_form.mediaarticle.mime_type }}</td>
-	</tr>
-	<tr>
 		<td><strong>URL</strong></td>
 		<td><small>{{ article_form.mediaarticle.url }}</small></td>
 	</tr>
+	<tr>
+		<td><strong>MIME-type</strong></td>
+		<td>{{ article_form.mediaarticle.mime_type }}</td>
+	</tr>
 </table>
+<p>
+	<img src="{{article.mediaarticle.url}}" />
+</p>
 {% endblock %}{% endblock %}
 
 <script type="text/javascript">
 	var $parent = $(".imageContainer");
-	$parent.find("input[type='filepicker-dragdrop']").change(function(e) {
-		var file = e.originalEvent.fpfile;
-		$parent.find("input[name='mediaarticle-mime_type']").val(file.mimetype);
-		$parent.find("input[name='mediaarticle-url']").val(file.url);
-	});
+	$parent.find("input[type='filepicker-dragdrop']").change(
+			function(e) {
+				var file = e.originalEvent.fpfile;
+				$parent.find("input[name='mediaarticle-mime_type']").val(
+						file.mimetype);
+				$parent.find("input[name='mediaarticle-url']").val(file.url);
+			});
 </script>
