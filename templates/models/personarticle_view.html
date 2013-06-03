@@ -2,19 +2,9 @@
 {% if template_parent %}{% extends template_parent %}
 {% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
 
-{% set type_form = article_form.personarticle if article_form else type_form %}
+{% from 'includes/components.html' import form_fields %}
 
+{% set personarticle_form = article_form.personarticle if article_form else fraction_form %}
 {% block content %}{% block inline %}
-<table class="table">
-  <tr>
-    <td><strong>Born</strong></td>
-    <td>{{ article_form.personarticle.born }}</td>
-</tr><tr>
-    <td><strong>Died</strong></td>
-    <td><small>{{ article_form.personarticle.died }}</small></td>
-</tr><tr>
-    <td><strong>Gender</strong></td> 
-    <td><small>{{ article_form.personarticle.gender }}</small></td>
-</tr>
-</table>
+{{ form_fields(personarticle_form) }}
 {% endblock %}{% endblock %}

@@ -1,8 +1,11 @@
+{% set flashes = get_flashed_messages(with_categories=true) %}
+{% if flashes %}
 <div id="alerts">
-{% for category, message in get_flashed_messages(with_categories=true) %}
+{% for category, message in flashes %}
 <div class="alert alert-block alert-{{ category }}">
     <a class="close" data-dismiss="alert" href="#">×</a>
     <p>{{ message }}</p>
 </div>
 {% endfor %}
 </div>
+{% endif %}

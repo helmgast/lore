@@ -2,14 +2,10 @@
 {% if template_parent %}{% extends template_parent %}
 {% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
 
+{% from 'includes/components.html' import form_fields %}
+
+{% set eventarticle_form = article_form.eventarticle if article_form else eventarticle_form %}
+
 {% block content %}{% block inline %}
-<table class="table">
-  <tr>
-    <td><strong>From</strong></td>
-    <td>{{ article_form.eventarticle.from_date }}</td>
-</tr><tr>
-    <td><strong>To</strong></td>
-    <td><small>{{ article_form.eventarticle.to_date }}</small></td>
-</tr>
-</table>
+{{ form_fields(eventarticle_form) }}
 {% endblock %}{% endblock %}

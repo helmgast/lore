@@ -1,27 +1,33 @@
-{% if template_parent %}{% extends template_parent %} {% else %}{%
-extends "world/world_view.html" %}{% endif %} {% if op == 'new' %} {%
-set tagline = world.title %} {% set title = 'New article!' %} {% else %}
-{% set tagline = article.type_name() + " [" + world.title + "]" %} {%
-set title = article.title %} {% endif %} {% block content_title %}{{
-title }}{% endblock %} {% block content_tagline %}{{ tagline }}{%
-endblock %} {% block sidebar %} {{ super() }}
+{% if template_parent %}{% extends template_parent %} {% else %}{% extends "world/world_view.html" %}{% endif %}
+
+{% if op == 'new' %}
+  {%set tagline = world.title %} {% set title = 'New article!' %}
+{% else %}
+  {% set tagline = article.type_name() + " [" + world.title + "]" %} {% set title = article.title %}
+{% endif %}
+
+{% block sidebar %} {{ super() }}
 <h4>Alternatives</h4>
 <ul class="nav nav-list">
 	{% if article %}
-	<li><a
-		href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}">Edit</a></li>
-	<li><a
-		href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}"
+	<li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}">Edit</a></li>
+	<li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}"
 		class="m_action" data-action-type="modal">Delete</a></li> {% endif %}
-	<li><a
-		href="{{ url_for('world.new_article', world_slug=world.slug) }}">New</a></li>
+	<li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}">New</a></li>
 </ul>
-{% endblock %} {% block content %}{% block inline %} {% if article_form
-%}
+{% endblock %}
+
+{% block middle %}
+{% if article_form %}
 <form method="post" action="{{ action_url }}">
+{{ article_form.title }}{{ article_form.world }}
+<div class="page-header">
+    <h1><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
+        <small>{{ article_form.type(class="m_action2") }}</small>
+    </h1>
+</div>
+{% include "includes/flash.html" %}
 	{% set article_type_name = article.type_name() if article else '' %}
-	<div style="float: left">{{ article_form.title }}{{
-		article_form.type(class="m_action2") }}{{ article_form.world }}</div>
 	<div id="personarticle_form" {{ ' class=hide ' if
 		article_type_name!='person'}}>{% include
 		"models/personarticle_view.html" %}</div>
@@ -34,14 +40,21 @@ endblock %} {% block sidebar %} {{ super() }}
 	<div id="placearticle_form" {{ ' class=hide ' if
 		article_type_name!='place'}}>{% include
 		"models/placearticle_view.html" %}</div>
+  <div id="fractionarticle_form" {{ ' class=hide ' if
+    article_type_name!='fraction'}}>{% include
+    "models/fractionarticle_view.html" %}</div>
 	<div class="edit">
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
-			<a class="btn btn-large" data-edit="bold"><i class="icon-bold"></i></a>
+			<div class="btn-group">
+        <a class="btn" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+        <a class="btn" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+      </div>
 		</div>
 		<div id="editor">{{ article_form.content.data }}</div>
 		{{ article_form.content(rows=20, value="text") }}
 	</div>
+  {% if article_form.outgoing_relations %}
 	<table>
 		{% for articlerelation_form in article_form.outgoing_relations %}
 		<tr>
@@ -51,18 +64,25 @@ endblock %} {% block sidebar %} {{ super() }}
 		</tr>
 		{% endfor %}
 	</table>
+  {% endif %}
 	<div class="row form-actions">
 		<button type="submit" class="btn btn-primary">Save changes</button>
 		<a href="{{ url_for('world.index') }}" class="btn">Cancel</a>
 	</div>
 </form>
 {% else %}
+<div class="page-header">
+    <h1>{{title }}
+        <small>{{ tagline }}</small>
+    </h1>
+</div>
+{% include "includes/flash.html" %}
 <div class="article">
 	{% if article.is_media() %} <img src="{{article.mediaarticle.url}}" />
 	{% endif %} {{ article.content|wikify|markdown }}
 
 </div>
-{% endif %} {% endblock %}{% endblock %} {% block row %} {% endblock %}
+{% endif %} {% endblock %}
 
 {% block final %} {{super()}}
 <script>
@@ -71,6 +91,10 @@ endblock %} {% block sidebar %} {{ super() }}
 				$('#editor').wysiwyg().blur(function(e){
 					$("#content").val($('#editor').cleanHtml());
 				});
+
+        $('#editable_title').blur(function(e) {
+          $('#title').val(this.textContent)
+        });
 
 				// Get the initial value
 				var $el = $('.m_action2');

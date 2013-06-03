@@ -326,6 +326,12 @@ important
 	margin-top: 0px;
 }
 
+.contenteditable, #editor{
+	border: 1px solid #d4d4d4;
+	border-radius: 4px;
+	padding: 5px;
+}
+
 /* helpers */
 .hidden {
 	display: none;

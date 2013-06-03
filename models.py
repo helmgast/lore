@@ -338,34 +338,6 @@ class World(db.Model):
     # datestring = "day %i in the year of %i" 
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
-class MediaArticle(db.Model):
-    mime_type = CharField()
-    url = CharField()
-
-GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
-GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female'))
-class PersonArticle(db.Model):
-    born = IntegerField()
-    died = IntegerField(null=True)
-    gender = IntegerField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
-    # otherNames = CharField()
-    occupation = CharField(null=True)
-
-    def gender_name(self):
-        return GENDER_TYPES[self.type][1].title()
-
-class FractionArticle(db.Model):
-    fraction_name = CharField()
-
-class PlaceArticle(db.Model):
-    coordinate_x = FloatField(null=True) # normalized position system, e.g. form 0 to 1 float, x and y
-    coordinate_y = FloatField(null=True) # 
-    location_type = CharField() # building, city, domain, point_of_interest
-
-class EventArticle(db.Model):
-    from_date = IntegerField()
-    to_date = IntegerField()
-
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
 class Article(db.Model):
@@ -374,57 +346,52 @@ class Article(db.Model):
     title = CharField()
     slug = CharField(unique=True) # URL-friendly name
     content = TextField()
-    personarticle = ForeignKeyField(PersonArticle, null=True, related_name='article')
-    mediaarticle = ForeignKeyField(MediaArticle, null=True, related_name='article')
-    fractionarticle = ForeignKeyField(FractionArticle, null=True, related_name='article')
-    placearticle = ForeignKeyField(PlaceArticle, null=True, related_name='article')
-    eventarticle = ForeignKeyField(EventArticle, null=True, related_name='article')
-
+ 
     # publish_status = IntegerField(choices=((1, 'draft'),(2, 'revision'), (3, 'published')), default=1)
     created_date = DateTimeField(default=datetime.datetime.now)
     # modified_date = DateTimeField()
     metadata = TextField(null=True) # JSON
     # thumbnail
     
-    def set_type(self, new_type):
-        # Need to make sure there is an model_obj created for the new type
-        # and that the old type obj is removed
-        # We may have cases where there is no old obj.
-        if new_type==ARTICLE_MEDIA and not self.mediaarticle:
-            self.mediaarticle = MediaArticle()
-            self.mediaarticle.save()
-        elif new_type==ARTICLE_PERSON and not self.personarticle:
-            self.personarticle = PersonArticle()
-            self.personarticle.save()
-        elif new_type==ARTICLE_FRACTION and not self.fractionarticle:
-            self.fractionarticle = FractionArticle()
-            self.fractionarticle.save()
-        elif new_type==ARTICLE_PLACE and not self.placearticle:
-            self.placearticle = PlaceArticle()
-            self.placearticle.save()
-        elif new_type==ARTICLE_EVENT and not self.eventarticle:
-            self.eventarticle = EventArticle()
-            self.eventarticle.save()
-        print u"Changed type of %s from %s to %s" % (self, self.type_name(), ARTICLE_TYPES[new_type][1], )
-        type_obj = self.get_type()
-        if type_obj:
-            type_obj.delete_instance()
-        else:
-            print "Warning, should not have None for previous type %s" % self.type_name()
-        self.type = new_type
-        self.save()
+    # def set_type(self, new_type):
+    #     # Need to make sure there is an model_obj created for the new type
+    #     # and that the old type obj is removed
+    #     # We may have cases where there is no old obj.
+    #     if new_type==ARTICLE_MEDIA and not self.mediaarticle:
+    #         self.mediaarticle = MediaArticle()
+    #         self.mediaarticle.save()
+    #     elif new_type==ARTICLE_PERSON and not self.personarticle:
+    #         self.personarticle = PersonArticle()
+    #         self.personarticle.save()
+    #     elif new_type==ARTICLE_FRACTION and not self.fractionarticle:
+    #         self.fractionarticle = FractionArticle()
+    #         self.fractionarticle.save()
+    #     elif new_type==ARTICLE_PLACE and not self.placearticle:
+    #         self.placearticle = PlaceArticle()
+    #         self.placearticle.save()
+    #     elif new_type==ARTICLE_EVENT and not self.eventarticle:
+    #         self.eventarticle = EventArticle()
+    #         self.eventarticle.save()
+    #     print u"Changed type of %s from %s to %s" % (self, self.type_name(), ARTICLE_TYPES[new_type][1], )
+    #     type_obj = self.get_type()
+    #     if type_obj:
+    #         type_obj.delete_instance()
+    #     else:
+    #         print "Warning, should not have None for previous type %s" % self.type_name()
+    #     self.type = new_type
+    #     self.save()
 
-    def print_types(self):
-        s = "Type id: %d %s\n" % (self.type, self.type_name())
-        if self.mediaarticle:
-            s+= 'media id: %s, mime: %s\n' % (self.mediaarticle.id, self.mediaarticle.mime_type)
-        else:
-            s+=' no media article\n'
-        if self.personarticle:
-            s+= 'person id: %s, born %s\n' % (self.personarticle.id, self.personarticle.born)
-        else:
-            s+=' no person article\n'
-        return s
+    # def print_types(self):
+    #     s = "Type id: %d %s\n" % (self.type, self.type_name())
+    #     if self.mediaarticle:
+    #         s+= 'media id: %s, mime: %s\n' % (self.mediaarticle.id, self.mediaarticle.mime_type)
+    #     else:
+    #         s+=' no media article\n'
+    #     if self.personarticle:
+    #         s+= 'person id: %s, born %s\n' % (self.personarticle.id, self.personarticle.born)
+    #     else:
+    #         s+=' no person article\n'
+    #     return s
 
     def get_type(self):
         if self.type==ARTICLE_MEDIA:
@@ -464,6 +431,39 @@ class Article(db.Model):
     
     def __unicode__(self):
         return u'%s [%s]' % (self.title, self.world.title)
+
+class MediaArticle(db.Model):
+    article = ForeignKeyField(Article, related_name='mediaarticle')
+    mime_type = CharField()
+    url = CharField()
+
+GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
+GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'), (GENDER_MALE, 'male'), (GENDER_FEMALE, 'female'))
+class PersonArticle(db.Model):
+    article = ForeignKeyField(Article, related_name='personarticle')
+    born = IntegerField(null=True)
+    died = IntegerField(null=True)
+    gender = IntegerField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
+    # otherNames = CharField()
+    occupation = CharField(null=True)
+
+    def gender_name(self):
+        return GENDER_TYPES[self.type][1].title()
+
+class FractionArticle(db.Model):
+    article = ForeignKeyField(Article, related_name='fractionarticle')
+    fraction_type = CharField()
+
+class PlaceArticle(db.Model):
+    article = ForeignKeyField(Article, related_name='placearticle')
+    coordinate_x = FloatField(null=True) # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_y = FloatField(null=True) # 
+    location_type = CharField() # building, city, domain, point_of_interest
+
+class EventArticle(db.Model):
+    article = ForeignKeyField(Article, related_name='eventarticle')
+    from_date = IntegerField()
+    to_date = IntegerField()
 
 ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
