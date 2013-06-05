@@ -1,0 +1,10 @@
+{#- PersonArticle, row form. Expects: action_url, typeform -#}
+{% if template_parent %}{% extends template_parent %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
+
+{% from 'includes/components.html' import form_fields %}
+
+{% set personarticle_form = article_form.personarticle if article_form else fraction_form %}
+{% block content %}{% block inline %}
+{{ form_fields(personarticle_form) }}
+{% endblock %}{% endblock %}

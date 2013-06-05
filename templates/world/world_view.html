@@ -1,0 +1,34 @@
+{% extends "world/base.html" %}
+
+{% block content_title %}{{world.title}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}
+  <h4>Alternativ</h4>
+    <ul class="nav nav-list">
+        <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-book"></i>Browse by type</a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-book"></i>Browse by time</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="span6">
+            <p class="well">{{ world.description }}</p>
+        </div>
+        <div class="span6">IMAGE</div>
+    </div>
+    <div class="row">
+    {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
+    <ul>
+        {% for article in world.articles %}
+
+        <li><a href="{{ url_for('world.view_article', article_slug=article.slug, world_slug=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
+        {% endfor %}
+    </ul>
+    {#{% include "includes/pagination.html" %}
+    {% endif %}#}
+    </div>
+{% endblock %}

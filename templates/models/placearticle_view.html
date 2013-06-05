@@ -1,0 +1,11 @@
+{#- PlaceArticle, row form. Expects: action_url, typeform -#}
+{% if template_parent %}{% extends template_parent %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
+
+{% from 'includes/components.html' import form_fields %}
+
+{% set placearticle_form = article_form.placearticle if article_form else placearticle_form %}
+
+{% block content %}{% block inline %}
+{{ form_fields(placearticle_form) }}
+{% endblock %}{% endblock %}

@@ -1,5 +1,5 @@
-{% if not partial %}{% extends "campaign/campaign.html" %}
-{% else %}{% extends "includes/partial.html" %}{% endif %}
+{% if not inline %}{% extends "campaign/campaign.html" %}
+{% else %}{% extends "includes/inline.html" %}{% endif %}
 
 {% block content_title %}{{'New ' if not the_session}}Session{% endblock %}
 

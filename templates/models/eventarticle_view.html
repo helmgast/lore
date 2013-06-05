@@ -1,0 +1,11 @@
+{#- EventArticle, row form. Expects: action_url, typeform -#}
+{% if template_parent %}{% extends template_parent %}
+{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
+
+{% from 'includes/components.html' import form_fields %}
+
+{% set eventarticle_form = article_form.eventarticle if article_form else eventarticle_form %}
+
+{% block content %}{% block inline %}
+{{ form_fields(eventarticle_form) }}
+{% endblock %}{% endblock %}

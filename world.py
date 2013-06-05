@@ -1,22 +1,28 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
-from wtfpeewee.orm import model_form
-from models import Article, World, ArticleRelations
-from resource import ResourceHandler
-from raconteur import auth
+from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
+from models import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle
+from models import ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT
+from resource import ResourceHandler, ModelServer
+from raconteur import auth, admin
 from itertools import groupby
 from datetime import datetime, timedelta
 from flask_peewee.utils import get_object_or_404, object_list, slugify
+from wtfpeewee.fields import ModelSelectField, ModelSelectMultipleField, ModelHiddenField, FormField,SelectQueryField
+from wtforms.fields import FieldList, HiddenField
+from flask_peewee.filters import FilterMapping, FilterForm, FilterModelConverter
+from werkzeug.datastructures import ImmutableMultiDict
 
-world = Blueprint('world', __name__, template_folder='templates')
+world_app = Blueprint('world', __name__, template_folder='templates')
 
-
+# Template filter, will group a list by their initial title letter
 def by_initials(objects):
   groups = []
   for k, g in groupby(objects, lambda o: o.title[0:1]):
     groups.append({'grouper':k, 'list':list(g)})
   return groups
 
+# Template filter, will group a list by their article type_name
 def by_articletype(objects):
   groups = []
   for k, g in groupby(objects, lambda o: o.type_name()):
@@ -37,89 +43,187 @@ def prettydate(d):
     else:
         return 'Older'
 
+# Template filter, will group a list by creation date, as measure in delta from now
 def by_time(objects):
   groups = []
   for k, g in groupby(objects, lambda o: prettydate(o.created_date)):
     groups.append({'grouper':k, 'list':list(g)})
   return groups
 
-world.add_app_template_filter(by_initials)
-world.add_app_template_filter(by_articletype)
-world.add_app_template_filter(by_time)
+world_app.add_app_template_filter(by_initials)
+world_app.add_app_template_filter(by_articletype)
+world_app.add_app_template_filter(by_time)
 
+# A slight modification of the normal ModelConverter (which automatically makes forms
+# from Model classes). This will accept a "hidden" field argument which will then switch
+# the form field type to ModelHidden, rather than a normal SelectQuery.
+class WorldConverter(ModelConverter):
+    def __init__(self):
+        super(WorldConverter, self).__init__(additional={CharField:self.handle_textfield, TextField:self.handle_textfield})
 
-class WorldHandler(ResourceHandler):
-    def get_redirect_url(self, instance):
-        return url_for(self.route, slug=instance.slug)
-
-    def allowed(self, op, user, instance=None):
-        if op == ResourceHandler.VIEW: # currently only allow viewing
-            return True
+    def handle_foreign_key(self, model, field, **kwargs):
+        if field.null:
+            kwargs['allow_blank'] = True
+        if field.choices is not None:
+            field_obj = SelectQueryField(query=field.choices, **kwargs)
+        elif kwargs.pop('hidden',False):
+            field_obj = ModelHiddenField(model=field.rel_model, **kwargs)
         else:
-            return False
+            query = kwargs.pop('query',None)
+            field_obj = SelectQueryField(query=query if query else field.rel_model.select(), **kwargs)
+        return FieldInfo(field.name, field_obj)
 
-worldhandler = WorldHandler(
-        World,
-        model_form(World, exclude=['slug']),
-        'world/world_page.html',
-        'world.world_detail')
-
-class ArticleHandler(ResourceHandler):
-    def get_redirect_url(self, instance):
-        return url_for(self.route, slug=instance.slug, worldslug=instance.world.slug)
-
-    def allowed(self, op, user, instance=None):
-        if op == ResourceHandler.VIEW:
-            return True
-        elif user:
-            return True
+    def handle_textfield(self, model, field, **kwargs):
+        if kwargs.pop('hidden',False): # from kwargs
+            return FieldInfo(field.name, HiddenField(**kwargs))
         else:
-            return False
+            return FieldInfo(field.name, self.defaults[field.__class__](**kwargs))
 
-articlehandler = ArticleHandler(
-        Article,
-        model_form(Article, exclude=['slug', 'created_date']),
-        'world/article_detail.html',
-        'world.article_detail')
+# For later rference, create the forms for each article_type
+personarticle_form = model_form(PersonArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
+mediaarticle_form = model_form(MediaArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
+eventarticle_form = model_form(EventArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
+placearticle_form = model_form(PlaceArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
+fractionarticle_form = model_form(FractionArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
 
-class ArticleRelationsHandler(ResourceHandler):
-    def get_redirect_url(self, instance):
-        return url_for(self.route, slug=instance.slug, worldslug=instance.world.slug)
+# Create article_relation form, but make sure we hide the from_article field.
+articlerelation_form = model_form(ArticleRelation, converter=WorldConverter(), 
+    field_args={'from_article':{'hidden':True},'relation_type':{'allow_blank':True,'blank_text':u' '}, 'to_article':{'allow_blank':True,'blank_text':u' '}})
 
-    def allowed(self, op, user, instance=None):
-        if op == ResourceHandler.VIEW:
-            return True
-        elif user:
-            return True
+# for k,v in articlerelation_form.__dict__.iteritems():
+#     print k,v
+
+# This is a special form to handle Articles, where we know that it will have a special type of field:
+# articletype. Article type is actually 5 separate fields in the model class, but only one of them should
+# be not_null at any time. This means we need to take special care to ignore the null ones when validating
+# (as the form will still render the field elements for all articletypes), and also when we populate an obj
+# from the form, we want to only use the new actice type, and we want to remove any previous type object.
+class ArticleForm(Form):
+    def validate(self):
+        self._errors = None
+        success = True
+        for name, field in self._fields.iteritems():
+            # Exclude this fields, as only one of them should be validated
+            if name not in ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle', 'fractionarticle']:
+                print "Validating %s" % name
+                if not field.validate(self):
+                    success = False
+        print "Validation is %s before articletypes" % success
+        if success:
+            # Now, also validate one of the fields, depending on the type that we have
+            if self.type.data == ARTICLE_DEFAULT:
+                return success
+            elif self.type.data == ARTICLE_MEDIA:
+                print "Validating media"
+                return self.mediaarticle.validate(self)
+            elif self.type.data == ARTICLE_EVENT:
+                return self.eventarticle.validate(self)
+                print "Validating event"
+            elif self.type.data == ARTICLE_PERSON:
+                return self.personarticle.validate(self)
+                print "Validating person"
+            elif self.type.data == ARTICLE_PLACE:
+                return self.placearticle.validate(self)
+                print "Validating place"
+            elif self.type.data == ARTICLE_FRACTION:
+                return self.fractionarticle.validate(self)
+                print "Validating fraction"
+        return success
+
+    def populate_obj(self, obj):
+        old_type = obj.type
+        old_type_obj = obj.get_type()
+        old_typename = obj.type_name()+'article'
+
+        # Do normal populate of all fields except FormFields
+        for name, field in self._fields.iteritems():
+            if name not in ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle','fractionarticle']:
+                print "Populating field %s with data %s" % (name, field.data)
+                field.populate_obj(obj, name)
+        
+        if old_type != obj.type:  
+            # First clean up old reference
+            print "We have changed type from %d to %d, old object was %s" % (old_type, obj.type, old_type_obj)
+            if old_type_obj:
+                print old_type_obj.first().delete_instance(recursive=True) # delete this and references to it
+        typename = obj.type_name()+'article'
+        if obj.type != ARTICLE_DEFAULT:
+            field = self._fields[typename]
+            new_model = obj.get_type().first()
+            print "Current type is %s (was %s), obj is %s" % (typename, old_typename, new_model)
+            if not new_model:
+                # Need to instantiate a new one if it didn't exist before!
+                if typename=='personarticle':
+                    new_model = PersonArticle()
+                elif typename == 'mediaarticle':
+                    new_model = MediaArticle()
+                elif typename == 'eventarticle':
+                    new_model = EventArticle()
+                elif typename == 'placearticle':
+                    new_model = PlaceArticle()
+                elif typename == 'fractionarticle':
+                    new_model = FractionArticle()    
+                print "Will populate %s with data %s" % (typename, field.form.data)
+            field.form.populate_obj(new_model)
+            new_model.save()
         else:
-            return False
+            print "Did not populate articletype as it's now DEFAULT"
 
-article_relations_handler = ArticleRelationsHandler(
-        ArticleRelations,
-        model_form(ArticleRelations),
-        'world/article_relations_detail.html',
-        'world.article_detail')
+article_form = model_form(Article, base_class=ArticleForm, exclude=['slug', 'created_date'], 
+    converter=WorldConverter(), field_args={'world':{'hidden':True},'title':{'hidden':True},'content':{'hidden':True}})
 
+class ArticleRelationFormField(FormField):
+    def populate_obj(self, obj, name):
+        print "This field has data %s, trying to write it to attribute %s of obj %s, currently %s (_obj is %s)" % (self.data, name, obj, getattr(obj, 'data'), self._obj)
+        candidate = getattr(obj, name, None)
+        if candidate is None:
+            if self._obj is None:
+                self._obj = ArticleRelation()
+                #raise TypeError('populate_obj: cannot find a value to populate from the provided obj or input data/defaults')
+            candidate = self._obj
+            setattr(obj, name, candidate)
+        self.form.populate_obj(candidate)
+        candidate.save()
 
-@world.route('/')
+# Need to add after creation otherwise the converter will interfere with them
+article_form.personarticle = FormField(personarticle_form)
+article_form.mediaarticle =  FormField(mediaarticle_form)
+article_form.eventarticle =  FormField(eventarticle_form)
+article_form.placearticle =  FormField(placearticle_form)
+article_form.fractionarticle =  FormField(fractionarticle_form)
+article_form.outgoing_relations = FieldList(ArticleRelationFormField(articlerelation_form))
+
+# Create servers to simplify our views
+world_server = ModelServer(world_app, World, templatepath='world/')
+article_server = ModelServer(world_app, Article, world_server, article_form)
+# personarticle_server = ModelServer(world_app, PersonArticle, article_server, personarticle_form)
+# mediaarticle_server = ModelServer(world_app, MediaArticle, article_server, mediaarticle_form)
+# eventarticle_server = ModelServer(world_app, EventArticle, article_server, eventarticle_form)
+# placearticle_server = ModelServer(world_app, PlaceArticle, article_server, placearticle_form)
+
+@world_app.route('/')
 def index():
     qr = World.select()
-    return object_list('world/worlds.html', qr)
+    return object_list('world/base.html', qr)
 
-@world.route('/myworlds')
+@world_app.route('/myworlds')
 def myworlds():
     qr = Article.select()
     return object_list('world/index.html', qr)
 
-@world.route('/<slug>/')
-def world_detail(slug):
-    world = get_object_or_404(World, World.slug == slug)
-    world_articles = Article.select().where(Article.world == world)
-    return object_list('world/world_detail.html', world_articles, world=world)
+@world_app.route('/<world_slug>/')
+def view_world(world_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    world_articles = world.articles
+    return object_list('world/world_view.html', world_articles, world=world)
 
-@world.route('/<slug>/browse/<groupby>')
-def world_browse(slug, groupby):
-    world = get_object_or_404(World, World.slug == slug)
+@world_app.route('/<world_slug>/list')
+def list_article(world_slug):
+    return redirect(url_for('.view_world', world_slug=world_slug))
+
+@world_app.route('/<world_slug>/browse/<groupby>')
+def world_browse(world_slug, groupby):
+    world = get_object_or_404(World, World.slug == world_slug)
     if groupby == 'title':
         world_articles = Article.select().where(Article.world == world).order_by(Article.title.asc())
     elif groupby == 'type':
@@ -130,35 +234,76 @@ def world_browse(slug, groupby):
         abort(404)
     return object_list('world/world_browse.html', world_articles, world=world, groupby=groupby)
 
-@world.route('/<worldslug>/<slug>/')
-def article_detail(worldslug, slug):
-    world = get_object_or_404(World, World.slug == worldslug)
-    article = get_object_or_404(Article, Article.slug == slug)
-    print world, article
-    return articlehandler.handle_request(ResourceHandler.VIEW, article, world=world)
+@world_app.route('/<world_slug>/<article_slug>/')
+def view_article(world_slug, article_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    article = get_object_or_404(Article, Article.slug == article_slug)
+    return article_server.render('view', article, world=world)
 
-@world.route('/<worldslug>/<slug>/edit', methods=['GET', 'POST'])
-def article_edit(worldslug, slug):
-    world = get_object_or_404(World, World.slug == worldslug)
-    article = get_object_or_404(Article, Article.slug == slug)
-    return articlehandler.handle_request(ResourceHandler.EDIT, article, world=world)
-
-@world.route('/<worldslug>/new', methods=['GET', 'POST'])
-def article_new(worldslug):
-    world = get_object_or_404(World, World.slug == worldslug)
-    return articlehandler.handle_request(ResourceHandler.NEW, None, world=world)
-
-@world.route('/<worldslug>/<slug>/delete/', methods=['GET', 'POST'])
+@world_app.route('/<world_slug>/<article_slug>/edit', methods=['GET', 'POST'])
 @auth.login_required
-def article_delete(worldslug, slug):
-    #world = get_object_or_404(World, World.slug == worldslug)
-    article = get_object_or_404(Article, Article.slug == slug)
-    return articlehandler.handle_request(ResourceHandler.DELETE, article, world=world, redirect_url=url_for('world.world_detail', slug=worldslug))
+def edit_article(world_slug, article_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    article = get_object_or_404(Article, Article.slug == article_slug)
 
-@world.route('/<worldslug>/<slug>/relate', methods=['GET', 'POST'])
-def article_relate(worldslug, slug):
-    world = get_object_or_404(World, World.slug == worldslug)
-    article = get_object_or_404(Article, Article.slug == slug)
-    relations = ArticleRelations.select().where(ArticleRelations.from_article == article).order_by(ArticleRelations.relation_type.asc());
-    return object_list('world/article_relations_detail.html', relations, world=world, article=article)
+    if request.method == 'GET':
+        form = article_server.get_form('edit', article)
+        print getattr(article, 'personarticle')
+        # To make sure each form contains the article id of this article (as the fields are hidden)
+        # We need to set the article
+        form.personarticle.article.data = article
+        form.eventarticle.article.data = article
+        form.placearticle.article.data = article
+        form.mediaarticle.article.data = article
+        form.fractionarticle.article.data = article
+        if article.type > 0:
+            f = form[article.type_name()+'article']
+            p = article.get_type().first()
+            print f.form.data, p
+            f.form.process(None, p)
 
+        # This will limit some of the querys in the form to only allow articles from this world
+        form.world.query = form.world.query.where(World.slug == world_slug)
+        # form.outgoing_relations.append_entry({'from_article':article})
+        for f in form.outgoing_relations:
+            f.to_article.query = f.to_article.query.where(Article.world == world).where(Article.id != article.id)
+        # print form.outgoing_relations
+        return article_server.render('edit', article, form, world=world)
+    elif request.method == 'POST':
+        to_return = article_server.commit('edit', article, world=world)
+        for o in article.outgoing_relations:
+            o.save()
+        return to_return
+
+@world_app.route('/<world_slug>/<article_slug>/articlerelations/new', methods=['GET'])
+@auth.login_required
+def new_articlerelation(world_slug, article_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    article = get_object_or_404(Article, Article.slug == article_slug)
+    form = article_server.get_form('edit', article)
+    nr = request.args.get('nr')
+    nr = int(nr)
+    for k in range(0,nr):
+        print k
+        form.outgoing_relations.append_entry({'from_article':article})
+        form.outgoing_relations[-1].to_article.query = form.outgoing_relations[-1].to_article.query.where(Article.world == world)
+    return render_template('models/articlerelation_view.html', op='new', articlerelation_form=form.outgoing_relations[-1])
+
+@world_app.route('/<world_slug>/new', methods=['GET', 'POST'])
+@auth.login_required
+def new_article(world_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    if request.method == 'GET':
+        return article_server.render('new', None, world=world)
+    elif request.method == 'POST':
+        return article_server.commit('new', None, world=world)
+
+@world_app.route('/<world_slug>/<article_slug>/delete', methods=['GET', 'POST'])
+@auth.login_required
+def delete_article(world_slug, article_slug):
+    world = get_object_or_404(World, World.slug == world_slug)
+    article = get_object_or_404(Article, Article.slug == article_slug)
+    if request.method == 'GET':
+        return article_server.render('delete', article, world=world)
+    elif request.method == 'POST':
+        return article_server.commit('delete', article, world=world)

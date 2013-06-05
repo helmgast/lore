@@ -1,0 +1,137 @@
+{% if template_parent %}{% extends template_parent %} {% else %}{% extends "world/world_view.html" %}{% endif %}
+
+{% if op == 'new' %}
+  {%set tagline = world.title %} {% set title = 'New article!' %}
+{% else %}
+  {% set tagline = article.type_name() + " [" + world.title + "]" %} {% set title = article.title %}
+{% endif %}
+
+{% block sidebar %} {{ super() }}
+<h4>Alternatives</h4>
+<ul class="nav nav-list">
+	{% if article %}
+	<li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}">Edit</a></li>
+	<li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}"
+		class="m_action" data-action-type="modal">Delete</a></li> {% endif %}
+	<li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}">New</a></li>
+</ul>
+{% endblock %}
+
+{% block middle %}
+{% if article_form %}
+<form method="post" action="{{ action_url }}">
+{{ article_form.title }}{{ article_form.world }}
+<div class="page-header">
+    <h1><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
+        <small>{{ article_form.type(class="m_action2") }}</small>
+    </h1>
+</div>
+{% include "includes/flash.html" %}
+	{% set article_type_name = article.type_name() if article else '' %}
+	<div id="personarticle_form" {{ ' class=hide ' if
+		article_type_name!='person'}}>{% include
+		"models/personarticle_view.html" %}</div>
+	<div id="mediaarticle_form" {{ ' class=hide ' if
+		article_type_name!='media'}}>{% include
+		"models/mediaarticle_view.html" %}</div>
+	<div id="eventarticle_form" {{ ' class=hide ' if
+		article_type_name!='event'}}>{% include
+		"models/eventarticle_view.html" %}</div>
+	<div id="placearticle_form" {{ ' class=hide ' if
+		article_type_name!='place'}}>{% include
+		"models/placearticle_view.html" %}</div>
+  <div id="fractionarticle_form" {{ ' class=hide ' if
+    article_type_name!='fraction'}}>{% include
+    "models/fractionarticle_view.html" %}</div>
+	<div class="edit">
+		<div class="btn-toolbar" data-role="editor-toolbar"
+			data-target="#editor">
+			<div class="btn-group">
+        <a class="btn" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
+        <a class="btn" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+      </div>
+		</div>
+		<div id="editor">{{ article_form.content.data }}</div>
+		{{ article_form.content(rows=20, value="text") }}
+	</div>
+  {% if article_form.outgoing_relations %}
+	<table class="m_view">
+		{% for articlerelation_form in article_form.outgoing_relations %}
+      {% include "models/articlerelation_view.html" %}
+		{% endfor %}
+    <tr class="m_control"><td><button id="addrow" class="btn btn-primary btn-small">Add relation</button></td></tr>
+	</table>
+  {% endif %}
+	<div class="row form-actions">
+		<button type="submit" class="btn btn-primary">Save changes</button>
+		<a href="{{ url_for('world.index') }}" class="btn">Cancel</a>
+	</div>
+</form>
+{% else %}
+<div class="page-header">
+    <h1>{{title }}
+        <small>{{ tagline }}</small>
+    </h1>
+</div>
+{% include "includes/flash.html" %}
+<div class="article">
+	{% if article.is_media() %} <img src="{{article.mediaarticle.url}}" />
+	{% endif %} {{ article.content|wikify|markdown }}
+
+</div>
+{% endif %} {% endblock %}
+
+{% block final %} {{super()}}
+<script>
+	$(document).ready(
+			function() {
+				$('#editor').wysiwyg().blur(function(e){
+					$("#content").val($('#editor').cleanHtml());
+				});
+
+        $('#editable_title').blur(function(e) {
+          $('#title').val(this.textContent)
+        });
+
+        $('#addrow').click(function(e){
+          $this = $(this);
+          var nr = $('.m_view input[type="hidden"]').last().attr('id')
+          if(nr !== undefined && nr.length > 0) {
+            nr = parseInt(nr.split('-')[1])+1 // will look for highest id in articlerelation list and add to it
+          } else {
+            nr = 0
+          }
+          $.get('{{ url_for('.new_articlerelation', world_slug=world.slug, article_slug=article.slug) }}?nr='+nr, function(data) {
+            var $d = $(data)
+            $d.insertBefore($this.closest('.m_control'))
+            $d.find('select[data-role="chosenblank"]').chosen({allow_single_deselect: true})
+          });
+          e.preventDefault(); return false;  
+        });
+
+        $('.m_view').on('click','.removerow',function(e) {
+          $(this).closest('.m_instance').remove();
+          e.preventDefault(); return false;  
+        });
+
+				// Get the initial value
+				var $el = $('.m_action2');
+				$el.data('oldVal', '#' + $el.find('option:selected').text()
+						+ 'article_form');
+
+				$el.change(function() {
+					//store new value
+					var $this = $(this);
+					var newValue = '#' + $this.find('option:selected').text()
+							+ 'article_form'
+					$(newValue).toggleClass('hide')
+					$($this.data('oldVal')).toggleClass('hide')
+					$this.data('oldVal', newValue)
+				})
+				//       .focus(function(){
+				//            // Get the value when input gains focus
+				//            var oldValue = $(this).data('oldVal');
+				//       });
+			});
+</script>
+{% endblock %}

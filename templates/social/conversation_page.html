@@ -1,22 +1,22 @@
-{% if not partial %}{% extends "social/social.html" %}
-{% else %}{% extends "includes/partial.html" %}{% endif %}
+{% if not inline %}{% extends "social/social.html" %}
+{% else %}{% extends "includes/inline.html" %}{% endif %}
 
 {% block content_title %}Conversation with {{ recipients|join(', ')|truncate(20) }}{% endblock %}
 
 {% block content_tagline %}{% endblock %}
 
 {% if conversation %}
-  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id, partial=partial) %}
+  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id, inline=inline) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
 {% else %}
-  {% set action_url = url_for('social.conversation_new', partial=partial) %}
+  {% set action_url = url_for('social.conversation_new', inline=inline) %}
 {% endif %}
 
 {% block content %}{% block modal_body %}
 
 <form class="modal-form" action="{{ action_url }}" method="post">
 {# note, Jinja seem to autoescape class names, so no need for "" #}
-  <div{{ ' class=modal-body' if partial }}>
+  <div{{ ' class=modal-body' if inline }}>
   {% if conversation %}
     {% include "includes/pagination.html" %}
     <ul class="unstyled">
@@ -27,7 +27,7 @@
     </ul>
   {% endif %}  
   </div>
-  <div{{ ' class=modal-footer' if partial }}>
+  <div{{ ' class=modal-footer' if inline }}>
     <textarea class="message" rows="4" name="content" autofocus></textarea>
     <select name="recipients" multiple="multiple"{{ ' class=hide' if fixed_recipients }}>
       {% for r in recipients %}

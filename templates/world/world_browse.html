@@ -1,4 +1,4 @@
-{% extends "world/worlds.html" %}
+{% extends "world/base.html" %}
 
 {% block content_title %}{{world.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
@@ -6,10 +6,10 @@
 {% block sidebar %}
   <h4>Alternativ</h4>
     <ul class="nav nav-list">
-        <li><a href="{{ url_for('world.article_new', worldslug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
-        <li><a href="{{ url_for('world.world_browse', slug=world.slug, groupby='type') }}"><i class="icon-book"></i>Browse by type</a></li>
-        <li><a href="{{ url_for('world.world_browse', slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
-        <li><a href="{{ url_for('world.world_browse', slug=world.slug, groupby='time') }}"><i class="icon-book"></i>Browse by time</a></li>
+        <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-book"></i>Browse by type</a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
+        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-book"></i>Browse by time</a></li>
     </ul>
 {% endblock %}
 
@@ -29,7 +29,7 @@
         <dt>{{ group.grouper|capitalize }}</dt>
         <dd><ul class="unstyled">
         {% for article in group.list %}
-            <li><a href="{{ url_for('world.article_detail', slug=article.slug, worldslug=world.slug) }}">{{article.title}}</a>
+            <li><a href="{{ url_for('world.view_article', article_slug=article.slug, world_slug=world.slug) }}">{{article.title}}</a>
                 {%- if groupby=='title' -%}
                     <small>{{" ["+article.type_name()+"]"}}</small>
                 {%- elif groupby=='time' -%}
@@ -40,6 +40,5 @@
         {% endfor %}
     </dl>
     {% endif %}
-    {% include "includes/pagination.html" %}
     </div>
 {% endblock %}

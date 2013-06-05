@@ -1,8 +1,8 @@
-{% if partial %}{% extends "includes/partial.html" %}{% endif -%}
+{% if inline %}{% extends "includes/inline.html" %}{% endif -%}
 {# needs vars mastered_groups, mastered_members, person #}
 
 <ul class="dropdown-menu m_field">
-  {%- block partial -%}
+  {%- block inline -%}
   {% for group in mastered_groups %}
     {% set gm_hash=person.username~"_"~group.id %} {# to lookup in dict #}
     {%- if gm_hash in mastered_members -%}

@@ -1,15 +1,15 @@
-{% if not partial %}{% extends "social/social.html" %}
-{% else %}{% extends "includes/partial.html" %}{% endif %}
+{% if not inline %}{% extends "social/social.html" %}
+{% else %}{% extends "includes/inline.html" %}{% endif %}
 
 {% set group = resource.instance %}
 {% set members=group.members() if group else [] %}
 
 {% if resource.op_is_new() %}
   {% set title = "New group" %}
-  {% set action_url = url_for('social.group_new', partial=partial) %}
+  {% set action_url = url_for('social.group_new', inline=inline) %}
 {% else %}
   {% set tagline = group.name %}
-  {% set action_url = url_for('social.group_detail', slug=group.slug, partial=partial) %}
+  {% set action_url = url_for('social.group_detail', slug=group.slug, inline=inline) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
 {% endif %}
 
@@ -18,7 +18,7 @@
 
 {% block content %}{% block modal_body %}
 {% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
-<div class="row m_inplace m_view{{ ' modal-body' if partial }}">
+<div class="row m_inplace m_view{{ ' modal-body' if inline }}">
   <div class="span6">
     <div class="well">{{ resource.field('description', rows=10) }}</div>
     <table class="table">

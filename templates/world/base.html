@@ -16,7 +16,7 @@
     <div class="row">
     {% for world in object_list %}
     <div class="span6">
-        <h3><a href="{{ url_for('world.world_detail', slug=world.slug)}}">{{ world.title }}</a></h3>
+        <h3><a href="{{ url_for('world.view_world', world_slug=world.slug)}}">{{ world.title }}</a></h3>
         <div class="well">{{ world.description }}</div>
         <dl class="dl-horizontal">
             <dt>Publisher</dt>

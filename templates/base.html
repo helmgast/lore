@@ -1,4 +1,4 @@
-{% if not partial %}
+{% if not inline %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,19 +14,27 @@
 
     <meta name="viewport" content="width=device-width; initial-scale=1.0">
 
+{% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
-
-    <script src="{{ url_for('static', filename='js/jquery-1.9.1.min.js') }}"></script>
+{% endblock %}
+{% block jsimports %}
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap-datepicker.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.calendar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap-wysiwyg.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock jsimports %}
 
 </head>
 
@@ -84,6 +92,7 @@
         <div class="span9">
             <div class="content">
                 {% block middle %}
+                {% block pre_content %}
                 {% block hero_box %}{% endblock %}
                 <div class="page-header">
                     <h1>{% block content_title %}{% endblock %}
@@ -91,7 +100,7 @@
                     </h1>
                 </div>
                 {% include "includes/flash.html" %}
-                {% block pre_content %}{% endblock %}
+                {% endblock %}
                 {% block content %}{% endblock %}
                 {% endblock %}
             </div>
