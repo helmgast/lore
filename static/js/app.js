@@ -149,5 +149,6 @@ $(document).ready(function() {
   $('.date-widget').datepicker({format: 'yyyy-mm-dd'});
 
   $('form select[data-role="chosen"]').chosen();
+  $('form select[data-role="chosenblank"]').chosen({allow_single_deselect: true});
 
 });

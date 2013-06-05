@@ -30,6 +30,7 @@ def create_admin(app, auth):
     admin.register(EventArticle)
     admin.register(PlaceArticle)
     admin.register(MediaArticle)
+    admin.register(FractionArticle)
     admin.register(ArticleRelation)
     admin.register(RelationType)
     admin.register(GroupMember)

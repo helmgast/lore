@@ -55,14 +55,11 @@
 		{{ article_form.content(rows=20, value="text") }}
 	</div>
   {% if article_form.outgoing_relations %}
-	<table>
+	<table class="m_view">
 		{% for articlerelation_form in article_form.outgoing_relations %}
-		<tr>
-			<td><strong>{{article.title+' is' if not loop.last else
-					'New relation:'}}</strong></td>
-			<td>{% include "models/articlerelation_view.html" %}</td>
-		</tr>
+      {% include "models/articlerelation_view.html" %}
 		{% endfor %}
+    <tr class="m_control"><td><button id="addrow" class="btn btn-primary btn-small">Add relation</button></td></tr>
 	</table>
   {% endif %}
 	<div class="row form-actions">
@@ -94,6 +91,27 @@
 
         $('#editable_title').blur(function(e) {
           $('#title').val(this.textContent)
+        });
+
+        $('#addrow').click(function(e){
+          $this = $(this);
+          var nr = $('.m_view input[type="hidden"]').last().attr('id')
+          if(nr !== undefined && nr.length > 0) {
+            nr = parseInt(nr.split('-')[1])+1 // will look for highest id in articlerelation list and add to it
+          } else {
+            nr = 0
+          }
+          $.get('{{ url_for('.new_articlerelation', world_slug=world.slug, article_slug=article.slug) }}?nr='+nr, function(data) {
+            var $d = $(data)
+            $d.insertBefore($this.closest('.m_control'))
+            $d.find('select[data-role="chosenblank"]').chosen({allow_single_deselect: true})
+          });
+          e.preventDefault(); return false;  
+        });
+
+        $('.m_view').on('click','.removerow',function(e) {
+          $(this).closest('.m_instance').remove();
+          e.preventDefault(); return false;  
         });
 
 				// Get the initial value
