@@ -78,6 +78,7 @@ class ResourceHandler:
         self.route = route
 
     def get_resource_request(self, op, user, instance=None): # to be overriden
+        print "This should be overriden"
         return ResourceRequest(op, self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None, instance)
 
     def get_redirect_url(self, instance):
@@ -115,6 +116,7 @@ class ResourceHandler:
                 kwargs['resource'] = self.get_resource_request(op, user, instance) # as default make instance available named by 'resource'
                 kwargs[self.resource_name] = kwargs['resource'] # also make instance available named by class
                 kwargs['inline'] = True if request.args.has_key('inline') else None
+                print kwargs['resource']
                 return render_template(self.template, **kwargs)
         elif POST:
             if op==self.EDIT or op==self.NEW:

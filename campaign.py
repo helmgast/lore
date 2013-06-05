@@ -39,13 +39,15 @@ sessionhandler = SessionHandler(
         'campaign.session_detail')
 
 class CampaignHandler(ResourceHandler):
-    def get_resource_instance(self, op, user, instance=None):
+    def get_resource_request(self, op, user, instance=None):
         form = self.form_class(obj=instance) if (op==ResourceHandler.EDIT or op==ResourceHandler.NEW) else None
+        print "Im in CampaignHandler"
         ri = ResourceRequest(op, form, instance)
         if op == ResourceHandler.EDIT or op==ResourceHandler.NEW:
             mastered_groups = Group.select().join(GroupMember).where(GroupMember.member == user, GroupMember.status == GROUP_MASTER)
             form.group.query = mastered_groups # set only mastered groups into the form select field
             ri.scenes = Scene.select().where(Scene.campaign == instance, Scene.parent >> None).order_by(Scene.order.asc()) # >> None means 'is null'
+            print list(ri.scenes)
             ri.sceneform = scenehandler.form_class()
         return ri
 

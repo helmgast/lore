@@ -37,7 +37,7 @@
 {% import 'includes/scene.html' as m %}
 <div class="dd" id="nestable">
     <ol class="dd-list">
-    {% for scene in scenes recursive %}
+    {% for scene in resource.scenes recursive %}
     <li class="dd-item dd3-item" data-id="{{scene.id}}" id="scene{{scene.id}}">
         <div class="dd-handle dd3-handle">Drag</div>
         <div class="dd3-content">
