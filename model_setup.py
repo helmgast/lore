@@ -33,6 +33,7 @@ def setup_models():
     
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
     altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
+    kult = World.create(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter")
     
     MediaArticle.create(mime_type="image/jpg",
                         url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
@@ -183,11 +184,11 @@ def setup_models():
     Message.create(user=mb, content=u'Definitivt!', conversation=c2)
     Message.create(user=nf, content=u'Hallå?', conversation=c3)
     
-    scmp = Campaign.create(name=u"Spelveckan", world=u"Mundana", group=ng, rule_system=u"Eon", description=u"Deep drama at the beginning of July each year.")
-    cd4k = Campaign.create(name=u"Den Fjärde Konfluxen", world=u"Chronopia", group=mg, rule_system=u"Drakar & Demoner", description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.")
-    cd6k = Campaign.create(name=u"Den Sjätte Konfluxen", world=u"Chronopia", group=mg, rule_system=u"Fate", description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.")
-    kcmp = Campaign.create(name=u"Kult AW", world=u"Kult", group=kg, rule_system=u"AW", description=u"Drama in victorian England at the edge of reality")
-    ycmp = Campaign.create(name=u"Yerlog", world=u"Mundana", group=ng, rule_system=u"Eon", description=u"Time to take over the world!")
+    scmp = Campaign.create(name=u"Spelveckan", world=mundana, group=ng, rule_system=u"Eon", description=u"Deep drama at the beginning of July each year.")
+    cd4k = Campaign.create(name=u"Den Fjärde Konfluxen", world=altor, group=mg, rule_system=u"Drakar & Demoner", description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.")
+    cd6k = Campaign.create(name=u"Den Sjätte Konfluxen", world=altor, group=mg, rule_system=u"Fate", description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.")
+    kcmp = Campaign.create(name=u"Kult AW", world=kult, group=kg, rule_system=u"AW", description=u"Drama in victorian England at the edge of reality")
+    ycmp = Campaign.create(name=u"Yerlog", world=mundana, group=ng, rule_system=u"Eon", description=u"Time to take over the world!")
 
     s1 = Scene.create(campaign=scmp, name="Intro", order=1)
     s2 = Scene.create(campaign=scmp, name="The old man in the taverna", order=2, parent=s1)

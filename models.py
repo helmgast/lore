@@ -251,12 +251,28 @@ class Message(db.Model):
 
     def __unicode__(self):
         return '%s: %s' % (self.user, self.content)
+  
+class World(db.Model):
+    title = CharField()
+    slug = CharField(unique=True) # URL-friendly name
+    description = TextField(null=True)
+    publisher = CharField(null=True)
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        return super(World, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return self.title+(' by '+self.publisher) if self.publisher else ''
+
+    # startyear = 0
+    # daysperyear = 360
+    # datestring = "day %i in the year of %i" 
+    # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
             
 # All material related to a certain story.
 class Campaign(db.Model):
     name = CharField()
     slug = CharField()
-    world = CharField() # The game world this belongs to
+    world = ForeignKeyField(World, related_name='campaigns')
     group = ForeignKeyField(Group)
     rule_system = CharField()
     description = TextField(null=True)
@@ -321,22 +337,6 @@ class StringGenerator(db.Model):
 
     def __unicode__(self):
         return self.name
-
-class World(db.Model):
-    title = CharField()
-    slug = CharField(unique=True) # URL-friendly name
-    description = TextField(null=True)
-    publisher = CharField(null=True)
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
-        return super(World, self).save(*args, **kwargs)
-    def __unicode__(self):
-        return self.title+(' by '+self.publisher) if self.publisher else ''
-
-    # startyear = 0
-    # daysperyear = 360
-    # datestring = "day %i in the year of %i" 
-    # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
