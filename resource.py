@@ -129,7 +129,6 @@ class ResourceHandler:
                         instance = self.model_class()
                     self.form.populate_obj(instance)
                     print request.form
-                    print instance.content
                     instance.save()
                     print instance
                     self.after_post(op, user, instance) # Run any subclassed operations to be done after post
@@ -284,11 +283,10 @@ class ModelServer:
             form = form if form else self.get_form(op, model_obj, request.form)
             #print "In NEW resource %s %s %s" % (request.form, model_obj, self.form_class)
             if form.validate():
-                if op=='new': # create an model_obj as we won't have one yet
+                if op=='new' and not model_obj: # create an model_obj if we won't have one yet
                     model_obj = self.model_class()
                 form.populate_obj(model_obj)
                 model_obj.save()
-                # print "After commit", model_obj.print_types()
                 flash("%s was successfully %s" % (model_obj, self.op_messages[op]), 'success')
                 user.log("%s %s" % (self.op_messages[op], model_obj))
                 # as slug/id may have been changed or just created, we need to add it to redirect args.

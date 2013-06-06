@@ -356,3 +356,7 @@ textarea#metadata {
 	min-height: 100px;
 	max-height: 300px;
 }
+
+.calendar .selected {
+	background-color: #ddd;
+}

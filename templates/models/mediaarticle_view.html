@@ -19,7 +19,7 @@ template_parent %}{% extends template_parent %} {% elif template_parent
 </table>
 {% if article and article.is_media() %}
 <p>
-	<img src="{{article.mediaarticle.url}}" />
+	<img src="{{article.get_type().url}}" />
 </p>
 {% endif %}{% endblock %}{% endblock %}
 

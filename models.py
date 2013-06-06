@@ -267,7 +267,7 @@ class World(db.Model):
     # daysperyear = 360
     # datestring = "day %i in the year of %i" 
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
-            
+
 # All material related to a certain story.
 class Campaign(db.Model):
     name = CharField()
@@ -353,17 +353,25 @@ class Article(db.Model):
     # modified_date = DateTimeField()
     # thumbnail
 
+    def remove_old_type(self, newtype):
+        if self.type != newtype:  
+            # First clean up old reference
+            typeobj = self.get_type()
+            print "We have changed type from %d to %d, old object was %s" % (self.type, newtype, typeobj)
+            if typeobj:
+                print typeobj.delete_instance(recursive=True) # delete this and references to it
+
     def get_type(self):
         if self.type==ARTICLE_MEDIA:
-            return self.mediaarticle
+            return self.mediaarticle.first()
         elif self.type==ARTICLE_PERSON:
-            return self.personarticle
+            return self.personarticle.first()
         elif self.type==ARTICLE_FRACTION:
-            return self.fractionarticle
+            return self.fractionarticle.first()
         elif self.type==ARTICLE_PLACE:
-            return self.placearticle
+            return self.placearticle.first()
         elif self.type==ARTICLE_EVENT:
-            return self.eventarticle
+            return self.eventarticle.first()
         else:
             return None
 
@@ -383,7 +391,11 @@ class Article(db.Model):
     def is_media(self):
         return ARTICLE_MEDIA == self.type
 
-    def type_name(self):
+    def type_name(self, intype=None):
+        if intype:
+            if isinstance(intype, basestring):
+                intype = int(intype)
+            return ARTICLE_TYPES[intype][1]
         return ARTICLE_TYPES[self.type][1]
 
     def __str__(self):

@@ -10,7 +10,7 @@ from json import loads
 campaign = Blueprint('campaign', __name__, template_folder='templates')
 
 class SessionHandler(ResourceHandler):
-    def get_resource_instance(self, op, user, instance=None):
+    def get_resource_request(self, op, user, instance=None):
         if op==ResourceHandler.NEW:
             # set start time to tomorrow 18.00 if no play_start given, else set to 18.00 of the date given
             if request.args.has_key('play_start'):
@@ -18,7 +18,7 @@ class SessionHandler(ResourceHandler):
             else:
                 play_start = datetime.combine(date.today()+timedelta(days=1), time(hour=18))
             play_end = play_start + timedelta(hours=5) # end 5 hours later
-            form = self.form_class(obj=self.instance, play_start=play_start, play_end=play_end)
+            form = self.form_class(obj=instance, play_start=play_start, play_end=play_end)
         else:
             form = self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None
         return ResourceRequest(op, form, instance)
@@ -35,7 +35,7 @@ class SessionHandler(ResourceHandler):
 sessionhandler = SessionHandler(
         Session,
         model_form(Session, exclude=[]),
-        'campaign/session_page.html.html',
+        'campaign/session_page.html',
         'campaign.session_detail')
 
 class CampaignHandler(ResourceHandler):
@@ -109,12 +109,12 @@ def sessions():
 @campaign.route('/sessions/new', methods=['GET', 'POST'])
 @auth.login_required
 def session_new():
-    return scenehandler.handle_request(ResourceHandler.NEW)
+    return sessionhandler.handle_request(ResourceHandler.NEW)
 
 @campaign.route('/sessions/<id>', methods=['GET', 'POST'])
 @auth.login_required
 def session_detail(id):
-    return scenehandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Session, Session.id == id))
+    return sessionhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Session, Session.id == id))
 
 @campaign.route('/campaigns/')
 def campaigns():

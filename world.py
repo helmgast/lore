@@ -2,7 +2,7 @@ from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
 from models import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle
-from models import ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT
+from models import ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
 from resource import ResourceHandler, ModelServer
 from raconteur import auth, admin
 from itertools import groupby
@@ -90,8 +90,15 @@ fractionarticle_form = model_form(FractionArticle, converter=WorldConverter(), f
 articlerelation_form = model_form(ArticleRelation, converter=WorldConverter(), 
     field_args={'from_article':{'hidden':True},'relation_type':{'allow_blank':True,'blank_text':u' '}, 'to_article':{'allow_blank':True,'blank_text':u' '}})
 
-# for k,v in articlerelation_form.__dict__.iteritems():
-#     print k,v
+class ArticleTypeFormField(FormField):
+    def validate(self, form, extra_validators=tuple()):
+        if extra_validators:
+            raise TypeError('FormField does not accept in-line validators, as it gets errors from the enclosed form.')
+        print "Validating ArticleType form field, form type is %d (%s), == name %s" % (form.type.data, ARTICLE_TYPES[form.type.data][1]+'article', self.name)
+        if form.type.data > 0 and (ARTICLE_TYPES[form.type.data][1]+'article')==self.name:
+            return self.form.validate()
+        else: # Only validate this field if it corresponds to current type, otherwise ignore
+            return True
 
 # This is a special form to handle Articles, where we know that it will have a special type of field:
 # articletype. Article type is actually 5 separate fields in the model class, but only one of them should
@@ -99,58 +106,47 @@ articlerelation_form = model_form(ArticleRelation, converter=WorldConverter(),
 # (as the form will still render the field elements for all articletypes), and also when we populate an obj
 # from the form, we want to only use the new actice type, and we want to remove any previous type object.
 class ArticleForm(Form):
-    def validate(self):
+    sub_fields = ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle', 'fractionarticle','outgoing_relations']
+
+    def pre_validate(self):
         self._errors = None
         success = True
         for name, field in self._fields.iteritems():
             # Exclude this fields, as only one of them should be validated
-            if name not in ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle', 'fractionarticle']:
-                print "Validating %s" % name
+            if name not in self.sub_fields:
                 if not field.validate(self):
                     success = False
-        print "Validation is %s before articletypes" % success
-        if success:
-            # Now, also validate one of the fields, depending on the type that we have
-            if self.type.data == ARTICLE_DEFAULT:
-                return success
-            elif self.type.data == ARTICLE_MEDIA:
-                print "Validating media"
-                return self.mediaarticle.validate(self)
-            elif self.type.data == ARTICLE_EVENT:
-                return self.eventarticle.validate(self)
-                print "Validating event"
-            elif self.type.data == ARTICLE_PERSON:
-                return self.personarticle.validate(self)
-                print "Validating person"
-            elif self.type.data == ARTICLE_PLACE:
-                return self.placearticle.validate(self)
-                print "Validating place"
-            elif self.type.data == ARTICLE_FRACTION:
-                return self.fractionarticle.validate(self)
-                print "Validating fraction"
+        self.prevalidated = True
         return success
 
-    def populate_obj(self, obj):
-        old_type = obj.type
-        old_type_obj = obj.get_type()
-        old_typename = obj.type_name()+'article'
+    def validate(self):
+        if not hasattr(self, 'prevalidated') or not self.prevalidated:
+            success = self.pre_validate()
+        else:
+            success = True
+        for name, field in self._fields.iteritems():
+            # Exclude this fields, as only one of them should be validated
+            if name in self.sub_fields:
+                if not field.validate(self):
+                    success = False
+        return success
 
+    def pre_populate_obj(self, obj):
         # Do normal populate of all fields except FormFields
         for name, field in self._fields.iteritems():
-            if name not in ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle','fractionarticle']:
-                print "Populating field %s with data %s" % (name, field.data)
+            if name not in self.sub_fields:
+                print "Pre-populating field %s with data %s" % (name, field.data)
                 field.populate_obj(obj, name)
+        self.prepopulated = True
         
-        if old_type != obj.type:  
-            # First clean up old reference
-            print "We have changed type from %d to %d, old object was %s" % (old_type, obj.type, old_type_obj)
-            if old_type_obj:
-                print old_type_obj.first().delete_instance(recursive=True) # delete this and references to it
+    def populate_obj(self, obj):
+        if not hasattr(self, 'prepopulated') or not self.prepopulated:
+            self.pre_populate_obj(obj)
         typename = obj.type_name()+'article'
         if obj.type != ARTICLE_DEFAULT:
             field = self._fields[typename]
-            new_model = obj.get_type().first()
-            print "Current type is %s (was %s), obj is %s" % (typename, old_typename, new_model)
+            new_model = obj.get_type()
+            print "Current type is %s, obj is %s" % (typename, new_model)
             if not new_model:
                 # Need to instantiate a new one if it didn't exist before!
                 if typename=='personarticle':
@@ -168,6 +164,7 @@ class ArticleForm(Form):
             new_model.save()
         else:
             print "Did not populate articletype as it's now DEFAULT"
+        self._fields['outgoing_relations'].populate_obj(obj, 'outgoing_relations')
 
 article_form = model_form(Article, base_class=ArticleForm, exclude=['slug', 'created_date'], 
     converter=WorldConverter(), field_args={'world':{'hidden':True},'title':{'hidden':True},'content':{'hidden':True}})
@@ -186,11 +183,11 @@ class ArticleRelationFormField(FormField):
         candidate.save()
 
 # Need to add after creation otherwise the converter will interfere with them
-article_form.personarticle = FormField(personarticle_form)
-article_form.mediaarticle =  FormField(mediaarticle_form)
-article_form.eventarticle =  FormField(eventarticle_form)
-article_form.placearticle =  FormField(placearticle_form)
-article_form.fractionarticle =  FormField(fractionarticle_form)
+article_form.personarticle = ArticleTypeFormField(personarticle_form)
+article_form.mediaarticle =  ArticleTypeFormField(mediaarticle_form)
+article_form.eventarticle =  ArticleTypeFormField(eventarticle_form)
+article_form.placearticle =  ArticleTypeFormField(placearticle_form)
+article_form.fractionarticle =  ArticleTypeFormField(fractionarticle_form)
 article_form.outgoing_relations = FieldList(ArticleRelationFormField(articlerelation_form))
 
 # Create servers to simplify our views
@@ -245,32 +242,23 @@ def view_article(world_slug, article_slug):
 def edit_article(world_slug, article_slug):
     world = get_object_or_404(World, World.slug == world_slug)
     article = get_object_or_404(Article, Article.slug == article_slug)
-
     if request.method == 'GET':
         form = article_server.get_form('edit', article)
-        print getattr(article, 'personarticle')
-        # To make sure each form contains the article id of this article (as the fields are hidden)
-        # We need to set the article
-        form.personarticle.article.data = article
-        form.eventarticle.article.data = article
-        form.placearticle.article.data = article
-        form.mediaarticle.article.data = article
-        form.fractionarticle.article.data = article
         if article.type > 0:
+            # TODO for some reason the prefill of article type has to be done manually
             f = form[article.type_name()+'article']
-            p = article.get_type().first()
-            print f.form.data, p
-            f.form.process(None, p)
-
+            f.form.process(None, article.get_type())
         # This will limit some of the querys in the form to only allow articles from this world
         form.world.query = form.world.query.where(World.slug == world_slug)
-        # form.outgoing_relations.append_entry({'from_article':article})
         for f in form.outgoing_relations:
             f.to_article.query = f.to_article.query.where(Article.world == world).where(Article.id != article.id)
-        # print form.outgoing_relations
         return article_server.render('edit', article, form, world=world)
     elif request.method == 'POST':
-        to_return = article_server.commit('edit', article, world=world)
+        form = article_server.get_form('edit', article, request.form)
+        article.remove_old_type(form.type.data) # remove old typeobj if needed
+        # We will set the default article relation on the chosen articletype
+        form[article.type_name(form.type.data )+'article'].article.data = article
+        to_return = article_server.commit('edit', article, form, world=world)
         for o in article.outgoing_relations:
             o.save()
         return to_return
@@ -282,7 +270,7 @@ def new_articlerelation(world_slug, article_slug):
     article = get_object_or_404(Article, Article.slug == article_slug)
     form = article_server.get_form('edit', article)
     nr = request.args.get('nr')
-    nr = int(nr)
+    nr = max(1,int(nr))
     for k in range(0,nr):
         print k
         form.outgoing_relations.append_entry({'from_article':article})
@@ -296,7 +284,16 @@ def new_article(world_slug):
     if request.method == 'GET':
         return article_server.render('new', None, world=world)
     elif request.method == 'POST':
-        return article_server.commit('new', None, world=world)
+        form = article_server.get_form('new', req_form=request.form)
+        if form.pre_validate():
+            article = Article(world=world)
+            # We need special prepopulate to create the Article object fully before we try to create dependent objects
+            form.pre_populate_obj(article)
+            article.save()
+            form[article.type_name(form.type.data )+'article'].article.data = article
+            return article_server.commit('new', article, form, world=world)
+    else:
+        abort(501)
 
 @world_app.route('/<world_slug>/<article_slug>/delete', methods=['GET', 'POST'])
 @auth.login_required
