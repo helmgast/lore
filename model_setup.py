@@ -23,6 +23,7 @@ def setup_models():
         RelationType,
         PlaceArticle,
         ArticleRelation,
+        ArticleGroup,
         Group,
         Conversation,
         User,
@@ -34,21 +35,12 @@ def setup_models():
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
     altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
     kult = World.create(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter")
-    
-    MediaArticle.create(mime_type="image/jpg",
-                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
-                        article=Article.create(type=ARTICLE_MEDIA,
-                                               title=u"Ljusbringaren",
-                                               content=u"No content",
-                                               world=altor))
-    PersonArticle.create(born=altor_date(1653,3,4),
-                         died=altor_date(1891,12,3),
-                         gender=GENDER_MALE,
-                         occupation=u"Ljusbringaren",
-                         article=Article.create(type=ARTICLE_PERSON,
-                                                title=u"Ljusbringaren bild",
-                                                content=u"No content",
-                                                world=altor))
+
+    RelationType.create(name="child of")
+    RelationType.create(name="parent of")
+    RelationType.create(name="friend of")
+    RelationType.create(name="enemy of")
+    RelationType.create(name="distant relative of")
 
 #mf = User.create(username='admin', password='a', email='ripperdoc@gmail.com', active=True, admin=True, realname='Martin F', description='Always games in a hat. Has a cat.')
     mf = User.create(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
@@ -100,6 +92,23 @@ def setup_models():
     User.create(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson')
     
+    MediaArticle.create(mime_type="image/jpg",
+                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
+                        article=Article.create(type=ARTICLE_MEDIA,
+                                               title=u"Ljusbringaren",
+                                               content=u"No content",
+                                               world=altor,
+                                               creator=mj))
+    PersonArticle.create(born=altor_date(1653,3,4),
+                         died=altor_date(1891,12,3),
+                         gender=GENDER_MALE,
+                         occupation=u"Ljusbringaren",
+                         article=Article.create(type=ARTICLE_PERSON,
+                                                title=u"Ljusbringaren bild",
+                                                content=u"No content",
+                                                world=altor,
+                                               creator=rl))
+
     Relationship.create(from_user=mf, to_user=nf)
     Relationship.create(from_user=nf, to_user=mf)
     Relationship.create(from_user=rj, to_user=vs)

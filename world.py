@@ -1,14 +1,14 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
-from models import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle
+from models import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ArticleGroup, Group
 from models import ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
 from resource import ResourceHandler, ModelServer
 from raconteur import auth, admin
 from itertools import groupby
 from datetime import datetime, timedelta
 from flask_peewee.utils import get_object_or_404, object_list, slugify
-from wtfpeewee.fields import ModelSelectField, ModelSelectMultipleField, ModelHiddenField, FormField,SelectQueryField
+from wtfpeewee.fields import ModelSelectField, SelectMultipleQueryField, ModelHiddenField, FormField,SelectQueryField
 from wtforms.fields import FieldList, HiddenField
 from flask_peewee.filters import FilterMapping, FilterForm, FilterModelConverter
 from werkzeug.datastructures import ImmutableMultiDict
@@ -68,6 +68,9 @@ class WorldConverter(ModelConverter):
             field_obj = SelectQueryField(query=field.choices, **kwargs)
         elif kwargs.pop('hidden',False):
             field_obj = ModelHiddenField(model=field.rel_model, **kwargs)
+        elif kwargs.pop('multiple', False):
+            query = kwargs.pop('query',None)
+            field_obj = SelectMultipleQueryField(query=query if query else field.rel_model.select(), **kwargs)
         else:
             query = kwargs.pop('query',None)
             field_obj = SelectQueryField(query=query if query else field.rel_model.select(), **kwargs)
@@ -89,6 +92,9 @@ fractionarticle_form = model_form(FractionArticle, converter=WorldConverter(), f
 # Create article_relation form, but make sure we hide the from_article field.
 articlerelation_form = model_form(ArticleRelation, converter=WorldConverter(), 
     field_args={'from_article':{'hidden':True},'relation_type':{'allow_blank':True,'blank_text':u' '}, 'to_article':{'allow_blank':True,'blank_text':u' '}})
+
+articlegroup_form = model_form(ArticleGroup, converter=WorldConverter(),
+    field_args={'article':{'hidden':True},'group':{'multiple':True}})
 
 class ArticleTypeFormField(FormField):
     def validate(self, form, extra_validators=tuple()):
@@ -189,6 +195,8 @@ article_form.eventarticle =  ArticleTypeFormField(eventarticle_form)
 article_form.placearticle =  ArticleTypeFormField(placearticle_form)
 article_form.fractionarticle =  ArticleTypeFormField(fractionarticle_form)
 article_form.outgoing_relations = FieldList(ArticleRelationFormField(articlerelation_form))
+article_form.articlegroups = FormField(articlegroup_form)
+
 
 # Create servers to simplify our views
 world_server = ModelServer(world_app, World, templatepath='world/')
@@ -248,6 +256,8 @@ def edit_article(world_slug, article_slug):
             # TODO for some reason the prefill of article type has to be done manually
             f = form[article.type_name()+'article']
             f.form.process(None, article.get_type())
+        form.articlegroups.group.data = [a.group for a in article.articlegroups]
+        form.articlegroups.article.data = article
         # This will limit some of the querys in the form to only allow articles from this world
         form.world.query = form.world.query.where(World.slug == world_slug)
         for f in form.outgoing_relations:
@@ -255,12 +265,30 @@ def edit_article(world_slug, article_slug):
         return article_server.render('edit', article, form, world=world)
     elif request.method == 'POST':
         form = article_server.get_form('edit', article, request.form)
+        print form.articlegroups.data
+        art_groups = {a.group.id:a for a in article.articlegroups}
+        for g in form.articlegroups.data['group']:
+            if g.id not in art_groups:
+                ArticleGroup.create(article=article, group=g)
+       # already_groups = ArticleGroup.select().where(ArticleGroup.article == article, ArticleGroup.group << form.articlegroups.data)
+       #  for g in form.articlegroups.data:
+       #      if 
+       #      ArticleGroup.create(article=article, group=g)
+        before_relations = {a.id:a for a in article.outgoing_relations}
         article.remove_old_type(form.type.data) # remove old typeobj if needed
         # We will set the default article relation on the chosen articletype
-        form[article.type_name(form.type.data )+'article'].article.data = article
+        if form.type.data > 0:
+            form[article.type_name(form.type.data )+'article'].article.data = article
+        form.articlegroups.article.data = article
         to_return = article_server.commit('edit', article, form, world=world)
         for o in article.outgoing_relations:
             o.save()
+            del before_relations[o.id] # remove it from the list of relations we may need to delete
+        for a in before_relations.values():
+            a.delete_instance() # delete the relations that were not in the list after form processing
+        for g in art_groups:
+            if art_groups[g] not in form.articlegroups.data:
+                art_groups[g].delete_instance()
         return to_return
 
 @world_app.route('/<world_slug>/<article_slug>/articlerelations/new', methods=['GET'])

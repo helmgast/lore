@@ -146,11 +146,13 @@ class ConversationMember(db.Model):
 
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
+GAME_GROUP, WORLD_GROUP, ARTICLE_GROUP = 1,2,3
 class Group(db.Model):
     name = CharField()
     location = CharField()
     slug = CharField()
     description = CharField()
+    type = IntegerField(choices=((GAME_GROUP, 'gamegroup'), (WORLD_GROUP, 'worldgroup'), (ARTICLE_GROUP, 'articlegroup')),default=GAME_GROUP)
     conversation = ForeignKeyField(Conversation)
     
     def __unicode__(self):
@@ -340,10 +342,10 @@ class StringGenerator(db.Model):
 
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT = 0, 1, 2, 3, 4, 5
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'), (ARTICLE_MEDIA, 'media'), (ARTICLE_PERSON, 'person'), (ARTICLE_FRACTION, 'fraction'), (ARTICLE_PLACE, 'place'), (ARTICLE_EVENT, 'event'))
-
 class Article(db.Model):
     type = IntegerField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
     world = ForeignKeyField(World, related_name='articles')
+    creator = ForeignKeyField(User, related_name='articles')
     title = CharField()
     slug = CharField(unique=True) # URL-friendly name
     content = TextField()
@@ -437,12 +439,16 @@ class EventArticle(db.Model):
     from_date = IntegerField()
     to_date = IntegerField()
 
-ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
-ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
-class ArticleUser(db.Model):
-    article = ForeignKeyField(Article, related_name='user')
-    user = ForeignKeyField(User)
-    type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
+# ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
+# ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
+# class ArticleUser(db.Model):
+#     article = ForeignKeyField(Article, related_name='user')
+#     user = ForeignKeyField(User)
+#     type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
+
+class ArticleGroup(db.Model):
+    article = ForeignKeyField(Article, related_name='articlegroups')
+    group = ForeignKeyField(Group, related_name='articles')
 
 class RelationType(db.Model):
     name = CharField() # human friendly name
@@ -472,17 +478,6 @@ class ArticleRelation(db.Model):
     # user = ForeignKeyField(User)
     # article = ForiegnKeyField(Article)
     # right = ForiegnKeyField(UserRights)
-
-# class UserRights(db.Model):
-    # right = # owner, editor, reader
-
-#        
-#class Metadata(db.Model): # Metadata to any article
-#    article = ForeignKeyField(Article)
-#    key = CharField()
-#    value = CharField()
-#
-
 
 '''
 @ link to

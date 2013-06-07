@@ -1,5 +1,7 @@
 {% if template_parent %}{% extends template_parent %} {% else %}{% extends "world/world_view.html" %}{% endif %}
 
+{% from 'includes/components.html' import form_field, form_fields %}
+
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New article!' %}
 {% else %}
@@ -21,29 +23,15 @@
 {% if article_form %}
 <form method="post" action="{{ action_url }}">
 {{ article_form.title }}{{ article_form.world }}
-<div class="page-header">
+<div class="page-header" style="margin-bottom: 5px;">
     <h1><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
-        <small>{{ article_form.type(class="m_action2") }}</small>
+    <button type="submit" class="btn btn-small btn-primary">Save changes</button>
+    <a href="{{ url_for('world.index') }}" class="btn btn-small">Cancel</a>
     </h1>
 </div>
 {% include "includes/flash.html" %}
-	{% set article_type_name = article.type_name() if article else '' %}
-	<div id="personarticle_form" {{ ' class=hide ' if
-		article_type_name!='person'}}>{% include
-		"models/personarticle_view.html" %}</div>
-	<div id="mediaarticle_form" {{ ' class=hide ' if
-		article_type_name!='media'}}>{% include
-		"models/mediaarticle_view.html" %}</div>
-	<div id="eventarticle_form" {{ ' class=hide ' if
-		article_type_name!='event'}}>{% include
-		"models/eventarticle_view.html" %}</div>
-	<div id="placearticle_form" {{ ' class=hide ' if
-		article_type_name!='place'}}>{% include
-		"models/placearticle_view.html" %}</div>
-  <div id="fractionarticle_form" {{ ' class=hide ' if
-    article_type_name!='fraction'}}>{% include
-    "models/fractionarticle_view.html" %}</div>
-	<div class="edit">
+<div class="row">
+<div class="span7">
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
 			<div class="btn-group">
@@ -52,17 +40,43 @@
       </div>
 		</div>
 		<div id="editor">{{ article_form.content.data }}</div>
-		{{ article_form.content(rows=20, value="text") }}
-	</div>
-	<table class="m_view">
-		{% for articlerelation_form in article_form.outgoing_relations %}
+		{{ article_form.content(rows=40, value="text") }}
+</div>
+<div class="span5 metadata">
+  <h4>Metadata</h4>
+  <fieldset style="margin-bottom: 10px">
+  {{ form_fields(article_form.articlegroups) }}
+  {{ form_field(article_form.type, class="m_action2")}}
+</fieldset>
+  {% set article_type_name = article.type_name() if article else '' %}
+  <div id="personarticle_form" {{ ' class=hide ' if
+    article_type_name!='person'}}>{% include
+    "models/personarticle_view.html" %}</div>
+  <div id="mediaarticle_form" {{ ' class=hide ' if
+    article_type_name!='media'}}>{% include
+    "models/mediaarticle_view.html" %}</div>
+  <div id="eventarticle_form" {{ ' class=hide ' if
+    article_type_name!='event'}}>{% include
+    "models/eventarticle_view.html" %}</div>
+  <div id="placearticle_form" {{ ' class=hide ' if
+    article_type_name!='place'}}>{% include
+    "models/placearticle_view.html" %}</div>
+  <div id="fractionarticle_form" {{ ' class=hide ' if
+    article_type_name!='fraction'}}>{% include
+    "models/fractionarticle_view.html" %}</div>
+  <h4 style="display:inline">Relations</h4><button id="addrow" class="btn btn-info btn-small" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+    <table class="m_view">
+    <tr class="m_instance"></tr>
+    {% for articlerelation_form in article_form.outgoing_relations %}
       {% include "models/articlerelation_view.html" %}
-		{% endfor %}
-    <tr class="m_control"><td><button id="addrow" class="btn btn-primary btn-small">Add relation</button></td></tr>
-	</table>
+    {% endfor %}
+    <tr class="m_control"><td></td></tr>
+  </table>
+</div>
+</div>
+
 	<div class="row form-actions">
-		<button type="submit" class="btn btn-primary">Save changes</button>
-		<a href="{{ url_for('world.index') }}" class="btn">Cancel</a>
+	
 	</div>
 </form>
 {% else %}
@@ -101,8 +115,8 @@
           }
           $.get('{{ url_for('.new_articlerelation', world_slug=world.slug, article_slug=article.slug) }}?nr='+nr, function(data) {
             var $d = $(data)
-            $d.insertBefore($this.closest('.m_control'))
-            $d.find('select[data-role="chosenblank"]').chosen({allow_single_deselect: true})
+            $d.insertAfter($('.m_view .m_instance').last())
+            $d.find('select[data-role="chosenblank"]').chosen()
           });
           e.preventDefault(); return false;  
         });

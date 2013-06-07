@@ -147,6 +147,6 @@ $(document).ready(function() {
   $('body').on('click', '.m_action', handle_action)
 
   $('form select[data-role="chosen"]').chosen();
-  $('form select[data-role="chosenblank"]').chosen({allow_single_deselect: true});
+  $('form select[data-role="chosenblank"]').chosen();
 
 });

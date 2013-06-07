@@ -345,18 +345,19 @@ textarea#metadata {
 	width: 200px;
 }
 
-.edit {
-	width: 614px;
-	clear: both;
-}
-
 #editor {
 	overflow: hidden;
 	overflow-y: scroll;
-	min-height: 100px;
-	max-height: 300px;
+	min-height: 300px;
+	max-height: 600px;
 }
 
 .calendar .selected {
 	background-color: #ddd;
+}
+
+.metadata label, .metadata input, .metadata select, .metadata textarea {
+	font-size: 11px !important;
+	line-height: 13px !important;
+	height: 13px !important;
 }

@@ -26,7 +26,7 @@ class GroupHandler(ResourceHandler):
 
 grouphandler = GroupHandler(
         Group,
-        model_form(Group, exclude=['slug', 'conversation']),
+        model_form(Group, exclude=['slug', 'conversation', 'type']),
         'social/group_page.html',
         'social.group_detail')
 
