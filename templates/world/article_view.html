@@ -93,6 +93,7 @@
 <script>
 	$(document).ready(
 			function() {
+        $("#content").val($('#editor').cleanHtml()); // have to load it once!
 				$('#editor').wysiwyg().blur(function(e){
 					$("#content").val($('#editor').cleanHtml());
 				});
