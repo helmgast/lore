@@ -260,6 +260,8 @@ def allowed_article(op, user, model_obj=None):
         return True
     elif model_obj and model_obj.creator == user:
         return True #creator has full rights
+    elif user and user.username == 'admin':
+        return True
     elif op=='view' or op=='edit': # we are not creator but we want to edit or view
         ags = list(model_obj.articlegroups)
         players_allowed = {}
@@ -392,15 +394,18 @@ def new_article(world_slug):
         return article_server.render('new', None, world=world)
     elif request.method == 'POST':
         form = article_server.get_form('new', req_form=request.form)
+        form.creator.data = auth.get_logged_in_user()
         if form.pre_validate():
             article = Article(world=world)
             # We need special prepopulate to create the Article object fully before we try to create dependent objects
             form.pre_populate_obj(article)
             article.save()
-            form[article.type_name(form.type.data )+'article'].article.data = article
+            if form.type.data > 0:
+                form[article.type_name(form.type.data )+'article'].article.data = article
             return article_server.commit('new', article, form, world=world)
-    else:
-        abort(501)
+        else:
+            s = '%s' % form.errors
+            return s
 
 @world_app.route('/<world_slug>/<article_slug>/delete', methods=['GET', 'POST'])
 @auth.login_required
