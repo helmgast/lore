@@ -39,8 +39,8 @@
         <a class="btn" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
       </div>
 		</div>
-		<div id="editor">{{ article_form.content.data }}</div>
-		{{ article_form.content(rows=40, value="text") }}
+		<div id="editor">{{ article_form.content.data|safe }}</div>
+    {{ article_form.content(value="text") }}
 </div>
 <div class="span5 metadata">
   <h4>Metadata</h4>
@@ -72,9 +72,7 @@
   </table>
 </div>
 </div>
-
 	<div class="row form-actions">
-	
 	</div>
 </form>
 {% else %}
