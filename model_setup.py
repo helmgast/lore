@@ -28,10 +28,14 @@ def setup_models():
         Conversation,
         User,
         Article,
-        World]
+        World,
+        StringGenerator,
+        GeneratorInputList,
+        GeneratorInputItem]
+        
     drop_model_tables(models, fail_silently=True)
     create_model_tables(models)
-    
+
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
     altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
     kult = World.create(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter")
@@ -246,15 +250,6 @@ def setup_models():
     Session.create(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), campaign=cd6k, location=u'Mölndalsvägen')
     Session.create(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), campaign=cd6k, location=u'Mölndalsvägen')
     Session.create(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), campaign=cd6k, location=u'Mölndalsvägen')
-
-    StringGenerator.drop_table(fail_silently=True)
-    StringGenerator.create_table()
-    StringGenerator.create(name="Default Generator")
-    
-    GeneratorInputList.drop_table(fail_silently=True)
-    GeneratorInputList.create_table()
-    GeneratorInputItem.drop_table(fail_silently=True)
-    GeneratorInputItem.create_table()
     
     gil1 = GeneratorInputList.create(name=u'Korhiv start letter')
     gil2 = GeneratorInputList.create(name=u'Korhiv middle syllables')
