@@ -1,6 +1,4 @@
-{#- PlaceArticle, row form. Expects: action_url, typeform -#}
-{% if template_parent %}{% extends template_parent %}
-{% elif template_parent == 'base' %}{% extends "world/base.html" %}{% endif %}
+{% extends 'includes/row.html' %}
 
 {% from 'includes/components.html' import form_fields %}
 

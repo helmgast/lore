@@ -49,9 +49,7 @@
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
   {% set article_type_name = article.type_name() if article else '' %}
-  <div id="personarticle_form" {{ ' class=hide ' if
-    article_type_name!='person'}}>{% include
-    "models/personarticle_view.html" %}</div>
+  <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>{% include "models/personarticle_view.html" %}</div>
   <div id="mediaarticle_form" {{ ' class=hide ' if
     article_type_name!='media'}}>{% include
     "models/mediaarticle_view.html" %}</div>

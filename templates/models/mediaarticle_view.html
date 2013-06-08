@@ -1,7 +1,7 @@
-{#- MediaArticle, row form. Expects: action_url, typeform -#} {% if
-template_parent %}{% extends template_parent %} {% elif template_parent
-== 'base' %}{% extends "world/base.html" %}{% endif %} {% block content
-%}{% block inline %}
+{% extends 'includes/row.html' %}
+
+{% block content %}{% block inline %}
+
 <table class="table imageContainer">
 	<tr>
 		<td><strong>Upload file</strong></td>
