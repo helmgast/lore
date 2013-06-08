@@ -307,6 +307,9 @@ class Scene(db.Model):
 
     def ordered_children(self):
         return self.children.order_by(Scene.order.asc())
+
+    def __unicode__(self):
+        return u'Scene: %s of %s' % (self.name, self.campaign)
                 
 # A game session that was or will be held, e.g. the instance between a scenario
 # and a group at a certain date
@@ -316,6 +319,9 @@ class Session(db.Model):
     campaign = ForeignKeyField(Campaign, related_name='sessions')
     description = CharField(null=True) # Details on the event if any.
     location = CharField(null=True) # Location of the session
+
+    def __unicode__(self):
+        return u'Session of %s at %s' % (self.campaign, self.play_start.strftime('%Y-%m-%d'))
 
 # Lists users present at a particular session
 class SessionPresentUser(db.Model):

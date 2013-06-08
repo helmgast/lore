@@ -196,7 +196,7 @@ class ArticleForm(Form):
         # Do normal populate of all fields except FormFields
         for name, field in self._fields.iteritems():
             if name not in self.sub_fields:
-                print "Pre-populating field %s with data %s" % (name, field.data)
+                # print u"Pre-populating field %s with data %s" % (name, field.data)
                 field.populate_obj(obj, name)
         self.prepopulated = True
         
@@ -220,7 +220,7 @@ class ArticleForm(Form):
                     new_model = PlaceArticle()
                 elif typename == 'fractionarticle':
                     new_model = FractionArticle()    
-                print "Will populate %s with data %s" % (typename, field.form.data)
+                # print u"Will populate %s with data %s" % (typename, field.form.data)
             field.form.populate_obj(new_model)
             new_model.save()
         else:
@@ -232,7 +232,7 @@ article_form = model_form(Article, base_class=ArticleForm, exclude=['slug', 'cre
 
 class ArticleRelationFormField(FormField):
     def populate_obj(self, obj, name):
-        print "This field has data %s, trying to write it to attribute %s of obj %s, currently %s (_obj is %s)" % (self.data, name, obj, getattr(obj, 'data'), self._obj)
+        # print "This field has data %s, trying to write it to attribute %s of obj %s, currently %s (_obj is %s)" % (self.data, name, obj, getattr(obj, 'data'), self._obj)
         candidate = getattr(obj, name, None)
         if candidate is None:
             if self._obj is None:
@@ -345,7 +345,7 @@ def edit_article(world_slug, article_slug):
         return article_server.render('edit', article, form, world=world)
     elif request.method == 'POST':
         form = article_server.get_form('edit', article, request.form)
-        print form.articlegroups._data
+        # print form.articlegroups._data
         # Read previous article groups
         art_groups = {a.group.id:a for a in article.articlegroups}
 

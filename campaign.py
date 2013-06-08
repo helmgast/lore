@@ -118,7 +118,7 @@ def session_detail(id):
 
 @campaign.route('/campaigns/')
 def campaigns():
-    campaigns = Campaign.select()
+    campaigns = Campaign.select().order_by(Campaign.name.asc())
     return render_template('campaign/campaigns.html', campaigns=campaigns)
 
 @auth.login_required

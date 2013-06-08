@@ -20,8 +20,8 @@ import raconteur
 if __name__ == '__main__':
   if is_deploy:  # We're running on deployment server
     raconteur.setup_models()
-    deploy.run()
-    
+    #deploy.run()
+
   else:
     print "Running local %s" % __name__
     if len(sys.argv) > 1 and sys.argv[1] == "reset":
