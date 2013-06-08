@@ -45,7 +45,7 @@
 <div class="span5 metadata">
   <h4>Metadata</h4>
   <fieldset style="margin-bottom: 10px">
-  {{ form_fields(article_form.articlegroups) }}
+  {{ form_field(article_form.articlegroups) }}
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
   {% set article_type_name = article.type_name() if article else '' %}

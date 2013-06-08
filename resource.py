@@ -183,7 +183,7 @@ class ModelServer:
     def get_model_name(model_class):
         return model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
 
-    def __init__(self, app, model_class, parent=None, form_class=None, templatepath=None, model_request_class=None): # should allow override formclass, template, route
+    def __init__(self, app, model_class, parent=None, form_class=None, templatepath=None, model_request_class=None, allowed_func=None): # should allow override formclass, template, route
         self.app = app
         self.endpoints = {}
         self.model_class = model_class
@@ -212,6 +212,8 @@ class ModelServer:
             'delete': 'includes/confirm.html',
             'base': '%sbase.html' % self.templatepath
         }
+        if allowed_func:
+            self.allowed = allowed_func
         self.ops_by_model = ['list','new']
         self.ops_by_identifier = ['view','edit','delete']
 
@@ -253,6 +255,9 @@ class ModelServer:
         return url_for(endpoint, **args)
 
     def render(self, op, model_obj, form=None, **render_args):
+        print 'in render', op, model_obj
+        if not self.allowed(op, auth.get_logged_in_user(), model_obj):
+            return error_response("Not allowed to %s %s" % (op, model_obj))
         render_args['op'] = op
         if not form:
              # let's assume that the render args, e.g. view args, can be useful to pre-fill the form!

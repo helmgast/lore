@@ -404,7 +404,7 @@ class Article(db.Model):
         return unicode(self).encode('utf-8')
     
     def __unicode__(self):
-        return u'%s [%s]' % (self.title, self.world.title)
+        return u'%s%s' % (self.title, ' [%s]' % self.type_name() if self.type>0 else '')
 
 class MediaArticle(db.Model):
     article = ForeignKeyField(Article, related_name='mediaarticle')
@@ -449,6 +449,7 @@ class EventArticle(db.Model):
 class ArticleGroup(db.Model):
     article = ForeignKeyField(Article, related_name='articlegroups')
     group = ForeignKeyField(Group, related_name='articles')
+    type = IntegerField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
 
 class RelationType(db.Model):
     name = CharField() # human friendly name
