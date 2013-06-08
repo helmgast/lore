@@ -19,8 +19,8 @@ import raconteur
 #  main():
 if __name__ == '__main__':
   if is_deploy:  # We're running on deployment server
-    raconteur.setup_models()
-    #deploy.run()
+    #raconteur.setup_models()
+    deploy.run()
 
   else:
     print "Running local %s" % __name__
