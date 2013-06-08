@@ -1,19 +1,29 @@
 import datetime
 
 from flask_peewee.admin import Admin, ModelAdmin, AdminPanel
+from flask import request
 from models import *
 
-class UserStatsPanel(AdminPanel):
-    template_name = 'admin/user_stats.html'
-    
+class DBAdminPanel(AdminPanel):
+
+    template_name = 'admin/dbadmin.html'
+
+    def get_urls(self):
+        return (
+            ('/dbadmin/', self.dbadmin),
+        )
+
+    def dbadmin(self):
+        import model_setup
+        code = request.args.get('code', None)
+        if not code or code != 'pleaseresetdb':
+            return "Sorry, you need to provide valid code to reset DB"
+        else:
+            model_setup.setup_models()
+            return 'Succsessfully resetted models!' 
+
     def get_context(self):
-        last_week = datetime.datetime.now() - datetime.timedelta(days=7)
-        signups_this_week = User.filter(join_date__gt=last_week).count()
-        messages_this_week = Message.filter(pub_date__gt=last_week).count()
-        return {
-            'signups': signups_this_week,
-            'messages': messages_this_week,
-        }
+        return {}
 
 class MessageAdmin(ModelAdmin):
     columns = ('user', 'content', 'pub_date',)
@@ -39,6 +49,6 @@ def create_admin(app, auth):
     admin.register(Scene)
     admin.register(Session)
     admin.register(World)
-    admin.register_panel('User stats', UserStatsPanel)
+    admin.register_panel('DB Admin', DBAdminPanel)
     admin.setup()
     return admin

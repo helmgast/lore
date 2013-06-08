@@ -1,0 +1,5 @@
+{% extends "admin/panels/default.html" %}
+
+{% block panel_content %}
+    <p><strong><a href="{{ url_for(panel.get_url_name('dbadmin')) }}">Reset database</a></strong></p>
+{% endblock %}
