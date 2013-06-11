@@ -118,6 +118,7 @@ class User(db.Model, BaseUser):
             WHERE a.member_id IN (%s) GROUP BY a.conversation_id HAVING COUNT(*) = ( SELECT COUNT(*) FROM conversationmembers b \
             WHERE b.conversation_id = a.conversation_id GROUP BY b.conversation_id) AND COUNT(*) = ? ORDER BY c.modified_date \
             DESC;' % param_list, *(member_ids+[len(member_ids)]))
+        print param_marker, param_list, rq.sql()
         return rq
 
     def gravatar_url(self, size=48):
