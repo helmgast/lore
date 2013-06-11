@@ -7,7 +7,7 @@ setup(name='Raconteur', version='0.3',
 
       #  Uncomment one or more lines below in the install_requires section
       #  for the specific client drivers/modules your application needs.
-      install_requires=['greenlet', 'gevent', 'Flask', 'psycopg2', 'flask-peewee', 'wtf-peewee >= 0.2.2'
+      install_requires=['greenlet', 'gevent', 'Jinja2 <= 2.6', 'Flask', 'psycopg2', 'flask-peewee', 'wtf-peewee >= 0.2.2'
                         #  'MySQL-python',
                         #  'pymongo',
                         #  'psycopg2',

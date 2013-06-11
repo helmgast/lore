@@ -1,4 +1,3 @@
-{% if inline %}{% extends "includes/inline.html" %}{% endif %}
 <table class="table table-striped table-narrow m_view m_view-groupmembers">
 <thead>
   <tr>
@@ -8,7 +7,7 @@
   </tr>
 </thead>
 <tbody>
-{%- block inline -%}
+{% block inline %}
 {%- for gm in members -%}
   <tr class="user-tablerow m_instance">
     <td class="m_field" name="username" data-value="{{gm.member.username}}">
@@ -18,8 +17,8 @@
     </a></td>
     <td>{{gm.member.realname}}</td>
     <td>{{gm.status_text()}}</td>
-    {% if form %}<td>
-      {% if form and gm.status != 1 %}
+    {% if False and resource.form %}<td> {# TODO avoiding to show form fields #}
+      {% if False and resource.form and gm.status != 1 %}
         <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
           <i class="icon-remove"></i>
         </button>
@@ -30,10 +29,10 @@
     </td>{% endif %}
   </tr>
 {%- endfor -%}
-{%- endblock -%}
+{% endblock %}
 
 </tbody>
-{% if form -%}
+{% if False and resource.form -%}
 <tfoot><tr><td colspan="4">
   <label>Add players</label>
   <ul class="typeahead-list typeahead-user">

@@ -1,5 +1,5 @@
 {% if not inline %}{% extends "social/social.html" %}
-{% else %}{% extends "includes/inline.html" %}{% endif %}
+{% else %}{% set inline = None %}{% extends "includes/inline.html" %}{% endif %}
 
 {% set group = resource.instance %}
 {% set members=group.members() if group else [] %}
@@ -8,15 +8,14 @@
   {% set title = "New group" %}
   {% set action_url = url_for('social.group_new', inline=inline) %}
 {% else %}
-  {% set tagline = group.name %}
+  {% set title = group.name %}
   {% set action_url = url_for('social.group_detail', slug=group.slug, inline=inline) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
 {% endif %}
 
 {% block content_title %}{{title}}{% endblock %}
-{% block content_tagline %}{{tagline}}{% endblock %}
 
-{% block content %}{% block modal_body %}
+{% block content %}{% block inline %}
 {% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if inline }}">
   <div class="span6">

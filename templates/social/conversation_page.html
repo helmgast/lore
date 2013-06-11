@@ -12,7 +12,7 @@
   {% set action_url = url_for('social.conversation_new', inline=inline) %}
 {% endif %}
 
-{% block content %}{% block modal_body %}
+{% block content %}{% block inline %}
 
 <form class="modal-form" action="{{ action_url }}" method="post">
 {# note, Jinja seem to autoescape class names, so no need for "" #}
