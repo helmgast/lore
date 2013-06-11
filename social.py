@@ -77,7 +77,8 @@ def conversation_new():
         recipients = [r for r in r_query] # Iterate now to get a list, not a query object
         print "insocial>recipients is list of %s, first item is %s" % (type(recipients[0]), recipients[0])
         # Get most recent conversation if there is one
-        convs = list(user.get_most_recent_conversation_with(recipients))
+        q = user.get_most_recent_conversation_with(recipients)
+        convs = list(q)
         print convs
         if convs: #not empty
             print "Conversation: %s, id %s and date %s" % (convs[0], convs[0].id, convs[0].modified_date)

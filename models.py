@@ -107,17 +107,17 @@ class User(db.Model, BaseUser):
         print "recipients is list of %s, first item is %s" % (type(recipients[0]), recipients[0])
         member_ids = [self.id]+[i.id for i in recipients] # add this user as well
 
+        param_marker = db.database_class.interpolation # in SQLite this is '?' but in Postgresql it's '%s'
+        # We need to manually build a parameterized query, and the parameter marker is different for different underlying DB
+        # We need a list of parameters representing member IDs, and we also need a count to match
+        param_list = ','.join([param_marker for x in range(0,len(member_ids))])
+        # Finally, we need to insert the individual parameters (the list of member ids plus total count) as an argument list,
+        # using the * to unpack the resulting list
         rq = RawQuery(Conversation, 
-            'SELECT c.id, c.modified_date FROM conversation c INNER JOIN \
-            conversationmembers a ON a.conversation_id = c.id WHERE a.member_id IN (?%s) GROUP BY \
-            a.conversation_id HAVING COUNT(*) = ( SELECT COUNT(*) FROM conversationmembers b \
-            WHERE b.conversation_id = a.conversation_id GROUP BY b.conversation_id) AND COUNT(*) = ? \
-            ORDER BY c.modified_date DESC;' % ',?'*(len(member_ids)-1),
-            *(member_ids+[len(member_ids)]))
-        # NOTE, the query need to include a ? for each parameter, so we need to insert enough ? to match
-        # our number of members. We also need to insert the number of members as a parameter itself,
-        # into the last function argument, in the *params style (expand list into separate arguments)
-        #print rq.sql(db.get_compiler())
+            'SELECT c.id, c.modified_date FROM conversation c INNER JOIN conversationmembers a ON a.conversation_id = c.id \
+            WHERE a.member_id IN (%s) GROUP BY a.conversation_id HAVING COUNT(*) = ( SELECT COUNT(*) FROM conversationmembers b \
+            WHERE b.conversation_id = a.conversation_id GROUP BY b.conversation_id) AND COUNT(*) = ? ORDER BY c.modified_date \
+            DESC;' % param_list, *(member_ids+[len(member_ids)]))
         return rq
 
     def gravatar_url(self, size=48):
