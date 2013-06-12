@@ -15,16 +15,16 @@ except ImportError:
 
 class LocalConfiguration(object): # basic configuration if running locally, uses Sqlite
     DATABASE = {
-        'name': 'example.db',
-        'engine': 'peewee.SqliteDatabase',
-        'check_same_thread': False,
+    #     'name': 'example.db',
+    #     'engine': 'peewee.SqliteDatabase',
+    #     'check_same_thread': False,
 #        'user': 'admin',
 #        'password': 'xzUqQfsuJlhN',
 #        'host':os.environ['OPENSHIFT_POSTGRESQL_DB_HOST'],
 #        'port':os.environ['OPENSHIFT_POSTGRESQL_DB_PORT'],
-        # 'name': 'martin',
-        # 'engine': 'peewee.PostgresqlDatabase',
-        # 'threadlocals': True,
+        'name': 'martin',
+        'engine': 'peewee.PostgresqlDatabase',
+        'threadlocals': True,
         #'check_same_thread': False,
     }
     SECRET_KEY = 'shhhh'
