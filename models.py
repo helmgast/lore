@@ -114,8 +114,8 @@ class User(db.Model, BaseUser):
         # Finally, we need to insert the individual parameters (the list of member ids plus total count) as an argument list,
         # using the * to unpack the resulting list
         rq = RawQuery(Conversation, 
-            'SELECT c.id, c.modified_date FROM conversation c INNER JOIN conversationmembers a ON a.conversation_id = c.id \
-            WHERE a.member_id IN (%s) GROUP BY a.conversation_id HAVING COUNT(*) = ( SELECT COUNT(*) FROM conversationmembers b \
+            'SELECT c.id, c.modified_date FROM conversation c INNER JOIN conversationmember a ON a.conversation_id = c.id \
+            WHERE a.member_id IN (%s) GROUP BY a.conversation_id HAVING COUNT(*) = ( SELECT COUNT(*) FROM conversationmember b \
             WHERE b.conversation_id = a.conversation_id GROUP BY b.conversation_id) AND COUNT(*) = %s ORDER BY c.modified_date \
             DESC;' % (param_list, param_marker), *(member_ids+[len(member_ids)]))
         print param_marker, param_list, rq.sql()
