@@ -439,7 +439,7 @@ class PlaceArticle(db.Model):
     article = ForeignKeyField(Article, related_name='placearticle')
     coordinate_x = FloatField(null=True) # normalized position system, e.g. form 0 to 1 float, x and y
     coordinate_y = FloatField(null=True) # 
-    location_type = CharField() # building, city, domain, point_of_interest
+    location_type = CharField(null=True) # building, city, domain, point_of_interest
 
 class EventArticle(db.Model):
     article = ForeignKeyField(Article, related_name='eventarticle')

@@ -94,9 +94,6 @@
   </table>
 </div>
 </div>
-{% if article_type_name=='place' %}
-<div id="map" style="height: 256px"></div>
-{% endif %}
 </form>
 <div id="hinter" style="display:none" class="article_text"></div>
 
@@ -211,14 +208,38 @@
 					$this.data('oldVal', newValue)
 				})
 
-        var map = L.map('map').setView([51.505, -0.09], 13);
+
+        var map = L.map('map', {
+          center: [-77, 660],
+          zoom: 1,
+          minZoom: 0,
+          maxZoom: 1
+        });
         L.tileLayer('//googledrive.com/host/0Bybs2FIAp3ZTUFd5RHgwS0FCU3M/map/mundana_stor_karta_{z}_{x}_{y}.png', {
-          attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+          attribution: 'Map data &copy; Neogames',
         minZoom: 0,
-        maxZoom: 3,
+        maxZoom: 1,
         noWrap: true,
         continuousWorld: true,
         }).addTo(map);
+
+        var marker
+        var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
+        if (latlng[0]!=NaN && latlng[1] != NaN) {
+          marker = L.marker([51.5, -0.09]).addTo(map);
+        }
+
+        function onMapClick(e) {
+          $('#placearticle-coordinate_x').val(e.latlng.lat);
+          $('#placearticle-coordinate_y').val(e.latlng.lng);
+          if(!marker) {
+            marker = L.marker(e.latlng).addTo(map);
+          } else {
+            marker.setLatLng(e.latlng);
+          }
+        }
+
+        map.on('click', onMapClick);
 
 			});
 </script>
