@@ -326,11 +326,12 @@ important
 	margin-top: 0px;
 }
 
+/*
 .contenteditable, #editor{
 	border: 1px solid #d4d4d4;
 	border-radius: 4px;
 	padding: 5px;
-}
+}*/
 
 /* helpers */
 .hidden {
@@ -346,10 +347,10 @@ textarea#metadata {
 }
 
 #editor {
-	overflow: hidden;
+/*	overflow: hidden;
 	overflow-y: scroll;
 	min-height: 300px;
-	max-height: 600px;
+	max-height: 600px;*/
 }
 
 .calendar .selected {
@@ -360,4 +361,20 @@ textarea#metadata {
 	font-size: 11px !important;
 	line-height: 13px !important;
 	height: 13px !important;
+}
+
+.article_header {
+	font-family: Gentium Book Basic, serif;
+}
+
+.article_text {
+	font-family: Gentium Book Basic, serif;
+	font-size: 17px;
+	margin-left: 0px !important;
+}
+
+#hinter {
+	color: #bbb;
+	position: absolute;
+	pointer-events: none;
 }

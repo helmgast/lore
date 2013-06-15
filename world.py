@@ -316,6 +316,10 @@ def world_browse(world_slug, groupby):
         world_articles = Article.select().where(Article.world == world).order_by(Article.type.asc())
     elif groupby == 'time':
         world_articles = Article.select().where(Article.world == world).order_by(Article.created_date.desc())
+    elif groupby == 'relation':
+        world_articles = Article.select().where(Article.world == world).order_by(Article.created_date.desc())
+        relations = ArticleRelation.select().where(ArticleRelation.from_article << world_articles)
+        return object_list('models/articlerelation_list.html', world_articles, world=world, groupby=groupby, relations=relations)
     else:
         abort(404)
     return object_list('world/world_browse.html', world_articles, world=world, groupby=groupby)
@@ -340,8 +344,10 @@ def edit_article(world_slug, article_slug):
 
         # This will limit some of the querys in the form to only allow articles from this world
         form.world.query = form.world.query.where(World.slug == world_slug)
+        print 'outoing',form.outgoing_relations
         for f in form.outgoing_relations:
             f.to_article.query = f.to_article.query.where(Article.world == world).where(Article.id != article.id)
+            print f.to_article.query, list(f.to_article.query)
         return article_server.render('edit', article, form, world=world)
     elif request.method == 'POST':
         form = article_server.get_form('edit', article, request.form)
@@ -364,7 +370,8 @@ def edit_article(world_slug, article_slug):
         to_return = article_server.commit('edit', article, form, world=world)
         for o in article.outgoing_relations:
             o.save()
-            del before_relations[o.id] # remove it from the list of relations we may need to delete
+            if o.id in before_relations:
+                del before_relations[o.id] # remove it from the list of relations we may need to delete
         for a in before_relations.values():
             a.delete_instance() # delete the relations that were not in the list after form processing
         for ag in art_groups.values():
@@ -380,10 +387,9 @@ def new_articlerelation(world_slug, article_slug):
     form = article_server.get_form('edit', article)
     nr = request.args.get('nr')
     nr = max(1,int(nr))
-    for k in range(0,nr):
-        print k
+    for k in range(0,nr+1):
         form.outgoing_relations.append_entry({'from_article':article})
-        form.outgoing_relations[-1].to_article.query = form.outgoing_relations[-1].to_article.query.where(Article.world == world)
+        form.outgoing_relations[-1].to_article.query = form.outgoing_relations[-1].to_article.query.where(Article.world == world).where(Article.id != article.id)
     return render_template('models/articlerelation_view.html', op='new', articlerelation_form=form.outgoing_relations[-1])
 
 @world_app.route('/<world_slug>/new', methods=['GET', 'POST'])

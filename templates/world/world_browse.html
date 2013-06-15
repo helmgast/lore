@@ -1,17 +1,4 @@
-{% extends "world/base.html" %}
-
-{% block content_title %}{{world.title}}{% endblock %}
-{% block content_tagline %}{% endblock %}
-
-{% block sidebar %}
-  <h4>Alternativ</h4>
-    <ul class="nav nav-list">
-        <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-book"></i>Browse by type</a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-book"></i>Browse by time</a></li>
-    </ul>
-{% endblock %}
+{% extends "world/world_view.html" %}
 
 {% block content %}
     <div class="row">

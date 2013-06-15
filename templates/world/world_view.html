@@ -4,13 +4,19 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}
-  <h4>Alternativ</h4>
-    <ul class="nav nav-list">
-        <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-book"></i><strong>New article</strong></a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-book"></i>Browse by type</a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
-        <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-book"></i>Browse by time</a></li>
-    </ul>
+<ul class="nav nav-list" style="float:left">
+    <li class="nav-header">{{world.title}}</li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-tag"></i>Browse by type</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-calendar"></i>Browse by time</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='relation') }}"><i class="icon-resize-small"></i>Browse by relation</a></li>
+</ul>
+<ul class="nav nav-list" style="float:left">
+<li class="nav-header">Article actions</li>    
+{%- block article_actions -%}
+    <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-pencil"></i>New</a></li>
+{%- endblock -%}
+</ul>
 {% endblock %}
 
 {% block content %}

@@ -14,9 +14,165 @@
 		fReader.readAsDataURL(fileInfo);
 		return loader.promise();
 	};
+
+	var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
+
+	$.fn.doKey = function (e) {
+		var select = $(this).getSelection();
+		var newrow = select.startOffset == 0 && select.collapsed;
+		var curEl = select.startContainer
+		if (curEl.nodeName==='#text') {
+			curEl = curEl.parentElement;
+		}
+		var tag = curEl.nodeName.toLowerCase();
+		if (e.keyCode == ENTER) {
+			e.preventDefault();
+			if (!newrow) {
+				if (tag !='li') {
+					tag='p'; // only treat li special
+				}
+				$.fn.newElement(tag, curEl, true)
+			} else {
+				if (tag == 'p') {
+					$.fn.newElement('h2', curEl)
+				} else if (tag=='h2') {
+					$.fn.newElement('h3', curEl)
+				} else if (tag=='h3' || tag=='blockquote') {
+					; // do nothing
+				} else if (tag=='li') {
+					var newCurEl =  curEl.parentElement
+					$(curEl).remove() // remove the empty li, and append a p after the UL
+					$.fn.newElement('p', newCurEl, true)
+				}
+			}	
+		} else if (e.keyCode == BACKSPACE) {
+			if (select.startOffset <=1 && select.collapsed) { // will reach beginning of line after this
+				$.fn.setHint($(curEl))
+			} if (newrow) {
+				e.preventDefault();
+				if (tag=='h2' || tag=='h3' || tag=='blockquote') {
+					$.fn.newElement('p', curEl);
+				} else if (tag=='li' && curEl.parentElement.childElementCount <= 1) {
+					$.fn.newElement('none', curEl.parentElement) // remove the whole ul in this case
+				} else {
+					$.fn.newElement('none', curEl)
+				}
+			} // let the backspace pass through
+		} else if (e.keyCode == TAB) {
+			e.preventDefault()
+			if (newrow) {
+				$.fn.newElement('blockquote', curEl)
+			}
+		} else if (e.keyCode == DASH) {
+			if (newrow) {
+				e.preventDefault()
+				$.fn.newElement('ul', curEl)
+			}
+		} else {
+			$('#hinter').hide();
+		}
+
+	};
+
+// function(e) { // onclick
+// 	// if click in contenteditable element
+// 	// set state to text if inside textnode, else (in beginning) set state accordingly
+// }
+
+	$.fn.newElement = function (newtag, curEl, after) {
+		var $h = $('#hinter');
+		if (!newtag || newtag=='none') {
+			$h.hide()
+			if (curEl) {
+				$.fn.selectElementText(curEl.previousElementSibling)
+				$(curEl).remove();
+			}
+			return;
+		} else {
+			if (newtag=='ul') {
+				var newEl = $('<'+newtag+'><li></li></'+newtag+'>');
+			} else {
+				var newEl = $('<'+newtag+'><br></'+newtag+'>');
+			}
+			if(after) {
+				$(curEl).after(newEl);
+			} else {
+				$(curEl).replaceWith(newEl);
+			}
+			$.fn.selectElementText(newEl[0])			
+		}
+		$.fn.setHint(newEl);
+	}
+
+	$.fn.setHint = function (newEl) {
+		var $h = $('#hinter');
+		var newtag = newEl[0].nodeName.toLowerCase();
+		if(!newEl) {
+			$h.hide();
+			return
+		}
+
+		if (newtag=='p') {
+			newEl.clone().appendTo($h.empty()).text('Paragraph')
+		} else if (newtag=='h2') {
+			newEl.clone().appendTo($h.empty()).text('Section title');
+		} else if (newtag=='h3') {
+			newEl.clone().appendTo($h.empty()).text('Sub-section title');
+		} else if (newtag=='blockquote') {
+			newEl.clone().appendTo($h.empty()).text('Quote');
+		} else if (newtag=='ul' || newtag=='li') {
+			if(newtag=='li') {
+				newEl = newEl.parent();
+				newtag = 'ul';
+			}
+			var hintlist = newEl.clone()
+			hintlist.children().empty().last().text('List')
+			$h.empty().append(hintlist)
+		}
+		$h.css({left:newEl.position().left, top:newEl.position().top});
+		$h.show()
+	}
+
+	$.fn.selectElementText = function(el, win){
+        win = win || window;
+        var doc = win.document, sel, range;
+        if (!el) {
+        	return;
+        }
+        if (win.getSelection && doc.createRange) {                    
+            range = doc.createRange();
+            range.selectNodeContents(el);
+            range.collapse(false);
+            sel = win.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+        else if (doc.body.createTextRange) {
+            range = doc.body.createTextRange();
+            range.moveToElementText(el);
+            range.select();
+        }
+    };
+
 	$.fn.cleanHtml = function () {
-		var html = $(this).html();
-		return html && html.replace(/(<br>|\s|<div><br><\/div>|&nbsp;)*$/, '');
+		var $t = $(this);
+		var html = $t.html();
+
+		// we only want to keep p, h2, h3, blockquote, ul, li. We will convert div to p.
+		// we will remove all attributes of the tags
+		// var toremove = $(this).children().not('p,h2,h3,blockquote,ul,li')
+
+		html = html.replace(/(<\/?)div>/gi,'$1p>');
+		html = html.replace(/(<\/?)h1>/gi,'$1h2>');
+		html = html.replace(/<(\w+) [^>]*>/g,'<$1>');
+		html = html.replace(/<(\/?(p|h2|h3|blockquote|ul|ol|li|em|strong))>/gi,'%%%$1%%%');
+		html = html.replace(/<\/?.+?>/g,'');
+		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
+		html = html.replace(/>(.+?)%%%/gi,'<$1>');
+		$t.html(html);
+		$t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />');
+		$t.contents(':empty').remove();
+		return $t.html();
 	};
 	$.fn.wysiwyg = function (userOptions) {
 		var editor = this,
@@ -153,6 +309,7 @@
 					});
 			};
 		options = $.extend({}, $.fn.wysiwyg.defaults, userOptions);
+		$.fn.getSelection = getCurrentRange;
 		toolbarBtnSelector = 'a[data-' + options.commandRole + '],button[data-' + options.commandRole + '],input[type=button][data-' + options.commandRole + ']';
 		bindHotkeys(options.hotKeys);
 		if (options.dragAndDropImages) {
@@ -187,7 +344,7 @@
 			'ctrl+e meta+e': 'justifycenter',
 			'ctrl+j meta+j': 'justifyfull',
 			'shift+tab': 'outdent',
-			'tab': 'indent'
+			// 'tab': 'indent'
 		},
 		toolbarSelector: '[data-role=editor-toolbar]',
 		commandRole: 'edit',

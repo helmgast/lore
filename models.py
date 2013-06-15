@@ -388,11 +388,11 @@ class Article(db.Model):
         self.slug = slugify(self.title)
         return super(Article, self).save(*args, **kwargs)
 
-    def delete_instance(self, recursive=False, delete_nullable=False):
-        # We need to delete the article_type first, because it has no reference back to this
-        # object, and would therefore not be caught by recursive delete on the row below
-        self.get_type().delete_instance(recursive=True)
-        return super(Article, self).delete_instance(recursive, delete_nullable)
+    # def delete_instance(self, recursive=False, delete_nullable=False):
+    #     # We need to delete the article_type first, because it has no reference back to this
+    #     # object, and would therefore not be caught by recursive delete on the row below
+    #     self.get_type().delete_instance(recursive=True)
+    #     return super(Article, self).delete_instance(recursive, delete_nullable)
 
     def is_person(self):
         return ARTICLE_PERSON == self.type
@@ -429,7 +429,7 @@ class PersonArticle(db.Model):
     occupation = CharField(null=True)
 
     def gender_name(self):
-        return GENDER_TYPES[self.type][1].title()
+        return GENDER_TYPES[self.gender][1].title()
 
 class FractionArticle(db.Model):
     article = ForeignKeyField(Article, related_name='fractionarticle')
@@ -457,6 +457,12 @@ class ArticleGroup(db.Model):
     article = ForeignKeyField(Article, related_name='articlegroups')
     group = ForeignKeyField(Group, related_name='articles')
     type = IntegerField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def __unicode__(self):
+        return u'%s (%ss)' % (self.group.name, STATUSES[self.type])
 
 class RelationType(db.Model):
     name = CharField() # human friendly name

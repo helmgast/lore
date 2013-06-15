@@ -5,33 +5,48 @@
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New article!' %}
 {% else %}
-  {% set tagline = article.type_name() + " [" + world.title + "]" %} {% set title = article.title %}
+  {% set tagline = article.type_name() %} {% set title = article.title %}
 {% endif %}
 
-{% block sidebar %} {{ super() }}
-<h4>Alternatives</h4>
-<ul class="nav nav-list">
-	{% if article %}
-	<li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}">Edit</a></li>
-	<li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}"
-		class="m_action" data-action-type="modal">Delete</a></li> {% endif %}
-	<li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}">New</a></li>
-</ul>
+{% set article_type_name = article.type_name() if article else '' %}
+
+{% block cssimports %}
+{{ super() }}
+<link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+{% if article_type_name=='place' %}
+ <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+ <!--[if lte IE 8]>
+     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
+ <![endif]-->
+ {% endif %}
 {% endblock %}
+
+{% block jsimports %}{{super()}}
+{% if article_type_name=='place' %}
+<script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+{%endif %}
+{% endblock %}
+
+{%- block article_actions -%}{{ super() }}
+<li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
+<li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}" 
+  class="m_action" data-action-type="modal"><i class="icon-trash"></i>Delete</a></li>
+<li><a href="{{ url_for('world.view_article', world_slug=world.slug, article_slug=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
+{%- endblock -%}
 
 {% block middle %}
 {% if article_form %}
-<form method="post" action="{{ action_url }}">
+<form id='articleform' method="post" action="{{ action_url }}">
 {{ article_form.title }}{{ article_form.world }}
 <div class="page-header" style="margin-bottom: 5px;">
-    <h1><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
-    <button type="submit" class="btn btn-small btn-primary">Save changes</button>
-    <a href="{{ url_for('world.index') }}" class="btn btn-small">Cancel</a>
-    </h1>
+  <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
 </div>
 {% include "includes/flash.html" %}
-<div class="row">
-<div class="span7">
+<div class="row-fluid">
+<div class="span7 article_text">
+  {% if article and article.is_media() %}
+  <img src="{{article.get_type().url}}" />
+  {% endif %}
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
 			<div class="btn-group">
@@ -39,16 +54,18 @@
         <a class="btn" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
       </div>
 		</div>
-		<div id="editor">{{ article_form.content.data|safe }}</div>
+		<div id="editor">{{ article_form.content.data|safe if article_form.content.data else '<p><br></p>'|safe}}</div>
     {{ article_form.content(value="text") }}
 </div>
 <div class="span5 metadata">
+  <button type="submit" class="btn btn-small btn-primary">Save changes</button>
+  <a href="{{ url_for('world.index') }}" class="btn btn-small">Cancel</a>
+
   <h4>Metadata</h4>
   <fieldset style="margin-bottom: 10px">
   {{ form_field(article_form.articlegroups) }}
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
-  {% set article_type_name = article.type_name() if article else '' %}
   <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>{% include "models/personarticle_view.html" %}</div>
   <div id="mediaarticle_form" {{ ' class=hide ' if
     article_type_name!='media'}}>{% include
@@ -62,7 +79,12 @@
   <div id="fractionarticle_form" {{ ' class=hide ' if
     article_type_name!='fraction'}}>{% include
     "models/fractionarticle_view.html" %}</div>
-  <h4 style="display:inline">Relations</h4><button id="addrow" class="btn btn-info btn-small" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+  <h4 style="display:inline">Relations</h4>
+  {%- if op == 'new' -%}
+    <button id="addrow" class="btn btn-info btn-small disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+  {%- else -%}
+    <button id="addrow" class="btn btn-info btn-small" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+  {%- endif -%}
     <table class="m_view">
     <tr class="m_instance"></tr>
     {% for articlerelation_form in article_form.outgoing_relations %}
@@ -72,35 +94,86 @@
   </table>
 </div>
 </div>
-	<div class="row form-actions">
-	</div>
+{% if article_type_name=='place' %}
+<div id="map" style="height: 256px"></div>
+{% endif %}
 </form>
-{% else %}
+<div id="hinter" style="display:none" class="article_text"></div>
+
+{%- else -%}
+
+
 <div class="page-header">
-    <h1>{{title }}
+    <h1 class="article_header">{{title }}
         <small>{{ tagline }}</small>
     </h1>
+<ul class="inline" style="margin-bottom: 0px">
+  {% set articlegroups = article.articlegroups|list %}
+  <li><i class="icon-user"></i> Martin</li>
+  <li><i class="icon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  <li><i class="icon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+</ul>
+<ul class="inline" style="margin-bottom: 0px;margin-left: -14px">
+{% set article_type = article.get_type() %}
+{%- if article_type_name=='place' -%}
+  <li><span class="nav-header" style="display:inline">Lon</span>{{article_type.coordinate_x}}</li>
+  <li><span class="nav-header" style="display:inline">Lat</span>{{article_type.coordinate_y}}</li>
+  <li><span class="nav-header" style="display:inline">Type</span>{{article_type.location_type }}</li>
+{%- elif article_type_name=='media' -%}
+  <li><span class="nav-header" style="display:inline">Type</span>{{article_type.mime_type}}</li>
+  <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article_type.url|truncate(30, True)}}</a></li>
+{%- elif article_type_name=='event' -%}
+  <li><span class="nav-header" style="display:inline">Started</span>{{article_type.from_date}}</li>
+  <li><span class="nav-header" style="display:inline">Ended</span>{{article_type.to_date}}</li>
+{%- elif article_type_name=='person' -%}
+  <li><span class="nav-header" style="display:inline">Born</span>{{article_type.born}}</li>
+  <li><span class="nav-header" style="display:inline">Died</span>{{article_type.died}}</li>
+  <li><span class="nav-header" style="display:inline">Gender</span>{{article_type.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">Occupation</span>{{article_type.occupation}}</li>
+{%- endif -%}
+</ul>
 </div>
+
 {% include "includes/flash.html" %}
-<div class="article">
+<div class="article span9 article_text">
 	{% if article.is_media() %} <img src="{{article.get_type().url}}" />
 	{% endif %} {{ article.content|wikify|markdown }}
-
 </div>
 {% endif %} {% endblock %}
 
 {% block final %} {{super()}}
+{% if article_form %}
 <script>
 	$(document).ready(
 			function() {
-        $("#content").val($('#editor').cleanHtml()); // have to load it once!
-				$('#editor').wysiwyg().blur(function(e){
-					$("#content").val($('#editor').cleanHtml());
-				});
+        var $e = $('#editor');
+        $e.wysiwyg();
+        //$("#content").val($e.cleanHtml()); // have to load it once!
+				// $e.wysiwyg().blur(function(e){
+				// 	$("#content").val($e.cleanHtml());
+				// });
+
+        $e.on('paste', function(e) {
+          $this = $(this)
+          setTimeout(function() {
+            $this.cleanHtml();
+          }, 100);
+        });
+
+        $('#articleform').on('submit', function(e) {
+          $("#content").val($e.cleanHtml());
+        });
+
+        $e.on('keydown', $e.doKey);
 
         $('#editable_title').blur(function(e) {
           $('#title').val(this.textContent)
-        });
+        }).on('paste', function(e) {
+          $this = $(this)
+          setTimeout(function() {
+            $this.html($this.text()); // clean the html
+          }, 100);
+        }).focus();
 
         $('#addrow').click(function(e){
           $this = $(this);
@@ -137,13 +210,20 @@
 					$($this.data('oldVal')).toggleClass('hide')
 					$this.data('oldVal', newValue)
 				})
-				//       .focus(function(){
-				//            // Get the value when input gains focus
-				//            var oldValue = $(this).data('oldVal');
-				//       });
+
+        var map = L.map('map').setView([51.505, -0.09], 13);
+        L.tileLayer('//googledrive.com/host/0Bybs2FIAp3ZTUFd5RHgwS0FCU3M/map/mundana_stor_karta_{z}_{x}_{y}.png', {
+          attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+        minZoom: 0,
+        maxZoom: 3,
+        noWrap: true,
+        continuousWorld: true,
+        }).addTo(map);
+
 			});
 </script>
 <script type="text/javascript">
 (function(a){if(window.filepicker){return}var b=a.createElement("script");b.type="text/javascript";b.async=!0;b.src=("https:"===a.location.protocol?"https:":"http:")+"//api.filepicker.io/v1/filepicker.js";var c=a.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c);var d={};d._queue=[];var e="pick,pickMultiple,pickAndStore,read,write,writeUrl,export,convert,store,storeUrl,remove,stat,setKey,constructWidget,makeDropPane".split(",");var f=function(a,b){return function(){b.push([a,arguments])}};for(var g=0;g<e.length;g++){d[e[g]]=f(e[g],d._queue)}window.filepicker=d})(document); 
 </script>
+{% endif %}
 {% endblock %}

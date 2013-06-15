@@ -5,11 +5,11 @@
 {% block world_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <h3>Navigation</h3>
-    <ul class="nav nav-list">
-      <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>All worlds</a></li>
-      <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>My worlds</a></li>
-    </ul>
+<ul class="nav nav-list">
+  <li class="nav-header">Actions</li>
+  <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>All worlds</a></li>
+  <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>My worlds</a></li>
+</ul>
 {% endblock %}
 
 {% block content %}

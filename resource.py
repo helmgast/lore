@@ -8,7 +8,7 @@ from wtforms.compat import iteritems
 from wtforms.fields import FormField
 
 def generate_flash(action, name, model_identifiers, dest=''):
-    s = '%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), ' to %s' % dest if dest else '')
+    s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
     flash(s, 'success')
     return s
 
@@ -292,19 +292,19 @@ class ModelServer:
                     model_obj = self.model_class()
                 form.populate_obj(model_obj)
                 model_obj.save()
-                flash("%s was successfully %s" % (model_obj, self.op_messages[op]), 'success')
-                user.log("%s %s" % (self.op_messages[op], model_obj))
+                flash(u'%s was successfully %s' % (model_obj, self.op_messages[op]), 'success')
+                user.log(u'%s %s' % (self.op_messages[op], model_obj))
                 # as slug/id may have been changed or just created, we need to add it to redirect args.
                 # model_identifier refers to either ...slug or ...id
                 redir_args = {self.model_identifier:getattr(model_obj, self.identifier)}
                 return redirect(self.get_url('view', redir_args))
             else:
-                return error_response("Input data %s to %s %s did not validate because of %s" % (request.form, op, self.model_class, form.errors))
+                return error_response(u'Input data %s to %s %s did not validate because of %s' % (request.form, op, self.model_class, form.errors))
         elif op=='delete':
-            s = "%s" % model_obj
+            s = u'%s' % model_obj
             model_obj.delete_instance()
-            flash("%s was successfully deleted" % s, 'success')
-            user.log("deleted %s" % s)
+            flash(u'%s was successfully deleted' % s, 'success')
+            user.log(u'deleted %s' % s)
             return redirect(self.get_url('list'))
 
     def autoregister_urls(self):
