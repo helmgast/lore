@@ -13,18 +13,14 @@
 {% block cssimports %}
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
-{% if article_type_name=='place' %}
  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
  <!--[if lte IE 8]>
      <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
  <![endif]-->
- {% endif %}
 {% endblock %}
 
 {% block jsimports %}{{super()}}
-{% if article_type_name=='place' %}
 <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
-{%endif %}
 {% endblock %}
 
 {%- block article_actions -%}{{ super() }}
@@ -207,7 +203,8 @@
 					$($this.data('oldVal')).toggleClass('hide')
 					$this.data('oldVal', newValue)
 				})
-
+        
+        var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
 
         var map = L.map('map', {
           center: [-77, 660],
@@ -224,9 +221,9 @@
         }).addTo(map);
 
         var marker
-        var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
         if (latlng[0]!=NaN && latlng[1] != NaN) {
-          marker = L.marker([51.5, -0.09]).addTo(map);
+          marker = L.marker(latlng).addTo(map);
+          map.panTo(latlng);
         }
 
         function onMapClick(e) {

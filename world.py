@@ -344,10 +344,8 @@ def edit_article(world_slug, article_slug):
 
         # This will limit some of the querys in the form to only allow articles from this world
         form.world.query = form.world.query.where(World.slug == world_slug)
-        print 'outoing',form.outgoing_relations
         for f in form.outgoing_relations:
             f.to_article.query = f.to_article.query.where(Article.world == world).where(Article.id != article.id)
-            print f.to_article.query, list(f.to_article.query)
         return article_server.render('edit', article, form, world=world)
     elif request.method == 'POST':
         form = article_server.get_form('edit', article, request.form)
