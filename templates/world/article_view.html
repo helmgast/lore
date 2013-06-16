@@ -221,7 +221,7 @@
         }).addTo(map);
 
         var marker
-        if (latlng[0]!=NaN && latlng[1] != NaN) {
+        if (!isNaN(latlng[0]) && !isNaN(latlng[1])) {
           marker = L.marker(latlng).addTo(map);
           map.panTo(latlng);
         }

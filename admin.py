@@ -3,6 +3,8 @@ import datetime
 from flask_peewee.admin import Admin, ModelAdmin, AdminPanel
 from flask import request
 from models import *
+import model_setup
+
 
 class DBAdminPanel(AdminPanel):
 
@@ -14,16 +16,19 @@ class DBAdminPanel(AdminPanel):
         )
 
     def dbadmin(self):
-        import model_setup
-        code = request.args.get('code', None)
-        if not code or code != 'pleaseresetdb':
-            return "Sorry, you need to provide valid code to reset DB"
+        if request.method=='POST':
+            return u'args %s' % request.form
+            # code = request.args.get('code', None)
+            # if not code or code != 'pleaseresetdb':
+            #     return "Sorry, you need to provide valid code to reset DB"
+            # else:
+            #     model_setup.setup_models()
+            #     return 'Succsessfully resetted models!'
         else:
-            model_setup.setup_models()
-            return 'Succsessfully resetted models!' 
+            return "Hej" 
 
     def get_context(self):
-        return {}
+        return {'models':model_setup.get_models()}
 
 class MessageAdmin(ModelAdmin):
     columns = ('user', 'content', 'pub_date',)

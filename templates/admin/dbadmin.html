@@ -1,5 +1,10 @@
 {% extends "admin/panels/default.html" %}
 
 {% block panel_content %}
-    <p><strong><a href="{{ url_for(panel.get_url_name('dbadmin')) }}">Reset database</a></strong></p>
+    <form method="POST" action="{{ url_for(panel.get_url_name('dbadmin')) }}">
+    {% for m in models %}
+        <input type="checkbox" name="{{m.__name__}}" value="True">{{m.__name__}}<br>
+    {% endfor %}  
+    <button type="submit" class="btn">Reset tables</button>
+    </form>
 {% endblock %}

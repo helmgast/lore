@@ -9,7 +9,7 @@ import inspect
 def altor_date(year, month, day):
     return year*360+(month-1)*30+(day-1)
 
-def setup_models():
+def get_models():
     models = [
         SessionPresentUser, 
         Session,
@@ -41,11 +41,19 @@ def setup_models():
     model_classes = [m[1] for m in model_classes if m[1].__module__ == 'models']
     for m in model_classes:
         if m not in models:
-            print "WARNING model_setup has not been told to setup this model: %s" % m
+            print "WARNING model_setup has not been told to setup this model: %s" % m 
+    return models
 
+def drop_tables(model_array):
     drop_model_tables(models, fail_silently=True)
     create_model_tables(models)
 
+def setup_models():
+    models = get_models()
+    drop_tables(models)
+    fill_table()
+
+def fill_tables():
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
     altor = World.create(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced")
     kult = World.create(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter")
@@ -159,7 +167,6 @@ def setup_models():
     c2 = Conversation.create()
     c3 = Conversation.create()
     
-
     ConversationMember.create(conversation=c1, member=mf)
     ConversationMember.create(conversation=c1, member=nf)
     

@@ -172,7 +172,7 @@
 		$t.html(html);
 		$t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />');
 		$t.contents(':empty').remove();
-		if (!$t.html() || !$t.children().length == 0) {
+		if (!$t.html() || $t.children().length == 0) {
 			$t.html('<p><br></p>');
 		}
 		return $t.html();
