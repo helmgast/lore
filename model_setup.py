@@ -45,13 +45,13 @@ def get_models():
     return models
 
 def drop_tables(model_array):
-    drop_model_tables(models, fail_silently=True)
-    create_model_tables(models)
+    drop_model_tables(model_array, fail_silently=True)
+    create_model_tables(model_array)
 
 def setup_models():
     models = get_models()
     drop_tables(models)
-    fill_table()
+    fill_tables()
 
 def fill_tables():
     mundana = World.create(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling")
