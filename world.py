@@ -1,16 +1,16 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
-from models import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ArticleGroup, Group, GroupMember
-from models import ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES, GROUP_MASTER, GROUP_PLAYER
+from model.world import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ArticleGroup, ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
+from model.user import Group, GroupMember, GROUP_MASTER, GROUP_PLAYER
+
 from resource import ResourceHandler, ModelServer
 from raconteur import auth, admin
 from itertools import groupby
 from datetime import datetime, timedelta
-from flask_peewee.utils import get_object_or_404, object_list, slugify
-from wtfpeewee.fields import ModelSelectField, SelectMultipleQueryField, ModelHiddenField, FormField,SelectQueryField
+from flask_peewee.utils import get_object_or_404, object_list
+from wtfpeewee.fields import ModelSelectField, SelectMultipleQueryField, ModelHiddenField, FormField, SelectQueryField
 from wtforms.fields import FieldList, HiddenField
-from flask_peewee.filters import FilterMapping, FilterForm, FilterModelConverter
 from werkzeug.datastructures import ImmutableMultiDict
 
 world_app = Blueprint('world', __name__, template_folder='templates')
@@ -90,7 +90,7 @@ class ArticleGroupSelectMultipleQueryField(SelectMultipleQueryField):
 
     def iter_choices(self):
         # Although the field holds ArticleGroups, we will allow choices from all combinations of groups and types.
-        for obj in Group.select():
+        for obj in Group.objects:
             yield ('%d-%d' % (obj.get_id(),GROUP_MASTER), self.get_label(obj)+' (masters)', self.has_articlegroup(obj.get_id(), GROUP_MASTER))
             yield ('%d-%d' % (obj.get_id(),GROUP_PLAYER), self.get_label(obj)+' (all)', self.has_articlegroup(obj.get_id(), GROUP_PLAYER))
 
