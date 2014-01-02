@@ -1,8 +1,7 @@
 from hashlib import md5
 import datetime
-from wtfpeewee.orm import model_form
+from flask.ext.mongoengine.wtf import model_form
 from auth import BaseUser
-from flask_peewee.utils import slugify
 from peewee import *
 from peewee import RawQuery
 from raconteur import db
@@ -17,6 +16,9 @@ def matches_form(formclass, formdata):
             print "Matches field %s!" % k
             return True
     return False
+
+def slugify(s):
+    return re.sub('[^a-z0-9_\-]+', '-', s.lower())
 
 class Conversation(db.Model):
     #creator = ForeignKeyField(User)

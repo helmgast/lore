@@ -1,4 +1,3 @@
-from flask_peewee.utils import object_list, get_object_or_404
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
 from raconteur import auth
 from resource import ResourceHandler
@@ -46,19 +45,19 @@ userhandler = UserHandler(User, model_form(User), 'social/user_detail.html', 'so
 def index():
     user = auth.get_logged_in_user()
     following_messages = Message.select().where(Message.conversation ==0, Message.user << user.following()).order_by(Message.pub_date.desc())
-    return object_list('social/social.html', following_messages, 'following_message_list')
+    return render_template('social/social.html', following_messages, 'following_message_list')
 
 @social.route('/public/')
 def public_timeline():
     messages = Message.select().where(Message.conversation == 0).order_by(Message.pub_date.desc())
-    return object_list('social/public_messages.html', messages, 'message_list')
+    return render_template('social/public_messages.html', messages, 'message_list')
 
 @social.route('/conversations/', methods=['GET'])
 @auth.login_required
 def conversations():
     user = auth.get_logged_in_user()
     conversations = Conversation.select().join(ConversationMember).where( ConversationMember.member == user)
-    return object_list('social/conversations.html', conversations, 'conversation_list')
+    return render_template('social/conversations.html', conversations, 'conversation_list')
 
 @social.route('/conversations/new/', methods=['GET', 'POST'])
 @auth.login_required
@@ -120,7 +119,7 @@ def conversation_detail(conv_id):
     user = auth.get_logged_in_user()
     inline = True if request.args.has_key('inline') else None
 
-    conversation = get_object_or_404(Conversation, Conversation.id==conv_id)
+    conversation = Conversation.objects.get_or_404(id=conv_id)
     messages = Message.select().where(Message.conversation == conv_id).order_by(Message.pub_date.desc())
     recipients = [r for r in conversation.members()]
     recipients.remove(user) # TODO check for error
@@ -134,14 +133,14 @@ def conversation_detail(conv_id):
         flash('Your message has been created')
         # .conversation_detail means to route to this blueprint (social), method conversation_detail
         return redirect(url_for('.conversation_detail', conv_id=conversation.id, inline=inline))
-    return object_list('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, inline=inline)
+    return render_template('social/conversation_page.html', messages, 'message_list', conversation=conversation, recipients=recipients, inline=inline)
 
 @social.route('/groups/')
 def groups():
     user = auth.get_logged_in_user() 
     my_master_groups = Group.select().join(GroupMember).where(GroupMember.member == user, GroupMember.status == GROUP_MASTER)
     groups = Group.select().order_by(Group.name.asc())
-    return object_list('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)
+    return render_template('social/groups.html', groups, 'groups', my_master_groups=my_master_groups)
 
 @social.route('/groups/new', methods=['GET', 'POST'])
 @auth.login_required
@@ -150,12 +149,12 @@ def group_new():
 
 @social.route('/groups/<slug>/', methods=['GET', 'POST'])
 def group_detail(slug):
-    return grouphandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Group, Group.slug == slug))
+    return grouphandler.handle_request(ResourceHandler.EDIT, Group.objects.get_or_404(slug=slug))
         
 @social.route('/groups/<slug>/delete', methods=['GET', 'POST'])
 @auth.login_required
 def group_delete(slug):
-    group = get_object_or_404(Group, Group.slug == slug)
+    group = Group.objects.get_or_404(slug=slug)
     user = auth.get_logged_in_user()
     masters = list(group.masters())
     #print "if not user=%s or not user in masters=%s or len(list(masters))>1=%s" % (not user, not user in masters, len(masters)>1) 
@@ -200,7 +199,7 @@ def edit_group(request, group=None):
 @social.route('/groups/<slug>/members/<action>', methods=['GET','POST'])
 @auth.login_required
 def group_members_change(slug, action):
-    group = get_object_or_404(Group, Group.slug == slug)
+    group = Group.objects.get_or_404(slug=slug)
     user = auth.get_logged_in_user()
     if user not in group.masters():
         return error_response('Logged in user %s is not master of group %s so cannot %s' % (user.username, group.name, action))
@@ -263,13 +262,13 @@ def test():
 @auth.login_required
 def following():
     user = auth.get_logged_in_user()
-    return object_list('social/user_following.html', user.following(), 'user_list')
+    return render_template('social/user_following.html', user.following(), 'user_list')
 
 @social.route('/followers/')
 @auth.login_required
 def followers():
     user = auth.get_logged_in_user()
-    return object_list('social/user_followers.html', user.followers(), 'user_list')
+    return render_template('social/user_followers.html', user.followers(), 'user_list')
 
 @social.route('/users/')
 def user_list():
@@ -282,17 +281,17 @@ def user_list():
             if gm.member.username != user.username: # remove ourselves, no need to check that again!
                 mastered_members['%s_%s' % (gm.member.username,gm.group.id)] = gm
     users = User.select().order_by(User.username.asc())
-    return object_list('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, mastered_members=mastered_members)
+    return render_template('social/all_users.html', users, 'user_list', mastered_groups=mastered_groups, mastered_members=mastered_members)
 
 @social.route('/users/<username>/', methods=['GET','POST'])
 def user_detail(username):
-    user = get_object_or_404(User, User.username == username)
+    user = User.objects.get_or_404(username=username)
     return userhandler.handle_request(ResourceHandler.VIEW, user)
 
 @social.route('/users/<username>/follow/', methods=['POST'])
 @auth.login_required
 def user_follow(username):
-    user = get_object_or_404(User, User.username == username)
+    user = User.objects.get_or_404(username=username)
     logged_in = auth.get_logged_in_user()
     Relationship.get_or_create(from_user=logged_in, to_user=user)
     flash('You are now following %s' % user.username)
@@ -304,7 +303,7 @@ def user_follow(username):
 @social.route('/users/<username>/unfollow/', methods=['POST'])
 @auth.login_required
 def user_unfollow(username):
-    user = get_object_or_404(User, User.username == username)
+    user = User.objects.get_or_404(username=username)
     logged_in = auth.get_logged_in_user()
     Relationship.delete().where(Relationship.from_user==auth.get_logged_in_user(),Relationship.to_user==user).execute()
     flash('You are no longer following %s' % user.username)
