@@ -7,7 +7,6 @@ from resource import ResourceHandler, ModelServer
 from raconteur import auth, admin
 from itertools import groupby
 from datetime import datetime, timedelta
-from flask_peewee.utils import get_object_or_404, object_list, slugify
 from wtfpeewee.fields import ModelSelectField, SelectMultipleQueryField, ModelHiddenField, FormField,SelectQueryField
 from wtforms.fields import FieldList, HiddenField
 from flask_peewee.filters import FilterMapping, FilterForm, FilterModelConverter
@@ -290,18 +289,18 @@ article_server = ModelServer(world_app, Article, world_server, article_form, all
 @world_app.route('/')
 def index():
     qr = World.select()
-    return object_list('world/base.html', qr)
+    return render_template('world/base.html', qr)
 
 @world_app.route('/myworlds')
 def myworlds():
     qr = Article.select()
-    return object_list('world/index.html', qr)
+    return render_template('world/index.html', qr)
 
 @world_app.route('/<world_slug>/')
 def view_world(world_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
+    world = World.objects.get_or_404(slug=world_slug)
     world_articles = world.articles
-    return object_list('world/world_view.html', world_articles, world=world)
+    return render_template('world/world_view.html', world_articles, world=world)
 
 @world_app.route('/<world_slug>/list')
 def list_article(world_slug):
@@ -309,7 +308,7 @@ def list_article(world_slug):
 
 @world_app.route('/<world_slug>/browse/<groupby>')
 def world_browse(world_slug, groupby):
-    world = get_object_or_404(World, World.slug == world_slug)
+    world = World.objects.get_or_404(slug=world_slug)
     if groupby == 'title':
         world_articles = Article.select().where(Article.world == world).order_by(Article.title.asc())
     elif groupby == 'type':
@@ -319,22 +318,22 @@ def world_browse(world_slug, groupby):
     elif groupby == 'relation':
         world_articles = Article.select().where(Article.world == world).order_by(Article.created_date.desc())
         relations = ArticleRelation.select().where(ArticleRelation.from_article << world_articles)
-        return object_list('models/articlerelation_list.html', world_articles, world=world, groupby=groupby, relations=relations)
+        return render_template('models/articlerelation_list.html', world_articles, world=world, groupby=groupby, relations=relations)
     else:
         abort(404)
-    return object_list('world/world_browse.html', world_articles, world=world, groupby=groupby)
+    return render_template('world/world_browse.html', world_articles, world=world, groupby=groupby)
 
 @world_app.route('/<world_slug>/<article_slug>/')
 def view_article(world_slug, article_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
-    article = get_object_or_404(Article, Article.slug == article_slug)
+    world = World.objects.get_or_404(slug=world_slug)
+    article = Article.objects.get_or_404(slug=article_slug)
     return article_server.render('view', article, world=world)
 
 @world_app.route('/<world_slug>/<article_slug>/edit', methods=['GET', 'POST'])
 @auth.login_required
 def edit_article(world_slug, article_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
-    article = get_object_or_404(Article, Article.slug == article_slug)
+    world = World.objects.get_or_404(slug=world_slug)
+    article = Article.objects.get_or_404(slug=article_slug)
     if request.method == 'GET':
         form = article_server.get_form('edit', article)
         if article.type > 0:
@@ -380,8 +379,8 @@ def edit_article(world_slug, article_slug):
 @world_app.route('/<world_slug>/<article_slug>/articlerelations/new', methods=['GET'])
 @auth.login_required
 def new_articlerelation(world_slug, article_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
-    article = get_object_or_404(Article, Article.slug == article_slug)
+    world = World.objects.get_or_404(slug=world_slug)
+    article = Article.objects.get_or_404(slug=article_slug)
     form = article_server.get_form('edit', article)
     nr = request.args.get('nr')
     nr = max(1,int(nr))
@@ -393,7 +392,7 @@ def new_articlerelation(world_slug, article_slug):
 @world_app.route('/<world_slug>/new', methods=['GET', 'POST'])
 @auth.login_required
 def new_article(world_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
+    world = World.objects.get_or_404(slug=world_slug)
     if request.method == 'GET':
         return article_server.render('new', None, world=world)
     elif request.method == 'POST':
@@ -414,8 +413,8 @@ def new_article(world_slug):
 @world_app.route('/<world_slug>/<article_slug>/delete', methods=['GET', 'POST'])
 @auth.login_required
 def delete_article(world_slug, article_slug):
-    world = get_object_or_404(World, World.slug == world_slug)
-    article = get_object_or_404(Article, Article.slug == article_slug)
+    world = World.objects.get_or_404(slug=world_slug)
+    article = Article.objects.get_or_404(slug=article_slug)
     if request.method == 'GET':
         return article_server.render('delete', article, world=world)
     elif request.method == 'POST':

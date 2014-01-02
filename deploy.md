@@ -7,6 +7,8 @@ myrepo/wsgi/static
 where Apache will serve normal files (e.g. images, css, etc).
 The wsgi/application will only need to setup the virtualenv, and then call the the_app application. WSGI will be using a different method than run(), which is implicit but is called wsgi_app().
 
+https://www.openshift.com/blogs/build-your-app-on-openshift-using-flask-sqlalchemy-and-postgresql-92
+
 It's important that the app.py file used in developmen has the line:
 if __name__ == '__main__':
 as it will make sure when the file is imported, it will not execute the_app.run().

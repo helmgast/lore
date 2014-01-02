@@ -4,13 +4,27 @@ import os
 from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
 from peewee import *
 from wtforms import Form, TextField, PasswordField, validators
-
-from flask_peewee.utils import get_next, make_password, check_password
-
+from hashlib import sha1
 
 current_dir = os.path.dirname(__file__)
 
+# borrowing these methods, slightly modified, from django.contrib.auth
+def get_hexdigest(salt, raw_password):
+    return sha1(salt + raw_password).hexdigest()
 
+def make_password(raw_password):
+    salt = get_hexdigest(str(random.random()), str(random.random()))[:5]
+    hsh = get_hexdigest(salt, raw_password)
+    return '%s$%s' % (salt, hsh)
+
+def check_password(raw_password, enc_password):
+    salt, hsh = enc_password.split('$', 1)
+    return hsh == get_hexdigest(salt, raw_password)
+
+def get_next():
+    if not request.query_string:
+        return request.path
+    return '%s?%s' % (request.path, request.query_string)
 
 class LoginForm(Form):
     username = TextField('Username', validators=[validators.Required()])

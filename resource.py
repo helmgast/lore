@@ -1,8 +1,7 @@
 from flask import request, render_template, flash, redirect, url_for
 from raconteur import auth
-from wtfpeewee.orm import model_form
+from flask.ext.mongoengine.wtf import model_form
 from flask.views import View
-from flask_peewee.utils import get_object_or_404, object_list, slugify
 from raconteur import the_app
 from wtforms.compat import iteritems
 from wtforms.fields import FormField
@@ -229,9 +228,9 @@ class ModelServer:
 
     def get_obj(self, identifier):
         if self.identifier == 'slug':
-            return get_object_or_404(self.model_class, self.model_class.slug == identifier)
+            return self.model_class.objects.get_or_404(slug=identifier)
         else:
-            return get_object_or_404(self.model_class, self.model_class.id == identifier)
+            return self.model_class.objects.get_or_404(id=identifier)
 
     def get_form(self, op, model_obj=None, req_form=None, **kwargs):
         if op=='edit' or op=='new':

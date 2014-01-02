@@ -1,7 +1,6 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from raconteur import auth
-from flask_peewee.utils import get_object_or_404
-from wtfpeewee.orm import model_form
+from flask.ext.mongoengine.wtf import model_form
 from models import Group, GroupMember, Campaign, Session, Scene, GROUP_MASTER
 from datetime import datetime, timedelta, date, time
 from resource import ResourceHandler, ResourceRequest
@@ -114,7 +113,7 @@ def session_new():
 @campaign.route('/sessions/<id>', methods=['GET', 'POST'])
 @auth.login_required
 def session_detail(id):
-    return sessionhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Session, Session.id == id))
+    return sessionhandler.handle_request(ResourceHandler.EDIT, Session.objects.get_or_404(id=id))
 
 @campaign.route('/campaigns/')
 def campaigns():
@@ -128,7 +127,7 @@ def campaign_new():
 
 @campaign.route('/campaigns/<slug>', methods=['GET', 'POST'] )
 def campaign_detail(slug):
-    return campaignhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Campaign, Campaign.slug == slug))
+    return campaignhandler.handle_request(ResourceHandler.EDIT, Campaign.objects.get_or_404(slug=slug))
 
 @auth.login_required
 @campaign.route('/campaigns/<slug>/scenes/new', methods=['GET', 'POST'] )
@@ -137,10 +136,10 @@ def scene_new(slug):
 
 @campaign.route('/campaigns/<slug>/scenes/<id>', methods=['GET', 'POST'] )
 def scene_detail(slug, id):
-    return campaignhandler.handle_request(ResourceHandler.EDIT, get_object_or_404(Scene, Scene.id == id))
+    return campaignhandler.handle_request(ResourceHandler.EDIT, Scene.objects.get_or_404(id=id))
 
 @auth.login_required
 @campaign.route('/campaigns/<slug>/scenes/<id>/delete', methods=['GET', 'POST'] )
 def scene_delete(slug, id):
-    return scenehandler.handle_request(ResourceHandler.DELETE, get_object_or_404(Scene, Scene.id == id))
+    return scenehandler.handle_request(ResourceHandler.DELETE, Scene.objects.get_or_404(id=id))
 
