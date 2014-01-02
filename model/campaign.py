@@ -1,6 +1,5 @@
 from raconteur import db
-from user import User, Group
-from world import CampaignArticle, Episode, ChronicleArticle
+from world import CampaignArticle, Episode, ChronicleArticle, User, Group
 
 '''
 Created on 2 jan 2014

@@ -1,7 +1,6 @@
 from hashlib import md5
-import datetime
 from auth import BaseUser
-from misc import slugify
+from misc import slugify, now
 from peewee import RawQuery
 from raconteur import db
 from flask.ext.mongoengine.wtf import model_form
@@ -11,8 +10,9 @@ Created on 2 jan 2014
 
 @author: Niklas
 '''
+
 class Conversation(db.Document):
-    modified_date = db.DateTimeField(default=datetime.datetime.now)
+    modified_date = db.DateTimeField(default=now())
     
     def members(self):
         return User.select().join(ConversationMember).where(ConversationMember.conversation == self)
@@ -41,7 +41,7 @@ class User(db.Document, BaseUser):
     location = db.StringField()
     description = db.StringField()
     xp = db.IntField(default=0)
-    join_date = db.DateTimeField(default=datetime.datetime.now)
+    join_date = db.DateTimeField(default=now())
     msglog = db.ReferenceField(Conversation)
     active = db.BooleanField(default=True)
     admin = db.BooleanField(default=False)
@@ -141,12 +141,15 @@ class ConversationMember(db.Document):
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
 GAME_GROUP, WORLD_GROUP, ARTICLE_GROUP = 1,2,3
+GROUP_TYPES = ((GAME_GROUP, 'gamegroup'), 
+               (WORLD_GROUP, 'worldgroup'), 
+               (ARTICLE_GROUP, 'articlegroup'))
 class Group(db.Document):
     name = db.StringField()
     location = db.StringField()
     slug = db.StringField()
     description = db.StringField()
-    type = db.IntField(choices=((GAME_GROUP, 'gamegroup'), (WORLD_GROUP, 'worldgroup'), (ARTICLE_GROUP, 'articlegroup')),default=GAME_GROUP)
+    type = db.IntField(choices=GROUP_TYPES,default=GAME_GROUP)
     conversation = db.ReferenceField(Conversation)
     
     def __unicode__(self):
@@ -182,7 +185,7 @@ class Group(db.Document):
     def addMembers(self, newmembers, type):
         if not newmembers or not isinstance(newmembers[0], User):
             raise TypeError("Need a list of Users, got %s of type %s" % (newmembers, type(newmembers)))
-        if not type in STATUSES.keys():
+        if not type in GROUP_ROLE_TYPES.keys():
             raise TypeError("type need to be one predefined integers, see models.py")
         members_dict = dict([[gm.member.id,gm] for gm in GroupMember.select().where(GroupMember.group == self)])
         edited = []
@@ -211,12 +214,15 @@ class Group(db.Document):
         return removed
                         
 # The relationship between a user as member of a Group
-GROUP_MASTER, GROUP_PLAYER, GROUP_INVITED = 1,2,3
-STATUSES = {GROUP_MASTER:'master', GROUP_PLAYER:'player', GROUP_INVITED:'invited'}
+GROUP_MASTER, GROUP_PLAYER, GROUP_INVITED = 1, 2, 3
+GROUP_ROLE_TYPES = ((GROUP_MASTER,'master'),
+                    (GROUP_PLAYER,'player'),
+                    (GROUP_INVITED,'invited'))
+
 class GroupMember(db.Document):
     group = db.ReferenceField(Group)
     member = db.ReferenceField(User)
-    status = db.IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player'), (GROUP_INVITED, 'invited')))
+    status = db.IntField(choices=GROUP_ROLE_TYPES)
     
     def __unicode__(self):
         return "%s, %s in %s" % (self.member, self.status_text(), self.group)
@@ -227,7 +233,7 @@ class GroupMember(db.Document):
         return super(GroupMember, self).save(*args, **kwargs)
 
     def status_text(self):
-        return STATUSES[self.status]
+        return GROUP_ROLE_TYPES[self.status]
 
 # The directional relationship between two users, e.g. from_user follows to_user
 class Relationship(db.Document):
@@ -241,7 +247,7 @@ class Relationship(db.Document):
 class Message(db.Document):
     user = db.ReferenceField(User)
     content = db.StringField()
-    pub_date = db.DateTimeField(default=datetime.datetime.now)
+    pub_date = db.DateTimeField(default=now())
     conversation = db.ReferenceField(Conversation)
     #readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
 

@@ -1,11 +1,13 @@
 from raconteur import db
 import re
+import datetime
 
 '''
 Created on 2 jan 2014
 
 @author: Niklas
 '''
+
 # WTForms would treat the _absence_ of a field in POST data as a reason to
 # to set the data to empty. This is a problem if the same POST receives variations
 # to a form. This method removes form fields if they are not present in postdata.
@@ -19,6 +21,9 @@ def matches_form(formclass, formdata):
   
 def slugify(s):
     return re.sub('[^a-z0-9_\-]+', '-', s.lower())
+  
+def now():
+    return datetime.datetime.now;
 
 class GeneratorInputList(db.Document):
     name = db.StringField()

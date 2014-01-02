@@ -1,13 +1,13 @@
-import datetime
-from misc import slugify
 from raconteur import db
-from user import User, Group, STATUSES, GROUP_PLAYER, GROUP_MASTER
+from misc import slugify, now
+from user import User, Group, GROUP_ROLE_TYPES, GROUP_PLAYER, GROUP_MASTER
 
 '''
 Created on 2 jan 2014
 
 @author: Niklas
 '''
+
 # Constants and enumerations
 ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE = 0, 1, 2, 3, 4, 5, 6, 7
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'),
@@ -42,7 +42,7 @@ class World(db.Document):
     thumbnail = db.ReferenceField(MediaResource)
     publisher = db.StringField()
     rule_system = db.StringField()
-    created_date = db.DateTimeField(default=datetime.datetime.now)
+    created_date = db.DateTimeField(default=now())
     
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -63,7 +63,7 @@ class Article(db.Document):
     type = db.IntField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
-    created_date = db.DateTimeField(default=datetime.datetime.now)
+    created_date = db.DateTimeField(default=now())
     title = db.StringField()
     description = db.StringField()
     content = db.StringField()
@@ -206,7 +206,7 @@ class ArticleGroup(db.Document):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u'%s (%ss)' % (self.group.name, STATUSES[self.type])
+        return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
 
 
 # class ArticleRights(db.Document):
