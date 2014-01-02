@@ -1,7 +1,7 @@
 from hashlib import md5
 import datetime
 from wtfpeewee.orm import model_form
-from flask_peewee.auth import BaseUser
+from auth import BaseUser
 from flask_peewee.utils import slugify
 from peewee import *
 from peewee import RawQuery

@@ -1,3 +1,6 @@
+# This is an implicit value, here for clarity
+--index https://pypi.python.org/simple/
+
 Flask==0.9
 Flask-Markdown==0.3
 Jinja2==2.6

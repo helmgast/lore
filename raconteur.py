@@ -1,9 +1,10 @@
 
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash
 from datetime import datetime
-from flask_peewee.auth import Auth
+from auth import Auth
 from flask_peewee.db import Database
 from peewee import Model
+from flask.ext.mongoengine import MongoEngine
 from re import compile
 from flaskext.markdown import Markdown
 import os
