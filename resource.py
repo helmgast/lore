@@ -53,7 +53,21 @@ new_route(s/s/s/s/)
     check_permission
     do_request
 
+add_url()
+
+
+
+
 class ResourceHandler2:
+
+    def dispatch(name, *args, **kwargs):
+        request.method
+
+    def __init__(query_func:
+        add_url_rule(single_res_name, single_res_name+'endpoint', single_dispatch, methods=['GET','POST','PUT','PATCH','DELETE'])
+        add_url_rule("<"+single_res_name+">"+'/edit', single_res_name+'endpoint', single_dispatch, methods=['GET','POST','PUT','PATCH','DELETE'])
+        add_url_rule(plural_res_name, plural_res_name+'endpoint', plural_dispatch, methods=['GET','POST'])
+
 
     def index():
         if request.method == 'OPTIONS':
@@ -68,27 +82,26 @@ class ResourceHandler2:
 
     def __init__(self, model_class, form_class, template, route):
 
-    def get:
+    /edit, /new
+
+    def dispatch_request():
+
+
+    def get_one:
+        query_func()
         # GET SR
         pass
-    def get_edit:
         pass
     def get_list:
         pass
-    def get_edit_list:
-        pass
-    def get_new:
-        pass
-    def post_new:
-        pass
-    def post:
+    def post_one:
         # Delegate to put, patch, delete
         pass
-    def put:
+    def put_one:
         pass
-    def patch:
+    def patch_one:
         pass
-    def delete:
+    def delete_one:
         pass
 
 
@@ -124,27 +137,18 @@ class ResourceHandler:
     ops = {EDIT:'edit',VIEW:'view',NEW:'new',DELETE:'delete'}
     op_messages = {EDIT: 'edited', NEW: 'created', DELETE:'deleted'}
 
-    def __init__(self, model_class, form_class, template, route):
-        self.stategy = strategy
-
+    def __init__(self, model_class, parent_handler, form_class=None):
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.model_class = model_class
-        self.form_class = form_class
+        self.form_class = form_class if form_class else model_form(model_class)
         self.template = template if template else 'models/%s.html' % self.resource_name
         self.route = route
-
-    def get_resource_request(self, op, user, instance=None): # to be overriden
-        print "This should be overriden"
-        return ResourceRequest(op, self.form_class(obj=instance) if (op==self.EDIT or op==self.NEW) else None, instance)
 
     def get_redirect_url(self, instance):
         return url_for(self.route, id=instance.id)
 
-    def prepare_get(self, op, user, instance=None): # to be overriden
-        pass
-
-    def after_post(self, op, user, instance=None): # to be overriden
-        pass
+    def get_instance(self, id):
+        return model_class.objects.
 
     def allowed(self, op, user, instance=None): # to be overriden
         print "Warning: Allowed function called without being overriden"
