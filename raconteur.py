@@ -28,7 +28,7 @@ if the_app == None:
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   
   # import model_setup
-  from models import User
+  from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
 

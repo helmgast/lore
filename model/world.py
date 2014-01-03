@@ -1,6 +1,6 @@
 from raconteur import db
 from misc import slugify, now
-from user import User, Group, GROUP_ROLE_TYPES, GROUP_PLAYER, GROUP_MASTER
+from user import User, Group
 
 '''
 Created on 2 jan 2014
@@ -60,7 +60,7 @@ class World(db.Document):
 class Article(db.Document):
     meta = {'allow_inheritance': True} 
     id = db.StringField(unique=True) # URL-friendly name
-    type = db.IntField(default=ARTICLE_DEFAULT, choices=ARTICLE_TYPES)
+    type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
     created_date = db.DateTimeField(default=now())
@@ -70,38 +70,6 @@ class Article(db.Document):
     thumbnail = db.ReferenceField(MediaResource)
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
     # modified_date = DateTimeField()
-
-    def remove_old_type(self, newtype):
-        if self.type != newtype:  
-            # First clean up old reference
-            typeobj = self.get_type()
-            print "We have changed type from %d to %d, old object was %s" % (self.type, newtype, typeobj)
-            if typeobj:
-                print typeobj.delete_instance(recursive=True) # delete this and references to it
-
-    def get_type(self):
-        if self.type==ARTICLE_MEDIA:
-            return self.mediaarticle.first()
-        elif self.type==ARTICLE_PERSON:
-            return self.personarticle.first()
-        elif self.type==ARTICLE_FRACTION:
-            return self.fractionarticle.first()
-        elif self.type==ARTICLE_PLACE:
-            return self.placearticle.first()
-        elif self.type==ARTICLE_EVENT:
-            return self.eventarticle.first()
-        else:
-            return None
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
-        return super(Article, self).save(*args, **kwargs)
-
-    # def delete_instance(self, recursive=False, delete_nullable=False):
-    #     # We need to delete the article_type first, because it has no reference back to this
-    #     # object, and would therefore not be caught by recursive delete on the row below
-    #     self.get_type().delete_instance(recursive=True)
-    #     return super(Article, self).delete_instance(recursive, delete_nullable)
 
     def is_person(self):
         return ARTICLE_PERSON == self.type
@@ -122,10 +90,10 @@ class Article(db.Document):
     def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.type_name() if self.type > 0 else '')
 
-class MediaArticle(db.Article):
+class MediaArticle(Article):
     media = db.ReferenceField(MediaResource)
 
-class PersonArticle(db.Article):
+class PersonArticle(Article):
     born = db.IntField()
     died = db.IntField()
     gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
@@ -135,17 +103,17 @@ class PersonArticle(db.Article):
     def gender_name(self):
         return GENDER_TYPES[self.gender][1].title()
 
-class FractionArticle(db.Article):
+class FractionArticle(Article):
     fraction_type = db.StringField()
 
-class PlaceArticle(db.Article):
+class PlaceArticle(Article):
     # normalized position system, e.g. form 0 to 1 float, x and y
     coordinate_x = db.FloatField() 
     coordinate_y = db.FloatField()
     # building, city, domain, point_of_interest
     location_type = db.StringField()
 
-class EventArticle(db.Article):
+class EventArticle(Article):
     from_date = db.IntField()
     to_date = db.IntField()
 
@@ -157,10 +125,10 @@ class Episode(db.EmbeddedDocument):
     
 Episode.children = db.ListField(db.EmbeddedDocumentField(Episode))
     
-class CampaignArticle(db.Article):
+class CampaignArticle(Article):
     children = db.ListField(db.EmbeddedDocumentField(Episode))
 
-class ChronicleArticle(db.Article):
+class ChronicleArticle(Article):
     pass
 
 
@@ -197,16 +165,16 @@ Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 #     user = ForeignKeyField(User)
 #     type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
 
-class ArticleGroup(db.Document):
-    article = db.ReferenceField(Article)
-    group = db.ReferenceField(Group)
-    type = db.IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
+# class ArticleGroup(db.Document):
+#     article = db.ReferenceField(Article)
+#     group = db.ReferenceField(Group)
+#     type = db.IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
 
-    def __str__(self):
-        return unicode(self).encode('utf-8')
+#     def __str__(self):
+#         return unicode(self).encode('utf-8')
 
-    def __unicode__(self):
-        return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
+#     def __unicode__(self):
+#         return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
 
 
 # class ArticleRights(db.Document):

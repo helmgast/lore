@@ -44,19 +44,19 @@ userhandler = UserHandler(User, model_form(User), 'social/user_detail.html', 'so
 @auth.login_required
 def index():
     user = auth.get_logged_in_user()
-    following_messages = Message.select().where(Message.conversation ==0, Message.user << user.following()).order_by(Message.pub_date.desc())
+    following_messages = Message.objects(conversation=0, user__in=user.following()).order_by('-pub_date')
     return render_template('social/social.html', following_messages, 'following_message_list')
 
 @social.route('/public/')
 def public_timeline():
-    messages = Message.select().where(Message.conversation == 0).order_by(Message.pub_date.desc())
+    messages = Message.objects(conversation=0).order_by('-pub_date')
     return render_template('social/public_messages.html', messages, 'message_list')
 
 @social.route('/conversations/', methods=['GET'])
 @auth.login_required
 def conversations():
     user = auth.get_logged_in_user()
-    conversations = Conversation.select().join(ConversationMember).where( ConversationMember.member == user)
+    # conversations = Conversation.objects(ConversationMember.member == user)
     return render_template('social/conversations.html', conversations, 'conversation_list')
 
 @social.route('/conversations/new/', methods=['GET', 'POST'])

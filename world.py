@@ -1,14 +1,13 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
 from peewee import *
 from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
-from model.world import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ArticleGroup, ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
-from model.user import Group, GroupMember, GROUP_MASTER, GROUP_PLAYER
+from model.world import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
+from model.user import Group
 
 from resource import ResourceHandler, ModelServer
-from raconteur import auth, admin
+from raconteur import auth
 from itertools import groupby
 from datetime import datetime, timedelta
-from flask_peewee.utils import get_object_or_404, object_list
 from wtfpeewee.fields import ModelSelectField, SelectMultipleQueryField, ModelHiddenField, FormField, SelectQueryField
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
@@ -54,34 +53,6 @@ world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
 world_app.add_app_template_filter(by_time)
 
-# A slight modification of the normal ModelConverter (which automatically makes forms
-# from Model classes). This will accept a "hidden" field argument which will then switch
-# the form field type to ModelHidden, rather than a normal SelectQuery.
-class WorldConverter(ModelConverter):
-    def __init__(self):
-        super(WorldConverter, self).__init__(additional={CharField:self.handle_textfield, TextField:self.handle_textfield})
-
-    def handle_foreign_key(self, model, field, **kwargs):
-        if field.null:
-            kwargs['allow_blank'] = True
-        if field.choices is not None:
-            field_obj = SelectQueryField(query=field.choices, **kwargs)
-        elif kwargs.pop('hidden',False):
-            field_obj = ModelHiddenField(model=field.rel_model, **kwargs)
-        else:
-            query = kwargs.pop('query',None)
-            select_class = kwargs.pop('select_class',None)
-            if select_class:
-                field_obj = select_class(query=query if query else field.rel_model.select(), **kwargs)
-            else:
-                field_obj = SelectQueryField(query=query if query else field.rel_model.select(), **kwargs)
-        return FieldInfo(field.name, field_obj)
-
-    def handle_textfield(self, model, field, **kwargs):
-        if kwargs.pop('hidden',False): # from kwargs
-            return FieldInfo(field.name, HiddenField(**kwargs))
-        else:
-            return FieldInfo(field.name, self.defaults[field.__class__](**kwargs))
 
 class ArticleGroupSelectMultipleQueryField(SelectMultipleQueryField):
     '''
@@ -141,11 +112,11 @@ class ArticleGroupSelectMultipleQueryField(SelectMultipleQueryField):
     #             raise ValidationError(self.gettext('Not a valid choice'))
 
 # For later rference, create the forms for each article_type
-personarticle_form = model_form(PersonArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
-mediaarticle_form = model_form(MediaArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
-eventarticle_form = model_form(EventArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
-placearticle_form = model_form(PlaceArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
-fractionarticle_form = model_form(FractionArticle, converter=WorldConverter(), field_args={'article':{'hidden':True}})
+personarticle_form = model_form(PersonArticle)
+mediaarticle_form = model_form(MediaArticle)
+eventarticle_form = model_form(EventArticle)
+placearticle_form = model_form(PlaceArticle)
+fractionarticle_form = model_form(FractionArticle)
 
 # Create article_relation form, but make sure we hide the from_article field.
 articlerelation_form = model_form(ArticleRelation, converter=WorldConverter(), 
@@ -160,75 +131,6 @@ class ArticleTypeFormField(FormField):
             return self.form.validate()
         else: # Only validate this field if it corresponds to current type, otherwise ignore
             return True
-
-# This is a special form to handle Articles, where we know that it will have a special type of field:
-# articletype. Article type is actually 5 separate fields in the model class, but only one of them should
-# be not_null at any time. This means we need to take special care to ignore the null ones when validating
-# (as the form will still render the field elements for all articletypes), and also when we populate an obj
-# from the form, we want to only use the new actice type, and we want to remove any previous type object.
-class ArticleForm(Form):
-    sub_fields = ['personarticle', 'mediaarticle', 'eventarticle', 'placearticle', 'fractionarticle','outgoing_relations']
-
-    def pre_validate(self):
-        self._errors = None
-        success = True
-        for name, field in self._fields.iteritems():
-            # Exclude this fields, as only one of them should be validated
-            if name not in self.sub_fields:
-                if not field.validate(self):
-                    success = False
-        self.prevalidated = True
-        return success
-
-    def validate(self):
-        if not hasattr(self, 'prevalidated') or not self.prevalidated:
-            success = self.pre_validate()
-        else:
-            success = True
-        for name, field in self._fields.iteritems():
-            # Exclude this fields, as only one of them should be validated
-            if name in self.sub_fields:
-                if not field.validate(self):
-                    success = False
-        return success
-
-    def pre_populate_obj(self, obj):
-        # Do normal populate of all fields except FormFields
-        for name, field in self._fields.iteritems():
-            if name not in self.sub_fields:
-                # print u"Pre-populating field %s with data %s" % (name, field.data)
-                field.populate_obj(obj, name)
-        self.prepopulated = True
-        
-    def populate_obj(self, obj):
-        if not hasattr(self, 'prepopulated') or not self.prepopulated:
-            self.pre_populate_obj(obj)
-        typename = obj.type_name()+'article'
-        if obj.type != ARTICLE_DEFAULT:
-            field = self._fields[typename]
-            new_model = obj.get_type()
-            print "Current type is %s, obj is %s" % (typename, new_model)
-            if not new_model:
-                # Need to instantiate a new one if it didn't exist before!
-                if typename=='personarticle':
-                    new_model = PersonArticle()
-                elif typename == 'mediaarticle':
-                    new_model = MediaArticle()
-                elif typename == 'eventarticle':
-                    new_model = EventArticle()
-                elif typename == 'placearticle':
-                    new_model = PlaceArticle()
-                elif typename == 'fractionarticle':
-                    new_model = FractionArticle()    
-                # print u"Will populate %s with data %s" % (typename, field.form.data)
-            field.form.populate_obj(new_model)
-            new_model.save()
-        else:
-            print "Did not populate articletype as it's now DEFAULT"
-        self._fields['outgoing_relations'].populate_obj(obj, 'outgoing_relations')
-
-article_form = model_form(Article, base_class=ArticleForm, exclude=['slug', 'created_date'], 
-    converter=WorldConverter(), field_args={'world':{'hidden':True},'title':{'hidden':True},'content':{'hidden':True}})
 
 class ArticleRelationFormField(FormField):
     def populate_obj(self, obj, name):
@@ -311,15 +213,14 @@ def list_article(world_slug):
 def world_browse(world_slug, groupby):
     world = World.objects.get_or_404(slug=world_slug)
     if groupby == 'title':
-        world_articles = Article.select().where(Article.world == world).order_by(Article.title.asc())
+        world_articles = Article.objects(world=world).order_by('title')
     elif groupby == 'type':
-        world_articles = Article.select().where(Article.world == world).order_by(Article.type.asc())
+        world_articles = Article.objects(world=world).order_by('type')
     elif groupby == 'time':
-        world_articles = Article.select().where(Article.world == world).order_by(Article.created_date.desc())
+        world_articles = Article.objects(world=world).order_by('-created_date') # descending order
     elif groupby == 'relation':
-        world_articles = Article.select().where(Article.world == world).order_by(Article.created_date.desc())
-        relations = ArticleRelation.select().where(ArticleRelation.from_article << world_articles)
-        return render_template('models/articlerelation_list.html', world_articles, world=world, groupby=groupby, relations=relations)
+        world_articles = Article.objects(world=world).order_by('-created_date') # descending order
+        return render_template('models/articlerelation_list.html', world_articles, world=world, groupby=groupby)
     else:
         abort(404)
     return render_template('world/world_browse.html', world_articles, world=world, groupby=groupby)
