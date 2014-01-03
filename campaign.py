@@ -97,27 +97,27 @@ scenehandler = SceneHandler(
 def index():
     return campaigns()
 
-@campaign.route('/sessions/')
-@auth.login_required
-def sessions():
-    user = auth.get_logged_in_user()
-    member_in_groups = Group.select().join(GroupMember).where(GroupMember.member == user)
-    sessions = Session.select().join(Campaign).where(Campaign.group << member_in_groups)
-    return render_template('campaign/sessions.html', sessions=sessions)
+# @campaign.route('/sessions/')
+# @auth.login_required
+# def sessions():
+#     user = auth.get_logged_in_user()
+#     member_in_groups = user.groups()
+#     sessions = Session.objects( mpaign.group << member_in_groups)
+#     return render_template('campaign/sessions.html', sessions=sessions)
 
-@campaign.route('/sessions/new', methods=['GET', 'POST'])
-@auth.login_required
-def session_new():
-    return sessionhandler.handle_request(ResourceHandler.NEW)
+# @campaign.route('/sessions/new', methods=['GET', 'POST'])
+# @auth.login_required
+# def session_new():
+#     return sessionhandler.handle_request(ResourceHandler.NEW)
 
-@campaign.route('/sessions/<id>', methods=['GET', 'POST'])
-@auth.login_required
-def session_detail(id):
-    return sessionhandler.handle_request(ResourceHandler.EDIT, Session.objects.get_or_404(id=id))
+# @campaign.route('/sessions/<id>', methods=['GET', 'POST'])
+# @auth.login_required
+# def session_detail(id):
+#     return sessionhandler.handle_request(ResourceHandler.EDIT, Session.objects.get_or_404(id=id))
 
 @campaign.route('/campaigns/')
 def campaigns():
-    campaigns = Campaign.select().order_by(Campaign.name.asc())
+    campaigns = Campaign.objects().order_by('name')
     return render_template('campaign/campaigns.html', campaigns=campaigns)
 
 @auth.login_required
