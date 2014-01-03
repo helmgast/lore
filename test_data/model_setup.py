@@ -5,18 +5,7 @@ from model.misc import *
 from model.user import *
 from model.world import *
 
-from hashlib import sha1
-import random
-
-from flask_peewee.utils import make_password
-
-def get_hexdigest(salt, raw_password):
-    return sha1(salt + raw_password).hexdigest()
-
-def make_password(raw_password):
-    salt = get_hexdigest(str(random.random()), str(random.random()))[:5]
-    hsh = get_hexdigest(salt, raw_password)
-    return '%s$%s' % (salt, hsh)
+from auth import make_password
 
 def altor_date(year, month, day):
     return year*360+(month-1)*30+(day-1)
