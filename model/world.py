@@ -158,7 +158,7 @@ class Episode(db.EmbeddedDocument):
 Episode.children = db.ListField(db.EmbeddedDocumentField(Episode))
     
 class CampaignArticle(db.Article):
-    structure = db.EmbeddedDocumentField(Episode)
+    children = db.ListField(db.EmbeddedDocumentField(Episode))
 
 class ChronicleArticle(db.Article):
     pass
