@@ -40,6 +40,61 @@ class ResourceRequest:
         else: # print the form
             return getattr(self.form, name)(**kwargs)
 
+
+w = add_model('world', World, opt1, opt2)
+w.add_model('article', Article)
+
+new_route(s/s/s/)
+    do_request
+
+new_route(s/s/s/s/)
+    check_param
+    check_404
+    check_permission
+    do_request
+
+class ResourceHandler2:
+
+    def index():
+        if request.method == 'OPTIONS':
+            # custom options handling here
+            ...
+        return 'Hello World!'
+    index.dispatch_request = None
+    index.provide_automatic_options = False
+    index.methods = ['GET', 'OPTIONS']
+
+    app.add_url_rule('/campaigns/<slug>/scenes/new', index)
+
+    def __init__(self, model_class, form_class, template, route):
+
+    def get:
+        # GET SR
+        pass
+    def get_edit:
+        pass
+    def get_list:
+        pass
+    def get_edit_list:
+        pass
+    def get_new:
+        pass
+    def post_new:
+        pass
+    def post:
+        # Delegate to put, patch, delete
+        pass
+    def put:
+        pass
+    def patch:
+        pass
+    def delete:
+        pass
+
+
+    def handle_request(self, op, instance=None, redirect_url=None, **kwargs):
+
+
 # WTForms Field constructor args
 # label - The label of the field. Available after construction through the label property.
 # validators - A sequence of validators to call when validate is called.
@@ -70,6 +125,8 @@ class ResourceHandler:
     op_messages = {EDIT: 'edited', NEW: 'created', DELETE:'deleted'}
 
     def __init__(self, model_class, form_class, template, route):
+        self.stategy = strategy
+
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.model_class = model_class
         self.form_class = form_class

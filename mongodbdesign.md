@@ -145,3 +145,72 @@ Visual components
 - Row (a row representation of a single resource. Used by Table.)
 - Table (a sortable table with rows). Only for list resource views.
 - Gallery (a stacked set of boxes). Only for list resource views.
+
+							?render=page;json;in_table;in_page;in_box
+
+GET		SingleResource/		?render=...
+POST	SingleResource/		?render=...
+							?method=PUT;PATCH;DELETE
+PUT		SingleResource/		?render=...
+PATCH	SingleResource/		?render=...
+DELETE	SingleResource/		?render=...
+GET		SingleResource/edit ?render=...
+							?<field>=x;
+GET		PluralResource/		?render=...
+							?order_by=<field>;-<field>
+							?<field>=x;<field__gt>=y;
+POST	PluralResource/		?render=...
+GET		PluralResource/new	?render=...
+GET		PluralResource/edit	?render=...
+							?order_by=<field>;-<field>
+							?<field>=x;<field__gt>=y;
+
+Responses
+200		Rendered output as per argument
+400		Bad request (general error or incorrect validation)
+404		Not found (given resource id does not exist)
+401		Unauthorized (not logged in or not access to article)
+403		Forbidden (operation is not allowed)
+500		Internal Server Error (python exception)
+
+1) Map method to actual view function (POST SR)
+2) Parse url params
+	if method, call corresponding function
+	if incorrect, respond 400
+	else proceed
+3) Get all resources instances from ids
+	if not found, respond 404
+4) Three actions:
+	Check if authorized
+		If not, respond 401
+	a) Render static view of resource (GET SR, GET PR)
+		a) GET SR/ Render SR
+			Respond 200
+		b) GET PR/ Parse and validate listing args
+			If incorrect listing args
+				Respond 400
+			Else continue
+				Respond 200
+	b) Render form view of resource (GET SR/edit, GET PR/new, GET PR/edit)
+		a) GET SR/edit Create form object, render form
+			If incorrect prefill fields, ignore, respond 200
+		b) GET PR/new Create form object, render form
+			If incorrect prefill fields, ignore, respond 200
+		c) GET PR/edit Parse and validate listing args, render as editable
+			If incorrect listing args
+				Respond 400
+			Else continue
+				Respond 200
+	c) Validate input and commit to DB, render response or error (POST;PUT;PATCH;DELETE SR/, POST PR/)
+		Create form object, input
+		If DELETE)
+			Respond 300 (to PR/)
+		Else if Validate
+			If POST)
+				1) Instantiate new model obj
+			If PUT)
+				1) Instantiate new model obj
+			Populate model obj with form data
+			Respond 300 (to SR/)
+		Else
+			Return 403, form with highlighted validation errors

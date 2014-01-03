@@ -117,7 +117,10 @@ def index():
 
 @campaign.route('/campaigns/')
 def campaigns():
+    parse_args
     campaigns = Campaign.objects().order_by('name')
+    allowed 
+    handle_request
     return render_template('campaign/campaigns.html', campaigns=campaigns)
 
 @auth.login_required
