@@ -40,59 +40,113 @@ class ResourceRequest:
         else: # print the form
             return getattr(self.form, name)(**kwargs)
 
+def add_article_rules(self, app, handler, (prefix, resource_id_name), resource_plural):
+    class GetOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.get(*args, **kwargs)
+    class PostOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.post(*args, **kwargs)
+    class PutOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.put(*args, **kwargs)
+    class PatchOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.patch(*args, **kwargs)
+    class DeleteOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.delete(*args, **kwargs)
+    class GetEditOne(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.get_edit(*args, **kwargs)
+    class GetMany(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.get_list(*args, **kwargs)
+    class PostNew(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.post_new(*args, **kwargs)
+    class GetNew(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.get_new(*args, **kwargs)
+    class GetEditMany(View):
+        def dispatch_request(self, *args, **kwargs):
+            return handler.get_edit_list(*args, **kwargs)
+  
+    app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['GET'], view_func=GetOne.as_view('%s_get_one' % resource_plural))
+    app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['POST'], view_func=PostOne.as_view('%s_post_one' % resource_plural))
+    app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['PUT'], view_func=PutOne.as_view('%s_put_one' % resource_plural))
+    app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['PATCH'], view_func=PatchOne.as_view('%s_patch_one' % resource_plural))
+    app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['DELETE'], view_func=DeleteOne.as_view('%s_delete_one' % resource_plural))
+    app.add_url_rule('%s/<%s>/edit' % (prefix, resource_id_name), methods=['GET'], view_func=GetEditOne.as_view('%s_get_edit_one' % resource_plural))
+    app.add_url_rule('%s/%s' % (prefix, resource_plural), methods=['GET'], view_func=GetMany.as_view('%s_get_list' % resource_plural))
+    app.add_url_rule('%s/%s' % (prefix, resource_plural), methods=['POST'], view_func=PostNew.as_view('%s_post_new' % resource_plural))
+    app.add_url_rule('%s/%s/new' % (prefix, resource_plural), methods=['GET'], view_func=GetNew.as_view('%s_get_new' % resource_plural))
+    app.add_url_rule('%s/%s/edit' % (prefix, resource_plural), methods=['GET'], view_func=GetEditMany.as_view('%s_get_edit_list' % resource_plural))
 
-w = add_model('world', World, opt1, opt2)
-w.add_model('article', Article)
 
-new_route(s/s/s/)
-    do_request
-
-new_route(s/s/s/s/)
-    check_param
-    check_404
-    check_permission
-    do_request
 
 class ResourceHandler2:
-
-    def index():
-        if request.method == 'OPTIONS':
-            # custom options handling here
-            ...
-        return 'Hello World!'
-    index.dispatch_request = None
-    index.provide_automatic_options = False
-    index.methods = ['GET', 'OPTIONS']
-
-    app.add_url_rule('/campaigns/<slug>/scenes/new', index)
-
+  
     def __init__(self, model_class, form_class, template, route):
+        self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
+        self.model_class = model_class
+    
+    def render_list(self, edit=False, *args, **kwargs):
+        return render_template('%s/%s.html' % (self.resource_name, self.resource_name), model=kwargs.model, edit=edit)
+    
+    def render_one(self, edit=False, new=False, *args, **kwargs):
+        return render_template('%s/%s_page.html' % (self.resource_name, self.resource_name), model=kwargs.model, edit=edit, new=new)
+    
+    def get(self, *args, **kwargs):
+        return self.render_one(*args, **kwargs)
 
-    def get:
-        # GET SR
-        pass
-    def get_edit:
-        pass
-    def get_list:
-        pass
-    def get_edit_list:
-        pass
-    def get_new:
-        pass
-    def post_new:
-        pass
-    def post:
-        # Delegate to put, patch, delete
-        pass
-    def put:
-        pass
-    def patch:
-        pass
-    def delete:
+    def get_edit(self, *args, **kwargs):
+        return self.render_one(edit=True, *args, **kwargs)
+    
+    def get_new(self, *args, **kwargs):
+        return self.render_one(new=True, *args, **kwargs)
+
+    def get_list(self, *args, **kwargs):
+        self.apply_request_args_to_model()
+        return self.render_list(*args, **kwargs)
+
+    def get_edit_list(self, *args, **kwargs):
+        self.apply_request_args_to_model()
+        return self.render_list(edit=True, *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if request.args.has_key('method'):
+            method = request.args.get('method')
+            if method == 'PUT':
+              return self.put(*args, **kwargs);
+            elif method == 'PATCH':
+              return self.patch(*args, **kwargs)
+            elif method == 'DELETE':
+              return self.delete(*args, **kwargs)
+            else:
+              return 400; #error_response, invalid method
+        else:
+          return 400; #error_response, missing method
+
+    def apply_request_args_to_model(self):
+        self.apply_request_args_to_model()
         pass
 
+    def post_new(self, *args, **kwargs):
+        self.apply_request_args_to_model()
+        pass
 
-    def handle_request(self, op, instance=None, redirect_url=None, **kwargs):
+    def put(self, *args, **kwargs):
+        self.apply_request_args_to_model()
+        pass
+
+    def patch(self, *args, **kwargs):
+        self.apply_request_args_to_model()
+        pass
+    
+    def delete(self, *args, **kwargs):
+        pass
+
 
 
 # WTForms Field constructor args
@@ -126,7 +180,6 @@ class ResourceHandler:
 
     def __init__(self, model_class, form_class, template, route):
         self.stategy = strategy
-
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.model_class = model_class
         self.form_class = form_class
