@@ -49,7 +49,7 @@ class ResourceAccessStrategy:
         self.parent = parent_strategy
 
     def get_url_path(self, part, op):
-        parent_url = self.parent.get_url_path(False, None) if self.parent else ''
+        parent_url = self.parent.get_url_path(False, None) + '/' if self.parent else ''
         return parent_url + part + ('/'+op if op else '')
 
     def get_list_url(self, op=None):
@@ -82,6 +82,12 @@ class ResourceAccessStrategy:
         # If instance exists, check allowed on that, otherwise check on model class
         return parent_allowed
 
+    def allowed_any(self, op):
+        return self.allowed(op, None);
+
+    def allowed_on(self, op, instance):
+        return self.allowed(op, instance);
+
 
 class ResourceHandler2:
 
@@ -89,18 +95,18 @@ class ResourceHandler2:
         self.form_class = form_class
         self.strategy = strategy
 
-    def register_urls(self):
+    def register_urls(self, app):
         st = self.strategy
-        app.add_url_rule(st.get_item_url(), methods=['GET'], view_func=dispatch(self.get), endpoint=st.endpoint_name('get'))
-        app.add_url_rule(st.get_item_url(), methods=['POST'], view_func=dispatch(self.post), endpoint=st.endpoint_name('post'))
-        app.add_url_rule(st.get_item_url(), methods=['PUT'], view_func=dispatch(self.put), endpoint=st.endpoint_name('put'))
-        app.add_url_rule(st.get_item_url(), methods=['PATCH'], view_func=dispatch(self.patch), endpoint=st.endpoint_name('patch'))
-        app.add_url_rule(st.get_item_url(), methods=['DELETE'], view_func=dispatch(self.delete), endpoint=st.endpoint_name('delete'))
-        app.add_url_rule(st.get_item_url('edit'), methods=['GET'], view_func=dispatch(self.get_edit), endpoint=st.endpoint_name('get_edit'))
-        app.add_url_rule(st.get_list_url(), methods=['GET'], view_func=dispatch_list(self.get_list), endpoint=st.endpoint_name('get_list'))
-        app.add_url_rule(st.get_list_url(), methods=['POST'], view_func=dispatch(self.post_new), endpoint=st.endpoint_name('post_new'))
-        app.add_url_rule(st.get_list_url('new'), methods=['GET'], view_func=dispatch(self.get_new), endpoint=st.endpoint_name('get_new'))
-        app.add_url_rule(st.get_list_url('edit'), methods=['GET'], view_func=dispatch_list(self.get_edit_list), endpoint=st.endpoint_name('get_edit_list'))
+        app.add_url_rule(st.get_item_url(), methods=['GET'], view_func=self.dispatch(self.get), endpoint=st.endpoint_name('get'))
+        app.add_url_rule(st.get_item_url(), methods=['POST'], view_func=self.dispatch(self.post), endpoint=st.endpoint_name('post'))
+        app.add_url_rule(st.get_item_url(), methods=['PUT'], view_func=self.dispatch(self.put), endpoint=st.endpoint_name('put'))
+        app.add_url_rule(st.get_item_url(), methods=['PATCH'], view_func=self.dispatch(self.patch), endpoint=st.endpoint_name('patch'))
+        app.add_url_rule(st.get_item_url(), methods=['DELETE'], view_func=self.dispatch(self.delete), endpoint=st.endpoint_name('delete'))
+        app.add_url_rule(st.get_item_url('edit'), methods=['GET'], view_func=self.dispatch(self.get_edit), endpoint=st.endpoint_name('get_edit'))
+        app.add_url_rule(st.get_list_url(), methods=['GET'], view_func=self.dispatch_list(self.get_list), endpoint=st.endpoint_name('get_list'))
+        app.add_url_rule(st.get_list_url(), methods=['POST'], view_func=self.dispatch(self.post_new), endpoint=st.endpoint_name('post_new'))
+        app.add_url_rule(st.get_list_url('new'), methods=['GET'], view_func=self.dispatch(self.get_new), endpoint=st.endpoint_name('get_new'))
+        app.add_url_rule(st.get_list_url('edit'), methods=['GET'], view_func=self.dispatch_list(self.get_edit_list), endpoint=st.endpoint_name('get_edit_list'))
 
     def render_list(self, instance, edit=False):
         return render_template(self.strategy.get_list_template(), model=instance, edit=edit)
@@ -108,34 +114,25 @@ class ResourceHandler2:
     def render_one(self, instance, edit=False, new=False):
         return render_template(self.strategy.get_item_template(), model=instance, edit=edit, new=new)
     
-    def dispatch_instance(callable):
+    def dispatch_instance(self, callable):
         def retfunction(*args, **kwargs):
             try:
                 return callable(*args, **kwargs)
             except:
-                return render_one()
-    return retfunction
+                return self.render_one()
+        return retfunction
 
-    def dispatch_list(callable):
+    def dispatch_list(self, callable):
         def retfunction(*args, **kwargs):
             try:
                 return callable(*args, **kwargs)
             except:
-                return render_list()
-    return retfunction
-
-    def query_instance(self, id):
-        return self.strategy.get_item(id)
-
-    def query_list(self):
-        return self.strategy.get_list(id)
-
-    def allowed(self, op, instance=None):
-        return self.allowed(op, instance)
+                return self.render_list()
+        return retfunction
 
     def get(self, *args):
         instance = self.strategy.get_item(id)
-        if not self.allowed('read', instance):
+        if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
         return self.render_one(*args, **kwargs)
 
@@ -143,7 +140,7 @@ class ResourceHandler2:
         instance = self.strategy.get_item(id)
         if not instance:
             return self.render_one(error=400)
-        if not self.allowed('write', instance):
+        if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
         if request.args.has_key('prefill'):
             if self.incorrect(request.args.get('prefill')):
@@ -153,7 +150,7 @@ class ResourceHandler2:
     
     def get_new(self, *args, **kwargs):
         # no instance, new
-        if not self.allowed('write'):
+        if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
         if request.args.has_key('prefill'):
             if self.incorrect(request.args.get('prefill')):
@@ -162,7 +159,7 @@ class ResourceHandler2:
         return self.render_one(new=True, form=form)
 
     def get_list(self, *args, **kwargs):
-        if not self.allowed('read'):
+        if not self.strategy.allowed_any('read'):
             return self.render_one(error=401)
         list_args = self.get_list_args()
         if not list_args:
@@ -172,7 +169,7 @@ class ResourceHandler2:
         return self.render_list(list)
 
     def get_edit_list(self, *args, **kwargs):
-        if not self.allowed('write'):
+        if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
           
         list_args = self.get_list_args()
@@ -197,7 +194,7 @@ class ResourceHandler2:
           return self.render_one(error=400, msg="Not REST operation"); #error_response, missing method
 
     def post_new(self, *args, **kwargs):
-        if not self.allowed('write'):
+        if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
@@ -211,7 +208,7 @@ class ResourceHandler2:
         instance = self.strategy.get_item(id)
         if not instance:
             return self.render_one(error=400)
-        if not self.allowed('write', instance):
+        if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
@@ -224,7 +221,7 @@ class ResourceHandler2:
         instance = self.strategy.get_item(id)
         if not instance:
             return self.render_one(error=400)
-        if not self.allowed('write', instance):
+        if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
@@ -237,7 +234,7 @@ class ResourceHandler2:
         instance = self.strategy.get_item(id)
         if not instance:
             return self.render_one(error=400)
-        if not self.allowed('write', instance):
+        if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
         instance.delete()  
         return redirect()
