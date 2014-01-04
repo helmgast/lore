@@ -109,10 +109,10 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.dispatch(self.get_new), endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.dispatch_list(self.get_edit_list), endpoint=st.endpoint_name('get_edit_list'))
 
-    def render_list(self, instance, edit=False):
+    def render_list(self, instance=None, edit=False):
         return render_template(self.strategy.list_template(), model=instance, edit=edit)
     
-    def render_one(self, instance, edit=False, new=False):
+    def render_one(self, instance=None, edit=False, new=False):
         return render_template(self.strategy.item_template(), model=instance, edit=edit, new=new)
     
     def dispatch_instance(self, callable):
@@ -131,7 +131,7 @@ class ResourceHandler2:
                 return self.render_list()
         return retfunction
 
-    def get(self, *args):
+    def get(self, *args, **kwargs):
         instance = self.strategy.get_item(id)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
@@ -167,7 +167,7 @@ class ResourceHandler2:
             return self.render_one(error=400)
         list = self.strategy.get_list(list_args)
         # Filter on allowed instances?
-        return self.render_list(list)
+        return self.render_list(instance=list)
 
     def get_edit_list(self, *args, **kwargs):
         if not self.strategy.allowed_any('write'):
@@ -178,7 +178,7 @@ class ResourceHandler2:
             return self.render_one(error=400)    
         list = self.strategy.get_list(list_args)
         # Filter on allowed instances?
-        return self.render_list(edit=True, list)
+        return self.render_list(edit=True, instance=list)
 
     def post(self, *args, **kwargs):
         if request.args.has_key('method'):

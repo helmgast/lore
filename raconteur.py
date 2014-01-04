@@ -34,19 +34,20 @@ if the_app == None:
 
   Markdown(the_app)
 
-  from world import world_app as world
+#   from world import world_app as world
   from social import social
-  from generator import generator
-  from campaign import campaign
+#   from generator import generator
+#   from campaign import campaign
 
-  the_app.register_blueprint(world, url_prefix='/world')
-  the_app.register_blueprint(generator, url_prefix='/generator')
+#   the_app.register_blueprint(world, url_prefix='/world')
+#   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
-  the_app.register_blueprint(campaign, url_prefix='/campaign')
+#   the_app.register_blueprint(campaign, url_prefix='/campaign')
   #print the_app.url_map
   
-# def setup_models():
-#   model_setup.setup_models()
+from test_data import model_setup
+def setup_models():
+  model_setup.setup_models()
 
 ###
 ### Basic views (URL handlers)

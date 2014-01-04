@@ -1,5 +1,6 @@
 import functools
 import os
+import random
 
 from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
 from peewee import *
