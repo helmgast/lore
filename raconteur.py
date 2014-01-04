@@ -45,8 +45,9 @@ if the_app == None:
   the_app.register_blueprint(campaign, url_prefix='/campaign')
   #print the_app.url_map
   
-# def setup_models():
-#   model_setup.setup_models()
+from test_data import model_setup
+def setup_models():
+  model_setup.setup_models()
 
 ###
 ### Basic views (URL handlers)

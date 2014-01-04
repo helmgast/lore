@@ -223,7 +223,7 @@ page.html
 
 model_form
 	if partial then extend partial else extend "world.html"
-	block: content
+	block: in_page
 	block: in_table
 	block: in_box
 model_view

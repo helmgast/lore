@@ -36,7 +36,7 @@ class MediaResource(db.Document):
     size_y = db.IntField()
 
 class World(db.Document):
-    id = db.StringField(unique=True) # URL-friendly name
+    slug = db.StringField(unique=True) # URL-friendly name
     title = db.StringField()
     description = db.StringField()
     thumbnail = db.ReferenceField(MediaResource)
@@ -59,7 +59,7 @@ class World(db.Document):
 
 class Article(db.Document):
     meta = {'allow_inheritance': True} 
-    id = db.StringField(unique=True) # URL-friendly name
+    slug = db.StringField(unique=True) # URL-friendly name
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
@@ -71,6 +71,10 @@ class Article(db.Document):
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
     # modified_date = DateTimeField()
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.title)
+        return super(Article, self).save(*args, **kwargs)
+      
     def is_person(self):
         return ARTICLE_PERSON == self.type
 

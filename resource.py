@@ -51,7 +51,7 @@ class ResourceAccessStrategy:
 
     def get_url_path(self, part, op):
         parent_url = self.parent.get_url_path(False, None) + '/' if self.parent else ''
-        return parent_url + part + ('/'+op if op else '')
+        return parent_url + part + '/'+op if op else ''
 
     def url_list(self, op=None):
         return self.get_url_path(self.plural_name, op)
@@ -98,24 +98,24 @@ class ResourceHandler2:
 
     def register_urls(self, app):
         st = self.strategy
-        app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.dispatch(self.get), endpoint=st.endpoint_name('get'))
-        app.add_url_rule(st.url_item(), methods=['POST'], view_func=self.dispatch(self.post), endpoint=st.endpoint_name('post'))
-        app.add_url_rule(st.url_item(), methods=['PUT'], view_func=self.dispatch(self.put), endpoint=st.endpoint_name('put'))
-        app.add_url_rule(st.url_item(), methods=['PATCH'], view_func=self.dispatch(self.patch), endpoint=st.endpoint_name('patch'))
-        app.add_url_rule(st.url_item(), methods=['DELETE'], view_func=self.dispatch(self.delete), endpoint=st.endpoint_name('delete'))
-        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=self.dispatch(self.get_edit), endpoint=st.endpoint_name('get_edit'))
+        app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.dispatch_item(self.get), endpoint=st.endpoint_name('get'))
+        app.add_url_rule(st.url_item(), methods=['POST'], view_func=self.dispatch_item(self.post), endpoint=st.endpoint_name('post'))
+        app.add_url_rule(st.url_item(), methods=['PUT'], view_func=self.dispatch_item(self.put), endpoint=st.endpoint_name('put'))
+        app.add_url_rule(st.url_item(), methods=['PATCH'], view_func=self.dispatch_item(self.patch), endpoint=st.endpoint_name('patch'))
+        app.add_url_rule(st.url_item(), methods=['DELETE'], view_func=self.dispatch_item(self.delete), endpoint=st.endpoint_name('delete'))
+        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=self.dispatch_item(self.get_edit), endpoint=st.endpoint_name('get_edit'))
         app.add_url_rule(st.url_list(), methods=['GET'], view_func=self.dispatch_list(self.get_list), endpoint=st.endpoint_name('get_list'))
-        app.add_url_rule(st.url_list(), methods=['POST'], view_func=self.dispatch(self.post_new), endpoint=st.endpoint_name('post_new'))
-        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.dispatch(self.get_new), endpoint=st.endpoint_name('get_new'))
+        app.add_url_rule(st.url_list(), methods=['POST'], view_func=self.dispatch_item(self.post_new), endpoint=st.endpoint_name('post_new'))
+        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.dispatch_item(self.get_new), endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.dispatch_list(self.get_edit_list), endpoint=st.endpoint_name('get_edit_list'))
 
-    def render_list(self, instance, edit=False):
+    def render_list(self, instance=None, edit=False):
         return render_template(self.strategy.list_template(), model=instance, edit=edit)
     
-    def render_one(self, instance, edit=False, new=False):
+    def render_one(self, instance=None, edit=False, new=False):
         return render_template(self.strategy.item_template(), model=instance, edit=edit, new=new)
     
-    def dispatch_instance(self, callable):
+    def dispatch_item(self, callable):
         def retfunction(*args, **kwargs):
             try:
                 return callable(*args, **kwargs)
@@ -131,7 +131,7 @@ class ResourceHandler2:
                 return self.render_list()
         return retfunction
 
-    def get(self, *args):
+    def get(self, *args, **kwargs):
         instance = self.strategy.get_item(id)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
@@ -167,7 +167,7 @@ class ResourceHandler2:
             return self.render_one(error=400)
         list = self.strategy.get_list(list_args)
         # Filter on allowed instances?
-        return self.render_list(list)
+        return self.render_list(instance=list)
 
     def get_edit_list(self, *args, **kwargs):
         if not self.strategy.allowed_any('write'):
@@ -178,7 +178,7 @@ class ResourceHandler2:
             return self.render_one(error=400)    
         list = self.strategy.get_list(list_args)
         # Filter on allowed instances?
-        return self.render_list(edit=True, list)
+        return self.render_list(edit=True, instance=list)
 
     def post(self, *args, **kwargs):
         if request.args.has_key('method'):
