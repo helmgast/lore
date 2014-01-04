@@ -75,91 +75,91 @@ def add_test_data():
     User(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson').save()
     
-    MediaArticle(mime_type="image/jpg",
-                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
-                        article=Article(type=ARTICLE_MEDIA,
+    MediaArticle(type=ARTICLE_MEDIA,
                                                title=u"Ljusbringaren",
                                                content=u"No content",
                                                world=altor,
-                                               creator=mj)).save()
-    PersonArticle(born=altor_date(1653,3,4),
-                         died=altor_date(1891,12,3),
-                         gender=GENDER_MALE,
-                         occupation=u"Ljusbringaren",
-                         article=Article(type=ARTICLE_PERSON,
+                                               creator=mj,
+                                               mime_type="image/jpg",
+                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg").save()
+    PersonArticle(type=ARTICLE_PERSON,
                                                 title=u"Ljusbringaren bild",
                                                 content=u"No content",
                                                 world=altor,
-                                               creator=rl)).save()
+                                               creator=rl,
+                                               born=altor_date(1653,3,4),
+                         died=altor_date(1891,12,3),
+                         gender=GENDER_MALE,
+                         occupation=u"Ljusbringaren").save()
 
-    Relationship(from_user=mf, to_user=nf).save()
-    Relationship(from_user=nf, to_user=mf).save()
-    Relationship(from_user=rj, to_user=vs).save()
-    Relationship(from_user=mf, to_user=ks).save()
-
-    Relationship(from_user=jc, to_user=nf).save()
-    Relationship(from_user=nf, to_user=jc).save()
-    Relationship(from_user=pf, to_user=nf).save()
-    Relationship(from_user=nf, to_user=pf).save()
-    Relationship(from_user=cm, to_user=nf).save()
-    Relationship(from_user=nf, to_user=cm).save()
-    Relationship(from_user=dm, to_user=nf).save()
-    Relationship(from_user=nf, to_user=dm).save()
-    Relationship(from_user=pf, to_user=jc).save()
-    Relationship(from_user=jc, to_user=pf).save()
-    Relationship(from_user=cm, to_user=jc).save()
-    Relationship(from_user=jc, to_user=cm).save()
-    Relationship(from_user=dm, to_user=jc).save()
-    Relationship(from_user=jc, to_user=dm).save()
-    Relationship(from_user=cm, to_user=pf).save()
-    Relationship(from_user=pf, to_user=cm).save()
-    Relationship(from_user=dm, to_user=pf).save()
-    Relationship(from_user=pf, to_user=dm).save()
-    Relationship(from_user=dm, to_user=cm).save()
-    Relationship(from_user=cm, to_user=dm).save()
-
-    Relationship(from_user=ar, to_user=mf).save()
-    Relationship(from_user=mf, to_user=ar).save()
-    Relationship(from_user=mf, to_user=mb).save()
-    Relationship(from_user=mb, to_user=vs).save()
-    Relationship(from_user=ar, to_user=mb).save()
+#     Relationship(from_user=mf, to_user=nf).save()
+#     Relationship(from_user=nf, to_user=mf).save()
+#     Relationship(from_user=rj, to_user=vs).save()
+#     Relationship(from_user=mf, to_user=ks).save()
+# 
+#     Relationship(from_user=jc, to_user=nf).save()
+#     Relationship(from_user=nf, to_user=jc).save()
+#     Relationship(from_user=pf, to_user=nf).save()
+#     Relationship(from_user=nf, to_user=pf).save()
+#     Relationship(from_user=cm, to_user=nf).save()
+#     Relationship(from_user=nf, to_user=cm).save()
+#     Relationship(from_user=dm, to_user=nf).save()
+#     Relationship(from_user=nf, to_user=dm).save()
+#     Relationship(from_user=pf, to_user=jc).save()
+#     Relationship(from_user=jc, to_user=pf).save()
+#     Relationship(from_user=cm, to_user=jc).save()
+#     Relationship(from_user=jc, to_user=cm).save()
+#     Relationship(from_user=dm, to_user=jc).save()
+#     Relationship(from_user=jc, to_user=dm).save()
+#     Relationship(from_user=cm, to_user=pf).save()
+#     Relationship(from_user=pf, to_user=cm).save()
+#     Relationship(from_user=dm, to_user=pf).save()
+#     Relationship(from_user=pf, to_user=dm).save()
+#     Relationship(from_user=dm, to_user=cm).save()
+#     Relationship(from_user=cm, to_user=dm).save()
+# 
+#     Relationship(from_user=ar, to_user=mf).save()
+#     Relationship(from_user=mf, to_user=ar).save()
+#     Relationship(from_user=mf, to_user=mb).save()
+#     Relationship(from_user=mb, to_user=vs).save()
+#     Relationship(from_user=ar, to_user=mb).save()
 
     c1 = Conversation().save()
     c2 = Conversation().save()
     c3 = Conversation().save()
     
-    ConversationMember(conversation=c1, member=mf).save()
-    ConversationMember(conversation=c1, member=nf).save()
-    
-    ConversationMember(conversation=c2, member=mf).save()
-    ConversationMember(conversation=c2, member=mb).save()
-    
-    ConversationMember(conversation=c3, member=nf).save()
-    ConversationMember(conversation=c3, member=ks).save()
+#     ConversationMember(conversation=c1, member=mf).save()
+#     ConversationMember(conversation=c1, member=nf).save()
+#     
+#     ConversationMember(conversation=c2, member=mf).save()
+#     ConversationMember(conversation=c2, member=mb).save()
+#     
+#     ConversationMember(conversation=c3, member=nf).save()
+#     ConversationMember(conversation=c3, member=ks).save()
 
     ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
     mg = Group(name='Nemesis', location='Gothenburg', description=u'Test').save()
     kg = Group(name='Kulthack', location='Gothenburg', description=u'Test').save()
 
-    GroupMember(group=ng, member=mf, status=GROUP_MASTER).save()
-    GroupMember(group=mg, member=nf, status=GROUP_MASTER).save()
-    GroupMember(group=kg, member=rl, status=GROUP_MASTER).save()
-    GroupMember(group=ng, member=nf, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=ar, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=mb, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=pn, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=pf, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=fj, status=GROUP_PLAYER).save()
-    GroupMember(group=ng, member=pd, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=jg, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=pn, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=jc, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=pf, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=cm, status=GROUP_PLAYER).save()
-    GroupMember(group=mg, member=dm, status=GROUP_PLAYER).save()
-    GroupMember(group=kg, member=mb, status=GROUP_PLAYER).save()
-    GroupMember(group=kg, member=pn, status=GROUP_PLAYER).save()
-    GroupMember(group=kg, member=ks, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=mf, status=GROUP_MASTER).save()
+#     GroupMember(group=mg, member=nf, status=GROUP_MASTER).save()
+#     GroupMember(group=kg, member=rl, status=GROUP_MASTER).save()
+#     GroupMember(group=ng, member=nf, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=ar, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=mb, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=pn, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=pf, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=fj, status=GROUP_PLAYER).save()
+#     GroupMember(group=ng, member=pd, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=jg, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=pn, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=jc, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=pf, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=cm, status=GROUP_PLAYER).save()
+#     GroupMember(group=mg, member=dm, status=GROUP_PLAYER).save()
+#     GroupMember(group=kg, member=mb, status=GROUP_PLAYER).save()
+#     GroupMember(group=kg, member=pn, status=GROUP_PLAYER).save()
+#     GroupMember(group=kg, member=ks, status=GROUP_PLAYER).save()
     
     # Make sure you use unicode strings by prefixing with u''
     Message(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1).save()
@@ -172,11 +172,11 @@ def add_test_data():
     Message(user=mb, content=u'Definitivt!', conversation=c2).save()
     Message(user=nf, content=u'Hallå?', conversation=c3).save()
 
-    scmpa = CampaignArticle(name=u"Spelveckan", world=mundana, description=u"Deep drama at the beginning of July each year.").save()
-    cd4ka = CampaignArticle(name=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana).save() är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
-    cd6ka = CampaignArticle(name=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
-    kcmpa = CampaignArticle(name=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
-    ycmpa = CampaignArticle(name=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
+    scmpa = CampaignArticle(title=u"Spelveckan", world=mundana, description=u"Deep drama at the beginning of July each year.").save()
+    cd4ka = CampaignArticle(title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana).save() är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
+    cd6ka = CampaignArticle(title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
+    kcmpa = CampaignArticle(title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
+    ycmpa = CampaignArticle(title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
     
     scmpa.children = [Episode(id=1, title="Intro"),
                       Episode(id=2, title="The old man in the taverna"),
