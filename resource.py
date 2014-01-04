@@ -41,72 +41,159 @@ class ResourceRequest:
             return getattr(self.form, name)(**kwargs)
 
 
-w = add_model('world', World, opt1, opt2)
-w.add_model('article', Article)
-
-new_route(s/s/s/)
-    do_request
-
-new_route(s/s/s/s/)
-    check_param
-    check_404
-    check_permission
-    do_request
-
-add_url()
-
-
-
-
 class ResourceHandler2:
 
-    def dispatch(name, *args, **kwargs):
-        request.method
+    def __init__(self, model_class, prefix, form_class, template, route):
+        self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
+        self.model_class = model_class
 
-    def __init__(query_func:
-        add_url_rule(single_res_name, single_res_name+'endpoint', single_dispatch, methods=['GET','POST','PUT','PATCH','DELETE'])
-        add_url_rule("<"+single_res_name+">"+'/edit', single_res_name+'endpoint', single_dispatch, methods=['GET','POST','PUT','PATCH','DELETE'])
-        add_url_rule(plural_res_name, plural_res_name+'endpoint', plural_dispatch, methods=['GET','POST'])
+    def register_urls(self):
+        app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['GET'], view_func=dispatch(self.get), endpoint=resource_id_name+'_get')
+        app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['POST'], view_func=dispatch(self.post), endpoint=resource_id_name+'_post')
+        app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['PUT'], view_func=dispatch(self.put), endpoint=resource_id_name+'_put')
+        app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['PATCH'], view_func=dispatch(self.patch), endpoint=resource_id_name+'_patch')
+        app.add_url_rule('%s/<%s>' % (prefix, resource_id_name), methods=['DELETE'], view_func=dispatch(self.delete), endpoint=resource_id_name+'_delete')
+        app.add_url_rule('%s/<%s>/edit' % (prefix, resource_id_name), methods=['GET'], view_func=dispatch(self.get_edit), endpoint=resource_id_name+'_get_edit')
+        app.add_url_rule('%s/%s' % (prefix, resource_plural), methods=['GET'], view_func=dispatch_list(self.get_list), endpoint=resource_id_name+'_get_list')
+        app.add_url_rule('%s/%s' % (prefix, resource_plural), methods=['POST'], view_func=dispatch(self.post_new), endpoint=resource_id_name+'_post_new')
+        app.add_url_rule('%s/%s/new' % (prefix, resource_plural), methods=['GET'], view_func=dispatch(self.get_new), endpoint=resource_id_name+'_get_new')
+        app.add_url_rule('%s/%s/edit' % (prefix, resource_plural), methods=['GET'], view_func=dispatch_list(self.get_edit_list), endpoint=resource_id_name+'_get_edit_list')
 
+    def render_list(self, instance, edit=False):
+        return render_template('%s/%s.html' % (self.resource_name, self.resource_name), model=kwargs.model, edit=edit)
+    
+    def render_one(self, instance, edit=False, new=False):
+        return render_template('%s/%s_page.html' % (self.resource_name, self.resource_name), model=kwargs.model, edit=edit, new=new)
+    
+    def dispatch_instance(callable):
+        def retfunction(*args, **kwargs):
+            try:
+                return callable(*args, **kwargs)
+            except:
+                return render_one()
+    return retfunction
 
-    def index():
-        if request.method == 'OPTIONS':
-            # custom options handling here
-            ...
-        return 'Hello World!'
-    index.dispatch_request = None
-    index.provide_automatic_options = False
-    index.methods = ['GET', 'OPTIONS']
+    def dispatch_list(callable):
+        def retfunction(*args, **kwargs):
+            try:
+                return callable(*args, **kwargs)
+            except:
+                return render_list()
+    return retfunction
 
-    app.add_url_rule('/campaigns/<slug>/scenes/new', index)
+    def query_instance(self, id):
+        instance = model_class.objects.get(id=id)
+        return 
 
-    def __init__(self, model_class, form_class, template, route):
-
-    /edit, /new
-
-    def dispatch_request():
-
-
-    def get_one:
-        query_func()
-        # GET SR
+    def query_list(self):
         pass
-        pass
-    def get_list:
-        pass
-    def post_one:
-        # Delegate to put, patch, delete
-        pass
-    def put_one:
-        pass
-    def patch_one:
-        pass
-    def delete_one:
+
+    def allowed(self, op, model_class=None, instance=None):
         pass
 
+    def get(self, *args):
+        instance = self.get_instance()
+        if not self.allowed('read', instance):
+            return self.render_one(error=401)
+        return self.render_one(*args, **kwargs)
 
-    def handle_request(self, op, instance=None, redirect_url=None, **kwargs):
+    def get_edit(self, *args, **kwargs):
+        instance = get_instance()
+        if not instance:
+            return self.render_one(error=400)
+        if not self.allowed('write', instance):
+            return self.render_one(error=401)
+        if request.args.has_key('prefill'):
+            if incorrect(request.args.get('prefill')):
+                return self.render_one(error=400)
+        form = form_class(request.prefill_args, obj=instance)
+        return self.render_one(edit=True, form=form)
+    
+    def get_new(self, *args, **kwargs):
+        # no instance, new
+        if not self.allowed('write', model_class=model_class):
+            return self.render_one(error=401)
+        if request.args.has_key('prefill'):
+            if incorrect(request.args.get('prefill')):
+                return self.render_one(error=400)
+        form = form_class(request.args, obj=None)
+        return self.render_one(new=True, form=form)
 
+    def get_list(self, *args, **kwargs):
+        if not self.allowed('read', instance):
+            return self.render_one(error=401)
+        list_args = get_list_args():
+        if not list_args:
+            return self.render_one(error=400)
+        return self.render_list(list_args)
+
+    def get_edit_list(self, *args, **kwargs):
+        if not self.allowed('write',instance):
+            return self.render_one(error=401)
+        list_args = get_list_args():
+        if not list_args:
+            return self.render_one(error=400)    
+        return self.render_list(edit=True, list_args)
+
+    def post(self, *args, **kwargs):
+        if request.args.has_key('method'):
+            method = request.args.get('method')
+            if method == 'PUT':
+              return self.put(*args, **kwargs);
+            elif method == 'PATCH':
+              return self.patch(*args, **kwargs)
+            elif method == 'DELETE':
+              return self.delete(*args, **kwargs)
+            else:
+              return self.render_one(error=400); #error_response, invalid method
+        else:
+          return self.render_one(error=400, msg="Not REST operation"); #error_response, missing method
+
+    def post_new(self, *args, **kwargs):
+        if not self.allowed('write', model_class=model_class):
+            return self.render_one(error=401)
+        form = form_class(request.form, obj=None)
+        if not form.validate():
+            return self.render_one(error=403)
+        obj = model_class.create()
+        form.populate_obj(obj)
+        obj.save()
+        return redirect()
+
+    def put(self, *args, **kwargs):
+        instance = get_instance()
+        if not instance:
+            return self.render_one(error=400)
+        if not self.allowed('write', instance):
+            return self.render_one(error=401)
+        form = form_class(request.form, obj=None)
+        if not form.validate():
+            return self.render_one(error=403)
+        form.populate_obj(instance)
+        instance.save()        
+        return redirect()
+
+    def patch(self, *args, **kwargs):
+        instance = get_instance()
+        if not instance:
+            return self.render_one(error=400)
+        if not self.allowed('write', instance):
+            return self.render_one(error=401)
+        form = form_class(request.form, obj=None)
+        if not form.validate():
+            return self.render_one(error=403)
+        form.populate_obj(instance)
+        instance.save()  
+        return redirect()
+    
+    def delete(self, *args, **kwargs):
+        instance = get_instance()
+        if not instance:
+            return self.render_one(error=400)
+        if not self.allowed('write', instance):
+            return self.render_one(error=401)
+        instance.delete()  
+        return redirect()
 
 # WTForms Field constructor args
 # label - The label of the field. Available after construction through the label property.
@@ -137,7 +224,8 @@ class ResourceHandler:
     ops = {EDIT:'edit',VIEW:'view',NEW:'new',DELETE:'delete'}
     op_messages = {EDIT: 'edited', NEW: 'created', DELETE:'deleted'}
 
-    def __init__(self, model_class, parent_handler, form_class=None):
+    def __init__(self, model_class, form_class, template, route):
+        self.stategy = strategy
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.model_class = model_class
         self.form_class = form_class if form_class else model_form(model_class)

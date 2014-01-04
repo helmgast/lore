@@ -3,8 +3,9 @@ from peewee import *
 from wtfpeewee.orm import model_form, Form, ModelConverter, FieldInfo
 from model.world import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
 from model.user import Group
+from flask.views import View
 
-from resource import ResourceHandler, ModelServer
+from resource import ResourceHandler, ModelServer, ResourceHandler2
 from raconteur import auth
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -321,3 +322,28 @@ def delete_article(world_slug, article_slug):
         return article_server.render('delete', article, world=world)
     elif request.method == 'POST':
         return article_server.commit('delete', article, world=world)
+
+
+class ArticleHandler2:
+
+  def __init__(self):
+    self.types = {'world' : { 'model' : World,
+                              'id' : 'world_id',
+                              'plural' : 'worlds' },
+                  'article' : { 'model' : Article,
+                                'id' : 'article_id',
+                                'plural' : 'articles' }}
+    
+  def get_worlds(self, args):
+    return World.objects
+    
+  def get_world(self, args):
+    return World.objects.get_or_404(id=args['world_id'])
+
+  def get_articles(self, args):
+    return Article.objects.get_or_404(world=self.get_world(args))
+  
+  def get_article(self, args):
+    return Article.objects.get_or_404(id=args['article_id'],
+                                      world=self.get_world(args))
+    

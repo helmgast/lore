@@ -42,7 +42,7 @@ class World(db.Document):
     thumbnail = db.ReferenceField(MediaResource)
     publisher = db.StringField()
     rule_system = db.StringField()
-    created_date = db.DateTimeField(default=now())
+    created_date = db.DateTimeField(default=now)
     
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -63,7 +63,7 @@ class Article(db.Document):
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
-    created_date = db.DateTimeField(default=now())
+    created_date = db.DateTimeField(default=now)
     title = db.StringField()
     description = db.StringField()
     content = db.StringField()
