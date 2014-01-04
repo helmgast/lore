@@ -15,6 +15,13 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 world_app = Blueprint('world', __name__, template_folder='templates')
 
+world_handler = ResourceHandler2(ResourceAccessStrategy(World, 'worlds'))
+world_handler.register_urls(world_app)
+
+article_handler = ResourceHandler2(ResourceAccessStrategy(Article, 'articles', parent_strategy=world_handler.strategy))
+article_handler.register_urls(world_app)
+
+
 # Template filter, will group a list by their initial title letter
 def by_initials(objects):
   groups = []
@@ -323,7 +330,4 @@ def delete_article(world_slug, article_slug):
     elif request.method == 'POST':
         return article_server.commit('delete', article, world=world)
 
-
-world_handler = ResourceHandler2(ResourceAccessStrategy(World, 'worlds'))
-article_handler = ResourceHandler2(ResourceAccessStrategy(Article, 'articles', parent_strategy=world_handler))
 
