@@ -48,15 +48,15 @@ class ResourceAccessStrategy:
         self.plural_name = plural_name
         self.parent = parent_strategy
 
-    def get_url_path(self, part, list=True, op=None):
+    def get_url_path(self, part, op):
         parent_url = self.parent.get_url_path(False, None) if self.parent else ''
         return parent_url + part + ('/'+op if op else '')
 
     def get_list_url(self, op=None):
-        return self.get_url_path(self.plural_name, op=op)
+        return self.get_url_path(self.plural_name, op)
 
     def get_item_url(self, op=None):
-        return self.get_url_path('<'+self.resource_name+'>', op=op)
+        return self.get_url_path('<'+self.resource_name+'>', op)
 
     def get_item_template(self):
         return '%s/%s_page.html' % (self.resource_name, self.resource_name)
@@ -71,7 +71,8 @@ class ResourceAccessStrategy:
         return self.model_class.create()
 
     def get_list(self, args):
-        return self.model_class.objects
+        # Parse order_by?
+        return self.model_class.objects(args)
       
     def endpoint_name(self, suffix):
         return self.resource_name + '_' + suffix
@@ -85,6 +86,7 @@ class ResourceAccessStrategy:
 class ResourceHandler2:
 
     def __init__(self, form_class, strategy):
+        self.form_class = form_class
         self.strategy = strategy
 
     def register_urls(self):
