@@ -42,16 +42,20 @@ class ResourceRequest:
 
 class ResourceAccessStrategy:
 
-    def __init__(self, model_class, plural_name, form_class=None, parent_strategy=None):
+    def __init__(self, model_class, plural_name, id_name='id', form_class=None, parent_strategy=None):
         self.form_class = form_class if form_class else model_form(model_class)
         self.model_class = model_class
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.plural_name = plural_name
         self.parent = parent_strategy
+        self.id_name = id_name
+        print 'Strategy created for "' + self.resource_name + '"'
 
-    def get_url_path(self, part, op):
-        parent_url = self.parent.get_url_path(False, None) + '/' if self.parent else ''
-        return parent_url + part + '/'+op if op else ''
+    def get_url_path(self, part, op=None):
+        parent_url = ('' if (self.parent is None) else self.parent.url_item(None))
+        op_val = ('' if (op is None) else ('/' + op))
+        url = parent_url + '/' + part + op_val
+        return url
 
     def url_list(self, op=None):
         return self.get_url_path(self.plural_name, op)
@@ -65,8 +69,8 @@ class ResourceAccessStrategy:
     def list_template(self):
         return '%s/%s.html' % (self.resource_name, self.resource_name)
 
-    def get_item(self, id):
-        return self.model_class.objects.get(id=id)
+    def get_item(self, args):
+        return self.model_class.objects.get(**{self.id_name:args[self.resource_name]})
 
     def new_item(self):
         return self.model_class.create()
@@ -98,16 +102,16 @@ class ResourceHandler2:
 
     def register_urls(self, app):
         st = self.strategy
-        app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.dispatch_item(self.get), endpoint=st.endpoint_name('get'))
-        app.add_url_rule(st.url_item(), methods=['POST'], view_func=self.dispatch_item(self.post), endpoint=st.endpoint_name('post'))
-        app.add_url_rule(st.url_item(), methods=['PUT'], view_func=self.dispatch_item(self.put), endpoint=st.endpoint_name('put'))
-        app.add_url_rule(st.url_item(), methods=['PATCH'], view_func=self.dispatch_item(self.patch), endpoint=st.endpoint_name('patch'))
-        app.add_url_rule(st.url_item(), methods=['DELETE'], view_func=self.dispatch_item(self.delete), endpoint=st.endpoint_name('delete'))
-        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=self.dispatch_item(self.get_edit), endpoint=st.endpoint_name('get_edit'))
-        app.add_url_rule(st.url_list(), methods=['GET'], view_func=self.dispatch_list(self.get_list), endpoint=st.endpoint_name('get_list'))
-        app.add_url_rule(st.url_list(), methods=['POST'], view_func=self.dispatch_item(self.post_new), endpoint=st.endpoint_name('post_new'))
-        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.dispatch_item(self.get_new), endpoint=st.endpoint_name('get_new'))
-        app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.dispatch_list(self.get_edit_list), endpoint=st.endpoint_name('get_edit_list'))
+        app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.get, endpoint=st.endpoint_name('get'))
+        app.add_url_rule(st.url_item(), methods=['POST'], view_func=self.post, endpoint=st.endpoint_name('post'))
+        app.add_url_rule(st.url_item(), methods=['PUT'], view_func=self.put, endpoint=st.endpoint_name('put'))
+        app.add_url_rule(st.url_item(), methods=['PATCH'], view_func=self.patch, endpoint=st.endpoint_name('patch'))
+        app.add_url_rule(st.url_item(), methods=['DELETE'], view_func=self.delete, endpoint=st.endpoint_name('delete'))
+        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=self.get_edit, endpoint=st.endpoint_name('get_edit'))
+        app.add_url_rule(st.url_list(), methods=['GET'], view_func=self.get_list, endpoint=st.endpoint_name('get_list'))
+        app.add_url_rule(st.url_list(), methods=['POST'], view_func=self.post_new, endpoint=st.endpoint_name('post_new'))
+        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
+        app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
     def render_list(self, instance=None, edit=False):
         return render_template(self.strategy.list_template(), model=instance, edit=edit)
@@ -132,7 +136,7 @@ class ResourceHandler2:
         return retfunction
 
     def get(self, *args, **kwargs):
-        instance = self.strategy.get_item(id)
+        instance = self.strategy.get_item(kwargs)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
         return self.render_one(*args, **kwargs)

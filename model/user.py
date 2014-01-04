@@ -13,7 +13,7 @@ Created on 2 jan 2014
 
 # A user in the system
 class User(db.Document, BaseUser):
-    username = db.StringField()
+    username = db.StringField(unique=True)
     password = db.StringField()
     email = db.StringField()
     realname = db.StringField()

@@ -1,8 +1,12 @@
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
 from raconteur import auth
-from resource import ResourceHandler
+from resource import ResourceHandler, ResourceHandler2, ResourceAccessStrategy
+from model.user import User
 
 social = Blueprint('social', __name__, template_folder='templates')
+
+user_handler = ResourceHandler2(ResourceAccessStrategy(User, 'users', 'username'))
+user_handler.register_urls(social)
 
 # class GroupHandler(ResourceHandler):
 #     def get_redirect_url(self, instance):
