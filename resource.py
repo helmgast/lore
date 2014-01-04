@@ -42,7 +42,8 @@ class ResourceRequest:
 
 class ResourceAccessStrategy:
 
-    def __init__(self, model_class, plural_name, parent_strategy):
+    def __init__(self, model_class, plural_name, form_class=None, parent_strategy=None):
+        self.form_class = form_class if form_class else model_form(model_class)
         self.model_class = model_class
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.plural_name = plural_name
@@ -91,8 +92,8 @@ class ResourceAccessStrategy:
 
 class ResourceHandler2:
 
-    def __init__(self, form_class, strategy):
-        self.form_class = form_class
+    def __init__(self, strategy):
+        self.form_class = strategy.form_class
         self.strategy = strategy
 
     def register_urls(self, app):
