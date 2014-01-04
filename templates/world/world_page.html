@@ -1,4 +1,4 @@
-{% extends "world/base.html" %}
+{% extends "world/base.html" if not parent_template else parent_template %}
 
 {% block content_title %}{{world.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
@@ -19,7 +19,7 @@
 </ul>
 {% endblock %}
 
-{% block content %}
+{% block in_page %}
     <div class="row">
         <div class="span6">
             <p class="well">{{ world.description }}</p>
@@ -37,4 +37,10 @@
     {#{% include "includes/pagination.html" %}
     {% endif %}#}
     </div>
+{% endblock %}
+
+{% block in_table %}
+{% endblock %}
+
+{% block in_box %}
 {% endblock %}
