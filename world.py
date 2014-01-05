@@ -21,8 +21,8 @@ article_handler.register_urls(world_app)
 
 @world_app.route('/')
 def index():
-    qr = World.objects()
-    return render_template('world/base.html', qr)
+    worlds = World.objects()
+    return render_template('world/base.html', worlds=worlds)
 
 
 # Template filter, will group a list by their initial title letter

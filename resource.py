@@ -64,10 +64,10 @@ class ResourceAccessStrategy:
         return self.get_url_path('<'+self.resource_name+'>', op)
 
     def item_template(self):
-        return '%s/%s_page.html' % (self.resource_name, self.resource_name)
+        return '%s/%s_item.html' % (self.resource_name, self.resource_name)
 
     def list_template(self):
-        return '%s/%s.html' % (self.resource_name, self.resource_name)
+        return '%s/%s_list.html' % (self.resource_name, self.resource_name)
 
     def get_item(self, args):
         return self.model_class.objects.get(**{self.id_name:args[self.resource_name]})
@@ -77,7 +77,16 @@ class ResourceAccessStrategy:
 
     def get_list(self, args):
         # Parse order_by?
-        return self.model_class.objects(args)
+        # order_by('-id')
+        orderby = None
+        for key in args.keys():
+            if key == 'order_by':
+                orderby = orderby + args.getlist('order_by')
+            else:
+                fieldname = key.split('__')[0] 
+                if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
+        #TODO actualy filter with above
+        return self.model_class.objects()
       
     def endpoint_name(self, suffix):
         return self.resource_name + '_' + suffix
@@ -113,33 +122,17 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
-    def render_list(self, instance=None, edit=False):
-        return render_template(self.strategy.list_template(), model=instance, edit=edit)
+    def render_list(self, list=None, edit=False):
+        return render_template(self.strategy.list_template(), model=list, edit=edit)
     
     def render_one(self, instance=None, edit=False, new=False):
         return render_template(self.strategy.item_template(), model=instance, edit=edit, new=new)
-    
-    def dispatch_item(self, callable):
-        def retfunction(*args, **kwargs):
-            try:
-                return callable(*args, **kwargs)
-            except:
-                return self.render_one()
-        return retfunction
-
-    def dispatch_list(self, callable):
-        def retfunction(*args, **kwargs):
-            try:
-                return callable(*args, **kwargs)
-            except:
-                return self.render_list()
-        return retfunction
 
     def get(self, *args, **kwargs):
-        instance = self.strategy.get_item(kwargs)
+        instance = self.strategy.get_item(args)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
-        return self.render_one(*args, **kwargs)
+        return self.render_one(instance)
 
     def get_edit(self, *args, **kwargs):
         instance = self.strategy.get_item(id)
@@ -166,12 +159,12 @@ class ResourceHandler2:
     def get_list(self, *args, **kwargs):
         if not self.strategy.allowed_any('read'):
             return self.render_one(error=401)
-        list_args = self.get_list_args()
-        if not list_args:
-            return self.render_one(error=400)
-        list = self.strategy.get_list(list_args)
+        # list_args = self.get_list_args()
+        # if not list_args:
+        #     return self.render_one(error=400)
+        list = self.strategy.get_list(request.args)
         # Filter on allowed instances?
-        return self.render_list(instance=list)
+        return self.render_list(list=list)
 
     def get_edit_list(self, *args, **kwargs):
         if not self.strategy.allowed_any('write'):

@@ -7,16 +7,16 @@
 {% block sidebar %}
 <ul class="nav nav-list">
   <li class="nav-header">Actions</li>
-  <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>All worlds</a></li>
-  <li><a href="{{ url_for('world.index') }}"><i class="icon-book"></i>My worlds</a></li>
+  <li><a href="{{ url_for('.index') }}"><i class="icon-book"></i>All worlds</a></li>
+  <li><a href="{{ url_for('.index') }}"><i class="icon-book"></i>My worlds</a></li>
 </ul>
 {% endblock %}
 
 {% block content %}
     <div class="row">
-    {% for world in object_list %}
+    {% for world in worlds %}
     <div class="span6">
-        <h3><a href="{{ url_for('world.view_world', world_slug=world.slug)}}">{{ world.title }}</a></h3>
+        <h3><a href="{{ url_for('.world_get', world=world.slug)}}">{{ world.title }}</a></h3>
         <div class="well">{{ world.description }}</div>
         <dl class="dl-horizontal">
             <dt>Publisher</dt>
@@ -26,5 +26,4 @@
     {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
     {% endfor %} 
   </div>
-  {% include "includes/pagination.html" %}
 {% endblock %}

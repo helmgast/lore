@@ -1,22 +1,22 @@
-{% extends "world/world_view.html" %}
+{% extends "world/base.html" %}
 
 {% block content %}
     <div class="row">
-    {% if object_list.count() == 0 %}No articles yet!{% else %}
+    {% if model.count() == 0 %}No articles yet!{% else %}
 
     {% if groupby=='type' %}
-        {% set groups = object_list|by_articletype %}
+        {% set groups = model|by_articletype %}
     {% elif groupby=='title' %}
-        {% set groups = object_list|by_initials %}
+        {% set groups = model|by_initials %}
     {% elif groupby=='time' %}
-        {% set groups = object_list|by_time %}
+        {% set groups = model|by_time %}
     {% endif %}
     <dl>
         {% for group in groups %}
         <dt>{{ group.grouper|capitalize }}</dt>
         <dd><ul class="unstyled">
         {% for article in group.list %}
-            <li><a href="{{ url_for('world.view_article', article_slug=article.slug, world_slug=world.slug) }}">{{article.title}}</a>
+            <li><a href="{{ url_for('.article_get', article=article.slug, world=world.slug) }}">{{article.title}}</a>
                 {%- if groupby=='title' -%}
                     <small>{{" ["+article.type_name()+"]"}}</small>
                 {%- elif groupby=='time' -%}
