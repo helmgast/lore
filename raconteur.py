@@ -27,7 +27,6 @@ if the_app == None:
   db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   
-  # import model_setup
   from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
