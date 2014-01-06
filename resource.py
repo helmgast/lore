@@ -78,15 +78,21 @@ class ResourceAccessStrategy:
     def get_list(self, args):
         # Parse order_by?
         # order_by('-id')
-        orderby = None
+        qr = self.model_class.objects()
+        filters = {}
         for key in args.keys():
             if key == 'order_by':
-                orderby = orderby + args.getlist('order_by')
+                qr = qr.order_by(*args.getlist('order_by'))
             else:
                 fieldname = key.split('__')[0] 
+                print fieldname, (fieldname in self.model_class.__dict__)
                 if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
+                    filters[key] = args.get(key)
+        print filters
+        if filters:
+            qr = qr.filter(**filters)
         #TODO actualy filter with above
-        return self.model_class.objects()
+        return qr
       
     def endpoint_name(self, suffix):
         return self.resource_name + '_' + suffix
@@ -123,7 +129,7 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
     def render_list(self, list=None, edit=False):
-        return render_template(self.strategy.list_template(), model=list, edit=edit)
+        return render_template(self.strategy.list_template(), **{self.strategy.plural_name:list, 'edit':edit})
     
     def render_one(self, instance=None, edit=False, new=False):
         return render_template(self.strategy.item_template(), model=instance, edit=edit, new=new)
