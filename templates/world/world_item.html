@@ -3,7 +3,7 @@
 {% block content_title %}{{world.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}
+{#{% block sidebar %}
 <ul class="nav nav-list" style="float:left">
     <li class="nav-header">{{world.title}}</li>
     <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-tag"></i>Browse by type</a></li>
@@ -17,9 +17,9 @@
     <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-pencil"></i>New</a></li>
 {%- endblock -%}
 </ul>
-{% endblock %}
+{% endblock %}#}
 
-{% block in_page %}
+{% block content %}
     <div class="row">
         <div class="span6">
             <p class="well">{{ world.description }}</p>
@@ -29,9 +29,9 @@
     <div class="row">
     {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
     <ul>
-        {% for article in world.articles %}
+        {% for article in world.articles() %}
 
-        <li><a href="{{ url_for('world.view_article', article_slug=article.slug, world_slug=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
+        <li><a href="{{ url_for('world.article_get', article=article.slug, world=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
         {% endfor %}
     </ul>
     {#{% include "includes/pagination.html" %}

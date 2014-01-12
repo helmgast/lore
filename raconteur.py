@@ -92,7 +92,10 @@ wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 @the_app.template_filter('wikify')
 def wikify(s):
-    return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+    if s:
+      return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+    else:
+      return ""
 
 @the_app.template_filter('dictreplace')
 def dictreplace(s, d):

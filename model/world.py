@@ -51,6 +51,9 @@ class World(db.Document):
     def __unicode__(self):
         return self.title+(' by '+self.publisher) if self.publisher else ''
 
+    def articles(self):
+        return Article.objects(world=self)
+
     # startyear = 0
     # daysperyear = 360
     # datestring = "day %i in the year of %i" 
@@ -58,8 +61,8 @@ class World(db.Document):
 
 
 class Article(db.Document):
-    meta = {'allow_inheritance': True} 
-    slug = db.StringField(unique=True) # URL-friendly name
+    meta = {'allow_inheritance': True, 'indexes': ['slug']} 
+    slug = db.StringField() # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
@@ -81,11 +84,7 @@ class Article(db.Document):
     def is_media(self):
         return ARTICLE_MEDIA == self.type
 
-    def type_name(self, intype=None):
-        if intype:
-            if isinstance(intype, basestring):
-                intype = int(intype)
-            return ARTICLE_TYPES[intype][1]
+    def type_name(self):
         return ARTICLE_TYPES[self.type][1]
 
     def __str__(self):

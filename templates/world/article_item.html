@@ -1,4 +1,4 @@
-{% if template_parent %}{% extends template_parent %} {% else %}{% extends "world/world_view.html" %}{% endif %}
+{% extends "world/base.html" if not parent_template else parent_template %}
 
 {% from 'includes/components.html' import form_field, form_fields %}
 
@@ -107,27 +107,30 @@
   <li><i class="icon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
 </ul>
 <ul class="inline" style="margin-bottom: 0px;margin-left: -14px">
-{% set article_type = article.get_type() %}
+{% set article_type = article.type_name() %}
 {%- if article_type_name=='place' -%}
-  <li><span class="nav-header" style="display:inline">Lon</span>{{article_type.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">Lat</span>{{article_type.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">Type</span>{{article_type.location_type }}</li>
+  <li><span class="nav-header" style="display:inline">Lon</span>{{article.coordinate_x}}</li>
+  <li><span class="nav-header" style="display:inline">Lat</span>{{article.coordinate_y}}</li>
+  <li><span class="nav-header" style="display:inline">Type</span>{{article.location_type }}</li>
 {%- elif article_type_name=='media' -%}
-  <li><span class="nav-header" style="display:inline">Type</span>{{article_type.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article_type.url|truncate(30, True)}}</a></li>
+  <li><span class="nav-header" style="display:inline">Type</span>{{article.mime_type}}</li>
+  <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
 {%- elif article_type_name=='event' -%}
-  <li><span class="nav-header" style="display:inline">Started</span>{{article_type.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">Ended</span>{{article_type.to_date}}</li>
+  <li><span class="nav-header" style="display:inline">Started</span>{{article.from_date}}</li>
+  <li><span class="nav-header" style="display:inline">Ended</span>{{article.to_date}}</li>
 {%- elif article_type_name=='person' -%}
-  <li><span class="nav-header" style="display:inline">Born</span>{{article_type.born}}</li>
-  <li><span class="nav-header" style="display:inline">Died</span>{{article_type.died}}</li>
-  <li><span class="nav-header" style="display:inline">Gender</span>{{article_type.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">Occupation</span>{{article_type.occupation}}</li>
+  <li><span class="nav-header" style="display:inline">Born</span>{{article.born}}</li>
+  <li><span class="nav-header" style="display:inline">Died</span>{{article.died}}</li>
+  <li><span class="nav-header" style="display:inline">Gender</span>{{article.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">Occupation</span>{{article.occupation}}</li>
 {%- endif -%}
 </ul>
 </div>
 
 {% include "includes/flash.html" %}
+{% if article.description %}
+<div class="span9">{{article.description}}</div>
+{% endif %}
 <div class="article span9 article_text">
 	{% if article.is_media() %} <img src="{{article.get_type().url}}" />
 	{% endif %} {{ article.content|wikify|markdown }}

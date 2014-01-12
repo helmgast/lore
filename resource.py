@@ -42,13 +42,13 @@ class ResourceRequest:
 
 class ResourceAccessStrategy:
 
-    def __init__(self, model_class, plural_name, id_name='id', form_class=None, parent_strategy=None):
+    def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None):
         self.form_class = form_class if form_class else model_form(model_class)
         self.model_class = model_class
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.plural_name = plural_name
         self.parent = parent_strategy
-        self.id_name = id_name
+        self.id_field = id_field
         print 'Strategy created for "' + self.resource_name + '"'
 
     def get_url_path(self, part, op=None):
@@ -64,13 +64,13 @@ class ResourceAccessStrategy:
         return self.get_url_path('<'+self.resource_name+'>', op)
 
     def item_template(self):
-        return '%s/%s_item.html' % (self.resource_name, self.resource_name)
+        return '%s_item.html' % self.resource_name
 
     def list_template(self):
-        return '%s/%s_list.html' % (self.resource_name, self.resource_name)
+        return '%s_list.html' % self.resource_name
 
     def get_item(self, args):
-        return self.model_class.objects.get(**{self.id_name:args[self.resource_name]})
+        return self.model_class.objects.get(**{self.id_field:args[self.resource_name]})
 
     def new_item(self):
         return self.model_class.create()
@@ -132,15 +132,16 @@ class ResourceHandler2:
         return render_template(self.strategy.list_template(), **{self.strategy.plural_name:list, 'edit':edit})
     
     def render_one(self, instance=None, edit=False, new=False):
-        return render_template(self.strategy.item_template(), model=instance, edit=edit, new=new)
+        return render_template(self.strategy.item_template(), **{self.strategy.resource_name:instance, 'edit':edit})
 
-    def get(self, *args, **kwargs):
-        instance = self.strategy.get_item(args)
+    def get(self, **kwargs):
+        print "in get(), kwargs = " + str(kwargs)
+        instance = self.strategy.get_item(kwargs)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
         return self.render_one(instance)
 
-    def get_edit(self, *args, **kwargs):
+    def get_edit(self, **kwargs):
         instance = self.strategy.get_item(id)
         if not instance:
             return self.render_one(error=400)
