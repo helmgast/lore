@@ -12,6 +12,7 @@ campaign_app = Blueprint('campaign', __name__, template_folder='templates/campai
 
 campaign_handler = ResourceHandler2(ResourceAccessStrategy(CampaignInstance, 'campaigns'))
 campaign_handler.register_urls(campaign_app)
+campaign_handler.register_index(campaign_app)
 
 # 
 # class SessionHandler(ResourceHandler):
@@ -99,9 +100,9 @@ campaign_handler.register_urls(campaign_app)
 #     'campaign/scene_page.html',
 #     'campaign.scene_detail')
 # 
-@campaign_app.route('/')
-def index():
-    return "campaigns()"
+# @campaign_app.route('/')
+# def index():
+#     return "campaigns()"
 # 
 # # @campaign.route('/sessions/')
 # # @auth.login_required

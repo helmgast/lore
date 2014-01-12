@@ -33,7 +33,7 @@ class CampaignInstance(db.Document):
     chronicles = db.ListField(db.ReferenceField(ChronicleArticle))
 
     def __unicode__(self):
-        return self.name
+        return u'%s by %s' % (self.campaign.title, self.group)
 
 #     def load_scene_tree(self, scene_tree, parent=None):
 #         # TODO very inefficient implementation

@@ -8,7 +8,10 @@
   <div class="row">
   {% for c in campaigns %}
     <div class="span6">
-      <h3>{{ c.campaign.title }}</h3>
+      <h3>{{ c.campaign.title }} by {{c.group}}</h3>
+      {% if c.description %}
+	  <div class="well">{{ c.description }}</div>
+	  {% endif %}
 	  <div class="well">{{ c.campaign.description }}</div>
       <dl class="dl-horizontal">
         <dt>Group</dt>
