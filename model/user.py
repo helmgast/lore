@@ -102,7 +102,7 @@ class Group(db.Document):
     invited = db.ListField(db.ReferenceField(User))
     
     def __unicode__(self):
-        return self.slug
+        return self.name
 
     def members(self):
         return masters+players+invited

@@ -36,7 +36,7 @@ if the_app == None:
   from world import world_app as world
   from social import social
   from generator import generator
-  from campaign import campaign
+  from campaign import campaign_app as campaign
 
   the_app.register_blueprint(world, url_prefix='/world')
   the_app.register_blueprint(generator, url_prefix='/generator')

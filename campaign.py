@@ -1,4 +1,6 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
+from resource import ResourceHandler2, ResourceAccessStrategy
+from model.campaign import *
 # from raconteur import auth
 # from flask.ext.mongoengine.wtf import model_form
 # from models import Group, GroupMember, Campaign, Session, Scene, GROUP_MASTER
@@ -6,7 +8,11 @@ from flask import request, redirect, url_for, render_template, Blueprint, flash
 # from resource import ResourceHandler, ResourceRequest
 # from json import loads
 # 
-campaign = Blueprint('campaign', __name__, template_folder='templates')
+campaign_app = Blueprint('campaign', __name__, template_folder='templates/campaign')
+
+campaign_handler = ResourceHandler2(ResourceAccessStrategy(CampaignInstance, 'campaigns'))
+campaign_handler.register_urls(campaign_app)
+
 # 
 # class SessionHandler(ResourceHandler):
 #     def get_resource_request(self, op, user, instance=None):
@@ -93,7 +99,7 @@ campaign = Blueprint('campaign', __name__, template_folder='templates')
 #     'campaign/scene_page.html',
 #     'campaign.scene_detail')
 # 
-@campaign.route('/')
+@campaign_app.route('/')
 def index():
     return "campaigns()"
 # 
