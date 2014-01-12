@@ -1,15 +1,15 @@
-{% extends "world/base.html" %}
+{% extends "world/world_item.html" if not parent_template else parent_template %}
 
 {% block content %}
     <div class="row">
-    {% if model.count() == 0 %}No articles yet!{% else %}
+    {% if articles.count() == 0 %}No articles yet!{% else %}
 
-    {% if groupby=='type' %}
-        {% set groups = model|by_articletype %}
-    {% elif groupby=='title' %}
-        {% set groups = model|by_initials %}
-    {% elif groupby=='time' %}
-        {% set groups = model|by_time %}
+    {% if request.args.get('groupby')=='type' %}
+        {% set groups = articles|by_articletype %}
+    {% elif request.args.get('groupby')=='title' %}
+        {% set groups = articles|by_initials %}
+    {% elif request.args.get('groupby')=='time' %}
+        {% set groups = articles|by_time %}
     {% endif %}
     <dl>
         {% for group in groups %}

@@ -69,8 +69,9 @@ class ResourceAccessStrategy:
     def list_template(self):
         return '%s_list.html' % self.resource_name
 
-    def get_item(self, args):
-        return self.model_class.objects.get(**{self.id_field:args[self.resource_name]})
+    def get_item(self, **kwargs):
+        id = kwargs[self.resource_name]
+        return self.model_class.objects.get(**{self.id_field:id})
 
     def new_item(self):
         return self.model_class.create()
@@ -93,6 +94,16 @@ class ResourceAccessStrategy:
             qr = qr.filter(**filters)
         #TODO actualy filter with above
         return qr
+
+    def get_parents(self, **kwargs):
+        if not self.parent:
+            return {}
+        # Silently pop any args relating to current, not parent
+        kwargs.pop(self.resource_name, None) 
+        grandparents = self.parent.get_parents(**kwargs)
+        grandparents[self.parent.resource_name] = self.parent.get_item(**kwargs)
+        #print "all parents %s" % grandparents 
+        return grandparents
       
     def endpoint_name(self, suffix):
         return self.resource_name + '_' + suffix
@@ -128,21 +139,27 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
-    def render_list(self, list=None, edit=False):
-        return render_template(self.strategy.list_template(), **{self.strategy.plural_name:list, 'edit':edit})
+    def render_list(self, list=None, parents=None, edit=False):
+        render_args = {self.strategy.plural_name:list, 'edit':edit}
+        render_args.update(parents)
+        return render_template(self.strategy.list_template(), **render_args)
     
-    def render_one(self, instance=None, edit=False, new=False):
-        return render_template(self.strategy.item_template(), **{self.strategy.resource_name:instance, 'edit':edit})
+    def render_one(self, instance=None, parents=None, edit=False, new=False):
+        render_args = {self.strategy.resource_name:instance, 'edit':edit}
+        render_args.update(parents)
+        return render_template(self.strategy.item_template(), **render_args)
 
     def get(self, **kwargs):
-        print "in get(), kwargs = " + str(kwargs)
-        instance = self.strategy.get_item(kwargs)
+        print "Kwargs in get() " + str(kwargs)
+        instance = self.strategy.get_item(**kwargs)
+        parents = self.strategy.get_parents(**kwargs)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
-        return self.render_one(instance)
+        return self.render_one(instance, parents)
 
     def get_edit(self, **kwargs):
-        instance = self.strategy.get_item(id)
+        instance = self.strategy.get_item(**kwargs)
+        parents = self.strategy.get_parents(**kwargs)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
@@ -164,6 +181,7 @@ class ResourceHandler2:
         return self.render_one(new=True, form=form)
 
     def get_list(self, *args, **kwargs):
+        parents = self.strategy.get_parents(**kwargs)
         if not self.strategy.allowed_any('read'):
             return self.render_one(error=401)
         # list_args = self.get_list_args()
@@ -171,7 +189,7 @@ class ResourceHandler2:
         #     return self.render_one(error=400)
         list = self.strategy.get_list(request.args)
         # Filter on allowed instances?
-        return self.render_list(list=list)
+        return self.render_list(list=list, parents=parents)
 
     def get_edit_list(self, *args, **kwargs):
         if not self.strategy.allowed_any('write'):
