@@ -8,13 +8,13 @@
   <div class="row">
   {% for c in campaigns %}
     <div class="span6">
-      <h3><a href="{{ url_for('campaign.campaign_detail', slug=c.slug)}}">{{ c.name }}</a></h3>
-      <div class="well">{{ c.description }}</div>
+      <h3>{{ c.campaign.title }}</h3>
+	  <div class="well">{{ c.campaign.description }}</div>
       <dl class="dl-horizontal">
         <dt>Group</dt>
-        <dd><a href="{{ url_for('social.group_detail', slug=c.group.slug) }}">{{c.group}}</a></dd>
+        <dd>{% if false %}<a href="{{ url_for('social.group_get', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
         <dt>World</dt>
-        <dd>{{ c.world }}</dd>
+        <dd>{{ c.campaign.world }}</dd>
         <dt>Rules</dt>
         <dd>{{ c.rule_system }}</dd>
       </dl>
