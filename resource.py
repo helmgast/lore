@@ -69,16 +69,14 @@ class ResourceAccessStrategy:
     def list_template(self):
         return '%s_list.html' % self.resource_name
 
-    def get_item(self, **kwargs):
+    def fetch_item(self, **kwargs):
         id = kwargs[self.resource_name]
         return self.model_class.objects.get(**{self.id_field:id})
 
-    def new_item(self):
+    def create_item(self):
         return self.model_class.create()
 
-    def get_list(self, args):
-        # Parse order_by?
-        # order_by('-id')
+    def fetch_list(self, args):
         qr = self.model_class.objects()
         filters = {}
         for key in args.keys():
@@ -92,16 +90,16 @@ class ResourceAccessStrategy:
         print filters
         if filters:
             qr = qr.filter(**filters)
-        #TODO actualy filter with above
+        # TODO very little safety in above as all filters are allowed
         return qr
 
-    def get_parents(self, **kwargs):
+    def fetch_parents(self, **kwargs):
         if not self.parent:
             return {}
-        # Silently pop any args relating to current, not parent
+        # Silently pop arg, if existing, relating to current resource
         kwargs.pop(self.resource_name, None) 
-        grandparents = self.parent.get_parents(**kwargs)
-        grandparents[self.parent.resource_name] = self.parent.get_item(**kwargs)
+        grandparents = self.parent.fetch_parents(**kwargs)
+        grandparents[self.parent.resource_name] = self.parent.fetch_item(**kwargs)
         #print "all parents %s" % grandparents 
         return grandparents
       
@@ -144,50 +142,47 @@ class ResourceHandler2:
         render_args.update(parents)
         return render_template(self.strategy.list_template(), **render_args)
     
-    def render_one(self, instance=None, parents=None, edit=False, new=False):
+    def render_one(self, instance=None, parents=None, edit=False, new=False, form=None):
         render_args = {self.strategy.resource_name:instance, 'edit':edit}
+        render_args[self.strategy.resource_name+'_form'] = form
         render_args.update(parents)
         return render_template(self.strategy.item_template(), **render_args)
 
     def get(self, **kwargs):
-        print "Kwargs in get() " + str(kwargs)
-        instance = self.strategy.get_item(**kwargs)
-        parents = self.strategy.get_parents(**kwargs)
+        instance = self.strategy.fetch_item(**kwargs)
+        parents = self.strategy.fetch_parents(**kwargs)
         if not self.strategy.allowed_on('read', instance):
             return self.render_one(error=401)
         return self.render_one(instance, parents)
 
     def get_edit(self, **kwargs):
-        instance = self.strategy.get_item(**kwargs)
-        parents = self.strategy.get_parents(**kwargs)
+        instance = self.strategy.fetch_item(**kwargs)
+        parents = self.strategy.fetch_parents(**kwargs)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
-        if request.args.has_key('prefill'):
-            if self.incorrect(request.args.get('prefill')):
-                return self.render_one(error=400)
-        form = self.form_class(request.prefill_args, obj=instance)
+        # TODO add prefil form functionality
+        form = self.form_class(obj=instance)
         return self.render_one(edit=True, form=form)
     
     def get_new(self, *args, **kwargs):
-        # no instance, new
+        # no existing instance as we are creating new
+        parents = self.strategy.fetch_parents(**kwargs)
         if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
-        if request.args.has_key('prefill'):
-            if self.incorrect(request.args.get('prefill')):
-                return self.render_one(error=400)
+        # TODO add prefil form functionality
         form = self.form_class(request.args, obj=None)
         return self.render_one(new=True, form=form)
 
     def get_list(self, *args, **kwargs):
-        parents = self.strategy.get_parents(**kwargs)
+        parents = self.strategy.fetch_parents(**kwargs)
         if not self.strategy.allowed_any('read'):
             return self.render_one(error=401)
         # list_args = self.get_list_args()
         # if not list_args:
         #     return self.render_one(error=400)
-        list = self.strategy.get_list(request.args)
+        list = self.strategy.fetch_list(request.args)
         # Filter on allowed instances?
         return self.render_list(list=list, parents=parents)
 
@@ -198,7 +193,7 @@ class ResourceHandler2:
         list_args = self.get_list_args()
         if not list_args:
             return self.render_one(error=400)    
-        list = self.strategy.get_list(list_args)
+        list = self.strategy.fetch_list(list_args)
         # Filter on allowed instances?
         return self.render_list(edit=True, instance=list)
 
@@ -222,13 +217,13 @@ class ResourceHandler2:
         form = self.form_class(request.form, obj=None)
         if not form.validate():
             return self.render_one(error=403)
-        obj = self.strategy.new_item()
+        obj = self.strategy.create_item()
         form.populate_obj(obj)
         obj.save()
         return redirect()
 
     def put(self, *args, **kwargs):
-        instance = self.strategy.get_item(id)
+        instance = self.strategy.fetch_item(id)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
@@ -241,7 +236,7 @@ class ResourceHandler2:
         return redirect()
 
     def patch(self, *args, **kwargs):
-        instance = self.strategy.get_item(id)
+        instance = self.strategy.fetch_item(id)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
@@ -254,7 +249,7 @@ class ResourceHandler2:
         return redirect()
     
     def delete(self, *args, **kwargs):
-        instance = self.strategy.get_item(id)
+        instance = self.strategy.fetch_item(id)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
