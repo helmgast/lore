@@ -19,7 +19,7 @@ class Session(db.EmbeddedDocument):
     present_members = db.ListField(db.ReferenceField(User));
 
     def __unicode__(self):
-        return u'Session of %s at %s' % (self.campaign, self.play_start.strftime('%Y-%m-%d'))
+        return u'Session of %s at %s' % ('self.campaign', self.play_start.strftime('%Y-%m-%d'))
 
 
 # All material related to a certain story by a certain group.
@@ -33,7 +33,7 @@ class CampaignInstance(db.Document):
     chronicles = db.ListField(db.ReferenceField(ChronicleArticle))
 
     def __unicode__(self):
-        return self.name
+        return u'%s by %s' % (self.campaign.title, self.group)
 
 #     def load_scene_tree(self, scene_tree, parent=None):
 #         # TODO very inefficient implementation
