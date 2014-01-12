@@ -124,6 +124,10 @@ class ResourceHandler2:
         self.form_class = strategy.form_class
         self.strategy = strategy
 
+    def register_index(self, app):
+        st = self.strategy
+        app.add_url_rule('/', methods=['GET'], view_func=self.get_list, endpoint='index')
+        
     def register_urls(self, app):
         st = self.strategy
         app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.get, endpoint=st.endpoint_name('get'))
