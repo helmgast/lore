@@ -36,12 +36,12 @@ class MediaResource(db.Document):
     size_y = db.IntField()
 
 class World(db.Document):
-    slug = db.StringField(unique=True) # URL-friendly name
-    title = db.StringField()
-    description = db.StringField()
+    slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+    title = db.StringField(max_length=60)
+    description = db.StringField(max_length=500)
     thumbnail = db.ReferenceField(MediaResource)
-    publisher = db.StringField()
-    rule_system = db.StringField()
+    publisher = db.StringField(max_length=60)
+    rule_system = db.StringField(max_length=60)
     created_date = db.DateTimeField(default=now)
     
     def save(self, *args, **kwargs):
@@ -62,13 +62,13 @@ class World(db.Document):
 
 class Article(db.Document):
     meta = {'allow_inheritance': True, 'indexes': ['slug']} 
-    slug = db.StringField() # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
+    slug = db.StringField(unique=True, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
     created_date = db.DateTimeField(default=now)
-    title = db.StringField()
-    description = db.StringField()
+    title = db.StringField(max_length=60)
+    description = db.StringField(max_length=500)
     content = db.StringField()
     thumbnail = db.ReferenceField(MediaResource)
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
@@ -101,20 +101,20 @@ class PersonArticle(Article):
     died = db.IntField()
     gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
     # otherNames = CharField()
-    occupation = db.StringField()
+    occupation = db.StringField(max_length=60)
 
     def gender_name(self):
         return GENDER_TYPES[self.gender][1].title()
 
 class FractionArticle(Article):
-    fraction_type = db.StringField()
+    fraction_type = db.StringField(max_length=60)
 
 class PlaceArticle(Article):
     # normalized position system, e.g. form 0 to 1 float, x and y
     coordinate_x = db.FloatField() 
     coordinate_y = db.FloatField()
     # building, city, domain, point_of_interest
-    location_type = db.StringField()
+    location_type = db.StringField(max_length=60)
 
 class EventArticle(Article):
     from_date = db.IntField()
@@ -122,7 +122,7 @@ class EventArticle(Article):
 
 class Episode(db.EmbeddedDocument):
     id = db.StringField(unique=True) # URL-friendly name?
-    title = db.StringField()
+    title = db.StringField(max_length=60)
     description = db.StringField()
     content = db.ListField(db.ReferenceField(Article))
     

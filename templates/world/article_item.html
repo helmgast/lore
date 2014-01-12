@@ -33,7 +33,9 @@
 {% block middle %}
 {% if article_form %}
 <form id='articleform' method="post" action="{{ article_form.action_url }}">
-{{ article_form.title(style="display:none;") }}{{ article_form.world }}
+{{ article_form.csrf_token }}
+{{ article_form.title(style="display:none;") }}{{ article_form.slug(style="display:none;")}}
+{{ article_form.world }}
 <div class="page-header" style="margin-bottom: 5px;">
   <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
 </div>
@@ -162,14 +164,15 @@
 
         $e.on('keydown', $e.doKey);
 
-        $('#editable_title').blur(function(e) {
-          $('#title').val(this.textContent)
-        }).on('paste', function(e) {
-          $this = $(this)
-          setTimeout(function() {
-            $this.html($this.text()); // clean the html
-          }, 100);
-        }).focus();
+        $('#editable_title')
+          .blur(function(e) {
+            $('#title').val(this.textContent)})
+          .on('paste', function(e) {
+            $this = $(this)
+            setTimeout(function() {
+              $this.html($this.text()); // clean the html
+            }, 100);})
+          .focus();
 
         $('#addrow').click(function(e){
           $this = $(this);

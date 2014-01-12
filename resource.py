@@ -206,11 +206,11 @@ class ResourceHandler2:
     def post(self, *args, **kwargs):
         if request.args.has_key('method'):
             method = request.args.get('method')
-            if method == 'PUT':
+            if method.upper() == 'PUT':
               return self.put(*args, **kwargs);
-            elif method == 'PATCH':
+            elif method.upper() == 'PATCH':
               return self.patch(*args, **kwargs)
-            elif method == 'DELETE':
+            elif method.upper() == 'DELETE':
               return self.delete(*args, **kwargs)
             else:
               return self.render_one(error=400); #error_response, invalid method
@@ -229,30 +229,38 @@ class ResourceHandler2:
         return redirect()
 
     def put(self, *args, **kwargs):
-        instance = self.strategy.fetch_item(id)
+        instance = self.strategy.fetch_item(**kwargs)
+        parents = self.strategy.fetch_parents(**kwargs)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
-        form = self.form_class(request.form, obj=None)
+        form = self.form_class(request.form, obj=instance)
         if not form.validate():
+            print form.errors
             return self.render_one(error=403)
         form.populate_obj(instance)
-        instance.save()        
-        return redirect()
+        instance.save()
+        # In case slug has changed, fetch the new value before redirecting!
+        kwargs[self.strategy.resource_name] = getattr(instance, self.strategy.id_field)
+        return redirect(url_for('.'+self.strategy.endpoint_name('get'), **kwargs))
 
     def patch(self, *args, **kwargs):
-        instance = self.strategy.fetch_item(id)
+        instance = self.strategy.fetch_item(**kwargs)
+        parents = self.strategy.fetch_parents(**kwargs)
         if not instance:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
-        form = self.form_class(request.form, obj=None)
+        form = self.form_class(request.form, obj=instance)
         if not form.validate():
+            print form.errors
             return self.render_one(error=403)
         form.populate_obj(instance)
-        instance.save()  
-        return redirect()
+        instance.save()
+        # In case slug has changed, fetch the new value before redirecting!
+        kwargs[self.strategy.resource_name] = getattr(instance, self.strategy.id_field)
+        return redirect(url_for('.'+self.strategy.endpoint_name('get'), **kwargs))
     
     def delete(self, *args, **kwargs):
         instance = self.strategy.fetch_item(id)
@@ -260,7 +268,7 @@ class ResourceHandler2:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', instance):
             return self.render_one(error=401)
-        instance.delete()  
+        instance.delete()
         return redirect()
 
 # WTForms Field constructor args
