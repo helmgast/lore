@@ -164,7 +164,8 @@ class ResourceHandler2:
             return self.render_one(error=401)
         # TODO add prefil form functionality
         form = self.form_class(obj=instance)
-        return self.render_one(edit=True, form=form)
+        form.action_url = url_for('.'+self.strategy.endpoint_name('post'), method='put', **kwargs)
+        return self.render_one(instance, parents, edit=True, form=form)
     
     def get_new(self, *args, **kwargs):
         # no existing instance as we are creating new
@@ -173,6 +174,7 @@ class ResourceHandler2:
             return self.render_one(error=401)
         # TODO add prefil form functionality
         form = self.form_class(request.args, obj=None)
+        form.action_url = url_for('.'+self.strategy.endpoint_name('post_new'), **kwargs)
         return self.render_one(new=True, form=form)
 
     def get_list(self, *args, **kwargs):

@@ -13,10 +13,10 @@
 {% block cssimports %}
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
- <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
- <!--[if lte IE 8]>
-     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
- <![endif]-->
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
+<!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
+<![endif]-->
 {% endblock %}
 
 {% block jsimports %}{{super()}}
@@ -32,8 +32,8 @@
 
 {% block middle %}
 {% if article_form %}
-<form id='articleform' method="post" action="{{ action_url }}">
-{{ article_form.title }}{{ article_form.world }}
+<form id='articleform' method="post" action="{{ article_form.action_url }}">
+{{ article_form.title(style="display:none;") }}{{ article_form.world }}
 <div class="page-header" style="margin-bottom: 5px;">
   <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
 </div>
@@ -51,7 +51,7 @@
       </div>
 		</div>
 		<div id="editor">{{ article_form.content.data|safe if article_form.content.data else '<p><br></p>'|safe}}</div>
-    {{ article_form.content(value="text") }}
+    {{ article_form.content(value="text",style="display:none;") }}
 </div>
 <div class="span5 metadata">
   <button type="submit" class="btn btn-small btn-primary">Save changes</button>
@@ -59,11 +59,11 @@
 
   <h4>Metadata</h4>
   <fieldset style="margin-bottom: 10px">
-  {{ form_field(article_form.articlegroups) }}
+{#  {{ form_field(article_form.articlegroups) }} #}
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
   <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>{% include "models/personarticle_view.html" %}</div>
-  <div id="mediaarticle_form" {{ ' class=hide ' if
+  {#<div id="mediaarticle_form" {{ ' class=hide ' if
     article_type_name!='media'}}>{% include
     "models/mediaarticle_view.html" %}</div>
   <div id="eventarticle_form" {{ ' class=hide ' if
@@ -74,7 +74,7 @@
     "models/placearticle_view.html" %}</div>
   <div id="fractionarticle_form" {{ ' class=hide ' if
     article_type_name!='fraction'}}>{% include
-    "models/fractionarticle_view.html" %}</div>
+    "models/fractionarticle_view.html" %}</div>#}
   <h4 style="display:inline">Relations</h4>
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-small disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
@@ -179,7 +179,7 @@
           } else {
             nr = 0
           }
-          $.get('{{ url_for('.new_articlerelation', world_slug=world.slug, article_slug=article.slug) }}?nr='+nr, function(data) {
+          $.get('#TODOgetnewform?nr='+nr, function(data) {
             var $d = $(data)
             $d.insertAfter($('.m_view .m_instance').last())
             $d.find('select[data-role="chosenblank"]').chosen()
@@ -206,7 +206,8 @@
 					$($this.data('oldVal')).toggleClass('hide')
 					$this.data('oldVal', newValue)
 				})
-        
+
+        /*        
         var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
 
         var map = L.map('map', {
@@ -240,6 +241,7 @@
         }
 
         map.on('click', onMapClick);
+        */
 
 			});
 </script>
