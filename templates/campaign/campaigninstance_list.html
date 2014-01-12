@@ -14,10 +14,12 @@
 	  {% endif %}
 	  <div class="well">{{ c.campaign.description }}</div>
       <dl class="dl-horizontal">
+        <dt>Based on</dt>
+        <dd><a href="{{ url_for('world.article_get', article=c.campaign.slug, world=c.campaign.world.slug) }}">{{ c.campaign }}</a></dd>
         <dt>Group</dt>
         <dd>{% if false %}<a href="{{ url_for('social.group_get', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
         <dt>World</dt>
-        <dd>{{ c.campaign.world }}</dd>
+        <dd><a href="{{ url_for('world.world_get', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
         <dt>Rules</dt>
         <dd>{{ c.rule_system }}</dd>
       </dl>
