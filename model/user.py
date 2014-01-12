@@ -105,7 +105,7 @@ class Group(db.Document):
         return self.name
 
     def members(self):
-        return masters+players+invited
+        return self.masters+self.players+self.invited
         
 # A message from a user (to everyone)
 class Message(db.Document):

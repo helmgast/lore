@@ -22,6 +22,10 @@
         <dd><a href="{{ url_for('world.world_get', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
         <dt>Rules</dt>
         <dd>{{ c.rule_system }}</dd>
+        <dt>Sessions</dt>
+        <dd>{{ c.sessions|length }}</dd>
+        <dt>Chronicles</dt>
+        <dd>{{ c.chronicles|length }}</dd>
       </dl>
     </div>
     {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}

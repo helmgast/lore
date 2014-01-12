@@ -178,11 +178,12 @@ def add_test_data():
     kcmpa = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
     ycmpa = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
     
-    scmpa.children = [Episode(id=1, title="Intro"),
-                      Episode(id=2, title="The old man in the taverna"),
-                      Episode(id=3, title="Going to the cave"),
-                      Episode(id=4, title="Not finding the way"),
-                      Episode(id=5, title="The general comes all over")]
+    scmpa.children = [Episode(id=u"1", title=u"Intro"),
+                      Episode(id=u"2", title=u"The old man in the taverna"),
+                      Episode(id=u"3", title=u"Going to the cave"),
+                      Episode(id=u"4", title=u"Not finding the way"),
+                      Episode(id=u"5", title=u"The general comes all over")]
+    scmpa.save()
 
     scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
     cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()
@@ -191,7 +192,10 @@ def add_test_data():
     CampaignInstance(campaign=ycmpa, name=u"Yerlog", group=ng, rule_system=u"Eon").save()
 
     scmp.sessions = [Session(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), location=u'Snöflingeg')]
+    scmp.save()
+
     kcmp.sessions = [Session(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), location=u'Åby')]
+    kcmp.save()
 
     cd4k.sessions = [Session(play_start=datetime.datetime(2006,07,28,18,0), play_end=datetime.datetime(2006,07,28,23,0), location=u'Snöflingegatan'),
                      Session(play_start=datetime.datetime(2006,07,29,18,0), play_end=datetime.datetime(2006,07,29,23,0), location=u'Snöflingegatan'),
@@ -203,7 +207,8 @@ def add_test_data():
                      Session(play_start=datetime.datetime(2007,01,03,18,0), play_end=datetime.datetime(2007,01,03,23,0), location=u'Mjödvägen'),
                      Session(play_start=datetime.datetime(2007,01,04,18,0), play_end=datetime.datetime(2007,01,04,23,0), location=u'Storsvängen'),
                      Session(play_start=datetime.datetime(2007,01,05,18,0), play_end=datetime.datetime(2007,01,05,23,0), location=u'Storsvängen')]
-    
+    cd4k.save()
+
     cd6k.sessions = [Session(play_start=datetime.datetime(2009,01,05,18,0), play_end=datetime.datetime(2009,01,05,23,0), location=u'Ulvsbygatan'),
                      Session(play_start=datetime.datetime(2009,01,06,18,0), play_end=datetime.datetime(2009,01,06,23,0), location=u'Ulvsbygatan'),
                      Session(play_start=datetime.datetime(2009,8,9,18,0), play_end=datetime.datetime(2009,8,9,23,0), location=u'Olsäter'),
@@ -231,6 +236,7 @@ def add_test_data():
                      Session(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), location=u'Mölndalsvägen'),
                      Session(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), location=u'Mölndalsvägen'),
                      Session(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), location=u'Mölndalsvägen')] 
+    cd6k.save()
     
     gil1 = GeneratorInputList(name=u'Korhiv start letter').save()
     gil2 = GeneratorInputList(name=u'Korhiv middle syllables').save()

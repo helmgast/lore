@@ -19,7 +19,7 @@ class Session(db.EmbeddedDocument):
     present_members = db.ListField(db.ReferenceField(User));
 
     def __unicode__(self):
-        return u'Session of %s at %s' % (self.campaign, self.play_start.strftime('%Y-%m-%d'))
+        return u'Session of %s at %s' % ('self.campaign', self.play_start.strftime('%Y-%m-%d'))
 
 
 # All material related to a certain story by a certain group.
