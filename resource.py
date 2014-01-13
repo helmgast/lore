@@ -42,13 +42,15 @@ class ResourceRequest:
 
 class ResourceAccessStrategy:
 
-    def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None):
+    def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None):
         self.form_class = form_class if form_class else model_form(model_class)
         self.model_class = model_class
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.plural_name = plural_name
         self.parent = parent_strategy
         self.id_field = id_field
+        # The field name pointing to a parent resource for this resource, e.g. article.world
+        self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
         print 'Strategy created for "' + self.resource_name + '"'
 
     def get_url_path(self, part, op=None):
@@ -141,45 +143,55 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
-    def render_list(self, list=None, parents=None, edit=False):
-        render_args = {self.strategy.plural_name:list, 'edit':edit}
+    def url_for_item(self, op, item):
+        all_items = {self.strategy.resource_name : getattr(item, self.strategy.id_field)}
+        p = self.strategy.parent
+        while p:
+            parent_item = getattr(item, self.strategy.parent_reference_field)
+            all_items[p.resource_name] = getattr(parent_item, p.id_field)
+            p = p.parent
+            item = parent_item
+        return url_for('.'+self.strategy.endpoint_name(op), **all_items)
+
+    def render_list(self, list=None, parents=None, op=None):
+        render_args = {self.strategy.plural_name:list, 'op':op}
         render_args.update(parents)
         return render_template(self.strategy.list_template(), **render_args)
     
-    def render_one(self, instance=None, parents=None, edit=False, new=False, form=None):
-        render_args = {self.strategy.resource_name:instance, 'edit':edit}
+    def render_one(self, item=None, parents=None, op=None, form=None):
+        render_args = {self.strategy.resource_name:item, 'op':op}
         render_args[self.strategy.resource_name+'_form'] = form
         render_args.update(parents)
         return render_template(self.strategy.item_template(), **render_args)
 
     def get(self, **kwargs):
-        instance = self.strategy.fetch_item(**kwargs)
+        item = self.strategy.fetch_item(**kwargs)
         parents = self.strategy.fetch_parents(**kwargs)
-        if not self.strategy.allowed_on('read', instance):
+        if not self.strategy.allowed_on('read', item):
             return self.render_one(error=401)
-        return self.render_one(instance, parents)
+        return self.render_one(item, parents)
 
     def get_edit(self, **kwargs):
-        instance = self.strategy.fetch_item(**kwargs)
+        item = self.strategy.fetch_item(**kwargs)
         parents = self.strategy.fetch_parents(**kwargs)
-        if not instance:
+        if not item:
             return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', instance):
+        if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
         # TODO add prefil form functionality
-        form = self.form_class(obj=instance)
+        form = self.form_class(obj=item)
         form.action_url = url_for('.'+self.strategy.endpoint_name('post'), method='put', **kwargs)
-        return self.render_one(instance, parents, edit=True, form=form)
+        return self.render_one(item, parents, op='edit', form=form)
     
     def get_new(self, *args, **kwargs):
-        # no existing instance as we are creating new
+        # no existing item as we are creating new
         parents = self.strategy.fetch_parents(**kwargs)
         if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
         # TODO add prefil form functionality
         form = self.form_class(request.args, obj=None)
         form.action_url = url_for('.'+self.strategy.endpoint_name('post_new'), **kwargs)
-        return self.render_one(new=True, form=form)
+        return self.render_one(parents=parents, op='new', form=form)
 
     def get_list(self, *args, **kwargs):
         parents = self.strategy.fetch_parents(**kwargs)
@@ -189,7 +201,7 @@ class ResourceHandler2:
         # if not list_args:
         #     return self.render_one(error=400)
         list = self.strategy.fetch_list(request.args)
-        # Filter on allowed instances?
+        # Filter on allowed items?
         return self.render_list(list=list, parents=parents)
 
     def get_edit_list(self, *args, **kwargs):
@@ -200,8 +212,8 @@ class ResourceHandler2:
         if not list_args:
             return self.render_one(error=400)    
         list = self.strategy.fetch_list(list_args)
-        # Filter on allowed instances?
-        return self.render_list(edit=True, instance=list)
+        # Filter on allowed items?
+        return self.render_list(op='edit', item=list)
 
     def post(self, *args, **kwargs):
         if request.args.has_key('method'):
@@ -222,53 +234,53 @@ class ResourceHandler2:
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
+            print form.errors
             return self.render_one(error=403)
-        obj = self.strategy.create_item()
-        form.populate_obj(obj)
-        obj.save()
-        return redirect()
+        item = self.strategy.create_item()
+        form.populate_obj(item)
+        item.save()
+        return redirect(self.url_for_item('get', item))
 
     def put(self, *args, **kwargs):
-        instance = self.strategy.fetch_item(**kwargs)
+        item = self.strategy.fetch_item(**kwargs)
         parents = self.strategy.fetch_parents(**kwargs)
-        if not instance:
+        if not item:
             return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', instance):
+        if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
-        form = self.form_class(request.form, obj=instance)
+        form = self.form_class(request.form, obj=item)
+        print request.form
         if not form.validate():
             print form.errors
             return self.render_one(error=403)
-        form.populate_obj(instance)
-        instance.save()
+        form.populate_obj(item)
+        item.save()
         # In case slug has changed, fetch the new value before redirecting!
-        kwargs[self.strategy.resource_name] = getattr(instance, self.strategy.id_field)
-        return redirect(url_for('.'+self.strategy.endpoint_name('get'), **kwargs))
+        return redirect(self.url_for_item('get', item))
 
     def patch(self, *args, **kwargs):
-        instance = self.strategy.fetch_item(**kwargs)
+        item = self.strategy.fetch_item(**kwargs)
         parents = self.strategy.fetch_parents(**kwargs)
-        if not instance:
+        if not item:
             return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', instance):
+        if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
-        form = self.form_class(request.form, obj=instance)
+        form = self.form_class(request.form, obj=item)
         if not form.validate():
             print form.errors
             return self.render_one(error=403)
-        form.populate_obj(instance)
-        instance.save()
+        form.populate_obj(item)
+        item.save()
         # In case slug has changed, fetch the new value before redirecting!
-        kwargs[self.strategy.resource_name] = getattr(instance, self.strategy.id_field)
-        return redirect(url_for('.'+self.strategy.endpoint_name('get'), **kwargs))
+        return redirect(self.url_for_item('get', item))
     
     def delete(self, *args, **kwargs):
-        instance = self.strategy.fetch_item(id)
-        if not instance:
+        item = self.strategy.fetch_item(id)
+        if not item:
             return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', instance):
+        if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
-        instance.delete()
+        item.delete()
         return redirect()
 
 # WTForms Field constructor args
