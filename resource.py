@@ -76,7 +76,7 @@ class ResourceAccessStrategy:
         return self.model_class.objects.get(**{self.id_field:id})
 
     def create_item(self):
-        return self.model_class.create()
+        return self.model_class()
 
     def fetch_list(self, args):
         qr = self.model_class.objects()
@@ -235,6 +235,7 @@ class ResourceHandler2:
         form = self.form_class(request.form, obj=None)
         if not form.validate():
             print form.errors
+            print self.strategy.model_class._fields
             return self.render_one(error=403)
         item = self.strategy.create_item()
         form.populate_obj(item)

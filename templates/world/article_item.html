@@ -1,4 +1,4 @@
-{% extends "world/base.html" if not parent_template else parent_template %}
+{% extends "world/world_item.html" if not parent_template else parent_template %}
 
 {% from 'includes/components.html' import form_field, form_fields %}
 
@@ -24,10 +24,10 @@
 {% endblock %}
 
 {%- block article_actions -%}{{ super() }}
-<li><a href="{{ url_for('world.edit_article', world_slug=world.slug, article_slug=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
-<li><a href="{{ url_for('world.delete_article', world_slug=world.slug, article_slug=article.slug) }}" 
+<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
+<li><a href="{{ url_for('.article_delete', world=world.slug, article=article.slug) }}" 
   class="m_action" data-action-type="modal"><i class="icon-trash"></i>Delete</a></li>
-<li><a href="{{ url_for('world.view_article', world_slug=world.slug, article_slug=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
+<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
 {%- endblock -%}
 
 {% block middle %}
@@ -166,7 +166,7 @@
 
         $('#editable_title')
           .blur(function(e) {
-            $('#title').val(this.textContent)})
+            $('#title').val(this.textContent); /*$('#slug').val(this.textContent) */})
           .on('paste', function(e) {
             $this = $(this)
             setTimeout(function() {
