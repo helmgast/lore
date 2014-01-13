@@ -62,7 +62,7 @@ class World(db.Document):
 
 class Article(db.Document):
     meta = {'allow_inheritance': True, 'indexes': ['slug']} 
-    slug = db.StringField(unique=True, required=False, max_length=62, default="dummy") # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
+    slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)

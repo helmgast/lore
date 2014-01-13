@@ -34,7 +34,7 @@
 {% if article_form %}
 <form id='articleform' method="post" action="{{ article_form.action_url }}">
 {{ article_form.csrf_token }}
-{{ article_form.title(style="display:none;") }}{{ article_form.slug(style="display:none;")}}
+{{ article_form.title(style="display:none;") }}
 {{ article_form.world }}
 <div class="page-header" style="margin-bottom: 5px;">
   <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
@@ -166,7 +166,7 @@
 
         $('#editable_title')
           .blur(function(e) {
-            $('#title').val(this.textContent); /*$('#slug').val(this.textContent) */})
+            $('#title').val(this.textContent); })
           .on('paste', function(e) {
             $this = $(this)
             setTimeout(function() {

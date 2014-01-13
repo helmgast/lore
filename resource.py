@@ -71,14 +71,14 @@ class ResourceAccessStrategy:
     def list_template(self):
         return '%s_list.html' % self.resource_name
 
-    def fetch_item(self, **kwargs):
+    def query_item(self, **kwargs):
         id = kwargs[self.resource_name]
         return self.model_class.objects.get(**{self.id_field:id})
 
     def create_item(self):
         return self.model_class()
 
-    def fetch_list(self, args):
+    def query_list(self, args):
         qr = self.model_class.objects()
         filters = {}
         for key in args.keys():
@@ -95,15 +95,21 @@ class ResourceAccessStrategy:
         # TODO very little safety in above as all filters are allowed
         return qr
 
-    def fetch_parents(self, **kwargs):
+    def query_parents(self, **kwargs):
         if not self.parent:
             return {}
         # Silently pop arg, if existing, relating to current resource
         kwargs.pop(self.resource_name, None) 
-        grandparents = self.parent.fetch_parents(**kwargs)
-        grandparents[self.parent.resource_name] = self.parent.fetch_item(**kwargs)
+        grandparents = self.parent.query_parents(**kwargs)
+        grandparents[self.parent.resource_name] = self.parent.query_item(**kwargs)
         #print "all parents %s" % grandparents 
         return grandparents
+
+    def all_view_args(self, item):
+        view_args = {self.resource_name : getattr(item, self.id_field)}
+        if self.parent:
+            view_args.update(self.parent.all_view_args(getattr(item, self.parent_reference_field)))
+        return view_args
       
     def endpoint_name(self, suffix):
         return self.resource_name + '_' + suffix
@@ -143,16 +149,6 @@ class ResourceHandler2:
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
         app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
 
-    def url_for_item(self, op, item):
-        all_items = {self.strategy.resource_name : getattr(item, self.strategy.id_field)}
-        p = self.strategy.parent
-        while p:
-            parent_item = getattr(item, self.strategy.parent_reference_field)
-            all_items[p.resource_name] = getattr(parent_item, p.id_field)
-            p = p.parent
-            item = parent_item
-        return url_for('.'+self.strategy.endpoint_name(op), **all_items)
-
     def render_list(self, list=None, parents=None, op=None):
         render_args = {self.strategy.plural_name:list, 'op':op}
         render_args.update(parents)
@@ -165,15 +161,15 @@ class ResourceHandler2:
         return render_template(self.strategy.item_template(), **render_args)
 
     def get(self, **kwargs):
-        item = self.strategy.fetch_item(**kwargs)
-        parents = self.strategy.fetch_parents(**kwargs)
+        item = self.strategy.query_item(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not self.strategy.allowed_on('read', item):
             return self.render_one(error=401)
         return self.render_one(item, parents)
 
     def get_edit(self, **kwargs):
-        item = self.strategy.fetch_item(**kwargs)
-        parents = self.strategy.fetch_parents(**kwargs)
+        item = self.strategy.query_item(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not item:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', item):
@@ -185,7 +181,7 @@ class ResourceHandler2:
     
     def get_new(self, *args, **kwargs):
         # no existing item as we are creating new
-        parents = self.strategy.fetch_parents(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
         # TODO add prefil form functionality
@@ -194,13 +190,13 @@ class ResourceHandler2:
         return self.render_one(parents=parents, op='new', form=form)
 
     def get_list(self, *args, **kwargs):
-        parents = self.strategy.fetch_parents(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not self.strategy.allowed_any('read'):
             return self.render_one(error=401)
         # list_args = self.get_list_args()
         # if not list_args:
         #     return self.render_one(error=400)
-        list = self.strategy.fetch_list(request.args)
+        list = self.strategy.query_list(request.args)
         # Filter on allowed items?
         return self.render_list(list=list, parents=parents)
 
@@ -211,7 +207,7 @@ class ResourceHandler2:
         list_args = self.get_list_args()
         if not list_args:
             return self.render_one(error=400)    
-        list = self.strategy.fetch_list(list_args)
+        list = self.strategy.query_list(list_args)
         # Filter on allowed items?
         return self.render_list(op='edit', item=list)
 
@@ -240,11 +236,12 @@ class ResourceHandler2:
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
-        return redirect(self.url_for_item('get', item))
+        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
+            **self.strategy.all_view_args(item)))
 
     def put(self, *args, **kwargs):
-        item = self.strategy.fetch_item(**kwargs)
-        parents = self.strategy.fetch_parents(**kwargs)
+        item = self.strategy.query_item(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not item:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', item):
@@ -256,12 +253,13 @@ class ResourceHandler2:
             return self.render_one(error=403)
         form.populate_obj(item)
         item.save()
-        # In case slug has changed, fetch the new value before redirecting!
-        return redirect(self.url_for_item('get', item))
+        # In case slug has changed, query the new value before redirecting!
+        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
+            **self.strategy.all_view_args(item)))
 
     def patch(self, *args, **kwargs):
-        item = self.strategy.fetch_item(**kwargs)
-        parents = self.strategy.fetch_parents(**kwargs)
+        item = self.strategy.query_item(**kwargs)
+        parents = self.strategy.query_parents(**kwargs)
         if not item:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', item):
@@ -272,17 +270,24 @@ class ResourceHandler2:
             return self.render_one(error=403)
         form.populate_obj(item)
         item.save()
-        # In case slug has changed, fetch the new value before redirecting!
-        return redirect(self.url_for_item('get', item))
+        # In case slug has changed, query the new value before redirecting!
+        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
+            **self.strategy.all_view_args(item)))
     
     def delete(self, *args, **kwargs):
-        item = self.strategy.fetch_item(id)
+        item = self.strategy.query_item(**kwargs)
         if not item:
             return self.render_one(error=400)
+        if self.strategy.parent:
+            parents = self.strategy.query_parents(**kwargs)
+            redir_url = url_for('.'+self.strategy.endpoint_name('get_list'), **self.parent.strategy.all_view_args(getattr(item, self.strategy.parent_reference_field)))
+        else:
+             redir_url = url_for('.'+self.strategy.endpoint_name('get_list'))
         if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
         item.delete()
-        return redirect()
+        # We have to build our redir_url first, as we can't read it out when item has been deleted
+        return redirect(redir_url)
 
 # WTForms Field constructor args
 # label - The label of the field. Available after construction through the label property.
@@ -404,7 +409,7 @@ class ModelRequest(View):
             model_obj = None
         render_args = {}
         for p in self.server.parents:
-            # Fetch model objects for all parents as well
+            # query model objects for all parents as well
             render_args[p.model_name] = p.get_obj(view_args[p.model_identifier])
         if request.method == 'GET':
             return self.server.render(self.op, model_obj, **render_args)
