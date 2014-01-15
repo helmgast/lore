@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content_title %}Social{% endblock %}
+{% block content_tagline %}bringing you closer to other gamers{% endblock %}
+{% block social_active %} class="active"{% endblock %}
+
+{% block sidebar %}
+  <h3>Navigation</h3>
+    <ul class="nav nav-list">
+      <li><a href="{{ url_for('.index') }}"><i class="icon-book"></i>Main</a></li>
+      <li><a href="{{ url_for('.user_get_list') }}"><i class="icon-book"></i>Gamers</a></li>
+      <li><a href="{{ url_for('.group_get_list') }}"><i class="icon-book"></i>Groups</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+  <p>
+  {% if session.logged_in %}
+  Welcome <strong>{{ current_user.realname }}</strong>!
+  {% endif %}
+  Here you can interact with other gamers, create and manage your game groups,
+  events, etc.</p>
+  
+  <h3>Messages from those you follow</h3>
+  <ul class="unstyled">
+    {% for message in following_message_list %}
+      <li>{% include "includes/message.html" %}</li>
+    {% endfor %}
+  </ul>
+  
+  {% include "includes/pagination.html" %}
+{% endblock %}

@@ -1,12 +1,15 @@
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint
 from raconteur import auth
 from resource import ResourceHandler, ResourceHandler2, ResourceAccessStrategy
-from model.user import User
+from model.user import User, Group
 
-social = Blueprint('social', __name__, template_folder='templates')
+social = Blueprint('social', __name__, template_folder='templates/social')
 
 user_handler = ResourceHandler2(ResourceAccessStrategy(User, 'users', 'username'))
 user_handler.register_urls(social)
+
+group_handler = ResourceHandler2(ResourceAccessStrategy(Group, 'groups', 'slug'))
+group_handler.register_urls(social)
 
 # class GroupHandler(ResourceHandler):
 #     def get_redirect_url(self, instance):
@@ -46,7 +49,7 @@ user_handler.register_urls(social)
 @social.route('/')
 @auth.login_required
 def index():
-    user = auth.get_logged_in_user()
+    current_user = auth.get_logged_in_user()
     following_messages = Message.objects(conversation=0, user__in=user.following()).order_by('-pub_date')
     return render_template('social/social.html', following_messages, 'following_message_list')
 

@@ -3,7 +3,6 @@ import os
 import random
 
 from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
-from peewee import *
 from wtforms import Form, TextField, PasswordField, validators
 from hashlib import sha1
 
@@ -72,31 +71,6 @@ class Auth(object):
 
         return User
 
-    def get_model_admin(self, model_admin=None):
-        if model_admin is None:
-            from flask_peewee.admin import ModelAdmin
-            model_admin = ModelAdmin
-
-        class UserAdmin(model_admin):
-            columns = ['username', 'email', 'active', 'admin']
-
-            def save_model(self, instance, form, adding=False):
-                orig_password = instance.password
-
-                user = super(UserAdmin, self).save_model(instance, form, adding)
-
-                if orig_password != form.password.data:
-                    user.set_password(form.password.data)
-                    user.save()
-
-                return user
-
-
-        return UserAdmin
-
-    def register_admin(self, admin_site, model_admin=None):
-        admin_site.register(self.User, self.get_model_admin(model_admin))
-
     def get_blueprint(self, blueprint_name):
         return Blueprint(
             blueprint_name,
@@ -134,9 +108,9 @@ class Auth(object):
         return self.test_user(lambda u: u.admin)(func)
 
     def authenticate(self, username, password):
-        active = self.User.select().where(self.User.active==True)
+        active = self.User.objects(active=True)
         try:
-            user = active.where(self.User.username==username).get()
+            user = active(username=username).get()
         except self.User.DoesNotExist:
             return False
         else:
@@ -147,7 +121,7 @@ class Auth(object):
 
     def login_user(self, user):
         session['logged_in'] = True
-        session['user_pk'] = user.get_id()
+        session['user_pk'] = str(user.id)
         session.permanent = True
         g.user = user
         flash('You are logged in as %s' % user.username, 'success')
@@ -166,9 +140,8 @@ class Auth(object):
                 return g.user
 
             try:
-                return self.User.select().where(
-                    self.User.active==True, 
-                    self.User.id==session.get('user_pk')
+                return self.User.objects(
+                    active=True, id=session.get('user_pk')
                 ).get()
             except self.User.DoesNotExist:
                 pass
@@ -195,7 +168,7 @@ class Auth(object):
         else:
             form = Form()
 
-        return render_template('auth/login.html', error=error, form=form)
+        return render_template('includes/login.html', error=error, form=form)
 
     def logout(self):
         self.logout_user(self.get_logged_in_user())

@@ -1,44 +1,7 @@
-<table class="table table-striped m_view">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Real name</th>
-      <th>Location</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-      {% for person in user_list %}
-      <tr class="user-tablerow m_instance">
-        <td><a href="{{ url_for('social.user_detail', username=person.username) }}">
-          <img class="avatar" src="{{ person.gravatar_url() }}" />
-          <strong class="message_name">{{person.username}}</strong>
-        </a></td>
-        <td>{{person.realname}}</td>
-        <td>{{person.location}}</td>
-        <td>
-        <div class="btn-toolbar">
-        {% if user %}
-          {% if person.username != user.username %}
-            <button type="button" class="btn btn-small m_action
-              {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
-              {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
-              {% endif %}</button>
-            <div class="btn-group">
-            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-              Add to group<span class="caret"></span>
-            </a>
-            {% include "social/group_member_selector.html" %}
-            </div>
-          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
-          {% else %}
-          <button class="btn disabled">It's you!</button>
-          {% endif %}
- 
-        {% endif %}
-        </div>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{% extends "social/base.html" %}
+
+{% block content_title %}All gamers{% endblock %}
+
+{% block content %}
+  {% include "social/user_list_component.html" %}
+{% endblock %}

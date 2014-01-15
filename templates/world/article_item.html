@@ -164,6 +164,7 @@
 
         $e.on('keydown', $e.doKey);
 
+        //----------------------------------
         $('#editable_title')
           .blur(function(e) {
             $('#title').val(this.textContent); })
@@ -174,6 +175,7 @@
             }, 100);})
           .focus();
 
+        //----------------------------------
         $('#addrow').click(function(e){
           $this = $(this);
           var nr = $('.m_view input[type="hidden"]').last().attr('id')
@@ -195,6 +197,7 @@
           e.preventDefault(); return false;  
         });
 
+        //----------------------------------
 				// Get the initial value
 				var $el = $('.m_action2');
 				$el.data('oldVal', '#' + $el.find('option:selected').text()
