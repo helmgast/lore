@@ -77,7 +77,10 @@ UserForm = User.get_form()
 class Conversation(db.Document):
     modified_date = db.DateTimeField(default=now())
     members = db.ListField(db.ReferenceField(User))
-            
+    
+    def messages(self):
+        return Message.objects(conversation=self)
+
     def last_message(self):
         return Message.objects(conversation=self).order_by('-pub_date').first() # first only or none
         
