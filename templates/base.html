@@ -65,7 +65,7 @@
                         <li><a href="{{ url_for('join') }}">join</a></li>
                     {% else %}
                         <li class="navbar-text">Welcome</span>
-                        <li><a href="{{ url_for('social.user_get', user=user) }}">{{ user.username }}!</a></li>
+                        <li><a href="{{ url_for('social.user_get', user=current_user) }}">{{ user.username }}!</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
                     {% endif %}
                 </ul>

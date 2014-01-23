@@ -124,9 +124,9 @@ def add_test_data():
 #     Relationship(from_user=mb, to_user=vs).save()
 #     Relationship(from_user=ar, to_user=mb).save()
 
-    c1 = Conversation().save()
-    c2 = Conversation().save()
-    c3 = Conversation().save()
+    c1 = Conversation(members=[mf, nf]).save()
+    c2 = Conversation(members=[mf, mb]).save()
+    c3 = Conversation(members=[nf, ks]).save()
     
 #     ConversationMember(conversation=c1, member=mf).save()
 #     ConversationMember(conversation=c1, member=nf).save()

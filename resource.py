@@ -63,7 +63,7 @@ class ResourceAccessStrategy:
         return self.get_url_path(self.plural_name, op)
 
     def url_item(self, op=None):
-        return self.get_url_path('<'+self.resource_name+'>', op)
+        return self.get_url_path(self.plural_name+'/<'+self.resource_name+'>', op)
 
     def item_template(self):
         return '%s_item.html' % self.resource_name

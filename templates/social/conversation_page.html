@@ -1,4 +1,4 @@
-{% if not inline %}{% extends "social/social.html" %}
+{% if not inline %}{% extends "social/base.html" %}
 {% else %}{% extends "includes/inline.html" %}{% endif %}
 
 {% block content_title %}Conversation with {{ recipients|join(', ')|truncate(20) }}{% endblock %}

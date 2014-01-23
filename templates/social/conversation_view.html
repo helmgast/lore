@@ -7,21 +7,21 @@
     </tr>
   </thead>
   <tbody>
-      {% for conversation in conversation_list %}
+      {% for conversation in conversations %}
       <tr>
         <td>
         {% set lastmsg = conversation.last_message() %}
         {% if lastmsg %}
-            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
+            <a href="{{ url_for('.conversation_get', conversation=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
         {% else %}
-            <a href="{{ url_for('social.conversation_detail', conv_id=conversation.id) }}"><em> (empty) </em></a>         
+            <a href="{{ url_for('.conversation_get', conversation=conversation.id) }}"><em> (empty) </em></a>         
         {% endif %}
         </td>
         <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%m')}}</td>
         <td>
           {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}
-          {% for member in conversation.members() %}
-            {{ comma() }}<a href="{{ url_for('social.user_detail', username=member.username) }}">{{ member.username }}</a>
+          {% for member in conversation.members %}
+            {{ comma() }}<a href="{{ url_for('.user_get', user=member.username) }}">{{ member.username }}</a>
           {% endfor %}
         </td>
       </tr>
