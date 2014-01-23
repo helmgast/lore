@@ -107,6 +107,10 @@ class Group(db.Document):
     def __unicode__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
+        return super(Group, self).save(*args, **kwargs)
+
     def members(self):
         return self.masters+self.players+self.invited
         
