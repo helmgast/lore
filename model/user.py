@@ -87,6 +87,11 @@ class Conversation(db.Document):
     def __unicode__(self):
         return u'conversation'
 
+ROLE_TYPES = ('MASTER','MEMBER','INVITED')
+class Member(db.EmbeddedDocument):
+    user = db.ReferenceField(User)
+    role = db.StringField(choices=ROLE_TYPES, default=ROLE_TYPES[2])
+
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
 GAME_GROUP, WORLD_GROUP, ARTICLE_GROUP = 1,2,3
@@ -99,20 +104,23 @@ class Group(db.Document):
     slug = db.StringField()
     description = db.StringField()
     type = db.IntField(choices=GROUP_TYPES,default=GAME_GROUP)
-    conversation = db.ReferenceField(Conversation)
-    masters = db.ListField(db.ReferenceField(User))
-    players = db.ListField(db.ReferenceField(User))
-    invited = db.ListField(db.ReferenceField(User))
+    members = db.ListField(db.EmbeddedDocumentField(Member))
     
     def __unicode__(self):
         return self.name
+
+    def add_masters(self, new_masters):
+        self.members.extend([Member(user=m,role='MASTER') for m in new_masters])
+
+    def add_members(self, new_members):
+        self.members.extend([Member(user=m,role='MEMBER') for m in new_members])
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         return super(Group, self).save(*args, **kwargs)
 
-    def members(self):
-        return self.masters+self.players+self.invited
+    def members_as_users(self):
+        return [m for m.user in members]
         
 # A message from a user (to everyone)
 class Message(db.Document):

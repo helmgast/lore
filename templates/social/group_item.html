@@ -1,6 +1,6 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
-{% set members=group.members() if group else [] %}
+{% set members=group.members if group else [] %}
 
 {% block content_title %}{{title}}{% endblock %}
 
