@@ -24,9 +24,8 @@
   <h3>Messages from those you follow</h3>
   <ul class="unstyled">
     {% for message in following_message_list %}
-      <li>{% include "includes/message.html" %}</li>
+      <li>{% include "social/message_item.html" %}</li>
     {% endfor %}
   </ul>
   
-  {% include "includes/pagination.html" %}
 {% endblock %}

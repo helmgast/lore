@@ -95,6 +95,8 @@ def add_test_data():
                          died=altor_date(1891,12,3),
                          gender=GENDER_MALE,
                          occupation=u"Ljusbringaren").save()
+    mf.following = [nf, ks, ar, mb]
+    mf.save()
 
 #     Relationship(from_user=mf, to_user=nf).save()
 #     Relationship(from_user=nf, to_user=mf).save()
@@ -133,24 +135,11 @@ def add_test_data():
     c2 = Conversation(members=[mf, mb]).save()
     c3 = Conversation(members=[nf, ks]).save()
     
-#     ConversationMember(conversation=c1, member=mf).save()
-#     ConversationMember(conversation=c1, member=nf).save()
-#     
-#     ConversationMember(conversation=c2, member=mf).save()
-#     ConversationMember(conversation=c2, member=mb).save()
-#     
-#     ConversationMember(conversation=c3, member=nf).save()
-#     ConversationMember(conversation=c3, member=ks).save()
-
     Group.drop_collection()
     ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
     ng.add_masters([mf])
     ng.add_members([nf, mb, fj, pd, pf, pn])
     ng.save()
-    # ng.members.extend([Member(user=mb, role='MASTER')])
-    # ng.add_members([mb])
-    # # ng.add_masters([mb])
-    # ng.save()
     mg = Group(name='Nemesis', location='Gothenburg', description=u'Test').save()
     mg.add_masters([nf])
     mg.add_members([jg,pn,jc,pf,cm,dm])

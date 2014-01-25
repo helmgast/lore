@@ -56,8 +56,8 @@ message_handler.register_urls(social)
 @auth.login_required
 def index():
     current_user = auth.get_logged_in_user()
-    following_messages = Message.objects(conversation=0, user__in=user.following()).order_by('-pub_date')
-    return render_template('social/social.html', following_messages, 'following_message_list')
+    following_messages = Message.objects(conversation=None, user__in=current_user.following).order_by('-pub_date')
+    return render_template('social/base.html', current_user=current_user, following_message_list=following_messages)
 
 # @social.route('/public/')
 # def public_timeline():
