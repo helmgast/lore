@@ -25,8 +25,7 @@
 
 {%- block article_actions -%}{{ super() }}
 <li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
-<li><a href="{{ url_for('.article_delete', world=world.slug, article=article.slug) }}" 
-  class="m_action" data-action-type="modal"><i class="icon-trash"></i>Delete</a></li>
+<li><a href="#deletemodal" data-toggle="modal"><i class="icon-trash"></i>Delete</a></li>
 <li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
 {%- endblock -%}
 
@@ -130,6 +129,18 @@
 </div>
 
 {% include "includes/flash.html" %}
+<div class="modal hide fade" id="deletemodal">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3>Are you sure you want to delete {{article.title}}?</h3>
+  </div>
+  <div class="modal-footer">
+    <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, method="DELETE")}}">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+    <button type="submit" class="btn btn-small btn-primary">Yes</button>
+    </form>
+  </div>
+</div>
 {% if article.description %}
 <div class="span9">{{article.description}}</div>
 {% endif %}

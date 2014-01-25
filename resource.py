@@ -280,7 +280,7 @@ class ResourceHandler2:
             return self.render_one(error=400)
         if self.strategy.parent:
             parents = self.strategy.query_parents(**kwargs)
-            redir_url = url_for('.'+self.strategy.endpoint_name('get_list'), **self.parent.strategy.all_view_args(getattr(item, self.strategy.parent_reference_field)))
+            redir_url = url_for('.'+self.strategy.endpoint_name('get_list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
         else:
              redir_url = url_for('.'+self.strategy.endpoint_name('get_list'))
         if not self.strategy.allowed_on('write', item):
