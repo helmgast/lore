@@ -15,20 +15,20 @@ def setup_models():
     
     
 def add_test_data():
-    
-    World.drop_collection()
+
+    # World.drop_collection()
     mundana = World(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling").save()
     altor = World(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
     kult = World(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
 
-    RelationType.drop_collection()
+    # RelationType.drop_collection()
     RelationType(name="child of").save()
     RelationType(name="parent of").save()
     RelationType(name="friend of").save()
     RelationType(name="enemy of").save()
     RelationType(name="distant relative of").save()
 
-    User.drop_collection()
+    # User.drop_collection()
     mf = User(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
         admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
     nf = User(username='niklas', password=make_password('niklas'), email='user@user.com', active=True,
@@ -78,17 +78,16 @@ def add_test_data():
     User(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson').save()
     
-    Article.drop_collection()
+    # Article.drop_collection()
 
-    Article(type=ARTICLE_MEDIA,
+    Article(type=ARTICLE_IMAGE,
         title=u"Ljusbringaren bild",
         content=u"No content",
         world=altor,
         creator=mj,
-        mediaarticle = MediaArticle(
-            mime_type="image/jpg",
-            url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
-        ).save()
+        imagearticle=ImageArticle.create_from_url(
+            "http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
+            ).save()
     Article(type=ARTICLE_PERSON,
         title=u"Ljusbringaren",
         content=u"No content",
@@ -135,12 +134,12 @@ def add_test_data():
 #     Relationship(from_user=mb, to_user=vs).save()
 #     Relationship(from_user=ar, to_user=mb).save()
 
-    Conversation.drop_collection()
+    # Conversation.drop_collection()
     c1 = Conversation(members=[mf, nf]).save()
     c2 = Conversation(members=[mf, mb]).save()
     c3 = Conversation(members=[nf, ks]).save()
     
-    Group.drop_collection()
+    # Group.drop_collection()
     ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
     ng.add_masters([mf])
     ng.add_members([nf, mb, fj, pd, pf, pn])
@@ -154,7 +153,7 @@ def add_test_data():
     kg.add_members([mb, pn, ks])
     kg.save()
     
-    Message.drop_collection()
+    # Message.drop_collection()
     # Make sure you use unicode strings by prefixing with u''
     Message(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1).save()
     Message(user=jg, content=u'Kul spel sist!').save()
@@ -179,7 +178,7 @@ def add_test_data():
                       Episode(id=u"5", title=u"The general comes all over")]
     scmpa.save()
 
-    CampaignInstance.drop_collection()
+    # CampaignInstance.drop_collection()
 
     scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
     cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()

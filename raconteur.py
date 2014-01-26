@@ -46,6 +46,7 @@ if the_app == None:
   
 from test_data import model_setup
 def setup_models():
+  db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
 ###

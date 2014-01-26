@@ -55,7 +55,7 @@ Article
 
 	ChronicleArticle
 
-	MediaArticle
+	ImageArticle
 		media_resource = MediaResource
 
 MediaResource

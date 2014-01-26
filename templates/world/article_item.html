@@ -34,17 +34,16 @@
 {#### FORM ####}
 {% if article_form %}
 <form id='articleform' method="post" action="{{ article_form.action_url }}">
-{{ article_form.csrf_token }}
 {{ article_form.title(style="display:none;") }}
-{{ article_form.world }}
 <div class="page-header" style="margin-bottom: 5px;">
   <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
 </div>
+
 {% include "includes/flash.html" %}
 <div class="row-fluid">
 <div class="span7 article_text">
-  {% if article and article.is_media() %}
-  <img src="{{article.get_type().url}}" />
+  {% if article and article.is_image() %}
+  <img src="{{article.imagearticle.url}}" />
   {% endif %}
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
@@ -57,16 +56,18 @@
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
 <div class="span5 metadata">
+
+  {{ article_form.csrf_token }}
   <button type="submit" class="btn btn-small btn-primary">Save changes</button>
   <a href="{{ url_for('world.index') }}" class="btn btn-small">Cancel</a>
-
+{{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
   <h4>Metadata</h4>
   <fieldset style="margin-bottom: 10px">
 {#  {{ form_field(article_form.articlegroups) }} #}
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
-  <div id="mediaarticle_form" {{ ' class=hide ' if article_type_name!='media'}}>
-  {{ article_form.mediaarticle }}
+  <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
+  {{ article_form.imagearticle }}
   </div>
   <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
   {{ article_form.personarticle }}
@@ -121,7 +122,7 @@
   <li><span class="nav-header" style="display:inline">Lon</span>{{article.coordinate_x}}</li>
   <li><span class="nav-header" style="display:inline">Lat</span>{{article.coordinate_y}}</li>
   <li><span class="nav-header" style="display:inline">Type</span>{{article.location_type }}</li>
-{%- elif article_type_name=='media' -%}
+{%- elif article_type_name=='image' -%}
   <li><span class="nav-header" style="display:inline">Type</span>{{article.mime_type}}</li>
   <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
 {%- elif article_type_name=='event' -%}
@@ -137,6 +138,17 @@
 </div>
 
 {% include "includes/flash.html" %}
+
+{% if article.description %}
+<div class="span9">{{article.description}}</div>
+{% endif %}
+<div class="article span9 article_text">
+	{% if article.is_image() %} <img src="{{url_for('.image', slug=article.slug)}}" />
+	{% endif %} {{ article.content|wikify|markdown }}
+</div>
+{% endif %} {% endblock %}
+
+{% block final %}
 <div class="modal hide fade" id="deletemodal">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -149,16 +161,8 @@
     </form>
   </div>
 </div>
-{% if article.description %}
-<div class="span9">{{article.description}}</div>
-{% endif %}
-<div class="article span9 article_text">
-	{% if article.is_media() %} <img src="{{article.get_type().url}}" />
-	{% endif %} {{ article.content|wikify|markdown }}
-</div>
-{% endif %} {% endblock %}
+{{super()}}
 
-{% block final %} {{super()}}
 {% if article_form %}
 <script>
 	$(document).ready(

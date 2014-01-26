@@ -1,13 +1,13 @@
-from flask import request, redirect, url_for, render_template, Blueprint, flash
+from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response
 from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
-  EventArticle, MediaArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_MEDIA, 
+  EventArticle, ImageArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_IMAGE, 
   ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 
 from resource import ResourceHandler2, ResourceAccessStrategy, RacModelConverter
-from raconteur import auth
+from raconteur import auth, db
 from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
@@ -34,6 +34,12 @@ def index():
     worlds = World.objects()
     return render_template('world/base.html', worlds=worlds)
 
+@world_app.route('/image/<slug>')
+def image(slug):
+    imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
+    response = make_response(imagearticle.image.read())
+    response.mimetype = imagearticle.mime_type
+    return response
 
 # Template filter, will group a list by their initial title letter
 def by_initials(objects):
@@ -134,7 +140,7 @@ world_app.add_app_template_filter(by_time)
 # 
 # # For later rference, create the forms for each article_type
 # personarticle_form = model_form(PersonArticle)
-# mediaarticle_form = model_form(MediaArticle)
+# imagearticle_form = model_form(ImageArticle)
 # eventarticle_form = model_form(EventArticle)
 # placearticle_form = model_form(PlaceArticle)
 # fractionarticle_form = model_form(FractionArticle)
@@ -168,7 +174,7 @@ world_app.add_app_template_filter(by_time)
 # 
 # # Need to add after creation otherwise the converter will interfere with them
 # article_form.personarticle = ArticleTypeFormField(personarticle_form)
-# article_form.mediaarticle =  ArticleTypeFormField(mediaarticle_form)
+# article_form.imagearticle =  ArticleTypeFormField(imagearticle_form)
 # article_form.eventarticle =  ArticleTypeFormField(eventarticle_form)
 # article_form.placearticle =  ArticleTypeFormField(placearticle_form)
 # article_form.fractionarticle =  ArticleTypeFormField(fractionarticle_form)

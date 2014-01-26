@@ -22,7 +22,7 @@ def get_models():
 #         GroupMember,
         Message,
 #         Relationship,
-        MediaArticle,
+        ImageArticle,
         PersonArticle,
         EventArticle,
         FractionArticle,

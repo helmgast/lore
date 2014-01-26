@@ -320,7 +320,7 @@ class ResourceHandler2:
         if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=item)
-        self.print_form_inputs(request.form, form.data, item)
+        # self.print_form_inputs(request.form, form.data, item)
         if not form.validate():
             print form.errors
             return self.render_one(error=403)
