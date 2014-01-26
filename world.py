@@ -1,10 +1,12 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash
-from model.world import Article, World, ArticleRelation, PersonArticle, PlaceArticle, EventArticle, MediaArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES
+from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
+  EventArticle, MediaArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_MEDIA, 
+  ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES)
 from model.user import Group
 from flask.views import View
-from flask.ext.mongoengine.wtf import model_form
+from flask.ext.mongoengine.wtf import model_form, model_fields
 
-from resource import ResourceHandler2, ResourceAccessStrategy
+from resource import ResourceHandler2, ResourceAccessStrategy, RacModelConverter
 from raconteur import auth
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -16,10 +18,16 @@ world_app = Blueprint('world', __name__, template_folder='templates/world')
 world_handler = ResourceHandler2(ResourceAccessStrategy(World, 'worlds', 'slug'))
 world_handler.register_urls(world_app)
 
-article_handler = ResourceHandler2(ResourceAccessStrategy(Article, 'articles', 'slug', 
-    parent_strategy=world_handler.strategy, form_class = model_form(Article, exclude=['slug'])))
-article_handler.register_urls(world_app)
+# field_dict = model_fields(Article, exclude=['slug'])
+# for k in field_dict:
+#   print k, field_dict[k], "\n"
+# for f in Article._fields.keys():
+#   print f
+artform = model_form(Article, exclude=['slug'], converter=RacModelConverter())
 
+article_handler = ResourceHandler2(ResourceAccessStrategy(Article, 'articles', 'slug', 
+    parent_strategy=world_handler.strategy, form_class = artform))
+article_handler.register_urls(world_app)
 
 @world_app.route('/')
 def index():
@@ -66,7 +74,6 @@ world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
 world_app.add_app_template_filter(by_time)
 
-# 
 # 
 # class ArticleGroupSelectMultipleQueryField(SelectMultipleQueryField):
 #     '''

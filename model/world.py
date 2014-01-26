@@ -59,6 +59,49 @@ class World(db.Document):
     # datestring = "day %i in the year of %i" 
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+class MediaArticle(db.EmbeddedDocument):
+    media = db.ReferenceField(MediaResource)
+
+class PersonArticle(db.EmbeddedDocument):
+    born = db.IntField()
+    died = db.IntField()
+    gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
+    # otherNames = CharField()
+    occupation = db.StringField(max_length=60)
+
+    def gender_name(self):
+        return GENDER_TYPES[self.gender][1].title()
+
+class FractionArticle(db.EmbeddedDocument):
+    fraction_type = db.StringField(max_length=60)
+
+class PlaceArticle(db.EmbeddedDocument):
+    # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_x = db.FloatField() 
+    coordinate_y = db.FloatField()
+    # building, city, domain, point_of_interest
+    location_type = db.StringField(max_length=60)
+
+class EventArticle(db.EmbeddedDocument):
+    from_date = db.IntField()
+    to_date = db.IntField()
+
+class Episode(db.EmbeddedDocument):
+    id = db.StringField(unique=True) # URL-friendly name?
+    title = db.StringField(max_length=60)
+    description = db.StringField()
+    content = db.ListField(db.ReferenceField('Article')) # references Article class below
+
+# TODO: cannot add this to Episode as it's self reference, but adding attributes
+# outside the class def seems not to be picked up by MongoEngine, so this row
+# may not have any effect
+Episode.children = db.ListField(db.EmbeddedDocumentField(Episode)) # references Episode class
+    
+class CampaignArticle(db.EmbeddedDocument):
+    children = db.ListField(db.EmbeddedDocumentField(Episode))
+
+class ChronicleArticle(db.EmbeddedDocument):
+    pass
 
 class Article(db.Document):
     meta = {'allow_inheritance': True, 'indexes': ['slug']} 
@@ -85,7 +128,11 @@ class Article(db.Document):
         return ARTICLE_MEDIA == self.type
 
     def type_name(self):
-        return ARTICLE_TYPES[self.type][1]
+        return Article.create_type_name(self.type)
+
+    @classmethod
+    def create_type_name(cls, asked_type):
+        return ARTICLE_TYPES[asked_type][1]
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -93,47 +140,12 @@ class Article(db.Document):
     def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.type_name() if self.type > 0 else '')
 
-class MediaArticle(Article):
-    media = db.ReferenceField(MediaResource)
-
-class PersonArticle(Article):
-    born = db.IntField()
-    died = db.IntField()
-    gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
-    # otherNames = CharField()
-    occupation = db.StringField(max_length=60)
-
-    def gender_name(self):
-        return GENDER_TYPES[self.gender][1].title()
-
-class FractionArticle(Article):
-    fraction_type = db.StringField(max_length=60)
-
-class PlaceArticle(Article):
-    # normalized position system, e.g. form 0 to 1 float, x and y
-    coordinate_x = db.FloatField() 
-    coordinate_y = db.FloatField()
-    # building, city, domain, point_of_interest
-    location_type = db.StringField(max_length=60)
-
-class EventArticle(Article):
-    from_date = db.IntField()
-    to_date = db.IntField()
-
-class Episode(db.EmbeddedDocument):
-    id = db.StringField(unique=True) # URL-friendly name?
-    title = db.StringField(max_length=60)
-    description = db.StringField()
-    content = db.ListField(db.ReferenceField(Article))
-    
-Episode.children = db.ListField(db.EmbeddedDocumentField(Episode))
-    
-class CampaignArticle(Article):
-    children = db.ListField(db.EmbeddedDocumentField(Episode))
-
-class ChronicleArticle(Article):
-    pass
-
+    mediaarticle = db.EmbeddedDocumentField(MediaArticle)
+    personarticle = db.EmbeddedDocumentField(PersonArticle)
+    fractionarticle = db.EmbeddedDocumentField(FractionArticle)
+    placearticle = db.EmbeddedDocumentField(PlaceArticle)
+    eventarticle = db.EmbeddedDocumentField(EventArticle)
+    campaignarticle = db.EmbeddedDocumentField(CampaignArticle)
 
 class RelationType(db.Document):
     name = db.StringField() # human friendly name
@@ -158,7 +170,7 @@ class ArticleRelation(db.EmbeddedDocument):
     def __unicode__(self):
         return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
-Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
+# Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2

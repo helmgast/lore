@@ -79,22 +79,27 @@ def add_test_data():
         realname='User Userson').save()
     
     Article.drop_collection()
-    MediaArticle(type=ARTICLE_MEDIA,
-                                               title=u"Ljusbringaren bild",
-                                               content=u"No content",
-                                               world=altor,
-                                               creator=mj,
-                                               mime_type="image/jpg",
-                        url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg").save()
-    PersonArticle(type=ARTICLE_PERSON,
-                                                title=u"Ljusbringaren",
-                                                content=u"No content",
-                                                world=altor,
-                                               creator=rl,
-                                               born=altor_date(1653,3,4),
-                         died=altor_date(1891,12,3),
-                         gender=GENDER_MALE,
-                         occupation=u"Ljusbringaren").save()
+
+    Article(type=ARTICLE_MEDIA,
+        title=u"Ljusbringaren bild",
+        content=u"No content",
+        world=altor,
+        creator=mj,
+        mediaarticle = MediaArticle(
+            mime_type="image/jpg",
+            url="http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
+        ).save()
+    Article(type=ARTICLE_PERSON,
+        title=u"Ljusbringaren",
+        content=u"No content",
+        world=altor,
+        creator=rl,
+        personarticle = PersonArticle(
+            born=altor_date(1653,3,4),
+            died=altor_date(1891,12,3),
+            gender=GENDER_MALE,
+            occupation=u"Ljusbringaren")
+        ).save()
     mf.following = [nf, ks, ar, mb]
     mf.save()
 
@@ -161,11 +166,11 @@ def add_test_data():
     Message(user=mb, content=u'Definitivt!', conversation=c2).save()
     Message(user=nf, content=u'Hallå?', conversation=c3).save()
 
-    scmpa = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
-    cd4ka = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
-    cd6ka = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
-    kcmpa = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
-    ycmpa = CampaignArticle(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
+    scmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
+    cd4ka = Article(type=ARTICLE_CAMPAIGN, title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
+    cd6ka = Article(type=ARTICLE_CAMPAIGN, title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
+    kcmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
+    ycmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
     
     scmpa.children = [Episode(id=u"1", title=u"Intro"),
                       Episode(id=u"2", title=u"The old man in the taverna"),

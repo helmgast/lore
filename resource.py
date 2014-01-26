@@ -1,10 +1,14 @@
 from flask import request, render_template, flash, redirect, url_for
-from raconteur import auth
+from raconteur import auth, db
 from flask.ext.mongoengine.wtf import model_form
+from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
+
 from flask.views import View
 from raconteur import the_app
 from wtforms.compat import iteritems
 from wtforms.fields import FormField
+from wtforms import Form as OrigForm
+
 
 def generate_flash(action, name, model_identifiers, dest=''):
     s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
@@ -39,6 +43,61 @@ class ResourceRequest:
             return getattr(self.instance, name)
         else: # print the form
             return getattr(self.form, name)(**kwargs)
+
+# class CSRFDisabledModelForm(ModelForm):
+#     """A Base Form class that disables CSRF by default, 
+#     to be used for e.g. EmbeddedDocument models"""
+
+#     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+#         super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
+
+class RacFormField(FormField):
+    def __init__(self, *args, **kwargs):
+        # We need to save the form in the field to read from it later
+        # (normally in WTForms, fields shouldn't know about their forms)
+        self._form = kwargs['_form']
+        # print "_form is %s" % kwargs['_form']
+        super(RacFormField, self).__init__(*args, **kwargs)
+
+    def populate_obj(self, obj, name):
+        # print "Populating field %s of %s from formfield %s of form class %s (model class %s)" % (
+        #        name, obj, self.name, self.form_class, self.form_class.model_class)
+        candidate = getattr(obj, name, None)
+        # print "Validated type in form is %s, type %s" % (self._form.type.data, type(self._form.type.data))
+        # new_type = obj.is_type(self.name)
+        typefield = self._form.model_class.create_type_name(self._form.type.data) + 'article'
+
+        # If new type matches this field
+        if typefield == name:
+            # if this field has no object
+            if candidate is None:
+                # Create empty instance of this object based on Model Class
+                candidate = self.form_class.model_class()
+                setattr(obj, name, candidate)
+                print "RacFormField.populate_obj: instantiated %s to new object as it was empty before, in %s" % (name, obj)
+            # Then populate as usual
+            self.form.populate_obj(candidate)
+        # If new type is not this field
+        elif not candidate is None:
+            print "RacFormField.populate_obj: set %s to None as not type of %s" % (name, obj)
+            # Just None the whole field and skip the population
+            setattr(obj, name, None)
+
+class RacModelConverter(ModelConverter):
+    @converts('EmbeddedDocumentField')
+    def conv_EmbeddedDocument(self, model, field, kwargs):
+        kwargs = {
+            'validators': [],
+            'filters': [],
+            'default': field.default or field.document_type_obj,
+        }
+        # The only difference to normal ModelConverter is that we use the original, 
+        # insecure WTForms form base class instead of the CSRF enabled one from
+        # flask-wtf. This is because we are in a FormField, and it doesn't require 
+        # additional CSRFs.
+        form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
+            base_class=OrigForm, field_args={}, )
+        return RacFormField(form_class, **kwargs)
 
 class ResourceAccessStrategy:
 
@@ -239,6 +298,20 @@ class ResourceHandler2:
         return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
             **self.strategy.all_view_args(item)))
 
+    def print_form_inputs(self, reqargs, formdata, obj):
+        '''Debug helper method to compare the data from HTTP, form and obj'''
+        reqkeys = reqargs.keys()
+        formdatakeys = formdata.keys()
+        objkeys = obj.__dict__.keys()
+        joinedkeys = reqkeys + formdatakeys + objkeys
+        joinedkeys = [k for k in joinedkeys if k[0]!='_']
+        for k in joinedkeys:
+            print "Key: %s" % k
+            print "\tReq: %s" % (reqargs.getlist(k) if reqargs.has_key(k) else None)
+            print "\tForm: %s" % (formdata.get(k) if formdata.has_key(k) else None)
+            print "\tObj: %s" % (getattr(obj, k, None))
+        # print "Joined keys: %s" % joinedkeys
+
     def put(self, *args, **kwargs):
         item = self.strategy.query_item(**kwargs)
         parents = self.strategy.query_parents(**kwargs)
@@ -247,7 +320,7 @@ class ResourceHandler2:
         if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
         form = self.form_class(request.form, obj=item)
-        print request.form
+        self.print_form_inputs(request.form, form.data, item)
         if not form.validate():
             print form.errors
             return self.render_one(error=403)

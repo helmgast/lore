@@ -1,5 +1,5 @@
 from raconteur import db
-from world import CampaignArticle, Episode, ChronicleArticle, User, Group
+from world import Article, Episode, User, Group
 
 '''
 Created on 2 jan 2014
@@ -24,13 +24,13 @@ class Session(db.EmbeddedDocument):
 
 # All material related to a certain story by a certain group.
 class CampaignInstance(db.Document):
-    campaign = db.ReferenceField(CampaignArticle)
+    campaign = db.ReferenceField(Article) # CampaignArticle
     group = db.ReferenceField(Group)
     rule_system = db.StringField()
     description = db.StringField()
     archived = db.BooleanField(default=False) # If the campaign is archived
     sessions = db.ListField(db.EmbeddedDocumentField(Session))
-    chronicles = db.ListField(db.ReferenceField(ChronicleArticle))
+    chronicles = db.ListField(db.ReferenceField(Article)) # ChronicleArticles
 
     def __unicode__(self):
         return u'%s by %s' % (self.campaign.title, self.group)

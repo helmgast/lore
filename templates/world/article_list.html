@@ -6,10 +6,10 @@
 
     {% if request.args.get('groupby')=='type' %}
         {% set groups = articles|by_articletype %}
-    {% elif request.args.get('groupby')=='title' %}
-        {% set groups = articles|by_initials %}
     {% elif request.args.get('groupby')=='time' %}
         {% set groups = articles|by_time %}
+    {% else %} {# request.args.get('groupby')=='title' #}
+        {% set groups = articles|by_initials %}
     {% endif %}
     <dl>
         {% for group in groups %}

@@ -30,6 +30,8 @@
 {%- endblock -%}
 
 {% block middle %}
+
+{#### FORM ####}
 {% if article_form %}
 <form id='articleform' method="post" action="{{ article_form.action_url }}">
 {{ article_form.csrf_token }}
@@ -63,19 +65,25 @@
 {#  {{ form_field(article_form.articlegroups) }} #}
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
-  <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>{% include "models/personarticle_view.html" %}</div>
-  {#<div id="mediaarticle_form" {{ ' class=hide ' if
-    article_type_name!='media'}}>{% include
-    "models/mediaarticle_view.html" %}</div>
-  <div id="eventarticle_form" {{ ' class=hide ' if
-    article_type_name!='event'}}>{% include
-    "models/eventarticle_view.html" %}</div>
-  <div id="placearticle_form" {{ ' class=hide ' if
-    article_type_name!='place'}}>{% include
-    "models/placearticle_view.html" %}</div>
-  <div id="fractionarticle_form" {{ ' class=hide ' if
-    article_type_name!='fraction'}}>{% include
-    "models/fractionarticle_view.html" %}</div>#}
+  <div id="mediaarticle_form" {{ ' class=hide ' if article_type_name!='media'}}>
+  {{ article_form.mediaarticle }}
+  </div>
+  <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
+  {{ article_form.personarticle }}
+  </div>
+  <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
+  {{ article_form.fractionarticle }}
+  </div>
+  <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
+  {{ article_form.placearticle }}
+  </div>
+  <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
+  {{ article_form.eventarticle }}
+  </div>
+  <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
+  {{ article_form.campaignarticle }}
+  </div>
+
   <h4 style="display:inline">Relations</h4>
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-small disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
@@ -94,8 +102,8 @@
 </form>
 <div id="hinter" style="display:none" class="article_text"></div>
 
+{#### PAGE ####}
 {%- else -%}
-
 
 <div class="page-header">
     <h1 class="article_header">{{title }}
@@ -119,11 +127,11 @@
 {%- elif article_type_name=='event' -%}
   <li><span class="nav-header" style="display:inline">Started</span>{{article.from_date}}</li>
   <li><span class="nav-header" style="display:inline">Ended</span>{{article.to_date}}</li>
-{%- elif article_type_name=='person' -%}
-  <li><span class="nav-header" style="display:inline">Born</span>{{article.born}}</li>
-  <li><span class="nav-header" style="display:inline">Died</span>{{article.died}}</li>
-  <li><span class="nav-header" style="display:inline">Gender</span>{{article.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">Occupation</span>{{article.occupation}}</li>
+{%- elif article_type_name=='person' and article.personarticle -%}
+  <li><span class="nav-header" style="display:inline">Born</span>{{article.personarticle.born}}</li>
+  <li><span class="nav-header" style="display:inline">Died</span>{{article.personarticle.died}}</li>
+  <li><span class="nav-header" style="display:inline">Gender</span>{{article.personarticle.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">Occupation</span>{{article.personarticle.occupation}}</li>
 {%- endif -%}
 </ul>
 </div>
