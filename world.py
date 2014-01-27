@@ -6,7 +6,7 @@ from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 
-from resource import ResourceHandler2, ResourceAccessStrategy, RacModelConverter
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter
 from raconteur import auth, db
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -15,7 +15,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 world_app = Blueprint('world', __name__, template_folder='templates/world')
 
-world_handler = ResourceHandler2(ResourceAccessStrategy(World, 'worlds', 'slug'))
+world_handler = ResourceHandler(ResourceAccessStrategy(World, 'worlds', 'slug'))
 world_handler.register_urls(world_app)
 
 # field_dict = model_fields(Article, exclude=['slug'])
@@ -25,7 +25,7 @@ world_handler.register_urls(world_app)
 #   print f
 artform = model_form(Article, exclude=['slug'], converter=RacModelConverter())
 
-article_handler = ResourceHandler2(ResourceAccessStrategy(Article, 'articles', 'slug', 
+article_handler = ResourceHandler(ResourceAccessStrategy(Article, 'articles', 'slug', 
     parent_strategy=world_handler.strategy, form_class = artform))
 article_handler.register_urls(world_app)
 

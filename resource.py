@@ -160,7 +160,7 @@ class ResourceAccessStrategy:
         return self.allowed(op, instance);
 
 
-class ResourceHandler2:
+class ResourceHandler:
 
     def __init__(self, strategy):
         self.form_class = strategy.form_class
