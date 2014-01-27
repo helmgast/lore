@@ -139,8 +139,8 @@ class Article(db.Document):
     def type_name(self):
         return Article.create_type_name(self.type)
 
-    @classmethod
-    def create_type_name(cls, asked_type):
+    @staticmethod
+    def create_type_name(asked_type):
         return ARTICLE_TYPES[asked_type][1]
 
     def __str__(self):

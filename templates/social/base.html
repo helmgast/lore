@@ -16,7 +16,7 @@
 {% block content %}
   <p>
   {% if session.logged_in %}
-  Welcome <strong>{{ current_user.realname }}</strong>!
+  Welcome <strong>{{ g.user.realname }}</strong>!
   {% endif %}
   Here you can interact with other gamers, create and manage your game groups,
   events, etc.</p>

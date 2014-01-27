@@ -54,6 +54,7 @@ def setup_models():
 ###
 @the_app.route('/')
 def homepage():
+
   return render_template('homepage.html')
     #if auth.get_logged_in_user():
     #    return private_timeline()

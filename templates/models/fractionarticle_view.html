@@ -1,8 +1,0 @@
-{% extends 'includes/row.html' %}
-
-{% from 'includes/components.html' import form_fields %}
-
-{% set fractionarticle_form = article_form.fractionarticle if article_form else fractionarticle_form %}
-{% block content %}{% block inline %}
-{{ form_fields(fractionarticle_form) }}
-{% endblock %}{% endblock %}

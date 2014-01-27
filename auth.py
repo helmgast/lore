@@ -144,6 +144,7 @@ class Auth(object):
                     active=True, id=session.get('user_pk')
                 ).get()
             except self.User.DoesNotExist:
+                session.pop('logged_in', None)
                 pass
 
     def login(self):
