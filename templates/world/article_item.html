@@ -24,9 +24,11 @@
 {% endblock %}
 
 {%- block article_actions -%}{{ super() }}
+{% if op!= 'new'%}
 <li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
 <li><a href="#deletemodal" data-toggle="modal"><i class="icon-trash"></i>Delete</a></li>
 <li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
+{%endif%}
 {%- endblock -%}
 
 {% block middle %}
@@ -67,22 +69,22 @@
   {{ form_field(article_form.type, class="m_action2")}}
 </fieldset>
   <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
-  {{ article_form.imagearticle }}
+  {{ form_fields(article_form.imagearticle) }}
   </div>
   <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
-  {{ article_form.personarticle }}
+  {{ form_fields(article_form.personarticle) }}
   </div>
   <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
-  {{ article_form.fractionarticle }}
+  {{ form_fields(article_form.fractionarticle) }}
   </div>
   <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
-  {{ article_form.placearticle }}
+  {{ form_fields(article_form.placearticle) }}
   </div>
   <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
-  {{ article_form.eventarticle }}
+  {{ form_fields(article_form.eventarticle) }}
   </div>
   <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
-  {{ article_form.campaignarticle }}
+  {{ form_fields(article_form.campaignarticle) }}
   </div>
 
   <h4 style="display:inline">Relations</h4>

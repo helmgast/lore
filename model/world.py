@@ -4,7 +4,6 @@ from user import User, Group
 import requests
 from StringIO import StringIO
 
-
 '''
 Created on 2 jan 2014
 
@@ -59,7 +58,8 @@ class ImageArticle(db.EmbeddedDocument):
     image = db.ImageField()
     source_image_url = db.URLField()
     source_page_url = db.URLField()
-    mime_type = db.StringField(choices=('image/jpeg','image/png', 'image/gif'))
+    # TODO MongoEngine should allow a simple tuple for choices, not having to add JPEG, PNG and GIF fields
+    mime_type = db.StringField(choices=(('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF')))
 
     @classmethod
     def create_from_url(cls, image_url, source_url=None):
@@ -114,7 +114,7 @@ class ChronicleArticle(db.EmbeddedDocument):
     pass
 
 class Article(db.Document):
-    meta = {'allow_inheritance': True, 'indexes': ['slug']} 
+    meta = {'indexes': ['slug']}
     slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)

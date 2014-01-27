@@ -1,27 +1,34 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
-{% set person = user %}
-{% block content_title %}{{ person.username }}{% endblock %}
-{% block content_tagline %}{{ person.realname }}{% endblock %}
+{% block content_title %}{{ user.username }}{% endblock %}
+{% block content_tagline %}{{ user.realname }}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list" style="float:left">
+<li class="nav-header">Actions</li>    
+<li><a href="{{ url_for('.user_get_edit', user=user.username) }}"><i class="icon-edit"></i>Edit</a></li>
+</ul>
+{%endblock%}
 
 {% block content %}
+{% if user_form %}<form id='userform' method="post" action="{{ user_form.action_url }}">{%endif%}
 <div class="row m_instance m_userdetail m_inplace">
   <div class="span5">
     <div class="row">
       <div class="span4">
-        <img src="{{ person.gravatar_url(128) }}" class="img-polaroid"/>
-        <h4 class="pagination-centered">{{ person.exp }} XP</h4>
+        <img src="{{ user.gravatar_url(128) }}" class="img-polaroid"/>
+        <h4 class="pagination-centered">{{ user.exp }} XP</h4>
       </div>
       <div class="span8">
         <table class="table">
           <tr><td><strong>Name</strong></td>
-          <td>{{ person.realname }}</td></tr>
+          <td>{{ user_form.realname if user_form else user.realname }}</td></tr>
           <tr><td><strong>Email</strong></td>
-          <td><small>{{ person.email }}</small></td></tr>
+          <td><small>{{ user.email }}</small></td></tr>
           <tr><td><strong>Location</strong></td>
-          <td>{{ person.location }}</td></tr>
+          <td>{{ user_form.location if user_form else user.location }}</td></tr>
           <tr><td><strong>Joined</strong></td>
-          <td>{{ person.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+          <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
           <tr><td><strong>Following</strong></td>
           <td><span class="badge">N/A</span></td></tr>
           <tr><td><strong>Followers</strong></td>
@@ -30,15 +37,15 @@
         <div class="btn-toolbar">
 {#        {% if resource.op == 'view' %}
           <button type="button" class="btn btn-small m_action
-            {% if current_user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
-            {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
+            {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">Unfollow
+            {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
             {% endif %}</button>
           <div class="btn-group">
             <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
             Add to group<span class="caret"></span></a>
             {% include "social/group_member_selector.html" %}
           </div>
-          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
+          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
         {% endif %}
 #}
         </div>
@@ -46,13 +53,20 @@
     </div>
   </div> 
   <div class="span5">
-    <div class="well">{{ person.description }}
+    <div class="well">{{ user_form.description if user_form else user.description }}
     </div>
   </div>
 </div>
+{% if user_form %}
+  {{ user_form.csrf_token }}
+  {{ user_form.username(style="display:none;") }}
+  <button type="submit" class="btn btn-small btn-primary">Save changes</button>
+  <a href="{{ url_for('.user_get', user=user.username) }}" class="btn btn-small">Cancel</a>
+</form>{%endif%}
 <div class="row">
   <div class="span5">
   <h4>Groups</h4>
+  {% set groups = user.groups() %}
   {% if groups and groups.count() > 0 %}
   <table class="table table-striped">
     <thead>
@@ -68,8 +82,8 @@
         <tr class="user-tablerow">
           <td><strong><a href="{{ url_for('social.group_get', group=group.slug) }}">{{group.name}}</a></strong></td>
           <td>{{group.location}}</td>
-          <td><span class="badge badge-info">{{group.members().count() }}</span></td>
-          <td>{{group.get_member(person).status_text()|capitalize }}</td>
+          <td><span class="badge badge-info">{{group.members|length }}</span></td>
+          <td>#TODO</td>
         </tr>
       {% endfor %}
     </tbody>
@@ -77,12 +91,12 @@
   {% else %}Not member of any groups yet!{% endif %}
   </div>
   <div class="span5">
-    {% set message_list = person.messages() %}
+    {% set message_list = user.messages() %}
     {% if message_list.count() > 0  %}
     <h4>Messages to followers</h4>
       <ul class="unstyled">
       {% for message in message_list %}
-        {# <li>{% include "includes/message.html" %}</li> #}
+        <li>{% include "social/message_item.html" %}</li>
       {% endfor %}
     </ul>
   {% endif %}
