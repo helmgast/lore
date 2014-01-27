@@ -2,18 +2,26 @@
 
 {% set members=group.members if group else [] %}
 
-{% block content_title %}{{title}}{% endblock %}
+{% block content_title %}{{group.name}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list" style="float:left">
+<li class="nav-header">Actions</li>    
+<li><a href="{{ url_for('.group_get_edit', group=group.slug) }}"><i class="icon-edit"></i>Edit</a></li>
+</ul>
+{%endblock%}
 
 {% block content %}{% block inline %}
-{% if group_form %}<form method="post" action="{{action_url}}">{% endif %}
+{% if group_form %}<form method="post" action="{{group_form.action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if inline }}">
   <div class="span6">
-    <div class="well">{{ group.description }}</div>
+    <div class="well">{{ group_form.description if group_form else group.description }}</div>
     <table class="table">
       <tr><td><strong>Name</strong></td>
-      <td>{{ group.name }}</td></tr>
+      <td>{{ group_form.name if group_form else group.name }}</td></tr>
       <tr><td><strong>Location</strong></td>
-      <td><small>{{ group.location }}</small></td></tr>
+      <td><small>{{ group_form.location if group_form else group.location }}</small></td></tr>
       <tr><td><strong>Members</strong></td>
       <td><span class="badge">{{members|length if group else 0}}</span></td></tr>
       <tr><td><strong>Meetings</strong></td>
@@ -24,10 +32,12 @@
     {% include "social/group_member_view.html" %}
   </div>
 </div>
-{% if group_form %}<div class="row form-actions">
+{% if group_form %}
+{{ group_form.csrf_token }}
+<div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('social.group_detail', slug=group.slug)}}" class="btn">Cancel</a>
-    <a href="{{url_for('social.group_delete', slug=group.slug)}}" class="btn btn-danger">Delete</a>
-    </div></form>{% endif %}
+    <a href="{{url_for('.group_get', group=group.slug)}}" class="btn">Cancel</a>
+    <a href="{{url_for('.group_delete', group=group.slug)}}" class="btn btn-danger">Delete</a>
+</div></form>{% endif %}
 
 {% endblock %}{% endblock %}
