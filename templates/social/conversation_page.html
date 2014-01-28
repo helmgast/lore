@@ -19,7 +19,7 @@
   <div{{ ' class=modal-body' if inline }}>
   {% if conversation %}
     {% include "includes/pagination.html" %}
-    <ul class="unstyled">
+    <ul class="list-unstyled">
       {% set is_conversation = True %}
       {% for message in message_list|reverse %}
         <li>{% include "includes/message.html" %}</li>

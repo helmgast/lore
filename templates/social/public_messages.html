@@ -3,7 +3,7 @@
 {% block content_title %}Public Timeline{% endblock %}
 
 {% block content %}
-  <ul class="unstyled">
+  <ul class="list-unstyled">
     {% for message in message_list %}
       <li>{% include "includes/message.html" %}</li>
     {% endfor %}

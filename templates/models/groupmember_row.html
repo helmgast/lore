@@ -10,10 +10,10 @@
   <td>{{gm.status_text()}}</td>
   {% if form %}<td>
     {% if form and gm.status != 1 %}
-      <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
-        <i class="icon-remove"></i>
+      <button type="button" class="btn btn-sm m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
+        <i class="glyphicon glyphicon-remove"></i>
       </button>
-      {% if gm.status==2 %}<button type="button" class="btn btn-mini m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
+      {% if gm.status==2 %}<button type="button" class="btn btn-xs m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
         Make master?
       </button>{% endif %}
     {% endif %}

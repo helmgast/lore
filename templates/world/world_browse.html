@@ -14,7 +14,7 @@
     <dl>
         {% for group in groups %}
         <dt>{{ group.grouper|capitalize }}</dt>
-        <dd><ul class="unstyled">
+        <dd><ul class="list-unstyled">
         {% for article in group.list %}
             <li><a href="{{ url_for('world.view_article', article_slug=article.slug, world_slug=world.slug) }}">{{article.title}}</a>
                 {%- if groupby=='title' -%}

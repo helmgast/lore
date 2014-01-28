@@ -1,44 +1,85 @@
-<table class="table table-striped m_view">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Real name</th>
-      <th>Location</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-      {% for person in user_list %}
-      <tr class="user-tablerow m_instance">
-        <td><a href="{{ url_for('social.user_detail', username=person.username) }}">
-          <img class="avatar" src="{{ person.gravatar_url() }}" />
-          <strong class="message_name">{{person.username}}</strong>
-        </a></td>
-        <td>{{person.realname}}</td>
-        <td>{{person.location}}</td>
-        <td>
-        <div class="btn-toolbar">
-        {% if user %}
-          {% if person.username != user.username %}
-            <button type="button" class="btn btn-small m_action
-              {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
-              {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
-              {% endif %}</button>
-            <div class="btn-group">
-            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-              Add to group<span class="caret"></span>
-            </a>
-            {% include "social/group_member_selector.html" %}
-            </div>
-          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
-          {% else %}
-          <button class="btn disabled">It's you!</button>
-          {% endif %}
- 
-        {% endif %}
-        </div>
-        </td>
+<div class="col-md-12">
+  <table class="table table-striped m_view">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Real name</th>
+        <th>Location</th>
+        <th>Actions</th>
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+        {% for person in user_list %}
+        <tr class="user-tablerow m_instance">
+          <td><a href="{{ url_for('social.user_detail', username=person.username) }}">
+            <img class="avatar" src="{{ person.gravatar_url() }}" />
+            <strong class="message_name">{{person.username}}</strong>
+          </a></td>
+          <td><span class="editMe">{{person.realname}}</span><span class="previousValue" style="display: none;"></span></td>
+          <td><span class="editMe">{{person.location}}</span><span class="previousValue" style="display: none;"></span></td>
+          <td>
+          
+          {% if user %}
+            {% if person.username != user.username %}
+              
+              <button type="button" class="btn btn-sm m_action
+                {% if user|is_following(person) %}" href="{{url_for('social.user_unfollow', username=person.username)}}">Unfollow
+                {% else %}btn-primary" href="{{url_for('social.user_follow', username=person.username)}}">Follow ...
+                {% endif %}</button>
+                
+                <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown">
+                  Add to group<span class="caret"></span>
+                </button>
+                {% include "social/group_member_selector.html" %}
+                </div>
+            <button type="button" class="btn btn-sm btn-primary m_action" href="{{url_for('social.conversation_new', recipients=person.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
+            {% else %}
+            <button class="btn btn-sm disabled">It's you!</button>
+            {% endif %}
+            <button type="button" style="display: none;" class="btn btn-sm btn-primary user-save" href="#">Save changes</button>
+            <button type="button" style="display: none;" class="btn btn-sm btn-danger user-cancel" href="#">Cancel</button>
+          {% endif %}
+          
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <table id="myTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>City</th>
+          <th>Phone</th>
+          <th>Mail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tableName">Bosse</td>
+          <td class="tableCity">Stockholm</td>
+          <td class="tablePhone">070-1</td>
+          <td class="tableMail">bosse@user.com</td>
+        </tr>
+        <tr>
+          <td class="tableName">Lasse</td>
+          <td class="tableCity">Göteborg</td>
+          <td class="tablePhone">070-2</td>
+          <td class="tableMail">lasse@user.com</td>
+        </tr>
+        <tr>
+          <td class="tableName">Peter</td>
+          <td class="tableCity">Malmö</td>
+          <td class="tablePhone">070-3</td>
+          <td class="tableMail">peter@user.com</td>
+        </tr>
+        <tr>
+          <td class="tableName">Kalle</td>
+          <td class="tableCity">Uppsala</td>
+          <td class="tablePhone">070-4</td>
+          <td class="tableMail">kalle@user.com</td>
+        </tr>
+      </tbody>
+  </table>
+</div>

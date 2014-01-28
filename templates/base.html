@@ -19,9 +19,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}">
 {% endblock %}
 {% block jsimports %}
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -34,6 +35,8 @@
     <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/list.min.js') }}"></script>
 {% endblock jsimports %}
 
 </head>
@@ -41,25 +44,26 @@
 <body class="{% block body_class %}admin{% endblock %}">
 
 {% block navbar %}
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
+<div class="navbar navbar-default navbar-fixed-top">
         <div class="container">
-            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="brand" href="{{ url_for('homepage') }}">Raconteur
-                <small>a story engine</small>
-            </a>
-            <div class ="nav-collapse collapse">
-                <ul class="nav">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#theNav">
+                <span class="glyphicon glyphicon-bar"></span>
+                <span class="glyphicon glyphicon-bar"></span>
+                <span class="glyphicon glyphicon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="{{ url_for('homepage') }}">Raconteur
+                  <small>a story engine</small>
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="theNav">
+                <ul class="nav navbar-nav">
                     <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
                     <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}">Campaign</a></li>
                     <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
                     <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
                 </ul>
-                <ul class="nav pull-right">
+                <ul class="nav navbar-nav pull-right">
                     {% if not session.logged_in %}
                         <li><a href="{{ url_for('auth.login') }}">log in</a></li>
                         <li><a href="{{ url_for('join') }}">join</a></li>
@@ -74,22 +78,21 @@
                 </ul>
             </div>
         </div>
-    </div>
 </div>
 {% endblock %}
 
-<div class="{% block container_class %}container-fluid{% endblock %}">
+<div class="{% block container_class %}container{% endblock %}">
 
     {% block mainblock %}
-    <div class="row-fluid">
-        <div class="span2">
+    <div class="row">
+        <div class="col-md-2">
             {% block sidebar %}
                 &nbsp;
             {% endblock %}
         </div>
         <!-- /sidebar -->
 
-        <div class="span10">
+        <div class="col-md-10">
             <div class="content">
                 {% block middle %}
                 {% block pre_content %}
@@ -111,9 +114,9 @@
         <footer>
             <p></p>
         </footer>
-        <div class="modal hide fade" id="themodal">
-            <div class="modal-blody">
-            </div>
+        <div class="modal fade" id="themodal">
+              <div class="modal-blody">
+              </div>
         </div>
         </div>
     </div>

@@ -3,17 +3,21 @@
 {% block content_title %}Join{% endblock %}
 
 {% block content %}
-  <form action="{{ url_for('join') }}" method="post">
-    <dl>
-      <dt>Username:</dt>
-      <dd><input type="text" name="username"></dd>
-      <dt>Password:</dt>
-      <dd><input type="password" name="password"></dd>
-      <dt>Email:</dt>
-      <dd><input type="text" name="email">
-        <p><small>(used for gravatar)</small></p>
-      </dd>
-      <dd><input type="submit" value="Join">
-    </dl>
-  </form>
+  <div class="col-md-4">
+    <form action="{{ url_for('join') }}" method="post">
+      <div class="form-group">
+        <dl>
+          <dt>Username:</dt>
+          <dd><input type="text" name="username" class="form-control"></dd>
+          <dt>Password:</dt>
+          <dd><input type="password" name="password" class="form-control"></dd>
+          <dt>Email:</dt>
+          <dd><input type="text" name="email" class="form-control">
+            <p><small>(used for gravatar)</small></p>
+          </dd>
+          <dd><input class="btn btn-default" type="submit" value="Join">
+        </dl>
+      </div>
+    </form>
+  </div>
 {% endblock %}

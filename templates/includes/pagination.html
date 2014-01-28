@@ -1,6 +1,6 @@
 {% if pagination.get_pages() > 1 %}
-  <div class="pagination">
-    <ul>
+  <div>
+    <ul class="pagination">
       <li{% if page-1 == 0 %} class="disabled"{% endif %}><a href="./?page={{ page - 1 }}">«</a></li>
       {% if page-2 >= 1 %}<li><a href="./?page={{ page - 2 }}">{{ page - 2 }}</a></li>{% endif %}
       {% if page-1 >= 1 %}<li><a href="./?page={{ page - 1 }}">{{ page - 1 }}</a></li>{% endif %}

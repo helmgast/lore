@@ -4,27 +4,27 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}
-<ul class="nav nav-list" style="float:left">
-    <li class="nav-header">{{world.title}}</li>
-    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="icon-tag"></i>Browse by type</a></li>
-    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
-    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="icon-calendar"></i>Browse by time</a></li>
-    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='relation') }}"><i class="icon-resize-small"></i>Browse by relation</a></li>
+<h4>{{world.title}}</h4>
+<ul class="list-unstyled pull-left">
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='type') }}"><i class="glyphicon glyphicon-tag"></i>Browse by type</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='title') }}"><i class="glyphicon glyphicon-book"></i>Browse by title</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='time') }}"><i class="glyphicon glyphicon-calendar"></i>Browse by time</a></li>
+    <li><a href="{{ url_for('world.world_browse', world_slug=world.slug, groupby='relation') }}"><i class="glyphicon glyphicon-resize-small"></i>Browse by relation</a></li>
 </ul>
-<ul class="nav nav-list" style="float:left">
-<li class="nav-header">Article actions</li>    
+<h5>Article actions</h5>
+<ul class="list-unstyled pull-left">
 {%- block article_actions -%}
-    <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="icon-pencil"></i>New</a></li>
+    <li><a href="{{ url_for('world.new_article', world_slug=world.slug) }}"><i class="glyphicon glyphicon-pencil"></i>New</a></li>
 {%- endblock -%}
 </ul>
 {% endblock %}
 
 {% block content %}
     <div class="row">
-        <div class="span6">
+        <div class="col-md-6">
             <p class="well">{{ world.description }}</p>
         </div>
-        <div class="span6">IMAGE</div>
+        <div class="col-md-6">IMAGE</div>
     </div>
     <div class="row">
     {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}

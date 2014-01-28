@@ -43,6 +43,7 @@
 					var newCurEl =  curEl.parentElement
 					$(curEl).remove() // remove the empty li, and append a p after the UL
 					$.fn.newElement('p', newCurEl, true)
+					
 				}
 			}	
 		} else if (e.keyCode == BACKSPACE) {
@@ -129,8 +130,8 @@
 			hintlist.children().empty().last().text('List')
 			$h.empty().append(hintlist)
 		}
-		$h.css({left:newEl.position().left, top:newEl.position().top});
-		$h.show()
+		$h.css({left: newEl.position().left, top: newEl.position().top});
+		$h.show();
 	}
 
 	$.fn.selectElementText = function(el, win){

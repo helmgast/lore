@@ -4,10 +4,10 @@
 
 {% block content %}
 
-  <div class="row-fluid">
-    <h2>My groups</h2>
+  <div class="row">
+    <h2>My groups</h2> 
     {% for group in my_master_groups %}
-    <div class="span4">
+    <div class="col-md-4 well">
       <h3>{{ group.name }}</h3>
       {% set members=group.members() %}
       {% include "social/group_member_view.html" %}
@@ -15,8 +15,8 @@
     {% endfor %}
   </div>
 
-  <div class="row-fluid">
-    <div class="span4">
+  <div class="row">
+    <div class="col-md-4">
       <h3>All groups</h3>
       <table class="table table-striped">
         <thead>
