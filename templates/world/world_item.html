@@ -1,0 +1,46 @@
+{% extends "world/base.html" if not parent_template else parent_template %}
+
+{% block content_title %}{{world.title}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}
+<ul class="nav nav-list" style="float:left">
+    <li class="nav-header">{{world.title}}</li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='type') }}"><i class="icon-tag"></i>Browse by type</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='time') }}"><i class="icon-calendar"></i>Browse by time</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='relation') }}"><i class="icon-resize-small"></i>Browse by relation</a></li>
+</ul>
+<ul class="nav nav-list" style="float:left">
+<li class="nav-header">Article actions</li>    
+{%- block article_actions -%}
+    <li><a href="{{ url_for('world.article_get_new', world=world.slug) }}"><i class="icon-pencil"></i>New</a></li>
+{%- endblock -%}
+</ul>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="span6">
+            <p class="well">{{ world.description }}</p>
+        </div>
+        <div class="span6">IMAGE</div>
+    </div>
+    <div class="row">
+    {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
+    <ul>
+        {% for article in world.articles() %}
+
+        <li><a href="{{ url_for('world.article_get', article=article.slug, world=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
+        {% endfor %}
+    </ul>
+    {#{% include "includes/pagination.html" %}
+    {% endif %}#}
+    </div>
+{% endblock %}
+
+{% block in_table %}
+{% endblock %}
+
+{% block in_box %}
+{% endblock %}

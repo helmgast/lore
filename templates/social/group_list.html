@@ -1,4 +1,4 @@
-{% extends "social/social.html" %}
+{% extends "social/base.html" %}
 
 {% block content_title %}Groups{% endblock %}
 
@@ -28,13 +28,12 @@
         <tbody>
             {% for group in groups %}
             <tr class="user-tablerow">
-              <td><strong><a href="{{ url_for('social.group_detail', slug=group.slug) }}">{{group.name}}</a></strong></td>
+              <td><strong><a href="{{ url_for('.group_get', group=group.slug) }}">{{group.name}}</a></strong></td>
               <td>{{group.location}}</td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
-      {% include "includes/pagination.html" %}
     </div>
   </div>
 {% endblock %}

@@ -6,9 +6,9 @@ is_debug = True
 is_deploy = 'OPENSHIFT_INTERNAL_IP' in os.environ  # means we are running on OpenShift
 
 # http://flask-peewee.readthedocs.org/en/latest/gevent.html#monkey-patch-the-thread-module
-if is_deploy:  # Supposed patch to make gevent run better with peewee?
-  from gevent import monkey; monkey.patch_all()
-  import deploy
+# if is_deploy:  # Supposed patch to make gevent run better with peewee?
+#   from gevent import monkey; monkey.patch_all()
+#   import deploy
 
 # IMPORTANT: Put any additional includes below this line.  If placed above this
 # line, it's possible required libraries won't be in your searchable path

@@ -1,0 +1,44 @@
+<table class="table table-striped m_view">
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Real name</th>
+      <th>Location</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+      {% for user in users %}
+      <tr class="user-tablerow m_instance">
+        <td><a href="{{ url_for('social.user_get', user=user.username) }}">
+          <img class="avatar" src="{{ user.gravatar_url() }}" />
+          <strong class="message_name">{{user.username}}</strong>
+        </a></td>
+        <td>{{user.realname}}</td>
+        <td>{{user.location}}</td>
+        <td>
+        <div class="btn-toolbar">
+        {% if user %}
+          {% if current_user and user.username != current_user.username %}
+            <button type="button" class="btn btn-small m_action
+              {% if current_user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">Unfollow
+              {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
+              {% endif %}</button>
+            <div class="btn-group">
+            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+              Add to group<span class="caret"></span>
+            </a>
+            {% include "social/group_member_selector.html" %}
+            </div>
+          <button type="button" class="btn btn-small btn-primary m_action" href="#TODO" data-action-type="modal">Send message</button>
+          {% else %}
+          <button class="btn disabled">It's you!</button>
+          {% endif %}
+ 
+        {% endif %}
+        </div>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

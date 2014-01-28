@@ -1,8 +1,7 @@
 *.pyc
 *.db
 *.sublime*
-.ropeproject
-/gevent.py
+dbconfig.cfg
 /.settings
 /.project
 /.pydevproject

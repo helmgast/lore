@@ -1,9 +1,8 @@
 
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash
 from datetime import datetime
-from flask_peewee.auth import Auth
-from flask_peewee.db import Database
-from peewee import Model
+from auth import Auth
+from flask.ext.mongoengine import MongoEngine
 from re import compile
 from flaskext.markdown import Markdown
 import os
@@ -13,70 +12,31 @@ try:
 except ImportError:
   import json
 
-class LocalConfiguration(object): # basic configuration if running locally, uses Sqlite
-    DATABASE = {
-      'name': 'example.db',
-      'engine': 'peewee.SqliteDatabase',
-      'check_same_thread': False,
-      # 'user': 'admin',
-      # 'password': 'xzUqQfsuJlhN',
-      # 'host':os.environ['OPENSHIFT_POSTGRESQL_DB_HOST'],
-      # 'port':os.environ['OPENSHIFT_POSTGRESQL_DB_PORT'],
-      # 'name': 'martin',
-      # 'engine': 'peewee.PostgresqlDatabase',
-      # 'threadlocals': True,
-    }
-    SECRET_KEY = 'shhhh'
-
-class RaconteurDB(Database):
-  def get_model_class(self):
-    class BaseModel(Model):
-        class Meta:
-            database = self.database
-        # def __unicode__(self): # plan to override string representations, gave up TODO
-        #     print "__str__ called"
-        #     return str(self)
-    return BaseModel
-
 the_app = None
 db = None
 auth = None
-admin = None
 
 if the_app == None:
   from app import is_debug, is_deploy
-  # is_deploy = True
-  # os.environ['OPENSHIFT_POSTGRESQL_DB_HOST']='127.0.0.1'
-  # os.environ['OPENSHIFT_POSTGRESQL_DB_PORT']='8080'
   the_app = Flask('raconteur') # Creates new flask instance
   print "App created"
   print the_app
-  if is_deploy:
-    from deploy import DeployConfiguration
-    the_app.config.from_object(DeployConfiguration)
-  else:
-    the_app.config.from_object(LocalConfiguration)
+  the_app.config.from_pyfile('dbconfig.cfg') # db-settings, should not be shown in code
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
-  db = RaconteurDB(the_app) # Initiate the peewee DB layer
+  db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
   
-  import model_setup
-  from models import User
-  from admin import create_admin
-  from api import create_api
+  from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
 
   Markdown(the_app)
 
-  admin = create_admin(the_app, auth)
-  api = create_api(the_app, auth)
-
   from world import world_app as world
   from social import social
   from generator import generator
-  from campaign import campaign
+  from campaign import campaign_app as campaign
 
   the_app.register_blueprint(world, url_prefix='/world')
   the_app.register_blueprint(generator, url_prefix='/generator')
@@ -84,7 +44,9 @@ if the_app == None:
   the_app.register_blueprint(campaign, url_prefix='/campaign')
   #print the_app.url_map
   
+from test_data import model_setup
 def setup_models():
+  db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
 ###
@@ -92,6 +54,7 @@ def setup_models():
 ###
 @the_app.route('/')
 def homepage():
+
   return render_template('homepage.html')
     #if auth.get_logged_in_user():
     #    return private_timeline()
@@ -131,7 +94,10 @@ wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 @the_app.template_filter('wikify')
 def wikify(s):
-    return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+    if s:
+      return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+    else:
+      return ""
 
 @the_app.template_filter('dictreplace')
 def dictreplace(s, d):

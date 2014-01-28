@@ -1,0 +1,105 @@
+{% extends "social/base.html" if not parent_template else parent_template %}
+
+{% block content_title %}{{ user.username }}{% endblock %}
+{% block content_tagline %}{{ user.realname }}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list" style="float:left">
+<li class="nav-header">Actions</li>    
+<li><a href="{{ url_for('.user_get_edit', user=user.username) }}"><i class="icon-edit"></i>Edit</a></li>
+</ul>
+{%endblock%}
+
+{% block content %}
+{% if user_form %}<form id='userform' method="post" action="{{ user_form.action_url }}">{%endif%}
+<div class="row m_instance m_userdetail m_inplace">
+  <div class="span5">
+    <div class="row">
+      <div class="span4">
+        <img src="{{ user.gravatar_url(128) }}" class="img-polaroid"/>
+        <h4 class="pagination-centered">{{ user.exp }} XP</h4>
+      </div>
+      <div class="span8">
+        <table class="table">
+          <tr><td><strong>Name</strong></td>
+          <td>{{ user_form.realname if user_form else user.realname }}</td></tr>
+          <tr><td><strong>Email</strong></td>
+          <td><small>{{ user.email }}</small></td></tr>
+          <tr><td><strong>Location</strong></td>
+          <td>{{ user_form.location if user_form else user.location }}</td></tr>
+          <tr><td><strong>Joined</strong></td>
+          <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+          <tr><td><strong>Following</strong></td>
+          <td><span class="badge">N/A</span></td></tr>
+          <tr><td><strong>Followers</strong></td>
+          <td><span class="badge">N/A</span></td></tr>
+        </table>
+        <div class="btn-toolbar">
+{#        {% if resource.op == 'view' %}
+          <button type="button" class="btn btn-small m_action
+            {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">Unfollow
+            {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
+            {% endif %}</button>
+          <div class="btn-group">
+            <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
+            Add to group<span class="caret"></span></a>
+            {% include "social/group_member_selector.html" %}
+          </div>
+          <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
+        {% endif %}
+#}
+        </div>
+      </div>
+    </div>
+  </div> 
+  <div class="span5">
+    <div class="well">{{ user_form.description if user_form else user.description }}
+    </div>
+  </div>
+</div>
+{% if user_form %}
+  {{ user_form.csrf_token }}
+  {{ user_form.username(style="display:none;") }}
+  {{ user_form.email(style="display:none;") }}
+  <button type="submit" class="btn btn-small btn-primary">Save changes</button>
+  <a href="{{ url_for('.user_get', user=user.username) }}" class="btn btn-small">Cancel</a>
+</form>{%endif%}
+<div class="row">
+  <div class="span5">
+  <h4>Groups</h4>
+  {% set groups = user.groups() %}
+  {% if groups and groups.count() > 0 %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Group name</th>
+        <th>Location</th>
+        <th>Members</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for group in groups %}
+        <tr class="user-tablerow">
+          <td><strong><a href="{{ url_for('social.group_get', group=group.slug) }}">{{group.name}}</a></strong></td>
+          <td>{{group.location}}</td>
+          <td><span class="badge badge-info">{{group.members|length }}</span></td>
+          <td>#TODO</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}Not member of any groups yet!{% endif %}
+  </div>
+  <div class="span5">
+    {% set message_list = user.messages() %}
+    {% if message_list.count() > 0  %}
+    <h4>Messages to followers</h4>
+      <ul class="unstyled">
+      {% for message in message_list %}
+        <li>{% include "social/message_item.html" %}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endblock %}

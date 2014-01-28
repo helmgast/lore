@@ -1,0 +1,35 @@
+{% extends "campaign/campaign.html" %}
+
+{% block content_title %}Campaigns{% endblock %}
+{% block content_tagline %}where the magic happens{% endblock %}
+{% block campaign_active %} class="active"{% endblock %}
+
+{% block content %}
+  <div class="row">
+  {% for c in campaigns %}
+    <div class="span6">
+      <h3><a href="{{ url_for('.campaigninstance_get_list', id=c.id) }}">{{c}}</a></h3>
+      {% if c.description %}
+	  <div class="well">{{ c.description }}</div>
+	  {% endif %}
+      <h4>Article <a href="{{ url_for('world.article_get', article=c.campaign.slug, world=c.campaign.world.slug) }}">{{ c.campaign }}</a></h4>
+      {% if c.campaign.description %}
+	  <div class="well">{{ c.campaign.description }}</div>
+	  {% endif %}
+      <dl class="dl-horizontal">
+        <dt>Group</dt>
+        <dd>{% if false %}<a href="{{ url_for('social.group_get', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
+        <dt>World</dt>
+        <dd><a href="{{ url_for('world.world_get', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
+        <dt>Rules</dt>
+        <dd>{{ c.rule_system }}</dd>
+        <dt>Sessions</dt>
+        <dd>{{ c.sessions|length }}</dd>
+        <dt>Chronicles</dt>
+        <dd>{{ c.chronicles|length }}</dd>
+      </dl>
+    </div>
+    {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
+  {% endfor %} 
+  </div>
+{% endblock %}
