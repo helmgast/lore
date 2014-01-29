@@ -55,7 +55,7 @@ Article
 
 	ChronicleArticle
 
-	MediaArticle
+	ImageArticle
 		media_resource = MediaResource
 
 MediaResource
@@ -233,3 +233,38 @@ model_view
 	block: in_box
 model_list
 model_custom
+
+
+Working with Forms
+
+The form library is seemingly simple but infinitly complex when you scratch the surface. First, here are the components:
+
+WTForms (package 'wtforms') - a generic library for building Form objects that can parse and validate data before filling up the real model object with it.
+
+Flask-WTF (package 'flask.ext.wtf') - a mini library that joins the WTForms with Flask, such as automatically adding CSRF tokens (security)
+
+Flask-Mongoengine (package 'flask.ext.mongoengine.wtf') - Comes with the automatic translation of Mongoengine Document objects (Model objects) into Forms by calling model_form() function, and also makes it easy to enhance an app with the Mongoengine layer.
+
+Mongoengine (package ..) - Used by Flask-Mongoengine but does the real work. 
+
+This is the lifecycle steps:
+
+1) Create Model class (db.Documents)
+
+2) Create Form class by telling model_form to parse all fields in Model class, and pick suitable HTML form fields that match each variable.
+
+3) When you have a request for a form, instantiate the Form class for that model, and by calling each field of the form, render the HTML. If the Form was instantiated with a model object, the form will be pre-filled with real model data.
+
+4) When you get a form post response back, let the form self-parse the request data, and then if it validates, tell the form to populate a Model object with the new data (overwriting any old data).
+
+Issues:
+EmbeddedDocuments in a Model is mapped as a FormField, which is a sub-form that pretends to be a field. So you get a recursive type of behaviour. Some of the problems:
+
+Issue: CSRF tokens are automatically added by flask-mongoengine using the Form class from flask-wtf. This means also sub-forms get their own CSRF which seems exxagerated.
+Solution: We can give model_form a different ModelConverter class, which contains the functions that map a Model field to a Form field. Here we can have a subclass that changes the behaviour of the function that creates FormFields (sub forms) from EmbeddedDocuments, to avoid using the CSRF enabled form here.
+
+Issue: FormFields expect to have objects (EmbeddedDocument) to fill with data, but in some Model cases we may accept having "None" for some of the Embedded Documents. This means populate_obj() method will throw errors, because there is no object to populate, and the form doesn't know how to create a new one just because it got form data.
+Solution: Articles have multiple EmbeddedFields, that may or may not be filled with data. Actually, among them, only one should be filled with data at the same time.
+A) We could make sure the default value is always an empty object rather than None. This would make FormField behave well when trying to populate, even if populating with empty fields. But it would inflate the database uneccesarily and it would make it less easy to check if there is data to display (e.g. cannot just check for None on the EmbeddedDocumentField).
+B) We could keep them as None by default, but it means, when someone creates an article we need to be able to instantiate the EmbeddedDocument (as the form can't do it), and when the type is changed, we need to None the old reference and insantiate the new. This step would have to happen AFTER validation but before populate_obj. Because we don't have "manual" access to the steps between validation and populate_obj, this cannot be done in current architecture.
+C) We can change the FormField class (inherit) so that it's populate_obj method correctly sets only the active type's EmbeddedDocument fields to a new instance and sets all others to None.

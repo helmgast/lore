@@ -1,15 +1,11 @@
-{% if not inline %}{% extends "social/social.html" %}
-{% else %}{% extends "includes/inline.html" %}{% endif %}
+{% extends "social/base.html" if not parent_template else parent_template %}
 
 {% block content_title %}Conversation with {{ recipients|join(', ')|truncate(20) }}{% endblock %}
 
 {% block content_tagline %}{% endblock %}
 
 {% if conversation %}
-  {% set action_url = url_for('social.conversation_detail', conv_id=conversation.id, inline=inline) %}
   {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
-{% else %}
-  {% set action_url = url_for('social.conversation_new', inline=inline) %}
 {% endif %}
 
 {% block content %}{% block inline %}
@@ -18,11 +14,10 @@
 {# note, Jinja seem to autoescape class names, so no need for "" #}
   <div{{ ' class=modal-body' if inline }}>
   {% if conversation %}
-    {% include "includes/pagination.html" %}
     <ul class="unstyled">
       {% set is_conversation = True %}
-      {% for message in message_list|reverse %}
-        <li>{% include "includes/message.html" %}</li>
+      {% for message in conversation.messages()|reverse %}
+        <li>{% include "social/message_item.html" %}</li>
       {% endfor %}
     </ul>
   {% endif %}  

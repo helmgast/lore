@@ -46,6 +46,7 @@ if the_app == None:
   
 from test_data import model_setup
 def setup_models():
+  db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
 ###
@@ -53,6 +54,7 @@ def setup_models():
 ###
 @the_app.route('/')
 def homepage():
+
   return render_template('homepage.html')
     #if auth.get_logged_in_user():
     #    return private_timeline()

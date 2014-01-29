@@ -24,8 +24,8 @@
 	$parent.find("input[type='filepicker-dragdrop']").change(
 			function(e) {
 				var file = e.originalEvent.fpfile;
-				$parent.find("input[name='mediaarticle-mime_type']").val(
+				$parent.find("input[name='imagearticle-mime_type']").val(
 						file.mimetype);
-				$parent.find("input[name='mediaarticle-url']").val(file.url);
+				$parent.find("input[name='imagearticle-url']").val(file.url);
 			});
 </script>

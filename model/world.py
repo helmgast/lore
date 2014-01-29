@@ -1,6 +1,8 @@
 from raconteur import db
 from misc import slugify, now
 from user import User, Group
+import requests
+from StringIO import StringIO
 
 '''
 Created on 2 jan 2014
@@ -9,9 +11,9 @@ Created on 2 jan 2014
 '''
 
 # Constants and enumerations
-ARTICLE_DEFAULT, ARTICLE_MEDIA, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE = 0, 1, 2, 3, 4, 5, 6, 7
+ARTICLE_DEFAULT, ARTICLE_IMAGE, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE = 0, 1, 2, 3, 4, 5, 6, 7
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'),
-                 (ARTICLE_MEDIA, 'media'),
+                 (ARTICLE_IMAGE, 'image'),
                  (ARTICLE_PERSON, 'person'),
                  (ARTICLE_FRACTION, 'fraction'),
                  (ARTICLE_PLACE, 'place'),
@@ -29,19 +31,12 @@ GENDER_TYPES = ((GENDER_UNKNOWN, 'unknown'),
                 (GENDER_MALE, 'male'),
                 (GENDER_FEMALE, 'female'))
 
-class MediaResource(db.Document):
-    mime_type = db.StringField()
-    file = db.FileField() # Check ImageField?
-    size_x = db.IntField()
-    size_y = db.IntField()
-
 class World(db.Document):
-    slug = db.StringField(unique=True) # URL-friendly name
-    title = db.StringField()
-    description = db.StringField()
-    thumbnail = db.ReferenceField(MediaResource)
-    publisher = db.StringField()
-    rule_system = db.StringField()
+    slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+    title = db.StringField(max_length=60)
+    description = db.StringField(max_length=500)
+    publisher = db.StringField(max_length=60)
+    rule_system = db.StringField(max_length=60)
     created_date = db.DateTimeField(default=now)
     
     def save(self, *args, **kwargs):
@@ -59,18 +54,75 @@ class World(db.Document):
     # datestring = "day %i in the year of %i" 
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+class ImageArticle(db.EmbeddedDocument):
+    image = db.ImageField()
+    source_image_url = db.URLField()
+    source_page_url = db.URLField()
+    # TODO MongoEngine should allow a simple tuple for choices, not having to add JPEG, PNG and GIF fields
+    mime_type = db.StringField(choices=(('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF')))
+
+    @classmethod
+    def create_from_url(cls, image_url, source_url=None):
+        r = requests.get(image_url)
+        im = ImageArticle(source_image_url=image_url, source_page_url=source_url)
+        im.image.put(StringIO(r.content))
+        im.mime_type = 'image/'+im.image.format.lower()
+        # TODO very poor way of correctly determining mime type
+        # TODO use md5 to check if file already downloaded
+        print "Fetched %s image from %s to DB" % (im.image.format, image_url)
+        return im
+
+class PersonArticle(db.EmbeddedDocument):
+    born = db.IntField()
+    died = db.IntField()
+    gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
+    # otherNames = CharField()
+    occupation = db.StringField(max_length=60)
+
+    def gender_name(self):
+        return GENDER_TYPES[self.gender][1].title()
+
+class FractionArticle(db.EmbeddedDocument):
+    fraction_type = db.StringField(max_length=60)
+
+class PlaceArticle(db.EmbeddedDocument):
+    # normalized position system, e.g. form 0 to 1 float, x and y
+    coordinate_x = db.FloatField() 
+    coordinate_y = db.FloatField()
+    # building, city, domain, point_of_interest
+    location_type = db.StringField(max_length=60)
+
+class EventArticle(db.EmbeddedDocument):
+    from_date = db.IntField()
+    to_date = db.IntField()
+
+class Episode(db.EmbeddedDocument):
+    id = db.StringField(unique=True) # URL-friendly name?
+    title = db.StringField(max_length=60)
+    description = db.StringField()
+    content = db.ListField(db.ReferenceField('Article')) # references Article class below
+
+# TODO: cannot add this to Episode as it's self reference, but adding attributes
+# outside the class def seems not to be picked up by MongoEngine, so this row
+# may not have any effect
+Episode.children = db.ListField(db.EmbeddedDocumentField(Episode)) # references Episode class
+    
+class CampaignArticle(db.EmbeddedDocument):
+    children = db.ListField(db.EmbeddedDocumentField(Episode))
+
+class ChronicleArticle(db.EmbeddedDocument):
+    pass
 
 class Article(db.Document):
-    meta = {'allow_inheritance': True, 'indexes': ['slug']} 
-    slug = db.StringField() # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
+    meta = {'indexes': ['slug']}
+    slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
     type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
     world = db.ReferenceField(World)
     creator = db.ReferenceField(User)
     created_date = db.DateTimeField(default=now)
-    title = db.StringField()
-    description = db.StringField()
+    title = db.StringField(max_length=60)
+    description = db.StringField(max_length=500)
     content = db.StringField()
-    thumbnail = db.ReferenceField(MediaResource)
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
     # modified_date = DateTimeField()
 
@@ -81,11 +133,15 @@ class Article(db.Document):
     def is_person(self):
         return ARTICLE_PERSON == self.type
 
-    def is_media(self):
-        return ARTICLE_MEDIA == self.type
+    def is_image(self):
+        return ARTICLE_IMAGE == self.type
 
     def type_name(self):
-        return ARTICLE_TYPES[self.type][1]
+        return Article.create_type_name(self.type)
+
+    @staticmethod
+    def create_type_name(asked_type):
+        return ARTICLE_TYPES[asked_type][1]
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -93,47 +149,12 @@ class Article(db.Document):
     def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.type_name() if self.type > 0 else '')
 
-class MediaArticle(Article):
-    media = db.ReferenceField(MediaResource)
-
-class PersonArticle(Article):
-    born = db.IntField()
-    died = db.IntField()
-    gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
-    # otherNames = CharField()
-    occupation = db.StringField()
-
-    def gender_name(self):
-        return GENDER_TYPES[self.gender][1].title()
-
-class FractionArticle(Article):
-    fraction_type = db.StringField()
-
-class PlaceArticle(Article):
-    # normalized position system, e.g. form 0 to 1 float, x and y
-    coordinate_x = db.FloatField() 
-    coordinate_y = db.FloatField()
-    # building, city, domain, point_of_interest
-    location_type = db.StringField()
-
-class EventArticle(Article):
-    from_date = db.IntField()
-    to_date = db.IntField()
-
-class Episode(db.EmbeddedDocument):
-    id = db.StringField(unique=True) # URL-friendly name?
-    title = db.StringField()
-    description = db.StringField()
-    content = db.ListField(db.ReferenceField(Article))
-    
-Episode.children = db.ListField(db.EmbeddedDocumentField(Episode))
-    
-class CampaignArticle(Article):
-    children = db.ListField(db.EmbeddedDocumentField(Episode))
-
-class ChronicleArticle(Article):
-    pass
-
+    imagearticle = db.EmbeddedDocumentField(ImageArticle)
+    personarticle = db.EmbeddedDocumentField(PersonArticle)
+    fractionarticle = db.EmbeddedDocumentField(FractionArticle)
+    placearticle = db.EmbeddedDocumentField(PlaceArticle)
+    eventarticle = db.EmbeddedDocumentField(EventArticle)
+    campaignarticle = db.EmbeddedDocumentField(CampaignArticle)
 
 class RelationType(db.Document):
     name = db.StringField() # human friendly name
@@ -158,7 +179,7 @@ class ArticleRelation(db.EmbeddedDocument):
     def __unicode__(self):
         return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
-Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
+# Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
