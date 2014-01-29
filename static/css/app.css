@@ -359,9 +359,19 @@ textarea#metadata {
 
 .metadata label, .metadata input, .metadata select, .metadata textarea {
 	font-size: 11px !important;
+}
+
+.metadata label, .metadata input, .metadata textarea {
 	line-height: 13px !important;
 	height: 13px !important;
 }
+
+.metadata select {
+	line-height: 23px !important;
+	height: 23px !important;
+	padding: 0px 1px;
+}
+
 
 .article_header {
 	font-family: Gentium Book Basic, serif;
