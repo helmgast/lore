@@ -149,4 +149,9 @@ $(document).ready(function() {
   $('form select[data-role="chosen"]').chosen();
   $('form select[data-role="chosenblank"]').chosen();
 
+  $('a[data-dismiss="back"]').click(function(e) {
+      history.back();
+      e.preventDefault();
+  });
+
 });
