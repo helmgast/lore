@@ -149,8 +149,10 @@ $(document).ready(function() {
   $('form select[data-role="chosen"]').chosen();
   $('form select[data-role="chosenblank"]').chosen();
 
+  // Change to * if more than <a> needed
   $('a[data-dismiss="back"]').click(function(e) {
       history.back();
+      // Required, not sure why
       e.preventDefault();
   });
 

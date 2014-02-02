@@ -179,7 +179,7 @@ class ArticleRelation(db.EmbeddedDocument):
     def __unicode__(self):
         return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
-# Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
+Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2

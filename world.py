@@ -29,6 +29,10 @@ article_handler = ResourceHandler(ResourceAccessStrategy(Article, 'articles', 's
     parent_strategy=world_handler.strategy, form_class = artform))
 article_handler.register_urls(world_app)
 
+article_relation_handler = ResourceHandler(ResourceAccessStrategy(ArticleRelation, 'relations', None,
+  parent_strategy=article_handler.strategy))
+article_relation_handler.register_urls(world_app)
+
 @world_app.route('/')
 def index():
     worlds = World.objects()
