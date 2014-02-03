@@ -152,79 +152,11 @@ $(document).ready(function() {
   }); 
   $('body').on('click', '.m_action', handle_action)
 
-  $('form select[data-role="chosen"]').chosen({
-    placeholder_text_single: "Select an option"
-  });
-  $('form select[data-role="chosenblank"]').chosen({
-    placeholder_text_single: "Select an option"
-  });
-  
-  // Add bootstrap form-control class to all input fields. Possible to do through other means.
-  // Workaround from lack of control through wtforms
-  $("input").addClass("form-control");
-  $("textarea").addClass("form-control");
-  
-  
-  // Editable Table
-  
-  $(".editMe").on('click', function (e) {
-    var prev = $(this).text();
-    $(this).siblings().text(prev);
-    if ($(this).attr("contenteditable") !== true) {
-      $(this).attr("contenteditable", true)
-      window.setTimeout(function() {
-        document.execCommand('selectAll', false, null);
-      })   
-    }
-  })
-  
-  $(".editMe").on('keyup', function (e) {
-    var currentValue = $(this).text();
-    var previousValue = $(this).siblings().text();
-    
-    if (currentValue != previousValue) {
-      $(this).parents("tr").find(".user-save").show(); 
-      $(this).parents("tr").find(".user-cancel").show();
-    }
-    else {
-      $(this).parents("tr").find(".user-cancel").hide();
-      $(this).parents("tr").find(".user-save").hide();
-    }
-    if (e.keyCode == 13 ) {
+  $('form select[data-role="chosen"]').chosen();
+  $('form select[data-role="chosenblank"]').chosen();
+
+  $('a[data-dismiss="back"]').click(function(e) {
+      history.back();
       e.preventDefault();
-    }
-  })
-  
-  $(".user-cancel").on('click', function (e) {
-    $(this).parent().find(".user-save").hide();
-    $(this).hide();
-    document.getSelection().removeAllRanges();
-    $(this).parents("tr").find(".editMe").each(function (index) {
-        var pre = $(this).siblings().text();
-        var cur = $(this).text();
-        
-        if (pre != cur) {
-          $(this).text(pre);
-          $(this).attr("contenteditable", false);
-        }
-    })
-    alert("Ersätt med modal-confirm");
-  })
-  
-    $(".user-save").on('click', function (e) {
-    $(this).parents("tr").find(".editMe").each(function (index) {
-          $(this).attr("contenteditable", false);
-    });
-    $(this).hide();
-    $(this).parent().find(".user-cancel").hide();
-    document.getSelection().removeAllRanges();
-    alert("Ersätt med modal-confirm");
-  })
-  
-var listOptions = {
-  valueNames: ['tableName', 'tableCity', 'tablePhone', 'tableMail']
-}
-  
-var myTable = new List('myTable', listOptions);  
-  
+  });
 });

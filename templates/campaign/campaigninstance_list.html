@@ -8,7 +8,7 @@
   <div class="row">
   {% for c in campaigns %}
     <div class="span6">
-      <h3><a href="{{ url_for('.campaigninstance_get_list', id=c.id) }}">{{c}}</a></h3>
+      <h3><a href="{{ url_for('.campaigninstance_get', campaigninstance=c.id) }}">{{c}}</a></h3>
       {% if c.description %}
 	  <div class="well">{{ c.description }}</div>
 	  {% endif %}
