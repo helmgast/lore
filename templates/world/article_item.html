@@ -25,9 +25,9 @@
 
 {%- block article_actions -%}{{ super() }}
 {% if op!= 'new'%}
-<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-edit"></i>Edit</a></li>
-<li><a href="#deletemodal" data-toggle="modal"><i class="glyphicon glyphicon-trash"></i>Delete</a></li>
-<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-align-justify"></i>View</a></li>
+<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-align-justify"></i> View</a></li>
+<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-edit"></i> Edit</a></li>
+<li><a href="#deletemodal" data-toggle="modal"><i class="glyphicon glyphicon-trash"></i> Delete</a></li>
 {%endif%}
 {%- endblock -%}
 
@@ -88,7 +88,8 @@
   {{ form_fields(article_form.campaignarticle) }}
   </div>
 
-  <h4 style="display:inline">Relations</h4>
+  <h4 style="display:inline">Relations ({{ article_form.relations|length }})</h4>
+  {{ form_fields(article_form.relations) }}
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-sm disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
   {%- else -%}
@@ -118,6 +119,8 @@
   <li><i class="glyphicon glyphicon-user"></i> Martin</li>
   <li><i class="glyphicon glyphicon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   <li><i class="glyphicon glyphicon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  <li><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
+  <li><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
 </ul>
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
@@ -209,7 +212,7 @@
           } else {
             nr = 0
           }
-          $.get('{{ url_for('.articlerelation_get_new', world=world.slug, article=article.slug) }}?nr='+nr, function(data) {
+          $.get('{{ url_for('.articlerelation_get_new', world=world.slug, article=article.slug) }}?index='+nr, function(data) {
             var $d = $(data)
             $d.insertAfter($('.m_view .m_instance').last())
             $d.find('select[data-role="chosenblank"]').chosen()
