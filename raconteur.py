@@ -33,10 +33,10 @@ if the_app == None:
 
   Markdown(the_app)
 
-  from world import world_app as world
-  from social import social
-  from generator import generator
-  from campaign import campaign_app as campaign
+  from controller.world import world_app as world
+  from controller.social import social
+  from controller.generator import generator
+  from controller.campaign import campaign_app as campaign
 
   the_app.register_blueprint(world, url_prefix='/world')
   the_app.register_blueprint(generator, url_prefix='/generator')
