@@ -88,7 +88,7 @@
   {{ form_fields(article_form.campaignarticle) }}
   </div>
 
-  <h4 style="display:inline">Relations ({{ article_form.relations|length }})</h4>
+  <h4 style="display:inline">Relations ({{ article.relations|length }})</h4>
   {{ form_fields(article_form.relations) }}
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-sm disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
@@ -97,8 +97,9 @@
   {%- endif -%}
     <table class="m_view">
     <tr class="m_instance"></tr>
+      {% include "articlerelation_item.html" %}
     {% for articlerelation_form in article_form.outgoing_relations %}
-      {% include "models/articlerelation_view.html" %}
+      {% include "templates/articlerelation_item.html" %}
     {% endfor %}
     <tr class="m_control"><td></td></tr>
   </table>
