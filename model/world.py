@@ -69,6 +69,7 @@ class RelationType(db.Document):
 
 class ArticleRelation(db.EmbeddedDocument):
 #    article = db.ReferenceField(Article)
+    article = db.ReferenceField('Article')
     relation_type = db.ReferenceField(RelationType)
 
     def __str__(self):
@@ -180,7 +181,6 @@ class Article(db.Document):
     campaignarticle = db.EmbeddedDocumentField(CampaignArticle)
     relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
-ArticleRelation.article = db.ReferenceField(Article)
 
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2

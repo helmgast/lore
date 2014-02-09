@@ -97,9 +97,8 @@
   {%- endif -%}
     <table class="m_view">
     <tr class="m_instance"></tr>
+    {% for articlerelation_form in article_form.relations %}
       {% include "articlerelation_item.html" %}
-    {% for articlerelation_form in article_form.outgoing_relations %}
-      {% include "templates/articlerelation_item.html" %}
     {% endfor %}
     <tr class="m_control"><td></td></tr>
   </table>
