@@ -209,7 +209,7 @@
           } else {
             nr = 0
           }
-          $.get('#TODOgetnewform?nr='+nr, function(data) {
+          $.get('{{ url_for('.articlerelation_get_new', world=world.slug, article=article.slug) }}?nr='+nr, function(data) {
             var $d = $(data)
             $d.insertAfter($('.m_view .m_instance').last())
             $d.find('select[data-role="chosenblank"]').chosen()
