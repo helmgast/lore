@@ -10,7 +10,7 @@
         <li class="m_selector"><a href="{{url_for('social.group_members_change',slug=group.slug,action='remove',players=person.username, view='m_group_member_selector')}}" class="m_action" data-action-type="modal">
       {%- else -%}
         <li class="m_selector disabled"><a>{% endif -%}
-      <i class="glyphicon glyphicon-ok"></i>{{ group.name }} <small class="hidden-menuitem">({{mastered_members[gm_hash].status_text()}})</small></a>
+      <span class="glyphicon glyphicon-ok"></span> {{ group.name }} <small class="hidden-menuitem">({{mastered_members[gm_hash].status_text()}})</small></a>
     {% else %}
       <li class="m_selector"><a href="{{url_for('social.group_members_change',slug=group.slug,action='add',players=person.username, view='m_group_member_selector')}}" class="m_action m_deselected" data-action-type="modal">{{ group.name }}</a>
     {% endif %}

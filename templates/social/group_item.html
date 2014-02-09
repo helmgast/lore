@@ -8,7 +8,7 @@
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list" style="float:left">
 <li class="nav-header">Actions</li>    
-<li><a href="{{ url_for('.group_get_edit', group=group.slug) }}"><i class="icon-edit"></i>Edit</a></li>
+<li><a href="{{ url_for('.group_get_edit', group=group.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
 </ul>
 {%endblock%}
 

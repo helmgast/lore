@@ -6,15 +6,15 @@
 {% block sidebar %}
 <ul class="nav nav-list" style="float:left">
     <li class="nav-header">{{world.title}}</li>
-    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='type') }}"><i class="icon-tag"></i>Browse by type</a></li>
-    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='title') }}"><i class="icon-book"></i>Browse by title</a></li>
-    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='time') }}"><i class="icon-calendar"></i>Browse by time</a></li>
-    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='relation') }}"><i class="icon-resize-small"></i>Browse by relation</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> Browse by type</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> Browse by title</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> Browse by time</a></li>
+    <li><a href="{{ url_for('.article_get_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> Browse by relation</a></li>
 </ul>
 <ul class="nav nav-list" style="float:left">
 <li class="nav-header">Article actions</li>    
 {%- block article_actions -%}
-    <li><a href="{{ url_for('world.article_get_new', world=world.slug) }}"><i class="icon-pencil"></i>New</a></li>
+    <li><a href="{{ url_for('world.article_get_new', world=world.slug) }}"><span class="glyphicon glyphicon-pencil"></span>New</a></li>
 {%- endblock -%}
 </ul>
 {% endblock %}

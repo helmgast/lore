@@ -6,7 +6,7 @@
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list" style="float:left">
 <li class="nav-header">Actions</li>    
-<li><a href="{{ url_for('.user_get_edit', user=user.username) }}"><i class="icon-edit"></i>Edit</a></li>
+<li><a href="{{ url_for('.user_get_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
 </ul>
 {%endblock%}
 

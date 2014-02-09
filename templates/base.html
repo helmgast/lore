@@ -17,12 +17,11 @@
 {% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}">
+{#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
@@ -35,8 +34,8 @@
     <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/list.min.js') }}"></script>
+{#    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/list.min.js') }}"></script> #}
 {% endblock jsimports %}
 
 </head>

@@ -25,9 +25,9 @@
 
 {%- block article_actions -%}{{ super() }}
 {% if op!= 'new'%}
-<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-edit"></i>Edit</a></li>
-<li><a href="#deletemodal" data-toggle="modal"><i class="glyphicon glyphicon-trash"></i>Delete</a></li>
-<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-align-justify"></i>View</a></li>
+<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+<li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
 {%endif%}
 {%- endblock -%}
 
@@ -50,8 +50,8 @@
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
 			<div class="btn-group btn-group-sm">
-        <a class="btn btn-default" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><i class="glyphicon glyphicon-bold"></i></a>
-        <a class="btn btn-default" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="glyphicon glyphicon-italic"></i></a>
+        <a class="btn btn-default" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
+        <a class="btn btn-default" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
       </div>
       
 		</div>
@@ -115,9 +115,9 @@
     </h1>
 <ul class="list-inline" style="margin-bottom: 0px">
   {% set articlegroups = article.articlegroups|list %}
-  <li><i class="glyphicon glyphicon-user"></i> Martin</li>
-  <li><i class="glyphicon glyphicon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li><i class="glyphicon glyphicon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  <li><span class="glyphicon glyphicon-user"></span> Martin</li>
+  <li><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  <li><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
 </ul>
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
