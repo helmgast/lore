@@ -2,9 +2,9 @@
 
 {% block content %}{% block inline %}
 <tr class="m_instance">
-    <td>{{ articlerelation_form.from_article(class="input-medium") if articlerelation_form else articlerelation.from_article }}
+    <td>{{ article.slug }} is a 
         {{ articlerelation_form.relation_type(class="input-medium") if articlerelation_form else articlerelation.relation_type }}
-        {{ articlerelation_form.to_article(class="input-medium") if articlerelation_form else articlerelation.to_article }}</td>
+        {{ articlerelation_form.article(class="input-medium") if articlerelation_form else articlerelation.article }}</td>
     <td><button class="removerow btn btn-danger btn-mini"><i class="icon-remove"></i></button></td>
 </tr>
 {% endblock %}{% endblock %}
