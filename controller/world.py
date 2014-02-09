@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
 
-world_app = Blueprint('world', __name__, template_folder='templates/world')
+world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
 world_handler = ResourceHandler(ResourceAccessStrategy(World, 'worlds', 'slug'))
 world_handler.register_urls(world_app)

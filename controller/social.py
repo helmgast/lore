@@ -3,7 +3,7 @@ from raconteur import auth
 from resource import ResourceHandler, ResourceAccessStrategy
 from model.user import User, Group, Conversation, Message
 
-social = Blueprint('social', __name__, template_folder='templates/social')
+social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_handler = ResourceHandler(ResourceAccessStrategy(User, 'users', 'username'))
 user_handler.register_urls(social)
