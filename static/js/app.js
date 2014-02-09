@@ -30,6 +30,9 @@ $(document).ready(function() {
       return s
     } 
   });  
+
+// Deprecated
+/*
   
   // Extends Typeahead with a different updater() function
   var extended_typeahead = {
@@ -72,6 +75,7 @@ $(document).ready(function() {
     $(this).remove()
   });
 
+  */ 
   function post_action($t) {
     var vars, type = $t.data('action-type'), href=$t.attr('href'),
       action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
@@ -102,8 +106,7 @@ $(document).ready(function() {
         $('#themodal').html(data)
         setTimeout(function() {$('#themodal').modal('hide')},3000)
       } else if ($a.children().length > 0) {
-        $t.popover({trigger: 'manual', html:true, content:$a.html()+'<div class="arrow"></div>',
-          template:'<div class="popover popover-alert"><h3 class="popover-title"></h3><div class="popover-content"></div></div>'})
+        $t.popover({trigger: 'manual', html:true, content:$a.html()})
         $t.popover('show')
         $('body').one('click', function() {$t.popover('destroy')})
       }
@@ -123,12 +126,13 @@ $(document).ready(function() {
       switch ($t.data('action-type')) {
         case 'modal':
           var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
-          $('#themodal').data('modal').options.caller = $t
+//          $('#themodal').data('modal').options.caller = $t P: options.caller deprecated as of Bootstrap 3?
           $('#themodal').load(href).modal('show'); break;
         case 'inplace': break;// replace instance with form
         default: // post directly
           post_action($t);
       }
+      
     }
     e.preventDefault()
   }
@@ -140,9 +144,11 @@ $(document).ready(function() {
       post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
       e.preventDefault(); return false;  
     } // else, let the submit work as usual, redirecting the whole page
-  }).on('hide', function(e) {
-    var $t = $(e.delegateTarget).data('modal').options.caller
-    $t.button('reset') // reset state
+  }).on('hide.bs.modal', function(e) { // P: options.caller deprecated, Updated to correct event
+//    var $t = $(e.delegateTarget).data('modal').options.caller
+//    $t.button('reset') // reset state
+    $("button").button('reset'); // reset state of all buttons
+    
   }); 
   $('body').on('click', '.m_action', handle_action)
 
@@ -155,5 +161,4 @@ $(document).ready(function() {
       // Required, not sure why
       e.preventDefault();
   });
-
 });

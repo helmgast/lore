@@ -25,9 +25,9 @@
 
 {%- block article_actions -%}{{ super() }}
 {% if op!= 'new'%}
-<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="icon-edit"></i>Edit</a></li>
-<li><a href="#deletemodal" data-toggle="modal"><i class="icon-trash"></i>Delete</a></li>
-<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="icon-align-justify"></i>View</a></li>
+<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-edit"></i>Edit</a></li>
+<li><a href="#deletemodal" data-toggle="modal"><i class="glyphicon glyphicon-trash"></i>Delete</a></li>
+<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><i class="glyphicon glyphicon-align-justify"></i>View</a></li>
 {%endif%}
 {%- endblock -%}
 
@@ -42,26 +42,27 @@
 </div>
 
 {% include "includes/flash.html" %}
-<div class="row-fluid">
-<div class="span7 article_text">
+<div class="row">
+<div class="col-md-7 article_text">
   {% if article and article.is_image() %}
   <img src="{{article.imagearticle.url}}" />
   {% endif %}
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
-			<div class="btn-group">
-        <a class="btn" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><i class="icon-bold"></i></a>
-        <a class="btn" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="icon-italic"></i></a>
+			<div class="btn-group btn-group-sm">
+        <a class="btn btn-default" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><i class="glyphicon glyphicon-bold"></i></a>
+        <a class="btn btn-default" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><i class="glyphicon glyphicon-italic"></i></a>
       </div>
+      
 		</div>
 		<div id="editor">{{ article_form.content.data|safe if article_form.content.data else '<p><br></p>'|safe}}</div>
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
-<div class="span5 metadata">
+<div class="col-md-5 metadata">
 
   {{ article_form.csrf_token }}
-  <button type="submit" class="btn btn-small btn-primary">Save changes</button>
-  <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-small">Cancel</a>
+  <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
+  <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
 {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
   <h4>Metadata</h4>
   <fieldset style="margin-bottom: 10px">
@@ -89,9 +90,9 @@
 
   <h4 style="display:inline">Relations</h4>
   {%- if op == 'new' -%}
-    <button id="addrow" class="btn btn-info btn-small disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+    <button id="addrow" class="btn btn-info btn-sm disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
   {%- else -%}
-    <button id="addrow" class="btn btn-info btn-small" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+    <button id="addrow" class="btn btn-info btn-sm" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
   {%- endif -%}
     <table class="m_view">
     <tr class="m_instance"></tr>
@@ -103,7 +104,7 @@
 </div>
 </div>
 </form>
-<div id="hinter" style="display:none" class="article_text"></div>
+
 
 {#### PAGE ####}
 {%- else -%}
@@ -112,13 +113,13 @@
     <h1 class="article_header">{{title }}
         <small>{{ tagline }}</small>
     </h1>
-<ul class="inline" style="margin-bottom: 0px">
+<ul class="list-inline" style="margin-bottom: 0px">
   {% set articlegroups = article.articlegroups|list %}
-  <li><i class="icon-user"></i> Martin</li>
-  <li><i class="icon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li><i class="icon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  <li><i class="glyphicon glyphicon-user"></i> Martin</li>
+  <li><i class="glyphicon glyphicon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  <li><i class="glyphicon glyphicon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
 </ul>
-<ul class="inline" style="margin-bottom: 0px;margin-left: -14px">
+<ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
 {%- if article_type_name=='place' -%}
   <li><span class="nav-header" style="display:inline">Lon</span>{{article.coordinate_x}}</li>
@@ -140,11 +141,10 @@
 </div>
 
 {% include "includes/flash.html" %}
-
 {% if article.description %}
-<div class="span9">{{article.description}}</div>
+<div class="col-md-9">{{article.description}}</div>
 {% endif %}
-<div class="article span9 article_text">
+<div class="article col-md-9 article_text">
 	{% if article.is_image() %} <img src="{{url_for('.image', slug=article.slug)}}" />
 	{% endif %} {{ article.content|wikify|markdown }}
 </div>
@@ -159,7 +159,7 @@
   <div class="modal-footer">
     <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, method="DELETE")}}">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button type="submit" class="btn btn-small btn-primary">Yes</button>
+    <button type="submit" class="btn btn-sm btn-primary">Yes</button>
     </form>
   </div>
 </div>

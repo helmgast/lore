@@ -1,10 +1,10 @@
 {% macro render_scene(scene, form) -%}
 {%- if scene -%}
-    <button type="button" class="btn btn-link scene_counter {{ 'collapsed' if not form }}" data-toggle="collapse" data-target="#scene{{scene.id}} .scene-text">{#<i class="icon-chevron-up"></i>#}Scene</button>
+    <button type="button" class="btn btn-link scene_counter {{ 'collapsed' if not form }}" data-toggle="collapse" data-target="#scene{{scene.id}} .scene-text">{#<i class="glyphicon glyphicon-chevron-up"></i>#}Scene</button>
 {%- endif -%}
 <h3>{{ form.name if form else scene.name }}</h3>
 {%- if scene -%}
-    <div class="btn-group"><a class="btn btn-mini" title="Edit"><i class="icon-edit"></i></a><a class="btn btn-mini" title="Remove"><i class="icon-trash"></i></a></div>
+    <div class="btn-group"><a class="btn btn-xs" title="Edit"><i class="glyphicon glyphicon-edit"></i></a><a class="btn btn-xs" title="Remove"><i class="glyphicon glyphicon-trash"></i></a></div>
 {%- endif -%}
 <div class="collapse scene-text {{ 'in' if form }}">{{ form.description if form else scene.description }}</div>
 {%- endmacro -%}

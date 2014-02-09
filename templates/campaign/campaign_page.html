@@ -16,11 +16,13 @@
 {% block content %}{% block modal_body %}
 {% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if inline }}">
-  <div class="span6">
+  <div class="col-md-6">
       <div class="well">{{ resource.field('description') }}</div>
       <dl class="dl-horizontal">
-        <dt>Name</dt>
-        <dd>{{ resource.field('name') }}</dd>
+        
+          <dt>Name</dt>
+          <dd>{{ resource.field('name') }}</dd>
+        
         <dt>Group</dt>
         <dd>{% if resource.form %}{{ resource.form.group }}{% else %}<a href="{{ url_for('social.group_detail', slug=resource.instance.group.slug) }}">{{resource.instance.group}}</a>{% endif %}</dd>
         <dt>World</dt>

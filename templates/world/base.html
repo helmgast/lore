@@ -5,17 +5,19 @@
 {% block world_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-<ul class="nav nav-list">
-  <li class="nav-header">Actions</li>
-  <li><a href="{{ url_for('.index') }}"><i class="icon-book"></i>All worlds</a></li>
-  <li><a href="{{ url_for('.index') }}"><i class="icon-book"></i>My worlds</a></li>
+
+<h4>Actions</h4>
+<ul class="list-unstyled">
+  <li><a href="{{ url_for('.index') }}"><i class="glyphicon glyphicon-book"></i> All worlds</a></li>
+  <li><a href="{{ url_for('.index') }}"><i class="glyphicon glyphicon-book"></i> My worlds</a></li>
+
 </ul>
 {% endblock %}
 
 {% block content %}
     <div class="row">
     {% for world in worlds %}
-    <div class="span6">
+    <div class="col-md-6">
         <h3><a href="{{ url_for('.world_get', world=world.slug)}}">{{ world.title }}</a></h3>
         <div class="well">{{ world.description }}</div>
         <dl class="dl-horizontal">

@@ -2,7 +2,7 @@
 
 {% if resource.form %}<form method="post" action="{{action_url}}">{% endif %}
 <div class="row m_inplace m_view{{ ' modal-body' if inline }}">
-  <div class="span6">
+  <div class="col-md-6">
     <div class="well">{{ resource.field('description', rows=10) }}</div>
     <table class="table">
       <tr><td><strong>Name</strong></td>
@@ -15,13 +15,13 @@
       <td><span class="badge">0</span></td></tr>
     </table>
   </div>
-  <div class="span6">
+  <div class="col-md-6">
     {% include "social/group_member_view.html" %}
   </div>
 </div>
 {% if resource.form %}
 <div class="row form-actions">
   <button type="submit" class="btn btn-primary">Save changes</button>
-  <a href="{{url_for('social.group_detail', slug=group.slug)}}" class="btn">Cancel</a>
+  <a href="{{url_for('social.group_detail', slug=group.slug)}}" class="btn btn-default">Cancel</a>
   <a href="{{url_for('social.group_delete', slug=group.slug)}}" class="btn btn-danger">Delete</a>
 </div></form>{% endif %}

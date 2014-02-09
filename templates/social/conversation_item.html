@@ -14,7 +14,7 @@
 {# note, Jinja seem to autoescape class names, so no need for "" #}
   <div{{ ' class=modal-body' if inline }}>
   {% if conversation %}
-    <ul class="unstyled">
+    <ul class="list-unstyled">
       {% set is_conversation = True %}
       {% for message in conversation.messages()|reverse %}
         <li>{% include "social/message_item.html" %}</li>

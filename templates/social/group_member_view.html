@@ -20,9 +20,9 @@
     {% if False and resource.form %}<td> {# TODO avoiding to show form fields #}
       {% if False and resource.form and gm.status != 1 %}
         <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
-          <i class="icon-remove"></i>
+          <i class="glyphicon glyphicon-remove"></i>
         </button>
-        {% if gm.status==2 %}<button type="button" class="btn btn-mini m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
+        {% if gm.status==2 %}<button type="button" class="btn btn-xs m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
           Make master?
         </button>{% endif %}
       {% endif %}
@@ -32,6 +32,9 @@
 {% endblock %}
 
 </tbody>
+
+<!-- Deprecated -->
+<!--
 {% if False and resource.form -%}
 <tfoot><tr><td colspan="4">
   <label>Add players</label>
@@ -43,4 +46,6 @@
   jQuery.getJSON('/api/username/', function(data) { $('.typeahead-user input').typeahead({source: data.objects}) })
 </script>
 {% endif %}
+
+-->
 </table>
