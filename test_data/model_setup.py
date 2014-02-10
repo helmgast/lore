@@ -25,7 +25,7 @@ def add_test_data():
     RelationType(name="child of").save()
     RelationType(name="parent of").save()
     RelationType(name="friend of").save()
-    RelationType(name="enemy of").save()
+    enemy = RelationType(name="enemy of").save()
     RelationType(name="distant relative of").save()
 
     # User.drop_collection()
@@ -170,6 +170,9 @@ def add_test_data():
     cd6ka = Article(type=ARTICLE_CAMPAIGN, title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
     kcmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
     ycmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
+
+    ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa)]
+    ycmpa.save()
     
     scmpa.children = [Episode(id=u"1", title=u"Intro"),
                       Episode(id=u"2", title=u"The old man in the taverna"),

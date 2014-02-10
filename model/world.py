@@ -54,6 +54,30 @@ class World(db.Document):
     # datestring = "day %i in the year of %i" 
     # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+class RelationType(db.Document):
+    name = db.StringField() # human friendly name
+    # code = CharField() # parent, child, reference, 
+    # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
+    # from_type = # type of article from
+    # to_type = # type of article to 
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
+    def __unicode__(self):
+        return u'%s' % self.name
+
+class ArticleRelation(db.EmbeddedDocument):
+#    article = db.ReferenceField(Article)
+    article = db.ReferenceField('Article')
+    relation_type = db.ReferenceField(RelationType)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+    
+    def __unicode__(self):
+        return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
+
 class ImageArticle(db.EmbeddedDocument):
     image = db.ImageField()
     source_image_url = db.URLField()
@@ -155,31 +179,8 @@ class Article(db.Document):
     placearticle = db.EmbeddedDocumentField(PlaceArticle)
     eventarticle = db.EmbeddedDocumentField(EventArticle)
     campaignarticle = db.EmbeddedDocumentField(CampaignArticle)
+    relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
-class RelationType(db.Document):
-    name = db.StringField() # human friendly name
-    # code = CharField() # parent, child, reference, 
-    # display = CharField() # some display pattern to use for this relation, e.g. "%from is father to %to"
-    # from_type = # type of article from
-    # to_type = # type of article to 
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-    
-    def __unicode__(self):
-        return u'%s' % self.name
-
-class ArticleRelation(db.EmbeddedDocument):
-    article = db.ReferenceField(Article)
-    relation_type = db.ReferenceField(RelationType)
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-    
-    def __unicode__(self):
-        return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
-
-Article.relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
