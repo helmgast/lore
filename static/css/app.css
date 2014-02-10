@@ -18,17 +18,39 @@ body {
 	border-radius: 0 0 6px 6px;
 }
 
-/* modeladmin filters */
-form.modeladmin-filters {
-	margin: 0;
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
 }
-
-form.modeladmin-filters ul {
-	list-style-type: none;
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
 }
-
-form.modeladmin-filters select.field {
-	margin-right: 10px;
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin .form-control {
+  position: relative;
+  font-size: 16px;
+  height: auto;
+  padding: 10px;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 div.form-wrapper {

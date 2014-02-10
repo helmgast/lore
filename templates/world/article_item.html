@@ -116,17 +116,11 @@
     </h1>
 <ul class="list-inline" style="margin-bottom: 0px">
   {% set articlegroups = article.articlegroups|list %}
-<<<<<<< HEAD
   <li><span class="glyphicon glyphicon-user"></span> Martin</li>
   <li><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   <li><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-=======
-  <li><i class="glyphicon glyphicon-user"></i> Martin</li>
-  <li><i class="glyphicon glyphicon-calendar"></i> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li><i class="glyphicon glyphicon-lock"></i> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
   <li><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
   <li><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
->>>>>>> f473562cde9b7a45172c47a7c88e0a39843a4fd5
 </ul>
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
@@ -160,16 +154,20 @@
 {% endif %} {% endblock %}
 
 {% block final %}
-<div class="modal hide fade" id="deletemodal">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Are you sure you want to delete {{article.title}}?</h3>
-  </div>
-  <div class="modal-footer">
-    <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, method="DELETE")}}">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-    <button type="submit" class="btn btn-sm btn-primary">Yes</button>
-    </form>
+<div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete {{article.title}}?</h4>
+      </div>
+      <div class="modal-body">
+        <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, method="DELETE")}}">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Yes</button> 
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 {{super()}}

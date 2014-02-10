@@ -165,7 +165,7 @@ class Auth(object):
                         self.default_next_url
                     )
                 else:
-                    flash('Incorrect username or password')
+                    flash('Incorrect username or password', 'warning')
         else:
             form = Form()
 

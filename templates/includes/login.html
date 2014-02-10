@@ -1,26 +1,19 @@
 {% extends "base.html" %}
 
-{% from 'includes/forms.html' import with_errors %}
+{% block mainblock %}
 
-{% block content_title %}Log in{% endblock %}
+<form method="post" action="" class="form-signin" role="form">
+  <h2 class="form-signin-heading">Please sign in</h2>
+  <input type="hidden" name="next" value="{{ next }}" />
+  {% set css_class = "form-control" %}
+  {{ form['username'](class="form-control",placeholder="Username", required="", autofocus="")}}
+  {{ form['password'](class="form-control",placeholder="Password", required="")}}
+{#  <label class="checkbox">
+    <input type="checkbox" value="remember-me"> Remember me
+  </label> #}
+{% include "includes/flash.html" %}
 
-{% block content %}
-  <form method="post" action="">
-    <input type="hidden" name="next" value="{{ next }}" />
-    {% for field in form %}
-      <div class="clearfix{% if field.errors %} error{% endif %}">
-        {{ field.label }}
-        <div class="input">
-          {% set css_class = 'span6 ' %}
-          {% if field.errors %}
-            {% set css_class = 'error ' + css_class %}
-          {% endif %}
-          {{ field(class=css_class) }}
-          {% if field.description %}<span class="help-inline">{{ field.description|safe() }}</span>{% endif %}
-          {% for error in field.errors %}<span class="help-inline">{{ error }}</span>{% endfor %}
-        </div>
-      </div>
-    {% endfor %}
-    <div class="actions"><button class="btn primary" type="submit">Log in</button></div>
-  </form>
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+</form>
+ 
 {% endblock %}

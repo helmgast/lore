@@ -6,13 +6,13 @@
 
     <!--[if IE]><![endif]-->
 
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>{% block title %}{{ self.content_title() }}{% endblock %} - Raconteur</title>
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <meta name="viewport" content="width=device-width; initial-scale=1.0">
+    <meta name="viewport" content="width=device-width; initial-scale=1">
 
 {% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -46,29 +46,28 @@
 <div class="navbar navbar-default navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#theNav">
-                <span class="glyphicon glyphicon-bar"></span>
-                <span class="glyphicon glyphicon-bar"></span>
-                <span class="glyphicon glyphicon-bar"></span>
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
               </button>
               <a class="navbar-brand" href="{{ url_for('homepage') }}">Raconteur
                   <small>a story engine</small>
               </a>
             </div>
-            <div class="collapse navbar-collapse" id="theNav">
+            <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
                     <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
                     <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}">Campaign</a></li>
                     <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
                     <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
                 </ul>
-                <ul class="nav navbar-nav pull-right">
+                <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
                         <li><a href="{{ url_for('auth.login') }}">log in</a></li>
                         <li><a href="{{ url_for('join') }}">join</a></li>
                     {% else %}
-                        <li class="navbar-text">Welcome</span>
-                        <li><a href="{{ url_for('social.user_get', user=g.user) }}">{{ g.user.username }}!</a></li>
+                        <li><a href="{{ url_for('social.user_get', user=g.user) }}">{{ g.user.username }}</a></li>
                         <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
                     {% endif %}
                 </ul>

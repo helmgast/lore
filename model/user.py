@@ -13,9 +13,9 @@ Created on 2 jan 2014
 
 # A user in the system
 class User(db.Document, BaseUser):
-    username = db.StringField(unique=True)
+    username = db.StringField(unique=True, max_length=60)
     password = db.StringField(max_length=60)
-    email = db.StringField(max_length=60) # TODO make into email field
+    email = db.EmailField(max_length=60) # TODO make into email field
     realname = db.StringField(max_length=60)
     location = db.StringField(max_length=60)
     description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea

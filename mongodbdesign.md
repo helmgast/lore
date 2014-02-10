@@ -268,3 +268,23 @@ Solution: Articles have multiple EmbeddedFields, that may or may not be filled w
 A) We could make sure the default value is always an empty object rather than None. This would make FormField behave well when trying to populate, even if populating with empty fields. But it would inflate the database uneccesarily and it would make it less easy to check if there is data to display (e.g. cannot just check for None on the EmbeddedDocumentField).
 B) We could keep them as None by default, but it means, when someone creates an article we need to be able to instantiate the EmbeddedDocument (as the form can't do it), and when the type is changed, we need to None the old reference and insantiate the new. This step would have to happen AFTER validation but before populate_obj. Because we don't have "manual" access to the steps between validation and populate_obj, this cannot be done in current architecture.
 C) We can change the FormField class (inherit) so that it's populate_obj method correctly sets only the active type's EmbeddedDocument fields to a new instance and sets all others to None.
+
+
+-------
+FORUM DESIGN
+
+Forum
+- Board
+-- Topic
+--- Post (message)
+
+
+Conversation
+
+A conversation is a list of messages from users. The list will always be flat (not threaded) and ordered by time. A conversation can be eternal, but normally is started and held active within a certain time. A conversation has members. Members are allowed to post messages to that conversation. The conversation can be tied to different things. It can be a comment, where it is tied to a place in an article (or by default, at the bottom/top). Conversations can be grouped into topics.
+
+Use of conversations
+- Closed chats for a game session (all can write)
+- Closed chat within a group, outside of game session (e.g. a permanent discussion)
+- Public posting of messages (one writes, rest reads)
+- Public discussion

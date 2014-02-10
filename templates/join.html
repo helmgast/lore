@@ -1,10 +1,24 @@
 {% extends "base.html" %}
 
-{% block content_title %}Join{% endblock %}
 
-{% block content %}
+{% block mainblock %}
+
+<form method="post" action="{{ url_for('join') }}" class="form-signin" role="form">
+  <h2 class="form-signin-heading">Sign up</h2>
+  <input type="hidden" name="next" value="{{ next }}" />
+  {% set css_class = "form-control" %}
+  {{ join_form['username'](class="form-control",placeholder="Username", required="", autofocus="")}}
+  {{ join_form['password'](type="password", class="form-control",placeholder="Password", required="")}}
+  {{ join_form['email'](class="form-control",placeholder="Email", required="")}}
+  {{ join_form['realname'](class="form-control",placeholder="Name")}}
+
+{% include "includes/flash.html" %}
+
+  <button class="btn btn-lg btn-primary btn-block" type="submit">Join</button>
+</form>
+
+{#
   <div class="col-md-4">
-    <form action="{{ url_for('join') }}" method="post">
       <div class="form-group">
         <dl>
           <dt>Username:</dt>
@@ -20,4 +34,5 @@
       </div>
     </form>
   </div>
+  #}
 {% endblock %}

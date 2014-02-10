@@ -5,6 +5,7 @@ from auth import Auth
 from flask.ext.mongoengine import MongoEngine
 from re import compile
 from flaskext.markdown import Markdown
+from flask.ext.mongoengine.wtf import model_form
 import os
 
 try:
@@ -61,27 +62,29 @@ def homepage():
     #else:
     #    return public_timeline()
 
+JoinForm = model_form(User)
+
 # Page to sign up, takes both GET and POST so that it can save the form
 @the_app.route('/join/', methods=['GET', 'POST'])
 def join():
+
     if request.method == 'POST' and request.form['username']:
         # Read username from the form that was posted in the POST request
         try:
-            user = User.get(username=request.form['username'])
+            user = User.objects().get(username=request.form['username'])
             flash('That username is already taken')
         except User.DoesNotExist:
             user = User(
                 username=request.form['username'],
                 email=request.form['email'],
-                join_date=datetime.datetime.now()
             )
             user.set_password(request.form['password'])
             user.save()
             
             auth.login_user(user)
             return redirect(url_for('homepage'))
-
-    return render_template('join.html')
+    join_form = JoinForm()
+    return render_template('join.html', join_form=join_form)
 
 ###
 ### Template filters
