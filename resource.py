@@ -8,6 +8,7 @@ from raconteur import the_app
 from wtforms.compat import iteritems
 from wtforms.fields import FormField
 from wtforms import Form as OrigForm
+import inspect
 
 
 def generate_flash(action, name, model_identifiers, dest=''):
@@ -346,188 +347,162 @@ class ResourceHandler:
         # We have to build our redir_url first, as we can't read it out when item has been deleted
         return redirect(redir_url)
 
+class ResourceHandler2(View):
+    default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
+    ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
 
-class ModelRequest(View):
-    methods = ['GET']
-    def __init__(self, server, op):
-        self.server = server
-        self.op = op
+    def __init__(self, strategy):
+        self.form_class = strategy.form_class
+        self.strategy = strategy
 
-    def dispatch_request(self, **view_args):
-        if self.op in self.server.ops_by_identifier: # for view, edit, delete
-            model_obj = self.server.get_obj(view_args[self.server.identifier])
+    @classmethod
+    def register_urls(cls, app, st):
+        # We try to parse out any methods added to this handler class, which we will use as separate endpoints
+        custom_ops = []
+        for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
+            if (not name.startswith("__")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
+                app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name(name), st))
+                print st.get_url_path(name)
+
+        app.add_url_rule(st.url_item(), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('view'), st))
+        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('form_new'), st))
+        # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('get_edit_list'), st))
+        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('form_edit'), st))
+        app.add_url_rule(st.url_list(), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('list'), st))
+        app.add_url_rule(st.url_list(), methods=['POST'], view_func=ResourceHandler2.as_view(st.endpoint_name('new'), st))
+        app.add_url_rule(st.url_item(), methods=['PUT','POST'], view_func=ResourceHandler2.as_view(st.endpoint_name('replace'), st))
+        app.add_url_rule(st.url_item(), methods=['PATCH','POST'], view_func=ResourceHandler2.as_view(st.endpoint_name('edit'), st))
+        app.add_url_rule(st.url_item(), methods=['DELETE','POST'], view_func=ResourceHandler2.as_view(st.endpoint_name('delete'), st))
+        # GET, POST, PATCH, PUT, DELETE resource/<id>
+        # GET, POST resource/resources
+
+    def dispatch_request(self, *args, **kwargs):
+        # If op is given by argument, we use that, otherwise we take it from endpoint
+        # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
+        # TODO unsafe to let us call a method based on request args!
+        # if request.method == 'POST' and op in ['put', 'patch','delete']:
+        #     print "GOT SPECIAL POST, method is %s, endpoint op is %s and arg op is %s" % (request.method, op, request.args.get('op'))
+        r = self.parse_url(**kwargs)
+        r = getattr(self, r['op'])(r)
+
+        # render output
+        if 'next' in r:
+            return redirect(r['next'])
         else:
-            model_obj = None
-        render_args = {}
-        for p in self.server.parents:
-            # query model objects for all parents as well
-            render_args[p.model_name] = p.get_obj(view_args[p.model_identifier])
-        if request.method == 'GET':
-            return self.server.render(self.op, model_obj, **render_args)
-        elif request.method == 'POST':
-            return self.server.commit(self.op, model_obj, **render_args)
+            return render_template(r['template'], **r)
 
-class ModelServer:
-    servers = {} # class global variable to remember all servers created
-    op_messages = {'edit': 'edited', 'new': 'created', 'delete':'deleted'}
+    def parse_url(self, **kwargs):
+        r = {'url_args':kwargs}
+        if self.strategy.resource_name in kwargs:
+            r['item'] = self.strategy.query_item(**kwargs)
+            r[self.strategy.resource_name] = r['item']
+        r['parents'] = self.strategy.query_parents(**kwargs)
+        r.update(r['parents'])
+        r['op'] = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())
+        if 'next' in request.args:
+            r['next'] = request.args['next']
+        return r
 
-    @staticmethod
-    def get_model_name(model_class):
-        return model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
+    def view(self, r):
+        item = r['item']
+        if not self.strategy.allowed_on(r['op'], item):
+            return {'error':401}
 
-    def __init__(self, app, model_class, parent=None, form_class=None, templatepath=None, model_request_class=None, allowed_func=None): # should allow override formclass, template, route
-        self.app = app
-        self.endpoints = {}
-        self.model_class = model_class
-        self.model_name = ModelServer.get_model_name(model_class)
-        if 'slug' in self.model_class.__dict__:
-            self.identifier = 'slug'
-        else:
-            self.identifier = 'id'
-        self.model_identifier = '%s_%s' % (self.model_name, self.identifier)
-        self.model_request_class = model_request_class if model_request_class else ModelRequest
-        if not form_class:
-            self.form_class = model_form(model_class) # Generate form based on model
-        else:
-            self.form_class = form_class
-        self.parent = parent
-        self.parents = parent.parents + [parent] if parent else []
-        if not templatepath:
-            self.templatepath = parent.templatepath if parent else 'models/'
-        else:
-            self.templatepath = templatepath
-        self.templates = {
-            'list': '%s%s_list.html' % (self.templatepath, self.model_name),
-            'new': '%s%s_view.html' % (self.templatepath, self.model_name),
-            'view': '%s%s_view.html' % (self.templatepath,self.model_name),
-            'edit': '%s%s_view.html' % (self.templatepath, self.model_name),
-            'delete': 'includes/confirm.html',
-            'base': '%sbase.html' % self.templatepath
-        }
-        if allowed_func:
-            self.allowed = allowed_func
-        self.ops_by_model = ['list','new']
-        self.ops_by_identifier = ['view','edit','delete']
+        r['template'] = self.strategy.item_template()
+        return r
 
-        ModelServer.servers[self.model_name] = self
-        ModelServer.servers[self.model_identifier] = self # also findable by identifier
+    def form_edit(self, r):
+        item = r['item']
+        if not item:
+            return {'error':400}
+        if not self.strategy.allowed_on(r['op'], item):
+            return {'error':401}
+        # TODO add prefill form functionality
+        form = self.form_class(obj=item)
+        form.action_url = url_for('.'+self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
+        r[self.strategy.resource_name+'_form'] = form
+        r['op'] = 'edit' # form_edit is not used in templates...
+        r['template'] = self.strategy.item_template()
+        return r
+    
+    def form_new(self, r):
+        if not self.strategy.allowed_any(r['op']):
+            return {'error':401}
+        # TODO add prefill form functionality
+        form = self.form_class(request.args, obj=None)
+        form.action_url = url_for('.'+self.strategy.endpoint_name('new'), **r['url_args'])
+        r[self.strategy.resource_name+'_form'] = form
+        r['op'] = 'new' # form_new is not used in templates...
+        r['template'] = self.strategy.item_template()
+        return r
 
-    def allowed(self, op, user, model_obj=None): # to be overriden
-        if op in ['list','view']:
-            return True
-        else:
-            print "According to default ModelServer, all state changing operations disallowed! Override method to change!"
-            return True ## TODO false
+    def list(self, r):
+        if not self.strategy.allowed_any(r['op']):
+            return {'error':401}
+        r['list'] = self.strategy.query_list(request.args)
+        r['template'] = self.strategy.list_template()
+        r[self.strategy.plural_name] = r['list']
+        # Filter on allowed items?
+        return r
 
-    def get_obj(self, identifier):
-        if self.identifier == 'slug':
-            return self.model_class.objects.get_or_404(slug=identifier)
-        else:
-            return self.model_class.objects.get_or_404(id=identifier)
+    def new(self, r):
+        if not self.strategy.allowed_any(r['op']):
+            return {'error':401}
+        form = self.form_class(request.form, obj=None)
+        if not form.validate():
+            return {'error':403}
+        item = self.strategy.create_item()
+        form.populate_obj(item)
+        item.save()
+        if not 'next' in r:
+            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+        return r
 
-    def get_form(self, op, model_obj=None, req_form=None, **kwargs):
-        if op=='edit' or op=='new':
-            return self.form_class(req_form, obj=model_obj, **kwargs)
-        else:
-            return None 
+    # TODO implement proper patch, currently just copy of PUT
+    def edit(self, r):
+        item = r['item']
+        if not item:
+            return {'error':400}
+        if not self.strategy.allowed_on(r['op'], item):
+            return {'error':401}
+        form = self.form_class(request.form, obj=item)
+        if not form.validate():
+            return {'error':403}
+        form.populate_obj(item)
+        item.save()
+        # In case slug has changed, query the new value before redirecting!
+        if not 'next' in r:
+            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+        return r
 
-# Redirect URL pattern
-# [GET, POST] article/new -> article/<new_slug>/view -> view_article, world_slug=..., article_slug=...
-# [GET] article/list (NO POST)
-# [GET,POST] article/<s>/edit -> article/<s>/view
-# [GET] article/<s>/view (NO POST)
-# [GET, POST] article/<s>/delete -> article/
+    def replace(self, r):
+        item = r['item']
+        if not item:
+            return {'error':400}
+        if not self.strategy.allowed_on(r['op'], item):
+            return {'error':401}
+        form = self.form_class(request.form, obj=item)
+        # self.print_form_inputs(request.form, form.data, item)
+        if not form.validate():
+            return {'error':403}
+        form.populate_obj(item)
+        item.save()
+        if not 'next' in r:
+            # In case slug has changed, query the new value before redirecting!
+            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+        return r
 
-    def get_url(self, op, redir_args=None):
-        args = request.view_args
-        if redir_args:
-            args.update(redir_args)
-        endpoint = '.%s_%s' % (op, self.model_name)
-        print endpoint
-        return url_for(endpoint, **args)
-
-    def render(self, op, model_obj, form=None, **render_args):
-        print 'in render', op, model_obj
-        if not self.allowed(op, auth.get_logged_in_user(), model_obj):
-            return error_response("Not allowed to %s %s" % (op, model_obj))
-        render_args['op'] = op
-        if not form:
-             # let's assume that the render args, e.g. view args, can be useful to pre-fill the form!
-             # Below statement will pick the render args that match the parent model names, e.g. world, article
-            form_args = { key: render_args[key] for key in [p.model_name for p in self.parents]}
-            form = self.get_form(op, model_obj, **form_args)
-
-        render_args[self.model_name+'_form'] = form
-        
-        render_args[self.model_name] = model_obj
-        if request.args.has_key('inline'):
-            render_args['inline'] = True
-            render_args['template_parent'] = 'includes/inline.html'
-        elif request.args.has_key('row'):
-            render_args['row'] = True
-            render_args['template_parent'] = 'includes/row.html'
-
-        if op=='delete':
-            return render_template('includes/confirm.html', url=request.base_url, #TODO, this will skip inline args, always intended? 
-                action=op, model_objs={'model_obj':[model_obj]}, **render_args)
-        else:
-            return render_template(self.templates[op], **render_args)
-
-    def commit(self, op, model_obj, form=None, **model_objs):
-        user = auth.get_logged_in_user()
-        if op=='edit' or op=='new':
-            # Create form object based on request and existing model_obj
-            form = form if form else self.get_form(op, model_obj, request.form)
-            #print "In NEW resource %s %s %s" % (request.form, model_obj, self.form_class)
-            if form.validate():
-                if op=='new' and not model_obj: # create an model_obj if we won't have one yet
-                    model_obj = self.model_class()
-                form.populate_obj(model_obj)
-                model_obj.save()
-                flash(u'%s was successfully %s' % (model_obj, self.op_messages[op]), 'success')
-                user.log(u'%s %s' % (self.op_messages[op], model_obj))
-                # as slug/id may have been changed or just created, we need to add it to redirect args.
-                # model_identifier refers to either ...slug or ...id
-                redir_args = {self.model_identifier:getattr(model_obj, self.identifier)}
-                return redirect(self.get_url('view', redir_args))
+    def delete(self, r):
+        item = r['item']
+        if not item:
+            return {'error':400}
+        if not 'next' in r:
+            if 'parents' in r:
+                r['next'] = url_for('.'+self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
             else:
-                return error_response(u'Input data %s to %s %s did not validate because of %s' % (request.form, op, self.model_class, form.errors))
-        elif op=='delete':
-            s = u'%s' % model_obj
-            model_obj.delete_instance()
-            flash(u'%s was successfully deleted' % s, 'success')
-            user.log(u'deleted %s' % s)
-            return redirect(self.get_url('list'))
+                 r['next'] = url_for('.'+self.strategy.endpoint_name('list'))
+        if not self.strategy.allowed_on(r['op'], item):
+            return {'error':401}
+        item.delete()
+        return r
 
-    def autoregister_urls(self):
-        self.add_op('list', self.model_request_class, verbose=True, on_instance=False)
-        self.add_op('new', self.model_request_class, verbose=True, on_instance=False, methods=['GET','POST'])
-        self.add_op('view', self.model_request_class, verbose=True, on_instance=True)
-        self.add_op('edit', self.model_request_class, verbose=True, on_instance=True, methods=['GET','POST'])
-        self.add_op('delete', self.model_request_class, verbose=True, on_instance=True, methods=['GET','POST'])
-
-    def add_op(self, op, mr_class, verbose=True, on_instance=True, methods=['GET']):
-        # direct -> models/model/ + op and models/model/ + <slug>/ + op (model_direct, model_direct_on_instance)
-        # verbose -> parent/parent/ + model/ + op and parent/parent/ + <slug>/ + op (model_verbose, model_verbose_on_instance)
-        if verbose:
-            parent_identifiers = self.get_parent_identifiers()
-            route = '/%s' % (''.join(['<%s>/'%s for s in parent_identifiers]) if parent_identifiers else '')
-        else:
-            route = '/models/%s/' % self.model_name
-        if on_instance:
-            route += '<%s>/' % self.model_identifier
-        elif verbose:
-            route += '%s/' % self.model_name
-        # elif verbose: # small exception to rule, that in verbose mode, not on_instance, we need to add model_name
-        #     route += '%s/' % self.model_name
-        route += op
-        endpoint = '%s_%s' % (op, self.model_name)
-        print "Added url %s, with endpoint %s handled by %s" % (route, endpoint, mr_class.__name__)
-        mr_class.methods = methods # TODO hack, we are setting the methods on the class before calling as_view, to register POST and other
-        self.app.add_url_rule(route, view_func=mr_class.as_view(endpoint, self, op))
-
-    def get_parent_identifiers(self):
-        identifiers = []
-        if self.parent:
-            identifiers += self.parent.get_parent_identifiers()+[self.parent.model_identifier]
-        return identifiers

@@ -25,9 +25,9 @@
 
 {%- block article_actions -%}{{ super() }}
 {% if op!= 'new'%}
-<li><a href="{{ url_for('.article_get_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+<li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
 <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
-<li><a href="{{ url_for('.article_get', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
+<li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
 {%endif%}
 {%- endblock -%}
 
@@ -88,7 +88,7 @@
   {{ form_fields(article_form.campaignarticle) }}
   </div>
 
-  <h4 style="display:inline">Relations ({{ article.relations|length }})</h4>
+  <h4 style="display:inline">Relations ({{ article.relations|length if article }})</h4>
   {{ form_fields(article_form.relations) }}
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-sm disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
@@ -154,6 +154,7 @@
 {% endif %} {% endblock %}
 
 {% block final %}
+{% if article %}
 <div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
@@ -162,7 +163,7 @@
         <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete {{article.title}}?</h4>
       </div>
       <div class="modal-body">
-        <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, method="DELETE")}}">
+        <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Yes</button> 
         </form>
@@ -170,6 +171,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 {{super()}}
 
 {% if article_form %}
@@ -208,6 +210,7 @@
           .focus();
 
         //----------------------------------
+        {% if article %} {# TODO should work also when article is None! #}
         $('#addrow').click(function(e){
           $this = $(this);
           var nr = $('.m_view input[type="hidden"]').last().attr('id')
@@ -216,7 +219,7 @@
           } else {
             nr = 0
           }
-          $.get('{{ url_for('.articlerelation_get_new', world=world.slug, article=article.slug) }}?index='+nr, function(data) {
+          $.get('{{ url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }}?index='+nr, function(data) {
             var $d = $(data)
             $d.insertAfter($('.m_view .m_instance').last())
             $d.find('select[data-role="chosenblank"]').chosen()
@@ -228,6 +231,7 @@
           $(this).closest('.m_instance').remove();
           e.preventDefault(); return false;  
         });
+        {% endif %}
 
         //----------------------------------
 				// Get the initial value

@@ -270,6 +270,53 @@ B) We could keep them as None by default, but it means, when someone creates an 
 C) We can change the FormField class (inherit) so that it's populate_obj method correctly sets only the active type's EmbeddedDocument fields to a new instance and sets all others to None.
 
 
+ class ResourceHandler():
+	dispatch_request(kwargs)
+		resource = parse_id(kwargs)
+		parents = self.parent.parse_parents(kwargs)
+		if GET 
+			r = self.get(resource=resource, parents=parents)
+		else
+		render(r)
+
+class MessageHandler(ResourceHandler):
+
+	# General INPUT to all handlers
+	# parsed_args (filter, order_by, etc), {resourceA: instance, resourceB: instance}, op (normally implicit)
+	# General OUTPUT from all handlers
+	# template,  {resourceA: instance, resourceB: instance},  {resource_formA: form, resource_formB: form}, op, next
+	
+	# prefixes all parent urls before
+	parent = Conversationhandler
+
+	# default GET resource/<id>
+	def get(kwargs)
+		return {template:.., resource:.., resource_form:.., error:..., next:...}
+
+	# default resource/resources
+	def list(kwargs)
+		return error(405) # Example for not allowed op
+
+	# default POST resource/resources or GET resource/resources?op=post
+	def post(kwargs)
+
+	# default PATCH resource/<id> or POST resource/<id>?op=patch or GET resource/<id>?op=patch
+	def patch(kwargs)
+
+	# default PUT resource/<id> or POST resource/<id>?op=put or GET resource/<id>?op=put
+	def put(kwargs)
+
+	# default DELETE resource/<id> or POST resource/<id>?op=delete or GET resource/<id>?op=delete
+	def delete(kwargs)
+
+	@route('/backwards/', methods=['GET', 'POST'])
+	def backwards()
+		self.list(order_by='-'')
+
+msgHandler = MessageHandler(...)
+
+
+
 -------
 FORUM DESIGN
 

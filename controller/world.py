@@ -6,7 +6,7 @@ from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter
+from resource import ResourceHandler, ResourceHandler2, ResourceAccessStrategy, RacModelConverter
 from raconteur import auth, db
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -15,8 +15,12 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_handler = ResourceHandler(ResourceAccessStrategy(World, 'worlds', 'slug'))
-world_handler.register_urls(world_app)
+world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug')
+class WorldHandler(ResourceHandler2):
+  def myworlds(self, r):
+    return self.list(r)
+    
+WorldHandler.register_urls(world_app, world_strategy)
 
 # field_dict = model_fields(Article, exclude=['slug'])
 # for k in field_dict:
@@ -25,25 +29,26 @@ world_handler.register_urls(world_app)
 #   print f
 artform = model_form(Article, exclude=['slug'], converter=RacModelConverter())
 
-article_handler = ResourceHandler(ResourceAccessStrategy(Article, 'articles', 'slug', 
-    parent_strategy=world_handler.strategy, form_class = artform))
-article_handler.register_urls(world_app)
+article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, form_class = artform)
+ResourceHandler2.register_urls(world_app, article_strategy)
 
-article_relation_handler = ResourceHandler(ResourceAccessStrategy(ArticleRelation, 'relations', None,
-  parent_strategy=article_handler.strategy))
-article_relation_handler.register_urls(world_app)
+article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)
 
-@world_app.route('/')
-def index():
-    worlds = World.objects()
-    return render_template('world/base.html', worlds=worlds)
+ResourceHandler2.register_urls(world_app, article_relation_strategy)
+
+# @world_app.route('/')
+# def index():
+#     worlds = World.objects()
+#     return render_template('world/base.html', worlds=worlds)
+
+
 
 @world_app.route('/image/<slug>')
 def image(slug):
-    imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
-    response = make_response(imagearticle.image.read())
-    response.mimetype = imagearticle.mime_type
-    return response
+  imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
+  response = make_response(imagearticle.image.read())
+  response.mimetype = imagearticle.mime_type
+  return response
 
 # Template filter, will group a list by their initial title letter
 def by_initials(objects):
@@ -60,17 +65,17 @@ def by_articletype(objects):
   return groups
 
 def prettydate(d):
-    diff = timedelta()
-    diff = datetime.utcnow() - d
-    if diff.days < 1:
-        return 'Today'
-    elif diff.days < 7:
-        return 'Last week'
-    elif diff.days < 31:
-        return 'Last month'
-    elif diff.days < 365:
-        return 'Last year'
-    else:
+  diff = timedelta()
+  diff = datetime.utcnow() - d
+  if diff.days < 1:
+      return 'Today'
+  elif diff.days < 7:
+      return 'Last week'
+  elif diff.days < 31:
+      return 'Last month'
+  elif diff.days < 365:
+      return 'Last year'
+  else:
         return 'Older'
 
 # Template filter, will group a list by creation date, as measure in delta from now
@@ -83,62 +88,3 @@ def by_time(objects):
 world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
 world_app.add_app_template_filter(by_time)
-
-# 
-# class ArticleGroupSelectMultipleQueryField(SelectMultipleQueryField):
-#     '''
-#     A single multi-select field that represents a list of ArticleGroups.
-#     '''
-# 
-#     def iter_choices(self):
-#         # Although the field holds ArticleGroups, we will allow choices from all combinations of groups and types.
-#         for obj in Group.objects:
-#             yield ('%d-%d' % (obj.get_id(),GROUP_MASTER), self.get_label(obj)+' (masters)', self.has_articlegroup(obj.get_id(), GROUP_MASTER))
-#             yield ('%d-%d' % (obj.get_id(),GROUP_PLAYER), self.get_label(obj)+' (all)', self.has_articlegroup(obj.get_id(), GROUP_PLAYER))
-# 
-#     # Checks if tuple of group_id and type matches an existing ArticleGroup in this field
-#     def has_articlegroup(self, group_id, type):
-#         if self._data:
-#             for ag in self._data:
-#                 if ag.group.id == group_id and ag.type == type:
-#                     return True
-#         return False
-# 
-#     def process_formdata(self, valuelist):
-#         if valuelist:
-#             self._data = []
-#             self._formdata = []
-#             for v in valuelist:
-#                 g_id, g_type = v.split('-')
-#                 g_id = int(g_id)
-#                 # We don't know article yet, it has to be set manually
-#                 self._formdata.append({'article':None, 'group':g_id,'type':g_type})
-#             # self._formdata = map(int, valuelist)
-#         else:
-#             self._formdata = []
-# 
-#     # def get_model_list(self, pk_list):
-#     #     # if pk_list:
-#     #     #     return list(self.query.where(self.model._meta.primary_key << pk_list))
-#     #     return []
-# 
-#     def _get_data(self):
-#         # if self._formdata is not None:
-#         #     self._set_data(self.get_model_list(self._formdata))
-#         return self._data or []
-# 
-#     def _set_data(self, data):
-#         if hasattr(data, '__iter__'):
-#             self._data = list(data)
-#         else:
-#             self._data = data
-#         self._formdata = None
-# 
-#     data = property(_get_data, _set_data)
-# 
-#     # def pre_validate(self, form):
-#     #     if self.data:
-#     #         id_list = [m.get_id() for m in self.data]
-#     #         if id_list and not self.query.where(self.model._meta.primary_key << id_list).count() == len(id_list):
-#     #             raise ValidationError(self.gettext('Not a valid choice'))
-# 
