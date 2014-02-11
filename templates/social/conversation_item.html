@@ -1,37 +1,44 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
-{% block content_title %}Conversation with {{ recipients|join(', ')|truncate(20) }}{% endblock %}
+{% set recipients = conversation.members %}
+
+{% block content_title %}{{'New conversation' if op=='new' else 'Conversation'}} with {{ recipients|join(', ')|truncate(20) }}{% endblock %}  
 
 {% block content_tagline %}{% endblock %}
 
 {% if conversation %}
-  {% set fixed_recipients = True %} {# fixed recipients always when having exiting conversation #}
+  {% set fixed_recipients = True %} {# fixed recipients always when having existing conversation #}
 {% endif %}
 
 {% block content %}{% block inline %}
-
-<form class="modal-form" action="{{ action_url }}" method="post">
-{# note, Jinja seem to autoescape class names, so no need for "" #}
-  <div{{ ' class=modal-body' if inline }}>
+<div class="row">
+  <div class="col-md-8">
   {% if conversation %}
     <ul class="list-unstyled">
       {% set is_conversation = True %}
-      {% for message in conversation.messages()|reverse %}
+      {% for message in conversation.messages() %}
         <li>{% include "social/message_item.html" %}</li>
       {% endfor %}
     </ul>
   {% endif %}  
-  </div>
-  <div{{ ' class=modal-footer' if inline }}>
-    <textarea class="message" rows="4" name="content" autofocus></textarea>
-    <select name="recipients" multiple="multiple"{{ ' class=hide' if fixed_recipients }}>
+  <form action="{{ url_for('.message_post_new', conversation=conversation.id, next=url_for('.conversation_get', conversation=conversation.id)) }}" method="post">
+    {% if conversation_form %}
+    <p>Members: {{conversation_form['members'](**{'data-role':'chosen','style':'width:100%;'}) }}</p>
+    {% endif %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <input type="hidden" name="user" value="{{g.user.id}}" />
+    <input type="hidden" name="conversation" value="{{conversation.id}}" />    
+    {#<select name="recipients" multiple="multiple"{{ ' class=hide' if fixed_recipients }}>
       {% for r in recipients %}
       <option selected="selected">{{ r }}</option>
       {% endfor %}
     </select>
-    <button type="submit" class="btn btn-primary">Send</button>
+    #}
+    <textarea class="form-control" rows="4" name="content" autofocus></textarea>
+    <button type="submit" class="btn btn-primary btn-block">Send</button>
+  </form>
   </div>
-</form>
+</div>
 {% endblock %}{% endblock %}
 {% block final %}
   {{super() }}

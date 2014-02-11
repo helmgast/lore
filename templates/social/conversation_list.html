@@ -22,7 +22,7 @@
             <a href="{{ url_for('.conversation_get', conversation=conversation.id) }}"><em> (empty) </em></a>         
         {% endif %}
         </td>
-        <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%m')}}</td>
+        <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%M')}} </td>
         <td>
           {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}
           {% for member in conversation.members %}
@@ -33,4 +33,5 @@
     {% endfor %}
   </tbody>
 </table>
+<a href="{{ url_for('.conversation_get_new')}}" class="btn btn-primary">New conversation</a>
 {% endblock %}

@@ -208,7 +208,7 @@ class ResourceHandler:
             return self.render_one(error=400)
         if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
-        # TODO add prefil form functionality
+        # TODO add prefill form functionality
         form = self.form_class(obj=item)
         form.action_url = url_for('.'+self.strategy.endpoint_name('post'), method='put', **kwargs)
         return self.render_one(item, parents, op='edit', form=form)
@@ -218,7 +218,7 @@ class ResourceHandler:
         parents = self.strategy.query_parents(**kwargs)
         if not self.strategy.allowed_any('write'):
             return self.render_one(error=401)
-        # TODO add prefil form functionality
+        # TODO add prefill form functionality
         form = self.form_class(request.args, obj=None)
         form.action_url = url_for('.'+self.strategy.endpoint_name('post_new'), **kwargs)
         return self.render_one(parents=parents, op='new', form=form)
@@ -270,6 +270,9 @@ class ResourceHandler:
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
+        print kwargs
+        if 'next' in request.args:
+            return redirect(request.args['next'])
         return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
             **self.strategy.all_view_args(item)))
 
@@ -301,6 +304,8 @@ class ResourceHandler:
             return self.render_one(error=403)
         form.populate_obj(item)
         item.save()
+        if 'next' in request.args:
+            return redirect(request.args['next'])
         # In case slug has changed, query the new value before redirecting!
         return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
             **self.strategy.all_view_args(item)))
@@ -318,6 +323,8 @@ class ResourceHandler:
             return self.render_one(error=403)
         form.populate_obj(item)
         item.save()
+        if 'next' in request.args:
+            return redirect(request.args['next'])
         # In case slug has changed, query the new value before redirecting!
         return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
             **self.strategy.all_view_args(item)))
@@ -334,6 +341,8 @@ class ResourceHandler:
         if not self.strategy.allowed_on('write', item):
             return self.render_one(error=401)
         item.delete()
+        if 'next' in request.args:
+            return redirect(request.args['next'])
         # We have to build our redir_url first, as we can't read it out when item has been deleted
         return redirect(redir_url)
 

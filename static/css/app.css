@@ -121,7 +121,8 @@ table.table-narrow {
 }
 
 .bubble_others {
-	margin-left: 200px;
+	margin-right: 0px;
+	margin-left: auto;
 	background-color: #f5f5f5;
 }
 

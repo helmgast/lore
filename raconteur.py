@@ -6,6 +6,7 @@ from flask.ext.mongoengine import MongoEngine
 from re import compile
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine.wtf import model_form
+from flask_wtf.csrf import CsrfProtect
 import os
 
 try:
@@ -33,6 +34,7 @@ if the_app == None:
   auth = Auth(the_app, db, user_model=User)
 
   Markdown(the_app)
+  CsrfProtect(the_app)
 
   from controller.world import world_app as world
   from controller.social import social
