@@ -4,14 +4,14 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}
-<ul class="nav nav-list" style="float:left">
+<ul class="nav nav-list" style="">
     <li class="nav-header">{{world.title}}</li>
     <li><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> Browse by type</a></li>
     <li><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> Browse by title</a></li>
     <li><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> Browse by time</a></li>
     <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> Browse by relation</a></li>
 </ul>
-<ul class="nav nav-list" style="float:left">
+<ul class="nav nav-list" style="">
 <li class="nav-header">Article actions</li>    
 {%- block article_actions -%}
     <li><a href="{{ url_for('world.article_form_new', world=world.slug) }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>
@@ -21,10 +21,10 @@
 
 {% block content %}
     <div class="row">
-        <div class="span6">
+        <div class="col-md-6">
             <p class="well">{{ world.description }}</p>
         </div>
-        <div class="span6">IMAGE</div>
+        <div class="col-md-6">IMAGE</div>
     </div>
     <div class="row">
     {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
