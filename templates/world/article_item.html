@@ -59,7 +59,9 @@
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
 <div class="col-md-5 metadata">
+  {% if g.user.id %}
   <input type="hidden" name="creator" value="{{g.user.id}}" />
+  {% endif %}
   {{ article_form.csrf_token }}
   <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
   <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
