@@ -69,8 +69,8 @@ class RelationType(db.Document):
 
 class ArticleRelation(db.EmbeddedDocument):
 #    article = db.ReferenceField(Article)
-    article = db.ReferenceField('Article')
     relation_type = db.ReferenceField(RelationType)
+    article = db.ReferenceField('Article')
 
     def __str__(self):
         return unicode(self).encode('utf-8')
