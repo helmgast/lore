@@ -24,7 +24,7 @@ def add_test_data():
     # RelationType.drop_collection()
     RelationType(name="child of").save()
     RelationType(name="parent of").save()
-    RelationType(name="friend of").save()
+    friend = RelationType(name="friend of").save()
     enemy = RelationType(name="enemy of").save()
     RelationType(name="distant relative of").save()
 
@@ -171,7 +171,7 @@ def add_test_data():
     kcmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
     ycmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
 
-    ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa)]
+    ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa), ArticleRelation(relation_type=friend, article=kcmpa)]
     ycmpa.save()
     
     scmpa.children = [Episode(id=u"1", title=u"Intro"),

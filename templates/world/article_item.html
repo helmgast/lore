@@ -50,8 +50,8 @@
 		<div class="btn-toolbar" data-role="editor-toolbar"
 			data-target="#editor">
 			<div class="btn-group btn-group-sm">
-        <a class="btn btn-default" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
-        <a class="btn btn-default" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
+        <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
+        <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
       </div>
       
 		</div>
@@ -59,7 +59,9 @@
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
 <div class="col-md-5 metadata">
+  {% if g.user.id %}
   <input type="hidden" name="creator" value="{{g.user.id}}" />
+  {% endif %}
   {{ article_form.csrf_token }}
   <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
   <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
@@ -97,10 +99,10 @@
   {%- endif -%}
     <table class="m_view">
     <tr class="m_instance"></tr>
-    {% for articlerelation_form in article_form.relations %}
+<!--     {% for articlerelation_form in article_form.relations %}
       {% include "articlerelation_item.html" %}
     {% endfor %}
-    <tr class="m_control"><td></td></tr>
+ -->    <tr class="m_control"><td></td></tr>
   </table>
 </div>
 </div>
@@ -180,10 +182,6 @@
 			function() {
         var $e = $('#editor');
         $e.wysiwyg();
-        //$("#content").val($e.cleanHtml()); // have to load it once!
-				// $e.wysiwyg().blur(function(e){
-				// 	$("#content").val($e.cleanHtml());
-				// });
 
         $e.on('paste', function(e) {
           $this = $(this)

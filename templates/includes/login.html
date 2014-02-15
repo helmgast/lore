@@ -8,6 +8,7 @@
   {% set css_class = "form-control" %}
   {{ form['username'](class="form-control",placeholder="Username", required="", autofocus="")}}
   {{ form['password'](class="form-control",placeholder="Password", required="")}}
+  {{ form.csrf_token }}
 {#  <label class="checkbox">
     <input type="checkbox" value="remember-me"> Remember me
   </label> #}

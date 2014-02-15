@@ -3,7 +3,8 @@ import os
 import random
 
 from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
-from wtforms import Form, TextField, PasswordField, validators
+from flask_wtf import Form
+from wtforms import TextField, PasswordField, validators
 from hashlib import sha1
 
 current_dir = os.path.dirname(__file__)

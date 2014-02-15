@@ -36,28 +36,31 @@ class RacFormField(FormField):
         super(RacFormField, self).__init__(*args, **kwargs)
 
     def populate_obj(self, obj, name):
-        # print "Populating field %s of %s from formfield %s of form class %s (model class %s)" % (
-        #        name, obj, self.name, self.form_class, self.form_class.model_class)
-        candidate = getattr(obj, name, None)
-        # print "Validated type in form is %s, type %s" % (self._form.type.data, type(self._form.type.data))
-        # new_type = obj.is_type(self.name)
-        typefield = self._form.model_class.create_type_name(self._form.type.data) + 'article'
+        if self._form is None:
+            super(RacFormField, self).populate_obj(obj, name)
+        else:
+            # print "Populating field %s of %s from formfield %s of form class %s (model class %s)" % (
+            #        name, obj, self.name, self.form_class, self.form_class.model_class)
+            candidate = getattr(obj, name, None)
+            # print "Validated type in form is %s, type %s" % (self._form.type.data, type(self._form.type.data))
+            # new_type = obj.is_type(self.name)
+            typefield = self._form.model_class.create_type_name(self._form.type.data) + 'article'
 
-        # If new type matches this field
-        if typefield == name:
-            # if this field has no object
-            if candidate is None:
-                # Create empty instance of this object based on Model Class
-                candidate = self.form_class.model_class()
-                setattr(obj, name, candidate)
-                print "RacFormField.populate_obj: instantiated %s to new object as it was empty before, in %s" % (name, obj)
-            # Then populate as usual
-            self.form.populate_obj(candidate)
-        # If new type is not this field
-        elif not candidate is None:
-            print "RacFormField.populate_obj: set %s to None as not type of %s" % (name, obj)
-            # Just None the whole field and skip the population
-            setattr(obj, name, None)
+            # If new type matches this field
+            if typefield == name:
+                # if this field has no object
+                if candidate is None:
+                    # Create empty instance of this object based on Model Class
+                    candidate = self.form_class.model_class()
+                    setattr(obj, name, candidate)
+                    print "RacFormField.populate_obj: instantiated %s to new object as it was empty before, in %s" % (name, obj)
+                # Then populate as usual
+                self.form.populate_obj(candidate)
+            # If new type is not this field
+            elif not candidate is None:
+                print "RacFormField.populate_obj: set %s to None as not type of %s" % (name, obj)
+                # Just None the whole field and skip the population
+                setattr(obj, name, None)
 
 class RacModelConverter(ModelConverter):
     @converts('EmbeddedDocumentField')
@@ -280,6 +283,7 @@ class ResourceHandler(View):
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
+        r['item'] = item
         if not 'next' in r:
             r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
