@@ -6,13 +6,11 @@
 
 {% block sidebar %}
   <h3>Navigation</h3>
-  {% if false %}
-    <ul class="list-unstyled">
+    <ul class="nav nav-list">
       <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-book"></span> Campaigns</a></li>
-      <li><a href="{{ url_for('campaign.sessions') }}"><span class="glyphicon glyphicon-book"></span> Your sessions</a></li>
+      <li><a href="#"><span class="glyphicon glyphicon-book"></span> Your sessions</a></li>
       <li><a href="#"><span class="glyphicon glyphicon-book"></span> Chronicles</a></li>
     </ul>
-  {% endif %}
 {% endblock %}
 
 {% block content %}
