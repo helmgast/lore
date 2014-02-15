@@ -1,4 +1,4 @@
-{% extends "campaign/campaign.html" %}
+{% extends "campaign/base.html" %}
 
 {% block content_title %}Campaigns{% endblock %}
 {% block content_tagline %}where the magic happens{% endblock %}
@@ -7,7 +7,7 @@
 {% block content %}
   <div class="row">
   {% for c in campaigns %}
-    <div class="span6">
+    <div class="col-md-6">
       <h3><a href="{{ url_for('.campaigninstance_view', campaigninstance=c.id) }}">{{c}}</a></h3>
       {% if c.description %}
 	  <div class="well">{{ c.description }}</div>

@@ -166,7 +166,7 @@
 		html = html.replace(/(<\/?)div>/gi,'$1p>');
 		html = html.replace(/(<\/?)h1>/gi,'$1h2>');
 		html = html.replace(/<(\w+) [^>]*>/g,'<$1>');
-		html = html.replace(/<(\/?(p|h2|h3|blockquote|ul|ol|li|em|strong))>/gi,'%%%$1%%%');
+		html = html.replace(/<(\/?(p|h2|h3|blockquote|ul|ol|li|em|b|i|strong))>/gi,'%%%$1%%%');
 		html = html.replace(/<\/?.+?>/g,'');
 		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
 		html = html.replace(/>(.+?)%%%/gi,'<$1>');
