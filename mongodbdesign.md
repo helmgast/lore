@@ -166,8 +166,10 @@ DELETE	(Resources/)<SingleResource>/	?render=...
 Responses
 200		Rendered output as per argument
 400		Bad request (general error or incorrect validation)
+	If on HTML, we can just highlight the errors on the page
 404		Not found (given resource id does not exist)
 401		Unauthorized (not logged in or not access to article)
+	If on HTML and not logged in, send to login page first
 403		Forbidden (operation is not allowed)
 500		Internal Server Error (python exception)
 

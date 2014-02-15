@@ -350,6 +350,20 @@ class ResourceHandler:
         # We have to build our redir_url first, as we can't read it out when item has been deleted
         return redirect(redir_url)
 
+class ResourceError(Exception):
+    default_messages = {
+        400: "Bad request or invalid input",
+        401: "Unathorized access",
+        403: "Forbidden, this is not an allowed operation",
+        404: "Resource not found",
+        500: "Internal server error"
+    }
+    def __init__(self, status_code, r=None, message=None):
+        Exception.__init__(self)
+        self.status_code = status_code
+        self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
+        self.r = r
+
 class ResourceHandler2(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
@@ -377,17 +391,13 @@ class ResourceHandler2(View):
         app.add_url_rule(st.url_item(), methods=['PUT','POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
         app.add_url_rule(st.url_item(), methods=['PATCH','POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
         app.add_url_rule(st.url_item(), methods=['DELETE','POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
-        # GET, POST, PATCH, PUT, DELETE resource/<id>
-        # GET, POST resource/resources
 
     def dispatch_request(self, *args, **kwargs):
         # If op is given by argument, we use that, otherwise we take it from endpoint
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
-        # TODO unsafe to let us call a method based on request args!
-        # if request.method == 'POST' and op in ['put', 'patch','delete']:
-        #     print "GOT SPECIAL POST, method is %s, endpoint op is %s and arg op is %s" % (request.method, op, request.args.get('op'))
+        # TODO unsafe to let us call a custom methods based on request args!
         r = self.parse_url(**kwargs)
-        r = getattr(self, r['op'])(r)
+        r = getattr(self, r['op'])(r) # picks the right method from the class and calls it!
 
         # render output
         if 'next' in r:
@@ -410,17 +420,16 @@ class ResourceHandler2(View):
     def view(self, r):
         item = r['item']
         if not self.strategy.allowed_on(r['op'], item):
-            return {'error':401}
-
+            raise ResourceError(401)
         r['template'] = self.strategy.item_template()
         return r
 
     def form_edit(self, r):
         item = r['item']
         if not item:
-            return {'error':400}
+            raise ResourceError(500)
         if not self.strategy.allowed_on(r['op'], item):
-            return {'error':401}
+            raise ResourceError(401)
         # TODO add prefill form functionality
         form = self.form_class(obj=item)
         form.action_url = url_for('.'+self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
@@ -431,7 +440,7 @@ class ResourceHandler2(View):
     
     def form_new(self, r):
         if not self.strategy.allowed_any(r['op']):
-            return {'error':401}
+            raise ResourceError(401)
         # TODO add prefill form functionality
         form = self.form_class(request.args, obj=None)
         form.action_url = url_for('.'+self.strategy.endpoint_name('new'), **r['url_args'])
@@ -442,7 +451,7 @@ class ResourceHandler2(View):
 
     def list(self, r):
         if not self.strategy.allowed_any(r['op']):
-            return {'error':401}
+            raise ResourceError(401)
         r['list'] = self.strategy.query_list(request.args)
         r['template'] = self.strategy.list_template()
         r[self.strategy.plural_name] = r['list']
@@ -451,10 +460,10 @@ class ResourceHandler2(View):
 
     def new(self, r):
         if not self.strategy.allowed_any(r['op']):
-            return {'error':401}
+            raise ResourceError(401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
-            return {'error':403}
+            raise ResourceError(400)
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
@@ -466,12 +475,12 @@ class ResourceHandler2(View):
     def edit(self, r):
         item = r['item']
         if not item:
-            return {'error':400}
+            raise ResourceError(500)
         if not self.strategy.allowed_on(r['op'], item):
-            return {'error':401}
+            raise ResourceError(401)
         form = self.form_class(request.form, obj=item)
         if not form.validate():
-            return {'error':403}
+            raise ResourceError(400)
         form.populate_obj(item)
         item.save()
         # In case slug has changed, query the new value before redirecting!
@@ -482,13 +491,13 @@ class ResourceHandler2(View):
     def replace(self, r):
         item = r['item']
         if not item:
-            return {'error':400}
+            raise ResourceError(500)
         if not self.strategy.allowed_on(r['op'], item):
-            return {'error':401}
+            raise ResourceError(401)
         form = self.form_class(request.form, obj=item)
         # self.print_form_inputs(request.form, form.data, item)
         if not form.validate():
-            return {'error':403}
+            raise ResourceError(400)
         form.populate_obj(item)
         item.save()
         if not 'next' in r:
@@ -499,14 +508,14 @@ class ResourceHandler2(View):
     def delete(self, r):
         item = r['item']
         if not item:
-            return {'error':400}
+            raise ResourceError(500)
         if not 'next' in r:
             if 'parents' in r:
                 r['next'] = url_for('.'+self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
             else:
                  r['next'] = url_for('.'+self.strategy.endpoint_name('list'))
         if not self.strategy.allowed_on(r['op'], item):
-            return {'error':401}
+            raise ResourceError(401)
         item.delete()
         return r
 
