@@ -146,7 +146,7 @@
 </div>
 
 {% include "includes/flash.html" %}
-{% if article.description %}
+ if article.description %}
 <div class="col-md-9">{{article.description}}</div>
 {% endif %}
 <div class="article col-md-9 article_text">
@@ -195,8 +195,6 @@
         });
 
         $('#articleform').on('submit', function(e) {
-          // console.log(e, $e, $e.cleanHtml());
-          // return false;
           $("#content").val($e.cleanHtml());
         });
 
