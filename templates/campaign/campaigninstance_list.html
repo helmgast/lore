@@ -8,19 +8,19 @@
   <div class="row">
   {% for c in campaigns %}
     <div class="span6">
-      <h3><a href="{{ url_for('.campaigninstance_get', campaigninstance=c.id) }}">{{c}}</a></h3>
+      <h3><a href="{{ url_for('.campaigninstance_view', campaigninstance=c.id) }}">{{c}}</a></h3>
       {% if c.description %}
 	  <div class="well">{{ c.description }}</div>
 	  {% endif %}
-      <h4>Article <a href="{{ url_for('world.article_get', article=c.campaign.slug, world=c.campaign.world.slug) }}">{{ c.campaign }}</a></h4>
+      <h4>Article <a href="{{ url_for('world.article_view', article=c.campaign.slug, world=c.campaign.world.slug) }}">{{ c.campaign }}</a></h4>
       {% if c.campaign.description %}
 	  <div class="well">{{ c.campaign.description }}</div>
 	  {% endif %}
       <dl class="dl-horizontal">
         <dt>Group</dt>
-        <dd>{% if false %}<a href="{{ url_for('social.group_get', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
+        <dd>{% if false %}<a href="{{ url_for('social.group_view', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
         <dt>World</dt>
-        <dd><a href="{{ url_for('world.world_get', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
+        <dd><a href="{{ url_for('world.world_view', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
         <dt>Rules</dt>
         <dd>{{ c.rule_system }}</dd>
         <dt>Sessions</dt>

@@ -11,7 +11,7 @@
 {%- for gm in members -%}
   <tr class="user-tablerow m_instance">
     <td class="m_field" name="username" data-value="{{gm.user.username}}">
-      <a href="{{ url_for('.user_get', user=gm.user.username) }}">
+      <a href="{{ url_for('.user_view', user=gm.user.username) }}">
       <img class="avatar" src="{{ gm.user.gravatar_url() }}" />
       <strong class="message_name">{{gm.user.username}}</strong>
     </a></td>

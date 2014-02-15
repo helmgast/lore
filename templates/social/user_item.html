@@ -6,7 +6,7 @@
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list" style="float:left">
 <li class="nav-header">Actions</li>    
-<li><a href="{{ url_for('.user_get_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+<li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
 </ul>
 {%endblock%}
 
@@ -62,7 +62,7 @@
   {{ user_form.username(style="display:none;") }}
   {{ user_form.email(style="display:none;") }}
   <button type="submit" class="btn btn-small btn-primary">Save changes</button>
-  <a href="{{ url_for('.user_get', user=user.username) }}" class="btn btn-small">Cancel</a>
+  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-small">Cancel</a>
 </form>{%endif%}
 <div class="row">
   <div class="span5">
@@ -81,7 +81,7 @@
     <tbody>
         {% for group in groups %}
         <tr class="user-tablerow">
-          <td><strong><a href="{{ url_for('social.group_get', group=group.slug) }}">{{group.name}}</a></strong></td>
+          <td><strong><a href="{{ url_for('social.group_view', group=group.slug) }}">{{group.name}}</a></strong></td>
           <td>{{group.location}}</td>
           <td><span class="badge badge-info">{{group.members|length }}</span></td>
           <td>#TODO</td>

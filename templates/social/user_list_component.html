@@ -10,7 +10,7 @@
   <tbody>
       {% for user in users %}
       <tr class="user-tablerow m_instance">
-        <td><a href="{{ url_for('social.user_get', user=user.username) }}">
+        <td><a href="{{ url_for('social.user_view', user=user.username) }}">
           <img class="avatar" src="{{ user.gravatar_url() }}" />
           <strong class="message_name">{{user.username}}</strong>
         </a></td>

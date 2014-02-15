@@ -17,21 +17,21 @@
         <td>
         {% set lastmsg = conversation.last_message() %}
         {% if lastmsg %}
-            <a href="{{ url_for('.conversation_get', conversation=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
+            <a href="{{ url_for('.conversation_view', conversation=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
         {% else %}
-            <a href="{{ url_for('.conversation_get', conversation=conversation.id) }}"><em> (empty) </em></a>         
+            <a href="{{ url_for('.conversation_view', conversation=conversation.id) }}"><em> (empty) </em></a>         
         {% endif %}
         </td>
         <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%M')}} </td>
         <td>
           {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}
           {% for member in conversation.members %}
-            {{ comma() }}<a href="{{ url_for('.user_get', user=member.username) }}">{{ member.username }}</a>
+            {{ comma() }}<a href="{{ url_for('.user_view', user=member.username) }}">{{ member.username }}</a>
           {% endfor %}
         </td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
-<a href="{{ url_for('.conversation_get_new')}}" class="btn btn-primary">New conversation</a>
+<a href="{{ url_for('.conversation_form_new')}}" class="btn btn-primary">New conversation</a>
 {% endblock %}

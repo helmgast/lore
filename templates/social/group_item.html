@@ -8,7 +8,7 @@
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list" style="float:left">
 <li class="nav-header">Actions</li>    
-<li><a href="{{ url_for('.group_get_edit', group=group.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+<li><a href="{{ url_for('.group_form_edit', group=group.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
 </ul>
 {%endblock%}
 
@@ -36,7 +36,7 @@
 {{ group_form.csrf_token }}
 <div class="row form-actions">
     <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('.group_get', group=group.slug)}}" class="btn">Cancel</a>
+    <a href="{{url_for('.group_view', group=group.slug)}}" class="btn">Cancel</a>
     <a href="{{url_for('.group_delete', group=group.slug)}}" class="btn btn-danger">Delete</a>
 </div></form>{% endif %}
 

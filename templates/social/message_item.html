@@ -4,11 +4,11 @@
   {% else %} bubble_others
   {% endif %}
 {% endif %}">
-    <a href="{{ url_for('.user_get', user=message.user.username) }}">
+    <a href="{{ url_for('.user_view', user=message.user.username) }}">
       <img class="avatar" src="{{ message.user.gravatar_url() }}" />
     </a>
     <span class="message_name">
-      <a href="{{ url_for('.user_get', user=message.user.username) }}">
+      <a href="{{ url_for('.user_view', user=message.user.username) }}">
         <strong>{{message.user.username}}</strong>
       </a>
       <small>{{ message.pub_date.strftime('%Y-%m-%d %H:%M') }}</small>

@@ -45,7 +45,7 @@ if the_app == None:
   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
-  #print the_app.url_map
+  # print the_app.url_map
   
 from test_data import model_setup
 def setup_models():

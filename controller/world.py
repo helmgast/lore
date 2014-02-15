@@ -15,33 +15,32 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug')
+world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
+
 class WorldHandler(ResourceHandler2):
   def myworlds(self, r):
-    return self.list(r)
-    
+    # Worlds which this user has created articles for
+    # TODO probably not efficient if many articles!
+    arts = Article.objects(creator=g.user).only("world").select_related()
+    worlds = [a.world for a in arts]
+    r['template'] = self.strategy.list_template()
+    r[self.strategy.plural_name] = worlds
+    return r
+
 WorldHandler.register_urls(world_app, world_strategy)
 
-# field_dict = model_fields(Article, exclude=['slug'])
-# for k in field_dict:
-#   print k, field_dict[k], "\n"
-# for f in Article._fields.keys():
-#   print f
-artform = model_form(Article, exclude=['slug'], converter=RacModelConverter())
-
-article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, form_class = artform)
+article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
+  form_class = model_form(Article, exclude=['slug'], converter=RacModelConverter()), short_url=True)
 ResourceHandler2.register_urls(world_app, article_strategy)
 
 article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)
 
 ResourceHandler2.register_urls(world_app, article_relation_strategy)
 
-# @world_app.route('/')
-# def index():
-#     worlds = World.objects()
-#     return render_template('world/base.html', worlds=worlds)
-
-
+@world_app.route('/')
+def index():
+    worlds = World.objects()
+    return render_template('world/base.html', worlds=worlds)
 
 @world_app.route('/image/<slug>')
 def image(slug):

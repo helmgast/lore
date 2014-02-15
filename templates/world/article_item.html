@@ -59,7 +59,7 @@
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
 <div class="col-md-5 metadata">
-
+  <input type="hidden" name="creator" value="{{g.user.id}}" />
   {{ article_form.csrf_token }}
   <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
   <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
@@ -116,7 +116,7 @@
     </h1>
 <ul class="list-inline" style="margin-bottom: 0px">
   {% set articlegroups = article.articlegroups|list %}
-  <li><span class="glyphicon glyphicon-user"></span> Martin</li>
+  <li><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
   <li><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   <li><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
   <li><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
@@ -286,9 +286,6 @@
         */
 
 			});
-</script>
-<script type="text/javascript">
-(function(a){if(window.filepicker){return}var b=a.createElement("script");b.type="text/javascript";b.async=!0;b.src=("https:"===a.location.protocol?"https:":"http:")+"//api.filepicker.io/v1/filepicker.js";var c=a.getElementsByTagName("script")[0];c.parentNode.insertBefore(b,c);var d={};d._queue=[];var e="pick,pickMultiple,pickAndStore,read,write,writeUrl,export,convert,store,storeUrl,remove,stat,setKey,constructWidget,makeDropPane".split(",");var f=function(a,b){return function(){b.push([a,arguments])}};for(var g=0;g<e.length;g++){d[e[g]]=f(e[g],d._queue)}window.filepicker=d})(document); 
 </script>
 {% endif %}
 {% endblock %}
