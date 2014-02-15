@@ -163,193 +163,6 @@ class ResourceAccessStrategy:
     def allowed_on(self, op, instance):
         return self.allowed(op, instance);
 
-
-class ResourceHandler:
-
-    def __init__(self, strategy):
-        self.form_class = strategy.form_class
-        self.strategy = strategy
-
-    def register_index(self, app):
-        st = self.strategy
-        app.add_url_rule('/', methods=['GET'], view_func=self.get_list, endpoint='index')
-        
-    def register_urls(self, app):
-        st = self.strategy
-        app.add_url_rule(st.url_item(), methods=['GET'], view_func=self.get, endpoint=st.endpoint_name('get'))
-        app.add_url_rule(st.url_item(), methods=['POST'], view_func=self.post, endpoint=st.endpoint_name('post'))
-        app.add_url_rule(st.url_item(), methods=['PUT'], view_func=self.put, endpoint=st.endpoint_name('put'))
-        app.add_url_rule(st.url_item(), methods=['PATCH'], view_func=self.patch, endpoint=st.endpoint_name('patch'))
-        app.add_url_rule(st.url_item(), methods=['DELETE'], view_func=self.delete, endpoint=st.endpoint_name('delete'))
-        app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=self.get_edit, endpoint=st.endpoint_name('get_edit'))
-        app.add_url_rule(st.url_list(), methods=['GET'], view_func=self.get_list, endpoint=st.endpoint_name('get_list'))
-        app.add_url_rule(st.url_list(), methods=['POST'], view_func=self.post_new, endpoint=st.endpoint_name('post_new'))
-        app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=self.get_new, endpoint=st.endpoint_name('get_new'))
-        app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=self.get_edit_list, endpoint=st.endpoint_name('get_edit_list'))
-
-    def render_list(self, list=None, parents=None, op=None):
-        render_args = {self.strategy.plural_name:list, 'op':op}
-        render_args.update(parents)
-        return render_template(self.strategy.list_template(), **render_args)
-    
-    def render_one(self, item=None, parents=None, op=None, form=None):
-        render_args = {self.strategy.resource_name:item, 'op':op}
-        render_args[self.strategy.resource_name+'_form'] = form
-        render_args.update(parents)
-        return render_template(self.strategy.item_template(), **render_args)
-
-    def get(self, **kwargs):
-        item = self.strategy.query_item(**kwargs)
-        parents = self.strategy.query_parents(**kwargs)
-        if not self.strategy.allowed_on('read', item):
-            return self.render_one(error=401)
-        return self.render_one(item, parents)
-
-    def get_edit(self, **kwargs):
-        item = self.strategy.query_item(**kwargs)
-        parents = self.strategy.query_parents(**kwargs)
-        if not item:
-            return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', item):
-            return self.render_one(error=401)
-        # TODO add prefill form functionality
-        form = self.form_class(obj=item)
-        form.action_url = url_for('.'+self.strategy.endpoint_name('post'), method='put', **kwargs)
-        return self.render_one(item, parents, op='edit', form=form)
-    
-    def get_new(self, *args, **kwargs):
-        # no existing item as we are creating new
-        parents = self.strategy.query_parents(**kwargs)
-        if not self.strategy.allowed_any('write'):
-            return self.render_one(error=401)
-        # TODO add prefill form functionality
-        form = self.form_class(request.args, obj=None)
-        form.action_url = url_for('.'+self.strategy.endpoint_name('post_new'), **kwargs)
-        return self.render_one(parents=parents, op='new', form=form)
-
-    def get_list(self, *args, **kwargs):
-        parents = self.strategy.query_parents(**kwargs)
-        if not self.strategy.allowed_any('read'):
-            return self.render_one(error=401)
-        # list_args = self.get_list_args()
-        # if not list_args:
-        #     return self.render_one(error=400)
-        list = self.strategy.query_list(request.args)
-        # Filter on allowed items?
-        return self.render_list(list=list, parents=parents)
-
-    def get_edit_list(self, *args, **kwargs):
-        if not self.strategy.allowed_any('write'):
-            return self.render_one(error=401)
-          
-        list_args = self.get_list_args()
-        if not list_args:
-            return self.render_one(error=400)    
-        list = self.strategy.query_list(list_args)
-        # Filter on allowed items?
-        return self.render_list(op='edit', item=list)
-
-    def post(self, *args, **kwargs):
-        if request.args.has_key('method'):
-            method = request.args.get('method')
-            if method.upper() == 'PUT':
-              return self.put(*args, **kwargs);
-            elif method.upper() == 'PATCH':
-              return self.patch(*args, **kwargs)
-            elif method.upper() == 'DELETE':
-              return self.delete(*args, **kwargs)
-            else:
-              return self.render_one(error=400); #error_response, invalid method
-        else:
-          return self.render_one(error=400, msg="Not REST operation"); #error_response, missing method
-
-    def post_new(self, *args, **kwargs):
-        if not self.strategy.allowed_any('write'):
-            return self.render_one(error=401)
-        form = self.form_class(request.form, obj=None)
-        if not form.validate():
-            print form.errors
-            print self.strategy.model_class._fields
-            return self.render_one(error=403)
-        item = self.strategy.create_item()
-        form.populate_obj(item)
-        item.save()
-        print kwargs
-        if 'next' in request.args:
-            return redirect(request.args['next'])
-        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
-            **self.strategy.all_view_args(item)))
-
-    def print_form_inputs(self, reqargs, formdata, obj):
-        '''Debug helper method to compare the data from HTTP, form and obj'''
-        reqkeys = reqargs.keys()
-        formdatakeys = formdata.keys()
-        objkeys = obj.__dict__.keys()
-        joinedkeys = reqkeys + formdatakeys + objkeys
-        joinedkeys = [k for k in joinedkeys if k[0]!='_']
-        for k in joinedkeys:
-            print "Key: %s" % k
-            print "\tReq: %s" % (reqargs.getlist(k) if reqargs.has_key(k) else None)
-            print "\tForm: %s" % (formdata.get(k) if formdata.has_key(k) else None)
-            print "\tObj: %s" % (getattr(obj, k, None))
-        # print "Joined keys: %s" % joinedkeys
-
-    def put(self, *args, **kwargs):
-        item = self.strategy.query_item(**kwargs)
-        parents = self.strategy.query_parents(**kwargs)
-        if not item:
-            return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', item):
-            return self.render_one(error=401)
-        form = self.form_class(request.form, obj=item)
-        # self.print_form_inputs(request.form, form.data, item)
-        if not form.validate():
-            print form.errors
-            return self.render_one(error=403)
-        form.populate_obj(item)
-        item.save()
-        if 'next' in request.args:
-            return redirect(request.args['next'])
-        # In case slug has changed, query the new value before redirecting!
-        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
-            **self.strategy.all_view_args(item)))
-
-    def patch(self, *args, **kwargs):
-        item = self.strategy.query_item(**kwargs)
-        parents = self.strategy.query_parents(**kwargs)
-        if not item:
-            return self.render_one(error=400)
-        if not self.strategy.allowed_on('write', item):
-            return self.render_one(error=401)
-        form = self.form_class(request.form, obj=item)
-        if not form.validate():
-            print form.errors
-            return self.render_one(error=403)
-        form.populate_obj(item)
-        item.save()
-        if 'next' in request.args:
-            return redirect(request.args['next'])
-        # In case slug has changed, query the new value before redirecting!
-        return redirect(url_for('.'+self.strategy.endpoint_name('get'), 
-            **self.strategy.all_view_args(item)))
-    
-    def delete(self, *args, **kwargs):
-        item = self.strategy.query_item(**kwargs)
-        if not item:
-            return self.render_one(error=400)
-        if self.strategy.parent:
-            parents = self.strategy.query_parents(**kwargs)
-            redir_url = url_for('.'+self.strategy.endpoint_name('get_list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
-        else:
-             redir_url = url_for('.'+self.strategy.endpoint_name('get_list'))
-        if not self.strategy.allowed_on('write', item):
-            return self.render_one(error=401)
-        item.delete()
-        if 'next' in request.args:
-            return redirect(request.args['next'])
-        # We have to build our redir_url first, as we can't read it out when item has been deleted
-        return redirect(redir_url)
-
 class ResourceError(Exception):
     default_messages = {
         400: "Bad request or invalid input",
@@ -364,7 +177,7 @@ class ResourceError(Exception):
         self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
         self.r = r
 
-class ResourceHandler2(View):
+class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
 
@@ -384,7 +197,7 @@ class ResourceHandler2(View):
 
         app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
-        # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler2.as_view(st.endpoint_name('get_edit_list'), st))
+        # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
         app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
         app.add_url_rule(st.url_list(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
         app.add_url_rule(st.url_list(), methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))

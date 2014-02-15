@@ -6,7 +6,7 @@ from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 
-from resource import ResourceHandler, ResourceHandler2, ResourceAccessStrategy, RacModelConverter
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter
 from raconteur import auth, db
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -17,7 +17,7 @@ world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
 world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
 
-class WorldHandler(ResourceHandler2):
+class WorldHandler(ResourceHandler):
   def myworlds(self, r):
     # Worlds which this user has created articles for
     # TODO probably not efficient if many articles!
@@ -31,11 +31,11 @@ WorldHandler.register_urls(world_app, world_strategy)
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, exclude=['slug'], converter=RacModelConverter()), short_url=True)
-ResourceHandler2.register_urls(world_app, article_strategy)
+ResourceHandler.register_urls(world_app, article_strategy)
 
 article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)
 
-ResourceHandler2.register_urls(world_app, article_relation_strategy)
+ResourceHandler.register_urls(world_app, article_relation_strategy)
 
 @world_app.route('/')
 def index():
