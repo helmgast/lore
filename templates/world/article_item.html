@@ -91,19 +91,12 @@
   </div>
 
   <h4 style="display:inline">Relations ({{ article.relations|length if article }})</h4>
-  {{ form_fields(article_form.relations) }}
+  {{ article_form.relations() }}
   {%- if op == 'new' -%}
     <button id="addrow" class="btn btn-info btn-sm disabled" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
   {%- else -%}
     <button id="addrow" class="btn btn-info btn-sm" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
   {%- endif -%}
-    <table class="m_view">
-    <tr class="m_instance"></tr>
-<!--     {% for articlerelation_form in article_form.relations %}
-      {% include "articlerelation_item.html" %}
-    {% endfor %}
- -->    <tr class="m_control"><td></td></tr>
-  </table>
 </div>
 </div>
 </form>
@@ -209,6 +202,17 @@
 
         //----------------------------------
         {% if article %} {# TODO should work also when article is None! #}
+        var getButtonObj = function() {
+          var $button = $("<button>");
+          $button.addClass("removerow btn btn-danger btn-xs").css("float", "right");
+          $button.append($("<span>").addClass("glyphicon glyphicon-remove"));
+          $button.click(function() {
+              $button.parent("li").remove();
+          });
+          return $button;
+        };
+        $("ul#relations > li").prepend(getButtonObj());
+
         $('#addrow').click(function(e){
           $this = $(this);
           var nr = $('.m_view input[type="hidden"]').last().attr('id')
@@ -217,10 +221,18 @@
           } else {
             nr = 0
           }
-          $.get('{{ url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }}?index='+nr, function(data) {
-            var $d = $(data)
-            $d.insertAfter($('.m_view .m_instance').last())
-            $d.find('select[data-role="chosenblank"]').chosen()
+          var currentCount = $("#relations li").length;
+          $.get('{{ url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }}', function(data) {
+            var $d = $(data);
+            var prefix = "relations-"+currentCount+"-";
+            $d.first("label").html("Relations-"+currentCount);
+            $d.find("*[id]").attr("id", prefix+$el.attr("id"));
+            $d.find("*[for]").attr("for", prefix+$el.attr("for"));
+            $d.find("*[name]").attr("name", prefix+$el.attr("name"));
+            
+            $("#relations").append($("<li>").append(getButtonObj()).append($d));
+            // $d.insertAfter($('.m_view .m_instance').last())
+            // $d.find('select[data-role="chosenblank"]').chosen()
           });
           e.preventDefault(); return false;  
         });
