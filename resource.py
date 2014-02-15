@@ -280,6 +280,7 @@ class ResourceHandler(View):
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
+        r['item'] = item
         if not 'next' in r:
             r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r

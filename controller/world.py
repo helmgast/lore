@@ -40,7 +40,7 @@ ResourceHandler.register_urls(world_app, article_relation_strategy)
 @world_app.route('/')
 def index():
     worlds = World.objects()
-    return render_template('world/base.html', worlds=worlds)
+    return render_template('world/world_list.html', worlds=worlds)
 
 @world_app.route('/image/<slug>')
 def image(slug):
