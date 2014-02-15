@@ -16,11 +16,7 @@
       <tr>
         <td>
         {% set lastmsg = conversation.last_message() %}
-        {% if lastmsg %}
-            <a href="{{ url_for('.conversation_view', conversation=conversation.id) }}"><em> {{lastmsg.content}}</em></a>
-        {% else %}
-            <a href="{{ url_for('.conversation_view', conversation=conversation.id) }}"><em> (empty) </em></a>         
-        {% endif %}
+        <a href="{{ url_for('.conversation_form_edit', conversation=conversation.id) }}"><em> {{lastmsg.content if lastmsg else '(empty)'}}</em></a>
         </td>
         <td>{{ conversation.modified_date.strftime('%Y-%m-%d %H:%M')}} </td>
         <td>

@@ -1,10 +1,11 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
-{% set recipients = conversation.members %}
+{% set recipients = conversation.members if conversation else [] %}
 
-{% block content_title %}{{'New conversation' if op=='new' else 'Conversation'}} with {{ recipients|join(', ')|truncate(20) }}{% endblock %}  
+{% block content_title %}{% if op=='new' %}New conversation{% elif conversation.title %}{{conversation.title}}{% else %}Conversation{%endif%}{% endblock %} 
 
 {% block content_tagline %}{% endblock %}
+{% block content_subheader %}<span class="nav-header">Members:</span> {{ recipients|join(', ')|truncate(20) }}{%endblock%}
 
 {% if conversation %}
   {% set fixed_recipients = True %} {# fixed recipients always when having existing conversation #}
@@ -21,22 +22,15 @@
       {% endfor %}
     </ul>
   {% endif %}  
-  <form action="{{ url_for('.conversation_new') }}" method="post">
-    {% if conversation_form %}
-    <p>Members: {{conversation_form['members'](**{'data-role':'chosen','style':'width:100%;'}) }}</p>
-    {% endif %}
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-    <input type="hidden" name="user" value="{{g.user.id}}" />
-    <input type="hidden" name="conversation" value="{{conversation.id}}" />    
-    {#<select name="recipients" multiple="multiple"{{ ' class=hide' if fixed_recipients }}>
-      {% for r in recipients %}
-      <option selected="selected">{{ r }}</option>
-      {% endfor %}
-    </select>
-    #}
+  {% if conversation_form %}
+  <form action="{{conversation_form.action_url}}" method="post">
+    <p>Title: {{conversation_form.title(style='width:100%;') }}</p>
+    <p>Members: {{conversation_form.members(**{'data-role':'chosen', 'data-placeholder':"Recipients...", 'style':'width:100%;'}) }}</p>
+    {{conversation_form.csrf_token()}}
     <textarea class="form-control" rows="4" name="content" autofocus></textarea>
     <button type="submit" class="btn btn-primary btn-block">Send</button>
   </form>
+  {% endif %}
   </div>
 </div>
 {% endblock %}{% endblock %}
