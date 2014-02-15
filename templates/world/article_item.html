@@ -182,10 +182,6 @@
 			function() {
         var $e = $('#editor');
         $e.wysiwyg();
-        //$("#content").val($e.cleanHtml()); // have to load it once!
-				// $e.wysiwyg().blur(function(e){
-				// 	$("#content").val($e.cleanHtml());
-				// });
 
         $e.on('paste', function(e) {
           $this = $(this)
