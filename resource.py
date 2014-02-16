@@ -226,6 +226,7 @@ class ResourceHandler(View):
         if self.strategy.resource_name in kwargs:
             r['item'] = self.strategy.query_item(**kwargs)
             r[self.strategy.resource_name] = r['item']
+        
         r['parents'] = self.strategy.query_parents(**kwargs)
         r.update(r['parents'])
         r['op'] = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())

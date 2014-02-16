@@ -14,8 +14,11 @@
 
 {% block content %}{% block inline %}
 {% if group_form %}<form method="post" action="{{group_form.action_url}}">{% endif %}
-<div class="row m_inplace m_view{{ ' modal-body' if inline }}">
-  <div class="span6">
+<div class="row">
+  <div class="col-md-6">
+    {% include "social/group_member_view.html" %}
+  </div>
+  <div class="col-md-6">
     <div class="well">{{ group_form.description if group_form else group.description }}</div>
     <table class="table">
       <tr><td><strong>Name</strong></td>
@@ -27,9 +30,6 @@
       <tr><td><strong>Meetings</strong></td>
       <td><span class="badge">0</span></td></tr>
     </table>
-  </div>
-  <div class="span6">
-    {% include "social/group_member_view.html" %}
   </div>
 </div>
 {% if group_form %}

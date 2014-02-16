@@ -73,8 +73,12 @@ class Conversation(db.Document):
     modified_date = db.DateTimeField(default=now())
     members = db.ListField(db.ReferenceField(User))
     title = db.StringField(max_length=60)
+    topic = db.StringField(max_length=60)
     
     meta = {'ordering': ['-modified_date']}
+
+    def is_private(self):
+        return (members and len(members)>1)
 
     def messages(self):
         return Message.objects(conversation=self)

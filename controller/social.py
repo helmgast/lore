@@ -15,19 +15,17 @@ conversation_strategy = ResourceAccessStrategy(Conversation, 'conversations')
 
 class ConversationHandler(ResourceHandler):
 	def new(self, r):
-		if not request.form.has_key('content'):
+		if not request.form.has_key('content') or len(request.form.get('content'))==0:
 			raise ResourceError(400, 'Need to attach first message with conversation')
 		r = super(ConversationHandler, self).new(r)
 		Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
 		return r
 	
 	def edit(self, r):
-		if not request.form.has_key('content'):
-			raise ResourceError(400, 'Need to attach new message to edited conversation')
 		r = super(ConversationHandler, self).edit(r)
-		Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
+		if request.form.has_key('content') and len(request.form.get('content'))>0:
+			Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
 		return r
-
 
 ConversationHandler.register_urls(social, conversation_strategy)
 

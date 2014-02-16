@@ -1,9 +1,9 @@
 <div class="message
-{% if is_conversation %}
-  {% if user.username == message.user.username %} bubble_mine
-  {% else %} bubble_others
-  {% endif %}
-{% endif %}">
+{%- if is_conversation -%}
+  {%- if user.username == message.user.username -%} bubble_mine
+  {%- else -%} bubble_others
+  {%- endif -%}
+{%- endif -%}">
     <a href="{{ url_for('.user_view', user=message.user.username) }}">
       <img class="avatar" src="{{ message.user.gravatar_url() }}" />
     </a>
