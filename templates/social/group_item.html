@@ -19,7 +19,7 @@
 {% if group_form %}<form method="post" action="{{group_form.action_url}}">{% endif %}
 <div class="row">
   <div class="col-md-6">
-    <table class="table table-striped">
+    <table class="table table-striped"{{ ' data-editable=list' if group_form}}>
       <thead>
         <tr>
           <th>Username</th>
@@ -28,7 +28,8 @@
         </tr>
       </thead>
       <tbody>
-      {%- for gm in members -%}
+      {%- for member in members -%}
+        {% set member_form = group_form.members[loop.index0] if group_form %}
         {% include "social/member_item.html" %}      
       {%- endfor -%}
       </tbody>
@@ -58,5 +59,19 @@
     <a href="{{url_for('.group_delete', group=group.slug)}}" class="btn btn-danger pull-right">Delete</a>
     {% endif %}
 </div></form>{% endif %}
-
 {% endblock %}{% endblock %}
+
+{% block final %}{{super()}}
+<script>
+  var getButtonObj = function() {
+    var $button = $("<button>");
+    $button.addClass("removerow btn btn-danger btn-xs").css("float", "right");
+    $button.append($("<span>").addClass("glyphicon glyphicon-remove"));
+    $button.click(function() {
+      $button.parent("li").remove();
+    });
+    return $button;
+  };
+  $("ul#relations > li").prepend(getButtonObj());
+</script>
+{% endblock %}

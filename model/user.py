@@ -89,10 +89,14 @@ class Conversation(db.Document):
     def __unicode__(self):
         return u'conversation'
 
-ROLE_TYPES = ('MASTER','MEMBER','INVITED')
+MASTER, MEMBER, INVITED = 0,1,2
+ROLE_TYPES = ((MASTER, 'MASTER'),(MEMBER, 'MEMBER'),(INVITED, 'INVITED'))
 class Member(db.EmbeddedDocument):
     user = db.ReferenceField(User)
-    role = db.StringField(choices=ROLE_TYPES, default=ROLE_TYPES[2])
+    role = db.IntField(choices=ROLE_TYPES, default=MEMBER)
+
+    def get_role(self):
+        return ROLE_TYPES[self.role][1]
 
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
@@ -112,10 +116,10 @@ class Group(db.Document):
         return self.name
 
     def add_masters(self, new_masters):
-        self.members.extend([Member(user=m,role='MASTER') for m in new_masters])
+        self.members.extend([Member(user=m,role=MASTER) for m in new_masters])
 
     def add_members(self, new_members):
-        self.members.extend([Member(user=m,role='MEMBER') for m in new_members])
+        self.members.extend([Member(user=m,role=MEMBER) for m in new_members])
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

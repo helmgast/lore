@@ -81,7 +81,7 @@ class RacModelConverter(ModelConverter):
 class ResourceAccessStrategy:
 
     def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False):
-        self.form_class = form_class if form_class else model_form(model_class)
+        self.form_class = form_class if form_class else model_form(model_class, converter=RacModelConverter())
         self.model_class = model_class
         self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
         self.plural_name = plural_name
@@ -226,7 +226,7 @@ class ResourceHandler(View):
         if self.strategy.resource_name in kwargs:
             r['item'] = self.strategy.query_item(**kwargs)
             r[self.strategy.resource_name] = r['item']
-        
+
         r['parents'] = self.strategy.query_parents(**kwargs)
         r.update(r['parents'])
         r['op'] = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())

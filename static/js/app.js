@@ -1,3 +1,37 @@
+
+// Editable List plugin
++function ($) {
+  'use strict';
+
+  $.fn.editablelist = function (option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var $button = $('<button type="button" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span></button>')
+      $button.click(function() {
+          $button.parent("tr").remove();
+      });
+      $button = $button.wrap('<td></td>').parent()
+      $this.find('tbody > tr').append($button)
+
+      // var data    = $this.data('bs.carousel')
+      // var options = $.extend({}, Carousel.DEFAULTS, $this.data(), typeof option == 'object' && option)
+      // var action  = typeof option == 'string' ? option : options.slide
+
+      // if (!data) $this.data('bs.carousel', (data = new Carousel(this, options)))
+      // if (typeof option == 'number') data.to(option)
+      // else if (action) data[action]()
+      // else if (options.interval) data.pause().cycle()
+    })
+  }
+
+  $(window).on('load', function () {
+    $('[data-editable="list"]').each(function () {
+      var $editablelist = $(this)
+      $editablelist.editablelist($editablelist.data())
+    })
+  })
+}(jQuery);
+
 $(document).ready(function() {
 
   function serializeObject(form) {
