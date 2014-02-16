@@ -2,19 +2,21 @@
 
 {% block inline %}
   <tr class="user-tablerow">
-    <td name="username">
-      {% if member_form and not member %}
-      	{{member_form.user}}
-      {% else %}
-      	{% if member_form %}
-      		<input type="hidden" name="members-{{index}}-user" value="{{member.user.id}}" />
-      	{% endif %}
+    {%- if member_form and not member %}
+   		<td name="username" colspan="2">
+      		{{member_form.user(**{'data-role':'chosen','style':'width:100%;'})}}
+      	</td>
+    {% else %}
+       <td name="username">
+      {% if member_form %}
+      	<input type="hidden" name="members-{{index}}-user" value="{{member.user.id}}" />
+      {% endif %}
       <a href="{{ url_for('.user_view', user=member.user.username) }}">        
       <img class="avatar" src="{{ member.user.gravatar_url() }}" />
       <strong class="message_name">{{member.user.username}}</strong></a>
-      {% endif %}
     </td>
     <td>{{member.user.realname if member}}</td>
+    {% endif %}
     <td>
     {% if member_form %}
     {{member_form.role}}

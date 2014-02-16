@@ -6,12 +6,22 @@
   $.fn.editablelist = function (option) {
     return this.each(function () {
       var $this   = $(this)
+      var remote  = $this.data('remote')
       var $button = $('<button type="button" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span></button>')
       $button.click(function() {
           $button.parent("tr").remove();
       });
       $button = $button.wrap('<td></td>').parent()
       $this.find('tbody > tr').append($button)
+
+      $button = $('<button type="button" class="btn btn-primary btn-sm">Add</button>')
+      $button.click(function() {
+          jQuery.get(remote, function(data) {
+            $this.find('tbody').append(data)
+            $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
+          })
+      });
+      $this.after($button)
 
       // var data    = $this.data('bs.carousel')
       // var options = $.extend({}, Carousel.DEFAULTS, $this.data(), typeof option == 'object' && option)
