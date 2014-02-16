@@ -1,16 +1,29 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
+{% if request.args.get('groupby')=='type' %}
+    {% set groups = articles|by_articletype %}
+    {% set type_tab = ' class=active' %}
+{% elif request.args.get('groupby')=='time' %}
+    {% set groups = articles|by_time %}
+    {% set time_tab = ' class=active' %}
+{% else %} {# request.args.get('groupby')=='title' #}
+    {% set groups = articles|by_initials %}
+    {% set title_tab = ' class=active' %}
+{% endif %}
+
+{% block pre_content %}
+<h2>Browse</h2>
+<ul class="nav nav-tabs">
+    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> Browse by title</a></li>
+    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> Browse by type</a></li>
+    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> Browse by time</a></li>
+    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> Browse by relation</a></li>
+</ul>
+{% endblock %}
+
 {% block content %}
     <div class="row">
     {% if articles.count() == 0 %}No articles yet!{% else %}
-
-    {% if request.args.get('groupby')=='type' %}
-        {% set groups = articles|by_articletype %}
-    {% elif request.args.get('groupby')=='time' %}
-        {% set groups = articles|by_time %}
-    {% else %} {# request.args.get('groupby')=='title' #}
-        {% set groups = articles|by_initials %}
-    {% endif %}
     <dl>
         {% for group in groups %}
         <dt>{{ group.grouper|capitalize }}</dt>

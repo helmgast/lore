@@ -16,10 +16,10 @@
 {% if group_form %}<form method="post" action="{{group_form.action_url}}">{% endif %}
 <div class="row">
   <div class="col-md-6">
-    {% include "social/group_member_view.html" %}
+    {% include "social/member_item.html" %}
   </div>
   <div class="col-md-6">
-    <div class="well">{{ group_form.description if group_form else group.description }}</div>
+    <div class="well">{{ group_form.description(style="width: 100%") if group_form else group.description }}</div>
     <table class="table">
       <tr><td><strong>Name</strong></td>
       <td>{{ group_form.name if group_form else group.name }}</td></tr>

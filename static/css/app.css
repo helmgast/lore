@@ -433,6 +433,10 @@ textarea#metadata {
   margin-right: 10px;
 }
 
+.worldheader .navbar-brand {
+	margin-left: 0px !important;
+}
+
 .popover-content p {
   font-weight: 600;
   color: #999;

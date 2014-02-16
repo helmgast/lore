@@ -3,16 +3,46 @@
 {% block content_title %}{{world.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+{% block navbar %}
+<div class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('homepage') }}"><span class="glyphicon glyphicon-home"></span></a></li>
+                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span></a></li>
+                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> </a></li>
+                    <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
+                    <li class="active"><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> Worlds</a></li>
+                    <li class="worldheader"><a class="navbar-brand" href="{{ url_for('world.world_view', world=world.slug) }}"> {{world.title}}</a></li>
+              </a>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    {% if not session.logged_in %}
+                        <li><a href="{{ url_for('auth.login') }}">log in</a></li>
+                        <li><a href="{{ url_for('join') }}">join</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+</div>
+{% endblock %}
+
+
 {% block sidebar %}
 <ul class="nav nav-list" style="">
-    <li class="nav-header">{{world.title}}</li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> Browse by type</a></li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> Browse by title</a></li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> Browse by time</a></li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> Browse by relation</a></li>
-</ul>
-<ul class="nav nav-list" style="">
-<li class="nav-header">Article actions</li>    
+    <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> Home</a></li>    
+    <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> Browse</a></li>    
+    <li class="nav-header">Article actions</li>
 {%- block article_actions -%}
     <li><a href="{{ url_for('world.article_form_new', world=world.slug) }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>
 {%- endblock -%}

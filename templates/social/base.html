@@ -5,13 +5,12 @@
 {% block social_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <h3>Navigation</h3>
-    <ul class="nav nav-list">
-      <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-home"></span> Main</a></li>
-      <li><a href="{{ url_for('.user_list') }}"><span class="glyphicon glyphicon-user"></span> Gamers</a></li>
-      <li><a href="{{ url_for('.group_list') }}"><span class="glyphicon glyphicon-globe"></span> Groups</a></li>
-      <li><a href="{{ url_for('.conversation_list') }}"><span class="glyphicon glyphicon-bullhorn"></span> Forum</a></li>
-    </ul>
+  <ul class="nav nav-list">
+    <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-home"></span> Main</a></li>
+    <li><a href="{{ url_for('.user_list') }}"><span class="glyphicon glyphicon-user"></span> Gamers</a></li>
+    <li><a href="{{ url_for('.group_list') }}"><span class="glyphicon glyphicon-globe"></span> Groups</a></li>
+    <li><a href="{{ url_for('.conversation_list') }}"><span class="glyphicon glyphicon-bullhorn"></span> Forum</a></li>
+  </ul>
 {% endblock %}
 
 {% block content %}

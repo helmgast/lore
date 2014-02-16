@@ -5,12 +5,11 @@
 {% block campaign_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <h3>Navigation</h3>
-    <ul class="nav nav-list">
-      <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-book"></span> Campaigns</a></li>
-      <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> My sessions</a></li>
-      <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> Chronicles</a></li>
-    </ul>
+  <ul class="nav nav-list">
+    <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> Campaigns</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> My sessions</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> Chronicles</a></li>
+  </ul>
 {% endblock %}
 
 {% block content %}

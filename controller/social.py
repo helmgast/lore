@@ -1,7 +1,7 @@
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g
 from raconteur import auth
 from resource import ResourceHandler, ResourceError, ResourceAccessStrategy
-from model.user import User, Group, Conversation, Message
+from model.user import User, Group, Member, Conversation, Message
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
@@ -10,6 +10,9 @@ ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
 ResourceHandler.register_urls(social, group_strategy)
+
+member_strategy = ResourceAccessStrategy(Member, 'members', None, parent_strategy=group_strategy)
+ResourceHandler.register_urls(social, member_strategy)
 
 conversation_strategy = ResourceAccessStrategy(Conversation, 'conversations')
 

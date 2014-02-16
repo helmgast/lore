@@ -9,7 +9,7 @@
 <tbody>
 {% block inline %}
 {%- for gm in members -%}
-  <tr class="user-tablerow m_instance">
+  <tr class="user-tablerow">
     <td class="m_field" name="username" data-value="{{gm.user.username}}">
       <a href="{{ url_for('.user_view', user=gm.user.username) }}">
       <img class="avatar" src="{{ gm.user.gravatar_url() }}" />
@@ -17,16 +17,6 @@
     </a></td>
     <td>{{gm.user.realname}}</td>
     <td>{{gm.role}}</td>
-    {% if False and resource.form %}<td> {# TODO avoiding to show form fields #}
-      {% if False and resource.form and gm.status != 1 %}
-        <button type="button" class="btn btn-small m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='remove', players=gm.member.username, view='m_group_member_view') }}">
-          <span class="glyphicon glyphicon-remove"></span>
-        </button>
-        {% if gm.status==2 %}<button type="button" class="btn btn-xs m_action" data-action-type="modal" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', masters=gm.member.username, view='m_group_member_view') }}">
-          Make master?
-        </button>{% endif %}
-      {% endif %}
-    </td>{% endif %}
   </tr>
 {%- endfor -%}
 {% endblock %}

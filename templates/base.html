@@ -57,10 +57,10 @@
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}">Social</a></li>
-                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}">Campaign</a></li>
-                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}">Worlds</a></li>
-                    <li{% block generator_active %}{% endblock %}><a href="{{ url_for('generator.index') }}">Generators</a></li>
+                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> Social</a></li>
+                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> Campaign</a></li>
+                    <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> Tools</a></li>
+                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> Worlds</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
@@ -80,14 +80,14 @@
 
     {% block mainblock %}
     <div class="row">
-        <div class="col-md-2 col-xs-3">
+        <div class="col-md-2">
             {% block sidebar %}
                 &nbsp;
             {% endblock %}
         </div>
         <!-- /sidebar -->
 
-        <div class="col-md-10 col-xs-9">
+        <div class="col-md-10">
             <div class="content">
                 {% block middle %}
                 {% block pre_content %}
