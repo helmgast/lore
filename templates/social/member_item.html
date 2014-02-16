@@ -1,16 +1,6 @@
-<table class="table table-striped">
-<thead>
-  <tr>
-    <th>Username</th>
-    <th>Real name</th>
-    <th>Role</th>
-  </tr>
-</thead>
-<tbody>
 {% block inline %}
-{%- for gm in members -%}
   <tr class="user-tablerow">
-    <td class="m_field" name="username" data-value="{{gm.user.username}}">
+    <td name="username" data-value="{{gm.user.username}}">
       <a href="{{ url_for('.user_view', user=gm.user.username) }}">
       <img class="avatar" src="{{ gm.user.gravatar_url() }}" />
       <strong class="message_name">{{gm.user.username}}</strong>
@@ -18,24 +8,4 @@
     <td>{{gm.user.realname}}</td>
     <td>{{gm.role}}</td>
   </tr>
-{%- endfor -%}
 {% endblock %}
-
-</tbody>
-
-<!-- Deprecated -->
-<!--
-{% if False and resource.form -%}
-<tfoot><tr><td colspan="4">
-  <label>Add players</label>
-  <ul class="typeahead-list typeahead-user">
-    <li class="typeahead-input"><input class="typeahead-user-input" type="text" data-provide="typeahead" data-exclude-view=".m_view-groupmembers" /></li>
-  </ul><button type="button" class="btn btn-primary m_action" href="{{ url_for('social.group_members_change', slug=group.slug, action='add', view='m_group_member_view') }}">Add</button>
-</td></tr></tfoot>
-<script>
-  jQuery.getJSON('/api/username/', function(data) { $('.typeahead-user input').typeahead({source: data.objects}) })
-</script>
-{% endif %}
-
--->
-</table>

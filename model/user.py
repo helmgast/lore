@@ -101,7 +101,7 @@ GROUP_TYPES = ((GAME_GROUP, 'gamegroup'),
                (WORLD_GROUP, 'worldgroup'), 
                (ARTICLE_GROUP, 'articlegroup'))
 class Group(db.Document):
-    name = db.StringField(max_length=60)
+    name = db.StringField(max_length=60, required=True)
     location = db.StringField(max_length=60)
     slug = db.StringField()
     description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea

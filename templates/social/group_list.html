@@ -2,6 +2,13 @@
 
 {% block content_title %}Groups{% endblock %}
 
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list">
+<li class="nav-header">Actions</li>
+<li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>
+</ul>
+{% endblock %}
+
 {% block content %}
 
   <div class="row">

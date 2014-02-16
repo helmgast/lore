@@ -53,12 +53,16 @@
 </div> 
 
 {% if user_form %}
+<div class="row form-actions">
   {{ user_form.csrf_token }}
-  {{ user_form.username(style="display:none;") }}
-  {{ user_form.email(style="display:none;") }}
-  <button type="submit" class="btn btn-small btn-primary">Save changes</button>
-  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-small">Cancel</a>
-</form>{%endif%}
+  {{ user_form.username(class="hide") }}
+  {{ user_form.email(class="hide") }}
+  <button type="submit" class="btn btn-primary">Save changes</button>
+  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-default">Cancel</a>
+  {% if op!='new' %}
+  <a href="{{url_for('.user_delete', user=user.username)}}" class="btn btn-danger pull-right">Delete</a>
+  {% endif %}
+</div></form>{%endif%}
 <div class="row">
   <div class="span5">
   <h4>Groups</h4>
