@@ -1,10 +1,17 @@
 {% extends 'includes/row.html' %}
 
 {% block content %}{% block inline %}
-<tr class="m_instance">
-    <td>{{ article.slug }} is a 
-        {{ articlerelation_form.relation_type(class="input-medium") if articlerelation_form else relation_type }}
-        {{ articlerelation_form.article(class="input-medium") if articlerelation_form else article.title }}</td>
-    <td><button class="removerow btn btn-danger btn-xs"><span class="glyphicon glyphicon-remove"></span></button></td>
-</tr>
+
+<label for="header"></label>
+<table id="header"><tbody>
+	<tr>
+	  	<th><label for="relation_type">{{ articlerelation_form.relation_type.label }}</label></th>
+  		<td>{{ articlerelation_form.relation_type() }}</td>
+  	</tr>
+	<tr>
+  		<th><label for="article">{{ articlerelation_form.article.label }}</label></th>
+  		<td>{{ articlerelation_form.article() }}</td>
+  	</tr>
+</tbody></table>
 {% endblock %}{% endblock %}
+  		
