@@ -6,7 +6,7 @@ from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
 from raconteur import auth, db
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -30,7 +30,7 @@ class WorldHandler(ResourceHandler):
 WorldHandler.register_urls(world_app, world_strategy)
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
-  form_class = model_form(Article, exclude=['slug']), short_url=True)
+  form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)
 ResourceHandler.register_urls(world_app, article_strategy)
 
 article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)

@@ -11,7 +11,7 @@ Created on 2 jan 2014
 '''
 
 # Constants and enumerations
-ARTICLE_DEFAULT, ARTICLE_IMAGE, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE = 0, 1, 2, 3, 4, 5, 6, 7
+ARTICLE_DEFAULT, ARTICLE_IMAGE, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE, ARTICLE_BLOG = 0, 1, 2, 3, 4, 5, 6, 7, 8
 ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'),
                  (ARTICLE_IMAGE, 'image'),
                  (ARTICLE_PERSON, 'person'),
@@ -19,7 +19,9 @@ ARTICLE_TYPES = ((ARTICLE_DEFAULT, 'default'),
                  (ARTICLE_PLACE, 'place'),
                  (ARTICLE_EVENT, 'event'),
                  (ARTICLE_CAMPAIGN, 'campaign'),
-                 (ARTICLE_CHRONICLE, 'chronicle'))
+                 (ARTICLE_CHRONICLE, 'chronicle'),
+                 (ARTICLE_BLOG, 'blogpost'))
+
 
 PUBLISH_STATUS_DRAFT, PUBLISH_STATUS_REVISION, PUBLISH_STATUS_PUBLISHED = 0, 1, 2
 PUBLISH_STATUS_TYPES = ((PUBLISH_STATUS_DRAFT, 'draft'),
@@ -137,6 +139,8 @@ class CampaignArticle(db.EmbeddedDocument):
 class ChronicleArticle(db.EmbeddedDocument):
     pass
 
+# Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
+EMBEDDED_TYPES = ['imagearticle','personarticle','fractionarticle','placearticle', 'eventarticle', 'campaignarticle']
 class Article(db.Document):
     meta = {'indexes': ['slug']}
     slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
@@ -149,6 +153,20 @@ class Article(db.Document):
     content = db.StringField()
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
     # modified_date = DateTimeField()
+
+    # Changes type by nulling the old field, if it exists, 
+    # and creating an empty new one, if it exists.
+    def change_type(self, new_type):
+        if new_type!=self.type:
+            if self.type is not None: # may still be 0
+                type_name = self.type_name()+'article'
+                if type_name in EMBEDDED_TYPES:
+                    # Null the old type
+                    setattr(self, type_name , None)
+            if new_type is not None: # may still be 0
+                type_name = Article.create_type_name(new_type)+'article'
+                if type_name in EMBEDDED_TYPES:
+                    setattr(self, type_name, self._fields[type_name].document_type())
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -179,6 +197,7 @@ class Article(db.Document):
     placearticle = db.EmbeddedDocumentField(PlaceArticle)
     eventarticle = db.EmbeddedDocumentField(EventArticle)
     campaignarticle = db.EmbeddedDocumentField(CampaignArticle)
+    
     relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
 

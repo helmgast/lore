@@ -9,6 +9,8 @@ from wtforms.compat import iteritems
 from wtforms.fields import FormField
 from wtforms import Form as OrigForm
 import inspect
+from flask.ext.mongoengine.wtf.models import ModelForm
+from model.world import EMBEDDED_TYPES, Article
 
 
 def generate_flash(action, name, model_identifiers, dest=''):
@@ -27,40 +29,22 @@ def error_response(msg, level='error'):
 #     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
 #         super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
 
-class RacFormField(FormField):
-    def __init__(self, *args, **kwargs):
-        # We need to save the form in the field to read from it later
-        # (normally in WTForms, fields shouldn't know about their forms)
-        self._form = kwargs['_form']
-        # print "_form is %s" % kwargs['_form']
-        super(RacFormField, self).__init__(*args, **kwargs)
+class ArticleBaseForm(ModelForm):
+    def populate_obj(self, obj):
+        if not type(obj) is Article:
+            raise TypeError('ArticleBaseForm can only handle Article models')
+        if 'type' in self.data:
+            new_type = self.data['type']
+            # Tell the Article we have changed type
+            obj.change_type(new_type)
 
-    def populate_obj(self, obj, name):
-        if self._form is None:
-            super(RacFormField, self).populate_obj(obj, name)
-        else:
-            # print "Populating field %s of %s from formfield %s of form class %s (model class %s)" % (
-            #        name, obj, self.name, self.form_class, self.form_class.model_class)
-            candidate = getattr(obj, name, None)
-            # print "Validated type in form is %s, type %s" % (self._form.type.data, type(self._form.type.data))
-            # new_type = obj.is_type(self.name)
-            typefield = self._form.model_class.create_type_name(self._form.type.data) + 'article'
-
-            # If new type matches this field
-            if typefield == name:
-                # if this field has no object
-                if candidate is None:
-                    # Create empty instance of this object based on Model Class
-                    candidate = self.form_class.model_class()
-                    setattr(obj, name, candidate)
-                    print "RacFormField.populate_obj: instantiated %s to new object as it was empty before, in %s" % (name, obj)
-                # Then populate as usual
-                self.form.populate_obj(candidate)
-            # If new type is not this field
-            elif not candidate is None:
-                print "RacFormField.populate_obj: set %s to None as not type of %s" % (name, obj)
-                # Just None the whole field and skip the population
-                setattr(obj, name, None)
+        for name, field in iteritems(self._fields):
+            # Avoid populating meta fields that are not currently active
+            if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
+                print "Skipping populating %s, as it's in %s and is != %s" % (name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
+                pass
+            else:
+                field.populate_obj(obj, name)
 
 class RacModelConverter(ModelConverter):
     @converts('EmbeddedDocumentField')
@@ -76,7 +60,8 @@ class RacModelConverter(ModelConverter):
         # additional CSRFs.
         form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
             base_class=OrigForm, field_args={}, )
-        return RacFormField(form_class, **kwargs)
+        print "Converted model %s" % model
+        return FormField(form_class, **kwargs)
 
 class ResourceAccessStrategy:
 
@@ -253,6 +238,7 @@ class ResourceHandler(View):
         r[self.strategy.resource_name+'_form'] = form
         r['op'] = 'edit' # form_edit is not used in templates...
         r['template'] = self.strategy.item_template()
+        # raise Exception()
         return r
     
     def form_new(self, r):
