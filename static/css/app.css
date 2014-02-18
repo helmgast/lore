@@ -398,6 +398,20 @@ textarea#metadata {
 
 .article_header {
 	font-family: Gentium Book Basic, serif;
+	font-size: 36px;
+}
+
+.blog_header {
+	color: #000;
+}
+
+.blog_header h2 {
+	font-family: Gentium Book Basic, serif;
+	font-size: 36px;
+}
+
+.blog_header:hover {
+	text-decoration: none;
 }
 
 .article_text {
@@ -435,6 +449,11 @@ textarea#metadata {
 
 .worldheader .navbar-brand {
 	margin-left: 0px !important;
+}
+
+.article-meta {
+	color: #999;
+	margin-bottom: 20px;
 }
 
 .popover-content p {

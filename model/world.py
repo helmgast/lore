@@ -3,6 +3,7 @@ from misc import slugify, now
 from user import User, Group
 import requests
 from StringIO import StringIO
+import re
 
 '''
 Created on 2 jan 2014
@@ -170,6 +171,7 @@ class Article(db.Document):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
+        self.description = re.sub('<[^<]+?>', '', self.content)[1:200]
         return super(Article, self).save(*args, **kwargs)
       
     def is_person(self):

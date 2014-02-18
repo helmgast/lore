@@ -42,6 +42,7 @@
 <ul class="nav nav-list" style="">
     <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> Home</a></li>    
     <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> Browse</a></li>    
+    <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> Blog</a></li>    
     <li class="nav-header">Article actions</li>
 {%- block article_actions -%}
     <li><a href="{{ url_for('world.article_form_new', world=world.slug) }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>

@@ -105,7 +105,7 @@
     <h1 class="article_header">{{title }}
         <small>{{ tagline }}</small>
     </h1>
-<ul class="list-inline" style="margin-bottom: 0px">
+<ul class="list-inline article-meta" style="margin-bottom: 0px">
   {% set articlegroups = article.articlegroups|list %}
   <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
   <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>

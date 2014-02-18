@@ -1,7 +1,7 @@
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g
 from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
   EventArticle, ImageArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_IMAGE, 
-  ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_TYPES)
+  ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_BLOG, ARTICLE_TYPES)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -25,13 +25,21 @@ class WorldHandler(ResourceHandler):
     worlds = [a.world for a in arts]
     r['template'] = self.strategy.list_template()
     r[self.strategy.plural_name] = worlds
-    return r
+    return r    
 
 WorldHandler.register_urls(world_app, world_strategy)
 
+class ArticleHandler(ResourceHandler):
+  def blog(self, r):
+    r = self.list(r)
+    r['template'] = 'world/article_blog.html'
+    r['list'] = r['list'].filter(type=ARTICLE_BLOG).order_by('-created_date')
+    r['articles'] = r['list']
+    return r
+
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)
-ResourceHandler.register_urls(world_app, article_strategy)
+ArticleHandler.register_urls(world_app, article_strategy)
 
 article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)
 

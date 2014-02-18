@@ -1,0 +1,22 @@
+{% extends "world/world_item.html" if not parent_template else parent_template %}
+
+{% block cssimports %}
+{{ super() }}
+<link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block pre_content %}{% endblock %}
+
+{% block content %}
+{% if articles.count() == 0 %}No articles yet!{% else %}
+	{% for article in articles %}
+		<a class="blog_header" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><h2>{{article.title}}</h2></a>
+		<ul class="list-inline article-meta" style="margin-bottom: 0px">
+		  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} by</li>
+		  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
+		</ul>
+		<p>{{article.description}}</p>
+		<a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em>Read more</em></a>
+	{% endfor %}
+{% endif %}
+{% endblock %}
