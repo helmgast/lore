@@ -62,14 +62,14 @@ def by_initials(objects):
   groups = []
   for k, g in groupby(objects, lambda o: o.title[0:1]):
     groups.append({'grouper':k, 'list':list(g)})
-  return groups
+  return sorted(groups, key=lambda tup : tup['grouper'])
 
 # Template filter, will group a list by their article type_name
 def by_articletype(objects):
   groups = []
   for k, g in groupby(objects, lambda o: o.type_name()):
     groups.append({'grouper':k, 'list':list(g)})
-  return groups
+  return sorted(groups, key=lambda tup : tup['grouper'])
 
 def prettydate(d):
   diff = timedelta()
