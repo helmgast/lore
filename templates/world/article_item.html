@@ -52,9 +52,16 @@
 			<div class="btn-group btn-group-sm">
         <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
         <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
+        <a class="btn btn-default" title="Description" data-toggle="collapse" href="#collapseDesc">Edit description</a>
       </div>
-      
 		</div>
+    <div class="panel panel-default">
+      <div id="collapseDesc" class="panel-collapse collapse">
+        <div class="panel-body">
+        {{article_form.description(style="width:100%")}}
+        </div>
+      </div>
+    </div>
 		<div id="editor">{{ article_form.content.data|safe if article_form.content.data else '<p><br></p>'|safe}}</div>
     {{ article_form.content(value="text",style="display:none;") }}
 </div>
