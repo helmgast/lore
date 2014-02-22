@@ -152,6 +152,7 @@ table.table-narrow {
 	padding: 0px 2px;
 }
 
+
 .message_name small {
 	font-size: 80%;
 }
@@ -229,6 +230,13 @@ table.table-narrow {
 
 .typeahead-item:hover {
 	background: #ccc;
+}
+
+#editor, textarea  {
+	border: 1px solid #bbb;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
 
 a .icon-ok {
@@ -367,13 +375,6 @@ textarea#content {
 
 textarea#metadata {
 	width: 200px;
-}
-
-#editor {
-/*	overflow: hidden;
-	overflow-y: scroll;
-	min-height: 300px;
-	max-height: 600px;*/
 }
 
 .calendar .selected {
