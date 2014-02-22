@@ -5,6 +5,7 @@ from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceAr
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
+from collections import OrderedDict
 
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
 from raconteur import auth, db
@@ -60,16 +61,16 @@ def image(slug):
 # Template filter, will group a list by their initial title letter
 def by_initials(objects):
   groups = []
-  for k, g in groupby(objects, lambda o: o.title[0:1]):
+  for k, g in groupby(sorted(objects, key=lambda x : x.title.upper()), lambda o: o.title[0:1].upper()):
     groups.append({'grouper':k, 'list':list(g)})
-  return sorted(groups, key=lambda tup : tup['grouper'])
+  return sorted(groups, key=lambda x : x['grouper'])
 
 # Template filter, will group a list by their article type_name
 def by_articletype(objects):
   groups = []
-  for k, g in groupby(objects, lambda o: o.type_name()):
-    groups.append({'grouper':k, 'list':list(g)})
-  return sorted(groups, key=lambda tup : tup['grouper'])
+  for k, g in groupby(sorted(objects, key=lambda x : x.type_name()), lambda o: o.type_name()):
+    groups.append({'grouper':k, 'list':sorted(list(g), key=lambda x : x.title)})
+  return sorted(groups, key=lambda x : x['grouper'])
 
 def prettydate(d):
   diff = timedelta()
@@ -88,9 +89,9 @@ def prettydate(d):
 # Template filter, will group a list by creation date, as measure in delta from now
 def by_time(objects):
   groups = []
-  for k, g in groupby(objects, lambda o: prettydate(o.created_date)):
-    groups.append({'grouper':k, 'list':list(g)})
-  return groups
+  for k, g in groupby(sorted(objects, key=lambda x : x.created_date), lambda o: prettydate(o.created_date)):
+    groups.append({'grouper':k, 'list':sorted(list(g), key=lambda x : x.title)})
+  return sorted(groups, key=lambda x : x['list'][0].created_date, reverse=True)
 
 world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
