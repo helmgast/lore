@@ -162,7 +162,7 @@ class Article(db.Document):
                 setattr(self, type_name, None)
         if new_type is not None: # may still be 0
             type_name = Article.create_type_name(new_type)+'article'
-            if type_name in EMBEDDED_TYPES and getattr(self, type_name, self._fields[type_name].document_type()) is None:
+            if type_name in EMBEDDED_TYPES and getattr(self, type_name) is None:
                 setattr(self, type_name, self._fields[type_name].document_type())
 
     def save(self, *args, **kwargs):
