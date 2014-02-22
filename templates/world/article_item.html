@@ -67,7 +67,6 @@
   <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
 {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
   <h4>Metadata</h4>
-  {{ article_form.description }}
   <fieldset style="margin-bottom: 10px">
   {#  {{ form_field(article_form.articlegroups) }} #}
   {{ form_field(article_form.type, class="m_action2")}}
@@ -143,22 +142,6 @@
 	{% if article.is_image() %} <img src="{{url_for('.image', slug=article.slug)}}" />
 	{% endif %} {{ article.content|wikify|markdown }}
 </div>
-{% if article_type_name == 'blogpost' %}
-    <div id="disqus_thread"></div>
-    <script type="text/javascript">
-        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-        var disqus_shortname = 'fablr'; // required: replace example with your forum shortname
-
-        /* * * DON'T EDIT BELOW THIS LINE * * */
-        (function() {
-            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-        })();
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-    {% endif %}
 {% endif %} {% endblock %}
 
 {% block final %}
@@ -215,25 +198,20 @@
 
         //----------------------------------
         {% if article %} {# TODO should work also when article is None! #}
+        // Editable-list START
         var getButtonObj = function() {
           var $button = $("<button>");
           $button.addClass("removerow btn btn-danger btn-xs").css("float", "right");
           $button.append($("<span>").addClass("glyphicon glyphicon-remove"));
-          $button.click(function() {
+          $button.click(function(e) {
               $button.parent("li").remove();
+              e.preventDefault(); return false;  
           });
           return $button;
         };
         $("ul#relations > li").prepend(getButtonObj());
 
-        $('#addrow').click(function(e){
-          $this = $(this);
-          var nr = $('.m_view input[type="hidden"]').last().attr('id')
-          if(nr !== undefined && nr.length > 0) {
-            nr = parseInt(nr.split('-')[1])+1 // will look for highest id in articlerelation list and add to it
-          } else {
-            nr = 0
-          }
+        $('#addrow').click(function(e) {
           var currentCount = $("#relations li").length;
           $.get('{{ url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }}', function(data) {
             var $d = $(data);
@@ -244,16 +222,10 @@
             $d.find("*[name]").attr("name", prefix+$el.attr("name"));
             
             $("#relations").append($("<li>").append(getButtonObj()).append($d));
-            // $d.insertAfter($('.m_view .m_instance').last())
-            // $d.find('select[data-role="chosenblank"]').chosen()
           });
           e.preventDefault(); return false;  
         });
-
-        $('.m_view').on('click','.removerow',function(e) {
-          $(this).closest('.m_instance').remove();
-          e.preventDefault(); return false;  
-        });
+        // Editable-list END
         {% endif %}
 
         //----------------------------------
