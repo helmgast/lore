@@ -9,20 +9,20 @@ Raconteur is a responsive web based platform that should work equally well on de
 
 ## FRAMEWORKS
 Raconteur is built in Python, and we use the following frameworks:
-* Flask: Mini-framework that provides the core HTTP functionality of taking requests, reading parameters, rendering an HTML template and responding to user.
-* MongoDB: For database we use the NoSQL MongoDB that gives us a JSON like flexible document structure rather than fixed columns à la SQL.
-* Flask-Mongoengine (package `flask.ext.mongoengine.wtf`): Comes with the automatic translation of Mongoengine Document objects (Model objects) into Forms by calling model_form() function, and also makes it easy to enhance an app with the Mongoengine layer.
-* WTForms (package `wtforms`): a generic library for building Form objects that can parse and validate data before filling up the data model object with it.
-* Flask-WTF (package `flask.ext.wtf`): a mini library that joins the WTForms with Flask, such as automatically adding CSRF tokens (security)
-* Bootstrap: for overall CSS design, typography and Javascript components
-* jQuery: For Javascript components.
+* [Flask](http://flask.pocoo.org/): Mini-framework that provides the core HTTP functionality of taking requests, reading parameters, rendering an HTML template and responding to user.
+* [MongoDB](http://www.mongodb.org/): For database we use the NoSQL MongoDB that gives us a JSON like flexible document structure rather than fixed columns à la SQL.
+* [Flask-Mongoengine](http://mongoengine.org/) (package `flask.ext.mongoengine.wtf`): Comes with the automatic translation of Mongoengine Document objects (Model objects) into Forms by calling model_form() function, and also makes it easy to enhance an app with the Mongoengine layer.
+* [WTForms](http://wtforms.readthedocs.org/en/1.0.5/) (package `wtforms`): a generic library for building Form objects that can parse and validate data before filling up the data model object with it.
+* [Flask-WTF](https://flask-wtf.readthedocs.org/en/latest/) (package `flask.ext.wtf`): a mini library that joins the WTForms with Flask, such as automatically adding CSRF tokens (security)
+* [Bootstrap](http://getbootstrap.com/): for overall CSS design, typography and Javascript components
+* [jQuery](http://jquery.com/): For Javascript components.
 
 ## COMPONENTS
 The Raconteur app contains 4 main components that interact to create the full application, but are otherwise relatively isolated. They are implemented as Flask Blueprints. They are:
-* Social: Contains logic for users, game groups and conversations. Here users can follow other users, set up discussions or form themselves into gaming groups.
-* Campaign: This section allows players, mostly game masters, to manage their own campaigns, including scheduling game sessions, managing story lines and scenes, and so on.
-* World: The biggest component for Raconteur, and involves Worlds and all Articles. It can be seen as a wiki or content management system optimized for fictional worlds, and with a semantical structure such as relations between places, persons, events, and so on.
-* Tools/Generator: This is a minor component that will hold different tools that can be of use for gamers and writers.
+* **Social**: Contains logic for users, game groups and conversations. Here users can follow other users, set up discussions or form themselves into gaming groups.
+* **Campaign**: This section allows players, mostly game masters, to manage their own campaigns, including scheduling game sessions, managing story lines and scenes, and so on.
+* **World**: The biggest component for Raconteur, and involves Worlds and all Articles. It can be seen as a wiki or content management system optimized for fictional worlds, and with a semantical structure such as relations between places, persons, events, and so on.
+* **Tools/Generator**: This is a minor component that will hold different tools that can be of use for gamers and writers.
 
 ## ARCHITECTURE
 The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps both to a REST interface support GET, POST, PUT, PATCH and DELETE as well as to a traditional rendered HTML GET and POST interface. Almost all HTML is pre-rendered on server and served to client, with minor Javascript added for usability. The general principle is that of "progressive enhancement" - the website should be readable by all types of browsers including search engines and screen readers.
