@@ -137,9 +137,6 @@ Episode.children = db.ListField(db.EmbeddedDocumentField(Episode)) # references 
 class CampaignArticle(db.EmbeddedDocument):
     children = db.ListField(db.EmbeddedDocumentField(Episode))
 
-class ChronicleArticle(db.EmbeddedDocument):
-    pass
-
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['imagearticle','personarticle','fractionarticle','placearticle', 'eventarticle', 'campaignarticle']
 class Article(db.Document):
@@ -158,16 +155,15 @@ class Article(db.Document):
     # Changes type by nulling the old field, if it exists, 
     # and creating an empty new one, if it exists.
     def change_type(self, new_type):
-        if new_type!=self.type:
-            if self.type is not None: # may still be 0
-                type_name = self.type_name()+'article'
-                if type_name in EMBEDDED_TYPES:
-                    # Null the old type
-                    setattr(self, type_name , None)
-            if new_type is not None: # may still be 0
-                type_name = Article.create_type_name(new_type)+'article'
-                if type_name in EMBEDDED_TYPES:
-                    setattr(self, type_name, self._fields[type_name].document_type())
+        if new_type!=self.type and self.type is not None: # may still be 0
+            type_name = self.type_name()+'article'
+            if type_name in EMBEDDED_TYPES:
+                # Null the old type
+                setattr(self, type_name, None)
+        if new_type is not None: # may still be 0
+            type_name = Article.create_type_name(new_type)+'article'
+            if type_name in EMBEDDED_TYPES:
+                setattr(self, type_name, self._fields[type_name].document_type())
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
