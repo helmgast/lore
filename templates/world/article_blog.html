@@ -15,7 +15,7 @@
 		  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} by</li>
 		  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
 		</ul>
-		<p>{{article.description}}</p>
+		<p>{% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|striptags|truncate}}{% endif %}</p>
 		<a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em>Read more</em></a>
 	{% endfor %}
 {% endif %}
