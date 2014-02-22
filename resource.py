@@ -6,7 +6,7 @@ from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.views import View
 from raconteur import the_app
 from wtforms.compat import iteritems
-from wtforms.fields import FormField
+from wtforms import fields as f
 from wtforms import Form as OrigForm
 import inspect
 from flask.ext.mongoengine.wtf.models import ModelForm
@@ -61,7 +61,19 @@ class RacModelConverter(ModelConverter):
         form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
             base_class=OrigForm, field_args={}, )
         print "Converted model %s" % model
-        return FormField(form_class, **kwargs)
+        return f.FormField(form_class, **kwargs)
+
+    @converts('StringField')
+    def conv_String(self, model, field, kwargs):
+        if field.regex:
+            kwargs['validators'].append(validators.Regexp(regex=field.regex))
+        self._string_common(model, field, kwargs)
+        if 'password' in kwargs:
+            if kwargs.pop('password'):
+                return f.PasswordField(**kwargs)
+        if field.max_length and field.max_length < 100:
+            return f.StringField(**kwargs)
+        return f.TextAreaField(**kwargs)
 
 class ResourceAccessStrategy:
 
