@@ -16,7 +16,7 @@
 	};
 
 	var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
-
+	var IGNORE_KEYS = {16:'shift',17:'ctrl',18:'alt',224:'meta'};
 	$.fn.doKey = function (e) {
 		var select = $(this).getSelection();
 		var newrow = select.startOffset == 0 && select.collapsed;
@@ -42,8 +42,7 @@
 				} else if (tag=='li') {
 					var newCurEl =  curEl.parentElement
 					$(curEl).remove() // remove the empty li, and append a p after the UL
-					$.fn.newElement('p', newCurEl, true)
-					
+					$.fn.newElement('p', newCurEl, true)			
 				}
 			}	
 		} else if (e.keyCode == BACKSPACE) {
@@ -69,16 +68,10 @@
 				e.preventDefault()
 				$.fn.newElement('ul', curEl)
 			}
-		} else {
+		} else if (!(e.keyCode in IGNORE_KEYS)) {
 			$('#hinter').hide();
 		}
-
 	};
-
-// function(e) { // onclick
-// 	// if click in contenteditable element
-// 	// set state to text if inside textnode, else (in beginning) set state accordingly
-// }
 
 	$.fn.newElement = function (newtag, curEl, after) {
 		var $h = $('#hinter');
@@ -186,7 +179,7 @@
 		html = html.replace(/<(\/?(p|h2|h3|h4|blockquote|ul|ol|li|em|strong))>/gi,'%%%$1%%%'); // rename safe tags
 		html = html.replace(/<\/?.+?>/g,''); // remove all remaining tags
 		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
-		html = html.replace(/>(.+?)%%%/gi,'<$1>');
+		// html = html.replace(/>(.+?)%%%/gi,'<$1>'); // TODO needed?
 		html = html.replace(/<p>\s+<\/p>/gi,''); // remove empty p tags		
 		$t.html(html);
 		// $t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />'); // wraps plain text nodes in p
@@ -198,7 +191,8 @@
 	};
 	$.fn.tomarkdown = function () {
 		var $t = $(this);
-		$t.detach()
+		$t.cleanHtml()
+		// $t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
 		})	
@@ -214,7 +208,7 @@
 		})
 		$t.find('ul').each(function () {
 			$(this).children('li').each(function(){
-				this.innerHTML = '* '+this.innerHTML + '\n'
+				this.innerHTML = '- '+this.innerHTML + '\n'
 			})
 			this.innerHTML = this.innerHTML+'\n'
 		})
@@ -228,6 +222,7 @@
 	}
 	$.fn.wysiwyg = function (userOptions) {
 		var editor = this,
+			customCommandState = {},
 			selectedRange,
 			options,
 			toolbarBtnSelector,
@@ -244,15 +239,16 @@
 				}
 			},
 			queryCommandState = function (cmd) {
-				return (cmd in options.customCommands) ? options.customCommands[cmd].active : document.queryCommandState(cmd)
+				return (cmd in customCommandState) 
+					? customCommandState[cmd] : document.queryCommandState(cmd)
 			},
 			execCommand = function (commandWithArgs, valueArg) {
 				var commandArr = commandWithArgs.split(' '),
 					command = commandArr.shift(),
 					args = commandArr.join(' ') + (valueArg || '');
 				if (command in options.customCommands) {
-					options.customCommands[command].active = !options.customCommands[command].active
-					options.customCommands[command].cmdfunc(options.customCommands[command].active)
+					customCommandState[command] = !customCommandState[command] // toggle
+					options.customCommands[command](customCommandState[command])
 				} else {
 					document.execCommand(command, 0, args);
 				}
@@ -414,23 +410,27 @@
 		selectionColor: 'darkgrey',
 		dragAndDropImages: true,
 		fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); }
-	};
+	}
+	;
 
 	$(window).on('load', function () {
 		$('[data-editable="textarea"]').each(function () {
 			var $ta = $(this).toggleClass('hide')
 			var $ed = $ta.data('target') && $($ta.data('target'))
-			var customCommands = {
-				'markdown': {'active':false, 'cmdfunc': function(active) {
-						$ta.toggleClass('hide')
-						$ed.toggleClass('hide')
-						if (active) {
-							$ed.cleanHtml()
-          					$ta.val($ed.tomarkdown());
-						}
-					}}
-			}
-			$ed.toggleClass('hide').wysiwyg({'customCommands':customCommands})
+			var customCommands = { 'customCommands': {
+				'markdown': function(active) {
+					// alert(active); // WARNING, CURRENTLY NOT WORKING
+					if (active) {
+						$ta.removeClass('hide')
+						$ed.addClass('hide')
+						$ta.val($ed.tomarkdown())
+					} else {
+						$ed.removeClass('hide')
+						$ta.addClass('hide')
+					}
+				}
+			}}
+			$ed.toggleClass('hide').wysiwyg(customCommands)
 			$ed.on('keydown', $ed.doKey)
 			$ed.on('paste', function(e) {
           		$this = $(this)

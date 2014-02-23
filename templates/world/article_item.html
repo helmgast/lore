@@ -52,11 +52,12 @@
 		<div class="btn-group btn-group-sm">
       <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
       <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
-      <a class="btn btn-default" data-edit="markdown" title="Markdown">Markdown</a>
+      {#<a class="btn btn-default" data-edit="markdown" title="Markdown">Markdown</a>#}
     </div>
 	</div>
   <div class="panel panel-default hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
   </div>
+  <span id="hinter"></span>
   {% set rows = (article_form.content.data|length // 32)+1 %}
   {{ article_form.content(**{'rows':rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
 </div>

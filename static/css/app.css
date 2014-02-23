@@ -429,7 +429,7 @@ important
 
 #hinter {
 	color: #bbb;
-  position: absolute;
+  	position: absolute;
 	pointer-events: none;
 }
 
