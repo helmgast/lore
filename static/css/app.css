@@ -232,11 +232,25 @@ table.table-narrow {
 	background: #ccc;
 }
 
+.metadata .panel-heading, .metadata .panel-body {
+	padding: 4px 8px;
+}
+
+.metadata .panel-heading .panel-title {
+	font-size: 12px;
+	text-transform: uppercase;
+}
+
+
+
 #editor, textarea  {
+	/*
 	border: 1px solid #bbb;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
+	*/
+	width: 100%;
 }
 
 a .icon-ok {
@@ -367,14 +381,6 @@ important
 /* helpers */
 .hidden {
 	display: none;
-}
-
-textarea#content {
-	width: 600px;
-}
-
-textarea#metadata {
-	width: 200px;
 }
 
 .calendar .selected {

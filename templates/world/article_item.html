@@ -43,27 +43,22 @@
 
 {% include "includes/flash.html" %}
 <div class="row">
-<div class="col-md-7 article_text">
+<div class="col-md-7 article_text panel-group">
   {% if article and article.is_image() %}
   <img src="{{article.imagearticle.url}}" />
   {% endif %}
-		<div class="btn-toolbar" data-role="editor-toolbar"
-			data-target="#editor">
-			<div class="btn-group btn-group-sm">
-        <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
-        <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
-        <a class="btn btn-default" title="Description" data-toggle="collapse" href="#collapseDesc">Edit description</a>
-      </div>
-		</div>
-    <div class="panel panel-default">
-      <div id="collapseDesc" class="panel-collapse collapse">
-        <div class="panel-body">
-        {{article_form.description(style="width:100%")}}
-        </div>
-      </div>
+	<div class="btn-toolbar" data-role="editor-toolbar"
+		data-target="#editor">
+		<div class="btn-group btn-group-sm">
+      <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
+      <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
+      <a class="btn btn-default" data-edit="markdown" title="Markdown">Markdown</a>
     </div>
-		<div id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
-    {{ article_form.content(value="text",style="display:none;") }}
+	</div>
+  <div class="panel panel-default hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
+  </div>
+  {% set rows = (article_form.content.data|length // 32)+1 %}
+  {{ article_form.content(**{'rows':rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
 </div>
 <div class="col-md-5 metadata">
   {% if g.user.id %}
@@ -73,6 +68,20 @@
   <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
   <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
   <h4>Metadata</h4>
+    <div class="panel panel-default">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" data-parent="#accordion" href="#collapseDesc">
+          Description <span class="glyphicon glyphicon-chevron-down"></span>
+        </a>
+      </h4>
+    </div>
+    <div id="collapseDesc" class="panel-collapse collapse">
+      <div class="panel-body">
+        {{article_form.description(style="width:100%")}}
+      </div>
+    </div>
+  </div>
   {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
   <fieldset style="margin-bottom: 10px">
   {#  {{ form_field(article_form.articlegroups) }} #}
@@ -149,6 +158,7 @@
 	{% if article.is_image() %} <img src="{{url_for('.image', slug=article.slug)}}" />
 	{% endif %} {{ article.content|markdown }}
 </div>
+
 {% if article_type_name == 'blogpost' %}
 <div id="disqus_thread"></div>
 <script type="text/javascript">
@@ -165,6 +175,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 {% endif %}
+
 {% endif %} {% endblock %}
 
 {% block final %}
@@ -192,23 +203,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 <script>
 	$(document).ready(
 			function() {
-        var $e = $('#editor');
-        $e.wysiwyg();
-
-        $e.on('paste', function(e) {
-          $this = $(this)
-          setTimeout(function() {
-            $this.cleanHtml();
-          }, 100);
-        });
-
-        $('#articleform').on('submit', function(e) {
-          $e.cleanHtml()
-          $("#content").val($e.tomarkdown());
-        });
-
-        $e.on('keydown', $e.doKey);
-
         //----------------------------------
         $('#editable_title')
           .blur(function(e) {

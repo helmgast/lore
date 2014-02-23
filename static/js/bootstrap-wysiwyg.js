@@ -157,9 +157,7 @@
 
 	$.fn.cleanHtml = function () {
 		var $t = $(this);
-
 		var html = $t.html();
-
 		/*
 		Modifications:
 		div -> 	p
@@ -179,7 +177,6 @@
 		strong -> strong
 		em -> 	em
 		*/
-
 		html = html.replace(/(<\/?)div>/gi,'$1p>'); // all divs to p		
 		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
 		html = html.replace(/(<\/?)b>/gi,'$1strong>'); // all b to strong
@@ -238,7 +235,7 @@
 				if (options.activeToolbarClass) {
 					$(options.toolbarSelector).find(toolbarBtnSelector).each(function () {
 						var command = $(this).data(options.commandRole);
-						if (document.queryCommandState(command)) {
+						if (queryCommandState(command)) {
 							$(this).addClass(options.activeToolbarClass);
 						} else {
 							$(this).removeClass(options.activeToolbarClass);
@@ -246,12 +243,20 @@
 					});
 				}
 			},
+			queryCommandState = function (cmd) {
+				return (cmd in options.customCommands) ? options.customCommands[cmd].active : document.queryCommandState(cmd)
+			},
 			execCommand = function (commandWithArgs, valueArg) {
 				var commandArr = commandWithArgs.split(' '),
 					command = commandArr.shift(),
 					args = commandArr.join(' ') + (valueArg || '');
-				document.execCommand(command, 0, args);
-				updateToolbar();
+				if (command in options.customCommands) {
+					options.customCommands[command].active = !options.customCommands[command].active
+					options.customCommands[command].cmdfunc(options.customCommands[command].active)
+				} else {
+					document.execCommand(command, 0, args);
+				}
+				updateToolbar();					
 			},
 			bindHotkeys = function (hotKeys) {
 				$.each(hotKeys, function (hotkey, command) {
@@ -401,6 +406,7 @@
 			'shift+tab': 'outdent',
 			// 'tab': 'indent'
 		},
+		customCommands: {},
 		toolbarSelector: '[data-role=editor-toolbar]',
 		commandRole: 'edit',
 		activeToolbarClass: 'btn-info',
@@ -409,4 +415,35 @@
 		dragAndDropImages: true,
 		fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); }
 	};
+
+	$(window).on('load', function () {
+		$('[data-editable="textarea"]').each(function () {
+			var $ta = $(this).toggleClass('hide')
+			var $ed = $ta.data('target') && $($ta.data('target'))
+			var customCommands = {
+				'markdown': {'active':false, 'cmdfunc': function(active) {
+						$ta.toggleClass('hide')
+						$ed.toggleClass('hide')
+						if (active) {
+							$ed.cleanHtml()
+          					$ta.val($ed.tomarkdown());
+						}
+					}}
+			}
+			$ed.toggleClass('hide').wysiwyg({'customCommands':customCommands})
+			$ed.on('keydown', $ed.doKey)
+			$ed.on('paste', function(e) {
+          		$this = $(this)
+          		setTimeout(function() {
+            		$this.cleanHtml();
+          		}, 50);
+        	});
+        	$ta.parents('form').on('submit', function(e) {
+        		if (!$ed.wysiwyg.options.customCommands['markdown'].active) {
+          			$ed.cleanHtml()
+          			$ta.val($ed.tomarkdown());
+          		}
+        	});
+		})
+	})
 }(window.jQuery));
