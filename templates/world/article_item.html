@@ -54,6 +54,10 @@
       <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
       {#<a class="btn btn-default" data-edit="markdown" title="Markdown">Markdown</a>#}
     </div>
+    <div class="btn-group">
+        <a class="btn btn-default" title="" id="pictureBtn" data-original-title="Insert picture (or just drag &amp; drop)"><i class="glyphicon glyphicon-picture"></i></a>
+        <input type="file" data-role="magic-overlay" data-target="#pictureBtn" data-edit="insertImage" style="opacity: 0; position: absolute; top: 0px; left: 0px; width: 36px; height: 30px;">
+      </div>
 	</div>
   <div class="panel panel-default hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
   </div>
