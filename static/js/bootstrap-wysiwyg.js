@@ -16,7 +16,7 @@
 	};
 
 	var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
-
+	var IGNORE_KEYS = {16:'shift',17:'ctrl',18:'alt',224:'meta'};
 	$.fn.doKey = function (e) {
 		var select = $(this).getSelection();
 		var newrow = select.startOffset == 0 && select.collapsed;
@@ -42,8 +42,7 @@
 				} else if (tag=='li') {
 					var newCurEl =  curEl.parentElement
 					$(curEl).remove() // remove the empty li, and append a p after the UL
-					$.fn.newElement('p', newCurEl, true)
-					
+					$.fn.newElement('p', newCurEl, true)			
 				}
 			}	
 		} else if (e.keyCode == BACKSPACE) {
@@ -69,16 +68,10 @@
 				e.preventDefault()
 				$.fn.newElement('ul', curEl)
 			}
-		} else {
+		} else if (!(e.keyCode in IGNORE_KEYS)) {
 			$('#hinter').hide();
 		}
-
 	};
-
-// function(e) { // onclick
-// 	// if click in contenteditable element
-// 	// set state to text if inside textnode, else (in beginning) set state accordingly
-// }
 
 	$.fn.newElement = function (newtag, curEl, after) {
 		var $h = $('#hinter');
@@ -158,28 +151,78 @@
 	$.fn.cleanHtml = function () {
 		var $t = $(this);
 		var html = $t.html();
+		/*
+		Modifications:
+		div -> 	p
+		b ->	strong
+		h1 -> 	h2
+		i ->	em
 
-		// we only want to keep p, h2, h3, blockquote, ul, li. We will convert div to p.
-		// we will remove all attributes of the tags
-		// var toremove = $(this).children().not('p,h2,h3,blockquote,ul,li')
-
-		html = html.replace(/(<\/?)div>/gi,'$1p>');
-		html = html.replace(/(<\/?)h1>/gi,'$1h2>');
-		html = html.replace(/<(\w+) [^>]*>/g,'<$1>');
-		html = html.replace(/<(\/?(p|h2|h3|blockquote|ul|ol|li|em|b|i|strong))>/gi,'%%%$1%%%');
-		html = html.replace(/<\/?.+?>/g,'');
+		Kept tags:
+		p ->	p
+		blockquote -> blockquote
+		h2 -> 	h2
+		h3 ->	h3
+		h4 ->	h4
+		ul ->	ul
+		ol ->	ol
+		li ->	li
+		strong -> strong
+		em -> 	em
+		*/
+		html = html.replace(/(<\/?)div>/gi,'$1p>'); // all divs to p		
+		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
+		html = html.replace(/(<\/?)b>/gi,'$1strong>'); // all b to strong
+		html = html.replace(/(<\/?)i>/gi,'$1em>'); // all i to em
+		html = html.replace(/<(\w+) [^>]*>/g,'<$1>'); // remove all attr
+		html = html.replace(/(&nbsp;)+/g,' '); // make spaces
+		html = html.replace(/<(\/?(p|h2|h3|h4|blockquote|ul|ol|li|em|strong))>/gi,'%%%$1%%%'); // rename safe tags
+		html = html.replace(/<\/?.+?>/g,''); // remove all remaining tags
 		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
-		html = html.replace(/>(.+?)%%%/gi,'<$1>');
+		// html = html.replace(/>(.+?)%%%/gi,'<$1>'); // TODO needed?
+		html = html.replace(/<p>\s+<\/p>/gi,''); // remove empty p tags		
 		$t.html(html);
-		$t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />');
-		$t.contents(':empty').remove();
-		if (!$t.html() || $t.children().length == 0) {
+		// $t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />'); // wraps plain text nodes in p
+		$t.contents(':empty').remove(); // removes empty nodes
+		if (!$t.html() || $t.children().length == 0) { // if no nodes, put in empty placeholder
 			$t.html('<p><br></p>');
 		}
 		return $t.html();
 	};
+	$.fn.tomarkdown = function () {
+		var $t = $(this);
+		$t.cleanHtml()
+		// $t.detach()
+		$t.find('p').each(function () {
+			this.innerHTML = this.innerHTML+'\n\n'
+		})	
+		$t.find('em').each(function () {
+			this.innerHTML = '_'+this.innerHTML+'_'
+		})
+		$t.find('strong').each(function () {
+			this.innerHTML = '**'+this.innerHTML+'**'
+		})
+		$t.find('h2,h3,h4').each(function () {
+			var hlevel = parseInt(this.nodeName.charAt(this.nodeName.length - 1))
+			this.innerHTML = Array(hlevel+1).join('#') + ' '+ this.innerHTML + '\n\n' // repeats # char right times
+		})
+		$t.find('ul').each(function () {
+			$(this).children('li').each(function(){
+				this.innerHTML = '- '+this.innerHTML + '\n'
+			})
+			this.innerHTML = this.innerHTML+'\n'
+		})
+		$t.find('ol').each(function () {
+			$(this).children('li').each(function (index) {
+				this.innerHTML = (index+1)+'. '+this.innerHTML + '\n'// index is the counter for li items in each ol
+			})
+			this.innerHTML = this.innerHTML+'\n'
+		})
+		return $t.html().replace(/<\/?.+?>/g,'')
+	}
 	$.fn.wysiwyg = function (userOptions) {
 		var editor = this,
+			customCommandState = {},
 			selectedRange,
 			options,
 			toolbarBtnSelector,
@@ -187,7 +230,7 @@
 				if (options.activeToolbarClass) {
 					$(options.toolbarSelector).find(toolbarBtnSelector).each(function () {
 						var command = $(this).data(options.commandRole);
-						if (document.queryCommandState(command)) {
+						if (queryCommandState(command)) {
 							$(this).addClass(options.activeToolbarClass);
 						} else {
 							$(this).removeClass(options.activeToolbarClass);
@@ -195,12 +238,21 @@
 					});
 				}
 			},
+			queryCommandState = function (cmd) {
+				return (cmd in customCommandState) 
+					? customCommandState[cmd] : document.queryCommandState(cmd)
+			},
 			execCommand = function (commandWithArgs, valueArg) {
 				var commandArr = commandWithArgs.split(' '),
 					command = commandArr.shift(),
 					args = commandArr.join(' ') + (valueArg || '');
-				document.execCommand(command, 0, args);
-				updateToolbar();
+				if (command in options.customCommands) {
+					customCommandState[command] = !customCommandState[command] // toggle
+					options.customCommands[command](customCommandState[command])
+				} else {
+					document.execCommand(command, 0, args);
+				}
+				updateToolbar();					
 			},
 			bindHotkeys = function (hotKeys) {
 				$.each(hotKeys, function (hotkey, command) {
@@ -350,6 +402,7 @@
 			'shift+tab': 'outdent',
 			// 'tab': 'indent'
 		},
+		customCommands: {},
 		toolbarSelector: '[data-role=editor-toolbar]',
 		commandRole: 'edit',
 		activeToolbarClass: 'btn-info',
@@ -357,5 +410,40 @@
 		selectionColor: 'darkgrey',
 		dragAndDropImages: true,
 		fileUploadError: function (reason, detail) { console.log("File upload error", reason, detail); }
-	};
+	}
+	;
+
+	$(window).on('load', function () {
+		$('[data-editable="textarea"]').each(function () {
+			var $ta = $(this).toggleClass('hide')
+			var $ed = $ta.data('target') && $($ta.data('target'))
+			var customCommands = { 'customCommands': {
+				'markdown': function(active) {
+					// alert(active); // WARNING, CURRENTLY NOT WORKING
+					if (active) {
+						$ta.removeClass('hide')
+						$ed.addClass('hide')
+						$ta.val($ed.tomarkdown())
+					} else {
+						$ed.removeClass('hide')
+						$ta.addClass('hide')
+					}
+				}
+			}}
+			$ed.toggleClass('hide').wysiwyg(customCommands)
+			$ed.on('keydown', $ed.doKey)
+			$ed.on('paste', function(e) {
+          		$this = $(this)
+          		setTimeout(function() {
+            		$this.cleanHtml();
+          		}, 50);
+        	});
+        	$ta.parents('form').on('submit', function(e) {
+        		if (!$ed.wysiwyg.options.customCommands['markdown'].active) {
+          			$ed.cleanHtml()
+          			$ta.val($ed.tomarkdown());
+          		}
+        	});
+		})
+	})
 }(window.jQuery));

@@ -99,6 +99,29 @@ def add_test_data():
             gender=GENDER_MALE,
             occupation=u"Ljusbringaren")
         ).save()
+    Article(type=ARTICLE_BLOG,
+        title=u"Gift tills döden skiljer oss åt",
+        world=mundana,
+        creator=pn,
+        content=
+u"""
+Nu har vi kommit tillbaka från den mörkaste tiden på året då de skotropiska krafterna har härjat fritt. Vår stora checklista som vi tog fram i början av hösten på "allt som måste göras" börjar nu komma ner i hanterliga mängder (en fingervisning är väl att 50 saker är kvar av 600).
+
+Den här posten kommer däremot att kika lite på hur gifter kommer att fungera. De tidigare reglerna involverade lite för många slag och lite för mycket tidsräknande kring rundor, minuter, timmar och liknande. Vi ville behålla essensen men ändå göra det mer lätthanterligt.
+
+Så här kan det därför fungera om man drabbas av ett bedövande gift: Under de följande tre rundorna kommer man att slå sin Livskraft mot svårigheten 12. Om man lyckas med slaget klarar man sig den rundan (för att gå helt opåverkad måste man alltså klara tre slag i rad). Om man misslyckas drabbas man av den första effekten, i detta fallet Omtöcknad (som ger temporärt avdrag likt Smärta). Andra gången man misslyckas blir effekten lite värre och om man skulle misslyckas tre gånger så blir man Utslagen.
+"""
+        ).save()
+    Article(type=ARTICLE_BLOG,
+        title=u"Monster",
+        content=
+u"""
+Monster fungerar inte på samma sätt som människor och andra folkslag. När du får in en träff med morgonstjärnan som skulle sända tiraken hem till sin gudinna så får du hyggelmonstret att bli än mer uppretad och aggressiv. Monster är oförutsägbara och en del är så fulla av ursinne och adrenalin att smärta inte bekommer dem.
+
+I Eon IV följer Monster (samt djur och liknande varelser) ett lite annorlunda skadesystem än vad vanliga folkslag gör. Det handlar både om att göra det enklare för en spelledare att administrera striderna men även att bidra med en annan känsla när man står öga mot öga med ett hyggelmonster på gladiatorarenans blodstänka sand. Istället för olika kroppsdelar och skadetabeller så har varje viktigare monster en egen skadetabell. På detta sätt finns det även variation mellan monster så att en strid mot ett halvdussin zombier blir en annan upplevelse än en strid mot ett grottroll. Skadetabellerna är också designade på ett annat sätt så om man slår lågt på dessa så råkar man ofta själv illa ut - så akta dig för det syraskvättande hyggelmonstret!
+""",
+        world=mundana,
+        creator=nf).save()            
     mf.following = [nf, ks, ar, mb]
     mf.save()
 
