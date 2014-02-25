@@ -10,6 +10,9 @@
       var $button = $('<button type="button" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button>')
       var $add = $('<button type="button" class="btn btn-primary btn-sm">Add</button>')
       var $type = $this.prop('tagName');
+      
+      console.log($this);
+      console.log("Test");
       /*
       $this.on('mouseenter', function(e) {
           console.log($(this).find('button'));
