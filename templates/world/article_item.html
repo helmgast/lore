@@ -202,7 +202,7 @@
         var getButtonObj = function() {
           var $button = $("<button>");
           $button.addClass("removerow btn btn-danger btn-xs").css("float", "right");
-          $button.append($("<span>").addClass("glyphicon glyphicon-remove"));
+          $button.append($("<span>").addClass("glyphicon glyphicon-trash"));
           $button.click(function(e) {
               $button.parent("li").remove();
               e.preventDefault(); return false;  
