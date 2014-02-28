@@ -1,5 +1,6 @@
 from raconteur import db
-from misc import slugify, now
+from misc import now
+from slugify import slugify
 from user import User, Group
 import requests
 from StringIO import StringIO

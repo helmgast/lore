@@ -8,6 +8,6 @@ setup(name='Raconteur', version='0.4',
       #  Uncomment one or more lines below in the install_requires section
       #  for the specific client drivers/modules your application needs.
       install_requires=[
-            'Jinja2', 'Flask', 'flask-mongoengine'
+            'Jinja2', 'Flask', 'flask-mongoengine', 'python-slugify'
       ],
      )

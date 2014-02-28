@@ -58,6 +58,23 @@ def image(slug):
   response.mimetype = imagearticle.mime_type
   return response
 
+def rows(objects, char_per_row=40, min_rows=10):
+  found = 0
+  if objects and isinstance(objects, str):
+    start, end = 0, min(char_per_row, len(objects))
+    while(start<len(objects)):
+      i = objects.find('\n', start, end)
+      found += 1
+      print 'Reading char %i-%i, got %i, found %i' % (start, end-1, i, found)
+      if i==-1:
+        start = end
+        end = end+char_per_row
+      else:
+        start = i+1
+        end = start+char_per_row
+  return max(found,min_rows)
+
+
 # Template filter, will group a list by their initial title letter
 def by_initials(objects):
   groups = []
@@ -96,3 +113,4 @@ def by_time(objects):
 world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
 world_app.add_app_template_filter(by_time)
+world_app.add_app_template_filter(rows)

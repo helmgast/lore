@@ -1,6 +1,7 @@
 from hashlib import md5
 from auth import BaseUser
-from misc import slugify, now
+from slugify import slugify
+from misc import now
 from raconteur import db
 from flask.ext.mongoengine.wtf import model_form
 

@@ -19,9 +19,6 @@ def matches_form(formclass, formdata):
             return True
     return False
   
-def slugify(s):
-    return re.sub('[^a-z0-9_\-]+', '-', s.lower())
-  
 def now():
     return datetime.datetime.now;
 
