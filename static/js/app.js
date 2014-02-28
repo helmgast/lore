@@ -7,39 +7,24 @@
     return this.each(function () {
       var $this   = $(this)
       var remote  = $this.data('remote')
-      var $button = $('<button type="button" class="btn btn-danger btn-xs"><span class="glyphicon glyphicon-trash"></span></button>')
-      var $add = $('<button type="button" class="btn btn-primary btn-sm">Add</button>')
+      var $button = $('<button type="button" class="btn btn-danger btn-xs deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
+      var $add = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span>Add</button>')
       var $type = $this.prop('tagName');
       
-      console.log($this);
-      console.log("Test");
-      /*
-      $this.on('mouseenter', function(e) {
-          console.log($(this).find('button'));
-          $(this).children('button').removeClass('hidden');
-      });
-      */
-      
-      /*
-      $button.click(function() {
-          $button.parent("tr").remove();
-      });
-      */
-      
       if ($type == "TABLE") {
-      $button = $button.wrap('<td></td>').parent()
-      $this.find('tbody > tr').append($button)
-      console.log("in here");
-      $add.click(function() {
-          jQuery.get(remote, function(data) {
-            $this.find('tbody').append(data)
-            $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
-          })
-      })
-      $button.click(function() {
-          $button.parent("tr").remove();
-      });
-      $this.after($add)
+        $button = $button.wrap('<td></td>').parent()
+        $this.find('tbody > tr').append($button)
+        console.log("in here");
+        $add.click(function() {
+            jQuery.get(remote, function(data) {
+              $this.find('tbody').append(data)
+              $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
+            })
+        })
+        $button.click(function() {
+            $button.parent("tr").remove();
+        });
+        $this.after($add)
       }
       else if ($type == "UL" || $type == "OL") {
         $this.children('li').addClass('editableListUl')
