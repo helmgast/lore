@@ -111,8 +111,9 @@
   </div>
 
   <h4 style="display:inline">Relations ({{ article.relations|length if article }})</h4>
-  {{ article_form.relations() }}
-  <button id="addrow" class="btn btn-info btn-sm{{' disabled' if op=='new'}}" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>
+  {{ article_form.relations(**{'data-editable':'relations', 
+    'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
+  {#<button id="addrow" class="btn btn-info btn-sm{{' disabled' if op=='new'}}" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>#}
 </div>
 </div>
 </form>
@@ -217,38 +218,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
               $this.html($this.text()); // clean the html
             }, 100);})
           .focus();
-
-        //----------------------------------
-        {% if article %} {# TODO should work also when article is None! #}
-        // Editable-list START
-        var getButtonObj = function() {
-          var $button = $("<button>");
-          $button.addClass("removerow btn btn-danger btn-xs").css("float", "right");
-          $button.append($("<span>").addClass("glyphicon glyphicon-trash"));
-          $button.click(function(e) {
-              $button.parent("li").remove();
-              e.preventDefault(); return false;  
-          });
-          return $button;
-        };
-        $("ul#relations > li").prepend(getButtonObj());
-
-        $('#addrow').click(function(e) {
-          var currentCount = $("#relations li").length;
-          $.get('{{ url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }}', function(data) {
-            var $d = $(data);
-            var prefix = "relations-"+currentCount+"-";
-            $d.first("label").html("Relations-"+currentCount);
-            $d.find("*[id]").attr("id", prefix+$el.attr("id"));
-            $d.find("*[for]").attr("for", prefix+$el.attr("for"));
-            $d.find("*[name]").attr("name", prefix+$el.attr("name"));
-            
-            $("#relations").append($("<li>").append(getButtonObj()).append($d));
-          });
-          e.preventDefault(); return false;  
-        });
-        // Editable-list END
-        {% endif %}
 
         //----------------------------------
 				// Get the initial value

@@ -24,13 +24,15 @@
       $add.click(function() {
         jQuery.get(remote, function(data) {
           var newel = $(data)
-          var i = $this.find(addselector+'tr').length // get # of rows, so we can correctly index the added inputs
-          newel.find('input, select').each(function() {
-            this.name = listname +'-'+ i +'-'+this.name
-            this.id = this.name
+          // get # of rows, so we can correctly index the added inputs
+          var name = listname +'-'+ $this.find(addselector+'tr').length+'-'+newel.find('input, select').first().attr('name')
+          newel.find('input, select, label').each(function() {
+            this.name = this.name && name
+            this.id = this.id && name
+            this.htmlFor = this.htmlFor && name
           })
           newel.append($button.clone())
-          $this.find(addselector).append(newel)
+          addselector ? $this.find(addselector).append(newel) : $this.append(newel)
           // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
           $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
         })
@@ -43,7 +45,7 @@
   }
 
   $(window).on('load', function () {
-    $('[data-editable]').each(function () {
+    $('table, ul, ol').filter('[data-editable]').each(function () {
       var $editablelist = $(this)
       $editablelist.editablelist($editablelist.data())
     })

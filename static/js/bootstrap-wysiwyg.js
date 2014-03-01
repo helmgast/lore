@@ -48,14 +48,17 @@
 		} else if (e.keyCode == BACKSPACE) {
 			if (select.startOffset <=1 && select.collapsed) { // will reach beginning of line after this
 				$.fn.setHint($(curEl))
-			} if (newrow) {
+			}
+			if (newrow) {
 				e.preventDefault();
+				var newtag = curEl.parentElement===this ? 'p' : 'none'
 				if (tag=='h2' || tag=='h3' || tag=='blockquote') {
-					$.fn.newElement('p', curEl);
+					$.fn.newElement(newtag, curEl);
 				} else if (tag=='li' && curEl.parentElement.childElementCount <= 1) {
-					$.fn.newElement('none', curEl.parentElement) // remove the whole ul in this case
+					newtag = curEl.parentElement.parentElement===this ? 'p' : 'none'
+					$.fn.newElement(newtag, curEl.parentElement) // remove the whole ul in this case
 				} else {
-					$.fn.newElement('none', curEl)
+					$.fn.newElement(newtag, curEl)
 				}
 			} // let the backspace pass through
 		} else if (e.keyCode == TAB) {
@@ -436,7 +439,7 @@
           		$this = $(this)
           		setTimeout(function() {
             		$this.cleanHtml();
-          		}, 50);
+          		}, 10);
         	});
         	$ta.parents('form').on('submit', function(e) {
         		if (!$ed.wysiwyg.options.customCommands['markdown'].active) {
