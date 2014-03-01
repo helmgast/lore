@@ -16,6 +16,9 @@ from re import compile
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine.wtf import model_form
 from flask_wtf.csrf import CsrfProtect
+# Babel
+from flask.ext.babel import Babel
+from config import LANGUAGES
 import os
 
 try:
@@ -44,6 +47,7 @@ if the_app == None:
 
   Markdown(the_app)
   CsrfProtect(the_app)
+  babel = Babel(the_app)
 
   from controller.world import world_app as world
   from controller.social import social
@@ -124,3 +128,8 @@ def dictreplace(s, d):
             parts[i] = d[parts[i]] # Replace with dict content
         return ''.join(parts)
     return s
+    
+# i18n
+@babel.localeselector
+def get_locale():
+    return "sv" #request.accept_languages.best_match(LANGUAGES.keys())

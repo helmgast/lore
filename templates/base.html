@@ -49,26 +49,26 @@
               <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>  
               </button>
               <a class="navbar-brand" href="{{ url_for('homepage') }}">Raconteur
-                  <small>a story engine</small>
+                  <small>{{ _('a story engine') }}</small>
               </a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> Social</a></li>
-                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> Campaign</a></li>
-                    <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> Tools</a></li>
-                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> Worlds</a></li>
+                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
+                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
+                    <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
+                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span>{{ _('Worlds') }}</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
-                        <li><a href="{{ url_for('auth.login') }}">log in</a></li>
-                        <li><a href="{{ url_for('join') }}">join</a></li>
+                        <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+                        <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
                     {% else %}
                         <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-                        <li><a href="{{ url_for('auth.logout') }}">log out</a></li>
+                        <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
                     {% endif %}
                 </ul>
             </div>

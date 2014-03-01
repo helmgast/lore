@@ -1,0 +1,129 @@
+# Swedish translations for PROJECT.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-03-01 12:16+0100\n"
+"PO-Revision-Date: 2014-03-01 12:31+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: sv <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+"X-Generator: Poedit 1.5.4\n"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:55
+msgid "a story engine"
+msgstr "en plattform för berättelser"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:60
+msgid "Social"
+msgstr "Social"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:61
+msgid "Campaign"
+msgstr "Kampanjer"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:62
+msgid "Tools"
+msgstr "Verktyg"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:63
+msgid "Worlds"
+msgstr "Världar"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:67
+msgid "log in"
+msgstr "Logga in"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:68
+msgid "join"
+msgstr "Registrera"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:71
+msgid "log out"
+msgstr "Logga ut"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:11
+msgid "Welcome to"
+msgstr "Välkommen till"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:12
+msgid "Raconteur - a person who tells anecdotes in a skillful and amusing way"
+msgstr ""
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:13
+msgid ""
+"This is the digital engine to keep stories going - role-playing, fiction, TV-"
+"series."
+msgstr ""
+"En digital plattform för att hålla berättelser vid liv - Rollspel, Böcker "
+"och TV-serier."
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:16
+msgid "Learn more"
+msgstr "Läs mer"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:19
+msgid "Join us!"
+msgstr "Registrera"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:23
+msgid "For game masters"
+msgstr "För spelledare"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:27
+msgid "Plan your campaigns and game sessions"
+msgstr "Planera dina kampanjer och spelsessioner"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:29
+msgid ""
+"Not only schedule sessions, but create and organize the content you need,\n"
+"      such as handouts, images, music, texts, etc. Use it as your notes for "
+"playing,\n"
+"      but also easily share it on a screen or with the players during a "
+"session!"
+msgstr ""
+"Inte bara planering, du kan även skapa och organisera innehåll, \n"
+"som handouts, bilder, musik, texter, etc. Anteckna händelser under spel, \n"
+"men du kan även enkelt dela det till en skärm eller andra spelare under en "
+"session!"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:36
+msgid "Manage your group and find new players"
+msgstr "Hantera dina grupper och hitta nya spelare"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:38
+msgid ""
+"Manage your groups and campaigns. Find new players based on their location\n"
+"      and preferences and invite them! Easily communicate with the whole "
+"group."
+msgstr ""
+"Hantera dina grupper och kampanjer. Hitta nya spelare baserat på deras "
+"plats,\n"
+"intresse och bjud enkelt in dem. Kommunicera enkelt med hela din spelgrupp."
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:44
+msgid "Read and write about the game world"
+msgstr "Läs och skriv om en spelvärld"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:46
+msgid ""
+"The game is a wiki, and you can both build your own content, and merge it\n"
+"       with the official content. Together with other game masters, you are "
+"constantly\n"
+"       evolving the game world!"
+msgstr ""
+"Spelet är en wiki, och du kan både skapa eget innehåll och slå ihop\n"
+"det med den officiella världen. Tillsammans med andra spelledare så\n"
+"förändras spelvärldarna ständigt."
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/join.html:7
+msgid "Sign up"
+msgstr "Registrera"
