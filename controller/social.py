@@ -26,7 +26,22 @@ group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
 ResourceHandler.register_urls(social, group_strategy)
 
 member_strategy = ResourceAccessStrategy(Member, 'members', None, parent_strategy=group_strategy)
-ResourceHandler.register_urls(social, member_strategy)
+
+class MemberHandler(ResourceHandler):
+	def form_new(self, r):
+		r = super(MemberHandler, self).form_new(r)
+		# Remove existing member from the choice of new user in Member form
+		current_member_ids = [m.user.id for m in r['group'].members]
+		r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+		return r
+
+	def form_edit(self, r):
+		r = super(MemberHandler, self).form_edit(r)
+		current_member_ids = [m.user.id for m in r['group'].members]
+		r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+		return r
+
+MemberHandler.register_urls(social, member_strategy)
 
 conversation_strategy = ResourceAccessStrategy(Conversation, 'conversations')
 

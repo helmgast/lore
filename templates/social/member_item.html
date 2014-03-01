@@ -5,9 +5,9 @@
     {%- if member_form and not member %}
    		<td name="username" colspan="2">
       		{{member_form.user(**{'data-role':'chosen','style':'width:100%;'})}}
-      	</td>
+      </td>
     {% else %}
-       <td name="username">
+      <td name="username">
       {% if member_form %}
       	<input type="hidden" name="members-{{index}}-user" value="{{member.user.id}}" />
       {% endif %}

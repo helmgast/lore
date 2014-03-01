@@ -261,7 +261,6 @@ class ResourceHandler(View):
         r[self.strategy.resource_name+'_form'] = form
         r['op'] = 'edit' # form_edit is not used in templates...
         r['template'] = self.strategy.item_template()
-        # raise Exception()
         return r
     
     def form_new(self, r):

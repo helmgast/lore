@@ -15,22 +15,24 @@
       if ($type == "TABLE") {
         $this.find('tbody tr').append($button)
         addselector = 'tbody '
-      }
-      else if ($type == "UL" || $type == "OL") {
+      } else if ($type == "UL" || $type == "OL") {
         $this.find('li').append($button);        
+      } else {
+        return
       }
 
       $add.click(function() {
         jQuery.get(remote, function(data) {
           var newel = $(data)
-          var i = $this.find(addselector+'tr').length
+          var i = $this.find(addselector+'tr').length // get # of rows, so we can correctly index the added inputs
           newel.find('input, select').each(function() {
             this.name = listname +'-'+ i +'-'+this.name
             this.id = this.name
           })
           newel.append($button.clone())
           $this.find(addselector).append(newel)
-          $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
+          // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
+          $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
         })
       })
       $this.after($add)
