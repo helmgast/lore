@@ -55,7 +55,6 @@ if the_app == None:
   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
-  # print the_app.url_map
 
 def run_the_app(debug):
   logger.info("Running local instance")
@@ -129,7 +128,6 @@ def wikify(s):
 
 @the_app.template_filter('dictreplace')
 def dictreplace(s, d):
-    #print "Replacing %s with %s" % (s,d)
     if d and len(d) > 0:
         parts = s.split("__")
         # Looking for variables __key__ in s.
