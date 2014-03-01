@@ -79,7 +79,8 @@ def rows(objects, char_per_row=40, min_rows=10):
     while(start<len(objects)):
       i = objects.find('\n', start, end)
       found += 1
-      print 'Reading char %i-%i, got %i, found %i' % (start, end-1, i, found)
+      logger = logging.getLogger(__name__)
+      logger.info("Reading char %i-%i, got %i, found %i", start, end-1, i, found)
       if i==-1:
         start = end
         end = end+char_per_row

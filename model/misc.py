@@ -19,7 +19,8 @@ import datetime
 def matches_form(formclass, formdata):
     for k in formdata.iterkeys():
         if k in dir(formclass):
-            print "Matches field %s!" % k
+            logger = logging.getLogger(__name__)
+            logger.info("Matches field %s!", k)
             return True
     return False
   
