@@ -61,7 +61,6 @@ if the_app == None:
   the_app.register_blueprint(campaign, url_prefix='/campaign')
 
 def run_the_app(debug):
-  logger = logging.getLogger(__name__)
   logger.info("Running local instance")
   the_app.run(debug=debug)
 
@@ -145,5 +144,4 @@ def dictreplace(s, d):
 # i18n
 @babel.localeselector
 def get_locale():
-  return 'sv'
-  #  return request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+    return "sv"#request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
