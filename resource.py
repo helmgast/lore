@@ -137,11 +137,11 @@ class ResourceAccessStrategy:
             if key == 'order_by':
                 qr = qr.order_by(*args.getlist('order_by'))
             else:
-                fieldname = key.split('__')[0] 
-                print fieldname, (fieldname in self.model_class.__dict__)
+                fieldname = key.split('__')[0]
+                # print fieldname, (fieldname in self.model_class.__dict__)
                 if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
                     filters[key] = args.get(key)
-        print filters
+        # print filters
         if filters:
             qr = qr.filter(**filters)
         # TODO very little safety in above as all filters are allowed
