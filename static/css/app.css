@@ -458,6 +458,24 @@ important
 	margin-left: 0px !important;
 }
 
+.nav.content-menu {
+	font-size: 12px !important;
+}
+
+.nav.content-menu a {
+	padding: 6px 10px;
+}
+
+.panel.content-panel {
+	border-top: none;
+}
+
+.articlesave {
+	float: right !important;
+	top: -4px;
+	right: 10%;
+}
+
 .article-meta {
 	color: #999;
 	margin-bottom: 20px;

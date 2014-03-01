@@ -23,101 +23,86 @@
 <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
 {% endblock %}
 
-{%- block article_actions -%}{{ super() }}
-{% if op!= 'new'%}
-<li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
-<li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
-<li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
-{%endif%}
-{%- endblock -%}
-
 {% block middle %}
 
 {#### FORM ####}
 {% if article_form %}
-<form id='articleform' method="post" action="{{ article_form.action_url }}">
-{{ article_form.title(style="display:none;") }}
-<div class="page-header" style="margin-bottom: 5px;">
-  <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
-</div>
-
 {% include "includes/flash.html" %}
-<div class="row">
-<div class="col-md-7 article_text panel-group">
-  {% if article and article.is_image() %}
-  <img src="{{article.imagearticle.url}}" />
-  {% endif %}
-	<div class="btn-toolbar" data-role="editor-toolbar"
-		data-target="#editor">
-		<div class="btn-group btn-group-sm">
-      <a class="btn btn-default" data-edit="bold" title="Bold" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
-      <a class="btn btn-default" data-edit="italic" title="Italic" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
-      {#<a class="btn btn-default" data-edit="markdown" title="Markdown">Markdown</a>#}
-    </div>
-    <div class="btn-group">
-        <a class="btn btn-default" title="" id="pictureBtn" data-original-title="Insert picture (or just drag &amp; drop)"><i class="glyphicon glyphicon-picture"></i></a>
-        <input type="file" data-role="magic-overlay" data-target="#pictureBtn" data-edit="insertImage" style="opacity: 0; position: absolute; top: 0px; left: 0px; width: 36px; height: 30px;">
-      </div>
-	</div>
-  <div class="panel panel-default hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
-  </div>
-  <span id="hinter"></span>
-  {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
-</div>
-<div class="col-md-5 metadata">
+
+<form id='articleform' method="post" action="{{ article_form.action_url }}">
   {% if g.user.id %}
   <input type="hidden" name="creator" value="{{g.user.id}}" />
   {% endif %}
   {{ article_form.csrf_token }}
-  <button type="submit" class="btn btn-sm btn-primary">Save changes</button>
-  <a href="{{ url_for('world.index') }}" data-dismiss="back" class="btn btn-sma">Cancel</a>
-  <h4>Metadata</h4>
-    <div class="panel panel-default">
-    <div class="panel-heading">
-      <h4 class="panel-title">
-        <a data-toggle="collapse" data-parent="#accordion" href="#collapseDesc">
-          Description <span class="glyphicon glyphicon-chevron-down"></span>
-        </a>
-      </h4>
-    </div>
-    <div id="collapseDesc" class="panel-collapse collapse">
-      <div class="panel-body">
-        {{article_form.description(style="width:100%")}}
-      </div>
-    </div>
-  </div>
-  {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
-  <fieldset style="margin-bottom: 10px">
-  {#  {{ form_field(article_form.articlegroups) }} #}
-  {{ form_field(article_form.type, class="m_action2")}}
-  </fieldset>
-  <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
-  {{ form_fields(article_form.imagearticle) }}
-  </div>
-  <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
-  {{ form_fields(article_form.personarticle) }}
-  </div>
-  <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
-  {{ form_fields(article_form.fractionarticle) }}
-  </div>
-  <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
-  {{ form_fields(article_form.placearticle) }}
-  </div>
-  <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
-  {{ form_fields(article_form.eventarticle) }}
-  </div>
-  <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
-  {{ form_fields(article_form.campaignarticle) }}
-  </div>
+{{ article_form.title(style="display:none;") }}
+  <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
+<ul class="nav nav-tabs content-menu">
+  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span> Focus</a></li>
+  <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
+  <li><a href="#relations" data-toggle="tab">Relations</a></li>
+  <li><a href="#description" data-toggle="tab">Description</a></li>
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+      Actions <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% if op!= 'new'%}
+      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
+    {%endif%}   
+    </ul>
+  </li>
+  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">Save changes</button></li>
+</ul>
 
-  <h4 style="display:inline">Relations ({{ article.relations|length if article }})</h4>
-  {{ article_form.relations(**{'data-editable':'relations', 
+<div class="tab-content panel panel-default content-panel">
+  <div class="tab-pane fade active in panel" id="focus"></div>
+
+  <div class="tab-pane fade active panel" id="metadata">
+    {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
+    <fieldset style="margin-bottom: 10px">
+    {#  {{ form_field(article_form.articlegroups) }} #}
+    {{ form_field(article_form.type, class="m_action2")}}
+    </fieldset>
+    <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
+    {{ form_fields(article_form.imagearticle) }}
+    </div>
+    <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
+    {{ form_fields(article_form.personarticle) }}
+    </div>
+    <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
+    {{ form_fields(article_form.fractionarticle) }}
+    </div>
+    <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
+    {{ form_fields(article_form.placearticle) }}
+    </div>
+    <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
+    {{ form_fields(article_form.eventarticle) }}
+    </div>
+    <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
+    {{ form_fields(article_form.campaignarticle) }}
+    </div>
+  </div>
+  <div class="tab-pane fade panel" id="relations">
+    {{ article_form.relations(**{'data-editable':'relations', 
     'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
-  {#<button id="addrow" class="btn btn-info btn-sm{{' disabled' if op=='new'}}" style="margin-left: 10px; margin-bottom: 5px;">Add relation</button>#}
+  </div>
+  <div class="tab-pane fade panel" id="description">
+    {{article_form.description(style="width:100%")}}
+  </div>
 </div>
+<div class="row">
+  <div class="col-md-9 article_text">
+    <div class=" hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
+    <span id="hinter"></span>
+    {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
+  </div>
+  <div class="col-md-3">
+    blalb
+  </div>
 </div>
 </form>
-
 
 {#### PAGE ####}
 {%- else -%}

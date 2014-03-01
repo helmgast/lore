@@ -13,16 +13,16 @@
 
 {% block pre_content %}
 <h2>Browse</h2>
-<ul class="nav nav-tabs">
-    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> Browse by title</a></li>
-    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> Browse by type</a></li>
-    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> Browse by time</a></li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> Browse by relation</a></li>
+<ul class="nav nav-tabs content-menu">
+    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> By title</a></li>
+    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> By type</a></li>
+    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> By time</a></li>
+    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> By relation</a></li>
 </ul>
 {% endblock %}
 
 {% block content %}
-    <div class="row">
+    <div class="panel panel-default">
     {% if articles.count() == 0 %}No articles yet!{% else %}
     <dl>
         {% for group in groups %}
@@ -39,6 +39,6 @@
         </ul></dd>
         {% endfor %}
     </dl>
-    {% endif %}
     </div>
+    {% endif %}
 {% endblock %}
