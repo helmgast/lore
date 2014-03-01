@@ -101,7 +101,8 @@ class ImageArticle(db.EmbeddedDocument):
         im.mime_type = 'image/'+im.image.format.lower()
         # TODO very poor way of correctly determining mime type
         # TODO use md5 to check if file already downloaded
-        print "Fetched %s image from %s to DB" % (im.image.format, image_url)
+        logger = logging.getLogger(__name__)
+        logger.info("Fetched %s image from %s to DB", im.image.format, image_url)
         return im
 
 class PersonArticle(db.EmbeddedDocument):
