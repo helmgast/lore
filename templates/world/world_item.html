@@ -39,14 +39,24 @@
 
 
 {% block sidebar %}
-<ul class="nav nav-list" style="">
+<ul class="nav nav-list">
     <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> Home</a></li>    
     <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> Browse</a></li>    
     <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> Blog</a></li>    
-    <li class="nav-header">Article actions</li>
-{%- block article_actions -%}
-    <li><a href="{{ url_for('world.article_form_new', world=world.slug) }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>
-{%- endblock -%}
+    <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> New article<span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}">Basic</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}">Person</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}">Fraction</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}">Place</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}">Event</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}">Campaign</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}">Chronicle</a></li>
+            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}">Blog post</a></li>
+        </ul>
+    </li>
 </ul>
 {% endblock %}
 

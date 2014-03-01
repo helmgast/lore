@@ -56,10 +56,10 @@
   <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">Save changes</button></li>
 </ul>
 
-<div class="tab-content panel panel-default content-panel">
-  <div class="tab-pane fade active in panel" id="focus"></div>
+<div class="tab-content content-panel">
+  <div class="tab-pane fade" id="focus"></div>
 
-  <div class="tab-pane fade active panel" id="metadata">
+  <div class="tab-pane panel panel-default fade" id="metadata">
     {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
     <fieldset style="margin-bottom: 10px">
     {#  {{ form_field(article_form.articlegroups) }} #}
@@ -84,11 +84,11 @@
     {{ form_fields(article_form.campaignarticle) }}
     </div>
   </div>
-  <div class="tab-pane fade panel" id="relations">
+  <div class="tab-pane panel panel-default fade" id="relations">
     {{ article_form.relations(**{'data-editable':'relations', 
     'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
   </div>
-  <div class="tab-pane fade panel" id="description">
+  <div class="tab-pane panel panel-default fade" id="description">
     {{article_form.description(style="width:100%")}}
   </div>
 </div>
@@ -141,12 +141,14 @@
 </div>
 
 {% include "includes/flash.html" %}
-{% if article.description %}
-<div class="col-md-9">{{article.description}}</div>
-{% endif %}
-<div class="article col-md-9 article_text">
-	{% if article.is_image() %} <img src="{{url_for('.image', slug=article.slug)}}" />
-	{% endif %} {{ article.content|markdown }}
+
+<div class="row">
+  <div class="col-md-9 article_text">
+    {{ article.content|markdown }}
+  </div>
+  <div class="col-md-3">
+    blalb
+  </div>
 </div>
 
 {% if article_type_name == 'blogpost' %}
