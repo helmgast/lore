@@ -140,6 +140,7 @@ class ResourceAccessStrategy:
             else:
                 fieldname = key.split('__')[0]
                 # print fieldname, (fieldname in self.model_class.__dict__)
+                # TODO replace second and-part with dict per model-class that describes what is filterable
                 if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
                     filters[key] = args.get(key)
         # print filters
