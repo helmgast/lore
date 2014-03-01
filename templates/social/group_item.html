@@ -20,7 +20,7 @@
 <div class="row">
   <div class="col-md-6">
     <table class="table table-striped"
-    {%- if group_form-%} data-editable="list" data-remote="{{url_for('.member_form_new', group=group.slug)}}"}}
+    {%- if group_form -%} data-editable="members" data-remote="{{url_for('.member_form_new', group=group.slug)}}"
     {%- endif -%}>
       <thead>
         <tr>

@@ -7,65 +7,41 @@
     return this.each(function () {
       var $this   = $(this)
       var remote  = $this.data('remote')
-      var $button = $('<button type="button" class="btn btn-danger btn-xs deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
-      var $add = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span>Add</button>')
+      var listname = $this.data('editable')
+      var $button = $('<button type="button" class="btn btn-default btn-xs el-deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
+      var $add = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
       var $type = $this.prop('tagName');
-      
+      var addselector = ''
       if ($type == "TABLE") {
-        $button = $button.wrap('<td></td>').parent()
-        $this.find('tbody > tr').append($button)
-        console.log("in here");
-        $add.click(function() {
-            jQuery.get(remote, function(data) {
-              $this.find('tbody').append(data)
-              $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
-            })
-        })
-        $button.click(function() {
-            $button.parent("tr").remove();
-        });
-        $this.after($add)
+        $this.find('tbody tr').append($button)
+        addselector = 'tbody '
       }
       else if ($type == "UL" || $type == "OL") {
-        $this.children('li').addClass('editableListUl')
-        $this.find('li').append($button);
-        $this.find('li button').addClass('editableListRemove')
-        
-        $add.click(function() {
-          jQuery.get(remote, function(data) {
-            $this.append(data)
-            $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
-          })
-        })
-      // Listening to class instead of $button to allow multiple removals.
-      $('.editableListRemove').click(function(e) {
-          $(this).parent('li').remove();
-          e.preventDefault();
-          return false;
-      })
-      
-      // Likely to be a less demanding solution for this.
-      $('.editableListUl').mouseover(function(e) {
-          $(this).find('.editableListRemove').show();
-      })
-      $('.editableListUl').mouseout(function(e) {
-          $(this).find('.editableListRemove').hide();
-      })
-        $this.after($add)
+        $this.find('li').append($button);        
       }
-      // var data    = $this.data('bs.carousel')
-      // var options = $.extend({}, Carousel.DEFAULTS, $this.data(), typeof option == 'object' && option)
-      // var action  = typeof option == 'string' ? option : options.slide
 
-      // if (!data) $this.data('bs.carousel', (data = new Carousel(this, options)))
-      // if (typeof option == 'number') data.to(option)
-      // else if (action) data[action]()
-      // else if (options.interval) data.pause().cycle()
+      $add.click(function() {
+        jQuery.get(remote, function(data) {
+          var newel = $(data)
+          var i = $this.find(addselector+'tr').length
+          newel.find('input, select').each(function() {
+            this.name = listname +'-'+ i +'-'+this.name
+            this.id = this.name
+          })
+          newel.append($button.clone())
+          $this.find(addselector).append(newel)
+          $this.find('select[data-role="chosen"]').chosen(); // need to reactive chosen for any loaded html TODO, nicer way
+        })
+      })
+      $this.after($add)
+      $this.on('click','.el-deletebtn', function() {
+        $(this).parent().remove()
+      })
     })
   }
 
   $(window).on('load', function () {
-    $('[data-editable="list"]').each(function () {
+    $('[data-editable]').each(function () {
       var $editablelist = $(this)
       $editablelist.editablelist($editablelist.data())
     })
