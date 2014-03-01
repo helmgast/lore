@@ -51,4 +51,4 @@ SECRET_KEY = 'SECRETPHRASE'
 1. Start mongodb with `mongod`
 2. If the database has not been used before, or data needs to be reset, run `python app.py reset`
 3. Start the application with `python app.py`
-4. Point your browser to `localhost:5000`
+4. Point your browser to `http://localhost:5000`
