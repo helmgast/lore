@@ -2,16 +2,27 @@ import os
 import raconteur
 import unittest
 import tempfile
+import logging
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
+from model.world import World
 
 class RaconteurTestCase(unittest.TestCase):
 
+	def test_strategy(self):
+		strategy = ResourceAccessStrategy(World, 'testresource', 'slug', short_url=True)
+		self.assertEqual('/testresource', strategy.url_list())
+
+	def test_handler(self):
+		handler = ResourceHandler(ResourceAccessStrategy(World, 'testresource', 'slug', short_url=True))
+		# self.assertEqual('/testresource', handler.form_new({}))
+
 	def test_empty_db(self):
 		rv = self.app.get('/')
-		assert 'Welcome to Raconteur' in rv.data
+		self.assertIn('Welcome to Raconteur', rv.data)
 
 	def test_get_world(self):
 		rv = self.app.get('/world/')
-		assert 'any fictional world at your fingertips' in rv.data
+		self.assertIn('any fictional world at your fingertips', rv.data)
 
 	def login(self, username, password):
 		return self.app.post('/accounts/login/', data=dict(
@@ -32,6 +43,8 @@ class RaconteurTestCase(unittest.TestCase):
 		os.unlink(raconteur.the_app.config['DATABASE'])
 
 
+def run_tests():
+	unittest.main()
 
 if __name__ == '__main__':
-	unittest.main()
+	run_tests()
