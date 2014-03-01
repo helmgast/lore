@@ -85,8 +85,10 @@
     </div>
   </div>
   <div class="tab-pane panel panel-default fade" id="relations">
-    {{ article_form.relations(**{'data-editable':'relations', 
-    'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
+  {% if article %}
+    {{ article_form.relations(**{'data-editable':'relations', 'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
+  {% endif %}
+  }
   </div>
   <div class="tab-pane panel panel-default fade" id="description">
     {{article_form.description(style="width:100%")}}
