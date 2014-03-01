@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-01 13:28+0100\n"
-"PO-Revision-Date: 2014-03-01 13:30+0100\n"
+"POT-Creation-Date: 2014-03-01 13:43+0100\n"
+"PO-Revision-Date: 2014-03-01 13:44+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -447,6 +447,27 @@ msgstr "av"
 msgid "Read more"
 msgstr "Läs mer"
 
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:15
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:44
+msgid "Browse"
+msgstr "Bläddra"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:17
+msgid "By title"
+msgstr "Av titel"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:18
+msgid "By type"
+msgstr "Av typ"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:19
+msgid "By time"
+msgstr "Av tid"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:20
+msgid "By relation"
+msgstr "Av relation"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:4
 msgid "any fictional world at your fingertips"
 msgstr "fiktiva världar i dina fingerspetsar"
@@ -466,10 +487,6 @@ msgstr "Utgivare"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:43
 msgid "Home"
 msgstr "Hem"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:44
-msgid "Browse"
-msgstr "Bläddra"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:45
 msgid "Blog"
