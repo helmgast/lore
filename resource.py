@@ -99,6 +99,7 @@ class ResourceAccessStrategy:
         self.parent = parent_strategy
         self.id_field = id_field
         self.short_url = short_url
+        self.fieldnames = [n for n in self.form_class.__dict__.keys() if (not n.startswith('_') and n is not 'model_class')]
         # The field name pointing to a parent resource for this resource, e.g. article.world
         self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
 
@@ -137,11 +138,12 @@ class ResourceAccessStrategy:
             if key == 'order_by':
                 qr = qr.order_by(*args.getlist('order_by'))
             else:
-                fieldname = key.split('__')[0] 
-                print fieldname, (fieldname in self.model_class.__dict__)
+                fieldname = key.split('__')[0]
+                # print fieldname, (fieldname in self.model_class.__dict__)
+                # TODO replace second and-part with dict per model-class that describes what is filterable
                 if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
                     filters[key] = args.get(key)
-        print filters
+        # print filters
         if filters:
             qr = qr.filter(**filters)
         # TODO very little safety in above as all filters are allowed
@@ -242,7 +244,17 @@ class ResourceHandler(View):
 
         r['parents'] = self.strategy.query_parents(**kwargs)
         r.update(r['parents'])
-        r['op'] = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())
+        op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())
+        if op in ['form_edit', 'form_new','list']:
+            # TODO faster, more pythonic way of getting intersection of fieldnames and args
+            vals = {}
+            for arg in request.args:
+                if arg in self.strategy.fieldnames:
+                    val = request.args.get(arg).strip()
+                    if val:
+                        vals[arg] = val
+            r['filter' if op is 'list' else 'prefill'] = vals
+        r['op'] = op
         if 'next' in request.args:
             r['next'] = request.args['next']
         return r
@@ -260,8 +272,7 @@ class ResourceHandler(View):
             raise ResourceError(500)
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
-        # TODO add prefill form functionality
-        form = self.form_class(obj=item)
+        form = self.form_class(obj=item, **r.get('prefill',{}))
         form.action_url = url_for('.'+self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
         r[self.strategy.resource_name+'_form'] = form
         r['op'] = 'edit' # form_edit is not used in templates...
@@ -271,8 +282,7 @@ class ResourceHandler(View):
     def form_new(self, r):
         if not self.strategy.allowed_any(r['op']):
             raise ResourceError(401)
-        # TODO add prefill form functionality
-        form = self.form_class(request.args, obj=None)
+        form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
         form.action_url = url_for('.'+self.strategy.endpoint_name('new'), **r['url_args'])
         r[self.strategy.resource_name+'_form'] = form
         r['op'] = 'new' # form_new is not used in templates...
@@ -282,10 +292,9 @@ class ResourceHandler(View):
     def list(self, r):
         if not self.strategy.allowed_any(r['op']):
             raise ResourceError(401)
-        r['list'] = self.strategy.query_list(request.args)
+        r['list'] = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
         r['template'] = self.strategy.list_template()
         r[self.strategy.plural_name] = r['list']
-        # Filter on allowed items?
         return r
 
     def new(self, r):
