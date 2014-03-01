@@ -3,7 +3,7 @@ import raconteur
 import unittest
 import tempfile
 import logging
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm, ResourceError
 from model.world import World
 from raconteur import db
 
@@ -39,11 +39,13 @@ class RaconteurTestCase(unittest.TestCase):
 		self.assertEqual(True, strategy.allowed_on('edit', obj))
 
 	def test_handler(self):
+#		rv = self.app.get('/world/altor/articles/new')
 		pass
-#		handler = ResourceHandler(ResourceAccessStrategy(TestObject, 'test_objects', short_url=True))
-#		with raconteur.the_app.test_request_context('/test_objects/new'):
-#			raconteur.the_app.preprocess_request()
-#			self.assertEqual('/testresource', handler.form_new({'op':'form_new', 'url_args':{}}))
+		# handler = ResourceHandler(ResourceAccessStrategy(TestObject, 'test_objects', short_url=True))
+		# with raconteur.the_app.test_request_context('/test_objects/new?name=test_name_handler'):
+		# 	with self.assertRaises(ResourceError):
+		# 		handler.new({'op':'new', 'url_args':{}})
+		# 	self.assertEqual('/testresource', handler.new({'op':'new'}))
 
 	def test_empty_db(self):
 		rv = self.app.get('/')
