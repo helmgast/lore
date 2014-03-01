@@ -35,4 +35,18 @@ The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps b
 * `test_data/` - test input data to prefill the database with when calling python app.py reset
 
 ## SETUP
-TBD
+**Prerequisites**: you need to have a terminal with installed git, python 2.7.5, mongodb and virtualenv.
+1. `git clone https://github.com/ripperdoc/raconteur.git`
+2. Create a new virtualenv, activate it and then cd into the new raconteur directory
+3. `python setup.py develop` (will install all dependencies)
+4. Create a file named `config.cfg` in the raconteur root, and write the following into it. Make sure to change NAMEOFYOURDB and SECRETPHRASE into something that you only use locally!
+```
+MONGODB_SETTINGS = {'DB':'NAMEOFYOURDB'}
+SECRET_KEY = 'SECRETPHRASE'
+```
+
+### Running
+1. Start mongodb with `mongod`
+2. If the database has not been used before, or data needs to be reset, run `python app.py reset`
+3. Start the application with `python app.py`
+4. Point your browser to `localhost:5000`

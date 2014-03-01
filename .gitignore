@@ -1,7 +1,8 @@
 *.pyc
 *.db
 *.sublime*
-dbconfig.cfg
+config.cfg
 /.settings
 /.project
 /.pydevproject
+/.Raconteur.egg-info
