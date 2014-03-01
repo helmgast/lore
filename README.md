@@ -33,6 +33,7 @@ The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps b
 * `static/` - contains static assets such as js, css, etc
 * `templates/` - sub-organized by blueprint, this contains all Jinja2 type HTML templates.
 * `test_data/` - test input data to prefill the database with when calling python app.py reset
+* `translations/` - localization files.
 
 ## SETUP
 **Prerequisites**: you need to have a terminal with installed git, python 2.7.5, mongodb and virtualenv.
@@ -43,12 +44,18 @@ The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps b
 4. Create a file named `config.cfg` in the raconteur root, and write the following into it. Make sure to change NAMEOFYOURDB and SECRETPHRASE into something that you only use locally!
 
 ```
+# -*- coding: utf-8 -*-
 MONGODB_SETTINGS = {'DB':'NAMEOFYOURDB'}
 SECRET_KEY = 'SECRETPHRASE'
+LANGUAGES = {
+    'en': 'English',
+    'sv': 'Swedish'
+}
 ```
 
 ### Running
 1. Start mongodb with `mongod`
 2. If the database has not been used before, or data needs to be reset, run `python app.py reset`
-3. Start the application with `python app.py`
-4. Point your browser to `http://localhost:5000`
+3. (Optional) Compile translations with `python app.py lang` 
+4. Start the application with `python app.py`
+5. Point your browser to `http://localhost:5000`
