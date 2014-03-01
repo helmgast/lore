@@ -1,10 +1,10 @@
 <table class="table table-striped m_view">
   <thead>
     <tr>
-      <th>Username</th>
-      <th>Real name</th>
-      <th>Location</th>
-      <th>Actions</th>
+      <th>{{ _('Username') }}</th>
+      <th>{{ _('Real name') }}</th>
+      <th>{{ _('Location') }}</th>
+      <th>{{ _('Actions') }}</th>
     </tr>
   </thead>
   <tbody>
@@ -21,18 +21,18 @@
         {% if user %}
           {% if current_use and user.username != current_user.username %}
             <button type="button" class="btn btn-sm m_action
-              {% if current_user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">Unfollow
+              {% if current_user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
               {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
               {% endif %}</button>
             <div class="btn-group">
             <a class="btn btn-sm dropdown-toggle" data-toggle="dropdown" href="#">
-              Add to group<span class="caret"></span>
+              {{ _('Add to group') }}<span class="caret"></span>
             </a>
             {% include "social/group_member_selector.html" %}
             </div>
-          <button type="button" class="btn btn-sm btn-primary m_action" href="#TODO" data-action-type="modal">Send message</button>
+          <button type="button" class="btn btn-sm btn-primary m_action" href="#TODO" data-action-type="modal">{{ _('Send message') }}</button>
           {% else %}
-          <button class="btn disabled">It's you!</button>
+          <button class="btn disabled">{{ _("It's you!") }}</button>
           {% endif %}
  
         {% endif %}

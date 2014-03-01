@@ -4,15 +4,15 @@
 
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list">
-<li class="nav-header">Actions</li>
-<li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> New</a></li>
+<li class="nav-header">{{ _('Actions') }}</li>
+<li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
 </ul>
 {% endblock %}
 
 {% block content %}
 
   <div class="row">
-    <h2>My groups</h2> 
+    <h2>{{ _('My groups') }}</h2> 
     {% for group in my_master_groups %}
     <div class="col-md-4 well">
       <h3>{{ group.name }}</h3>
@@ -24,12 +24,12 @@
 
   <div class="row">
     <div class="col-md-4">
-      <h3>All groups</h3>
+      <h3>{{ _('All groups') }}</h3>
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Group name</th>
-            <th>Location</th>
+            <th>{{ _('Group name') }}</th>
+            <th>{{ _('Location') }}</th>
           </tr>
         </thead>
         <tbody>

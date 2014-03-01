@@ -1,7 +1,7 @@
 {% extends "campaign/base.html" %}
 
-{% block content_title %}Campaigns{% endblock %}
-{% block content_tagline %}where the magic happens{% endblock %}
+{% block content_title %}{{ _('Campaigns') }}{% endblock %}
+{% block content_tagline %}{{ _('where the magic happens') }}{% endblock %}
 {% block campaign_active %} class="active"{% endblock %}
 
 {% block content %}
@@ -17,15 +17,15 @@
 	  <div class="well">{{ c.campaign.description }}</div>
 	  {% endif %}
       <dl class="dl-horizontal">
-        <dt>Group</dt>
+        <dt>{{ _('Group') }}</dt>
         <dd>{% if false %}<a href="{{ url_for('social.group_view', slug=c.group.slug) }}">{{c.group}}</a>{% endif %}{{c.group}}</dd>
-        <dt>World</dt>
+        <dt>{{ _('World') }}</dt>
         <dd><a href="{{ url_for('world.world_view', world=c.campaign.world.slug) }}">{{ c.campaign.world }}</a></dd>
-        <dt>Rules</dt>
+        <dt>{{ _('Rules') }}</dt>
         <dd>{{ c.rule_system }}</dd>
-        <dt>Sessions</dt>
+        <dt>{{ _('Sessions') }}</dt>
         <dd>{{ c.sessions|length }}</dd>
-        <dt>Chronicles</dt>
+        <dt>{{ _('Chronicles') }}</dt>
         <dd>{{ c.chronicles|length }}</dd>
       </dl>
     </div>

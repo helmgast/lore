@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block content_title %}Campaign{% endblock %}
-{% block content_tagline %}manage YOUR game{% endblock %}
+{% block content_title %}{{ _('Campaign') }}{% endblock %}
+{% block content_tagline %}{{ _('manage YOUR game') }}{% endblock %}
 {% block campaign_active %} class="active"{% endblock %}
 
 {% block sidebar %}
   <ul class="nav nav-list">
-    <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> Campaigns</a></li>
-    <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> My sessions</a></li>
-    <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> Chronicles</a></li>
+    <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaigns') }}</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> {{ _('My sessions') }}</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('Chronicles') }}</a></li>
   </ul>
 {% endblock %}
 
 {% block content %}
   <p>
   {% if session.logged_in %}
-  Welcome <strong>{{ user.realname }}</strong>!
+  {{ _('Welcome') }} <strong>{{ user.realname }}</strong>!
   {% endif %}
-  In this section you can manage the campaigns and scenarios that you play.</p>
+  {{ _('In this section you can manage the campaigns and scenarios that you play.') }}</p>
 {% endblock %}

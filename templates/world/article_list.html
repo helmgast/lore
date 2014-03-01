@@ -12,12 +12,12 @@
 {% endif %}
 
 {% block pre_content %}
-<h2>Browse</h2>
+<h2>{{ _('Browse') }}</h2>
 <ul class="nav nav-tabs content-menu">
-    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> By title</a></li>
-    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> By type</a></li>
-    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> By time</a></li>
-    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> By relation</a></li>
+    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> {{ _('By title') }}</a></li>
+    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> {{ _('By type') }}</a></li>
+    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> {{ _('By time') }}</a></li>
+    <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> {{ _('By relation') }}</a></li>
 </ul>
 {% endblock %}
 

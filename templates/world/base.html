@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block content_title %}World{% endblock %}
-{% block content_tagline %}any fictional world at your fingertips{% endblock %}
+{% block content_title %}{{ _('World') }}{% endblock %}
+{% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
 {% block world_active %} class="active"{% endblock %}
 
 {% block sidebar %}
 <ul class="nav nav-list">
-  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> All worlds</a></li>
-  <li><a href="{{ url_for('.world_myworlds') }}"><span class="glyphicon glyphicon-book"></span> My worlds</a></li>
+  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+  <li><a href="{{ url_for('.world_myworlds') }}"><span class="glyphicon glyphicon-book"></span> {{ _('My worlds') }}</a></li>
 </ul>
 
 {% endblock %}
@@ -19,7 +19,7 @@
         <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a></h3>
         <div class="well">{{ world.description }}</div>
         <dl class="dl-horizontal">
-            <dt>Publishers</dt>
+            <dt>{{ _('Publishers') }}</dt>
             <dd>{{ world.publisher }}</dd>
         </dl>
     </div>
