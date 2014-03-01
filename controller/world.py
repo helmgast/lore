@@ -1,3 +1,17 @@
+"""
+    controller.world
+    ~~~~~~~~~~~~~~~~
+
+    This is the controller and Flask blueprint for game world features,
+    it initializes URL routes based on the Resource module and specific
+    ResourceAccessStrategy for each world related model class. This module is then
+    responsible for taking incoming URL requests, parse their parameters,
+    perform operations on the Model classes and then return responses via 
+    associated template files.
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g
 from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
   EventArticle, ImageArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_IMAGE, 

@@ -1,3 +1,13 @@
+"""
+    model.world
+    ~~~~~~~~~~~~~~~~
+
+    Includes all game world related Mongoengine model classes, such as 
+    World, Article and so forth
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 from raconteur import db
 from misc import now
 from slugify import slugify
@@ -5,12 +15,6 @@ from user import User, Group
 import requests
 from StringIO import StringIO
 import re
-
-'''
-Created on 2 jan 2014
-
-@author: Niklas
-'''
 
 # Constants and enumerations
 ARTICLE_DEFAULT, ARTICLE_IMAGE, ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_CAMPAIGN, ARTICLE_CHRONICLE, ARTICLE_BLOG = 0, 1, 2, 3, 4, 5, 6, 7, 8
@@ -198,8 +202,6 @@ class Article(db.Document):
     
     relations = db.ListField(db.EmbeddedDocumentField(ArticleRelation))
 
-
-
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 # ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
 # class ArticleUser(db.Document):
@@ -223,43 +225,3 @@ class Article(db.Document):
     # user = ForeignKeyField(User)
     # article = ForiegnKeyField(Article)
     # right = ForiegnKeyField(UserRights)
-
-'''
-@ link to
-& embed
-# revision
-World:Mundana
-    &Text:...  (always a leaf node)
-    &Media:... (also always a leaf node)
-    @Place:Consaber
-        @Place:Nantien
-            @Person:Tiamel
-            @Place:Nant
-                #rev67
-                #rev66
-                ...
-    Event:Calniafestivalen
-    Scenario:Calniatrubbel
-        &Text:...
-        @Scene:1
-            @/mundana/consaber/nantien
-            @/mundana/
-        @Scene:2
-        @Scene:3
-    Character:Taldar
-
-Semantical structure
-World:Mundana
-    Place:Consaber mundana/consaber
-        Place:Nantien mundana/consaber/nantien
-            Person:Tiamel mundana/consaber/nantien/tiamel
-            Place:Nant mundana/consaber/
-    Event:Calniafestivalen
-    Scenario:Calniatrubbel
-        Scene:1
-            @/mundana/consaber/nantien
-            @/mundana/
-        Scene:2
-        Scene:3
-    Character:Taldar
-'''

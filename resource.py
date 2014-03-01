@@ -1,3 +1,14 @@
+"""
+    raconteur.resource
+    ~~~~~~~~~~~~~~~~
+
+    An internal library for generating REST-like URL routes and request
+    handling functionality for most of Raconteur's models. This provides
+    DRYness of code and simplified addition of new models.
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 from flask import request, render_template, flash, redirect, url_for
 from raconteur import auth, db
 from flask.ext.mongoengine.wtf import model_form

@@ -1,3 +1,12 @@
+"""
+    raconteur.raconteur
+    ~~~~~~~~~~~~~~~~
+
+   Main raconteur application class, that initializes the Flask application,
+   it's blueprints, plugins and template filters.
+
+    :copyright: (c) 2014 by Raconteur
+"""
 
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash
 from datetime import datetime

@@ -1,6 +1,16 @@
+"""
+    controller.generator
+    ~~~~~~~~~~~~~~~~
+
+    This is the controller and Flask blueprint for generator features.
+
+    CURRENTLY NOT IN USE
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 # from models import User, GeneratorInputList, GeneratorInputItem
 # 
-# __author__ = 'Niklas'
 # 
 from flask import   render_template, Blueprint
 # from peewee import *

@@ -1,11 +1,14 @@
+"""
+    model.campaign
+    ~~~~~~~~~~~~~~~~
+
+    Provides Mongoengine model classes for all game campaign related features.
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 from raconteur import db
 from world import Article, Episode, User, Group
-
-'''
-Created on 2 jan 2014
-
-@author: Niklas
-'''
 
 # A game session that was or will be held, e.g. the instance between a scenario
 # and a group  at a certain date

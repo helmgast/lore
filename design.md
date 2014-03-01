@@ -475,3 +475,43 @@ Use of conversations
 - Closed chat within a group, outside of game session (e.g. a permanent discussion)
 - Public posting of messages (one writes, rest reads)
 - Public discussion
+
+'''
+@ link to
+& embed
+# revision
+World:Mundana
+    &Text:...  (always a leaf node)
+    &Media:... (also always a leaf node)
+    @Place:Consaber
+        @Place:Nantien
+            @Person:Tiamel
+            @Place:Nant
+                #rev67
+                #rev66
+                ...
+    Event:Calniafestivalen
+    Scenario:Calniatrubbel
+        &Text:...
+        @Scene:1
+            @/mundana/consaber/nantien
+            @/mundana/
+        @Scene:2
+        @Scene:3
+    Character:Taldar
+
+Semantical structure
+World:Mundana
+    Place:Consaber mundana/consaber
+        Place:Nantien mundana/consaber/nantien
+            Person:Tiamel mundana/consaber/nantien/tiamel
+            Place:Nant mundana/consaber/
+    Event:Calniafestivalen
+    Scenario:Calniatrubbel
+        Scene:1
+            @/mundana/consaber/nantien
+            @/mundana/
+        Scene:2
+        Scene:3
+    Character:Taldar
+'''

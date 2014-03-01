@@ -1,3 +1,17 @@
+"""
+    controller.social
+    ~~~~~~~~~~~~~~~~
+
+    This is the controller and Flask blueprint for social features,
+    it initializes URL routes based on the Resource module and specific
+    ResourceAccessStrategy for each related model class. This module is then
+    responsible for taking incoming URL requests, parse their parameters,
+    perform operations on the Model classes and then return responses via 
+    associated template files.
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g
 from raconteur import auth
 from resource import ResourceHandler, ResourceError, ResourceAccessStrategy

@@ -1,3 +1,13 @@
+"""
+    raconteur.auth
+    ~~~~~~~~~~~~~~~~
+
+   Authentication module that provides login and logout features on top of 
+   User model. Adapted from flask-peewee.
+
+    :copyright: (c) 2014 by Raconteur
+"""
+
 import functools
 import os
 import random
@@ -8,6 +18,8 @@ from wtforms import TextField, PasswordField, validators
 from hashlib import sha1
 
 current_dir = os.path.dirname(__file__)
+
+# Provides
 
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):
