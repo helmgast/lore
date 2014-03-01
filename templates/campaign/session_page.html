@@ -18,20 +18,20 @@
 <div class="row m_inplace m_view{{ ' modal-body' if inline }}">
   <div class="col-md-6">
     <table class="table">
-      <tr><td><strong>Campaign</strong></td>
+      <tr><td><strong>{{ _('Campaign') }}</strong></td>
       <td>{{ resource.field('campaign') }}</td></tr>
-      <tr><td><strong>Location</strong></td>
+      <tr><td><strong>{{ _('Location') }}</strong></td>
       <td><small>{{ resource.field('location') }}</small></td></tr>
-      <tr><td><strong>Start time</strong></td>
+      <tr><td><strong>{{ _('Start time') }}</strong></td>
       <td>{{ resource.field('play_start') }}</td></tr>
-      <tr><td><strong>End time</strong></td>
+      <tr><td><strong>{{ _('End time') }}</strong></td>
       <td>{{ resource.field('play_end') }}</td></tr>
     </table>
     <div class="well">{{ resource.field('description', rows=10) }}</div>
   </div>
 </div>
 {% if resource.form %}<div class="row form-actions">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('campaign.sessions')}}" class="btn">Cancel</a>
+    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+    <a href="{{url_for('campaign.sessions')}}" class="btn">{{ _('Cancel') }}</a>
     </div></form>{% endif %}
 {% endblock %}{% endblock %}

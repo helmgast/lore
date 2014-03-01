@@ -2,10 +2,10 @@
 
 {% set recipients = conversation.members if conversation else [] %}
 
-{% block content_title %}{% if op=='new' %}New conversation{% elif conversation.title %}{{conversation.title}}{% else %}Conversation{%endif%}{% endblock %} 
+{% block content_title %}{% if op=='new' %}{{ _('New conversation') }}{% elif conversation.title %}{{conversation.title}}{% else %}Conversation{%endif%}{% endblock %} 
 
 {% block content_tagline %}{% endblock %}
-{% block content_subheader %}<span class="nav-header">Members:</span> {{ recipients|join(', ')|truncate(20) }}{%endblock%}
+{% block content_subheader %}<span class="nav-header">{{ _('Members') }}:</span> {{ recipients|join(', ')|truncate(20) }}{%endblock%}
 
 {% if conversation %}
   {% set fixed_recipients = True %} {# fixed recipients always when having existing conversation #}
@@ -24,11 +24,11 @@
   {% endif %}  
   {% if conversation_form %}
   <form action="{{conversation_form.action_url}}" method="post">
-    <p>Title: {{conversation_form.title(style='width:100%;') }}</p>
-    <p>Members: {{conversation_form.members(**{'data-role':'chosen', 'data-placeholder':"Recipients...", 'style':'width:100%;'}) }}</p>
+    <p>{{ _('Title') }}: {{conversation_form.title(style='width:100%;') }}</p>
+    <p>{{ _('Members') }}: {{conversation_form.members(**{'data-role':'chosen', 'data-placeholder':"Recipients...", 'style':'width:100%;'}) }}</p>
     {{conversation_form.csrf_token()}}
     <textarea class="form-control" rows="4" name="content" autofocus></textarea>
-    <button type="submit" class="btn btn-primary btn-block">Send</button>
+    <button type="submit" class="btn btn-primary btn-block">{{ _('Send') }}</button>
   </form>
   {% endif %}
   </div>

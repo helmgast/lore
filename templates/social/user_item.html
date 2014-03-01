@@ -5,8 +5,8 @@
 
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list" style="float:left">
-<li class="nav-header">Actions</li>    
-<li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+<li class="nav-header">{{ _('Actions') }}</li>    
+<li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 </ul>
 {%endblock%}
 
@@ -19,15 +19,15 @@
     <div class="btn-toolbar">
 {#        {% if resource.op == 'view' %}
       <button type="button" class="btn btn-small m_action
-        {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">Unfollow
+        {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
         {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
         {% endif %}</button>
       <div class="btn-group">
         <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-        Add to group<span class="caret"></span></a>
+        {{ _('Add to group') }}<span class="caret"></span></a>
         {% include "social/group_member_selector.html" %}
       </div>
-      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=True)}}" data-action-type="modal">Send message</button>
+      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=True)}}" data-action-type="modal">{{ _('Send message') }}</button>
     {% endif %}
 #}
     </div>
@@ -36,17 +36,17 @@
      <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description }}
     </div>
     <table class="table">
-      <tr><td><strong>Name</strong></td>
+      <tr><td><strong>{{ _('Name') }}</strong></td>
       <td>{{ user_form.realname if user_form else user.realname }}</td></tr>
-      <tr><td><strong>Email</strong></td>
+      <tr><td><strong>{{ _('Email') }}</strong></td>
       <td><small>{{ user.email }}</small></td></tr>
-      <tr><td><strong>Location</strong></td>
+      <tr><td><strong>{{ _('Location') }}</strong></td>
       <td>{{ user_form.location if user_form else user.location }}</td></tr>
-      <tr><td><strong>Joined</strong></td>
+      <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
-      <tr><td><strong>Following</strong></td>
+      <tr><td><strong>{{ _('Following') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
-      <tr><td><strong>Followers</strong></td>
+      <tr><td><strong>{{ _('Followers') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
     </table>
   </div>
@@ -57,24 +57,24 @@
   {{ user_form.csrf_token }}
   {{ user_form.username(class="hide") }}
   {{ user_form.email(class="hide") }}
-  <button type="submit" class="btn btn-primary">Save changes</button>
-  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-default">Cancel</a>
+  <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-default">{{ _('Cancel') }}</a>
   {% if op!='new' %}
-  <a href="{{url_for('.user_delete', user=user.username)}}" class="btn btn-danger pull-right">Delete</a>
+  <a href="{{url_for('.user_delete', user=user.username)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
   {% endif %}
 </div></form>{%endif%}
 <div class="row">
-  <div class="span5">
-  <h4>Groups</h4>
+  <div class="col-md-5">
+  <h4>{{ _('Groups') }}</h4>
   {% set groups = user.groups() %}
   {% if groups and groups.count() > 0 %}
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Group name</th>
-        <th>Location</th>
-        <th>Members</th>
-        <th>Role</th>
+        <th>{{ _('Group name') }}</th>
+        <th>{{ _('Location') }}</th>
+        <th>{{ _('Members') }}</th>
+        <th>{{ _('Role') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -88,12 +88,12 @@
       {% endfor %}
     </tbody>
   </table>
-  {% else %}Not member of any groups yet!{% endif %}
+  {% else %}{{ _('Not member of any groups yet!') }}{% endif %}
   </div>
-  <div class="span5">
+  <div class="col-md-5">
     {% set message_list = user.messages() %}
     {% if message_list.count() > 0  %}
-    <h4>Messages to followers</h4>
+    <h4>{{ _('Messages to followers') }}</h4>
       <ul class="list-unstyled">
       {% for message in message_list %}
         <li>{% include "social/message_item.html" %}</li>

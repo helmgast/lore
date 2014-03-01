@@ -1,7 +1,7 @@
 {% extends "campaign/campaign.html" %}
 
-{% block content_title %}Sessions{% endblock %}
-{% block content_tagline %}upcoming and already done{% endblock %}
+{% block content_title %}{{ _('Sessions') }}{% endblock %}
+{% block content_tagline %}{{ _('upcoming and already done') }}{% endblock %}
 {% block campaign_active %} class="active"{% endblock %}
 
 {% block content %}
@@ -34,21 +34,21 @@
     </script>
   </div>
   <div class="col-md-6" id="sessionform">
-    <h3 id="test">Book sessions</h3>
+    <h3 id="test">{{ _('Book sessions') }}</h3>
   </div>
 </div>
 <div class="row">
-  <h3>Past events</h3>
+  <h3>{{ _('Past events') }}</h3>
   <table class="table table-striped m_view">
     <thead>
       <tr>
-        <th>Campaign</th>
-        <th>Group</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Location</th>
-        <th>Description</th>
-        <th>Present</th>
+        <th>{{ _('Campaign') }}</th>
+        <th>{{ _('Group') }}</th>
+        <th>{{ _('Start') }}</th>
+        <th>{{ _('End') }}</th>
+        <th>{{ _('Location') }}</th>
+        <th>{{ _('Description') }}</th>
+        <th>{{ _('Present') }}</th>
       </tr>
     </thead>
     <tbody>

@@ -20,29 +20,29 @@
       <div class="well">{{ resource.field('description') }}</div>
       <dl class="dl-horizontal">
         
-          <dt>Name</dt>
+          <dt>{{ _('Name') }}</dt>
           <dd>{{ resource.field('name') }}</dd>
         
-        <dt>Group</dt>
+        <dt>{{ _('Group') }}</dt>
         <dd>{% if resource.form %}{{ resource.form.group }}{% else %}<a href="{{ url_for('social.group_detail', slug=resource.instance.group.slug) }}">{{resource.instance.group}}</a>{% endif %}</dd>
-        <dt>World</dt>
+        <dt>{{ _('World') }}</dt>
         <dd>{{ resource.field('world') }}</dd>
-        <dt>Rules</dt>
+        <dt>{{ _('Rules') }}</dt>
         <dd>{{ resource.field('rule_system') }}</dd>
-        <dt>Sessions</dt>
+        <dt>{{ _('Sessions') }}</dt>
         <dd><span class="badge">{{ resource.instance.sessions.count() }}</span></dd>
       </dl>
   </div>
 </div>
 
 {% if resource.form %}
-<h3>Scenes <small>(reorder the tree of scenes as you like!)</small></h3>
+<h3>{{ _('Scenes') }} <small>{{ _('(reorder the tree of scenes as you like!)') }}</small></h3>
 {% import 'includes/scene.html' as m %}
 <div class="dd" id="nestable">
     <ol class="dd-list">
     {% for scene in resource.scenes recursive %}
     <li class="dd-item dd3-item" data-id="{{scene.id}}" id="scene{{scene.id}}">
-        <div class="dd-handle dd3-handle">Drag</div>
+        <div class="dd-handle dd3-handle">{{ _('Drag') }}</div>
         <div class="dd3-content">
             {{ m.render_scene(scene, None) }}
         </div>
@@ -60,8 +60,8 @@
 {% endif %}
 
 {% if resource.form %}<div class="row form-actions">
-    <button type="submit" class="btn btn-primary">Save changes</button>
-    <a href="{{url_for('campaign.campaigns')}}" class="btn">Cancel</a>
+    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+    <a href="{{url_for('campaign.campaigns')}}" class="btn">{{ _('Cancel') }}</a>
     </div></form>{% endif %}
 
 <script type="text/javascript">

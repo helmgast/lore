@@ -6,9 +6,9 @@
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>Conversation</th>
-      <th>Last activity</th>
-      <th>Members</th>
+      <th>{{ _('Conversation') }}</th>
+      <th>{{ _('Last activity') }}</th>
+      <th>{{ _('Members') }}</th>
     </tr>
   </thead>
   <tbody>
@@ -29,5 +29,5 @@
     {% endfor %}
   </tbody>
 </table>
-<a href="{{ url_for('.conversation_form_new')}}" class="btn btn-primary">New conversation</a>
+<a href="{{ url_for('.conversation_form_new')}}" class="btn btn-primary">{{ _('New conversation') }}</a>
 {% endblock %}
