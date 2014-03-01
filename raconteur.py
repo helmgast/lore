@@ -145,4 +145,5 @@ def dictreplace(s, d):
 # i18n
 @babel.localeselector
 def get_locale():
-    return request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+  return 'sv'
+  #  return request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
