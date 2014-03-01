@@ -20,6 +20,7 @@ from flask_wtf.csrf import CsrfProtect
 from flask.ext.babel import Babel
 from config import LANGUAGES
 import os
+import logging
 
 try:
   import simplejson as json
@@ -33,8 +34,8 @@ auth = None
 if the_app == None:
   from app import is_debug, is_deploy
   the_app = Flask('raconteur') # Creates new flask instance
-  print "App created"
-  print the_app
+  logger = logging.getLogger(__name__)
+  logger.info("App created: %s", the_app)
   the_app.config.from_pyfile('config.cfg') # db-settings and secrets, should not be shown in code
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
@@ -58,12 +59,24 @@ if the_app == None:
   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
-  # print the_app.url_map
-  
+
+def run_the_app(debug):
+  logger.info("Running local instance")
+  the_app.run(debug=debug)
+
 from test_data import model_setup
 def setup_models():
+  logger = logging.getLogger(__name__)
+  logger.info("Resetting data models")
   db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
+
+from tests import app_test
+def run_tests():
+  logger = logging.getLogger(__name__)
+  logger.info("Running unit tests")
+  app_test.run_tests();
+
 
 ###
 ### Basic views (URL handlers)
@@ -119,7 +132,6 @@ def wikify(s):
 
 @the_app.template_filter('dictreplace')
 def dictreplace(s, d):
-    #print "Replacing %s with %s" % (s,d)
     if d and len(d) > 0:
         parts = s.split("__")
         # Looking for variables __key__ in s.

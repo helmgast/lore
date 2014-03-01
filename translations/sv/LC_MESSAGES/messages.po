@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-01 13:24+0100\n"
-"PO-Revision-Date: 2014-03-01 13:24+0100\n"
+"POT-Creation-Date: 2014-03-01 13:28+0100\n"
+"PO-Revision-Date: 2014-03-01 13:30+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -31,6 +31,7 @@ msgstr "Social"
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/base.html:3
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:21
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/sessions.html:45
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:55
 msgid "Campaign"
 msgstr "Kampanjer"
 
@@ -343,7 +344,6 @@ msgstr "Funktioner"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:11
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_list.html:8
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:48
 msgid "New"
 msgstr "Ny"
 
@@ -475,11 +475,39 @@ msgstr "Bläddra"
 msgid "Blog"
 msgstr "Blogg"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:46
-msgid "Article actions"
-msgstr "Artikelfunktioner"
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:47
+msgid "New article"
+msgstr "Ny artikel"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:58
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:50
+msgid "Basic"
+msgstr "Grundläggande"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:51
+msgid "Person"
+msgstr "Person"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:52
+msgid "Fraction"
+msgstr "Fraktion"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:53
+msgid "Place"
+msgstr "Plats"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:54
+msgid "Event"
+msgstr "Händelse"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:56
+msgid "Chronicle"
+msgstr "Krönika"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:57
+msgid "Blog post"
+msgstr "Bloggpost"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:68
 msgid "IMAGE"
 msgstr "BILD"
 
@@ -494,3 +522,6 @@ msgstr "Regelsystem"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:15
 msgid "Created By"
 msgstr "Skapad av"
+
+#~ msgid "Article actions"
+#~ msgstr "Artikelfunktioner"

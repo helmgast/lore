@@ -20,6 +20,7 @@ from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
 import inspect
+import logging
 from flask.ext.mongoengine.wtf.models import ModelForm
 from model.world import EMBEDDED_TYPES, Article
 
@@ -52,7 +53,8 @@ class ArticleBaseForm(ModelForm):
         for name, field in iteritems(self._fields):
             # Avoid populating meta fields that are not currently active
             if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
-                print "Skipping populating %s, as it's in %s and is != %s" % (name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
+                logger = logging.getLogger(__name__)
+                logger.info("Skipping populating %s, as it's in %s and is != %s", name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
                 pass
             else:
                 field.populate_obj(obj, name)
@@ -71,7 +73,8 @@ class RacModelConverter(ModelConverter):
         # additional CSRFs.
         form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
             base_class=OrigForm, field_args={}, )
-        print "Converted model %s" % model
+        logger = logging.getLogger(__name__)
+        logger.info("Converted model %s", model)
         return f.FormField(form_class, **kwargs)
 
     @converts('StringField')
@@ -204,7 +207,9 @@ class ResourceHandler(View):
             if (not name.startswith("__")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
                 app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
                 custom_ops.append(name)
-        print "Creating resource with url pattern %s and custom ops %s" % (st.url_item(), [st.get_url_path(o) for o in custom_ops])
+
+        logger = logging.getLogger(__name__)
+        logger.info("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
 
         app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
         app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))

@@ -406,6 +406,7 @@ important
 .article_header {
 	font-family: Gentium Book Basic, serif;
 	font-size: 36px;
+	margin-top: 40px;
 }
 
 .blog_header {
@@ -423,8 +424,7 @@ important
 
 .article_text {
 	font-family: Gentium Book Basic, serif;
-	font-size: 17px;
-	margin-left: 0px !important;
+	font-size: 20px;
 }
 
 #hinter {
@@ -460,13 +460,20 @@ important
 
 .nav.content-menu {
 	font-size: 12px !important;
+	margin-left: 4px;
+	margin-right: 4px;
 }
 
 .nav.content-menu a {
 	padding: 6px 10px;
 }
 
-.panel.content-panel {
+.content-panel {
+	margin-bottom: 20px;
+}
+
+.content-panel .panel {
+	padding: 10px;
 	border-top: none;
 }
 
@@ -523,14 +530,4 @@ tr:hover .el-deletebtn {
 	position: absolute;
 	right: 0px;
 	margin-top: 15px;
-}
-
-.editableListUl {
-  width: 150px;
-  line-height: 25px;
-}
-
-.editableListRemove {
-  float: right;
-  display: none;
 }

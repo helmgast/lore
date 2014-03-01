@@ -78,6 +78,9 @@ def add_test_data():
     User(username='user4', password=make_password('user'), email='user@user.com', active=True, admin=False,
         realname='User Userson').save()
     
+    mf.following = [nf, ks, ar, mb]
+    mf.save()
+
     # Article.drop_collection()
 
     Article(type=ARTICLE_IMAGE,
@@ -90,7 +93,7 @@ def add_test_data():
             ).save()
     Article(type=ARTICLE_PERSON,
         title=u"Ljusbringaren",
-        content=u"No content",
+        content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",
         world=altor,
         creator=rl,
         personarticle = PersonArticle(
@@ -122,8 +125,33 @@ I Eon IV följer Monster (samt djur och liknande varelser) ett lite annorlunda s
 """,
         world=mundana,
         creator=nf).save()            
-    mf.following = [nf, ks, ar, mb]
-    mf.save()
+
+    Article(type=ARTICLE_BLOG,
+        title=u"Gladiatorkämparna",
+        content=
+u"""
+De två gladiatorkämparna Ademar och Brutus möts i den stora finalen i Jarum. Striden är på liv och död och guvernören har betalat stora pengar för att få se och bjuda på detta. Nedan är ett spelexempel mellan dessa två. Många regler har nämnts i tidigare blogginlägg men några är även nya här.
+
+Striden börjar på Medellångt avstånd när då de befinner sig på motsatt sida av arenan. Ademar har en kastyxa hoppas kunna hota Brutus att agera i avståndsfasen och om inte annat skada honom. Ademar väljer att agera i avståndsfasen (och får därmed inte agera i närstridsfasen denna rundan). Brutus väljer det senare i hopp om att hinna fram till Ademar så snabbt som möjligt.
+
+## Avståndsfasen
+Avståndsfasen börjar och Ademar använder sin sidohandling för att dra sin kastyxa och sedan sin huvudhandling för att slunga iväg den mot Brutus som väljer att försvara sig med sin lilla rundsköld. Grundsvårigheten för Ademar är 10 (medellångt avstånd) vilket ökar till 14 på grund av skölden. Brutus slår sitt försvarsslag (med färdigheten Sköld) och spenderar samtidigt 1 Utmattning då han agerar utanför aktiv fas. Slaget landar på 16 vilket innebär att svårigheten för Ademar höjs till detta värde. Ademars har lite tur med Ob-slagen och får 23 - Brutus har blivit träffad! Det slumpas fram att Höger ben träffas (0 på 1T10) och Ademar har även fått ett Övertag på anfallet (23 är minst 5 mer än 16 men skillnaden är mindre än 10).
+
+För detta Övertag ska Ademar välja en Fördel men för ett Övertag kan han endast välja Öka skada (då kastyxan inte har några vapengenskaper som ger rabatt på någon av de andra Fördelarna). Skadan blir därmed 2T6+3T6+2 = 5T6+2 i Huggskada (Grundskada + Vapenskada + Öka skada). Summan blir 21 och från detta subtraheras Brutus Grundrustning (3) samt hans pälsbyxors skydd mot Huggskada (2). Skadeverkan blir därmed 16 vilket hamnar inom intervallet 15-19. Detta orsakar dels 6 Utmattning samt ett slag på Skadetabellen för Huggskador i benen med 1T10+2. Ademar fortsätter att ha tur och får totalt 11.
+
+Resultat 11 lyder "Träff över fotleden [Amputationsrisk 12 (fot).]". Brutus behöver alltså klara en svårighet på 12 eller få foten avhuggen! Han har tur med de 3T6 man slår och får 14 och klarar sig. Utöver detta blir Brutus totala Utmattning 7 (1 sedan innan) och han måste slå ett Chockslag mot denna som svårighet för att inte bli Utslagen. Han klarar detta galant det som hänt beskrivs färgglatt runt spelbordet.
+
+## Närstridsfasen
+Därefter börjar närstridsfasen som Brutus väljer att agera i. Han använder sin sidohandling för att Förflytta sig och då han vill ta sig två avstånd (från Medellångt via Kort till Närstrid) så måste han klara ett Förflyttningsslag. Svårigheten är mycket enkel (6) då det är stampad jord och sand på arenan och då Brutus inte är särskilt belastad i sin rustning klarar han det utan problem. Därefter öppnas närstriden. I vanliga fall hade Ademar och Brutus slagit sina Reaktionsslag för att se vem som börjar som anfallare men då Ademar redan har agerat i avståndsfasen så förlorar han denna automatiskt. Brutus använder därmed sin huvudhandling för att anfalla med sin storhammare och slår 22. Ademar försöker desperat blockera med sin sköld (–1T6 då han inte har den redo) och slår 15. På träfftabellen slår Brutus 3 och träffar därmed Torson.
+
+Brutus får alltså ett Övertag. Storhammare har dock vapengenskaperna Klyvande 2 och Otymplig. Den första ger 2 Övertag rabatt på Fördelen Slå sönder och den andra gör det omöjligt att attackera med Snabbt anfall (Brutus gjorde ett standardanfall ovan). Slå sönder kostar normalt 3 Övertag men med rabatten kan Brutus köpa den för sitt enda Övertag vilket han också gör. Slå sönder fungerar mot utrustning som har vapenegenskapen Bräcklig, vilket de flesta sköldar har. Skölden blir därmed obrukbar (för striden, kan repareras senare) och Brutus går vidare med att slå hammarens Krosskada på 6T6 (varav 2T6 från Grundskada) och får totalt 25. Ademars totalt skydd mot Krosskada i torson är 5 så skadeverkan blir 20. Detta hamnar inom intervallet 20-24 vilket ger 8 Utmattning och ett slag på skadetabellen för krosskador i torson på 1T10+4.
+
+Den ödesmättade tärningen slås, blir 8 och totalt resultat 12. En träff i torson är däremot mycket mer allvarlig än i armar och ben. Ademar måste direkt slå ett Dödsslag med svårighet 12 som han lyckas med. Därefter kommer beskrivningen "Träff i buken får maginnehållet att välla upp i munnen [Smärta, Omtöcknad.]". Även om själva träffen inte dödade Ademar så är han nu illa ute. Smärta ger –1T6 på alla slag och Omtöcknad fungerar liknande fast endast nästa runda. Den rundan kommer även Brutus fortsätta att vara anfallare då Ademar slog lägre på sitt försvarsslag (och inte hade möjlighet att välja några särskilda försvarstaktiker då han inte valde närstridsfasen som sin aktiva fas). Runt spelbordet beskrivs hur Ademars sköld knäcks och hur storhammare trycker rätt in i buken.
+
+Här lämnar vi våra kämpar.
+""",
+        world=mundana,
+        creator=nf).save()            
 
 #     Relationship(from_user=mf, to_user=nf).save()
 #     Relationship(from_user=nf, to_user=mf).save()
