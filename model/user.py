@@ -52,7 +52,8 @@ class User(db.Document, BaseUser):
             raise ValueError('Empty list of recipients')
         if not isinstance(recipients, list) or not isinstance(recipients[0], User):
             raise TypeError('Expects a list of User')
-        print "recipients is list of %s, first item is %s" % (type(recipients[0]), recipients[0])
+        logger = logging.getLogger(__name__)
+        logger.info("recipients is list of %s, first item is %s", type(recipients[0]), recipients[0])
         recipients = recipients + [self]
         # All conversations where all recipients are present and the length of the lists are the same
         return Conversation.objects(members__all=recipients, members__size=len(recipients))
