@@ -20,7 +20,7 @@
 {#        {% if resource.op == 'view' %}
       <button type="button" class="btn btn-small m_action
         {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
-        {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
+        {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">{{ _('Follow') }} ...
         {% endif %}</button>
       <div class="btn-group">
         <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">

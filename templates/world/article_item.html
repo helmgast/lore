@@ -47,13 +47,13 @@
     </a>
     <ul class="dropdown-menu">
     {% if op!= 'new'%}
-      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
-      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
-      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
+      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
     {%endif%}   
     </ul>
   </li>
-  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">Save changes</button></li>
+  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
 </ul>
 
 <div class="tab-content content-panel">
@@ -144,20 +144,20 @@
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
 {%- if article_type_name=='place' -%}
-  <li><span class="nav-header" style="display:inline">Lon</span>{{article.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">Lat</span>{{article.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">Type</span>{{article.location_type }}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.coordinate_x}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.coordinate_y}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.location_type }}</li>
 {%- elif article_type_name=='image' -%}
-  <li><span class="nav-header" style="display:inline">Type</span>{{article.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.mime_type}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
 {%- elif article_type_name=='event' -%}
-  <li><span class="nav-header" style="display:inline">Started</span>{{article.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">Ended</span>{{article.to_date}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.from_date}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.to_date}}</li>
 {%- elif article_type_name=='person' and article.personarticle -%}
-  <li><span class="nav-header" style="display:inline">Born</span>{{article.personarticle.born}}</li>
-  <li><span class="nav-header" style="display:inline">Died</span>{{article.personarticle.died}}</li>
-  <li><span class="nav-header" style="display:inline">Gender</span>{{article.personarticle.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">Occupation</span>{{article.personarticle.occupation}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.personarticle.born}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.personarticle.died}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.personarticle.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.personarticle.occupation}}</li>
 {%- endif -%}
 </ul>
 </div>
@@ -199,12 +199,12 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete {{article.title}}?</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{article.title}}?</h4>
       </div>
       <div class="modal-body">
         <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Yes</button> 
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button> 
         </form>
       </div>
     </div>
