@@ -11,28 +11,34 @@
       var $button = $('<button type="button" class="btn btn-default btn-xs el-deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
       var $add = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
       var $type = $this.prop('tagName');
-      var addselector = ''
-      if ($type == "TABLE") {
-        $this.find('tbody tr').append($button)
-        addselector = 'tbody '
-      } else if ($type == "UL" || $type == "OL") {
-        $this.find('li').append($button);        
-      } else {
-        return
+      var selectors = {
+        TABLE : {
+          item: 'tr',
+          add : 'tbody'
+        },
+        UL : {
+          item: 'li',
+          add : ''          
+        }
       }
+      if (!selectors[$type]) {
+        return // not correct type
+      }
+      selectors.OL = selectors.UL
+      $this.find(selectors[$type].item).append($button)
 
       $add.click(function() {
         jQuery.get(remote, function(data) {
           var newel = $(data)
           // get # of rows, so we can correctly index the added inputs
-          var name = listname +'-'+ $this.find(addselector+'tr').length+'-'+newel.find('input, select').first().attr('name')
+          var name = listname +'-'+ $this.find(selectors[$type].item).length+'-'+newel.find('input, select').first().attr('name')
           newel.find('input, select, label').each(function() {
             this.name = this.name && name
             this.id = this.id && name
             this.htmlFor = this.htmlFor && name
           })
           newel.append($button.clone())
-          addselector ? $this.find(addselector).append(newel) : $this.append(newel)
+          selectors[$type].add ? $this.find(selectors[$type].add).append(newel) : $this.append(newel)
           // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
           $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
         })

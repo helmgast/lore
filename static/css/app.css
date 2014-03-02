@@ -63,6 +63,14 @@ form input[type="text"].datetime-widget {
 	margin-right: 10px;
 }
 
+.chosen-container {
+	min-width:250px !important; /* Customize to meet your needs */
+}
+
+.relation-type-selector+.chosen-container {
+	min-width:80px !important; /* Customize to meet your needs */
+}
+
 div.sidebar li.active {
 	font-weight: bold;
 }
@@ -520,7 +528,7 @@ important
           transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
 
-tr:hover .el-deletebtn {
+tr:hover .el-deletebtn, li:hover .el-deletebtn {
   color: #fff;
   background-color: #d9534f;
   border-color: #d43f3a;

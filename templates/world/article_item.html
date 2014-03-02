@@ -29,18 +29,18 @@
 {% if article_form %}
 {% include "includes/flash.html" %}
 
-<form id='articleform' method="post" action="{{ article_form.action_url }}">
-  {% if g.user.id %}
-  <input type="hidden" name="creator" value="{{g.user.id}}" />
-  {% endif %}
+<form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
   {{ article_form.csrf_token }}
-{{ article_form.title(style="display:none;") }}
-  <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
+  {{ article_form.title(style="display:none;") }}
+  <h1 class="article_header">
+    <span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
+        <small>{{ tagline }}</small>
+  </h1>
 <ul class="nav nav-tabs content-menu">
-  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span> Focus</a></li>
+  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
-  <li><a href="#relations" data-toggle="tab">Relations</a></li>
-  <li><a href="#description" data-toggle="tab">Description</a></li>
+  <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> Relations</a></li>
+  <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Details</a></li>
   <li class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
       Actions <span class="caret"></span>
@@ -60,11 +60,6 @@
   <div class="tab-pane fade" id="focus"></div>
 
   <div class="tab-pane panel panel-default fade" id="metadata">
-    {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
-    <fieldset style="margin-bottom: 10px">
-    {#  {{ form_field(article_form.articlegroups) }} #}
-    {{ form_field(article_form.type, class="m_action2")}}
-    </fieldset>
     <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
     {{ form_fields(article_form.imagearticle) }}
     </div>
@@ -84,14 +79,39 @@
     {{ form_fields(article_form.campaignarticle) }}
     </div>
   </div>
-  <div class="tab-pane panel panel-default fade" id="relations">
+
+  <div class="tab-pane panel panel-default fade row" id="relations">
   {% if article %}
-    {{ article_form.relations(**{'data-editable':'relations', 'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
+    <div class="col-xs-7">
+    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.articlerelation_form_new', world=world.slug, article=article.slug)}}">
+      {% for articlerelation_form in article_form.relations %}
+        {% include "world/articlerelation_item.html" %}
+      {% endfor %}
+    </ul>
+    </div>
   {% endif %}
-  }
   </div>
-  <div class="tab-pane panel panel-default fade" id="description">
-    {{article_form.description(style="width:100%")}}
+
+  <div class="tab-pane panel panel-default fade row" id="details">
+    <div class="col-xs-6">
+      <div class="form-group">
+        <label class="control-label" for="description">Description</label>
+        {{ article_form.description(class="form-control", rows=4) }}
+      </div>
+    </div>
+    <div class="col-xs-6">
+      <div class="form-group">
+        <label class="control-label" for="type">Type</label>
+          {{ article_form.type(class="form-control input-sm") }}
+      </div>
+      <div class="form-group">
+        <label class="control-label" for="world">World</label>
+        {{ article_form.world(**{'data-role':'chosen'}) }}
+      </div>
+      {% if g.user.id %}
+        <input type="hidden" name="creator" value="{{g.user.id}}" />
+      {% endif %}
+    </div>
   </div>
 </div>
 <div class="row">
@@ -101,7 +121,7 @@
     {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
   </div>
   <div class="col-md-3">
-    blalb
+    Example comment
   </div>
 </div>
 </form>
@@ -110,7 +130,7 @@
 {%- else -%}
 
 <div class="page-header">
-    <h1 class="article_header">{{title }}
+    <h1 class="article_header">{{title}}
         <small>{{ tagline }}</small>
     </h1>
 <ul class="list-inline article-meta" style="margin-bottom: 0px">
@@ -149,7 +169,7 @@
     {{ article.content|markdown }}
   </div>
   <div class="col-md-3">
-    blalb
+    Example comment
   </div>
 </div>
 
