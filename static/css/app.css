@@ -68,7 +68,7 @@ form input[type="text"].datetime-widget {
 }
 
 .relation-type-selector+.chosen-container {
-	min-width:80px !important; /* Customize to meet your needs */
+	min-width:90px !important; /* Customize to meet your needs */
 }
 
 div.sidebar li.active {
@@ -433,6 +433,7 @@ important
 .article_text {
 	font-family: Gentium Book Basic, serif;
 	font-size: 20px;
+	margin-top: 20px;
 }
 
 #hinter {
@@ -472,12 +473,19 @@ important
 	margin-right: 4px;
 }
 
-.nav.content-menu a {
+.nav.content-menu  a {
 	padding: 6px 10px;
 }
 
-.content-panel {
-	margin-bottom: 20px;
+.content-menu .content-menu-info a {
+	display: inline;
+	margin-right: 0px;
+	padding: 0px;
+}
+
+.content-menu-info {
+	padding: 6px 10px;
+	color: #999;
 }
 
 .content-panel .panel {

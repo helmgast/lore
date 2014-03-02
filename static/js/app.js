@@ -21,10 +21,10 @@
           add : ''          
         }
       }
+      selectors.OL = selectors.UL
       if (!selectors[$type]) {
         return // not correct type
       }
-      selectors.OL = selectors.UL
       $this.find(selectors[$type].item).append($button)
 
       $add.click(function() {

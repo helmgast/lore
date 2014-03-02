@@ -37,6 +37,7 @@
         <small>{{ tagline }}</small>
   </h1>
 <ul class="nav nav-tabs content-menu">
+  <li class="content-menu-info">Banan</li>
   <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
   <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> Relations</a></li>
@@ -59,25 +60,26 @@
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
 
-  <div class="tab-pane panel panel-default fade" id="metadata">
-    <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
-    {{ form_fields(article_form.imagearticle) }}
+  <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
+  {% if article_type_name == 'person' %}
+    {% set type_form = article_form.personarticle %}
+  {% elif article_type_name == 'fraction' %}
+    {% set type_form = article_form.fractionarticle %}
+  {% elif article_type_name == 'place' %}
+    {% set type_form = article_form.placearticle %}
+  {% elif article_type_name == 'event' %}
+    {% set type_form = article_form.eventarticle %}
+  {% elif article_type_name == 'campaign' %}
+    {% set type_form = article_form.pcampaignarticle %}
+  {% endif %}
+  {% for field in type_form %}
+    <div class="form-group">
+      {{ field.label(class="col-sm-2 control-label") }}
+      <div class="col-sm-2">
+        {{ field(class="form-control")}}
+      </div>
     </div>
-    <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
-    {{ form_fields(article_form.personarticle) }}
-    </div>
-    <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
-    {{ form_fields(article_form.fractionarticle) }}
-    </div>
-    <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
-    {{ form_fields(article_form.placearticle) }}
-    </div>
-    <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
-    {{ form_fields(article_form.eventarticle) }}
-    </div>
-    <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
-    {{ form_fields(article_form.campaignarticle) }}
-    </div>
+  {% endfor %}
   </div>
 
   <div class="tab-pane panel panel-default fade row" id="relations">
@@ -129,18 +131,30 @@
 {#### PAGE ####}
 {%- else -%}
 
-<div class="page-header">
-    <h1 class="article_header">{{title}}
-        <small>{{ tagline }}</small>
-    </h1>
-<ul class="list-inline article-meta" style="margin-bottom: 0px">
+<h1 class="article_header">{{title}}
+    <small>{{ tagline }}</small>
+</h1>
+<ul class="nav nav-tabs content-menu">
   {% set articlegroups = article.articlegroups|list %}
-  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
-  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-  <li title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-  <li title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  <li class="content-menu-info" title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
+  <li class="content-menu-info" title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  <li class="content-menu-info" title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  <li class="content-menu-info" title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
+  <li class="content-menu-info" title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+      Actions <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% if op!= 'new'%}
+      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+    {%endif%}   
+    </ul>
+  </li>
 </ul>
+
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
 {%- if article_type_name=='place' -%}
