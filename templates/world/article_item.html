@@ -120,6 +120,13 @@
   <div class="col-md-9 article_text">
     <div class=" hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
     <span id="hinter"></span>
+    <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
+      <div class="btn-group">
+      <a class="btn btn-primary" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
+      <a class="btn btn-primary" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
+      </div>
+      <div class="tooltip-arrow"></div>
+    </div>
     {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
   </div>
   <div class="col-md-3">

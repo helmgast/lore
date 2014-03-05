@@ -499,6 +499,24 @@ important
 	right: 10%;
 }
 
+#editor-toolbar {
+	position: absolute;
+	z-index: 1050;
+}
+
+#editor-toolbar .tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -7px;
+  border-width: 10px 10px 0;
+  border-top-color: #428bca;
+}
+
 .article-meta {
 	color: #999;
 	margin-bottom: 20px;
