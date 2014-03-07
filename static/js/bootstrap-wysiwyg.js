@@ -225,27 +225,41 @@
 		})
 		return $t.html().replace(/<\/?.+?>/g,'')
 	}
-	$.fn.updateToolbarPosition = function(e) {
+	$.fn.clickHandler = function(e) {
 		var selection = window.getSelection();
-		var $e = $('#editor-toolbar')
+		var $target = $(e.target)
+		var tparents = $target.parents('#editor-toolbar, #editor')
+
+		if (tparents.length && tparents.get(0).id === 'editor-toolbar' ) {
+			return // we simply just want this click to get through as is, to press the button
+		}
+
 		if ( selection.isCollapsed === true && lastType === false) {
 			// no selection and we haven't started a selection
 			$(this).removeToolbar()
 		}
 		if ( selection.isCollapsed === false) {
-			// there is a selection, and 
-			var range = selection.getRangeAt(0);
-			var boundary = range.getBoundingClientRect(); // position in viewport
-			var offset = e.currentTarget.getBoundingClientRect() // editor's position in viewport
-			$e.css({top:(boundary.top-offset.top-55 + "px"),left:(boundary.left-offset.left + "px")}) // sets absolute position (from parent element)
-			$e.addClass('in')
+			// there is a selection
+			if(tparents.length && tparents.get(0).id === 'editor') {
+				$(this).moveToolbar(tparents.get(0))				
+			}
 		}
 		lastType = selection.isCollapsed
+	}
+
+	$.fn.moveToolbar = function(editor) {
+		var selection = window.getSelection();
+		var $e = $('#editor-toolbar')
+		var range = selection.getRangeAt(0);
+		var boundary = range.getBoundingClientRect(); // position in viewport
+		var offset = editor.getBoundingClientRect() // editor's position in viewport
+		$e.css({top:(boundary.top-offset.top-55 + "px"),left:(boundary.left-offset.left + "px")}) // sets absolute position (from parent element)
+		$e.addClass('in')	
 	}
 	$.fn.removeToolbar = function(e) {
 		var $e = $('#editor-toolbar')
 		$e.removeClass('in')
-		$e.css({top:"-999 px",left:"-999 px"})
+		$e.offset({top:-999,left:-999})
 	}
 	$.fn.wysiwyg = function (userOptions) {
 		var editor = this,
@@ -465,13 +479,12 @@
             		$this.cleanHtml();
           		}, 10);
         	});
-        	$ed.on('mousedown',$ed.updateToolbarPosition)
-        	$ed.on('mouseup', function( event ) {
+        	$(document).on('mousedown',$ed.clickHandler)
+        	$(document).on('mouseup', function( event ) {
 				setTimeout( function() {
-					$ed.updateToolbarPosition( event );
+					$ed.clickHandler( event );
 				}, 1);
 			})
-			$ed.on('blur', $ed.removeToolbar)
 			$('#hinter').tooltip({trigger:'manual',title:'Hej'})
 
         	$ta.parents('form').on('submit', function(e) {

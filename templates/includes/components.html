@@ -1,75 +1,4 @@
-{% macro render_button(type, states, resources, index=1, target=None, autoclose=None) -%}
-  <{{type|safe}} class="{{ states[index]['class'] }}"
-    href="{{ states[index]['href']|dictreplace(resources) if states[index]['href'] }}" title="{{ states[index]['title']|dictreplace(resources) }}"
-    data-state="{{index}}" {{ 'data-toggle=modal data-target='+target if target}} {{'data-autoclose=True' if autoclose }}
-    data-resources='{{resources|tojson}}'
-    >{{ states[index]['html']|dictreplace(resources)|safe }}</{{type|safe}}>
-{%- endmacro %}
-
-{% macro render_states(selector, states) -%}
-  <script type="text/javascript">
-  $('{{selector}}').bind('nextstate', function(e, data) {
-    $t = $(e.target)
-    if (data.state > {{states|length}}) { // Reset state counter
-      data.state = 1
-    }
-    $t.data('state',data.state)
-    switch(data.state) {
-      {%- for k in states.keys() %}
-      case {{k}}:
-        {%- for k,v in states[k].iteritems() %}
-        {%- if k=='html'%}
-          {%- if v.startswith("/") or v.startswith("http") %}
-            $t.load(jQuery.dictreplace('{{v|safe}}',data.resources))
-          {% else %}
-            $t.html(jQuery.dictreplace('{{v|safe}}',data.resources))
-          {% endif -%}
-        {%- else %}
-          $t.attr('{{k}}',jQuery.dictreplace('{{v|safe}}',data.resources))
-        {% endif -%}
-        {% endfor -%}
-        break;
-      {% endfor -%}
-    }
-  })
-  </script>
-{%- endmacro %}
-
-{%- macro form_field_label(field) -%}
-    <label for="{{ field.id }}">{{ field.label.text }}
-    {%- if field.flags.required -%}
-        <abbr title="This is a required field">*</abbr>
-    {%- endif %}</label>
-{% endmacro %}
- 
-{%- macro form_field_description(field) -%}
-    {% if field.description %}
-        <span class="descr">{{ field.description }}</span>
-    {% endif %}
-{%- endmacro -%}
- 
-{%- macro form_field_errors(field) -%}
-    {% if field.errors %}
-    <div>
-        {%- for error in field.errors -%}
-        <span class="label important">{{ error }}</span>
-        {%- endfor -%}
-    </div>
-    {% endif %}
-{%- endmacro -%}
- 
-{%- macro form_field_boolean(field) -%}
-  <div class="input">
-    <label>
-      {{ field(**kwargs) }}
-      <span>{{ field.label.text }}</span>
-      {{ form_field_description(field) }}
-      {{ form_field_errors(field) }}
-    </label>
-  </div>
-{%- endmacro -%}
- 
-{%- macro action_buttons(submit_title, cancel_title="Cancel", submit_class="primary") -%}
+ {%- macro action_buttons(submit_title, cancel_title="Cancel", submit_class="primary") -%}
 <div class="actions">
   <input type="submit" class="btn {{submit_class}}" value="{{submit_title}}">
   &nbsp;
@@ -77,40 +6,16 @@
 </div>
 {%- endmacro -%}
  
-{%- macro form_field(field) -%}
-  <div class="clearfix">
-    {% if field.type == 'HiddenField' %}
-        {{ field() }}
-    {% else %}
-        {% if field.type == 'BooleanField' %}
-            {{ form_field_boolean(field, **kwargs) }}
-        {% else%}
-            {{ form_field_label(field) }}
-          <div class="input" id="{{field.id}}-div">
-            {% if field.type == 'RadioField' %}
-                {{ field(class='radio-group', **kwargs) }}
-            {% else %}
-                {{ field(**kwargs) }}
-            {% endif %}
-            {{ form_field_description(field) }}
-            {{ form_field_errors(field) }}
-          </div>
-        {% endif %}
-    {% endif %}
+{%- macro FORM_FIELD(field, type="plain", cols=None, addlabelcls="", addcontrolcls="") -%}
+  {% set labelcls = "control-label"+addlabelcls %}
+  {% if type=="inline" %}{% set labelcls= labelcls+" sr-only"%}{%endif%}
+  {% if cols %}{% set labelcls= labelcls+" "+cols[0]%}{%endif%}
+  {% set controlcls = "form-control"+addcontrolcls %}
+
+  <div class="form-group">
+    {{ field.label(class=labelcls) }}
+    {% if type=="cols" %}<div class="{{cols[1]}}">{% endif %}
+    {{ field(class=controlcls) }}
+    {% if type=="cols" %}</div>{% endif %}
   </div>
-{%- endmacro -%}
- 
-{%- macro form_fields(fields, class=None, legend=None) -%}
-  <fieldset {% if class %}class="{{class}}"{% endif %}>
-    {% if legend %}
-      <legend>{{legend}}</legend>
-    {% endif %}
-    {% for field in fields %}
-        {% if field.type == 'HiddenField' or field.type == 'ModelHiddenField' %}
-            {{ field() }}
-        {% else %}
-            {{ form_field(field) }}
-        {% endif %}
-    {% endfor %}
-  </fieldset>
 {%- endmacro -%}

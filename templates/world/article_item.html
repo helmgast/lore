@@ -1,6 +1,6 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% from 'includes/components.html' import form_field, form_fields %}
+{% from 'includes/components.html' import FORM_FIELD %}
 
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New article!' %}
@@ -73,12 +73,7 @@
     {% set type_form = article_form.pcampaignarticle %}
   {% endif %}
   {% for field in type_form %}
-    <div class="form-group">
-      {{ field.label(class="col-sm-2 control-label") }}
-      <div class="col-sm-2">
-        {{ field(class="form-control")}}
-      </div>
-    </div>
+    {{FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2"))}}
   {% endfor %}
   </div>
 
@@ -96,20 +91,11 @@
 
   <div class="tab-pane panel panel-default fade row" id="details">
     <div class="col-xs-6">
-      <div class="form-group">
-        <label class="control-label" for="description">Description</label>
-        {{ article_form.description(class="form-control", rows=4) }}
-      </div>
+      {{ FORM_FIELD(article_form.description)}}
     </div>
     <div class="col-xs-6">
-      <div class="form-group">
-        <label class="control-label" for="type">Type</label>
-          {{ article_form.type(class="form-control input-sm") }}
-      </div>
-      <div class="form-group">
-        <label class="control-label" for="world">World</label>
-        {{ article_form.world(**{'data-role':'chosen'}) }}
-      </div>
+      {{ FORM_FIELD(article_form.type) }}
+      {{ FORM_FIELD(article_form.world) }}
       {% if g.user.id %}
         <input type="hidden" name="creator" value="{{g.user.id}}" />
       {% endif %}
@@ -118,7 +104,7 @@
 </div>
 <div class="row">
   <div class="col-md-9 article_text">
-    <div class=" hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
+    <div class="hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
     <span id="hinter"></span>
     <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
       <div class="btn-group">
