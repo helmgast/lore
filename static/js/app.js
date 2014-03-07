@@ -13,11 +13,13 @@
       var $type = $this.prop('tagName');
       var selectors = {
         TABLE : {
-          item: 'tr',
+          item: 'td:last-child',
+          row: 'tr',
           add : 'tbody'
         },
         UL : {
           item: 'li',
+          row: 'li',
           add : ''          
         }
       }
@@ -45,7 +47,7 @@
       })
       $this.after($add)
       $this.on('click','.el-deletebtn', function() {
-        $(this).parent().remove()
+        $(this).parents(selectors[$type].row).first().remove()
       })
     })
   }
