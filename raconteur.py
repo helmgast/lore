@@ -85,7 +85,7 @@ def validate_model():
           try:
             cls.objects()  # Check all objects of type
           except TypeError:
-            logger.warning("Failed to instantiate %s", cls)
+            logger.error("Failed to instantiate %s", cls)
             is_ok = False
         except AttributeError:
           pass  # Ignore errors from getattr
