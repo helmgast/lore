@@ -36,12 +36,12 @@ if the_app == None:
   the_app = Flask('raconteur') # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
-  the_app.config.from_pyfile('config.cfg') # db-settings and secrets, should not be shown in code
+  the_app.config.from_pyfile('config.py') # db-settings and secrets, should not be shown in code
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
   db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
-  
+
   from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
@@ -108,7 +108,7 @@ def join():
             )
             user.set_password(request.form['password'])
             user.save()
-            
+
             auth.login_user(user)
             return redirect(url_for('homepage'))
     join_form = JoinForm()
@@ -120,7 +120,7 @@ def join():
 @the_app.template_filter('is_following')
 def is_following(from_user, to_user):
     return from_user.is_following(to_user)
-    
+
 wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 @the_app.template_filter('wikify')
@@ -140,8 +140,8 @@ def dictreplace(s, d):
             parts[i] = d[parts[i]] # Replace with dict content
         return ''.join(parts)
     return s
-    
+
 # i18n
 @babel.localeselector
 def get_locale():
-    return "sv"#request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+    return request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
