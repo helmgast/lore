@@ -72,6 +72,11 @@ def image(slug):
   response.mimetype = imagearticle.mime_type
   return response
 
+@world_app.route('/images/new')
+def insert_image():
+  return render_template('world/image_new.html')
+
+
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0
   if objects and isinstance(objects, str):

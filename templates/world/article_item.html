@@ -33,11 +33,11 @@
   {{ article_form.csrf_token }}
   {{ article_form.title(style="display:none;") }}
   <h1 class="article_header">
-    <span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
+    <span id="header" class="contenteditable" contenteditable="True">{{title }}</span>
         <small>{{ tagline }}</small>
   </h1>
 <ul class="nav nav-tabs content-menu">
-  <li class="content-menu-info">Banan</li>
+  {#<li class="content-menu-info">Banan</li>#}
   <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
   <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> Relations</a></li>
@@ -104,17 +104,36 @@
 </div>
 <div class="row">
   <div class="col-md-9 article_text">
-    <div class="hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
+    {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide', 'data-editable':'textarea', 'data-target':'#editor'}) }}
+    <div id="content-editor" class="content" contenteditable="true"><p class="hide" contenteditable="false"></p>{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
     <span id="hinter"></span>
-    <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
+    <div class="bubble-bar" id="text-options">
+      <div class="options">
+        <span class="no-overflow">
+          <span class="lengthen ui-inputs">
+            <button type="button" class="url"><span class="glyphicon glyphicon-link"></span></button>
+            <input class="url-input" type="text" placeholder="Type or Paste URL here"/>
+            <button type="button" class="bold">b</button>
+            <button type="button" class="italic">i</button>
+            <button type="button" class="quote">&rdquo;</button>
+          </span>
+        </span>
+      </div>
+    </div>
+    <div class="bubble-bar" id="margin-options">
+      <div class="options ui-inputs">
+            <a data-toggle="modal" href="{{url_for('world.insert_image')}}" data-target="#itsafuckingmodal"><span class="glyphicon glyphicon-picture"></span></a>
+      </div>
+    </div>
+
+{#    <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
       <div class="btn-group">
       <a class="btn btn-primary" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
       <a class="btn btn-primary" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
       </div>
       <div class="tooltip-arrow"></div>
-    </div>
-    {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
-  </div>
+    </div> #}
+   </div>
   <div class="col-md-3">
     Example comment
   </div>
@@ -222,8 +241,23 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
 {% if article_form %}
 <script>
+  // Load required scripts. 
+  head.js( 
+    "{{ url_for('static', filename='js/utils.js') }}",
+    "{{ url_for('static', filename='js/editor.js') }}",
+        function(){          
+          // Initiate ZenPen
+          editor.init();
+        }
+      );
+
 	$(document).ready(
 			function() {
+        $ta = $('#content')
+        $ta.parents('form').on('submit', function(e) {
+              $ta.val(editor.exportText());
+            }
+        );
         //----------------------------------
         $('#editable_title')
           .blur(function(e) {
@@ -234,22 +268,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
               $this.html($this.text()); // clean the html
             }, 100);})
           .focus();
-
-        //----------------------------------
-				// Get the initial value
-				var $el = $('.m_action2');
-				$el.data('oldVal', '#' + $el.find('option:selected').text()
-						+ 'article_form');
-
-				$el.change(function() {
-					//store new value
-					var $this = $(this);
-					var newValue = '#' + $this.find('option:selected').text()
-							+ 'article_form'
-					$(newValue).toggleClass('hide')
-					$($this.data('oldVal')).toggleClass('hide')
-					$this.data('oldVal', newValue)
-				})
 
         /*        
         var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
