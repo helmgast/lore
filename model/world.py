@@ -174,7 +174,7 @@ class Article(db.Document):
     creator = db.ReferenceField(User)
     created_date = db.DateTimeField(default=now)
     title = db.StringField(max_length=60)
-    description = description = db.StringField(max_length=500)
+    description = db.StringField(max_length=500)
     content = db.StringField()
     status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
     #i18n
