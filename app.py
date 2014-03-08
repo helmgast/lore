@@ -14,22 +14,23 @@ import raconteur
 import logging
 
 if __name__ == '__main__':
-  if is_deploy:  # We're running on deployment server
-    deploy.run()
+	if is_deploy:  # We're running on deployment server
+		deploy.run()
 
-  else:
-    # sys.argv = [sys.argv[0], "reset"];
-    # sys.argv = [sys.argv[0], "test"];
-    if len(sys.argv) > 1 and sys.argv[1] == "reset":
-      logging.basicConfig(level=logging.DEBUG)
-      raconteur.setup_models() # Reloads DB with data specified in /test_data/model_setup.py
-      exit()
-    elif len(sys.argv) > 1 and sys.argv[1] == "test":
-      logging.basicConfig(level=logging.DEBUG)
-      raconteur.run_tests() # Runs all unit tests
-    elif len(sys.argv) > 1 and sys.argv[1] == "lang":
-      os.system("pybabel compile -d translations/");
-      exit()
-    else:
-      logging.basicConfig(level=logging.DEBUG)
-      raconteur.run_the_app(debug=is_debug) # Debug will reload code automatically, so no need to restart server
+	else:
+		# sys.argv = [sys.argv[0], "reset"];
+		# sys.argv = [sys.argv[0], "test"];
+		if len(sys.argv) > 1 and sys.argv[1] == "reset":
+			logging.basicConfig(level=logging.DEBUG)
+			raconteur.setup_models()  # Reloads DB with data specified in /test_data/model_setup.py
+			exit()
+		elif len(sys.argv) > 1 and sys.argv[1] == "test":
+			logging.basicConfig(level=logging.DEBUG)
+			raconteur.run_tests()  # Runs all unit tests
+		elif len(sys.argv) > 1 and sys.argv[1] == "lang":
+			os.system("pybabel compile -d translations/");
+			exit()
+		else:
+			logging.basicConfig(level=logging.DEBUG)
+			if raconteur.verify_model():
+				raconteur.run_the_app(debug=is_debug)  # Debug will reload code automatically, so no need to restart server
