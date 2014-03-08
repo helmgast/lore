@@ -6,3 +6,4 @@ config.py
 /.project
 /.pydevproject
 /Raconteur.egg-info
+config.py

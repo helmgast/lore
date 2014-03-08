@@ -61,6 +61,7 @@ if the_app == None:
   the_app.register_blueprint(campaign, url_prefix='/campaign')
 
 def run_the_app(debug):
+  logger = logging.getLogger(__name__)
   logger.info("Running local instance")
   the_app.run(debug=debug)
 
@@ -71,11 +72,33 @@ def setup_models():
   db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
+def verify_model():
+  logger = logging.getLogger(__name__)
+  logger.info("Verifying model")
+  is_ok = True
+  pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']
+  for doc in db.Document._subclasses:
+    if doc != 'Document':
+      for pkg in pkgs:
+        # print (pkg+'.'+doc)
+        try:
+          cls = getattr(__import__(pkg, fromlist=[doc]), doc)
+          try:
+            logger.info("Found %d objects of type %s", len(cls.objects()), cls)
+          except TypeError:
+            logger.warning("Failed to instantiate %s", cls)
+            is_ok = False
+        except AttributeError:
+          pass
+        except ImportError:
+          pass
+  return is_ok
+
 from tests import app_test
 def run_tests():
   logger = logging.getLogger(__name__)
   logger.info("Running unit tests")
-  app_test.run_tests();
+  app_test.run_tests()
 
 
 ###
