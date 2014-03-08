@@ -4,6 +4,7 @@ import sys
 
 is_debug = True
 is_deploy = 'OPENSHIFT_INTERNAL_IP' in os.environ  # means we are running on OpenShift
+skip_model_validation = is_debug
 
 # This is just a startup script for launching the server.
 
@@ -32,5 +33,5 @@ if __name__ == '__main__':
 			exit()
 		else:
 			logging.basicConfig(level=logging.DEBUG)
-			if raconteur.verify_model():
+			if skip_model_validation or raconteur.validate_model():
 				raconteur.run_the_app(debug=is_debug)  # Debug will reload code automatically, so no need to restart server

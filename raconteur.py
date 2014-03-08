@@ -72,7 +72,7 @@ def setup_models():
   db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
-def verify_model():
+def validate_model():
   logger = logging.getLogger(__name__)
   is_ok = True
   pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
@@ -90,7 +90,7 @@ def verify_model():
           pass  # Ignore errors from getattr
         except ImportError:
           pass  # Ignore errors from __import__
-  logger.info("Model has been verified" if is_ok else "Model has errors, aborting startup")
+  logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
   return is_ok
 
 from tests import app_test
