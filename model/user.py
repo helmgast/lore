@@ -2,7 +2,7 @@
     model.user
     ~~~~~~~~~~~~~~~~
 
-    Includes all Mongoengine model classes relating to social features, 
+    Includes all Mongoengine model classes relating to social features,
     including the central User model, but also Conversation and Group.
 
     :copyright: (c) 2014 by Raconteur
@@ -14,6 +14,8 @@ from slugify import slugify
 from misc import now
 from raconteur import db
 from flask.ext.mongoengine.wtf import model_form
+# i18n (Babel)
+from flask.ext.babel import lazy_gettext as _
 
 # A user in the system
 class User(db.Document, BaseUser):
@@ -30,12 +32,22 @@ class User(db.Document, BaseUser):
     admin = db.BooleanField(default=False)
     following = db.ListField(db.ReferenceField('self'))
 
+    #i18n
+    username.verbose_name  = _('username')
+    password.verbose_name  = _('password')
+    email.verbose_name  = _('email')
+    realname.verbose_name  = _('real name')
+    location.verbose_name  = _('location')
+    description.verbose_name  = _('description')
+    xp.verbose_name  = _('xp')
+    join_date.verbose_name  = _('join date')
+
     def __unicode__(self):
         return self.username
 
     def full_string(self):
         return "%s (%s)" % (self.username, self.realname)
-     
+
     def log(self, msg):
         pass # TODO
 
@@ -44,7 +56,7 @@ class User(db.Document, BaseUser):
 
     def messages(self):
         return Message.objects(user=self).order_by('-pub_date')
-        
+
     def get_most_recent_conversation_with(self, recipients):
         # A private conversation is one which is only between this user
         # and the given recipients, with no other users
@@ -80,7 +92,11 @@ class Conversation(db.Document):
     members = db.ListField(db.ReferenceField(User))
     title = db.StringField(max_length=60)
     topic = db.StringField(max_length=60)
-    
+
+    members.verbose_name  = _('members')
+    title.verbose_name  = _('title')
+    topic.verbose_name  = _('topic')
+
     meta = {'ordering': ['-modified_date']}
 
     def is_private(self):
@@ -91,12 +107,12 @@ class Conversation(db.Document):
 
     def last_message(self):
         return Message.objects(conversation=self).order_by('-pub_date').first() # first only or none
-        
+
     def __unicode__(self):
         return u'conversation'
 
 MASTER, MEMBER, INVITED = 0,1,2
-ROLE_TYPES = ((MASTER, 'MASTER'),(MEMBER, 'MEMBER'),(INVITED, 'INVITED'))
+ROLE_TYPES = ((MASTER, _('MASTER')),(MEMBER, _('MEMBER')),(INVITED, _('INVITED')))
 class Member(db.EmbeddedDocument):
     user = db.ReferenceField(User)
     role = db.IntField(choices=ROLE_TYPES, default=MEMBER)
@@ -107,8 +123,8 @@ class Member(db.EmbeddedDocument):
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
 GAME_GROUP, WORLD_GROUP, ARTICLE_GROUP = 1,2,3
-GROUP_TYPES = ((GAME_GROUP, 'gamegroup'), 
-               (WORLD_GROUP, 'worldgroup'), 
+GROUP_TYPES = ((GAME_GROUP, 'gamegroup'),
+               (WORLD_GROUP, 'worldgroup'),
                (ARTICLE_GROUP, 'articlegroup'))
 class Group(db.Document):
     name = db.StringField(max_length=60, required=True)
@@ -117,7 +133,7 @@ class Group(db.Document):
     description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
     type = db.IntField(choices=GROUP_TYPES,default=GAME_GROUP)
     members = db.ListField(db.EmbeddedDocumentField(Member))
-    
+
     def __unicode__(self):
         return self.name
 
@@ -133,7 +149,7 @@ class Group(db.Document):
 
     def members_as_users(self):
         return [m for m.user in members]
-        
+
 # A message from a user (to everyone)
 class Message(db.Document):
     user = db.ReferenceField(User)

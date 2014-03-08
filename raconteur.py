@@ -18,6 +18,7 @@ from flask.ext.mongoengine.wtf import model_form
 from flask_wtf.csrf import CsrfProtect
 # Babel
 from flask.ext.babel import Babel
+from flask.ext.babel import lazy_gettext as _
 from config import LANGUAGES
 import os
 import logging
@@ -100,7 +101,7 @@ def join():
         # Read username from the form that was posted in the POST request
         try:
             user = User.objects().get(username=request.form['username'])
-            flash('That username is already taken')
+            flash(_('That username is already taken'))
         except User.DoesNotExist:
             user = User(
                 username=request.form['username'],
@@ -144,4 +145,4 @@ def dictreplace(s, d):
 # i18n
 @babel.localeselector
 def get_locale():
-    return request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+    return "sv"#request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
