@@ -1,9 +1,73 @@
 /* MUNDANA THEME
 
+Generic classes for all world children
 */
 body {
 
 }
+
+.worldSideBar {
+
+}
+
+.worldSideBar li a {
+
+}
+
+/* World Title */
+.content .page-header h1 {
+
+}
+
+/* Browse Articles - article_list.html
+---------------------------------------------
+*/
+
+/* Browse Article Title */
+.content .browseArticle {
+
+}
+
+/* Browse Tabs container*/
+.content .content-menu {
+
+}
+.content .content-menu li {
+
+}
+.content .content-menu a {
+
+}
+
+/* Browse Article container */
+.content .worldBrowse {
+
+}
+
+/* Browse Article Links */
+.content .worldBrowse a {
+
+}
+
+.content .content-menu li .active
+
+/* World Article - article_item.html
+-------------------------------
+*/
+
+/* World Article Title */
+.content .article_header h2 {
+
+}
+
+.content .article_header h2 small {
+
+}
+
+/*
+World Item - world_item.html
+-----------------------------------------
+*/
 
 /* container for articles */
 .worldArticles {
@@ -27,14 +91,6 @@ body {
 
 }
 
-.worldSideBar {
-
-}
-
-.worldSideBar li a {
-
-}
-
 .worldDesc {
 
 }
@@ -46,3 +102,5 @@ body {
 .imgAside img {
 
 }
+
+/* End world_item.html */
