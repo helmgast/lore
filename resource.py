@@ -115,9 +115,9 @@ class ResourceAccessStrategy:
 
     def url_item(self, op=None):
         if self.short_url:
-            return self.get_url_path('<'+self.resource_name+'>', op)
+            return self.get_url_path('<' + self.resource_name + '>', op)
         else:
-            return self.get_url_path(self.plural_name+'/<'+self.resource_name+'>', op)
+            return self.get_url_path(self.plural_name + '/<' + self.resource_name + '>', op)
 
     def item_template(self):
         return '%s_item.html' % self.resource_name
@@ -175,10 +175,10 @@ class ResourceAccessStrategy:
         return parent_allowed
 
     def allowed_any(self, op):
-        return self.allowed(op, None);
+        return self.allowed(op, None)
 
     def allowed_on(self, op, instance):
-        return self.allowed(op, instance);
+        return self.allowed(op, instance)
 
 
 class ResourceError(Exception):
@@ -200,6 +200,7 @@ class ResourceError(Exception):
 class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
+    logger = logging.getLogger(__name__)
 
     def __init__(self, strategy):
         self.form_class = strategy.form_class
@@ -330,6 +331,7 @@ class ResourceHandler(View):
         # In case slug has changed, query the new value before redirecting!
         if not 'next' in r:
             r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+        self.logger.info("Edit on %s/%s", self.strategy.resource_name, item.slug)
         return r
 
     def replace(self, r):
@@ -360,6 +362,7 @@ class ResourceHandler(View):
                 r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
+        self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
         item.delete()
         return r
 
