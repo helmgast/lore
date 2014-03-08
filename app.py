@@ -27,6 +27,9 @@ if __name__ == '__main__':
     elif len(sys.argv) > 1 and sys.argv[1] == "test":
       logging.basicConfig(level=logging.DEBUG)
       raconteur.run_tests() # Runs all unit tests
+    elif len(sys.argv) > 1 and sys.argv[1] == "lang":
+      os.system("pybabel compile -d translations/");
+      exit()
     else:
       logging.basicConfig(level=logging.DEBUG)
       raconteur.run_the_app(debug=is_debug) # Debug will reload code automatically, so no need to restart server

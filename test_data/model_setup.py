@@ -100,7 +100,7 @@ def add_test_data():
             born=altor_date(1653,3,4),
             died=altor_date(1891,12,3),
             gender=GENDER_MALE,
-            occupation=u"Ljusbringaren")
+            occupation=u"Ljusbringare")
         ).save()
     Article(type=ARTICLE_BLOG,
         title=u"Gift tills döden skiljer oss åt",

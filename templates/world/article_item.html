@@ -1,6 +1,6 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% from 'includes/components.html' import form_field, form_fields %}
+{% from 'includes/components.html' import FORM_FIELD %}
 
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New article!' %}
@@ -29,79 +29,94 @@
 {% if article_form %}
 {% include "includes/flash.html" %}
 
-<form id='articleform' method="post" action="{{ article_form.action_url }}">
-  {% if g.user.id %}
-  <input type="hidden" name="creator" value="{{g.user.id}}" />
-  {% endif %}
+<form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
   {{ article_form.csrf_token }}
-{{ article_form.title(style="display:none;") }}
-  <h1 class="article_header"><span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span></h1>
+  {{ article_form.title(style="display:none;") }}
+  <h1 class="article_header">
+    <span id="editable_title" class="contenteditable" contenteditable="True">{{title }}</span>
+        <small>{{ tagline }}</small>
+  </h1>
 <ul class="nav nav-tabs content-menu">
-  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span> Focus</a></li>
+  <li class="content-menu-info">Banan</li>
+  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
-  <li><a href="#relations" data-toggle="tab">Relations</a></li>
-  <li><a href="#description" data-toggle="tab">Description</a></li>
+  <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> Relations</a></li>
+  <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Details</a></li>
   <li class="dropdown">
     <a class="dropdown-toggle" data-toggle="dropdown" href="#">
       Actions <span class="caret"></span>
     </a>
     <ul class="dropdown-menu">
     {% if op!= 'new'%}
-      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
-      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
-      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> View</a></li>
+      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
     {%endif%}   
     </ul>
   </li>
-  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">Save changes</button></li>
+  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
 </ul>
 
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
 
-  <div class="tab-pane panel panel-default fade" id="metadata">
-    {{ article_form.world(**{'data-role':'chosen'}) }} {# Makes nice select widget#}
-    <fieldset style="margin-bottom: 10px">
-    {#  {{ form_field(article_form.articlegroups) }} #}
-    {{ form_field(article_form.type, class="m_action2")}}
-    </fieldset>
-    <div id="imagearticle_form" {{ ' class=hide ' if article_type_name!='image'}}>
-    {{ form_fields(article_form.imagearticle) }}
-    </div>
-    <div id="personarticle_form" {{ ' class=hide ' if article_type_name!='person'}}>
-    {{ form_fields(article_form.personarticle) }}
-    </div>
-    <div id="fractionarticle_form" {{ ' class=hide ' if article_type_name!='fraction'}}>
-    {{ form_fields(article_form.fractionarticle) }}
-    </div>
-    <div id="placearticle_form" {{ ' class=hide ' if article_type_name!='place'}}>
-    {{ form_fields(article_form.placearticle) }}
-    </div>
-    <div id="eventarticle_form" {{ ' class=hide ' if article_type_name!='event'}}>
-    {{ form_fields(article_form.eventarticle) }}
-    </div>
-    <div id="campaignarticle_form" {{ ' class=hide ' if article_type_name!='campaign'}}>
-    {{ form_fields(article_form.campaignarticle) }}
-    </div>
-  </div>
-  <div class="tab-pane panel panel-default fade" id="relations">
-  {% if article %}
-    {{ article_form.relations(**{'data-editable':'relations', 'data-remote':url_for('.articlerelation_form_new', world=world.slug, article=article.slug) }) }}
+  <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
+  {% if article_type_name == 'person' %}
+    {% set type_form = article_form.personarticle %}
+  {% elif article_type_name == 'fraction' %}
+    {% set type_form = article_form.fractionarticle %}
+  {% elif article_type_name == 'place' %}
+    {% set type_form = article_form.placearticle %}
+  {% elif article_type_name == 'event' %}
+    {% set type_form = article_form.eventarticle %}
+  {% elif article_type_name == 'campaign' %}
+    {% set type_form = article_form.pcampaignarticle %}
   {% endif %}
-  }
+  {% for field in type_form %}
+    {{FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2"))}}
+  {% endfor %}
   </div>
-  <div class="tab-pane panel panel-default fade" id="description">
-    {{article_form.description(style="width:100%")}}
+
+  <div class="tab-pane panel panel-default fade row" id="relations">
+  {% if article %}
+    <div class="col-xs-7">
+    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.articlerelation_form_new', world=world.slug, article=article.slug)}}">
+      {% for articlerelation_form in article_form.relations %}
+        {% include "world/articlerelation_item.html" %}
+      {% endfor %}
+    </ul>
+    </div>
+  {% endif %}
+  </div>
+
+  <div class="tab-pane panel panel-default fade row" id="details">
+    <div class="col-xs-6">
+      {{ FORM_FIELD(article_form.description)}}
+    </div>
+    <div class="col-xs-6">
+      {{ FORM_FIELD(article_form.type) }}
+      {{ FORM_FIELD(article_form.world) }}
+      {% if g.user.id %}
+        <input type="hidden" name="creator" value="{{g.user.id}}" />
+      {% endif %}
+    </div>
   </div>
 </div>
 <div class="row">
   <div class="col-md-9 article_text">
-    <div class=" hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
+    <div class="hide" id="editor">{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
     <span id="hinter"></span>
+    <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
+      <div class="btn-group">
+      <a class="btn btn-primary" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
+      <a class="btn btn-primary" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
+      </div>
+      <div class="tooltip-arrow"></div>
+    </div>
     {{ article_form.content(**{'rows':article_form.content.data|rows, 'data-editable':'textarea', 'data-target':'#editor'}) }}
   </div>
   <div class="col-md-3">
-    blalb
+    Example comment
   </div>
 </div>
 </form>
@@ -109,35 +124,47 @@
 {#### PAGE ####}
 {%- else -%}
 
-<div class="page-header">
-    <h1 class="article_header">{{title }}
-        <small>{{ tagline }}</small>
-    </h1>
-<ul class="list-inline article-meta" style="margin-bottom: 0px">
+<h1 class="article_header">{{title}}
+    <small>{{ tagline }}</small>
+</h1>
+<ul class="nav nav-tabs content-menu">
   {% set articlegroups = article.articlegroups|list %}
-  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
-  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-  <li title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-  <li title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  <li class="content-menu-info" title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
+  <li class="content-menu-info" title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  <li class="content-menu-info" title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  <li class="content-menu-info" title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
+  <li class="content-menu-info" title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  <li class="dropdown">
+    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+      Actions <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+    {% if op!= 'new'%}
+      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+    {%endif%}   
+    </ul>
+  </li>
 </ul>
+
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
 {% set article_type = article.type_name().lower() %}
 {%- if article_type_name=='place' -%}
-  <li><span class="nav-header" style="display:inline">Lon</span>{{article.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">Lat</span>{{article.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">Type</span>{{article.location_type }}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.coordinate_x}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.coordinate_y}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.location_type }}</li>
 {%- elif article_type_name=='image' -%}
-  <li><span class="nav-header" style="display:inline">Type</span>{{article.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">URL</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.mime_type}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
 {%- elif article_type_name=='event' -%}
-  <li><span class="nav-header" style="display:inline">Started</span>{{article.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">Ended</span>{{article.to_date}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.from_date}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.to_date}}</li>
 {%- elif article_type_name=='person' and article.personarticle -%}
-  <li><span class="nav-header" style="display:inline">Born</span>{{article.personarticle.born}}</li>
-  <li><span class="nav-header" style="display:inline">Died</span>{{article.personarticle.died}}</li>
-  <li><span class="nav-header" style="display:inline">Gender</span>{{article.personarticle.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">Occupation</span>{{article.personarticle.occupation}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.personarticle.born}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.personarticle.died}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.personarticle.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.personarticle.occupation}}</li>
 {%- endif -%}
 </ul>
 </div>
@@ -149,7 +176,7 @@
     {{ article.content|markdown }}
   </div>
   <div class="col-md-3">
-    blalb
+    Example comment
   </div>
 </div>
 
@@ -179,12 +206,12 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete {{article.title}}?</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{article.title}}?</h4>
       </div>
       <div class="modal-body">
         <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Yes</button> 
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button> 
         </form>
       </div>
     </div>

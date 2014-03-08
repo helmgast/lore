@@ -22,7 +22,7 @@
           {% if current_use and user.username != current_user.username %}
             <button type="button" class="btn btn-sm m_action
               {% if current_user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
-              {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">Follow ...
+              {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">{{ _('Follow') }} ...
               {% endif %}</button>
             <div class="btn-group">
             <a class="btn btn-sm dropdown-toggle" data-toggle="dropdown" href="#">

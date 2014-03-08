@@ -1,18 +1,9 @@
 {% extends 'includes/row.html' %}
 
 {% block content %}{% block inline %}
-<li>
-<label for="header"></label>
-<table id="header"><tbody>
-	<tr>
-	  	<th><label for="relation_type">{{ articlerelation_form.relation_type.label }}</label></th>
-  		<td>{{ articlerelation_form.relation_type() }}</td>
-  	</tr>
-	<tr>
-  		<th><label for="article">{{ articlerelation_form.article.label }}</label></th>
-  		<td>{{ articlerelation_form.article() }}</td>
-  	</tr>
-</tbody></table>
+<li class="list-group-item">
+    {{ articlerelation_form.relation_type(**{'data-role':'chosen', 'class':'relation-type-selector'}) }}
+    {{ articlerelation_form.article(**{'data-role':'chosen'}) }}
 </li>
 {% endblock %}{% endblock %}
   		

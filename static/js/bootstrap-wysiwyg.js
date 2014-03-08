@@ -17,6 +17,8 @@
 
 	var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
 	var IGNORE_KEYS = {16:'shift',17:'ctrl',18:'alt',224:'meta'};
+	var lastType
+
 	$.fn.doKey = function (e) {
 		var select = $(this).getSelection();
 		var newrow = select.startOffset == 0 && select.collapsed;
@@ -222,6 +224,42 @@
 			this.innerHTML = this.innerHTML+'\n'
 		})
 		return $t.html().replace(/<\/?.+?>/g,'')
+	}
+	$.fn.clickHandler = function(e) {
+		var selection = window.getSelection();
+		var $target = $(e.target)
+		var tparents = $target.parents('#editor-toolbar, #editor')
+
+		if (tparents.length && tparents.get(0).id === 'editor-toolbar' ) {
+			return // we simply just want this click to get through as is, to press the button
+		}
+
+		if ( selection.isCollapsed === true && lastType === false) {
+			// no selection and we haven't started a selection
+			$(this).removeToolbar()
+		}
+		if ( selection.isCollapsed === false) {
+			// there is a selection
+			if(tparents.length && tparents.get(0).id === 'editor') {
+				$(this).moveToolbar(tparents.get(0))				
+			}
+		}
+		lastType = selection.isCollapsed
+	}
+
+	$.fn.moveToolbar = function(editor) {
+		var selection = window.getSelection();
+		var $e = $('#editor-toolbar')
+		var range = selection.getRangeAt(0);
+		var boundary = range.getBoundingClientRect(); // position in viewport
+		var offset = editor.getBoundingClientRect() // editor's position in viewport
+		$e.css({top:(boundary.top-offset.top-55 + "px"),left:(boundary.left-offset.left + "px")}) // sets absolute position (from parent element)
+		$e.addClass('in')	
+	}
+	$.fn.removeToolbar = function(e) {
+		var $e = $('#editor-toolbar')
+		$e.removeClass('in')
+		$e.offset({top:-999,left:-999})
 	}
 	$.fn.wysiwyg = function (userOptions) {
 		var editor = this,
@@ -441,6 +479,14 @@
             		$this.cleanHtml();
           		}, 10);
         	});
+        	$(document).on('mousedown',$ed.clickHandler)
+        	$(document).on('mouseup', function( event ) {
+				setTimeout( function() {
+					$ed.clickHandler( event );
+				}, 1);
+			})
+			$('#hinter').tooltip({trigger:'manual',title:'Hej'})
+
         	$ta.parents('form').on('submit', function(e) {
         		if (!$ed.wysiwyg.options.customCommands['markdown'].active) {
           			$ed.cleanHtml()

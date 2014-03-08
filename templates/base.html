@@ -16,11 +16,11 @@
 
 {% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/datepicker.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/chosen.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}
@@ -60,7 +60,7 @@
                     <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
                     <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
                     <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
-                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span>{{ _('Worlds') }}</a></li>
+                    <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
