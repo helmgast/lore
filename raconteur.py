@@ -36,7 +36,7 @@ if the_app == None:
   the_app = Flask('raconteur') # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
-  the_app.config.from_pyfile('config.cfg') # db-settings and secrets, should not be shown in code
+  the_app.config.from_pyfile('config.py') # db-settings and secrets, should not be shown in code
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
   db = MongoEngine(the_app) # Initiate the MongoEngine DB layer

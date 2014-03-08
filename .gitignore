@@ -1,7 +1,7 @@
 *.pyc
 *.db
 *.sublime*
-config.cfg
+config.py
 /.settings
 /.project
 /.pydevproject
