@@ -1,5 +1,7 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
+{% from 'includes/components.html' import FORM_FIELD %}
+
 {% set members=group.members if group else [] %}
 
 {% block content_title %}{{group.name if group}}{% endblock %}
@@ -39,17 +41,17 @@
   </div>
   <div class="col-md-6">
     <h5>{{ _('Details') }}</h5>
-    <div class="well">{{ group_form.description(style="width: 100%") if group_form else group.description }}</div>
+    {{ FORM_FIELD(group_form.description) if group_form else group.description }}
+    {{ FORM_FIELD(group_form.name) if group_form else group.name }}
+    {{ FORM_FIELD(group_form.location) if group_form else group.location }}
+
     <table class="table">
-      <tr><td><strong>{{ _('Name') }}</strong></td>
-      <td>{{ group_form.name if group_form else group.name }}</td></tr>
-      <tr><td><strong>{{ _('Location') }}</strong></td>
-      <td><small>{{ group_form.location if group_form else group.location }}</small></td></tr>
       <tr><td><strong>{{ _('Members') }}</strong></td>
-      <td><span class="badge">{{members|length if group else 0}}</span></td></tr>
+      <td></td></tr>
       <tr><td><strong>{{ _('Meetings') }}</strong></td>
       <td><span class="badge">0</span></td></tr>
     </table>
+    
   </div>
 </div>
 {% if group_form %}

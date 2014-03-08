@@ -6,14 +6,14 @@
 </div>
 {%- endmacro -%}
  
-{%- macro FORM_FIELD(field, type="plain", cols=None, addlabelcls="", addcontrolcls="") -%}
+{%- macro FORM_FIELD(field, type="plain", label=True, cols=None, addlabelcls="", addcontrolcls="") -%}
   {% set labelcls = "control-label"+addlabelcls %}
   {% if type=="inline" %}{% set labelcls= labelcls+" sr-only"%}{%endif%}
   {% if cols %}{% set labelcls= labelcls+" "+cols[0]%}{%endif%}
   {% set controlcls = "form-control"+addcontrolcls %}
 
   <div class="form-group">
-    {{ field.label(class=labelcls) }}
+    {{ field.label(class=labelcls) if label }}
     {% if type=="cols" %}<div class="{{cols[1]}}">{% endif %}
     {{ field(class=controlcls) }}
     {% if type=="cols" %}</div>{% endif %}

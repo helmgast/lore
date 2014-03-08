@@ -41,7 +41,7 @@ The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps b
 1. `git clone https://github.com/ripperdoc/raconteur.git`
 2. Create a new virtualenv, activate it and then cd into the new raconteur directory
 3. `python setup.py develop` (will install all dependencies)
-4. Create a file named `config.cfg` in the raconteur root, and write the following into it. Make sure to change NAMEOFYOURDB and SECRETPHRASE into something that you only use locally!
+4. Create a file named `config.py` in the raconteur root, and write the following into it. Make sure to change NAMEOFYOURDB and SECRETPHRASE into something that you only use locally!
 
 ```
 # -*- coding: utf-8 -*-
