@@ -62,6 +62,7 @@ if the_app == None:
   the_app.register_blueprint(campaign, url_prefix='/campaign')
 
 def run_the_app(debug):
+  logger = logging.getLogger(__name__)
   logger.info("Running local instance")
   the_app.run(debug=debug)
 
@@ -72,11 +73,32 @@ def setup_models():
   db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
+def validate_model():
+  logger = logging.getLogger(__name__)
+  is_ok = True
+  pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
+  for doc in db.Document._subclasses:  # Ugly way of finding all document type
+    if doc != 'Document':  # Ignore base type (since we don't own it)
+      for pkg in pkgs:
+        try:
+          cls = getattr(__import__(pkg, fromlist=[doc]), doc)  # Do add-hoc import/lookup of type, simillar to from 'pkg' import 'doc'
+          try:
+            cls.objects()  # Check all objects of type
+          except TypeError:
+            logger.warning("Failed to instantiate %s", cls)
+            is_ok = False
+        except AttributeError:
+          pass  # Ignore errors from getattr
+        except ImportError:
+          pass  # Ignore errors from __import__
+  logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
+  return is_ok
+
 from tests import app_test
 def run_tests():
   logger = logging.getLogger(__name__)
   logger.info("Running unit tests")
-  app_test.run_tests();
+  app_test.run_tests()
 
 
 ###

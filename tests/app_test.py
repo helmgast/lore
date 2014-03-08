@@ -43,7 +43,7 @@ class RaconteurTestCase(unittest.TestCase):
 	def test_strategy_access(self):
 		strategy = ResourceAccessStrategy(TestObject, 'test_objects', short_url=True)
 		self.assertEqual(True, strategy.allowed_any('view'))
-		obj = TestObject(name="test_name");
+		obj = TestObject(name="test_name")
 		self.assertEqual(True, strategy.allowed_on('edit', obj))
 
 	def test_handler(self):
@@ -56,18 +56,6 @@ class RaconteurTestCase(unittest.TestCase):
 			result = handler.new({'op': 'new'})
 			self.assertEqual('new', result['op'])
 			self.assertEqual(u'test_name_handler', result['item'].name)
-
-	def test_empty_db(self):
-		pass
-
-	# rv = self.app.get('/')
-	# self.assertIn('Welcome to Raconteur', rv.data)
-
-	def test_get_world(self):
-		pass
-
-	# rv = self.app.get('/world/')
-	# self.assertIn('any fictional world at your fingertips', rv.data)
 
 	def login(self, username, password):
 		return self.app.post('/accounts/login/', data=dict(
