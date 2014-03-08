@@ -74,7 +74,6 @@ def setup_models():
 
 def verify_model():
   logger = logging.getLogger(__name__)
-  logger.info("Verifying model")
   is_ok = True
   pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
   for doc in db.Document._subclasses:  # Ugly way of finding all document type
@@ -91,6 +90,7 @@ def verify_model():
           pass  # Ignore errors from getattr
         except ImportError:
           pass  # Ignore errors from __import__
+  logger.info("Model has been verified" if is_ok else "Model has errors, aborting startup")
   return is_ok
 
 from tests import app_test
