@@ -193,6 +193,12 @@ class ResourceError(Exception):
         self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
         self.r = r
 
+    def to_dict(self):
+        rv = dict()
+        rv['message'] = self.message
+        rv['status_code'] = self.status_code
+        return rv
+
 class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
@@ -235,6 +241,10 @@ class ResourceHandler(View):
             return redirect(r['next'])
         else:
             return render_template(r['template'], **r)
+
+        # mongo notuniqueerror
+        # doesnotexist error
+        # 
 
     def parse_url(self, **kwargs):
         r = {'url_args':kwargs}
@@ -287,6 +297,7 @@ class ResourceHandler(View):
         r[self.strategy.resource_name+'_form'] = form
         r['op'] = 'new' # form_new is not used in templates...
         r['template'] = self.strategy.item_template()
+        raise ResourceError(401)
         return r
 
     def list(self, r):

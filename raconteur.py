@@ -8,7 +8,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
 from auth import Auth
 from flask.ext.mongoengine import MongoEngine
@@ -54,6 +54,7 @@ if the_app == None:
   from controller.social import social
   from controller.generator import generator
   from controller.campaign import campaign_app as campaign
+  from resource import ResourceError
 
   the_app.register_blueprint(world, url_prefix='/world')
   the_app.register_blueprint(generator, url_prefix='/generator')
@@ -77,6 +78,10 @@ def run_tests():
   logger.info("Running unit tests")
   app_test.run_tests();
 
+@the_app.errorhandler(ResourceError)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    return response
 
 ###
 ### Basic views (URL handlers)
