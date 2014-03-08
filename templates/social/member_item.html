@@ -1,5 +1,7 @@
 {% set index = loop.index0 if loop %}
 
+{% from 'includes/components.html' import FORM_FIELD %}
+
 {% block inline %}
   <tr class="user-tablerow">
     {%- if member_form and not member %}
@@ -19,7 +21,7 @@
     {% endif %}
     <td>
     {% if member_form %}
-    {{member_form.role}}
+    {{ FORM_FIELD(member_form.role, label=False)}}
     {% else %}{{member.get_role()}}
     {% endif %}
     </td>

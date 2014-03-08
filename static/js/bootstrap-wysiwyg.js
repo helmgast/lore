@@ -15,133 +15,159 @@
 		return loader.promise();
 	};
 
-	var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
+	// var ENTER = 13, BACKSPACE = 8, TAB=9, DASH=189, INVISIBLE_SPACE = '\uFEFF';
 	var IGNORE_KEYS = {16:'shift',17:'ctrl',18:'alt',224:'meta'};
 	var lastType
 
-	$.fn.doKey = function (e) {
+	$.fn.getSelectedEl = function () {
 		var select = $(this).getSelection();
-		var newrow = select.startOffset == 0 && select.collapsed;
 		var curEl = select.startContainer
 		if (curEl.nodeName==='#text') {
 			curEl = curEl.parentElement;
 		}
+		if (curEl.id==='editor') { // we shouldn't work on the editor
+			curEl = curEl.firstChild
+		}
+		return curEl	
+	}
+
+	$.fn.blockChanges = {
+		// if empty block do below
+		p: {
+			 13: //ENTER // if empty block, swap to h2, if beginning, add p above, if in middle, split and add p after
+			 	function(curEl) { $.fn.swapBlock(curEl, 'h2') }
+			,8: //BACKSPACE //if not last p, remove
+				function(curEl) { $.fn.swapBlock(curEl, '') }
+			,9: //TAB // if empty block, swap to blockquote
+				function(curEl) { $.fn.swapBlock(curEl, 'blockquote') }
+			,189: //DASH // if empty block, swap to ul>li
+				function(curEl) { $.fn.swapBlock(curEl, 'ul>li') }
+			//,ENDBRACKET: // if line is \d+), swap to ol>li
+			//,AT: // if \s@, call typeahead for link
+			//,AND: // if \s&, call typeahead for embed
+		}
+		, h2: {
+			 13: //ENTER  // if empty block, swap to h3, if beginning add p above, if in middle, split and add p after
+				function(curEl) { $.fn.swapBlock(curEl, 'h3') }
+			,8: //BACKSPACE // if empty block, swap to p
+				function(curEl) { $.fn.swapBlock(curEl, 'p') }
+		}
+		, h3: {
+			 13: //ENTER  // if empty block, do nothing, if beginning add p above, if in middle, split and add p after
+			 	function() { ; }
+			,8: //BACKSPACE // if empty block, swap to p
+				function(curEl) { $.fn.swapBlock(curEl, 'p') }
+		}
+		, blockquote: {
+			 13: //ENTER  // if empty block, do nothing, if beginning add p above, if in middle, split and add p after
+			 	function() { ; }				 	
+			,8: //BACKSPACE // if empty block, swap to p
+				function(curEl) { $.fn.swapBlock(curEl, 'p') }				
+		}
+			// , li: {
+			// 	 ENTER: // if empty block, add p after ul, if beginning, add li above, if in middle split andd add li after
+			// 	 	function() {  }
+			// 	,BACKSPACE: // if empty block, remove li, if empty ul, swap to p
+			// }
+	}
+
+	$.fn.doKeydown = function (e) {
+		var curEl = $.fn.getSelectedEl()
+		if (curEl.id == 'editor') {
+			alert('error'); return
+		}
+		var select = $(this).getSelection();
+		var atStart = select.startOffset == 0 && select.collapsed;
+		var empty = curEl.textContent.length == 0 //select.startOffset == 0 && select.collapsed ;
 		var tag = curEl.nodeName.toLowerCase();
-		if (e.keyCode == ENTER) {
-			e.preventDefault();
-			if (!newrow) {
-				if (tag !='li') {
-					tag='p'; // only treat li special
-				}
-				$.fn.newElement(tag, curEl, true)
-			} else {
-				if (tag == 'p') {
-					$.fn.newElement('h2', curEl)
-				} else if (tag=='h2') {
-					$.fn.newElement('h3', curEl)
-				} else if (tag=='h3' || tag=='blockquote') {
-					; // do nothing
-				} else if (tag=='li') {
-					var newCurEl =  curEl.parentElement
-					$(curEl).remove() // remove the empty li, and append a p after the UL
-					$.fn.newElement('p', newCurEl, true)			
-				}
-			}	
-		} else if (e.keyCode == BACKSPACE) {
-			if (select.startOffset <=1 && select.collapsed) { // will reach beginning of line after this
-				$.fn.setHint($(curEl))
-			}
-			if (newrow) {
-				e.preventDefault();
-				var newtag = curEl.parentElement===this ? 'p' : 'none'
-				if (tag=='h2' || tag=='h3' || tag=='blockquote') {
-					$.fn.newElement(newtag, curEl);
-				} else if (tag=='li' && curEl.parentElement.childElementCount <= 1) {
-					newtag = curEl.parentElement.parentElement===this ? 'p' : 'none'
-					$.fn.newElement(newtag, curEl.parentElement) // remove the whole ul in this case
-				} else {
-					$.fn.newElement(newtag, curEl)
-				}
-			} // let the backspace pass through
-		} else if (e.keyCode == TAB) {
-			e.preventDefault()
-			if (newrow) {
-				$.fn.newElement('blockquote', curEl)
-			}
-		} else if (e.keyCode == DASH) {
-			if (newrow) {
+		if ($.fn.blockChanges[tag]) {
+			if(empty && $.fn.blockChanges[tag][e.keyCode]) {
+				$.fn.blockChanges[tag][e.keyCode].call(undefined, curEl)
 				e.preventDefault()
-				$.fn.newElement('ul', curEl)
+			} else if (e.keyCode == 13) { // ENTER
+				// handle splitting of blocks when ENTER happen in non-empty blocks
+				// split curEl into two identical el, at the current selection
+				var range = document.createRange();
+				range.selectNode(curEl)
+				range.setStart(curEl.firstChild, select.startOffset)
+				var newEl = range.extractContents()
+				$(curEl).after(newEl)
+				$.fn.selectElementText(curEl.nextElementSibling, true)
+				e.preventDefault()
+			} else if (e.keyCode == 8) {
+				
 			}
-		} else if (!(e.keyCode in IGNORE_KEYS)) {
-			$('#hinter').hide();
+			return // handle key as normal
+		} else {
+			console.log('error, tag '+tag+'  not expected'); return
 		}
 	};
 
-	$.fn.newElement = function (newtag, curEl, after) {
-		var $h = $('#hinter');
-		if (!newtag || newtag=='none') {
-			$h.hide()
-			if (curEl) {
-				$.fn.selectElementText(curEl.previousElementSibling)
+	$.fn.doKeyup = function(e) {
+		$.fn.setHint()
+	}
+
+	$.fn.swapBlock = function (curEl, newTag) {
+		if (!newTag) {
+			// only remove if we are not at last element of
+			var parent = curEl.parentElement
+			if (parent.id !='editor' || parent.childNodes.length > 1) {
+				var prevEl = curEl.previousElementSibling
 				$(curEl).remove();
+				$.fn.selectElementText(prevEl || parent.childNodes[0])						
 			}
 			return;
 		} else {
-			if (newtag=='ul') {
-				var newEl = $('<'+newtag+'><li></li></'+newtag+'>');
-			} else {
-				var newEl = $('<'+newtag+'><br></'+newtag+'>');
-			}
-			if(after) {
-				$(curEl).after(newEl);
-			} else {
-				$(curEl).replaceWith(newEl);
-			}
-			$.fn.selectElementText(newEl[0])			
+			var newEl = $('<'+newTag+'><br></'+newTag+'>')
+			$(curEl).replaceWith(newEl);
+			$.fn.selectElementText(newEl[0])
 		}
-		$.fn.setHint(newEl);
 	}
 
-	$.fn.setHint = function (newEl) {
+	$.fn.setHint = function (curEl) {
 		var $h = $('#hinter');
-		var newtag = newEl[0].nodeName.toLowerCase();
-		if(!newEl) {
-			$h.hide();
-			return
-		}
+		curEl = curEl || $.fn.getSelectedEl()
+		var emptyBlock = curEl.textContent.length == 0 //select.startOffset == 0 && select.collapsed
+		if (emptyBlock) {
+			curEl = $(curEl)
+			var tag = curEl.prop('tagName').toLowerCase();
 
-		if (newtag=='p') {
-			newEl.clone().appendTo($h.empty()).text('Paragraph')
-		} else if (newtag=='h2') {
-			newEl.clone().appendTo($h.empty()).text('Section title');
-		} else if (newtag=='h3') {
-			newEl.clone().appendTo($h.empty()).text('Sub-section title');
-		} else if (newtag=='blockquote') {
-			newEl.clone().appendTo($h.empty()).text('Quote');
-		} else if (newtag=='ul' || newtag=='li') {
-			if(newtag=='li') {
-				newEl = newEl.parent();
-				newtag = 'ul';
+			if (tag=='p') {
+				curEl.clone().appendTo($h.empty()).text('Paragraph')
+			} else if (tag=='h2') {
+				curEl.clone().appendTo($h.empty()).text('Section title');
+			} else if (tag=='h3') {
+				curEl.clone().appendTo($h.empty()).text('Sub-section title');
+			} else if (tag=='blockquote') {
+				curEl.clone().appendTo($h.empty()).text('Quote');
+			} else if (tag=='ul' || tag=='li') {
+				if(tag=='li') {
+					curEl = curEl.parent();
+					tag = 'ul';
+				}
+				var hintlist = curEl.clone()
+				hintlist.children().empty().last().text('List')
+				$h.empty().append(hintlist)
+			} else {
+				return
 			}
-			var hintlist = newEl.clone()
-			hintlist.children().empty().last().text('List')
-			$h.empty().append(hintlist)
+			$h.css({left: curEl.position().left, top: curEl.position().top});
+			$h.show();	
+		} else {
+			$h.hide();
 		}
-		$h.css({left: newEl.position().left, top: newEl.position().top});
-		$h.show();
+		
 	}
 
-	$.fn.selectElementText = function(el, win){
-        win = win || window;
-        var doc = win.document, sel, range;
+	$.fn.selectElementText = function(el, start){
+        var win = window, doc = win.document, sel, range;
         if (!el) {
         	return;
         }
         if (win.getSelection && doc.createRange) {                    
             range = doc.createRange();
             range.selectNodeContents(el);
-            range.collapse(false);
+            range.collapse(start);
             sel = win.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
@@ -472,7 +498,8 @@
 				}
 			}}
 			$ed.toggleClass('hide').wysiwyg(customCommands)
-			$ed.on('keydown', $ed.doKey)
+			$ed.on('keydown', $ed.doKeydown)
+			$ed.on('keyup', $ed.doKeyup)
 			$ed.on('paste', function(e) {
           		$this = $(this)
           		setTimeout(function() {

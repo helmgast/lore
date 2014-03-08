@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/zenstyle.css') }}">
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}
@@ -30,7 +31,13 @@
     <script src="{{ url_for('static', filename='js/bootstrap.calendar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.hotkeys.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/bootstrap-wysiwyg.js') }}"></script>
+{#    <script src="{{ url_for('static', filename='js/bootstrap-wysiwyg.js') }}"></script>#}
+
+     <script src="{{ url_for('static', filename='js/libs/head.min.js') }}"></script>
+{#    <script src="{{ url_for('static', filename='js/libs/FileSaver.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/libs/Blob.js') }}"></script>#}
+    <script src="{{ url_for('static', filename='js/libs/fullScreen.js') }}"></script>
+
     <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
@@ -110,9 +117,16 @@
         <footer>
             <p></p>
         </footer>
-        <div class="modal fade" id="themodal">
-              <div class="modal-blody">
-              </div>
+        <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">Hej</div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="itsafuckingmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">Hej</div>
+            </div>
         </div>
         </div>
     </div>
