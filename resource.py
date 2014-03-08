@@ -232,7 +232,7 @@ class ResourceHandler(View):
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
         r = self.parse_url(**kwargs)
-        r = getattr(self, r['op'])(r) # picks the right method from the class and calls it!
+        r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
 
         # render output
         if 'next' in r:
@@ -277,8 +277,8 @@ class ResourceHandler(View):
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
         form = self.form_class(obj=item, **r.get('prefill',{}))
-        form.action_url = url_for('.'+self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
-        r[self.strategy.resource_name+'_form'] = form
+        form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
+        r[self.strategy.resource_name + '_form'] = form
         r['op'] = 'edit' # form_edit is not used in templates...
         r['template'] = self.strategy.item_template()
         return r
@@ -287,8 +287,8 @@ class ResourceHandler(View):
         if not self.strategy.allowed_any(r['op']):
             raise ResourceError(401)
         form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
-        form.action_url = url_for('.'+self.strategy.endpoint_name('new'), **r['url_args'])
-        r[self.strategy.resource_name+'_form'] = form
+        form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
+        r[self.strategy.resource_name + '_form'] = form
         r['op'] = 'new' # form_new is not used in templates...
         r['template'] = self.strategy.item_template()
         return r
@@ -312,7 +312,7 @@ class ResourceHandler(View):
         item.save()
         r['item'] = item
         if not 'next' in r:
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
 
     # TODO implement proper patch, currently just copy of PUT
@@ -329,7 +329,7 @@ class ResourceHandler(View):
         item.save()
         # In case slug has changed, query the new value before redirecting!
         if not 'next' in r:
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
 
     def replace(self, r):
@@ -346,7 +346,7 @@ class ResourceHandler(View):
         item.save()
         if not 'next' in r:
             # In case slug has changed, query the new value before redirecting!
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
 
     def delete(self, r):
@@ -355,9 +355,9 @@ class ResourceHandler(View):
             raise ResourceError(500)
         if not 'next' in r:
             if 'parents' in r:
-                r['next'] = url_for('.'+self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
+                r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
             else:
-                 r['next'] = url_for('.'+self.strategy.endpoint_name('list'))
+                r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
         item.delete()
