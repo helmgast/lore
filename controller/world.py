@@ -22,11 +22,12 @@ from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
-from raconteur import auth, db
+from raconteur import auth, db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.utils import secure_filename
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
@@ -65,16 +66,37 @@ def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
 
-@world_app.route('/image/<slug>')
+@world_app.route('/images/<slug>')
 def image(slug):
   imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
   response = make_response(imagearticle.image.read())
   response.mimetype = imagearticle.mime_type
   return response
 
-@world_app.route('/images/new')
-def insert_image():
-  return render_template('world/image_new.html')
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+#@auth.login_required
+@csrf.exempt
+@world_app.route('/images/<world>/new', methods=['GET', 'POST'])
+def insert_image(world):
+  world = World.objects.get(slug=world)
+  if request.method == 'GET':
+    return render_template('world/image_new.html', world=world)
+  elif request.method == 'POST':
+    file = request.files['imagefile']
+    if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
+      fname = secure_filename(file.filename)
+      im = ImageArticle()
+      im.image.put(file)
+      article = Article(type=ARTICLE_IMAGE,
+        title=fname,
+        world=world,
+        creator=g.user,
+        imagearticle=im).save()
+      redirect(url_for('world.image', slug=article.slug))
+    else:
+      abort(403)
+    return redirect(url_for('world.insert_image', world=world.slug))
 
 
 def rows(objects, char_per_row=40, min_rows=10):

@@ -234,6 +234,7 @@ class ResourceHandler(View):
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
         r = self.parse_url(**kwargs)
+        
         r = getattr(self, r['op'])(r) # picks the right method from the class and calls it!
 
         # render output

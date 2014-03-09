@@ -1,12 +1,13 @@
 {% extends 'includes/row.html' %}
 
 {% block content %}{% block inline %}
-<form role="form">
+<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('world.insert_image', world=world.slug)}}">
   <div class="form-group">
     <label for="exampleInputFile">File input</label>
-    <input type="file" id="exampleInputFile">
+    <input type="file" name="imagefile">
     <p class="help-block">Example block-level help text here.</p>
   </div>
+  <button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button>
 </form>
 
 {% endblock %}{% endblock %}

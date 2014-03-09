@@ -47,7 +47,7 @@ if the_app == None:
   auth = Auth(the_app, db, user_model=User)
 
   Markdown(the_app)
-  CsrfProtect(the_app)
+  csrf = CsrfProtect(the_app)
   babel = Babel(the_app)
 
   from controller.world import world_app as world
@@ -104,6 +104,7 @@ def run_tests():
 @the_app.errorhandler(ResourceError)
 def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
+    print request.args
     return response
 
 ###
@@ -111,12 +112,7 @@ def handle_invalid_usage(error):
 ###
 @the_app.route('/')
 def homepage():
-
   return render_template('homepage.html')
-    #if auth.get_logged_in_user():
-    #    return private_timeline()
-    #else:
-    #    return public_timeline()
 
 JoinForm = model_form(User)
 
