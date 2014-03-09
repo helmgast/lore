@@ -1,6 +1,9 @@
 {% extends "world/base.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{world.title}}{% endblock %}
+
+{% block content_title %}
+{{world.title}}
+{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block navbar %}
@@ -38,42 +41,56 @@
 {% endblock %}
 
 
+
+
+
+
 {% block sidebar %}
-<ul class="nav nav-list">
-    <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>    
-    <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>    
-    <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>    
-    <li class="dropdown">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}<span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
-            <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
-        </ul>
-    </li>
+{% if world.slug %}
+  <!--
+  Theme-template for every particular world
+  Todo: Add favicon support
+  -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/' + world.slug + '.css') }}">
+{% endif %}
+<div class="worldSideBar">
+  <ul class="nav nav-list">
+      <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+      <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+      <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+      <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}<span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu">
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
+              <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
+          </ul>
+      </li>
 </ul>
+</div>
 {% endblock %}
 
 {% block content %}
+
     <div class="row">
         <div class="col-md-6">
-            <p class="well">{{ world.description }}</p>
+            <p class="well worldDesc">{{ world.description }}</p>
         </div>
-        <div class="col-md-6">{{ _('IMAGE') }}
+        <div class="col-md-6 imgAside">{{ _('IMAGE') }}
         </div>
     </div>
-    <div class="row">
+    <div class="row worldArticles">
     {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
     <ul>
         {% for article in world.articles() %}
 
-        <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a> [{{ article.type_name() }}]</li>
+        <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>  <span>[{{ article.type_name() }}]</span></li>
         {% endfor %}
     </ul>
     {#{% include "includes/pagination.html" %}

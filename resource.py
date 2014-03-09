@@ -9,19 +9,18 @@
     :copyright: (c) 2014 by Raconteur
 """
 
+import inspect
+import logging
+
 from flask import request, render_template, flash, redirect, url_for
-from raconteur import auth, db
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
-
 from flask.views import View
-from raconteur import the_app
 from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
-import inspect
-import logging
 from flask.ext.mongoengine.wtf.models import ModelForm
+
 from model.world import EMBEDDED_TYPES, Article
 
 
@@ -29,6 +28,7 @@ def generate_flash(action, name, model_identifiers, dest=''):
     s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
     flash(s, 'success')
     return s
+
 
 def error_response(msg, level='error'):
     flash(msg, level)
@@ -40,6 +40,7 @@ def error_response(msg, level='error'):
 
 #     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
 #         super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
+
 
 class ArticleBaseForm(ModelForm):
     def populate_obj(self, obj):
@@ -59,6 +60,7 @@ class ArticleBaseForm(ModelForm):
             else:
                 field.populate_obj(obj, name)
 
+
 class RacModelConverter(ModelConverter):
     @converts('EmbeddedDocumentField')
     def conv_EmbeddedDocument(self, model, field, kwargs):
@@ -71,8 +73,7 @@ class RacModelConverter(ModelConverter):
         # insecure WTForms form base class instead of the CSRF enabled one from
         # flask-wtf. This is because we are in a FormField, and it doesn't require 
         # additional CSRFs.
-        form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
-            base_class=OrigForm, field_args={}, )
+        form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
         logger = logging.getLogger(__name__)
         logger.info("Converted model %s", model)
         return f.FormField(form_class, **kwargs)
@@ -89,12 +90,12 @@ class RacModelConverter(ModelConverter):
             return f.StringField(**kwargs)
         return f.TextAreaField(**kwargs)
 
-class ResourceAccessStrategy:
 
+class ResourceAccessStrategy:
     def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False):
         self.form_class = form_class if form_class else model_form(model_class, converter=RacModelConverter())
         self.model_class = model_class
-        self.resource_name = model_class.__name__.lower().split('.')[-1] # class name, ignoring package name
+        self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
         self.plural_name = plural_name
         self.parent = parent_strategy
         self.id_field = id_field
@@ -114,9 +115,9 @@ class ResourceAccessStrategy:
 
     def url_item(self, op=None):
         if self.short_url:
-            return self.get_url_path('<'+self.resource_name+'>', op)
+            return self.get_url_path('<' + self.resource_name + '>', op)
         else:
-            return self.get_url_path(self.plural_name+'/<'+self.resource_name+'>', op)
+            return self.get_url_path(self.plural_name + '/<' + self.resource_name + '>', op)
 
     def item_template(self):
         return '%s_item.html' % self.resource_name
@@ -174,10 +175,11 @@ class ResourceAccessStrategy:
         return parent_allowed
 
     def allowed_any(self, op):
-        return self.allowed(op, None);
+        return self.allowed(op, None)
 
     def allowed_on(self, op, instance):
-        return self.allowed(op, instance);
+        return self.allowed(op, instance)
+
 
 class ResourceError(Exception):
     default_messages = {
@@ -187,6 +189,7 @@ class ResourceError(Exception):
         404: "Resource not found",
         500: "Internal server error"
     }
+
     def __init__(self, status_code, r=None, message=None):
         Exception.__init__(self)
         self.status_code = status_code
@@ -202,6 +205,7 @@ class ResourceError(Exception):
 class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
+    logger = logging.getLogger(__name__)
 
     def __init__(self, strategy):
         self.form_class = strategy.form_class
@@ -225,17 +229,17 @@ class ResourceHandler(View):
         app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
         app.add_url_rule(st.url_list(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
         app.add_url_rule(st.url_list(), methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
-        app.add_url_rule(st.url_item(), methods=['PUT','POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
-        app.add_url_rule(st.url_item(), methods=['PATCH','POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
-        app.add_url_rule(st.url_item(), methods=['DELETE','POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+        app.add_url_rule(st.url_item(), methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
+        app.add_url_rule(st.url_item(), methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
+        app.add_url_rule(st.url_item(), methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
 
     def dispatch_request(self, *args, **kwargs):
         # If op is given by argument, we use that, otherwise we take it from endpoint
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
         r = self.parse_url(**kwargs)
-        
-        r = getattr(self, r['op'])(r) # picks the right method from the class and calls it!
+
+        r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
 
         # render output
         if 'next' in r:
@@ -284,8 +288,8 @@ class ResourceHandler(View):
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
         form = self.form_class(obj=item, **r.get('prefill',{}))
-        form.action_url = url_for('.'+self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
-        r[self.strategy.resource_name+'_form'] = form
+        form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
+        r[self.strategy.resource_name + '_form'] = form
         r['op'] = 'edit' # form_edit is not used in templates...
         r['template'] = self.strategy.item_template()
         return r
@@ -294,8 +298,8 @@ class ResourceHandler(View):
         if not self.strategy.allowed_any(r['op']):
             raise ResourceError(401)
         form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
-        form.action_url = url_for('.'+self.strategy.endpoint_name('new'), **r['url_args'])
-        r[self.strategy.resource_name+'_form'] = form
+        form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
+        r[self.strategy.resource_name + '_form'] = form
         r['op'] = 'new' # form_new is not used in templates...
         r['template'] = self.strategy.item_template()
         raise ResourceError(401)
@@ -320,7 +324,7 @@ class ResourceHandler(View):
         item.save()
         r['item'] = item
         if not 'next' in r:
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
 
     # TODO implement proper patch, currently just copy of PUT
@@ -337,7 +341,8 @@ class ResourceHandler(View):
         item.save()
         # In case slug has changed, query the new value before redirecting!
         if not 'next' in r:
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+        self.logger.info("Edit on %s/%s", self.strategy.resource_name, item.slug)
         return r
 
     def replace(self, r):
@@ -354,7 +359,7 @@ class ResourceHandler(View):
         item.save()
         if not 'next' in r:
             # In case slug has changed, query the new value before redirecting!
-            r['next'] = url_for('.'+self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+            r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
         return r
 
     def delete(self, r):
@@ -363,11 +368,12 @@ class ResourceHandler(View):
             raise ResourceError(500)
         if not 'next' in r:
             if 'parents' in r:
-                r['next'] = url_for('.'+self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
+                r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
             else:
-                 r['next'] = url_for('.'+self.strategy.endpoint_name('list'))
+                r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
         if not self.strategy.allowed_on(r['op'], item):
             raise ResourceError(401)
+        self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
         item.delete()
         return r
 

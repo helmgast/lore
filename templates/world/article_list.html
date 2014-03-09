@@ -12,7 +12,7 @@
 {% endif %}
 
 {% block pre_content %}
-<h2>{{ _('Browse') }}</h2>
+<h2 class="browseArticle">{{ _('Browse') }}</h2>
 <ul class="nav nav-tabs content-menu">
     <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> {{ _('By title') }}</a></li>
     <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> {{ _('By type') }}</a></li>
@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="panel panel-default">
+    <div class="worldBrowse panel panel-default">
     {% if articles.count() == 0 %}{{ _('No articles yet!') }}{% else %}
     <dl>
         {% for group in groups %}

@@ -18,6 +18,7 @@ from flask.ext.mongoengine.wtf import model_form
 from flask_wtf.csrf import CsrfProtect
 # Babel
 from flask.ext.babel import Babel
+from flask.ext.babel import lazy_gettext as _
 from config import LANGUAGES
 import os
 import logging
@@ -41,7 +42,7 @@ if the_app == None:
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
   db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
-  
+
   from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
@@ -73,26 +74,25 @@ def setup_models():
   db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
   model_setup.setup_models()
 
-def verify_model():
+def validate_model():
   logger = logging.getLogger(__name__)
-  logger.info("Verifying model")
   is_ok = True
-  pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']
-  for doc in db.Document._subclasses:
-    if doc != 'Document':
+  pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
+  for doc in db.Document._subclasses:  # Ugly way of finding all document type
+    if doc != 'Document':  # Ignore base type (since we don't own it)
       for pkg in pkgs:
-        # print (pkg+'.'+doc)
         try:
-          cls = getattr(__import__(pkg, fromlist=[doc]), doc)
+          cls = getattr(__import__(pkg, fromlist=[doc]), doc)  # Do add-hoc import/lookup of type, simillar to from 'pkg' import 'doc'
           try:
-            logger.info("Found %d objects of type %s", len(cls.objects()), cls)
+            cls.objects()  # Check all objects of type
           except TypeError:
-            logger.warning("Failed to instantiate %s", cls)
+            logger.error("Failed to instantiate %s", cls)
             is_ok = False
         except AttributeError:
-          pass
+          pass  # Ignore errors from getattr
         except ImportError:
-          pass
+          pass  # Ignore errors from __import__
+  logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
   return is_ok
 
 from tests import app_test
@@ -124,7 +124,7 @@ def join():
         # Read username from the form that was posted in the POST request
         try:
             user = User.objects().get(username=request.form['username'])
-            flash('That username is already taken')
+            flash(_('That username is already taken'))
         except User.DoesNotExist:
             user = User(
                 username=request.form['username'],
@@ -132,7 +132,7 @@ def join():
             )
             user.set_password(request.form['password'])
             user.save()
-            
+
             auth.login_user(user)
             return redirect(url_for('homepage'))
     join_form = JoinForm()
@@ -144,7 +144,7 @@ def join():
 @the_app.template_filter('is_following')
 def is_following(from_user, to_user):
     return from_user.is_following(to_user)
-    
+
 wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 @the_app.template_filter('wikify')
@@ -164,7 +164,7 @@ def dictreplace(s, d):
             parts[i] = d[parts[i]] # Replace with dict content
         return ''.join(parts)
     return s
-    
+
 # i18n
 @babel.localeselector
 def get_locale():
