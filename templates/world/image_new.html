@@ -1,13 +1,90 @@
-{% extends 'includes/row.html' %}
+{% extends 'includes/modal.html' %}
+
+{% from 'includes/components.html' import FORM_FIELD %}
+
+{% block content_title %}{{ _('Insert image') }}{% endblock %}
 
 {% block content %}{% block inline %}
 <form role="form" enctype="multipart/form-data" method="post" action="{{url_for('world.insert_image', world=world.slug)}}">
-  <div class="form-group">
-    <label for="exampleInputFile">File input</label>
-    <input type="file" name="imagefile">
-    <p class="help-block">Example block-level help text here.</p>
-  </div>
-  <button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button>
+  	<div class="image-preview hide">
+  		<div class="image-container"></div>
+    	<button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
+  	</div>
+  	<div class="form-group image-form">
+	    <p class="help-block">Drag or click to upload file</p>
+	    <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
+	    <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
+	    <p class="help-block">... or link to image online</p>
+	    <input type="text" class="form-control" name="imagearticle.source_image_url" id="imagearticle.source_image_url" placeholder="http://">
+	  	</div>
+  	<fieldset class="image-metafields hide">
+	  {{ FORM_FIELD(article_form.title, addcontrolcls=" image-title")}}
+	  <input name="type" id="type" type="hidden" value="1"> {# TODO hardcoded for ARTICLE_IMAGE #}
+	  {{ article_form.csrf_token }}
+	  {{ FORM_FIELD(article_form.description)}}
+	  <input name="world" id="world" type="hidden" value="{{world.id}}">
+	  {% if g.user.id %}
+	  	<input type="hidden" name="creator" value="{{g.user.id}}" />
+	  {% endif %}
+	  {{ FORM_FIELD(article_form.imagearticle.mime_type)}}
+	</fieldset>
+  
 </form>
+<script>
+	debugger;
+	var fileEvent = function(e) {
+		if (e.dataTransfer && e.dataTransfer.files) {
+			$('#imagefile').prop('files', e.dataTransfer.files)
+			var files = e.dataTransfer.files
+		} else {
+			var files = e.target.files			
+		}
+		if (files && files.length) {
+			var file = files[0]
+			$('.image-title').val(file.name)
+			$('#imagearticle-mime_type').val(file.type)
+			$('.image-form').addClass('hide')
+			$('.image-preview, .image-metafields').removeClass('hide')
+			$('.image-preview .close').click(function(e) {
+				e.preventDefault()
+				$('#imagefile').value = ""
+				$('.image-form').removeClass('hide')
+				$('.image-preview, .image-metafields').addClass('hide')
+			})
+			reader = new FileReader()
+			reader.onload = (function(tfile) {
+				return function(e) {
+					$('.image-container').html('<img src="' + e.target.result + '"  />')
+				};
+			}(file));
+			reader.readAsDataURL(file);
+		}
+		e.preventDefault()
+	}
+	$('#imagefile').change(fileEvent)
+	var $im = $('.image-upload')
+	$im.get(0).addEventListener('dragover', function(e) {
+		e.stopPropagation()
+		e.preventDefault()
+		e.dataTransfer.dropEffect = 'copy'
+	}, false);
+	$im.get(0).addEventListener('drop', fileEvent, false)
 
+	$('.modal-submit').click(function(e) {
+		$modal = $(e.target).parents('.modal')
+		$f = $modal.find('form')
+		var formData = new FormData($f.get(0))
+		var req = new XMLHttpRequest();
+		req.addEventListener("load", function() {
+			if (this.responseText) {
+				$(editor.getActiveBlock()).before('<img alt="'+$('.image-title').val()+'" src="'+this.responseText+'" >')
+			}
+			$modal.modal('hide')
+		}, false);
+		req.open('POST', $f.attr('action'))
+		req.send(formData) // does not work in IE9 and below
+		e.preventDefault()
+	});
+
+</script>
 {% endblock %}{% endblock %}

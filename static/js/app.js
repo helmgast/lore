@@ -60,6 +60,10 @@
   })
 }(jQuery);
 
+$(document).on('hidden.bs.modal', function (e) {
+    $(e.target).removeData('bs.modal'); // clears modals after they have been hidden
+});
+
 $(document).ready(function() {
 
   function serializeObject(form) {

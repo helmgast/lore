@@ -93,7 +93,7 @@ class ImageArticle(db.EmbeddedDocument):
     source_image_url = db.URLField()
     source_page_url = db.URLField()
     # TODO MongoEngine should allow a simple tuple for choices, not having to add JPEG, PNG and GIF fields
-    mime_type = db.StringField(choices=(('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF')))
+    mime_type = db.StringField(choices=(('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF')), required=True)
 
     @classmethod
     def create_from_url(cls, image_url, source_url=None):
@@ -169,24 +169,14 @@ EMBEDDED_TYPES = ['imagearticle','personarticle','fractionarticle','placearticle
 class Article(db.Document):
     meta = {'indexes': ['slug']}
     slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
-    type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT)
-    world = db.ReferenceField(World)
-    creator = db.ReferenceField(User)
+    type = db.IntField(choices=ARTICLE_TYPES, default=ARTICLE_DEFAULT, verbose_name=_('Type'))
+    world = db.ReferenceField(World, verbose_name=_('World'))
+    creator = db.ReferenceField(User, verbose_name=_('Creator'))
     created_date = db.DateTimeField(default=now)
-    title = db.StringField(min_length=1, max_length=60)
-    description = db.StringField(max_length=500)
+    title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+    description = db.StringField(max_length=500, verbose_name=_('Description'))
     content = db.StringField()
-    status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT)
-    #i18n
-    type.verbose_name = _('Type')
-    world.verbose_name = _('World')
-    creator.verbose_name = _('Creator')
-    title.verbose_name = _('Title')
-    status.verbose_name = _('Status')
-    description.verbose_name = _('Description')
-
-
-
+    status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT, verbose_name=_('Status'))
 
     # modified_date = DateTimeField()
 

@@ -53,6 +53,15 @@ class ArticleHandler(ResourceHandler):
     r['articles'] = r['list']
     return r
 
+  def form_new(self, r):
+    r = super(ArticleHandler, self).form_new(r)
+    if 'prefill' in r and 'type' in r['prefill']:
+      type = r['prefill']['type']
+      if type=='image':
+        r['template'] = 'world/image_new.html' # change to image template
+    return r
+
+
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)
 ArticleHandler.register_urls(world_app, article_strategy)
@@ -70,7 +79,7 @@ def index():
 def image(slug):
   imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
   response = make_response(imagearticle.image.read())
-  response.mimetype = imagearticle.mime_type
+  response.mimetype = imagearticle.mime_type or 'image/jpeg'
   return response
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -79,25 +88,28 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 @csrf.exempt
 @world_app.route('/images/<world>/new', methods=['GET', 'POST'])
 def insert_image(world):
+  print request.form
   world = World.objects.get(slug=world)
   if request.method == 'GET':
     return render_template('world/image_new.html', world=world)
   elif request.method == 'POST':
+    print request.files
     file = request.files['imagefile']
     if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
       fname = secure_filename(file.filename)
+      print "got file %s" % fname
       im = ImageArticle()
       im.image.put(file)
+      im.mime_type = request.form['imagearticle-mime_type']
       article = Article(type=ARTICLE_IMAGE,
-        title=fname,
+        title=request.form['title'],
         world=world,
         creator=g.user,
         imagearticle=im).save()
-      redirect(url_for('world.image', slug=article.slug))
+      return url_for('world.image', slug=article.slug) # TODO HACKY WAY OF GETTING URL BACK TO MODAL
     else:
+      print "Aborting, 403"
       abort(403)
-    return redirect(url_for('world.insert_image', world=world.slug))
-
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0

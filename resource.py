@@ -302,7 +302,6 @@ class ResourceHandler(View):
         r[self.strategy.resource_name + '_form'] = form
         r['op'] = 'new' # form_new is not used in templates...
         r['template'] = self.strategy.item_template()
-        raise ResourceError(401)
         return r
 
     def list(self, r):

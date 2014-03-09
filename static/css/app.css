@@ -565,3 +565,47 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	right: 0px;
 	margin-top: 15px;
 }
+
+.image-upload {
+	font-size: 10em;
+	color: #aaa;
+	cursor: pointer;
+	text-align: center;
+	display: block;
+}
+
+.image-upload:hover {
+	color: #ddd;
+}
+
+.image-preview {
+	text-align: center;
+}
+
+.image-preview .image-container {
+	display: inline-block;
+}
+
+.image-preview .close {
+	float: none;
+	position: absolute;
+	top: 20px;
+	margin-left: -30px;
+	font-size: 40px;
+	color: white;
+	background-color: #000;
+	width: 40px;
+	border-radius: 50%;
+}
+
+.image-preview .close span {
+	position: relative;
+	top: -4px;
+}
+
+.image-preview .image-container img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	max-height: 300px;
+}
