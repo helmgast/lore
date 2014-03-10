@@ -16,7 +16,7 @@ var sample_data = {
     "title": "Ljusbringaren bild",
     "content": "No content",
     "status": 0,
-    "imagearticle": {
+    "imagedata": {
         "image": ObjectId("531b1388b7426f25a8f60d33"),
         "source_image_url": "http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg",
         "mime_type": "image/jpeg"

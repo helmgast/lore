@@ -101,11 +101,12 @@ def run_tests():
   logger.info("Running unit tests")
   app_test.run_tests()
 
-@the_app.errorhandler(ResourceError)
-def handle_invalid_usage(error):
-    response = jsonify(error.to_dict())
-    print request.args
-    return response
+if not is_debug:
+  @the_app.errorhandler(ResourceError)
+  def handle_invalid_usage(error):
+      response = jsonify(error.to_dict())
+      print request.args
+      return response
 
 ###
 ### Basic views (URL handlers)

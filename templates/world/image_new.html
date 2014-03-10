@@ -15,18 +15,18 @@
 	    <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
 	    <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
 	    <p class="help-block">... or link to image online</p>
-	    <input type="text" class="form-control" name="imagearticle.source_image_url" id="imagearticle.source_image_url" placeholder="http://">
+	    <input type="text" class="form-control" name="imagedata.source_image_url" id="imagedata.source_image_url" placeholder="http://">
 	  	</div>
   	<fieldset class="image-metafields hide">
 	  {{ FORM_FIELD(article_form.title, addcontrolcls=" image-title")}}
-	  <input name="type" id="type" type="hidden" value="1"> {# TODO hardcoded for ARTICLE_IMAGE #}
+	  <input name="type" id="type" type="hidden" value="image"> {# TODO hardcoded for image #}
 	  {{ article_form.csrf_token }}
 	  {{ FORM_FIELD(article_form.description)}}
 	  <input name="world" id="world" type="hidden" value="{{world.id}}">
 	  {% if g.user.id %}
 	  	<input type="hidden" name="creator" value="{{g.user.id}}" />
 	  {% endif %}
-	  {{ FORM_FIELD(article_form.imagearticle.mime_type)}}
+	  {{ FORM_FIELD(article_form.imagedata.mime_type)}}
 	</fieldset>
   
 </form>
@@ -42,7 +42,7 @@
 		if (files && files.length) {
 			var file = files[0]
 			$('.image-title').val(file.name)
-			$('#imagearticle-mime_type').val(file.type)
+			$('#imagedata-mime_type').val(file.type)
 			$('.image-form').addClass('hide')
 			$('.image-preview, .image-metafields').removeClass('hide')
 			$('.image-preview .close').click(function(e) {

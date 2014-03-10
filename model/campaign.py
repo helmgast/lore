@@ -27,7 +27,7 @@ class Session(db.EmbeddedDocument):
 
 # All material related to a certain story by a certain group.
 class CampaignInstance(db.Document):
-    campaign = db.ReferenceField(Article) # CampaignArticle
+    campaign = db.ReferenceField(Article) # CampaignData
     group = db.ReferenceField(Group)
     rule_system = db.StringField()
     description = db.StringField()

@@ -13,9 +13,8 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g
-from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
-  EventArticle, ImageArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_IMAGE, 
-  ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_BLOG, ARTICLE_TYPES)
+from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
+  EventData, ImageData, FractionData)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -49,7 +48,7 @@ class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
-    r['list'] = r['list'].filter(type=ARTICLE_BLOG).order_by('-created_date')
+    r['list'] = r['list'].filter(type='blog').order_by('-created_date')
     r['articles'] = r['list']
     return r
 
@@ -77,9 +76,9 @@ def index():
 
 @world_app.route('/images/<slug>')
 def image(slug):
-  imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
-  response = make_response(imagearticle.image.read())
-  response.mimetype = imagearticle.mime_type or 'image/jpeg'
+  imagedata= Article.objects(slug=slug).first_or_404().imagedata
+  response = make_response(imagedata.image.read())
+  response.mimetype = imagedata.mime_type or 'image/jpeg'
   return response
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -98,14 +97,14 @@ def insert_image(world):
     if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
       fname = secure_filename(file.filename)
       print "got file %s" % fname
-      im = ImageArticle()
+      im = ImageData()
       im.image.put(file)
-      im.mime_type = request.form['imagearticle-mime_type']
-      article = Article(type=ARTICLE_IMAGE,
+      im.mime_type = request.form['imagedata-mime_type']
+      article = Article(type='image',
         title=request.form['title'],
         world=world,
         creator=g.user,
-        imagearticle=im).save()
+        imagedata=im).save()
       return url_for('world.image', slug=article.slug) # TODO HACKY WAY OF GETTING URL BACK TO MODAL
     else:
       print "Aborting, 403"
@@ -139,7 +138,7 @@ def by_initials(objects):
 # Template filter, will group a list by their article type_name
 def by_articletype(objects):
   groups = []
-  for k, g in groupby(sorted(objects, key=lambda x : x.type_name()), lambda o: o.type_name()):
+  for k, g in groupby(sorted(objects, key=lambda x : x.type), lambda o: o.type):
     groups.append({'grouper':k, 'list':sorted(list(g), key=lambda x : x.title)})
   return sorted(groups, key=lambda x : x['grouper'])
 

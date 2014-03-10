@@ -427,7 +427,7 @@ var editor = (function() {
 	function exportText(type) {
 		var $t = $(contentField);
 		cleanHtml()
-		// $t.detach()
+		$t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
 		})

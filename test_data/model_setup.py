@@ -83,26 +83,26 @@ def add_test_data():
 
     # Article.drop_collection()
 
-    Article(type=ARTICLE_IMAGE,
+    Article(type='image',
         title=u"Ljusbringaren bild",
         content=u"No content",
         world=altor,
         creator=mj,
-        imagearticle=ImageArticle.create_from_url(
+        imagedata=ImageData.create_from_url(
             "http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
             ).save()
-    Article(type=ARTICLE_PERSON,
+    Article(type='person',
         title=u"Ljusbringaren",
         content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",
         world=altor,
         creator=rl,
-        personarticle = PersonArticle(
+        persondata = PersonData(
             born=altor_date(1653,3,4),
             died=altor_date(1891,12,3),
             gender=GENDER_MALE,
             occupation=u"Ljusbringare")
         ).save()
-    Article(type=ARTICLE_BLOG,
+    Article(type='blogpost',
         title=u"Gift tills döden skiljer oss åt",
         world=mundana,
         creator=pn,
@@ -115,7 +115,7 @@ Den här posten kommer däremot att kika lite på hur gifter kommer att fungera.
 Så här kan det därför fungera om man drabbas av ett bedövande gift: Under de följande tre rundorna kommer man att slå sin Livskraft mot svårigheten 12. Om man lyckas med slaget klarar man sig den rundan (för att gå helt opåverkad måste man alltså klara tre slag i rad). Om man misslyckas drabbas man av den första effekten, i detta fallet Omtöcknad (som ger temporärt avdrag likt Smärta). Andra gången man misslyckas blir effekten lite värre och om man skulle misslyckas tre gånger så blir man Utslagen.
 """
         ).save()
-    Article(type=ARTICLE_BLOG,
+    Article(type='blogpost',
         title=u"Monster",
         content=
 u"""
@@ -126,7 +126,7 @@ I Eon IV följer Monster (samt djur och liknande varelser) ett lite annorlunda s
         world=mundana,
         creator=nf).save()            
 
-    Article(type=ARTICLE_BLOG,
+    Article(type='blogpost',
         title=u"Gladiatorkämparna",
         content=
 u"""
@@ -216,11 +216,11 @@ Här lämnar vi våra kämpar.
     Message(user=mb, content=u'Definitivt!', conversation=c2).save()
     Message(user=nf, content=u'Hallå?', conversation=c3).save()
 
-    scmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
-    cd4ka = Article(type=ARTICLE_CAMPAIGN, title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
-    cd6ka = Article(type=ARTICLE_CAMPAIGN, title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
-    kcmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
-    ycmpa = Article(type=ARTICLE_CAMPAIGN, title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
+    scmpa = Article(type='campaign', title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
+    cd4ka = Article(type='campaign', title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
+    cd6ka = Article(type='campaign', title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
+    kcmpa = Article(type='campaign', title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
+    ycmpa = Article(type='campaign', title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
 
     ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa), ArticleRelation(relation_type=friend, article=kcmpa)]
     ycmpa.save()
