@@ -43,6 +43,15 @@ def error_response(msg, level='error'):
 
 
 class ArticleBaseForm(ModelForm):
+    def process(self, formdata=None, obj=None, **kwargs):
+        super(ArticleBaseForm, self).process(formdata, obj, **kwargs)
+        # remove all *article fields that don't match new type
+        typedata = Article.type_data_name(self.data.get('type', 'default'))
+        for f in EMBEDDED_TYPES:
+            if f!=typedata:
+                print 'Removed field %s' % f
+                del self._fields[f]
+
     def populate_obj(self, obj):
         if not type(obj) is Article:
             raise TypeError('ArticleBaseForm can only handle Article models')
@@ -50,15 +59,15 @@ class ArticleBaseForm(ModelForm):
             new_type = self.data['type']
             # Tell the Article we have changed type
             obj.change_type(new_type)
-
-        for name, field in iteritems(self._fields):
-            # Avoid populating meta fields that are not currently active
-            if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
-                logger = logging.getLogger(__name__)
-                logger.info("Skipping populating %s, as it's in %s and is != %s", name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
-                pass
-            else:
-                field.populate_obj(obj, name)
+        super(ArticleBaseForm, self).populate_obj(obj)
+        # for name, field in iteritems(self._fields):
+        #     # Avoid populating meta fields that are not currently active
+        #     if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
+        #         logger = logging.getLogger(__name__)
+        #         logger.info("Skipping populating %s, as it's in %s and is != %s", name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
+        #         pass
+        #     else:
+        #         field.populate_obj(obj, name)
 
 
 class RacModelConverter(ModelConverter):
@@ -196,6 +205,11 @@ class ResourceError(Exception):
         self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
         self.r = r
 
+    def to_dict(self):
+        rv = dict()
+        rv['message'] = self.message
+        rv['status_code'] = self.status_code
+        return rv
 
 class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
@@ -233,6 +247,7 @@ class ResourceHandler(View):
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
         r = self.parse_url(**kwargs)
+
         r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
 
         # render output
@@ -240,6 +255,10 @@ class ResourceHandler(View):
             return redirect(r['next'])
         else:
             return render_template(r['template'], **r)
+
+        # mongo notuniqueerror
+        # doesnotexist error
+        # 
 
     def parse_url(self, **kwargs):
         r = {'url_args':kwargs}
@@ -325,7 +344,11 @@ class ResourceHandler(View):
             raise ResourceError(401)
         form = self.form_class(request.form, obj=item)
         if not form.validate():
-            raise ResourceError(400)
+            flash(u'Form did not validare %s' % form.errors,'warning')
+            r['template'] = self.strategy.item_template()
+            r[self.strategy.resource_name + '_form'] = form
+            return r
+            # raise ResourceError(400, r)
         form.populate_obj(item)
         item.save()
         # In case slug has changed, query the new value before redirecting!

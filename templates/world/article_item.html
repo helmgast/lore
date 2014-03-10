@@ -5,10 +5,8 @@
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New article!' %}
 {% else %}
-  {% set tagline = article.type_name() %} {% set title = article.title %}
+  {% set tagline = article.type %} {% set title = article.title %}
 {% endif %}
-
-{% set article_type_name = article.type_name().lower() if article else '' %}
 
 {% block cssimports %}
 {{ super() }}
@@ -61,16 +59,16 @@
   <div class="tab-pane fade" id="focus"></div>
 
   <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
-  {% if article_type_name == 'person' %}
-    {% set type_form = article_form.personarticle %}
-  {% elif article_type_name == 'fraction' %}
-    {% set type_form = article_form.fractionarticle %}
-  {% elif article_type_name == 'place' %}
-    {% set type_form = article_form.placearticle %}
-  {% elif article_type_name == 'event' %}
-    {% set type_form = article_form.eventarticle %}
-  {% elif article_type_name == 'campaign' %}
-    {% set type_form = article_form.pcampaignarticle %}
+  {% if article.type == 'person' %}
+    {% set type_form = article_form.persondata %}
+  {% elif article.type == 'fraction' %}
+    {% set type_form = article_form.fractiondata %}
+  {% elif article.type == 'place' %}
+    {% set type_form = article_form.placedata %}
+  {% elif article.type == 'event' %}
+    {% set type_form = article_form.eventdata %}
+  {% elif article.type == 'campaign' %}
+    {% set type_form = article_form.pcampaigndata %}
   {% endif %}
   {% for field in type_form %}
     {{FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2"))}}
@@ -122,7 +120,7 @@
     </div>
     <div class="bubble-bar" id="margin-options">
       <div class="options ui-inputs">
-            <a data-toggle="modal" href="{{url_for('world.insert_image')}}" data-target="#itsafuckingmodal"><span class="glyphicon glyphicon-picture"></span></a>
+            <a data-toggle="modal" href="{{url_for('.article_form_new', world=world.slug, type='image')}}" data-target="#itsafuckingmodal"><span class="glyphicon glyphicon-picture"></span></a>
       </div>
     </div>
 
@@ -142,7 +140,6 @@
 
 {#### PAGE ####}
 {%- else -%}
-
 <h1 class="article_header">{{title}}
     <small>{{ tagline }}</small>
 </h1>
@@ -168,22 +165,21 @@
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
-{% set article_type = article.type_name().lower() %}
-{%- if article_type_name=='place' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.location_type }}</li>
-{%- elif article_type_name=='image' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article_type.url}}">{{article.url|truncate(30, True)}}</a></li>
-{%- elif article_type_name=='event' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.to_date}}</li>
-{%- elif article_type_name=='person' and article.personarticle -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.personarticle.born}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.personarticle.died}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.personarticle.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.personarticle.occupation}}</li>
+{%- if article.type=='place' -%}
+  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.placedata.coordinate_x}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.placedata.coordinate_y}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.placedata.location_type }}</li>
+{%- elif article.type=='image' -%}
+  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.imagedata.mime_type}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article.imagedata.url}}">{{article.imagedata.url|truncate(30, True)}}</a></li>
+{%- elif article.type=='event' -%}
+  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.eventdata.from_date}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.eventdata.to_date}}</li>
+{%- elif article.type=='person' and article.persondata -%}
+  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.persondata.born}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.persondata.died}}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.persondata.gender_name() }}</li>
+  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.persondata.occupation}}</li>
 {%- endif -%}
 </ul>
 </div>
@@ -199,7 +195,7 @@
   </div>
 </div>
 
-{% if article_type_name == 'blogpost' %}
+{% if article.type == 'blogpost' %}
 <div id="disqus_thread"></div>
 <script type="text/javascript">
 /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
@@ -259,7 +255,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
             }
         );
         //----------------------------------
-        $('#editable_title')
+        $('#header')
           .blur(function(e) {
             $('#title').val(this.textContent); })
           .on('paste', function(e) {
@@ -270,7 +266,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
           .focus();
 
         /*        
-        var latlng = [parseFloat($('#placearticle-coordinate_x').val()), parseFloat($('#placearticle-coordinate_y').val())]
+        var latlng = [parseFloat($('#placedata-coordinate_x').val()), parseFloat($('#placedata-coordinate_y').val())]
 
         var map = L.map('map', {
           center: [-77, 660],
@@ -293,8 +289,8 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         }
 
         function onMapClick(e) {
-          $('#placearticle-coordinate_x').val(e.latlng.lat);
-          $('#placearticle-coordinate_y').val(e.latlng.lng);
+          $('#placedata-coordinate_x').val(e.latlng.lat);
+          $('#placedata-coordinate_y').val(e.latlng.lng);
           if(!marker) {
             marker = L.marker(e.latlng).addTo(map);
           } else {

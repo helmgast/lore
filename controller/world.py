@@ -13,20 +13,20 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g
-from model.world import (Article, World, ArticleRelation, PersonArticle, PlaceArticle, 
-  EventArticle, ImageArticle, FractionArticle, ARTICLE_DEFAULT, ARTICLE_IMAGE, 
-  ARTICLE_PERSON, ARTICLE_FRACTION, ARTICLE_PLACE, ARTICLE_EVENT, ARTICLE_BLOG, ARTICLE_TYPES)
+from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
+  EventData, ImageData, FractionData)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
-from raconteur import auth, db
+from raconteur import auth, db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.utils import secure_filename
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
@@ -48,9 +48,18 @@ class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
-    r['list'] = r['list'].filter(type=ARTICLE_BLOG).order_by('-created_date')
+    r['list'] = r['list'].filter(type='blog').order_by('-created_date')
     r['articles'] = r['list']
     return r
+
+  def form_new(self, r):
+    r = super(ArticleHandler, self).form_new(r)
+    if 'prefill' in r and 'type' in r['prefill']:
+      type = r['prefill']['type']
+      if type=='image':
+        r['template'] = 'world/image_new.html' # change to image template
+    return r
+
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)
@@ -65,17 +74,41 @@ def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
 
-@world_app.route('/image/<slug>')
+@world_app.route('/images/<slug>')
 def image(slug):
-  imagearticle= Article.objects(slug=slug).first_or_404().imagearticle
-  response = make_response(imagearticle.image.read())
-  response.mimetype = imagearticle.mime_type
+  imagedata= Article.objects(slug=slug).first_or_404().imagedata
+  response = make_response(imagedata.image.read())
+  response.mimetype = imagedata.mime_type or 'image/jpeg'
   return response
 
-@world_app.route('/images/new')
-def insert_image():
-  return render_template('world/image_new.html')
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
+#@auth.login_required
+@csrf.exempt
+@world_app.route('/images/<world>/new', methods=['GET', 'POST'])
+def insert_image(world):
+  print request.form
+  world = World.objects.get(slug=world)
+  if request.method == 'GET':
+    return render_template('world/image_new.html', world=world)
+  elif request.method == 'POST':
+    print request.files
+    file = request.files['imagefile']
+    if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
+      fname = secure_filename(file.filename)
+      print "got file %s" % fname
+      im = ImageData()
+      im.image.put(file)
+      im.mime_type = request.form['imagedata-mime_type']
+      article = Article(type='image',
+        title=request.form['title'],
+        world=world,
+        creator=g.user,
+        imagedata=im).save()
+      return url_for('world.image', slug=article.slug) # TODO HACKY WAY OF GETTING URL BACK TO MODAL
+    else:
+      print "Aborting, 403"
+      abort(403)
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0
@@ -105,7 +138,7 @@ def by_initials(objects):
 # Template filter, will group a list by their article type_name
 def by_articletype(objects):
   groups = []
-  for k, g in groupby(sorted(objects, key=lambda x : x.type_name()), lambda o: o.type_name()):
+  for k, g in groupby(sorted(objects, key=lambda x : x.type), lambda o: o.type):
     groups.append({'grouper':k, 'list':sorted(list(g), key=lambda x : x.title)})
   return sorted(groups, key=lambda x : x['grouper'])
 

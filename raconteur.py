@@ -8,7 +8,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
 from auth import Auth
 from flask.ext.mongoengine import MongoEngine
@@ -48,13 +48,14 @@ if the_app == None:
   auth = Auth(the_app, db, user_model=User)
 
   Markdown(the_app)
-  CsrfProtect(the_app)
+  csrf = CsrfProtect(the_app)
   babel = Babel(the_app)
 
   from controller.world import world_app as world
   from controller.social import social
   from controller.generator import generator
   from controller.campaign import campaign_app as campaign
+  from resource import ResourceError
 
   the_app.register_blueprint(world, url_prefix='/world')
   the_app.register_blueprint(generator, url_prefix='/generator')
@@ -100,18 +101,19 @@ def run_tests():
   logger.info("Running unit tests")
   app_test.run_tests()
 
+if not is_debug:
+  @the_app.errorhandler(ResourceError)
+  def handle_invalid_usage(error):
+      response = jsonify(error.to_dict())
+      print request.args
+      return response
 
 ###
 ### Basic views (URL handlers)
 ###
 @the_app.route('/')
 def homepage():
-
   return render_template('homepage.html')
-    #if auth.get_logged_in_user():
-    #    return private_timeline()
-    #else:
-    #    return public_timeline()
 
 JoinForm = model_form(User)
 

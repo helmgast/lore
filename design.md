@@ -173,23 +173,23 @@ Article
 		relation_type = Choice
 		article = Ref()
 
-	PlaceArticle
+	PlaceData
 		coordinate
 		location_type
 
-	PersonArticle
+	PersonData
 		born = Int
 		died = Int
 		gender = Choice
 		occupation
 
-	FractionArticle
+	FractionData
 
-	EventArticle
+	EventData
 		from_date = 
 		to_date = 
 
-	CampaignArticle
+	CampaignData
 		rule_system = String
 		episodes = Tree
 			id
@@ -200,7 +200,7 @@ Article
 
 	ChronicleArticle
 
-	ImageArticle
+	ImageData
 		media_resource = MediaResource
 
 MediaResource
@@ -522,3 +522,32 @@ World:Mundana
         Scene:3
     Character:Taldar
 '''
+
+
+
+Error inputs:
+- Not found
+	- API error
+	- Partial error
+	- Error page
+	- Logging
+- Not authorized
+	- API error
+	- Partial error
+	- Error page
+	- Logging
+- Server error
+	- API error
+	- Partial error
+	- Error page
+	- Logging
+- Malformed request
+- Form doesn't validate
+
+Output:
+- API JSON error
+- Partial-HTML response error (as attached JSON)
+- Flash (as response to POSTs or on-page errors)
+- Logging
+- Debug exception
+- Error page
