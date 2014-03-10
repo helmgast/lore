@@ -1,3 +1,10 @@
+# Workflow
+## Backup database
+Run the following command
+    mongo <db_name> db/backup_db.js
+
+This will create a backup with todays timestamp.
+
 # Design
 
 On the server, there are Model classes that fully represent every entity in the system. The exception is that some Models represent only many-to-many relationships (meaning they are not an entity but a relationship).
