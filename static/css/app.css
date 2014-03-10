@@ -609,3 +609,10 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	height: auto;
 	max-height: 300px;
 }
+
+.content img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	max-height: 400px;
+}

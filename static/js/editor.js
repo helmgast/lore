@@ -402,6 +402,7 @@ var editor = (function() {
 		strong -> strong
 		em -> 	em
 		*/
+		html = html.replace(/<(img.+?)>/gi,'%%%$1%%%')
 		html = html.replace(/<(\w+) [^>]*>/g,'<$1>'); // remove all attr
 		html = html.replace(/(<\/?)div>/gi,'$1p>'); // all divs to p		
 		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
@@ -416,7 +417,7 @@ var editor = (function() {
 		var $t = $(contentField);
 		$t.html(html);
 		$t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />'); // wraps plain text nodes in p
-		$t.contents(':empty').remove(); // removes empty nodes
+		$t.contents('p:empty').remove(); // removes empty p
 		if (!$t.html() || $t.children().length == 0) { // if no nodes, put in empty placeholder
 			$t.html('<p><br></p>');
 		}
@@ -429,10 +430,10 @@ var editor = (function() {
 		// $t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
-		})	
+		})
 		$t.find('blockquote').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
-		})	
+		})
 		$t.find('i').each(function () {
 			this.innerHTML = '_'+this.innerHTML+'_'
 		})
@@ -455,6 +456,10 @@ var editor = (function() {
 			})
 			this.innerHTML = this.innerHTML+'\n'
 		})
+		$t.find('img').each(function() {
+			// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
+			this.outerHTML = '!['+this.alt+']('+this.src.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
+		});
 		var html = $t.html()
 		html = html.replace(/<blockquote>/g,'<blockquote>> ') // > can't be added into innerHTML without being encoded
 		html = html.replace(/<\/?.+?>/g,'') // remove all remaining tags
