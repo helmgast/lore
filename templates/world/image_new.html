@@ -62,6 +62,12 @@
 		e.preventDefault()
 	}
 	$('#imagefile').change(fileEvent)
+	$('#imagedata\\.source_image_url').change(function(e) {
+		$('.image-form').addClass('hide')
+		$('.image-preview, .image-metafields').removeClass('hide')
+		$('.image-container').html('<img src="' + this.value + '"  />')
+		$('.image-title').val(this.value.substr(this.value.lastIndexOf('/') + 1))
+	})
 	var $im = $('.image-upload')
 	$im.get(0).addEventListener('dragover', function(e) {
 		e.stopPropagation()
