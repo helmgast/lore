@@ -12,10 +12,11 @@
   {% if cols %}{% set labelcls= labelcls+" "+cols[0]%}{%endif%}
   {% set controlcls = "form-control"+addcontrolcls %}
 
-  <div class="form-group">
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
     {{ field.label(class=labelcls) if label }}
     {% if type=="cols" %}<div class="{{cols[1]}}">{% endif %}
     {{ field(class=controlcls) }}
+    {%- if field.errors -%}<span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>{% endif %}
     {% if type=="cols" %}</div>{% endif %}
   </div>
 {%- endmacro -%}

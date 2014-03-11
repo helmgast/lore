@@ -523,7 +523,15 @@ World:Mundana
     Character:Taldar
 '''
 
-
+Responses
+200		Rendered output as per argument
+400		Bad request (general error or incorrect validation)
+	If on HTML, we can just highlight the errors on the page
+404		Not found (given resource id does not exist)
+401		Unauthorized (not logged in or not access to article)
+	If on HTML and not logged in, send to login page first
+403		Forbidden (operation is not allowed)
+500		Internal Server Error (python exception)
 
 Error inputs:
 - Not found
@@ -551,3 +559,31 @@ Output:
 - Logging
 - Debug exception
 - Error page
+
+If request full html:
+	400		-> bad request
+			if a edit/new of form, return original form with validation errors highlighted in requsted form and flash message shown
+			if error with URL args, just flash message
+	401		-> Unauthorized, redirect to login-page if not logged in, else flash message not allowed
+	403		-> forbidden operation, just flash message that not possible with current user
+	404		-> not found page
+	500		-> flash message about internal server error
+			if debug, go to debug instead
+
+If request fragment:
+	400		-> bad request
+			if a validation error, return fragment html of complete form with validation errors
+			else return text line to insert into flash
+	401		-> return flash message that "need to be logged in (with a link to click?)"
+	403		-> forbidden, return flash message that not possible
+	404		-> return flash message
+	500		-> return flash message
+
+If request json:
+	400		-> bad request
+			if validation error, return json representation of form.errors
+			else return normal json error dict
+	401		-> unauthorized, return json error dict
+	403		-> forbidden, return json error dict
+	404		-> not found, return json error dict
+	500		-> return json error dict

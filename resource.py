@@ -12,7 +12,7 @@
 import inspect
 import logging
 
-from flask import request, render_template, flash, redirect, url_for
+from flask import request, render_template, flash, redirect, url_for, abort
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.views import View
@@ -20,6 +20,7 @@ from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
+from mongoengine.errors import DoesNotExist
 
 from model.world import EMBEDDED_TYPES, Article
 
@@ -214,6 +215,7 @@ class ResourceError(Exception):
 class ResourceHandler(View):
     default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
+    get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
     logger = logging.getLogger(__name__)
 
     def __init__(self, strategy):
@@ -246,19 +248,49 @@ class ResourceHandler(View):
         # If op is given by argument, we use that, otherwise we take it from endpoint
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
-        r = self.parse_url(**kwargs)
-
-        r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
+        r = {}
+        try:
+            r = self.parse_url(**kwargs)
+            r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
+        except ResourceError as err:
+            if err.status_code == 400: # bad request
+                if r['op'] in self.get_post_pairs:
+                    # we were posting a form
+                    if 'form' in r and r['form'].errors:
+                        flash(u'Form did not validate, errors in %s' % r['form'].errors.keys(),'warning')
+                    else:
+                        flash(u'Bad request','warning')
+                    r['op'] = self.get_post_pairs[r['op']] # change the effective op
+                    r['template'] = self.strategy.item_template()
+                    r[self.strategy.resource_name + '_form'] = r['form']
+                else:
+                    flash(u'Bad request','warning')
+                return render_template(r['template'], **r), 400
+            
+            elif err.status_code == 401: # unauthorized
+                flash(u'You need to be logged in to continue','warning')
+                return redirect(url_for('auth.login', next=request.path))
+            
+            elif err.status_code == 403: # forbidden
+                flash(u'You are not allowed to perform this operation','warning')
+                r['op'] = self.get_post_pairs[r['op']] # change the effective op
+                r['template'] = self.strategy.item_template()
+                r[self.strategy.resource_name + '_form'] = form
+                return render_template(r['template'], **r), 403
+            
+            elif err.status_code == 404:
+                abort(404) # TODO, nicer 404 page?
+            
+            else:
+                raise
+        except DoesNotExist:
+            abort(404)
 
         # render output
         if 'next' in r:
             return redirect(r['next'])
         else:
             return render_template(r['template'], **r)
-
-        # mongo notuniqueerror
-        # doesnotexist error
-        # 
 
     def parse_url(self, **kwargs):
         r = {'url_args':kwargs}
@@ -326,7 +358,8 @@ class ResourceHandler(View):
             raise ResourceError(401)
         form = self.form_class(request.form, obj=None)
         if not form.validate():
-            raise ResourceError(400)
+            r['form'] = form
+            raise ResourceError(400, r)
         item = self.strategy.create_item()
         form.populate_obj(item)
         item.save()
@@ -344,11 +377,8 @@ class ResourceHandler(View):
             raise ResourceError(401)
         form = self.form_class(request.form, obj=item)
         if not form.validate():
-            flash(u'Form did not validare %s' % form.errors,'warning')
-            r['template'] = self.strategy.item_template()
-            r[self.strategy.resource_name + '_form'] = form
-            return r
-            # raise ResourceError(400, r)
+            r['form'] = form
+            raise ResourceError(400, r)
         form.populate_obj(item)
         item.save()
         # In case slug has changed, query the new value before redirecting!
@@ -366,7 +396,8 @@ class ResourceHandler(View):
         form = self.form_class(request.form, obj=item)
         # self.print_form_inputs(request.form, form.data, item)
         if not form.validate():
-            raise ResourceError(400)
+            r['form'] = form
+            raise ResourceError(400, r)
         form.populate_obj(item)
         item.save()
         if not 'next' in r:
