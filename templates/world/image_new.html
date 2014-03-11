@@ -32,6 +32,27 @@
 </form>
 <script>
 	debugger;
+
+	$modal = $('.image-preview').parents('.modal')
+	$modal_submit = $modal.find('.modal-submit')
+	$modal_submit.prop('disabled', true)
+
+	function showPreview() {
+		$('.image-form').addClass('hide')
+		$('.image-preview, .image-metafields').removeClass('hide')
+		$('.image-preview .close').click(hidePreview)
+		$modal_submit.prop('disabled', false)
+	}
+
+	function hidePreview(e) {
+		e.preventDefault()
+		$('#imagefile').val(null)
+		$('#imagedata.source_image_url').val(null)
+		$('.image-form').removeClass('hide')
+		$('.image-preview, .image-metafields').addClass('hide')
+		$modal_submit.prop('disabled', true)
+	}
+
 	var fileEvent = function(e) {
 		if (e.dataTransfer && e.dataTransfer.files) {
 			$('#imagefile').prop('files', e.dataTransfer.files)
@@ -43,14 +64,6 @@
 			var file = files[0]
 			$('.image-title').val(file.name)
 			$('#imagedata-mime_type').val(file.type)
-			$('.image-form').addClass('hide')
-			$('.image-preview, .image-metafields').removeClass('hide')
-			$('.image-preview .close').click(function(e) {
-				e.preventDefault()
-				$('#imagefile').value = ""
-				$('.image-form').removeClass('hide')
-				$('.image-preview, .image-metafields').addClass('hide')
-			})
 			reader = new FileReader()
 			reader.onload = (function(tfile) {
 				return function(e) {
@@ -58,13 +71,13 @@
 				};
 			}(file));
 			reader.readAsDataURL(file);
+			showPreview()
 		}
 		e.preventDefault()
 	}
 	$('#imagefile').change(fileEvent)
 	$('#imagedata\\.source_image_url').change(function(e) {
-		$('.image-form').addClass('hide')
-		$('.image-preview, .image-metafields').removeClass('hide')
+		showPreview()
 		$('.image-container').html('<img src="' + this.value + '"  />')
 		$('.image-title').val(this.value.substr(this.value.lastIndexOf('/') + 1))
 	})
@@ -76,16 +89,15 @@
 	}, false);
 	$im.get(0).addEventListener('drop', fileEvent, false)
 
-	$('.modal-submit').click(function(e) {
-		$modal = $(e.target).parents('.modal')
+	$modal_submit.click(function(e) {
 		$f = $modal.find('form')
 		var formData = new FormData($f.get(0))
 		var req = new XMLHttpRequest();
 		req.addEventListener("load", function() {
-			if (this.responseText) {
+			if (this.status==200 && this.responseText) {
 				$(editor.getActiveBlock()).before('<img alt="'+$('.image-title').val()+'" src="'+this.responseText+'" >')
+				$modal.modal('hide')
 			}
-			$modal.modal('hide')
 		}, false);
 		req.open('POST', $f.attr('action'))
 		req.send(formData) // does not work in IE9 and below

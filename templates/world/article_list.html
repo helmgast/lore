@@ -31,7 +31,7 @@
         {% for article in group.list %}
             <li><a href="{{ url_for('.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>
                 {%- if groupby=='title' -%}
-                    <small>{{" ["+article.type_name()+"]"}}</small>
+                    <small>{{" ["+article.type+"]"}}</small>
                 {%- elif groupby=='time' -%}
                     <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
                 {%- endif %}</li>

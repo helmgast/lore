@@ -12,7 +12,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g
+from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
   EventData, ImageData, FractionData)
 from model.user import Group
@@ -84,31 +84,30 @@ def image(slug):
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 #@auth.login_required
-@csrf.exempt
-@world_app.route('/images/<world>/new', methods=['GET', 'POST'])
+@world_app.route('/images/<world>/new', methods=['POST'])
 def insert_image(world):
   print request.form
   world = World.objects.get(slug=world)
-  if request.method == 'GET':
-    return render_template('world/image_new.html', world=world)
-  elif request.method == 'POST':
-    print request.files
+  if request.method == 'POST':
     file = request.files['imagefile']
+    im = None
     if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
       fname = secure_filename(file.filename)
       print "got file %s" % fname
       im = ImageData()
       im.image.put(file)
       im.mime_type = request.form['imagedata-mime_type']
+    elif request.form.has_key('imagedata.source_image_url'):
+      im = ImageData.create_from_url(request.form['imagedata.source_image_url'])
+    else:
+      abort(403)
+    if im:
       article = Article(type='image',
         title=request.form['title'],
         world=world,
         creator=g.user,
         imagedata=im).save()
       return url_for('world.image', slug=article.slug) # TODO HACKY WAY OF GETTING URL BACK TO MODAL
-    else:
-      print "Aborting, 403"
-      abort(403)
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0
