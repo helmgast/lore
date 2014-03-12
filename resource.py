@@ -13,6 +13,7 @@ import inspect
 import logging
 
 from flask import request, render_template, flash, redirect, url_for, abort
+from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.views import View
@@ -24,6 +25,7 @@ from mongoengine.errors import DoesNotExist
 
 from model.world import EMBEDDED_TYPES, Article
 
+logger = logging.getLogger(__name__)
 
 def generate_flash(action, name, model_identifiers, dest=''):
     s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
@@ -84,7 +86,6 @@ class RacModelConverter(ModelConverter):
         # flask-wtf. This is because we are in a FormField, and it doesn't require 
         # additional CSRFs.
         form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
-        logger = logging.getLogger(__name__)
         logger.info("Converted model %s", model)
         return f.FormField(form_class, **kwargs)
 
@@ -192,9 +193,11 @@ class ResourceAccessStrategy:
 
 
 class ResourceError(Exception):
+    logger = logging.getLogger(__name__)
+
     default_messages = {
         400: "Bad request or invalid input",
-        401: "Unathorized access",
+        401: "Unathorized access, please login",
         403: "Forbidden, this is not an allowed operation",
         404: "Resource not found",
         500: "Internal server error"
@@ -204,7 +207,10 @@ class ResourceError(Exception):
         Exception.__init__(self)
         self.status_code = status_code
         self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
+        if status_code == 400 and r and 'form' in r:
+            message += ", invalid fields %s" % r['form'].errors.keys()
         self.r = r
+        logger.warning(status_code+': '+message)
 
     def to_dict(self):
         rv = dict()
@@ -231,7 +237,6 @@ class ResourceHandler(View):
                 app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
                 custom_ops.append(name)
 
-        logger = logging.getLogger(__name__)
         logger.info("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
 
         app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
@@ -248,35 +253,43 @@ class ResourceHandler(View):
         # If op is given by argument, we use that, otherwise we take it from endpoint
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
-        r = {}
+        r = self.parse_url(**kwargs)
         try:
-            r = self.parse_url(**kwargs)
+            r = self.query_url_components(r, **kwargs)
             r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
         except ResourceError as err:
             if err.status_code == 400: # bad request
                 if r['op'] in self.get_post_pairs:
                     # we were posting a form
-                    if 'form' in r and r['form'].errors:
-                        flash(u'Form did not validate, errors in %s' % r['form'].errors.keys(),'warning')
-                    else:
-                        flash(u'Bad request','warning')
                     r['op'] = self.get_post_pairs[r['op']] # change the effective op
                     r['template'] = self.strategy.item_template()
                     r[self.strategy.resource_name + '_form'] = r['form']
+
+                # if json, return json instead of render
+                if r['out'] == 'json':
+                    return self.return_json(r, err)
                 else:
-                    flash(u'Bad request','warning')
-                return render_template(r['template'], **r), 400
+                    flash(err.message,'warning')
+                    return render_template(r['template'], **r), 400
             
             elif err.status_code == 401: # unauthorized
-                flash(u'You need to be logged in to continue','warning')
-                return redirect(url_for('auth.login', next=request.path))
+                if r['out'] == 'json':
+                    return self.return_json(r, err)
+                else:
+                    flash(err.message,'warning')
+                    # if fragment/json, just return 401
+                    return redirect(url_for('auth.login', next=request.path))
             
             elif err.status_code == 403: # forbidden
-                flash(u'You are not allowed to perform this operation','warning')
                 r['op'] = self.get_post_pairs[r['op']] # change the effective op
                 r['template'] = self.strategy.item_template()
                 r[self.strategy.resource_name + '_form'] = form
-                return render_template(r['template'], **r), 403
+                # if json, return json instead of render
+                if r['out'] == 'json':
+                    return self.return_json(r, err)
+                else:
+                    flash(err.message,'warning')
+                    return render_template(r['template'], **r), 403
             
             elif err.status_code == 404:
                 abort(404) # TODO, nicer 404 page?
@@ -287,19 +300,22 @@ class ResourceHandler(View):
             abort(404)
 
         # render output
-        if 'next' in r:
+        if r['out'] == 'json':
+            return self.return_json(r)
+        elif 'next' in r:
             return redirect(r['next'])
         else:
+            # if json, return json instead of render
             return render_template(r['template'], **r)
+
+    def return_json(self, r, err=None):
+        if err:
+            return jsonify(err.to_dict()), err.status_code
+        else:
+            return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next']})
 
     def parse_url(self, **kwargs):
         r = {'url_args':kwargs}
-        if self.strategy.resource_name in kwargs:
-            r['item'] = self.strategy.query_item(**kwargs)
-            r[self.strategy.resource_name] = r['item']
-
-        r['parents'] = self.strategy.query_parents(**kwargs)
-        r.update(r['parents'])
         op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())
         if op in ['form_edit', 'form_new','list']:
             # TODO faster, more pythonic way of getting intersection of fieldnames and args
@@ -311,8 +327,17 @@ class ResourceHandler(View):
                         vals[arg] = val
             r['filter' if op is 'list' else 'prefill'] = vals
         r['op'] = op
+        r['out'] = request.args.get('out','html') # default to HTML
         if 'next' in request.args:
             r['next'] = request.args['next']
+        return r
+
+    def query_url_components(self, r, **kwargs):
+        if self.strategy.resource_name in kwargs:
+            r['item'] = self.strategy.query_item(**kwargs)
+            r[self.strategy.resource_name] = r['item']
+        r['parents'] = self.strategy.query_parents(**kwargs)
+        r.update(r['parents'])
         return r
 
     def view(self, r):
@@ -409,6 +434,8 @@ class ResourceHandler(View):
         item = r['item']
         if not item:
             raise ResourceError(500)
+        if not self.strategy.allowed_on(r['op'], item):
+            raise ResourceError(401)
         if not 'next' in r:
             if 'parents' in r:
                 r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))

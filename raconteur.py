@@ -8,10 +8,12 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash
+from flask.json import JSONEncoder, jsonify
 from datetime import datetime
 from auth import Auth
 from flask.ext.mongoengine import MongoEngine
+from mongoengine import Document, QuerySet
 from re import compile
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine.wtf import model_form
@@ -23,10 +25,13 @@ from config import LANGUAGES
 import os
 import logging
 
-try:
-  import simplejson as json
-except ImportError:
-  import json
+
+class MongoJSONEncoder(JSONEncoder):
+  def default(self, o):
+    print "In mongo json"
+    if isinstance(o, Document) or isinstance(o, QuerySet):
+      return o.to_json()
+    return JSONEncoder.default(self, o)
 
 the_app = None
 db = None
@@ -40,6 +45,7 @@ if the_app == None:
   the_app.config.from_pyfile('config.py') # db-settings and secrets, should not be shown in code
   the_app.config['DEBUG'] = is_debug
   the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
+  the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
 
