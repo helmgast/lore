@@ -36,6 +36,9 @@ the_app = None
 db = None
 auth = None
 
+# Private = Everything locked down, no access to database (due to maintenance)
+# Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
+# Public = Everyone is allowed to log in and create new accounts
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = 0, 1, 2
 app_state = STATE_PUBLIC
 
