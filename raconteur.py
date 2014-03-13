@@ -36,17 +36,20 @@ the_app = None
 db = None
 auth = None
 
+STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = 0, 1, 2
+app_state = STATE_PUBLIC
+
 if the_app is None:
 	from app import is_debug
 
-	the_app = Flask('raconteur') # Creates new flask instance
+	the_app = Flask('raconteur')  # Creates new flask instance
 	logger = logging.getLogger(__name__)
 	logger.info("App created: %s", the_app)
-	the_app.config.from_pyfile('config.py') # db-settings and secrets, should not be shown in code
+	the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
 	the_app.config['DEBUG'] = is_debug
 	the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
 	the_app.json_encoder = MongoJSONEncoder
-	db = MongoEngine(the_app) # Initiate the MongoEngine DB layer
+	db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
 	# we can't import models before db is created, as the model classes are built on runtime knowledge of db
 
 	from model.user import User
@@ -70,8 +73,16 @@ if the_app is None:
 	the_app.register_blueprint(campaign, url_prefix='/campaign')
 
 
-def allow_write():
-	return True
+def is_private():
+	return app_state == STATE_PRIVATE
+
+
+def is_protected():
+	return app_state == STATE_PROTECTED
+
+
+def is_public():
+	return app_state == STATE_PUBLIC
 
 
 def run_the_app(debug):
@@ -129,8 +140,10 @@ def homepage():
 
 
 @auth.admin_required
-@the_app.route('/admin/')
+@the_app.route('/admin/', methods=['GET', 'POST'])
 def admin():
+	if request.method == 'POST' and request.form['state']:
+		pass
 	return render_template('maintenance.html')
 
 
