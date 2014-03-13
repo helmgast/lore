@@ -12,7 +12,7 @@
 import inspect
 import logging
 
-from flask import request, render_template, flash, redirect, url_for, abort
+from flask import request, render_template, flash, redirect, url_for, abort, g
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
@@ -22,7 +22,7 @@ from wtforms import fields as f
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist
-
+from raconteur import is_allowed_access
 from model.world import EMBEDDED_TYPES, Article
 
 
@@ -183,9 +183,8 @@ class ResourceAccessStrategy:
 		return self.resource_name + '_' + suffix
 
 	def allowed(self, op, instance=None):
-		parent_allowed = self.parent.allowed(op, instance) if self.parent else True
 		# If instance exists, check allowed on that, otherwise check on model class
-		return parent_allowed
+		return is_allowed_access(g.user) and (self.parent.allowed(op, instance) if self.parent else True)
 
 	def allowed_any(self, op):
 		return self.allowed(op, None)
@@ -212,7 +211,7 @@ class ResourceError(Exception):
 		if status_code == 400 and r and 'form' in r:
 			message += ", invalid fields %s" % r['form'].errors.keys()
 		self.r = r
-		logger.warning(status_code+': '+message)
+		logger.warning("%d: %s", status_code, message)
 
 	def to_dict(self):
 		rv = dict()

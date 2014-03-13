@@ -42,6 +42,27 @@ auth = None
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = 0, 1, 2
 app_state = STATE_PUBLIC
 
+
+def is_private():
+	return app_state == STATE_PRIVATE
+
+
+def is_protected():
+	return app_state == STATE_PROTECTED
+
+
+def is_public():
+	return app_state == STATE_PUBLIC
+
+
+def is_allowed_access(user):
+	if is_private():
+		return False
+	elif is_protected():
+		return user.admin if user else False
+	else:
+		return True
+
 if the_app is None:
 	from app import is_debug
 
@@ -74,18 +95,6 @@ if the_app is None:
 	the_app.register_blueprint(generator, url_prefix='/generator')
 	the_app.register_blueprint(social, url_prefix='/social')
 	the_app.register_blueprint(campaign, url_prefix='/campaign')
-
-
-def is_private():
-	return app_state == STATE_PRIVATE
-
-
-def is_protected():
-	return app_state == STATE_PROTECTED
-
-
-def is_public():
-	return app_state == STATE_PUBLIC
 
 
 def run_the_app(debug):
