@@ -184,7 +184,9 @@ class ResourceAccessStrategy:
 
 	def allowed(self, op, instance=None):
 		# If instance exists, check allowed on that, otherwise check on model class
-		return is_allowed_access(g.user) and (self.parent.allowed(op, instance) if self.parent else True)
+		return is_allowed_access(g.user) \
+			and (g.user is not None or op in ["view", "list"]) \
+			and (self.parent.allowed(op, instance) if self.parent else True)
 
 	def allowed_any(self, op):
 		return self.allowed(op, None)
