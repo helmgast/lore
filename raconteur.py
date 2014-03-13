@@ -12,6 +12,7 @@ from flask import Flask, Markup, render_template, request, redirect, url_for, fl
 from flask.json import JSONEncoder, jsonify
 from datetime import datetime
 from auth import Auth
+# from admin import Admin
 from flask.ext.mongoengine import MongoEngine
 from mongoengine import Document, QuerySet
 from re import compile
@@ -37,7 +38,7 @@ the_app = None
 db = None
 auth = None
 
-if the_app == None:
+if the_app is None:
   from app import is_debug, is_deploy
   the_app = Flask('raconteur') # Creates new flask instance
   logger = logging.getLogger(__name__)
@@ -52,6 +53,7 @@ if the_app == None:
   from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
+#	admin = Admin(the_app, auth)
 
   Markdown(the_app)
   csrf = CsrfProtect(the_app)
@@ -67,6 +69,10 @@ if the_app == None:
   the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
+
+
+def allow_write():
+  return True
 
 def run_the_app(debug):
   logger = logging.getLogger(__name__)
@@ -121,6 +127,13 @@ if not is_debug:
 def homepage():
   return render_template('homepage.html')
 
+
+@auth.admin_required
+@the_app.route('/admin/')
+def admin():
+  return render_template('maintenance.html')
+
+
 JoinForm = model_form(User)
 
 # Page to sign up, takes both GET and POST so that it can save the form
@@ -130,7 +143,7 @@ def join():
     if request.method == 'POST' and request.form['username']:
         # Read username from the form that was posted in the POST request
         try:
-            user = User.objects().get(username=request.form['username'])
+            User.objects().get(username=request.form['username'])
             flash(_('That username is already taken'))
         except User.DoesNotExist:
             user = User(
