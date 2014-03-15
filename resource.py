@@ -186,6 +186,12 @@ class ResourceAccessStrategy:
     return self.allowed(op, instance)
 
 
+class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
+	def allowed(self, op, instance=None):
+		super(ResourceAccessStrategy, self).allowed(op, instance) \
+			and (g.user is not None and g.user.admin and op not in ["view", "list"])
+
+
 class ResourceError(Exception):
   logger = logging.getLogger(__name__)
 
