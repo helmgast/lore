@@ -1,6 +1,14 @@
 /* KULT THEME
 
 Generic classes for all world children
+KULER Theme:
+
+rgba(86, 102, 105, 1) - Content
+rgba(191, 226, 255, 1) - Text?
+rgba(10, 19, 26, 1) - BG
+rgba(18, 32, 49, 1) - Sidebar
+rgba(0, 1, 13, 1) - Something?
+
 */
 
 /* needs !important to overwrite other css classes */
@@ -8,13 +16,12 @@ body {
   background-color: rgba(10, 19, 26, 1) !important;
 }
 
-/* needs !important to overwrite other css classes */
-.content {
-  background-color: rgba(86, 102, 105, 1);
-}
-
 .worldSideBar {
   background-color: rgba(18, 32, 49, 1);
+}
+
+.content {
+  margin: 0 0 0 -15px;
 }
 
 .worldSideBar li a {
@@ -63,12 +70,25 @@ body {
 */
 
 /* World Article Title */
-.content .article_header h2 {
-
+.content .article_header {
+  background-color: rgba(86, 102, 105, 1) !important;
 }
 
 .content .article_header h2 small {
 
+}
+
+.article_text {
+  background-color: rgba(191, 226, 255, 1);
+  padding: 5px 0px;
+  margin: 5px 0 0 0;
+}
+
+.article_comment {
+  background-color: rgba(191, 226, 255, 1);
+  padding: 5px -15px 5px ;
+  margin: 5px 0 0 0;
+  border-left: 3px solid rgba(0, 1, 13, 1);
 }
 
 /*
