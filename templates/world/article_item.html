@@ -238,10 +238,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 {{super()}}
 
 <script>
-   $( function()
-    {
-        $( '.article_text a' ).imageLightbox();
-    });
 {% if article_form %}
   // Load required scripts. 
   head.js( 
@@ -310,6 +306,12 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         */
 
 			});
+{% else %}
+  // only load lightbox if we are viewing an article
+   $( function()
+    {
+        $( '.article_text a' ).imageLightbox();
+    });
 {% endif %}
 </script>
 {% endblock %}
