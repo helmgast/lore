@@ -46,13 +46,7 @@
 
 
 {% block sidebar %}
-{% if world.slug %}
-  <!--
-  Theme-template for every particular world
-  Todo: Add favicon support
-  -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/' + world.slug + '.css') }}">
-{% endif %}
+
 <div class="worldSideBar">
   <ul class="nav nav-list">
       <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
