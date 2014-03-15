@@ -4,6 +4,13 @@
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
 {% block world_active %} class="active"{% endblock %}
 
+{% block cssimports %}
+{{ super() }}
+
+{% include ['themes/' + world.slug + '-theme.html', 'themes/default.html'] ignore missing %}
+{% endblock %}
+
+
 {% block sidebar %}
 <ul class="nav nav-list">
   <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
