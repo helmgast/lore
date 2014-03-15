@@ -5,16 +5,16 @@ Generic classes for all world children
 
 /* needs !important to overwrite other css classes */
 body {
-
+  background-color: rgba(10, 19, 26, 1) !important;
 }
 
 /* needs !important to overwrite other css classes */
 .content {
-
+  background-color: rgba(86, 102, 105, 1);
 }
 
 .worldSideBar {
-
+  background-color: rgba(18, 32, 49, 1);
 }
 
 .worldSideBar li a {
