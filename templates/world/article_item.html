@@ -50,7 +50,7 @@
       <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
       <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
       <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
-    {%endif%}
+    {% endif %}
     </ul>
   </li>
   <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
@@ -151,18 +151,20 @@
   <li class="content-menu-info" title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
   <li class="content-menu-info" title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
   <li class="content-menu-info" title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
-  <li class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-      Actions <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-    {% if op!= 'new'%}
-      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
-    {%endif%}
-    </ul>
-  </li>
+  {% call IS_USER() %}
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+        Actions <span class="caret"></span>
+      </a>
+      <ul class="dropdown-menu">
+      {% if op!= 'new'%}
+        <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+        <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+        <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+      {% endif %}
+      </ul>
+    </li>
+  {% endcall %}
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
