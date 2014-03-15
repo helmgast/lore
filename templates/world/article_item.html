@@ -226,6 +226,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
       </div>
       <div class="modal-body">
         <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
           <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button> 
         </form>

@@ -309,8 +309,6 @@ class ResourceHandler(View):
       else:
         raise resErr # Send the error onward, will be picked up by debugger if in debug mode
 
-
-
     # render output
     if r['out'] == 'json':
       return self.return_json(r)
@@ -328,7 +326,7 @@ class ResourceHandler(View):
 
   def parse_url(self, **kwargs):
     r = {'url_args':kwargs}
-    op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1].lower())
+    op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1]).lower()
     if op in ['form_edit', 'form_new','list']:
       # TODO faster, more pythonic way of getting intersection of fieldnames and args
       vals = {}

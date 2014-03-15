@@ -48,7 +48,7 @@ class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
-    r['list'] = r['list'].filter(type='blog').order_by('-created_date')
+    r['list'] = r['list'].filter(type='blogpost').order_by('-created_date')
     r['articles'] = r['list']
     return r
 
