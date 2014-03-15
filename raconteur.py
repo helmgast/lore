@@ -23,13 +23,36 @@ from flask_wtf.csrf import CsrfProtect
 from flask.ext.babel import Babel
 from flask.ext.babel import lazy_gettext as _
 from mongoengine import Document, QuerySet
-
+from markdown.extensions import Extension
+from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
+from markdown.util import etree
 
 class MongoJSONEncoder(JSONEncoder):
 	def default(self, o):
 		if isinstance(o, Document) or isinstance(o, QuerySet):
 			return o.to_json()
 		return JSONEncoder.default(self, o)
+
+class NewImagePattern(ImagePattern):
+	def handleMatch(self, m):
+		el = super(NewImagePattern, self).handleMatch(m)
+		alt = el.get('alt')
+		src = el.get('src')
+		parts = alt.rsplit('|',1)
+		if len(parts)==2:
+			el.set('alt',parts[0])
+			el.set('class', parts[1])
+		el.set('src', src.replace('/images/','/images/thumbs/'))
+		a_el = etree.Element('a')
+		a_el.append(el)
+		a_el.set('href', src)
+		return a_el
+
+class AutolinkedImage(Extension):
+    def extendMarkdown(self, md, md_globals):
+    	print "AUTOLINKEDIMAGE"
+        # Insert instance of 'mypattern' before 'references' pattern
+        md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
 
 the_app = None
 db = None
@@ -80,7 +103,8 @@ if the_app is None:
 	auth = Auth(the_app, db, user_model=User)
 #	admin = Admin(the_app, auth)
 
-	Markdown(the_app)
+	md = Markdown(the_app)
+	md.register_extension(AutolinkedImage)
 	csrf = CsrfProtect(the_app)
 	babel = Babel(the_app)
 

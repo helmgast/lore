@@ -381,28 +381,62 @@ var editor = (function() {
 		return activeBlock;
 	}
 
-	function cleanHtml() {
-		var html = contentField.innerHTML;
-		/*
-		Modifications:
-		div -> 	p
-		b ->	strong
-		h1 -> 	h2
-		i ->	em
+	// var element_whitelist = {
+	// 	a: 	{
+	// 			sub: [img],
+	// 			attr: [href]
+	// 		},
+	// 	p:	{
+	// 			sub: [a, i, b]
+	// 		},
+	// 	blockquote: 	{
+	// 			sub: [i, b]
+	// 		},
+	// 	ul: 	{
+	// 			sub: [li]
+	// 		},
+	// 	ol: 	{
+	// 			sub: [li]
+	// 		},
+	// 	h2: {},
+	// 	h3: {},
+	// 	h4: {},
+	// 	img:	{
+	// 			attr: [class, alt, src]
+	// 		},
+	// 	div: {repl: p},
+	// 	em: {repl: i},
+	// 	strong: {repl: b}
+	// 	h1: {repl: h2}
+	// }
 
-		Kept tags:
-		p ->	p
-		blockquote -> blockquote
-		h2 -> 	h2
-		h3 ->	h3
-		h4 ->	h4
-		ul ->	ul
-		ol ->	ol
-		li ->	li
-		strong -> strong
-		em -> 	em
-		*/
+	// function cleanElement(el) {
+	// 	if (el.children) {
+	// 		var inner = ""
+	// 		for (i = 0; i < el.children.length; ++i) {
+ //    			inner += cleanElement(el.children[0])
+	// 		}
+	// 	} else {
+	// 		el_rules = element_whitelist[el.nodeName.toLowerCase()]
+	// 		if (el_rules) {
+	// 			if (el_rules.repl) {
+	// 				return '<'+el_rules.repl+'>'+el.innerHTML+'</'+el_rules.repl+'>'
+	// 			} else if 
+	// 		} else {
+	// 			return "" // remove
+	// 		}
+	// 	}
+	// }
+
+
+	function cleanHtml() {
+		// var par = contentField.parent
+		// var $c = $(contentField)
+		// $c.detach()
+
+		var html = contentField.innerHTML;
 		html = html.replace(/<(img.+?)>/gi,'%%%$1%%%')
+		html = html.replace(/<\/?(a.*?)>/gi,'%%%$1%%%')
 		html = html.replace(/<(\w+) [^>]*>/g,'<$1>'); // remove all attr
 		html = html.replace(/(<\/?)div>/gi,'$1p>'); // all divs to p		
 		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
@@ -427,7 +461,7 @@ var editor = (function() {
 	function exportText(type) {
 		var $t = $(contentField);
 		cleanHtml()
-		// $t.detach()
+		$t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
 		})
@@ -456,9 +490,13 @@ var editor = (function() {
 			})
 			this.innerHTML = this.innerHTML+'\n'
 		})
-		$t.find('img').each(function() {
-			// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
-			this.outerHTML = '!['+this.alt+(this.className ? '|'+this.className : '')+']('+this.src.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
+		$t.find('a').each(function() {
+			img = $(this).children('img').get(0)
+			if (img) {
+				// We save the image as
+				// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
+				this.outerHTML = '!['+img.alt+(img.className ? '|'+img.className : '')+']('+this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'				
+			}
 		});
 		var html = $t.html()
 		html = html.replace(/<blockquote>/g,'<blockquote>> ') // > can't be added into innerHTML without being encoded

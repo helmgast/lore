@@ -643,3 +643,9 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	max-height: 200px;
 	margin-bottom: 5px;
 }
+
+#imagelightbox
+{
+    position: fixed;
+    z-index: 9999;
+}

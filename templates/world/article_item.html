@@ -19,6 +19,7 @@
 
 {% block jsimports %}{{super()}}
 <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/imagelightbox.min.js') }}"></script>
 {% endblock %}
 
 {% block middle %}
@@ -235,8 +236,12 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 {% endif %}
 {{super()}}
 
-{% if article_form %}
 <script>
+   $( function()
+    {
+        $( '.article_text a' ).imageLightbox();
+    });
+{% if article_form %}
   // Load required scripts. 
   head.js( 
     "{{ url_for('static', filename='js/utils.js') }}",
@@ -246,6 +251,8 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
           editor.init();
         }
       );
+
+
 
 	$(document).ready(
 			function() {
@@ -302,6 +309,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         */
 
 			});
-</script>
 {% endif %}
+</script>
 {% endblock %}
