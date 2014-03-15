@@ -175,13 +175,11 @@ class ResourceAccessStrategy:
 
   # Checks if user is logged in and authorized
   def is_authorized(self, user, op, instance):
-    return (user is not None or op in ["view", "list"]) \
-        and (self.parent.is_authorized(user, op, instance) if self.parent else True)
+    return user is not None or op in ["view", "list"]
 
   # Checks if user has access rights
   def is_allowed(self, user, op, instance):
-    return is_allowed_access(user) \
-        and (self.parent.is_allowed(user, op, instance) if self.parent else True)
+    return is_allowed_access(user)
 
   def validate_operation(self, op, instance=None):
     if not self.is_authorized(g.user, op, instance):
