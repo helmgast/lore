@@ -187,9 +187,9 @@ class ResourceAccessStrategy:
 
 
 class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
-	def allowed(self, op, instance=None):
-		super(ResourceAccessStrategy, self).allowed(op, instance) \
-			and (g.user is not None and g.user.admin and op not in ["view", "list"])
+  def allowed(self, op, instance=None):
+    super(ResourceAccessStrategy, self).allowed(op, instance) \
+        and (g.user is not None and g.user.admin and op not in ["view", "list"])
 
 
 class ResourceError(Exception):
