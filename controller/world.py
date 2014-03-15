@@ -46,6 +46,7 @@ WorldHandler.register_urls(world_app, world_strategy)
 
 class ArticleHandler(ResourceHandler):
   def blog(self, r):
+    r['op'] = "list"
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
     r['list'] = r['list'].filter(type='blog').order_by('-created_date')
