@@ -16,9 +16,14 @@ import requests
 from StringIO import StringIO
 import re
 import logging
+import imghdr
 from flask.ext.babel import lazy_gettext as _
+import hashlib
+
 
 # Constants and enumerations
+
+logger = logging.getLogger(__name__)
 
 def list_to_choices(list):
     return [(s, _(s)) for s in list]
@@ -80,23 +85,36 @@ class ArticleRelation(db.EmbeddedDocument):
     def __unicode__(self):
         return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
+MIME_TYPE_CHOICES = (('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF'))
+IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
 class ImageData(db.EmbeddedDocument):
-    image = db.ImageField()
+    image = db.ImageField(thumbnail_size=(300,300,False))
     source_image_url = db.URLField()
     source_page_url = db.URLField()
     # TODO MongoEngine should allow a simple tuple for choices, not having to add JPEG, PNG and GIF fields
-    mime_type = db.StringField(choices=(('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF')), required=True)
+    mime_type = db.StringField(choices=MIME_TYPE_CHOICES, required=True)
+
 
     @classmethod
     def create_from_url(cls, image_url, source_url=None):
-        r = requests.get(image_url)
-        im = ImageData(source_image_url=image_url, source_page_url=source_url)
-        im.image.put(StringIO(r.content))
-        im.mime_type = 'image/'+im.image.format.lower()
-        # TODO very poor way of correctly determining mime type
+        file = StringIO(requests.get(image_url).content)
         # TODO use md5 to check if file already downloaded
-        logger = logging.getLogger(__name__)
+        im = cls.create_from_file(file, image_url, source_url)
         logger.info("Fetched %s image from %s to DB", im.image.format, image_url)
+        return im
+
+    @classmethod
+    def create_from_file(cls, file, image_url=None, source_url=None):
+        # block_size=256*128
+        # md5 = hashlib.md5()
+        # for chunk in iter(lambda: file.read(block_size), b''): 
+        #      md5.update(chunk)
+        # print md5.hexdigest()
+        
+        file.seek(0) # reset 
+        im = ImageData(source_image_url=image_url, source_page_url=source_url)
+        im.image.put(file)
+        im.mime_type = 'image/%s' % im.image.format.lower()
         return im
 
 class PersonData(db.EmbeddedDocument):
@@ -198,7 +216,15 @@ class Article(db.Document):
                 setattr(self, new_type_data, self._fields[new_type_data].document_type())
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
+        if self.type == 'image':
+            parts = self.title.rsplit('.',1)
+            self.slug = slugify(parts[0])
+            if len(parts)==1 or parts[1] not in IMAGE_FILE_ENDING.values():
+                self.slug = self.slug + '.' + IMAGE_FILE_ENDING[self.imagedata.mime_type]
+            else:
+                self.slug = self.slug + '.' + parts[1]
+        else:
+            self.slug = slugify(self.title)
         return super(Article, self).save(*args, **kwargs)
 
     @staticmethod

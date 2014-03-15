@@ -12,7 +12,7 @@ def altor_date(year, month, day):
 
 def setup_models():
     add_test_data()
-    
+
     
 def add_test_data():
 
@@ -82,7 +82,7 @@ def add_test_data():
     mf.save()
 
     # Article.drop_collection()
-
+    
     Article(type='image',
         title=u"Ljusbringaren bild",
         content=u"No content",
@@ -102,6 +102,7 @@ def add_test_data():
             gender=GENDER_MALE,
             occupation=u"Ljusbringare")
         ).save()
+
     Article(type='blogpost',
         title=u"Gift tills döden skiljer oss åt",
         world=mundana,

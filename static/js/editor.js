@@ -427,7 +427,7 @@ var editor = (function() {
 	function exportText(type) {
 		var $t = $(contentField);
 		cleanHtml()
-		$t.detach()
+		// $t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
 		})
@@ -458,7 +458,7 @@ var editor = (function() {
 		})
 		$t.find('img').each(function() {
 			// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
-			this.outerHTML = '!['+this.alt+']('+this.src.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
+			this.outerHTML = '!['+this.alt+(this.className ? '|'+this.className : '')+']('+this.src.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
 		});
 		var html = $t.html()
 		html = html.replace(/<blockquote>/g,'<blockquote>> ') // > can't be added into innerHTML without being encoded

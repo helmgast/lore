@@ -5,10 +5,10 @@
 {% block content_title %}{{ _('Insert image') }}{% endblock %}
 
 {% block content %}{% block inline %}
-<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('world.insert_image', world=world.slug)}}">
+<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('world.article_new', world=world.slug, out='json')}}">
   	<div class="image-preview hide">
-  		<div class="image-container"></div>
     	<button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
+  		<div class="image-container"></div>
   	</div>
   	<div class="form-group image-form">
 	    <p class="help-block">Drag or click to upload file</p>
@@ -22,11 +22,16 @@
 	  <input name="type" id="type" type="hidden" value="image"> {# TODO hardcoded for image #}
 	  {{ article_form.csrf_token }}
 	  {{ FORM_FIELD(article_form.description)}}
+	  	<select name="imgclass" id="imgclass">
+  			<option value="normal" selected>Normal</option>
+  			<option value="full">Full</option>
+  			<option value="thumb">Thumb</option>
+  			<option value="gallery">Gallery</option>
+		</select>
 	  <input name="world" id="world" type="hidden" value="{{world.id}}">
 	  {% if g.user.id %}
 	  	<input type="hidden" name="creator" value="{{g.user.id}}" />
 	  {% endif %}
-	  {{ FORM_FIELD(article_form.imagedata.mime_type)}}
 	</fieldset>
   
 </form>
@@ -63,7 +68,6 @@
 		if (files && files.length) {
 			var file = files[0]
 			$('.image-title').val(file.name)
-			$('#imagedata-mime_type').val(file.type)
 			reader = new FileReader()
 			reader.onload = (function(tfile) {
 				return function(e) {
@@ -94,9 +98,20 @@
 		var formData = new FormData($f.get(0))
 		var req = new XMLHttpRequest();
 		req.addEventListener("load", function() {
-			if (this.status==200 && this.responseText) {
-				$(editor.getActiveBlock()).before('<img alt="'+$('.image-title').val()+'" src="'+this.responseText+'" >')
+			var res = JSON.parse(this.responseText)
+			if (this.status==200 && res.next) {
+				var alt=$('.image-title').val(), imgclass=$('#imgclass').val(), src = res.next, href= res.next
+				if (imgclass=="thumb" || imgclass=="gallery") {
+					src = src.replace('/images/','/images/thumbs/')
+				} else if (imgclass=="normal") {
+					imgclass = ""
+				}
+				var imgstr = '<a href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
+				$(editor.getActiveBlock()).prepend(imgstr)
 				$modal.modal('hide')
+			} else {
+				$f.prepend('<div class="alert alert-warning alert-dismissable"><button type="button" class="close"'+ 
+					'data-dismiss="alert" aria-hidden="true">&times;</button>'+(res.message || 'unknown error')+'</div>')
 			}
 		}, false);
 		req.open('POST', $f.attr('action'))

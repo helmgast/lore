@@ -27,7 +27,6 @@ from mongoengine import Document, QuerySet
 
 class MongoJSONEncoder(JSONEncoder):
 	def default(self, o):
-		print "In mongo json"
 		if isinstance(o, Document) or isinstance(o, QuerySet):
 			return o.to_json()
 		return JSONEncoder.default(self, o)
@@ -107,7 +106,10 @@ def setup_models():
 	db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
 	from test_data import model_setup
 	model_setup.setup_models()
-
+	# This hack sets a unique index on the md5 of image files to prevent us from 
+	# uploading duplicate images
+	# db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
+ #        'md5', unique=True, background=True)
 
 def validate_model():
 	is_ok = True

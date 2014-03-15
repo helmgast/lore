@@ -580,6 +580,7 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 
 .image-preview {
 	text-align: center;
+	position: relative;
 }
 
 .image-preview .image-container {
@@ -589,8 +590,8 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 .image-preview .close {
 	float: none;
 	position: absolute;
-	top: 20px;
-	margin-left: -30px;
+	top: 0px;
+	right: 0px;
 	font-size: 40px;
 	color: white;
 	background-color: #000;
@@ -610,9 +611,35 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	max-height: 300px;
 }
 
-.content img {
+.article_text img {
 	display: block;
 	max-width: 100%;
 	height: auto;
 	max-height: 400px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.article_text .full {
+	display: block;
+	max-width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.article_text .thumb {
+	display: block;
+	float: right;
+	margin: 10px;
+}
+
+.article_text .gallery {
+	display: inline-block;
+	max-width: 200px;
+	max-height: 200px;
+	margin-bottom: 5px;
 }

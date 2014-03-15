@@ -21,7 +21,7 @@ from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
-from mongoengine.errors import DoesNotExist
+from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from raconteur import is_allowed_access
 from model.world import EMBEDDED_TYPES, Article
 
@@ -211,9 +211,9 @@ class ResourceError(Exception):
 		self.status_code = status_code
 		self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
 		if status_code == 400 and r and 'form' in r:
-			message += ", invalid fields %s" % r['form'].errors.keys()
+			self.message += ", invalid fields %s" % r['form'].errors.keys()
 		self.r = r
-		logger.warning("%d: %s", status_code, message)
+		logger.warning("%d: %s", self.status_code, self.message)
 
 	def to_dict(self):
 		rv = dict()
@@ -298,10 +298,27 @@ class ResourceHandler(View):
 			elif err.status_code == 404:
 				abort(404) # TODO, nicer 404 page?
 
+			elif r['out'] == 'json':
+				return self.return_json(r, err)
 			else:
-				raise
+				raise # Send the error onward, will be picked up by debugger if in debug mode
 		except DoesNotExist:
 			abort(404)
+		except ValidationError as err:
+			self.logger.exception("Validation error")
+			resErr = ResourceError(400, message=err.message)
+			if r['out'] == 'json':
+				return self.return_json(r, resErr)
+			else:
+				raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+		except NotUniqueError as err:
+			resErr = ResourceError(400, message=err.message)
+			if r['out'] == 'json':
+				return self.return_json(r, resErr)
+			else:
+				raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+
+
 
 		# render output
 		if r['out'] == 'json':
@@ -312,9 +329,9 @@ class ResourceHandler(View):
 			# if json, return json instead of render
 			return render_template(r['template'], **r)
 
-	def return_json(self, r, err=None):
+	def return_json(self, r, err=None, status_code=0):
 		if err:
-			return jsonify(err.to_dict()), err.status_code
+			return jsonify(err.to_dict()), status_code or err.status_code
 		else:
 			return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next']})
 

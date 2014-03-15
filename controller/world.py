@@ -19,7 +19,7 @@ from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
-
+from gridfs.errors import FileExists
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
 from raconteur import auth, db, csrf
 from itertools import groupby
@@ -53,6 +53,7 @@ class ArticleHandler(ResourceHandler):
     return r
 
   def form_new(self, r):
+    '''Override form_new to pick special template for image articles'''
     r = super(ArticleHandler, self).form_new(r)
     if 'prefill' in r and 'type' in r['prefill']:
       type = r['prefill']['type']
@@ -60,6 +61,32 @@ class ArticleHandler(ResourceHandler):
         r['template'] = 'world/image_new.html' # change to image template
     return r
 
+  def new(self, r):
+    '''Override new to deal with images differently'''
+    if request.form.has_key('type') and request.form['type'] == 'image':
+      print request.form
+      file = request.files['imagefile']
+      im = None
+      if file:
+        im = ImageData.create_from_file(file)
+      elif request.form.has_key('imagedata.source_image_url'):
+        im = ImageData.create_from_url(request.form['imagedata.source_image_url'])
+      else:
+        abort(403)
+
+      if im:
+        article = Article(type='image',
+          title=request.form['title'],
+          description=request.form.get('description', None),
+          world=r['parents']['world'],
+          creator=g.user,
+          imagedata=im).save()
+        r['item'] = article
+        if not 'next' in r:
+          r['next'] = url_for('world.image', slug=article.slug)
+        return r
+    else:
+      return super(ArticleHandler, self).new(r)
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)
@@ -74,40 +101,30 @@ def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
 
+    # This should be a lower memory way of doing this
+
+    # try:
+    #     file = FS.get(ObjectId(oid))
+    #     return Response(file, mimetype=file.content_type, direct_passthrough=True)
+    # except NoFile:
+    #     abort(404)
+
+    # or this
+    # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
+
 @world_app.route('/images/<slug>')
 def image(slug):
   imagedata= Article.objects(slug=slug).first_or_404().imagedata
   response = make_response(imagedata.image.read())
-  response.mimetype = imagedata.mime_type or 'image/jpeg'
+  response.mimetype = imagedata.mime_type
   return response
 
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-
-#@auth.login_required
-@world_app.route('/images/<world>/new', methods=['POST'])
-def insert_image(world):
-  print request.form
-  world = World.objects.get(slug=world)
-  if request.method == 'POST':
-    file = request.files['imagefile']
-    im = None
-    if file and file.filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS:
-      fname = secure_filename(file.filename)
-      print "got file %s" % fname
-      im = ImageData()
-      im.image.put(file)
-      im.mime_type = request.form['imagedata-mime_type']
-    elif request.form.has_key('imagedata.source_image_url'):
-      im = ImageData.create_from_url(request.form['imagedata.source_image_url'])
-    else:
-      abort(403)
-    if im:
-      article = Article(type='image',
-        title=request.form['title'],
-        world=world,
-        creator=g.user,
-        imagedata=im).save()
-      return url_for('world.image', slug=article.slug) # TODO HACKY WAY OF GETTING URL BACK TO MODAL
+@world_app.route('/images/thumbs/<slug>')
+def image_thumb(slug):
+  imagedata= Article.objects(slug=slug).first_or_404().imagedata
+  response = make_response(imagedata.image.thumbnail.read())
+  response.mimetype = imagedata.mime_type
+  return response 
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0
