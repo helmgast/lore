@@ -2,7 +2,14 @@
 
 Generic classes for all world children
 */
+
+/* needs !important to overwrite other css classes */
 body {
+
+}
+
+/* needs !important to overwrite other css classes */
+.content {
 
 }
 

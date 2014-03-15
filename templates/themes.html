@@ -1,0 +1,11 @@
+<link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
+
+{% if world %}
+  {% if world.slug %}
+    <!--
+    Theme-template for every particular world
+    Todo: Add favicon support
+    -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/' + world.slug + '.css') }}">
+  {% endif %}
+{% endif %}
