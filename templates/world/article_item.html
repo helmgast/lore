@@ -133,7 +133,7 @@
       <div class="tooltip-arrow"></div>
     </div> #}
    </div>
-  <div class="col-md-3">
+  <div class="col-md-3 article_comment">
     Example comment
   </div>
 </div>
@@ -193,7 +193,7 @@
   <div class="col-md-9 article_text">
     {{ article.content|markdown if article.content else _("Content")}}
   </div>
-  <div class="col-md-3">
+  <div class="col-md-3 article_comment">
     Example comment
   </div>
 </div>
@@ -229,7 +229,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
       <div class="modal-body">
         <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
           <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button> 
+          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button>
         </form>
       </div>
     </div>
@@ -244,11 +244,11 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         $( '.article_text a' ).imageLightbox();
     });
 {% if article_form %}
-  // Load required scripts. 
-  head.js( 
+  // Load required scripts.
+  head.js(
     "{{ url_for('static', filename='js/utils.js') }}",
     "{{ url_for('static', filename='js/editor.js') }}",
-        function(){          
+        function(){
           // Initiate ZenPen
           editor.init();
         }
@@ -274,7 +274,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
             }, 100);})
           .focus();
 
-        /*        
+        /*
         var latlng = [parseFloat($('#placedata-coordinate_x').val()), parseFloat($('#placedata-coordinate_y').val())]
 
         var map = L.map('map', {
