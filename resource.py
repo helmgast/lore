@@ -175,16 +175,21 @@ class ResourceAccessStrategy:
 
   # Checks if user is logged in and authorized
   def is_authorized(self, user, op, instance):
-    return user is not None or op in ["view", "list"]
+    authorized = user is not None or op in ["view", "list"]
+    if not authorized:
+      logger.info("Anonymous user not authorized to do '%s'", op)
+    return authorized
 
   # Checks if user has access rights
   def is_allowed(self, user, op, instance):
-    return is_allowed_access(user)
+    return True
 
   def validate_operation(self, op, instance=None):
+    if not is_allowed_access(g.user):
+      raise ResourceError(403)
     if not self.is_authorized(g.user, op, instance):
       raise ResourceError(401)
-    if not self.is_allowed(g.user, op, instance):
+    if g.user and not self.is_allowed(g.user, op, instance):
       raise ResourceError(403)
 
   def check_operation_any(self, op):
@@ -198,8 +203,12 @@ class ResourceAccessStrategy:
 
 class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
   def is_allowed(self, user, op, instance):
-    return super(AdminWriteResourceAccessStrategy, self).is_allowed(user, op, instance) \
-        and (user is not None and user.admin and op not in ["view", "list"])
+    return user.admin and op not in ["view", "list"]
+
+
+class MyUserResourceAccessStrategy(ResourceAccessStrategy):
+  def is_allowed(self, user, op, instance):
+    return user.admin or user == instance
 
 
 class ResourceError(Exception):
