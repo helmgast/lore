@@ -110,9 +110,9 @@
         imgstr = '<a href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
         if (imgclass=="gallery") {
           var $gallery
-          $gallery = $activeBlock.is('ul.gallery')
-          $gallery = $gallery.length==0 || $activeBlock.prev('ul.gallery')
-          $gallery = $gallery.length==0 || $('<ul class="gallery"></ul>').insertBefore($activeBlock)
+          $gallery = $activeBlock.filter('ul.gallerylist')
+          $gallery = $gallery.length==0 ? $activeBlock.prev('ul.gallerylist') : $gallery 
+          $gallery = $gallery.length==0 ? $('<ul class="gallerylist"></ul>').insertBefore($activeBlock) : $gallery 
           $gallery.append('<li>'+imgstr+'</li>')
         } else {
           $activeBlock.prepend(imgstr)
