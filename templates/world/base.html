@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% from 'includes/components.html' import FORM_FIELD, IS_USER, IS_ADMIN %}
+
 {% block content_title %}{{ _('World') }}{% endblock %}
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
 {% block world_active %} class="active"{% endblock %}
