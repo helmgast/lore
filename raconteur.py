@@ -50,7 +50,6 @@ class NewImagePattern(ImagePattern):
 
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
-    	print "AUTOLINKEDIMAGE"
         # Insert instance of 'mypattern' before 'references' pattern
         md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
 

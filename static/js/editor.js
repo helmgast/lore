@@ -482,6 +482,9 @@ var editor = (function() {
 			$(this).children('li').each(function(){
 				this.innerHTML = '- '+this.innerHTML + '\n'
 			})
+			if ($(this).find('img.gallery').length > 0) {
+				this.innerHTML = this.innerHTML + '{: .gallerylist }'
+			}
 			this.innerHTML = this.innerHTML+'\n'
 		})
 		$t.find('ol').each(function () {

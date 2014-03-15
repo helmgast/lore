@@ -642,11 +642,29 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	margin: 10px;
 }
 
-.article_text .gallery {
+.article_text .gallerylist {
+	list-style: none;
+	display: flex;
+	display: -webkit-flex;
+	flex-wrap: wrap;
+	padding-left: 0px;
+}
+
+.article_text .gallerylist li {
 	display: inline-block;
+}
+
+.article_text .gallerylist p {
+	display: inline-block;
+	margin-bottom: 0px;
+}
+
+.article_text .gallerylist .gallery {
 	max-width: 200px;
 	max-height: 200px;
 	margin-bottom: 5px;
+	margin-top: 0px;
+	margin-right: 5px;
 }
 
 #imagelightbox
