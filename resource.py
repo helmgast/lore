@@ -173,17 +173,33 @@ class ResourceAccessStrategy:
   def endpoint_name(self, suffix):
     return self.resource_name + '_' + suffix
 
-  def allowed(self, op, instance=None):
-    # If instance exists, check allowed on that, otherwise check on model class
-    return is_allowed_access(g.user) \
-      and (g.user is not None or op in ["view", "list"]) \
-      and (self.parent.allowed(op, instance) if self.parent else True)
+  # Checks if user is logged in and authorized
+  def is_authorized(self, user, op, instance):
+    return user is not None or op in ["view", "list"]
 
-  def allowed_any(self, op):
-    return self.allowed(op, None)
+  # Checks if user has access rights
+  def is_allowed(self, user, op, instance):
+    return is_allowed_access(user)
 
-  def allowed_on(self, op, instance):
-    return self.allowed(op, instance)
+  def validate_operation(self, op, instance=None):
+    if not self.is_authorized(g.user, op, instance):
+      raise ResourceError(401)
+    if not self.is_allowed(g.user, op, instance):
+      raise ResourceError(403)
+
+  def check_operation_any(self, op):
+    self.validate_operation(op, None)
+
+  def check_operation_on(self, op, instance):
+    if not instance:
+      raise ResourceError(500)
+    self.validate_operation(op, instance)
+
+
+class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
+  def is_allowed(self, user, op, instance):
+    return super(AdminWriteResourceAccessStrategy, self).is_allowed(user, op, instance) \
+        and (user is not None and user.admin and op not in ["view", "list"])
 
 
 class ResourceError(Exception):
@@ -352,17 +368,13 @@ class ResourceHandler(View):
 
   def view(self, r):
     item = r['item']
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     r['template'] = self.strategy.item_template()
     return r
 
   def form_edit(self, r):
     item = r['item']
-    if not item:
-      raise ResourceError(500)
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(obj=item, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
@@ -371,8 +383,7 @@ class ResourceHandler(View):
     return r
 
   def form_new(self, r):
-    if not self.strategy.allowed_any(r['op']):
-      raise ResourceError(401)
+    self.strategy.check_operation_any(r['op'])
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
@@ -381,16 +392,14 @@ class ResourceHandler(View):
     return r
 
   def list(self, r):
-    if not self.strategy.allowed_any(r['op']):
-      raise ResourceError(401)
+    self.strategy.check_operation_any(r['op'])
     r['list'] = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
     r['template'] = self.strategy.list_template()
     r[self.strategy.plural_name] = r['list']
     return r
 
   def new(self, r):
-    if not self.strategy.allowed_any(r['op']):
-      raise ResourceError(401)
+    self.strategy.check_operation_any(r['op'])
     form = self.form_class(request.form, obj=None)
     if not form.validate():
       r['form'] = form
@@ -406,10 +415,7 @@ class ResourceHandler(View):
   # TODO implement proper patch, currently just copy of PUT
   def edit(self, r):
     item = r['item']
-    if not item:
-      raise ResourceError(500)
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
     if not form.validate():
       r['form'] = form
@@ -424,10 +430,7 @@ class ResourceHandler(View):
 
   def replace(self, r):
     item = r['item']
-    if not item:
-      raise ResourceError(500)
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
     # self.print_form_inputs(request.form, form.data, item)
     if not form.validate():
@@ -442,17 +445,13 @@ class ResourceHandler(View):
 
   def delete(self, r):
     item = r['item']
-    if not item:
-      raise ResourceError(500)
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     if not 'next' in r:
       if 'parents' in r:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
       else:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
-    if not self.strategy.allowed_on(r['op'], item):
-      raise ResourceError(401)
+    self.strategy.check_operation_on(r['op'], item)
     self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r

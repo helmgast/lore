@@ -14,6 +14,8 @@
 
     <meta name="viewport" content="width=device-width; initial-scale=1">
 
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
+
 
 {% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -47,6 +49,8 @@
 {% endblock jsimports %}
 
 </head>
+
+{% from 'includes/components.html' import FORM_FIELD, IS_USER, IS_ADMIN %}
 
 <body class="{% block body_class %}admin{% endblock %}">
 
