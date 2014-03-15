@@ -1,8 +1,13 @@
+html {
+  height: 100%;
+}
+
 html,body {
 	background-color: #fff;
 }
 
 body {
+  min-height: 100%;
 	padding-top: 60px;
 }
 
@@ -342,9 +347,9 @@ a .icon-ok {
 {
 border-right-color
 :
- 
+
 #f2dede
- 
+
 !
 important
 ;
@@ -452,7 +457,7 @@ important
 }
 
 .world_item h3 {
-  margin: 0px; 
+  margin: 0px;
 }
 
 .nav-header {
@@ -529,11 +534,11 @@ important
 }
 
 .popover-content .close {
-  margin-top: -15px; 
+  margin-top: -15px;
 }
 
 .popover-content .alert-message {
-  margin-bottom: 0; 
+  margin-bottom: 0;
 }
 
 .wysiwyg-control {
