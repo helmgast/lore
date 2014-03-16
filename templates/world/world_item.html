@@ -21,18 +21,22 @@
                     <li><a href="{{ url_for('homepage') }}"><span class="glyphicon glyphicon-home"></span></a></li>
                     <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span></a></li>
                     <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> </a></li>
-                    <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
+                    {% call IS_ENABLED("tools") %}
+                      <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
+                    {% endcall %}
                     <li class="active"><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
                     <li class="worldheader"><a class="navbar-brand" href="{{ url_for('world.world_view', world=world.slug) }}"> {{world.title}}</a></li>
               </a>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
-                        <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+                      <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+                      {% call IS_ENABLED("join") %}
                         <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
+                      {% endcall %}
                     {% else %}
-                        <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-                        <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
+                      <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
+                      <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
                     {% endif %}
                 </ul>
             </div>

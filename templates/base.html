@@ -78,11 +78,13 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if not session.logged_in %}
-                        <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
-                        <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
+                      <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+                      {% call IS_ENABLED("join") %}
+                         <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
+                      {% endcall %}
                     {% else %}
-                        <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-                        <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
+                      <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
+                      <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
                     {% endif %}
                 </ul>
             </div>

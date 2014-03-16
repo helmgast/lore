@@ -65,7 +65,7 @@ app_state = STATE_PUBLIC
 
 app_features = {
   "tools": False,
-  "join": True
+  "join": False
 }
 
 
