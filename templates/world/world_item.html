@@ -8,39 +8,39 @@
 
 {% block navbar %}
 <div class="navbar navbar-default navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-            </div>
-            <div class="collapse navbar-collapse">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('homepage') }}"><span class="glyphicon glyphicon-home"></span></a></li>
-                    <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span></a></li>
-                    <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> </a></li>
-                    {% call IS_ENABLED("tools") %}
-                      <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
-                    {% endcall %}
-                    <li class="active"><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
-                    <li class="worldheader"><a class="navbar-brand" href="{{ url_for('world.world_view', world=world.slug) }}"> {{world.title}}</a></li>
-              </a>
-                </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    {% if not session.logged_in %}
-                      <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
-                      {% call IS_ENABLED("join") %}
-                        <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
-                      {% endcall %}
-                    {% else %}
-                      <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-                      <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="collapse navbar-collapse">
+      <ul class="nav navbar-nav">
+        <li><a href="{{ url_for('homepage') }}"><span class="glyphicon glyphicon-home"></span></a></li>
+        <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span></a></li>
+        <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> </a></li>
+        {% call IS_ENABLED("tools") %}
+          <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span></a></li>
+        {% endcall %}
+        <li class="active"><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
+        <li class="worldheader"><a class="navbar-brand" href="{{ url_for('world.world_view', world=world.slug) }}"> {{world.title}}</a></li>
+      </a>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if not session.logged_in %}
+          <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+          {% call IS_ENABLED("join") %}
+            <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
+          {% endcall %}
+        {% else %}
+          <li><a href="{{ url_for('social.user_view', user=g.user) }}"><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
+          <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
 </div>
 {% endblock %}
 
@@ -48,49 +48,49 @@
 
 <div class="worldSideBar">
   <ul class="nav nav-list">
-      <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
-      <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-      <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-      {% call IS_USER() %}
-        <li class="dropdown">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}<span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
-                <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
-            </ul>
-        </li>
-      {% endcall %}
+    <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+    <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+    <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+    {% call IS_USER() %}
+      <li class="dropdown">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}<span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
+        </ul>
+      </li>
+    {% endcall %}
 </ul>
 </div>
 {% endblock %}
 
 {% block content %}
 
-    <div class="row">
-        <div class="col-md-6">
-            <p class="well worldDesc">{{ world.description }}</p>
-        </div>
-        <div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}
-        </div>
+  <div class="row">
+    <div class="col-md-6">
+      <p class="well worldDesc">{{ world.description }}</p>
     </div>
-    <div class="row worldArticles">
-    {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
-    <ul>
-        {% for article in world.articles() %}
+    <div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}
+    </div>
+  </div>
+  <div class="row worldArticles">
+  {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
+  <ul>
+    {% for article in world.articles() %}
 
-        <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>  <span>[{{ article.type }}]</span></li>
-        {% endfor %}
-    </ul>
-    {#{% include "includes/pagination.html" %}
-    {% endif %}#}
-    </div>
+    <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>  <span>[{{ article.type }}]</span></li>
+    {% endfor %}
+  </ul>
+  {#{% include "includes/pagination.html" %}
+  {% endif %}#}
+  </div>
 {% endblock %}
 
 {% block in_table %}
