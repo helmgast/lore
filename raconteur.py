@@ -10,7 +10,7 @@
 
 import logging
 from re import compile
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g
 from auth import Auth
 # from admin import Admin
 
@@ -63,6 +63,11 @@ auth = None
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = 0, 1, 2
 app_state = STATE_PUBLIC
 
+app_features = {
+  "tools": False,
+  "join": True
+}
+
 
 def is_private():
   return app_state == STATE_PRIVATE
@@ -114,10 +119,18 @@ if the_app is None:
   from resource import ResourceError
 
   the_app.register_blueprint(world, url_prefix='/world')
-  the_app.register_blueprint(generator, url_prefix='/generator')
+  if app_features["tools"]:
+    the_app.register_blueprint(generator, url_prefix='/generator')
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
 
+JoinForm = model_form(User)
+wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
+
+
+@the_app.before_request
+def load_user():
+  g.feature = app_features
 
 def run_the_app(debug):
   logger.info("Running local instance")
@@ -133,6 +146,7 @@ def setup_models():
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
+
 
 def validate_model():
   is_ok = True
@@ -184,30 +198,28 @@ def admin():
   return render_template('maintenance.html')
 
 
-JoinForm = model_form(User)
-
-
 # Page to sign up, takes both GET and POST so that it can save the form
 @the_app.route('/join/', methods=['GET', 'POST'])
 def join():
+  if not app_features["join"]:
+    raise ResourceError(403)
+  if request.method == 'POST' and request.form['username']:
+    # Read username from the form that was posted in the POST request
+    try:
+      User.objects().get(username=request.form['username'])
+      flash(_('That username is already taken'))
+    except User.DoesNotExist:
+      user = User(
+          username=request.form['username'],
+          email=request.form['email'],
+      )
+      user.set_password(request.form['password'])
+      user.save()
 
-    if request.method == 'POST' and request.form['username']:
-        # Read username from the form that was posted in the POST request
-        try:
-            User.objects().get(username=request.form['username'])
-            flash(_('That username is already taken'))
-        except User.DoesNotExist:
-            user = User(
-                username=request.form['username'],
-                email=request.form['email'],
-            )
-            user.set_password(request.form['password'])
-            user.save()
-
-            auth.login_user(user)
-            return redirect(url_for('homepage'))
-    join_form = JoinForm()
-    return render_template('join.html', join_form=join_form)
+      auth.login_user(user)
+      return redirect(url_for('homepage'))
+  join_form = JoinForm()
+  return render_template('join.html', join_form=join_form)
 
 
 ###
@@ -216,8 +228,6 @@ def join():
 @the_app.template_filter('is_following')
 def is_following(from_user, to_user):
     return from_user.is_following(to_user)
-
-wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 
 @the_app.template_filter('wikify')

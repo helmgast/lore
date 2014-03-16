@@ -27,8 +27,14 @@
     {% endif %}
 {%- endmacro -%}
 
- {%- macro IS_ADMIN() -%}
+{%- macro IS_ADMIN() -%}
     {% if g.user and g.user.admin %}
+         {{ caller() }}
+    {% endif %}
+{%- endmacro -%}
+
+ {%- macro IS_ENABLED(feature) -%}
+    {% if g.feature and g.feature[feature] %}
          {{ caller() }}
     {% endif %}
 {%- endmacro -%}

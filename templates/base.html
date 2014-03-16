@@ -50,7 +50,7 @@
 
 </head>
 
-{% from 'includes/components.html' import FORM_FIELD, IS_USER, IS_ADMIN %}
+{% from 'includes/components.html' import FORM_FIELD, IS_USER, IS_ADMIN, IS_ENABLED %}
 
 <body class="{% block body_class %}admin{% endblock %}">
 
@@ -71,7 +71,9 @@
                 <ul class="nav navbar-nav">
                     <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
                     <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
+                    {% call IS_ENABLED("tools") %}
                     <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
+                    {% endcall %}
                     <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
