@@ -83,7 +83,7 @@ var editor = (function() {
 
 		contentField.onpaste = function(e) {
           	setTimeout(function() {
-				cleanHtml()
+				jqueryClean()
           	}, 10);
         };
 	}
@@ -381,53 +381,18 @@ var editor = (function() {
 		return activeBlock;
 	}
 
-	// var element_whitelist = {
-	// 	a: 	{
-	// 			sub: [img],
-	// 			attr: [href]
-	// 		},
-	// 	p:	{
-	// 			sub: [a, i, b]
-	// 		},
-	// 	blockquote: 	{
-	// 			sub: [i, b]
-	// 		},
-	// 	ul: 	{
-	// 			sub: [li]
-	// 		},
-	// 	ol: 	{
-	// 			sub: [li]
-	// 		},
-	// 	h2: {},
-	// 	h3: {},
-	// 	h4: {},
-	// 	img:	{
-	// 			attr: [class, alt, src]
-	// 		},
-	// 	div: {repl: p},
-	// 	em: {repl: i},
-	// 	strong: {repl: b}
-	// 	h1: {repl: h2}
-	// }
-
-	// function cleanElement(el) {
-	// 	if (el.children) {
-	// 		var inner = ""
-	// 		for (i = 0; i < el.children.length; ++i) {
- //    			inner += cleanElement(el.children[0])
-	// 		}
-	// 	} else {
-	// 		el_rules = element_whitelist[el.nodeName.toLowerCase()]
-	// 		if (el_rules) {
-	// 			if (el_rules.repl) {
-	// 				return '<'+el_rules.repl+'>'+el.innerHTML+'</'+el_rules.repl+'>'
-	// 			} else if 
-	// 		} else {
-	// 			return "" // remove
-	// 		}
-	// 	}
-	// }
-
+	function jqueryClean() {
+		// Attempt at making new HTML cleaner that uses jQuery
+		$c = $(contentField)
+		$c.find('div').replaceWith('p')
+		$c.find('em').replaceWith('i')
+		$c.find('strong').replaceWith('b')
+		$c.find('h1').replaceWith('h2')			
+		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() {
+			return this.innerHTML
+		})
+		$c.find('*').removeAttr('style id')
+	}
 
 	function cleanHtml() {
 		// var par = contentField.parent
@@ -442,8 +407,9 @@ var editor = (function() {
 		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
 		html = html.replace(/(<\/?)strong>/gi,'$1b>'); // all b to strong
 		html = html.replace(/(<\/?)em>/gi,'$1i>'); // all i to em
-		html = html.replace(/(&nbsp;)+/g,' '); // make spaces
+		html = html.replace(/(&nbsp;)+/gi,' '); // make spaces
 		html = html.replace(/<(\/?(p|h2|h3|h4|blockquote|ul|ol|li|i|b))>/gi,'%%%$1%%%'); // rename safe tags
+		html = html.replace(/>\s+</gi,'><'); // remove only spaces	between tags	
 		html = html.replace(/<\/?.+?>/g,''); // remove all remaining tags
 		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
 		// html = html.replace(/>(.+?)%%%/gi,'<$1>'); // TODO needed?
@@ -463,7 +429,7 @@ var editor = (function() {
 		cleanHtml()
 		$t.detach()
 		$t.find('p').each(function () {
-			this.innerHTML = this.innerHTML+'\n\n'
+			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallerylist' ? '{: .gallerylist }\n' : '\n')
 		})
 		$t.find('blockquote').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
@@ -494,11 +460,11 @@ var editor = (function() {
 			this.innerHTML = this.innerHTML+'\n'
 		})
 		$t.find('a').each(function() {
-			img = $(this).children('img').get(0)
+			var $this = $(this), img = $this.children('img').get(0)
 			if (img) {
-				// We save the image as
 				// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
-				this.outerHTML = '!['+img.alt+(img.className ? '|'+img.className : '')+']('+this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'				
+				this.outerHTML = '!['+img.alt+(img.className ? '|'+img.className : '')+']('+
+					this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
 			}
 		});
 		var html = $t.html()

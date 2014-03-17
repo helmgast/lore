@@ -107,7 +107,7 @@ if the_app is None:
   auth = Auth(the_app, db, user_model=User)
 #  admin = Admin(the_app, auth)
 
-  md = Markdown(the_app)
+  md = Markdown(the_app, extensions=['attr_list'])
   md.register_extension(AutolinkedImage)
   csrf = CsrfProtect(the_app)
   babel = Babel(the_app)

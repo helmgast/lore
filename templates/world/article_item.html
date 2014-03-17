@@ -8,6 +8,10 @@
   {% set tagline = article.type %} {% set title = article.title %}
 {% endif %}
 
+{% if request.args.has_key('markdown') %}
+ {% set markdown=true %}
+{% endif %}
+
 {% block cssimports %}
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
@@ -103,8 +107,12 @@
 </div>
 <div class="row">
   <div class="col-md-9 article_text">
-    {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide', 'data-editable':'textarea', 'data-target':'#editor'}) }}
-    <div id="content-editor" class="content" contenteditable="true"><p class="hide" contenteditable="false"></p>{{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}</div>
+    {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide' if not markdown else '' }) }}
+    {% if not markdown %}
+    <div id="content-editor" class="content{{' '}}" contenteditable="true"><p class="hide" contenteditable="false"></p>
+    {{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
+    </div>
+    {% endif %}
     <span id="hinter"></span>
     <div class="bubble-bar" id="text-options">
       <div class="options">
@@ -125,13 +133,6 @@
       </div>
     </div>
 
-{#    <div class="btn-toolbar fade" id="editor-toolbar" data-role="editor-toolbar" data-target="#editor">
-      <div class="btn-group">
-      <a class="btn btn-primary" data-edit="bold" title="" data-original-title="Bold (Ctrl/Cmd+B)"><span class="glyphicon glyphicon-bold"></span></a>
-      <a class="btn btn-primary" data-edit="italic" title="" data-original-title="Italic (Ctrl/Cmd+I)"><span class="glyphicon glyphicon-italic"></span></a>
-      </div>
-      <div class="tooltip-arrow"></div>
-    </div> #}
    </div>
   <div class="col-md-3 article_comment">
     Example comment
