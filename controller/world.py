@@ -14,7 +14,7 @@
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
-  EventData, ImageData, FractionData)
+  EventData, FractionData)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -53,15 +53,6 @@ class ArticleHandler(ResourceHandler):
     r['articles'] = r['list']
     return r
 
-  def form_new(self, r):
-    '''Override form_new to pick special template for image articles'''
-    r = super(ArticleHandler, self).form_new(r)
-    if 'prefill' in r and 'type' in r['prefill']:
-      type = r['prefill']['type']
-      if type=='image':
-        r['template'] = 'world/image_new.html' # change to image template
-    return r
-
   def new(self, r):
     '''Override new to deal with images differently'''
     if request.form.has_key('type') and request.form['type'] == 'image':
@@ -97,35 +88,11 @@ article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations',
 
 ResourceHandler.register_urls(world_app, article_relation_strategy)
 
+
 @world_app.route('/')
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
-
-    # This should be a lower memory way of doing this
-
-    # try:
-    #     file = FS.get(ObjectId(oid))
-    #     return Response(file, mimetype=file.content_type, direct_passthrough=True)
-    # except NoFile:
-    #     abort(404)
-
-    # or this
-    # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
-
-@world_app.route('/images/<slug>')
-def image(slug):
-  imagedata= Article.objects(slug=slug).first_or_404().imagedata
-  response = make_response(imagedata.image.read())
-  response.mimetype = imagedata.mime_type
-  return response
-
-@world_app.route('/images/thumbs/<slug>')
-def image_thumb(slug):
-  imagedata= Article.objects(slug=slug).first_or_404().imagedata
-  response = make_response(imagedata.image.thumbnail.read())
-  response.mimetype = imagedata.mime_type
-  return response 
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0

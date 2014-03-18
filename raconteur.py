@@ -10,7 +10,7 @@
 
 import logging
 from re import compile
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response
 from auth import Auth
 # from admin import Admin
 
@@ -49,9 +49,9 @@ class NewImagePattern(ImagePattern):
     return a_el
 
 class AutolinkedImage(Extension):
-    def extendMarkdown(self, md, md_globals):
-        # Insert instance of 'mypattern' before 'references' pattern
-        md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+  def extendMarkdown(self, md, md_globals):
+    # Insert instance of 'mypattern' before 'references' pattern
+    md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
 
 the_app = None
 db = None
@@ -116,7 +116,9 @@ if the_app is None:
   from controller.social import social
   from controller.generator import generator
   from controller.campaign import campaign_app as campaign
-  from resource import ResourceError
+  from resource import ResourceError, ResourceHandler, ResourceAccessStrategy
+  from model.world import ImageAsset
+
 
   the_app.register_blueprint(world, url_prefix='/world')
   if app_features["tools"]:
@@ -177,9 +179,9 @@ def run_tests():
 if not is_debug:
   @the_app.errorhandler(ResourceError)
   def handle_invalid_usage(error):
-      response = jsonify(error.to_dict())
-      print request.args
-      return response
+    response = jsonify(error.to_dict())
+    print request.args
+    return response
 
 
 ###
@@ -221,36 +223,79 @@ def join():
   join_form = JoinForm()
   return render_template('join.html', join_form=join_form)
 
+# This should be a lower memory way of doing this
+# try:
+#     file = FS.get(ObjectId(oid))
+#     return Response(file, mimetype=file.content_type, direct_passthrough=True)
+# except NoFile:
+#     abort(404)
+# or this
+# https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
+@the_app.route('/asset/<id>')
+def asset(id):
+  asset = ImageAsset.objects(id=id).first_or_404()
+  response = make_response(asset.image.read())
+  response.mimetype = asset.mime_type
+  return response
+
+@the_app.route('/asset/thumbs/<id>')
+def asset_thumb(id):
+  asset = ImageAsset.objects(id=id).first_or_404()
+  response = make_response(asset.image.thumbnail.read())
+  response.mimetype = asset.mime_type
+  return response
+
+imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', 'id')
+class ImageAssetHandler(ResourceHandler):
+  def new(self, r):
+    '''Override new to deal with images differently'''
+    file = request.files['imagefile']
+    im = ImageAsset(creator=g.user, title=request.form.get('title','none'))
+    if file:
+      im.make_from_file(file)
+    elif request.form.has_key('source_image_url'):
+      im.make_from_url(request.form['source_image_url'])
+    else:
+      abort(403)
+    im.save()
+    r['item'] = im
+    if not 'next' in r:
+      r['next'] = url_for('asset', id=im.id)
+    return r
+
+ImageAssetHandler.register_urls(the_app, imageasset_strategy)
+
+
 
 ###
 ### Template filters
 ###
 @the_app.template_filter('is_following')
 def is_following(from_user, to_user):
-    return from_user.is_following(to_user)
+  return from_user.is_following(to_user)
 
 
 @the_app.template_filter('wikify')
 def wikify(s):
-    if s:
-      return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
-    else:
-      return ""
+  if s:
+    return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
+  else:
+    return ""
 
 
 @the_app.template_filter('dictreplace')
 def dictreplace(s, d):
-    if d and len(d) > 0:
-        parts = s.split("__")
-        # Looking for variables __key__ in s.
-        # Splitting on __ makes every 2nd part a key, starting with index 1 (not 0)
-        for i in range(1, len(parts), 2):
-            parts[i] = d[parts[i]]  # Replace with dict content
-        return ''.join(parts)
-    return s
+  if d and len(d) > 0:
+    parts = s.split("__")
+    # Looking for variables __key__ in s.
+    # Splitting on __ makes every 2nd part a key, starting with index 1 (not 0)
+    for i in range(1, len(parts), 2):
+      parts[i] = d[parts[i]]  # Replace with dict content
+    return ''.join(parts)
+  return s
 
 
 # i18n
 @babel.localeselector
 def get_locale():
-    return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+  return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.

@@ -57,7 +57,7 @@ class World(db.Document):
   # startyear = 0
   # daysperyear = 360
   # datestring = "day %i in the year of %i"
-  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
+  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]  
 
 class RelationType(db.Document):
   name = db.StringField() # human friendly name
@@ -84,34 +84,43 @@ class ArticleRelation(db.EmbeddedDocument):
 
 MIME_TYPE_CHOICES = (('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF'))
 IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
-class ImageData(db.EmbeddedDocument):
+class ImageAsset(db.Document):
   image = db.ImageField(thumbnail_size=(300,300,False))
   source_image_url = db.URLField()
   source_page_url = db.URLField()
-  # TODO MongoEngine should allow a simple tuple for choices, not having to add JPEG, PNG and GIF fields
+  tags = db.ListField(db.StringField(max_length=30))
   mime_type = db.StringField(choices=MIME_TYPE_CHOICES, required=True)
+  creator = db.ReferenceField(User, verbose_name=_('Creator'))
+  created_date = db.DateTimeField(default=now)
+  title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+  description = db.StringField(max_length=500, verbose_name=_('Description'))
 
-  @classmethod
-  def create_from_url(cls, image_url, source_url=None):
-    file = StringIO(requests.get(image_url).content)
+  # if self.type == 'image':
+  #   parts = self.title.rsplit('.',1)
+  #   self.slug = slugify(parts[0])
+  #   if len(parts)==1 or parts[1] not in IMAGE_FILE_ENDING.values():
+  #     self.slug = self.slug + '.' + IMAGE_FILE_ENDING[self.imagedata.mime_type]
+  #   else:
+  #     self.slug = self.slug + '.' + parts[1]
+  # else:
+
+  def make_from_url(self, image_url, source_url=None):
     # TODO use md5 to check if file already downloaded
-    im = cls.create_from_file(file, image_url, source_url)
-    logger.info("Fetched %s image from %s to DB", im.image.format, image_url)
-    return im
+    file = StringIO(requests.get(image_url).content)
+    self.make_from_file(file)
+    self.source_image_url = image_url
+    self.source_page_url = source_url
+    logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
 
-  @classmethod
-  def create_from_file(cls, file, image_url=None, source_url=None):
+  def make_from_file(self, file):
     # block_size=256*128
     # md5 = hashlib.md5()
     # for chunk in iter(lambda: file.read(block_size), b''): 
     #      md5.update(chunk)
     # print md5.hexdigest()
-    
-    file.seek(0) # reset 
-    im = ImageData(source_image_url=image_url, source_page_url=source_url)
-    im.image.put(file)
-    im.mime_type = 'image/%s' % im.image.format.lower()
-    return im
+    # file.seek(0) # reset 
+    self.image.put(file)
+    self.mime_type = 'image/%s' % self.image.format.lower()
 
 class PersonData(db.EmbeddedDocument):
   born = db.IntField()
@@ -172,7 +181,6 @@ class CampaignData(db.EmbeddedDocument):
 
 ARTICLE_TYPES = list_to_choices([
   'default', 
-  'image',
   'person',
   'fraction',
   'place',
@@ -183,7 +191,7 @@ ARTICLE_TYPES = list_to_choices([
   ])
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
-EMBEDDED_TYPES = ['imagedata','persondata','fractiondata','placedata', 'eventdata', 'campaigndata']
+EMBEDDED_TYPES = ['persondata','fractiondata','placedata', 'eventdata', 'campaigndata']
 class Article(db.Document):
   meta = {'indexes': ['slug']}
   slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
@@ -195,6 +203,7 @@ class Article(db.Document):
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
   status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT, verbose_name=_('Status'))
+  feature_image = db.ReferenceField(ImageAsset) 
 
   # modified_date = DateTimeField()
 
@@ -212,15 +221,7 @@ class Article(db.Document):
         setattr(self, new_type_data, self._fields[new_type_data].document_type())
 
   def save(self, *args, **kwargs):
-    if self.type == 'image':
-      parts = self.title.rsplit('.',1)
-      self.slug = slugify(parts[0])
-      if len(parts)==1 or parts[1] not in IMAGE_FILE_ENDING.values():
-        self.slug = self.slug + '.' + IMAGE_FILE_ENDING[self.imagedata.mime_type]
-      else:
-        self.slug = self.slug + '.' + parts[1]
-    else:
-      self.slug = slugify(self.title)
+    self.slug = slugify(self.title)
     return super(Article, self).save(*args, **kwargs)
 
   @staticmethod
@@ -233,7 +234,6 @@ class Article(db.Document):
   def __unicode__(self):
     return u'%s%s' % (self.title, ' [%s]' % self.type)
 
-  imagedata = db.EmbeddedDocumentField(ImageData)
   persondata = db.EmbeddedDocumentField(PersonData)
   fractiondata = db.EmbeddedDocumentField(FractionData)
   placedata = db.EmbeddedDocumentField(PlaceData)

@@ -83,14 +83,9 @@ def add_test_data():
 
     # Article.drop_collection()
     
-    Article(type='image',
-        title=u"Ljusbringaren bild",
-        content=u"No content",
-        world=altor,
-        creator=mj,
-        imagedata=ImageData.create_from_url(
-            "http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
-            ).save()
+    im = ImageAsset(creator=mj)
+    im.make_from_url("http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
+    im.save()
     Article(type='person',
         title=u"Ljusbringaren",
         content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",

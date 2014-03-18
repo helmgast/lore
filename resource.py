@@ -223,7 +223,7 @@ class ResourceError(Exception):
   }
 
   def __init__(self, status_code, r=None, message=None):
-    Exception.__init__(self)
+    Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
     self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
     if status_code == 400 and r and 'form' in r:
@@ -240,7 +240,7 @@ class ResourceError(Exception):
 
 class ResourceHandler(View):
   default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
-  ignored_methods = ['as_view', 'dispatch_request', 'parse_url', 'register_urls']
+  ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
   logger = logging.getLogger(__name__)
 
@@ -253,12 +253,12 @@ class ResourceHandler(View):
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
-      if (not name.startswith("__")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
+      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
         app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
 
     logger.info("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-
+    print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
     app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
     # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
@@ -273,9 +273,9 @@ class ResourceHandler(View):
     # If op is given by argument, we use that, otherwise we take it from endpoint
     # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
     # TODO unsafe to let us call a custom methods based on request args!
-    r = self.parse_url(**kwargs)
+    r = self._parse_url(**kwargs)
     try:
-      r = self.query_url_components(r, **kwargs)
+      r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
       if err.status_code == 400: # bad request
@@ -287,14 +287,14 @@ class ResourceHandler(View):
 
         # if json, return json instead of render
         if r['out'] == 'json':
-          return self.return_json(r, err)
+          return self._return_json(r, err)
         else:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 400
 
       elif err.status_code == 401: # unauthorized
         if r['out'] == 'json':
-          return self.return_json(r, err)
+          return self._return_json(r, err)
         else:
           flash(err.message,'warning')
           # if fragment/json, just return 401
@@ -306,7 +306,7 @@ class ResourceHandler(View):
         r[self.strategy.resource_name + '_form'] = form
         # if json, return json instead of render
         if r['out'] == 'json':
-          return self.return_json(r, err)
+          return self._return_json(r, err)
         else:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 403
@@ -315,7 +315,7 @@ class ResourceHandler(View):
         abort(404) # TODO, nicer 404 page?
 
       elif r['out'] == 'json':
-        return self.return_json(r, err)
+        return self._return_json(r, err)
       else:
         raise # Send the error onward, will be picked up by debugger if in debug mode
     except DoesNotExist:
@@ -324,32 +324,32 @@ class ResourceHandler(View):
       self.logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
-        return self.return_json(r, resErr)
+        return self._return_json(r, resErr)
       else:
         raise resErr # Send the error onward, will be picked up by debugger if in debug mode
     except NotUniqueError as err:
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
-        return self.return_json(r, resErr)
+        return self._return_json(r, resErr)
       else:
         raise resErr # Send the error onward, will be picked up by debugger if in debug mode
 
     # render output
     if r['out'] == 'json':
-      return self.return_json(r)
+      return self._return_json(r)
     elif 'next' in r:
       return redirect(r['next'])
     else:
       # if json, return json instead of render
       return render_template(r['template'], **r)
 
-  def return_json(self, r, err=None, status_code=0):
+  def _return_json(self, r, err=None, status_code=0):
     if err:
       return jsonify(err.to_dict()), status_code or err.status_code
     else:
       return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next']})
 
-  def parse_url(self, **kwargs):
+  def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
     op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1]).lower()
     if op in ['form_edit', 'form_new','list']:
@@ -367,7 +367,7 @@ class ResourceHandler(View):
       r['next'] = request.args['next']
     return r
 
-  def query_url_components(self, r, **kwargs):
+  def _query_url_components(self, r, **kwargs):
     if self.strategy.resource_name in kwargs:
       r['item'] = self.strategy.query_item(**kwargs)
       r[self.strategy.resource_name] = r['item']

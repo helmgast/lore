@@ -5,7 +5,7 @@
 {% block content_title %}{{ _('Insert image') }}{% endblock %}
 
 {% block content %}{% block inline %}
-<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('world.article_new', world=world.slug, out='json')}}">
+<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
     <div class="image-preview hide">
       <button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
       <div class="image-container"></div>
@@ -15,23 +15,18 @@
       <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
       <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
       <p class="help-block">... or link to image online</p>
-      <input type="text" class="form-control" name="imagedata.source_image_url" id="imagedata.source_image_url" placeholder="http://">
+      <input type="text" class="form-control" name="source_image_url" id="source_image_url" placeholder="http://">
       </div>
     <fieldset class="image-metafields hide">
-    {{ FORM_FIELD(article_form.title, addcontrolcls=" image-title")}}
-    <input name="type" id="type" type="hidden" value="image"> {# TODO hardcoded for image #}
-    {{ article_form.csrf_token }}
-    {{ FORM_FIELD(article_form.description)}}
+    {{ FORM_FIELD(imageasset_form.title, addcontrolcls=" image-title")}}
+    {{ imageasset_form.csrf_token }}
+    {{ FORM_FIELD(imageasset_form.description)}}
       <select name="imgclass" id="imgclass">
         <option value="normal" selected>Normal</option>
         <option value="full">Full</option>
         <option value="thumb">Thumb</option>
         <option value="gallery">Gallery</option>
     </select>
-    <input name="world" id="world" type="hidden" value="{{world.id}}">
-    {% if g.user.id %}
-      <input type="hidden" name="creator" value="{{g.user.id}}" />
-    {% endif %}
   </fieldset>
   
 </form>
