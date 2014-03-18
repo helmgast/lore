@@ -387,46 +387,23 @@ var editor = (function() {
 		$c.find('div').replaceWith('p')
 		$c.find('em').replaceWith('i')
 		$c.find('strong').replaceWith('b')
-		$c.find('h1').replaceWith('h2')			
+		$c.find('h1').replaceWith('h2')		
+		console.log('Starting')
+		console.log('Removing')
 		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() {
 			return this.innerHTML
 		})
+		// Doing this twice seems to fix some bugs that some elements not removed. TODO can it be fixed?
+		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() {
+			return this.innerHTML
+		})
+		$c.find(':empty').not('img').remove()
 		$c.find('*').removeAttr('style id')
 	}
 
-	function cleanHtml() {
-		// var par = contentField.parent
-		// var $c = $(contentField)
-		// $c.detach()
-
-		var html = contentField.innerHTML;
-		html = html.replace(/<(img.+?)>/gi,'%%%$1%%%')
-		html = html.replace(/<\/?(a.*?)>/gi,'%%%$1%%%')
-		html = html.replace(/<(\w+) [^>]*>/g,'<$1>'); // remove all attr
-		html = html.replace(/(<\/?)div>/gi,'$1p>'); // all divs to p		
-		html = html.replace(/(<\/?)h1>/gi,'$1h2>'); // all h1 to h2
-		html = html.replace(/(<\/?)strong>/gi,'$1b>'); // all b to strong
-		html = html.replace(/(<\/?)em>/gi,'$1i>'); // all i to em
-		html = html.replace(/(&nbsp;)+/gi,' '); // make spaces
-		html = html.replace(/<(\/?(p|h2|h3|h4|blockquote|ul|ol|li|i|b))>/gi,'%%%$1%%%'); // rename safe tags
-		html = html.replace(/>\s+</gi,'><'); // remove only spaces	between tags	
-		html = html.replace(/<\/?.+?>/g,''); // remove all remaining tags
-		html = html.replace(/%%%(.+?)%%%/gi,'<$1>');
-		// html = html.replace(/>(.+?)%%%/gi,'<$1>'); // TODO needed?
-		html = html.replace(/<p>\s+<\/p>/gi,''); // remove empty p tags		
-		var $t = $(contentField);
-		$t.html(html);
-		$t.contents().filter(function() { return this.nodeType===3;}).wrap('<p />'); // wraps plain text nodes in p
-		$t.contents('p:empty').remove(); // removes empty p
-		if (!$t.html() || $t.children().length == 0) { // if no nodes, put in empty placeholder
-			$t.html('<p><br></p>');
-		}
-		return $t.html();
-	};
-
 	function exportText(type) {
 		var $t = $(contentField);
-		cleanHtml()
+		jqueryClean()
 		$t.detach()
 		$t.find('p').each(function () {
 			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallerylist' ? '{: .gallerylist }\n' : '\n')
@@ -464,12 +441,14 @@ var editor = (function() {
 			if (img) {
 				// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
 				this.outerHTML = '!['+img.alt+(img.className ? '|'+img.className : '')+']('+
-					this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')\n'
+					this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')'
 			}
 		});
 		var html = $t.html()
 		html = html.replace(/<blockquote>/g,'<blockquote>> ') // > can't be added into innerHTML without being encoded
 		html = html.replace(/<\/?.+?>/g,'') // remove all remaining tags
+		html = html.replace(/([^\S\n])[^\S\n]+/g,'$1') // weird regex but reduces all whitespace except newline to only one
+		html = html.replace(/\n\n\n+/g,'\n\n') // Removes more than 2 newlines in a row, not needed			
 		return html
 	}
 

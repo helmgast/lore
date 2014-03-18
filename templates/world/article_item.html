@@ -243,6 +243,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 <script>
 {% if article_form %}
   // Load required scripts.
+  {% if not markdown %}
   head.js(
     "{{ url_for('static', filename='js/utils.js') }}",
     "{{ url_for('static', filename='js/editor.js') }}",
@@ -251,6 +252,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
           editor.init();
         }
       );
+  {% endif %}
 
 	$(document).ready(
 			function() {
