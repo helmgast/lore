@@ -637,7 +637,7 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	margin: 10px;
 }
 
-.article_text .gallerylist {
+.gallerylist {
 	list-style: none;
 	display: flex;
 	display: -webkit-flex;
@@ -645,16 +645,16 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	padding-left: 0px;
 }
 
-.article_text .gallerylist li {
+.gallerylist li {
 	display: inline-block;
 }
 
-.article_text .gallerylist p {
+.gallerylist p {
 	display: inline-block;
 	margin-bottom: 0px;
 }
 
-.article_text .gallerylist .gallery {
+.gallerylist .gallery {
 	max-width: 200px;
 	max-height: 200px;
 	margin-bottom: 5px;

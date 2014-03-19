@@ -5,32 +5,48 @@
 {% block content_title %}{{ _('Insert image') }}{% endblock %}
 
 {% block content %}{% block inline %}
-<form role="form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
-    <div class="image-preview hide">
-      <button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
-      <div class="image-container"></div>
-    </div>
-    <div class="form-group image-form">
-      <p class="help-block">Drag or click to upload file</p>
-      <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
-      <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
-      <p class="help-block">... or link to image online</p>
-      <input type="text" class="form-control" name="source_image_url" id="source_image_url" placeholder="http://">
-      </div>
-    <fieldset class="image-metafields hide">
-    {{ FORM_FIELD(imageasset_form.title, addcontrolcls=" image-title")}}
-    {{ imageasset_form.csrf_token }}
-    {{ FORM_FIELD(imageasset_form.description)}}
-      <select name="imgclass" id="imgclass">
-        <option value="normal" selected>Normal</option>
-        <option value="thumb">Thumb</option>
-        <option value="gallery">Gallery</option>
-    </select>
-  </fieldset>
-  
-</form>
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#modalupload" data-toggle="tab">Upload</a></li>
+  <li><a id="modalgallerylink" href="#modalgallery" data-toggle="tab">Gallery</a></li>
+</ul>
+<div class="tab-content">
+  <div class="tab-pane active" id="modalupload">
+    <form role="form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
+        <div class="image-preview hide">
+          <button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
+          <div class="image-container"></div>
+        </div>
+        <div class="form-group image-form">
+          <p class="help-block">Drag or click to upload file</p>
+          <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
+          <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
+          <p class="help-block">... or link to image online</p>
+          <input type="text" class="form-control" name="source_image_url" id="source_image_url" placeholder="http://">
+          </div>
+        <fieldset class="image-metafields hide">
+        {{ FORM_FIELD(imageasset_form.title, addcontrolcls=" image-title")}}
+        {{ imageasset_form.csrf_token }}
+        {{ FORM_FIELD(imageasset_form.description)}}
+          <select name="imgclass" id="imgclass">
+            <option value="normal" selected>Normal</option>
+            <option value="thumb">Thumb</option>
+            <option value="gallery">Gallery</option>
+        </select>
+      </fieldset>
+    </form>
+  </div>
+  <div class="tab-pane" id="modalgallery">...</div>
+</div>
+
+
+
 <script>
-  debugger;
+  // debugger;
+
+  $('#modalgallerylink').on('show.bs.tab', function (e) {
+    $($(e.target).attr('href')).load("{{url_for('imageasset_list')}}")
+    //$(e.target)
+  })
 
   $modal = $('.image-preview').parents('.modal')
   $modal_submit = $modal.find('.modal-submit')
