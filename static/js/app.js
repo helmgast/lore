@@ -65,6 +65,8 @@ $(document).on('hidden.bs.modal', function (e) {
 });
 
 $(document).ready(function() {
+$("a[data-toggle='tooltip']").tooltip()
+
 
   function serializeObject(form) {
     var o = {};

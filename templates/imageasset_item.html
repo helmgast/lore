@@ -23,7 +23,6 @@
     {{ FORM_FIELD(imageasset_form.description)}}
       <select name="imgclass" id="imgclass">
         <option value="normal" selected>Normal</option>
-        <option value="full">Full</option>
         <option value="thumb">Thumb</option>
         <option value="gallery">Gallery</option>
     </select>
@@ -102,7 +101,7 @@
         } else if (imgclass=="normal") {
           imgclass = ""
         }
-        imgstr = '<a href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
+        imgstr = '<a class="imagelink" href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
         if (imgclass=="gallery") {
           var $gallery
           $gallery = $activeBlock.filter('.gallerylist')

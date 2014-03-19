@@ -406,7 +406,7 @@ var editor = (function() {
 		jqueryClean()
 		$t.detach()
 		$t.find('p').each(function () {
-			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallerylist' ? '{: .gallerylist }\n' : '\n')
+			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallerylist' ? '{: .gallerylist }\n\n' : '\n')
 		})
 		$t.find('blockquote').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'

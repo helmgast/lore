@@ -616,20 +616,15 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	max-height: 300px;
 }
 
-.article_text img {
+.imagelink {
+	display: block-inline;
+}
+
+.imagelink img {
 	display: block;
 	max-width: 100%;
 	height: auto;
 	max-height: 400px;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 20px;
-	margin-bottom: 20px;
-}
-
-.article_text .full {
-	display: block;
-	max-width: 100%;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 20px;
