@@ -26,7 +26,6 @@ from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
-from werkzeug.utils import secure_filename
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
@@ -52,33 +51,6 @@ class ArticleHandler(ResourceHandler):
     r['list'] = r['list'].filter(type='blogpost').order_by('-created_date')
     r['articles'] = r['list']
     return r
-
-  def new(self, r):
-    '''Override new to deal with images differently'''
-    if request.form.has_key('type') and request.form['type'] == 'image':
-      print request.form
-      file = request.files['imagefile']
-      im = None
-      if file:
-        im = ImageData.create_from_file(file)
-      elif request.form.has_key('imagedata.source_image_url'):
-        im = ImageData.create_from_url(request.form['imagedata.source_image_url'])
-      else:
-        abort(403)
-
-      if im:
-        article = Article(type='image',
-          title=request.form['title'],
-          description=request.form.get('description', None),
-          world=r['parents']['world'],
-          creator=g.user,
-          imagedata=im).save()
-        r['item'] = article
-        if not 'next' in r:
-          r['next'] = url_for('world.image', slug=article.slug)
-        return r
-    else:
-      return super(ArticleHandler, self).new(r)
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, 
   form_class = model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()), short_url=True)

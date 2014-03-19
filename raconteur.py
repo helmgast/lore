@@ -42,7 +42,7 @@ class NewImagePattern(ImagePattern):
     if len(parts)==2:
       el.set('alt',parts[0])
       el.set('class', parts[1])
-    el.set('src', src.replace('/images/','/images/thumbs/'))
+    el.set('src', src.replace('/asset/','/asset/thumbs/'))
     a_el = etree.Element('a')
     a_el.append(el)
     a_el.set('href', src)
@@ -116,7 +116,7 @@ if the_app is None:
   from controller.social import social
   from controller.generator import generator
   from controller.campaign import campaign_app as campaign
-  from resource import ResourceError, ResourceHandler, ResourceAccessStrategy
+  from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
   from model.world import ImageAsset
 
 
@@ -231,36 +231,43 @@ def join():
 #     abort(404)
 # or this
 # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
-@the_app.route('/asset/<id>')
-def asset(id):
-  asset = ImageAsset.objects(id=id).first_or_404()
+@the_app.route('/asset/<slug>')
+def asset(slug):
+  asset = ImageAsset.objects(slug=slug).first_or_404()
   response = make_response(asset.image.read())
   response.mimetype = asset.mime_type
   return response
 
-@the_app.route('/asset/thumbs/<id>')
-def asset_thumb(id):
-  asset = ImageAsset.objects(id=id).first_or_404()
+@the_app.route('/asset/thumbs/<slug>')
+def asset_thumb(slug):
+  asset = ImageAsset.objects(slug=slug).first_or_404()
   response = make_response(asset.image.thumbnail.read())
   response.mimetype = asset.mime_type
   return response
 
-imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', 'id')
+imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', form_class=
+  model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
 class ImageAssetHandler(ResourceHandler):
   def new(self, r):
     '''Override new to deal with images differently'''
+    self.strategy.check_operation_any(r['op'])
+    form = self.form_class(request.form, obj=None)
+    if not form.validate():
+      r['form'] = form
+      raise ResourceError(400, r)
+
     file = request.files['imagefile']
-    im = ImageAsset(creator=g.user, title=request.form.get('title','none'))
+    item = ImageAsset(creator=g.user)
     if file:
-      im.make_from_file(file)
+      item.make_from_file(file)
     elif request.form.has_key('source_image_url'):
-      im.make_from_url(request.form['source_image_url'])
+      item.make_from_url(request.form['source_image_url'])
     else:
       abort(403)
-    im.save()
-    r['item'] = im
-    if not 'next' in r:
-      r['next'] = url_for('asset', id=im.id)
+    form.populate_obj(item)
+    item.save()
+    r['item'] = item
+    r['next'] = url_for('asset', slug=item.slug)
     return r
 
 ImageAssetHandler.register_urls(the_app, imageasset_strategy)

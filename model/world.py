@@ -19,6 +19,8 @@ import logging
 import imghdr
 from flask.ext.babel import lazy_gettext as _
 import hashlib
+from werkzeug.utils import secure_filename
+from mongoengine.queryset import Q
 
 # Constants and enumerations
 logger = logging.getLogger(__name__)
@@ -85,7 +87,8 @@ class ArticleRelation(db.EmbeddedDocument):
 MIME_TYPE_CHOICES = (('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF'))
 IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
 class ImageAsset(db.Document):
-  image = db.ImageField(thumbnail_size=(300,300,False))
+  meta = {'indexes': ['slug']}
+  image = db.ImageField(thumbnail_size=(300,300,False), required=True)
   source_image_url = db.URLField()
   source_page_url = db.URLField()
   tags = db.ListField(db.StringField(max_length=30))
@@ -94,15 +97,24 @@ class ImageAsset(db.Document):
   created_date = db.DateTimeField(default=now)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
+  slug = db.StringField(unique=True, min_length=1, max_length=60, verbose_name=_('Slug'))
 
-  # if self.type == 'image':
-  #   parts = self.title.rsplit('.',1)
-  #   self.slug = slugify(parts[0])
-  #   if len(parts)==1 or parts[1] not in IMAGE_FILE_ENDING.values():
-  #     self.slug = self.slug + '.' + IMAGE_FILE_ENDING[self.imagedata.mime_type]
-  #   else:
-  #     self.slug = self.slug + '.' + parts[1]
-  # else:
+  def save(self, *args, **kwargs):
+    if self.title:
+      slug, end = secure_filename(self.title).rsplit('.', 1)
+      if len(end)>4:
+        slug = slug+end # end is probably not a file ending
+    else:
+      slug = self.id
+    if not slug:
+      raise ValueError('Cannot make slug from either title %s or id %s' % (self.title, self.id))
+    new_end = IMAGE_FILE_ENDING[self.mime_type]
+    new_slug = slug+'.'+new_end
+    existing = len(ImageAsset.objects(Q(slug__endswith='__'+new_slug) or Q(slug=new_slug)))
+    if existing:
+      new_slug = "%i__%s.%s" % (existing+1, slug, new_end)
+    self.slug = new_slug
+    return super(ImageAsset, self).save(*args, **kwargs)
 
   def make_from_url(self, image_url, source_url=None):
     # TODO use md5 to check if file already downloaded
@@ -110,6 +122,8 @@ class ImageAsset(db.Document):
     self.make_from_file(file)
     self.source_image_url = image_url
     self.source_page_url = source_url
+    self.title = self.title or image_url.rsplit('/',1)[-1]
+    print self.title
     logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
 
   def make_from_file(self, file):

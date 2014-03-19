@@ -98,7 +98,7 @@
         var alt=$('.image-title').val(), imgclass=$('#imgclass').val(), 
           src = res.next, href= res.next, imgstr, $activeBlock=$(editor.getActiveBlock())
         if (imgclass=="thumb" || imgclass=="gallery") {
-          src = src.replace('/images/','/images/thumbs/')
+          src = src.replace('/asset/','/asset/thumbs/')
         } else if (imgclass=="normal") {
           imgclass = ""
         }

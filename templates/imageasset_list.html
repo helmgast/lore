@@ -1,0 +1,12 @@
+{% extends "base.html" if not parent_template else parent_template %}
+
+{% block content %}
+    <div class="row">
+    {% for imageasset in images %}
+    <div class="col-md-5 col-xs-6">
+    <img src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
+    </div>
+    {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
+    {% endfor %} 
+  </div>
+{% endblock %}
