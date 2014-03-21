@@ -209,7 +209,7 @@ class Article(db.Document):
       old_type_data = Article.type_data_name(self.type)
       if old_type_data in EMBEDDED_TYPES:
         # Null the old type
-        setattr(self, type_data, None)
+        setattr(self, old_type_data, None)
     if new_type is not None: # may still be 0
       new_type_data = Article.type_data_name(new_type)
       if new_type_data in EMBEDDED_TYPES and getattr(self, new_type_data) is None:

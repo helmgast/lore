@@ -2,8 +2,11 @@
 
 {% from 'includes/components.html' import FORM_FIELD %}
 
+{% set article_type = article.type if article else prefill['type'] %}
+{% set type_form = article_form[article_type+'data'] %}
+
 {% if op == 'new' %}
-  {%set tagline = world.title %} {% set title = 'New article!' %}
+  {%set tagline = world.title %} {% set title = 'New '+article_type+'!' %}
 {% else %}
   {% set tagline = article.type %} {% set title = article.title %}
 {% endif %}
@@ -64,17 +67,6 @@
   <div class="tab-pane fade" id="focus"></div>
 
   <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
-  {% if article.type == 'person' %}
-    {% set type_form = article_form.persondata %}
-  {% elif article.type == 'fraction' %}
-    {% set type_form = article_form.fractiondata %}
-  {% elif article.type == 'place' %}
-    {% set type_form = article_form.placedata %}
-  {% elif article.type == 'event' %}
-    {% set type_form = article_form.eventdata %}
-  {% elif article.type == 'campaign' %}
-    {% set type_form = article_form.pcampaigndata %}
-  {% endif %}
   {% for field in type_form %}
     {{FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2"))}}
   {% endfor %}
