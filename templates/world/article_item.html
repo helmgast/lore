@@ -99,6 +99,7 @@
     <div class="col-xs-6">
       {{ FORM_FIELD(article_form.type) }}
       {{ FORM_FIELD(article_form.world) }}
+      <input type="hidden" name="feature_image" id="feature_image" value="" />
       {% if g.user.id %}
         <input type="hidden" name="creator" value="{{g.user.id}}" />
       {% endif %}
@@ -258,7 +259,12 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 			function() {
         $ta = $('#content')
         $ta.parents('form').on('submit', function(e) {
-              $ta.val(editor.exportText());
+              var text = editor.exportText()
+              $ta.val(text);
+              var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)[2]
+              if (image_match) {
+                $('#feature_image').val(image_match)
+              }
             }
         );
         //----------------------------------

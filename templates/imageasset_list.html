@@ -1,7 +1,16 @@
+{% extends "base.html" if not out=='fragment' else 'base_fragment.html' %}
+
 {% block content %}
-    <div class="gallerylist">
-    {% for imageasset in images %}
-    <img class="gallery" src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
-    {% endfor %} 
-  	</div>
+<div class="gallerylist">
+	<div class="gallery-row">
+  {% for imageasset in images %}
+    <figure class="gallery">
+    	<img src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
+    	<figcaption>{{imageasset.title}}</figcaption>
+    </figure>
+  {% if loop.index is divisibleby 3 %}</div><div class="gallery-row">{% endif %}
+  {% endfor %} 
+  </div>
+</div>
+
 {% endblock %}

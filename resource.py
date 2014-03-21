@@ -16,6 +16,7 @@ from flask import request, render_template, flash, redirect, url_for, abort, g
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
+from flask.ext.mongoengine.wtf.fields import ModelSelectField
 from flask.views import View
 from wtforms.compat import iteritems
 from wtforms import fields as f
@@ -66,6 +67,26 @@ class ArticleBaseForm(ModelForm):
     #         field.populate_obj(obj, name)
 
 
+class RacModelSelectField(ModelSelectField):
+  # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
+  # This is required to accept custom primary keys
+  # https://github.com/MongoEngine/flask-mongoengine/issues/82
+  def process_formdata(self, valuelist):
+    if valuelist:
+      if valuelist[0] == '__None':
+        self.data = None
+      else:
+        if self.queryset is None:
+          self.data = None
+          return
+
+        try:
+          # clone() because of https://github.com/MongoEngine/mongoengine/issues/56
+          obj = self.queryset.clone().get(pk=valuelist[0])
+          self.data = obj
+        except DoesNotExist:
+          self.data = None
+
 class RacModelConverter(ModelConverter):
   @converts('EmbeddedDocumentField')
   def conv_EmbeddedDocument(self, model, field, kwargs):
@@ -81,6 +102,12 @@ class RacModelConverter(ModelConverter):
     form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
     logger.info("Converted model %s", model)
     return f.FormField(form_class, **kwargs)
+
+  # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
+
+  @converts('ReferenceField')
+  def conv_Reference(self, model, field, kwargs):
+      return RacModelSelectField(model=field.document_type, **kwargs)
 
   @converts('StringField')
   def conv_String(self, model, field, kwargs):
@@ -231,13 +258,6 @@ class ResourceError(Exception):
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
-  def to_dict(self):
-    rv = dict()
-    rv['message'] = self.message
-    rv['status_code'] = self.status_code
-    return rv
-
-
 class ResourceHandler(View):
   default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
@@ -333,6 +353,11 @@ class ResourceHandler(View):
         return self._return_json(r, resErr)
       else:
         raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+    except Exception as err:
+      if r['out'] == 'json':
+        return self._return_json(r, err, 500)
+      else:
+        raise # Send the error onward, will be picked up by debugger if in debug mode
 
     # render output
     if r['out'] == 'json':
@@ -345,7 +370,8 @@ class ResourceHandler(View):
 
   def _return_json(self, r, err=None, status_code=0):
     if err:
-      return jsonify(err.to_dict()), status_code or err.status_code
+      self.logger.exception(err)
+      return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
       return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next']})
 
@@ -426,6 +452,7 @@ class ResourceHandler(View):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
+    print request.form, form.data
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)

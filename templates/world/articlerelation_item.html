@@ -1,9 +1,9 @@
-{% extends 'includes/row.html' %}
+{% extends 'base_fragment.html' %}
 
-{% block content %}{% block inline %}
+{% block content %}
 <li class="list-group-item">
     {{ articlerelation_form.relation_type(**{'data-role':'chosen', 'class':'relation-type-selector'}) }}
     {{ articlerelation_form.article(**{'data-role':'chosen'}) }}
 </li>
-{% endblock %}{% endblock %}
+{% endblock %}
   		

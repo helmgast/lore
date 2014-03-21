@@ -10,13 +10,22 @@
 {% block content %}
 {% if articles.count() == 0 %}No articles yet!{% else %}
 	{% for article in articles %}
-		<a class="blog_header" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><h2>{{article.title}}</h2></a>
-		<ul class="list-inline article-meta" style="margin-bottom: 0px">
-		  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
-		  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
-		</ul>
-		<p>{% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}</p>
-		<a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em>{{ _('Read more') }}</em></a>
+	<a class="blog_header" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><h2>{{article.title}}</h2></a>
+	<ul class="list-inline article-meta" style="margin-bottom: 0px">
+	  <li title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
+	  <li title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
+	</ul>
+	<div class="media">
+	{% if article.feature_image %}
+  	<a class="pull-left" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
+  	<img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+		</a>
+	{% endif %}
+		<div class="media-body">
+			{% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
+			<a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em>{{ _('read more') }}</em></a>
+		</div>
+	</div>
 	{% endfor %}
 {% endif %}
 {% endblock %}

@@ -639,31 +639,81 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 
 .gallerylist {
 	list-style: none;
-	display: flex;
-	display: -webkit-flex;
-	flex-wrap: wrap;
-	padding-left: 0px;
+	overflow: hidden;
+	width: 100%;
 }
 
-.gallerylist li {
-	display: inline-block;
+.gallerylist .gallery-row {
+	margin-bottom: .5rem;
+	overflow: hidden;
+ 	width: 150%;
 }
 
-.gallerylist p {
-	display: inline-block;
-	margin-bottom: 0px;
-}
+.gallerylist .gallery-row:last-child { margin: 0; }
+.gallerylist .gallery:first-child { margin-left: 0; }
+.gallerylist .gallery:last-child  { margin-right: 0; }
 
 .gallerylist .gallery {
-	max-width: 200px;
-	max-height: 200px;
-	margin-bottom: 5px;
-	margin-top: 0px;
-	margin-right: 5px;
+	display: block;
+	float: left;
+	margin: 0 .25rem;
+}
+
+.gallerylist figure {
+	margin: 0;
+	overflow: hidden;
+	position: relative;
+	-webkit-backface-visibility: hidden; /* To fix webkit 1px rendering bug */
+}
+
+.gallerylist figcaption {
+	background-color: rgba(255, 255, 255, .75);
+	box-sizing: border-box;
+	font-size: .75rem;
+	padding: .5rem;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+	-webkit-transform: translateY(100%);
+	transform: translateY(100%);
+	transition: all .5s ease-in-out;
+}
+
+.gallery a {
+  border: 0;
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.gallerylist .gallery:hover figcaption {
+	-webkit-transform: translateY(0);
+	transform: translateY(0);
+}
+
+.gallery img {
+	display: block;
+	max-width: 100%;
+	transition: all .25s ease-in-out;
+}
+
+.gallery .selected {
+	border: 4px solid rgba(102,175,233,1)
+}
+
+#modalgallery {
+	overflow-y: scroll; 
+	height: 360px;
 }
 
 #imagelightbox
 {
     position: fixed;
     z-index: 9999;
+}
+
+.media-object {
+	max-height: 80px;
 }

@@ -251,13 +251,13 @@ imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', form_class=
   model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
 class ImageAssetHandler(ResourceHandler):
   def new(self, r):
-    '''Override new to deal with images differently'''
+    '''Override new() to do some custom file pre-handling'''
     self.strategy.check_operation_any(r['op'])
     form = self.form_class(request.form, obj=None)
+    # del form.slug # remove slug so it wont throw errors here
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)
-
     file = request.files['imagefile']
     item = ImageAsset(creator=g.user)
     if file:

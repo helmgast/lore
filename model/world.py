@@ -87,6 +87,7 @@ class ArticleRelation(db.EmbeddedDocument):
 MIME_TYPE_CHOICES = (('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF'))
 IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
 class ImageAsset(db.Document):
+  slug = db.StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
   meta = {'indexes': ['slug']}
   image = db.ImageField(thumbnail_size=(300,300,False), required=True)
   source_image_url = db.URLField()
@@ -97,9 +98,9 @@ class ImageAsset(db.Document):
   created_date = db.DateTimeField(default=now)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
-  slug = db.StringField(unique=True, min_length=1, max_length=60, verbose_name=_('Slug'))
 
-  def save(self, *args, **kwargs):
+  # Executes before saving
+  def clean(self):
     if self.title:
       slug, end = secure_filename(self.title).rsplit('.', 1)
       if len(end)>4:
@@ -114,7 +115,6 @@ class ImageAsset(db.Document):
     if existing:
       new_slug = "%i__%s.%s" % (existing+1, slug, new_end)
     self.slug = new_slug
-    return super(ImageAsset, self).save(*args, **kwargs)
 
   def make_from_url(self, image_url, source_url=None):
     # TODO use md5 to check if file already downloaded
@@ -137,53 +137,34 @@ class ImageAsset(db.Document):
     self.mime_type = 'image/%s' % self.image.format.lower()
 
 class PersonData(db.EmbeddedDocument):
-  born = db.IntField()
-  died = db.IntField()
-  gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES)
+  born = db.IntField(verbose_name = _('born'))
+  died = db.IntField(verbose_name = _('died'))
+  gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES, verbose_name = _('gender'))
   # otherNames = CharField()
-  occupation = db.StringField(max_length=60)
-
-  #i18n things
-  born.verbose_name = _('born')
-  died.verbose_name = _('died')
-  gender.verbose_name = _('gender')
-  occupation.verbose_name = _('occupation')
+  occupation = db.StringField(max_length=60, verbose_name = _('occupation'))
 
   def gender_name(self):
     return GENDER_TYPES[self.gender][1].title()
 
 class FractionData(db.EmbeddedDocument):
-  fraction_type = db.StringField(max_length=60)
-  #i18n
-  fraction_type.verbose_name = _('fraction')
+  fraction_type = db.StringField(max_length=60, verbose_name = _('fraction'))
 
 class PlaceData(db.EmbeddedDocument):
   # normalized position system, e.g. form 0 to 1 float, x and y
-  coordinate_x = db.FloatField()
-  coordinate_y = db.FloatField()
+  coordinate_x = db.FloatField(verbose_name = _('Coordinate X'))
+  coordinate_y = db.FloatField(verbose_name = _('Coordinate Y'))
   # building, city, domain, point_of_interest
-  location_type = db.StringField(max_length=60)
-  #i18n
-  coordinate_x.verbose_name = _('Coordinate X')
-  coordinate_y.verbose_name = _('Coordinate Y')
-  location_type.verbose_name = _('Location type')
+  location_type = db.StringField(max_length=60, verbose_name = _('Location type'))
 
 class EventData(db.EmbeddedDocument):
-  from_date = db.IntField()
-  to_date = db.IntField()
-
-  from_date.verbose_name = _('From')
-  to_date.verbose_name = _('To')
+  from_date = db.IntField(verbose_name = _('From'))
+  to_date = db.IntField(verbose_name = _('To'))
 
 class Episode(db.EmbeddedDocument):
   id = db.StringField(unique=True) # URL-friendly name?
-  title = db.StringField(max_length=60)
-  description = db.StringField()
+  title = db.StringField(max_length=60, verbose_name = _('Title'))
+  description = db.StringField(verbose_name = _('Description'))
   content = db.ListField(db.ReferenceField('Article')) # references Article class below
-
-  #i18n
-  title.verbose_name = _('Title')
-  description.verbose_name = _('Description')
 
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row
@@ -208,7 +189,7 @@ ARTICLE_TYPES = list_to_choices([
 EMBEDDED_TYPES = ['persondata','fractiondata','placedata', 'eventdata', 'campaigndata']
 class Article(db.Document):
   meta = {'indexes': ['slug']}
-  slug = db.StringField(unique=True, required=False, max_length=62) # URL-friendly name, removed "unique", slug cannot be guaranteed to be unique
+  slug = db.StringField(unique=True, required=False, max_length=62)
   type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
@@ -234,9 +215,9 @@ class Article(db.Document):
       if new_type_data in EMBEDDED_TYPES and getattr(self, new_type_data) is None:
         setattr(self, new_type_data, self._fields[new_type_data].document_type())
 
-  def save(self, *args, **kwargs):
+  # Executes before saving
+  def clean(self):
     self.slug = slugify(self.title)
-    return super(Article, self).save(*args, **kwargs)
 
   @staticmethod
   def type_data_name(asked_type):
