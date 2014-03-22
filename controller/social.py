@@ -17,9 +17,15 @@ from raconteur import auth
 from resource import ResourceHandler, ResourceError, ResourceAccessStrategy
 from model.user import User, Group, Member, Conversation, Message
 
+
+class SameUserResourceAccessStrategy(ResourceAccessStrategy):
+  def is_allowed(self, user, op, instance):
+    return user.admin or user == instance or op in ["view", "list"]
+
+
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
-user_strategy = ResourceAccessStrategy(User, 'users', 'username')
+user_strategy = SameUserResourceAccessStrategy(User, 'users', 'username')
 ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
@@ -28,36 +34,36 @@ ResourceHandler.register_urls(social, group_strategy)
 member_strategy = ResourceAccessStrategy(Member, 'members', None, parent_strategy=group_strategy)
 
 class MemberHandler(ResourceHandler):
-	def form_new(self, r):
-		r = super(MemberHandler, self).form_new(r)
-		# Remove existing member from the choice of new user in Member form
-		current_member_ids = [m.user.id for m in r['group'].members]
-		r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-		return r
+  def form_new(self, r):
+    r = super(MemberHandler, self).form_new(r)
+    # Remove existing member from the choice of new user in Member form
+    current_member_ids = [m.user.id for m in r['group'].members]
+    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+    return r
 
-	def form_edit(self, r):
-		r = super(MemberHandler, self).form_edit(r)
-		current_member_ids = [m.user.id for m in r['group'].members]
-		r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-		return r
+  def form_edit(self, r):
+    r = super(MemberHandler, self).form_edit(r)
+    current_member_ids = [m.user.id for m in r['group'].members]
+    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+    return r
 
 MemberHandler.register_urls(social, member_strategy)
 
 conversation_strategy = ResourceAccessStrategy(Conversation, 'conversations')
 
 class ConversationHandler(ResourceHandler):
-	def new(self, r):
-		if not request.form.has_key('content') or len(request.form.get('content'))==0:
-			raise ResourceError(400, 'Need to attach first message with conversation')
-		r = super(ConversationHandler, self).new(r)
-		Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-		return r
-	
-	def edit(self, r):
-		r = super(ConversationHandler, self).edit(r)
-		if request.form.has_key('content') and len(request.form.get('content'))>0:
-			Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-		return r
+  def new(self, r):
+    if not request.form.has_key('content') or len(request.form.get('content'))==0:
+      raise ResourceError(400, 'Need to attach first message with conversation')
+    r = super(ConversationHandler, self).new(r)
+    Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
+    return r
+
+  def edit(self, r):
+    r = super(ConversationHandler, self).edit(r)
+    if request.form.has_key('content') and len(request.form.get('content'))>0:
+      Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
+    return r
 
 ConversationHandler.register_urls(social, conversation_strategy)
 
