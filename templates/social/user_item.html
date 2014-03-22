@@ -4,10 +4,12 @@
 {% block content_tagline %}{{ user.realname }}{% endblock %}
 
 {% block sidebar %}{{super()}}
-<ul class="nav nav-list" style="float:left">
-<li class="nav-header">{{ _('Actions') }}</li>    
-<li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-</ul>
+  {% call IS_USER(user) %}
+  <ul class="nav nav-list" style="float:left">
+    <li class="nav-header">{{ _('Actions') }}</li>
+    <li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+  </ul>
+  {% endcall %}
 {%endblock%}
 
 {% block content %}

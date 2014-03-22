@@ -233,10 +233,6 @@ class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
     return user.admin and op not in ["view", "list"]
 
 
-class MyUserResourceAccessStrategy(ResourceAccessStrategy):
-  def is_allowed(self, user, op, instance):
-    return user.admin or user == instance
-
 
 class ResourceError(Exception):
   logger = logging.getLogger(__name__)
@@ -321,9 +317,9 @@ class ResourceHandler(View):
           return redirect(url_for('auth.login', next=request.path))
 
       elif err.status_code == 403: # forbidden
-        r['op'] = self.get_post_pairs[r['op']] # change the effective op
+        r['op'] = self.get_post_pairs[r['op']] if r['op'] in self.get_post_pairs else r['op']  # change the effective op
         r['template'] = self.strategy.item_template()
-        r[self.strategy.resource_name + '_form'] = form
+        # r[self.strategy.resource_name + '_form'] = form
         # if json, return json instead of render
         if r['out'] == 'json':
           return self._return_json(r, err)
@@ -470,7 +466,7 @@ class ResourceHandler(View):
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
-    self.logger.info("Edit on %s/%s", self.strategy.resource_name, item.slug)
+    self.logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
   def replace(self, r):
