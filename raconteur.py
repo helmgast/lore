@@ -8,7 +8,7 @@
   :copyright: (c) 2014 by Raconteur
 """
 
-import logging
+import logging, os
 from re import compile
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response
 from auth import Auth
@@ -41,7 +41,6 @@ app_features = {
   "tools": False,
   "join": False
 }
-
 
 def is_private():
   return app_state == STATE_PRIVATE
@@ -97,11 +96,10 @@ if the_app is None:
   the_app = Flask('raconteur')  # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
-  
-  try:
-    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
-  except Exception:
-    the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
+
+  the_app.config.from_pyfile('config.py')  # default, dummy settings
+  the_app.config.from_envvar('RACONTEUR_CONFIG_FILE', silent=True)  # db-settings and secrets, should not be shown in code
+  the_app.config['INIT_MODE'] = os.environ.get('RACONTEUR_INIT_MODE', None)
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
@@ -128,18 +126,20 @@ if the_app is None:
   the_app.register_blueprint(social, url_prefix='/social')
   the_app.register_blueprint(campaign, url_prefix='/campaign')
 
-JoinForm = model_form(User)
-wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
-
-
-@the_app.before_request
-def load_user():
-  g.feature = app_features
+  init_mode = the_app.config.get('INIT_MODE', None)
+  if init_mode:
+    if init_mode=='reset':
+      setup_models()
+    elif init_mode=='lang':
+      setup_language()
+    elif init_mode=='test':
+      run_tests()
+    # Clear the init mode flag to avoid running twice accidentaly
+    del os.environ['INIT_MODE']
 
 def run_the_app(debug):
   logger.info("Running local instance")
   the_app.run(debug=debug)
-
 
 def setup_models():
   logger.info("Resetting data models")
@@ -150,7 +150,6 @@ def setup_models():
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
-
 
 def validate_model():
   is_ok = True
@@ -172,12 +171,18 @@ def validate_model():
   logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
   return is_ok
 
+def setup_language():
+  os.system("pybabel compile -d translations/");
 
 def run_tests():
   logger.info("Running unit tests")
   from tests import app_test
   app_test.run_tests()
 
+
+@the_app.before_request
+def load_user():
+  g.feature = app_features
 
 ###
 ### Basic views (URL handlers)
@@ -194,6 +199,8 @@ def admin():
     pass
   return render_template('maintenance.html')
 
+
+JoinForm = model_form(User)
 
 # Page to sign up, takes both GET and POST so that it can save the form
 @the_app.route('/join/', methods=['GET', 'POST'])
@@ -275,6 +282,7 @@ ImageAssetHandler.register_urls(the_app, imageasset_strategy)
 def is_following(from_user, to_user):
   return from_user.is_following(to_user)
 
+wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 
 @the_app.template_filter('wikify')
 def wikify(s):

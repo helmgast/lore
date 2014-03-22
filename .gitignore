@@ -1,7 +1,6 @@
 *.pyc
 *.db
 *.sublime*
-config.py
 config.openshift.py
 /.settings
 /.project
