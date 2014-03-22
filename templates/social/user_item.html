@@ -67,7 +67,7 @@
   <div class="col-md-5">
   <h4>{{ _('Groups') }}</h4>
   {% set groups = user.groups() %}
-  {% if groups and groups.count() > 0 %}
+  {% if groups and groups|length > 0 %}
   <table class="table table-striped">
     <thead>
       <tr>

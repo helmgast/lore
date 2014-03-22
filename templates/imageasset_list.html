@@ -5,7 +5,13 @@
 	<div class="gallery-row">
   {% for imageasset in images %}
     <figure class="gallery">
-    	<img src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
+      {# will make last 1 or 2 images large asset, as they are in a row with less
+      than 3 images in total and will be zoomed in #}
+      {% if (loop.length % 3 > 0) and (loop.revindex0 < loop.length % 3) %}
+      <img src="{{url_for('asset', slug = imageasset.slug)}}">
+    	{% else %}
+      <img src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
+      {% endif %}
     	<figcaption>{{imageasset.title}}</figcaption>
     </figure>
   {% if loop.index is divisibleby 3 %}</div><div class="gallery-row">{% endif %}

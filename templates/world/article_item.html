@@ -3,7 +3,9 @@
 {% from 'includes/components.html' import FORM_FIELD %}
 
 {% set article_type = article.type if article else prefill['type'] %}
-{% set type_form = article_form[article_type+'data'] %}
+{% if article_form %}
+  {% set type_form = article_form[article_type+'data'] %}
+{% endif %}
 
 {% if op == 'new' %}
   {%set tagline = world.title %} {% set title = 'New '+article_type+'!' %}

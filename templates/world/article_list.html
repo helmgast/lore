@@ -1,9 +1,9 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% if request.args.get('groupby')=='type' %}
+{% if request.args.get('order_by')=='type' %}
     {% set groups = articles|by_articletype %}
     {% set type_tab = ' class=active' %}
-{% elif request.args.get('groupby')=='time' %}
+{% elif request.args.get('order_by')=='created_date' %}
     {% set groups = articles|by_time %}
     {% set time_tab = ' class=active' %}
 {% else %} {# request.args.get('groupby')=='title' #}
@@ -14,31 +14,43 @@
 {% block pre_content %}
 <h2 class="browseArticle">{{ _('Browse') }}</h2>
 <ul class="nav nav-tabs content-menu">
-    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='title') }}"><span class="glyphicon glyphicon-book"></span> {{ _('By title') }}</a></li>
-    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='type') }}"><span class="glyphicon glyphicon-tag"></span> {{ _('By type') }}</a></li>
-    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, groupby='time') }}"><span class="glyphicon glyphicon-calendar"></span> {{ _('By time') }}</a></li>
+    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='title') }}"><span class="glyphicon glyphicon-book"></span> {{ _('By title') }}</a></li>
+    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='type') }}"><span class="glyphicon glyphicon-tag"></span> {{ _('By type') }}</a></li>
+    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='created_date') }}"><span class="glyphicon glyphicon-calendar"></span> {{ _('By time') }}</a></li>
     <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> {{ _('By relation') }}</a></li>
 </ul>
 {% endblock %}
 
 {% block content %}
-    <div class="worldBrowse panel panel-default">
-    {% if articles.count() == 0 %}{{ _('No articles yet!') }}{% else %}
-    <dl>
+    <div class="panel panel-default item-list">
+    {% if articles|length == 0 %}{{ _('No articles yet!') }}{% else %}
         {% for group in groups %}
-        <dt>{{ group.grouper|capitalize }}</dt>
-        <dd><ul class="list-unstyled">
-        {% for article in group.list %}
-            <li><a href="{{ url_for('.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>
-                {%- if groupby=='title' -%}
-                    <small>{{" ["+article.type+"]"}}</small>
-                {%- elif groupby=='time' -%}
-                    <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
-                {%- endif %}</li>
+            <h3>{{ group.grouper|capitalize }}</h3>
+            <div class="row">
+            {% for article in group.list %}
+                <div class="media col-sm-6">
+                    <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
+                        <h4>{{article.title}}
+                        {%- if groupby=='title' -%}
+                        <small>{{" ["+article.type+"]"}}</small>
+                        {%- elif groupby=='time' -%}
+                        <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
+                        {%- endif %}</h4>
+                    </a>
+                    {% if article.feature_image %}
+                    <a class="pull-left" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
+                    <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+                    </a>
+                    {% endif %}
+          
+                    {% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
+                    <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('read more') }}</em></a>
+                </div> 
+            {% if not loop.last and loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
             {% endfor %}
-        </ul></dd>
+            </div>
         {% endfor %}
-    </dl>
     </div>
+    {% include "includes/pagination.html" %}
     {% endif %}
 {% endblock %}

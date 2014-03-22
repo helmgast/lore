@@ -428,9 +428,17 @@ class ResourceHandler(View):
 
   def list(self, r):
     self.strategy.check_operation_any(r['op'])
-    r['list'] = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
+    listquery = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
+    page = request.args.get('page', 1)
+    if page=='all':
+      r['list'] = listquery
+      r[self.strategy.plural_name] = listquery
+    else:
+      r['list'] = listquery.paginate(page=int(page), per_page=5)
+      r[self.strategy.plural_name] = r['list'].items
+    r['url_for_args'] = request.view_args
+    r['url_for_args'].update(request.args.to_dict())
     r['template'] = self.strategy.list_template()
-    r[self.strategy.plural_name] = r['list']
     return r
 
   def new(self, r):
