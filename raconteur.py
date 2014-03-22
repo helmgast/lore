@@ -97,14 +97,16 @@ if the_app is None:
   the_app = Flask('raconteur')  # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
-  the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
+  try:
+    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
+  except Exception:
+    the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
 
   from model.user import User
-
   auth = Auth(the_app, db, user_model=User)
 
   md = Markdown(the_app, extensions=['attr_list'])
@@ -119,7 +121,6 @@ if the_app is None:
   from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
   from model.world import ImageAsset
 
-
   the_app.register_blueprint(world, url_prefix='/world')
   if app_features["tools"]:
     the_app.register_blueprint(generator, url_prefix='/generator')
@@ -128,7 +129,6 @@ if the_app is None:
 
 JoinForm = model_form(User)
 wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
-
 
 
 @the_app.before_request
