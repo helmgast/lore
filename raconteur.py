@@ -135,9 +135,9 @@ wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 def load_user():
   g.feature = app_features
 
-def run_the_app(debug):
-  logger.info("Running local instance")
-  the_app.run(debug=debug)
+# def run_the_app(debug):
+#   logger.info("Running local instance")
+#   the_app.run(debug=debug)
 
 
 def setup_models():
