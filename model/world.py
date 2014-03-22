@@ -123,7 +123,6 @@ class ImageAsset(db.Document):
     self.source_image_url = image_url
     self.source_page_url = source_url
     self.title = self.title or image_url.rsplit('/',1)[-1]
-    print self.title
     logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
 
   def make_from_file(self, file):

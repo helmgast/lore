@@ -21,8 +21,8 @@
   </div>
 {%- endmacro -%}
 
-{%- macro IS_USER() -%}
-    {% if g.user %}
+{%- macro IS_USER(user=None) -%}
+    {% if g.user and (not user or g.user == user or g.user.admin) %}
          {{ caller() }}
     {% endif %}
 {%- endmacro -%}
