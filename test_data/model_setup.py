@@ -85,7 +85,7 @@ def add_test_data():
     
     im = ImageAsset(creator=mj)
     im.make_from_url("http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
-    im.update_slug()
+    # im.update_slug()
     im.save()
     Article(type='person',
         title=u"Ljusbringaren",
