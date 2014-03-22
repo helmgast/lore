@@ -3,27 +3,75 @@
 Generic classes for all world children
 */
 
+@font-face {
+  font-family: 'Vinque';
+  src: url('../../../static/fonts/vinque.ttf');
+}
+
+@font-face {
+  font-family: 'Goudy';
+  src: url('../../../static/fonts/GoudyBookletter1911.otf');
+}
+
+@font-face {
+  font-family: 'PrinceValiant';
+  src: url('../../../static/fonts/prince-valiant.ttf');
+}
+
 /* needs !important to overwrite other css classes */
 body {
+  font-family: Goudy;
+  background: url('../../../static/img/bg.jpg') !important;
+}
 
+body a {
+  text-decoration: none;
+  color: #8f0011;
+  font-weight: bold;
+}
+
+.well {
+  background-color: #bda362;
+  border: 1px solid black;
+  color: #8f0011;
 }
 
 /* needs !important to overwrite other css classes */
 .content {
-
+  background: none !important;
 }
 
 .worldSideBar {
+  background: url('../../../static/img/goat.png');
+  background-position: top;
+  background-repeat: no-repeat;
+  background-size: 75%;
+  font-family: PrinceValiant;
+}
 
+.worldSideBar ul {
+  padding: 120px 0 0 20px;
 }
 
 .worldSideBar li a {
+    text-decoration: none;
+    color: #8f0011;
+    font-weight: normal;
+}
 
+.worldSideBar li a:hover {
+  background: #bda362;;
+  
 }
 
 /* World Title */
 .content .page-header h1 {
+  font-family: Vinque;
+  color: #8f0011;
+}
 
+.content .page-header {
+  border-bottom: 1px solid black;
 }
 
 /* Browse Articles - article_list.html
