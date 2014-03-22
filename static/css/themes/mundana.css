@@ -46,7 +46,6 @@ body a {
   background-position: top;
   background-repeat: no-repeat;
   background-size: 75%;
-  font-family: PrinceValiant;
 }
 
 .worldSideBar ul {
@@ -74,6 +73,39 @@ body a {
   border-bottom: 1px solid black;
 }
 
+.pagination a {
+  color: #8f0011 !important;
+}
+
+.pagination li > a {
+  border: 0;
+  background-color: #bda362;
+}
+
+.pagination li > a:hover {
+  background-color: #8f0011;
+  color: white !important;
+}
+
+.pagination li.disabled > a {
+  background-color: #bda362;
+}
+
+.pagination li.disabled > a:hover {
+  background-color: #bda362;
+  color: #8f0011 !important;
+}
+
+.pagination li.active > a {
+  background-color: #8f0011;
+  color: white !important;
+}
+
+.pagination li.active > a:hover {
+  background-color: #8f0011;
+  color: white !important;
+}
+
 /* Browse Articles - article_list.html
 ---------------------------------------------
 */
@@ -83,15 +115,29 @@ body a {
 
 }
 
+.panel {
+  background: #bda362 !important;
+  border: 1px solid black;
+  padding: 0 0 0 10px;
+}
+
 /* Browse Tabs container*/
 .content .content-menu {
-
+  border: 0;
 }
-.content .content-menu li {
 
+.content .content-menu li a:hover {
+  color: white;
+  background: #8f0011;
+  border: 1px solid black;
+  border-bottom: 0;
 }
-.content .content-menu a {
 
+.content .content-menu li.active > a {
+  background: #bda362 !important;
+  border: 1px solid black;
+  border-bottom: 0;
+  color: #8f0011;
 }
 
 /* Browse Article container */
