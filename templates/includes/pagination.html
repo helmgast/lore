@@ -1,5 +1,5 @@
 {% if list.pages > 1 %}
-  {% set page=list.page %}
+  {% set page=pagination.page %}
   {% set urlargs = url_for_args.pop('page', None) %} {# need to remove page if there already #}
   {% set urlargs = url_for_args %}
   <div>

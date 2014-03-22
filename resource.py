@@ -373,7 +373,7 @@ class ResourceHandler(View):
       self.logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
-      return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next']})
+      return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
 
   def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
@@ -434,8 +434,9 @@ class ResourceHandler(View):
       r['list'] = listquery
       r[self.strategy.plural_name] = listquery
     else:
-      r['list'] = listquery.paginate(page=int(page), per_page=5)
-      r[self.strategy.plural_name] = r['list'].items
+      r['pagination'] = listquery.paginate(page=int(page), per_page=5)
+      r['list'] = r['pagination'].items
+      r[self.strategy.plural_name] = r['list']
     r['url_for_args'] = request.view_args
     r['url_for_args'].update(request.args.to_dict())
     r['template'] = self.strategy.list_template()

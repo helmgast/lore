@@ -15,7 +15,7 @@ from auth import Auth
 # from admin import Admin
 
 from flask.json import JSONEncoder, jsonify
-from flask.ext.mongoengine import MongoEngine
+from flask.ext.mongoengine import MongoEngine, Pagination
 from flask.ext.mongoengine.wtf import model_form
 from flaskext.markdown import Markdown
 from flask_wtf.csrf import CsrfProtect
@@ -31,6 +31,8 @@ class MongoJSONEncoder(JSONEncoder):
   def default(self, o):
     if isinstance(o, Document) or isinstance(o, QuerySet):
       return o.to_json()
+    elif isinstance(o, Pagination):
+      return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
     return JSONEncoder.default(self, o)
 
 class NewImagePattern(ImagePattern):
