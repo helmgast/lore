@@ -1,4 +1,4 @@
-{% if list.pages > 1 %}
+{% if pagination.pages > 1 %}
   {% set page=pagination.page %}
   {% set urlargs = url_for_args.pop('page', None) %} {# need to remove page if there already #}
   {% set urlargs = url_for_args %}
@@ -8,9 +8,9 @@
       {% if page-2 >= 1 %}<li><a href="{{url_for(request.endpoint, page=page-2, **urlargs)}}">{{ page - 2 }}</a></li>{% endif %}
       {% if page-1 >= 1 %}<li><a href="{{url_for(request.endpoint, page=page-1, **urlargs)}}">{{ page - 1 }}</a></li>{% endif %}
       <li class="active"><a href="{{url_for(request.endpoint, page=page, **urlargs)}}">{{ page }}</a></li>
-      {% if page+1 <= list.pages %}<li><a href="{{url_for(request.endpoint, page=page+1, **urlargs)}}">{{ page + 1 }}</a></li>{% endif %}
-      {% if page+2 <= list.pages  %}<li><a href="{{url_for(request.endpoint, page=page+2, **urlargs)}}">{{ page + 2 }}</a></li>{% endif %}
-      <li{% if page+1 > list.pages %} class="disabled"{% endif %}><a class="next" href="{{url_for(request.endpoint, page=page+1, **urlargs)}}">»</a></li>
+      {% if page+1 <= pagination.pages %}<li><a href="{{url_for(request.endpoint, page=page+1, **urlargs)}}">{{ page + 1 }}</a></li>{% endif %}
+      {% if page+2 <= pagination.pages  %}<li><a href="{{url_for(request.endpoint, page=page+2, **urlargs)}}">{{ page + 2 }}</a></li>{% endif %}
+      <li{% if page+1 > pagination.pages %} class="disabled"{% endif %}><a class="next" href="{{url_for(request.endpoint, page=page+1, **urlargs)}}">»</a></li>
     </ul>
   </div>
 {% endif %}

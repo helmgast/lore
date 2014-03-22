@@ -98,9 +98,10 @@ if the_app is None:
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
   
-  the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
-  # except Exception:
-    # the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
+  try:
+    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
+  except Exception:
+    the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
@@ -135,9 +136,9 @@ wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
 def load_user():
   g.feature = app_features
 
-# def run_the_app(debug):
-#   logger.info("Running local instance")
-#   the_app.run(debug=debug)
+def run_the_app(debug):
+  logger.info("Running local instance")
+  the_app.run(debug=debug)
 
 
 def setup_models():
