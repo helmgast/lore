@@ -27,36 +27,6 @@ from markdown.extensions import Extension
 from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
 from markdown.util import etree
 
-class MongoJSONEncoder(JSONEncoder):
-  def default(self, o):
-    if isinstance(o, Document) or isinstance(o, QuerySet):
-      return o.to_json()
-    elif isinstance(o, Pagination):
-      return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
-    return JSONEncoder.default(self, o)
-
-class NewImagePattern(ImagePattern):
-  def handleMatch(self, m):
-    el = super(NewImagePattern, self).handleMatch(m)
-    alt = el.get('alt')
-    src = el.get('src')
-    parts = alt.rsplit('|',1)
-    el.set('alt',parts[0])
-    if len(parts)==2:
-      el.set('class', parts[1])
-      if parts[1] in ['gallery', 'thumb']:
-        el.set('src', src.replace('/asset/','/asset/thumbs/'))
-    a_el = etree.Element('a')
-    a_el.set('class', 'imagelink')
-    a_el.append(el)
-    a_el.set('href', src)
-    return a_el
-
-class AutolinkedImage(Extension):
-  def extendMarkdown(self, md, md_globals):
-    # Insert instance of 'mypattern' before 'references' pattern
-    md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
-
 the_app = None
 db = None
 auth = None
@@ -93,15 +63,42 @@ def is_allowed_access(user):
   else:
     return True
 
-if the_app is None:
-  from app import is_debug
+class MongoJSONEncoder(JSONEncoder):
+  def default(self, o):
+    if isinstance(o, Document) or isinstance(o, QuerySet):
+      return o.to_json()
+    elif isinstance(o, Pagination):
+      return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
+    return JSONEncoder.default(self, o)
 
+class NewImagePattern(ImagePattern):
+  def handleMatch(self, m):
+    el = super(NewImagePattern, self).handleMatch(m)
+    alt = el.get('alt')
+    src = el.get('src')
+    parts = alt.rsplit('|',1)
+    el.set('alt',parts[0])
+    if len(parts)==2:
+      el.set('class', parts[1])
+      if parts[1] in ['gallery', 'thumb']:
+        el.set('src', src.replace('/asset/','/asset/thumbs/'))
+    a_el = etree.Element('a')
+    a_el.set('class', 'imagelink')
+    a_el.append(el)
+    a_el.set('href', src)
+    return a_el
+
+class AutolinkedImage(Extension):
+  def extendMarkdown(self, md, md_globals):
+    # Insert instance of 'mypattern' before 'references' pattern
+    md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+
+if the_app is None:
   the_app = Flask('raconteur')  # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
   the_app.config.from_pyfile('config.py')  # db-settings and secrets, should not be shown in code
-  the_app.config['DEBUG'] = is_debug
-  the_app.config['PROPAGATE_EXCEPTIONS'] = is_debug
+  the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
   # we can't import models before db is created, as the model classes are built on runtime knowledge of db
@@ -109,7 +106,6 @@ if the_app is None:
   from model.user import User
 
   auth = Auth(the_app, db, user_model=User)
-#  admin = Admin(the_app, auth)
 
   md = Markdown(the_app, extensions=['attr_list'])
   md.register_extension(AutolinkedImage)
@@ -132,6 +128,7 @@ if the_app is None:
 
 JoinForm = model_form(User)
 wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
+
 
 
 @the_app.before_request
@@ -179,13 +176,6 @@ def run_tests():
   logger.info("Running unit tests")
   from tests import app_test
   app_test.run_tests()
-
-if not is_debug:
-  @the_app.errorhandler(ResourceError)
-  def handle_invalid_usage(error):
-    response = jsonify(error.to_dict())
-    print request.args
-    return response
 
 
 ###
@@ -275,7 +265,6 @@ class ImageAssetHandler(ResourceHandler):
     return r
 
 ImageAssetHandler.register_urls(the_app, imageasset_strategy)
-
 
 
 ###
