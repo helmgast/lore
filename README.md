@@ -53,9 +53,9 @@ LANGUAGES = {
 }
 ```
 
-### Running
+### Running locally
 1. Start mongodb with `mongod`
-2. If the database has not been used before, or data needs to be reset, run `python app.py reset`
-3. (Optional) Compile translations with `python app.py lang` 
-4. Start the application with `python app.py`
+2. If the database has not been used before, or data needs to be reset, run `python start.py reset`
+3. (Optional) Compile translations with `python start.py lang` 
+4. Start the application with `python start.py`
 5. Point your browser to `http://localhost:5000`
