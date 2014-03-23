@@ -65,3 +65,16 @@ sudo chgrp -R /var/www/helmgast.se
 sudo chmod -R 771 /var/www/helmgast.se
 sudo chgrp -R /var/repo/fablr.git
 sudo chmod -R 771 /var/repo/fablr.git
+
+mkdir -p .ssh/
+
+vi /etc/ssh/sshd_config
+
+-Change settings to
+
+PermitRootLogin no
+PasswordAuthentication no
+X11Forwarding no
+UsePAM no
+UseDNS no
+AllowUsers michael

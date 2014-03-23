@@ -21,7 +21,7 @@ Generic classes for all world children
 /* needs !important to overwrite other css classes */
 body {
   font-family: Goudy;
-  background: url('../../../static/img/bg.jpg') !important;
+  background: #f6f5ee url("../../../static/img/noise-light.png") !important;
 }
 
 body a {
