@@ -70,6 +70,15 @@ ConversationHandler.register_urls(social, conversation_strategy)
 message_strategy = ResourceAccessStrategy(Message, 'messages', parent_strategy=conversation_strategy)
 ResourceHandler.register_urls(social, message_strategy)
 
+###
+### Template filters
+###
+@social.template_filter('is_following')
+def is_following(from_user, to_user):
+  return from_user.is_following(to_user)
+
+wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
+
 @social.route('/')
 @auth.login_required
 def index():

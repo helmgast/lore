@@ -10,7 +10,7 @@
 
 import logging, os
 from re import compile
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
 from auth import Auth
 # from admin import Admin
 
@@ -92,14 +92,25 @@ class AutolinkedImage(Extension):
     # Insert instance of 'mypattern' before 'references' pattern
     md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
 
-if the_app is None:
+default_options = {
+  'MONGODB_SETTINGS': {'DB':'raconteurdb'},
+  'SECRET_KEY':'raconteur',
+  'LANGUAGES': {
+    'en': 'English',
+    'sv': 'Swedish'
+  }
+}
+
+def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
   logger = logging.getLogger(__name__)
   logger.info("App created: %s", the_app)
-
-  the_app.config.from_pyfile('config.py')  # default, dummy settings
-  the_app.config.from_envvar('RACONTEUR_CONFIG_FILE', silent=True)  # db-settings and secrets, should not be shown in code
-  the_app.config['INIT_MODE'] = os.environ.get('RACONTEUR_INIT_MODE', None)
+  the_app.config.update(default_options)  # default, dummy settings
+  the_app.config.update(kwargs)  # default, dummy settings
+  if 'RACONTEUR_CONFIG_FILE' in os.environ:
+    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE', silent=True)  # db-settings and secrets, should not be shown in code
+  if 'RACONTEUR_INIT_MODE' in os.environ:
+    the_app.config['INIT_MODE'] = os.environ.get('RACONTEUR_INIT_MODE')
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
   db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
@@ -180,20 +191,20 @@ def run_tests():
   app_test.run_tests()
 
 
-@the_app.before_request
+@current_app.before_request
 def load_user():
   g.feature = app_features
 
 ###
 ### Basic views (URL handlers)
 ###
-@the_app.route('/')
+@current_app.route('/')
 def homepage():
   return render_template('homepage.html')
 
 
 @auth.admin_required
-@the_app.route('/admin/', methods=['GET', 'POST'])
+@current_app.route('/admin/', methods=['GET', 'POST'])
 def admin():
   if request.method == 'POST' and request.form['state']:
     pass
@@ -203,7 +214,7 @@ def admin():
 JoinForm = model_form(User)
 
 # Page to sign up, takes both GET and POST so that it can save the form
-@the_app.route('/join/', methods=['GET', 'POST'])
+@current_app.route('/join/', methods=['GET', 'POST'])
 def join():
   if not app_features["join"]:
     raise ResourceError(403)
@@ -233,14 +244,14 @@ def join():
 #     abort(404)
 # or this
 # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
-@the_app.route('/asset/<slug>')
+@current_app.route('/asset/<slug>')
 def asset(slug):
   asset = ImageAsset.objects(slug=slug).first_or_404()
   response = make_response(asset.image.read())
   response.mimetype = asset.mime_type
   return response
 
-@the_app.route('/asset/thumbs/<slug>')
+@current_app.route('/asset/thumbs/<slug>')
 def asset_thumb(slug):
   asset = ImageAsset.objects(slug=slug).first_or_404()
   response = make_response(asset.image.thumbnail.read())
@@ -275,33 +286,16 @@ class ImageAssetHandler(ResourceHandler):
 ImageAssetHandler.register_urls(the_app, imageasset_strategy)
 
 
-###
-### Template filters
-###
-@the_app.template_filter('is_following')
-def is_following(from_user, to_user):
-  return from_user.is_following(to_user)
-
-wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
-
-@the_app.template_filter('wikify')
-def wikify(s):
-  if s:
-    return Markup(wikify_re.sub(r'<a href="/world/\1/">\1</a>', s))
-  else:
-    return ""
-
-
-@the_app.template_filter('dictreplace')
-def dictreplace(s, d):
-  if d and len(d) > 0:
-    parts = s.split("__")
-    # Looking for variables __key__ in s.
-    # Splitting on __ makes every 2nd part a key, starting with index 1 (not 0)
-    for i in range(1, len(parts), 2):
-      parts[i] = d[parts[i]]  # Replace with dict content
-    return ''.join(parts)
-  return s
+# @current_app.template_filter('dictreplace')
+# def dictreplace(s, d):
+#   if d and len(d) > 0:
+#     parts = s.split("__")
+#     # Looking for variables __key__ in s.
+#     # Splitting on __ makes every 2nd part a key, starting with index 1 (not 0)
+#     for i in range(1, len(parts), 2):
+#       parts[i] = d[parts[i]]  # Replace with dict content
+#     return ''.join(parts)
+#   return s
 
 
 # i18n
