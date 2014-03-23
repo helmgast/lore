@@ -72,8 +72,6 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # default, dummy settings
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
     the_app.config.from_envvar('RACONTEUR_CONFIG_FILE', silent=True)  # db-settings and secrets, should not be shown in code
-  if 'RACONTEUR_INIT_MODE' in os.environ:
-    the_app.config['INIT_MODE'] = os.environ.get('RACONTEUR_INIT_MODE')
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
 

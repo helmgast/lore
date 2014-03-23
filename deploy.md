@@ -31,3 +31,20 @@ To tail the log of processes running (requires rhc command line tool from OpenSh
 To start or stop app
 rhc app stop raconteur
 rhc app start raconteur
+
+
+
+sudo apt-get update
+sudo apt-get install apache2
+
+sudo apt-get install libapache2-mod-wsgi
+
+sudo a2enmod wsgi
+
+sudo apt-get install python-dev
+
+sudo apt-get install python-pip
+sudo pip install virtualenvmkdir /var/www/helmgast.semkdir /var/repo/fablr.git/sudo apt-get install git
+
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
