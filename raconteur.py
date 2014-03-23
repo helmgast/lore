@@ -158,6 +158,7 @@ def init_actions(app, init_mode):
 
 def setup_models(app):
   app.logger.info("Resetting data models")
+  app.logger.info(app.config['MONGODB_SETTINGS'])
   db.connection.drop_database(app.config['MONGODB_SETTINGS']['DB'])
   from test_data import model_setup
   model_setup.setup_models()
