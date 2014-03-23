@@ -8,7 +8,7 @@ try:
 except IOError:
   pass
 
-from raconteur import create_app
+from raconteur import create_app, init_actions
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
