@@ -8,13 +8,16 @@
   :copyright: (c) 2014 by Raconteur
 """
 
-import logging, os
+import logging
+import os
 from re import compile
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
+
 from auth import Auth
+
 # from admin import Admin
 
-from flask.json import JSONEncoder, jsonify
+from flask.json import JSONEncoder
 from flask.ext.mongoengine import MongoEngine, Pagination
 from flask.ext.mongoengine.wtf import model_form
 from flaskext.markdown import Markdown
@@ -31,28 +34,30 @@ the_app = None
 db = None
 auth = None
 
-# Private = Everything locked down, no access to database (due to maintenance)
-# Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
-# Public = Everyone is allowed to log in and create new accounts
-STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = 0, 1, 2
-app_state = STATE_PUBLIC
+app_states = {
+  # Private = Everything locked down, no access to database (due to maintenance)
+  "private": False,
+  # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
+  "protected": False,
+  # Public = Everyone is allowed to log in and create new accounts
+  "public": True
+}
 
 app_features = {
-  "tools": False,
+  "tools": True,
   "join": False
 }
 
 def is_private():
-  return app_state == STATE_PRIVATE
+  return app_states["private"]
 
 
 def is_protected():
-  return app_state == STATE_PROTECTED
+  return app_states["protected"]
 
 
 def is_public():
-  return app_state == STATE_PUBLIC
-
+  return app_states["public"]
 
 def is_allowed_access(user):
   if is_private():
@@ -150,7 +155,7 @@ def create_app(**kwargs):
 
 def run_the_app(debug):
   logger.info("Running local instance")
-  the_app.run(debug=debug)
+  the_app.run(debug=True)
 
 def setup_models():
   logger.info("Resetting data models")
@@ -206,9 +211,11 @@ def homepage():
 @auth.admin_required
 @current_app.route('/admin/', methods=['GET', 'POST'])
 def admin():
-  if request.method == 'POST' and request.form['state']:
-    pass
-  return render_template('maintenance.html')
+  if request.method == 'GET':
+    return render_template('admin.html', states=app_states, features=app_features)
+  elif request.method == 'POST':
+    self.app_states = request.form['states']
+    self.app_features = request.form['features']
 
 
 JoinForm = model_form(User)
