@@ -48,3 +48,18 @@ sudo pip install virtualenvmkdir /var/www/helmgast.semkdir /var/repo/fablr.git/s
 
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
 echo 'deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen' | sudo tee /etc/apt/sources.list.d/mongodb.list
+sudo apt-get update
+sudo apt-get install mongodb-10gen
+
+sudo vi post-receive
+#!/bin/sh
+git --work-tree=/var/www/domain.com --git-dir=/var/repo/site.git checkout -f
+
+chmod +x post-receive
+
+sudo groupadd vpsadmin
+sudo usermod -a -G vpsadmin martin
+sudo usermod -a -G vpsadmin niklas
+
+sudo chgrp -R /var/www/helmgast.se
+sudo chmod -R 771 /var/www/helmgast.se
