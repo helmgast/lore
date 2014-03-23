@@ -4,9 +4,9 @@ import os
 virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
 virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
 try:
-    execfile(virtualenv, dict(__file__=virtualenv))
+  execfile(virtualenv, dict(__file__=virtualenv))
 except IOError:
-    pass
+  pass
 
 from raconteur import create_app
 
@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 
 application = create_app()
 logger.error('TEST ERROR')
-
 if 'RACONTEUR_INIT_MODE' in os.environ:
-	init_actions(application, os.environ['RACONTEUR_INIT_MODE'])	
-    # Clear the init mode flag to avoid running twice accidentaly
-    del os.environ['RACONTEUR_INIT_MODE']
+  init_actions(application, os.environ['RACONTEUR_INIT_MODE'])	
+  # Clear the init mode flag to avoid running twice accidentaly
+  del os.environ['RACONTEUR_INIT_MODE']
