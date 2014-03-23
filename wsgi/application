@@ -11,9 +11,15 @@ except IOError:
 from raconteur import create_app
 
 import logging
+logging.basicConfig(level=logging.DEBUG,
+  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ 
+logging.debug('this is a debug message')
 
 application = create_app()
 if 'RACONTEUR_INIT_MODE' in os.environ:
   init_actions(application, os.environ['RACONTEUR_INIT_MODE'])	
   # Clear the init mode flag to avoid running twice accidentaly
   del os.environ['RACONTEUR_INIT_MODE']
+
+logging.debug('this is a 2nd debug message')
