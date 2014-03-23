@@ -8,31 +8,13 @@
   :copyright: (c) 2014 by Raconteur
 """
 
-import logging
 import os
-from re import compile
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
-
-from auth import Auth
-
-# from admin import Admin
-
 from flask.json import JSONEncoder
-from flask.ext.mongoengine import MongoEngine, Pagination
-from flask.ext.mongoengine.wtf import model_form
 from flaskext.markdown import Markdown
-from flask_wtf.csrf import CsrfProtect
-# Babel
-from flask.ext.babel import Babel
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.mongoengine import Pagination
+from extensions import db, csrf, babel, AutolinkedImage
 from mongoengine import Document, QuerySet
-from markdown.extensions import Extension
-from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
-from markdown.util import etree
-
-the_app = None
-db = None
-auth = None
 
 app_states = {
   # Private = Everything locked down, no access to database (due to maintenance)
@@ -75,28 +57,6 @@ class MongoJSONEncoder(JSONEncoder):
       return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
     return JSONEncoder.default(self, o)
 
-class NewImagePattern(ImagePattern):
-  def handleMatch(self, m):
-    el = super(NewImagePattern, self).handleMatch(m)
-    alt = el.get('alt')
-    src = el.get('src')
-    parts = alt.rsplit('|',1)
-    el.set('alt',parts[0])
-    if len(parts)==2:
-      el.set('class', parts[1])
-      if parts[1] in ['gallery', 'thumb']:
-        el.set('src', src.replace('/asset/','/asset/thumbs/'))
-    a_el = etree.Element('a')
-    a_el.set('class', 'imagelink')
-    a_el.append(el)
-    a_el.set('href', src)
-    return a_el
-
-class AutolinkedImage(Extension):
-  def extendMarkdown(self, md, md_globals):
-    # Insert instance of 'mypattern' before 'references' pattern
-    md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
-
 default_options = {
   'MONGODB_SETTINGS': {'DB':'raconteurdb'},
   'SECRET_KEY':'raconteur',
@@ -108,8 +68,6 @@ default_options = {
 
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
-  logger = logging.getLogger(__name__)
-  logger.info("App created: %s", the_app)
   the_app.config.update(default_options)  # default, dummy settings
   the_app.config.update(kwargs)  # default, dummy settings
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
@@ -118,17 +76,40 @@ def create_app(**kwargs):
     the_app.config['INIT_MODE'] = os.environ.get('RACONTEUR_INIT_MODE')
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
-  db = MongoEngine(the_app)  # Initiate the MongoEngine DB layer
-  # we can't import models before db is created, as the model classes are built on runtime knowledge of db
 
-  from model.user import User
-  auth = Auth(the_app, db, user_model=User)
+  configure_logging(the_app)
+  the_app.logger.info("App created: %s", the_app)
 
-  md = Markdown(the_app, extensions=['attr_list'])
+  # Configure all extensions
+  configure_extensions(the_app)
+
+  # Configure all blueprints
+  auth = configure_blueprints(the_app)
+
+  configure_hooks(the_app)
+
+  register_main_routes(the_app, auth)
+
+  return the_app
+
+def configure_extensions(app):
+  # flask-sqlalchemy
+  db.init_app(app)
+
+  # Internationalization
+  babel.init_app(app)
+
+  # Secure forms
+  csrf.init_app(app)
+
+  md = Markdown(app, extensions=['attr_list'])
   md.register_extension(AutolinkedImage)
-  csrf = CsrfProtect(the_app)
-  babel = Babel(the_app)
 
+def configure_blueprints(app):
+  from model.user import User
+  from auth import Auth
+  auth = Auth(app, db, user_model=User)
+  
   from controller.world import world_app as world
   from controller.social import social
   from controller.generator import generator
@@ -136,30 +117,48 @@ def create_app(**kwargs):
   from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
   from model.world import ImageAsset
 
-  the_app.register_blueprint(world, url_prefix='/world')
+  app.register_blueprint(world, url_prefix='/world')
   if app_features["tools"]:
-    the_app.register_blueprint(generator, url_prefix='/generator')
-  the_app.register_blueprint(social, url_prefix='/social')
-  the_app.register_blueprint(campaign, url_prefix='/campaign')
+    app.register_blueprint(generator, url_prefix='/generator')
+  app.register_blueprint(social, url_prefix='/social')
+  app.register_blueprint(campaign, url_prefix='/campaign')
+  return auth
+ 
+def configure_hooks(app):
+  
+  @app.before_request
+  def load_user():
+    g.feature = app_features
 
-  init_mode = the_app.config.get('INIT_MODE', None)
+def configure_logging(app):
+  import logging
+
+  # Set info level on logger, which might be overwritten by handers.
+  # Suppress DEBUG messages.
+  app.logger.setLevel(logging.INFO if not app.debug else logging.DEBUG)
+
+  # info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')
+  # info_file_handler = logging.handlers.RotatingFileHandler(info_log, maxBytes=100000, backupCount=10)
+  # info_file_handler.setLevel(logging.INFO)
+  # info_file_handler.setFormatter(logging.Formatter(
+  #     '%(asctime)s %(levelname)s: %(message)s '
+  #     '[in %(pathname)s:%(lineno)d]')
+  # )
+  # app.logger.addHandler(info_file_handler)
+
+
+def init_actions(app, init_mode):
   if init_mode:
     if init_mode=='reset':
-      setup_models()
+      setup_models(app)
     elif init_mode=='lang':
       setup_language()
     elif init_mode=='test':
       run_tests()
-    # Clear the init mode flag to avoid running twice accidentaly
-    del os.environ['INIT_MODE']
 
-def run_the_app(debug):
-  logger.info("Running local instance")
-  the_app.run(debug=True)
-
-def setup_models():
-  logger.info("Resetting data models")
-  db.connection.drop_database(the_app.config['MONGODB_SETTINGS']['DB'])
+def setup_models(app):
+  app.logger.info("Resetting data models")
+  db.connection.drop_database(app.config['MONGODB_SETTINGS']['DB'])
   from test_data import model_setup
   model_setup.setup_models()
   # This hack sets a unique index on the md5 of image files to prevent us from 
@@ -195,103 +194,99 @@ def run_tests():
   from tests import app_test
   app_test.run_tests()
 
+def register_main_routes(app, auth):
+  from flask.ext.mongoengine.wtf import model_form
+  from flask.ext.babel import lazy_gettext as _
+  from model.user import User
+  from model.world import ImageAsset
+  from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
-@current_app.before_request
-def load_user():
-  g.feature = app_features
+  @app.route('/')
+  def homepage():
+    return render_template('homepage.html')
 
-###
-### Basic views (URL handlers)
-###
-@current_app.route('/')
-def homepage():
-  return render_template('homepage.html')
-
-
-@auth.admin_required
-@current_app.route('/admin/', methods=['GET', 'POST'])
-def admin():
-  if request.method == 'GET':
-    return render_template('admin.html', states=app_states, features=app_features)
-  elif request.method == 'POST':
-    self.app_states = request.form['states']
-    self.app_features = request.form['features']
+  @auth.admin_required
+  @app.route('/admin/', methods=['GET', 'POST'])
+  def admin():
+    if request.method == 'GET':
+      return render_template('admin.html', states=app_states, features=app_features)
+    elif request.method == 'POST':
+      self.app_states = request.form['states']
+      self.app_features = request.form['features']
 
 
-JoinForm = model_form(User)
+  JoinForm = model_form(User)
 
-# Page to sign up, takes both GET and POST so that it can save the form
-@current_app.route('/join/', methods=['GET', 'POST'])
-def join():
-  if not app_features["join"]:
-    raise ResourceError(403)
-  if request.method == 'POST' and request.form['username']:
-    # Read username from the form that was posted in the POST request
-    try:
-      User.objects().get(username=request.form['username'])
-      flash(_('That username is already taken'))
-    except User.DoesNotExist:
-      user = User(
-          username=request.form['username'],
-          email=request.form['email'],
-      )
-      user.set_password(request.form['password'])
-      user.save()
+  # Page to sign up, takes both GET and POST so that it can save the form
+  @app.route('/join/', methods=['GET', 'POST'])
+  def join():
+    if not app_features["join"]:
+      raise ResourceError(403)
+    if request.method == 'POST' and request.form['username']:
+      # Read username from the form that was posted in the POST request
+      try:
+        User.objects().get(username=request.form['username'])
+        flash(_('That username is already taken'))
+      except User.DoesNotExist:
+        user = User(
+            username=request.form['username'],
+            email=request.form['email'],
+        )
+        user.set_password(request.form['password'])
+        user.save()
 
-      auth.login_user(user)
-      return redirect(url_for('homepage'))
-  join_form = JoinForm()
-  return render_template('join.html', join_form=join_form)
+        auth.login_user(user)
+        return redirect(url_for('homepage'))
+    join_form = JoinForm()
+    return render_template('join.html', join_form=join_form)
 
-# This should be a lower memory way of doing this
-# try:
-#     file = FS.get(ObjectId(oid))
-#     return Response(file, mimetype=file.content_type, direct_passthrough=True)
-# except NoFile:
-#     abort(404)
-# or this
-# https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
-@current_app.route('/asset/<slug>')
-def asset(slug):
-  asset = ImageAsset.objects(slug=slug).first_or_404()
-  response = make_response(asset.image.read())
-  response.mimetype = asset.mime_type
-  return response
+  @app.route('/asset/<slug>')
+  def asset(slug):
+    # TODO This should be a lower memory way of doing this
+    # try:
+    #     file = FS.get(ObjectId(oid))
+    #     return Response(file, mimetype=file.content_type, direct_passthrough=True)
+    # except NoFile:
+    #     abort(404)
+    # or this
+    # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
+    asset = ImageAsset.objects(slug=slug).first_or_404()
+    response = make_response(asset.image.read())
+    response.mimetype = asset.mime_type
+    return response
 
-@current_app.route('/asset/thumbs/<slug>')
-def asset_thumb(slug):
-  asset = ImageAsset.objects(slug=slug).first_or_404()
-  response = make_response(asset.image.thumbnail.read())
-  response.mimetype = asset.mime_type
-  return response
+  @app.route('/asset/thumbs/<slug>')
+  def asset_thumb(slug):
+    asset = ImageAsset.objects(slug=slug).first_or_404()
+    response = make_response(asset.image.thumbnail.read())
+    response.mimetype = asset.mime_type
+    return response
 
-imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', form_class=
-  model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
-class ImageAssetHandler(ResourceHandler):
-  def new(self, r):
-    '''Override new() to do some custom file pre-handling'''
-    self.strategy.check_operation_any(r['op'])
-    form = self.form_class(request.form, obj=None)
-    # del form.slug # remove slug so it wont throw errors here
-    if not form.validate():
-      r['form'] = form
-      raise ResourceError(400, r)
-    file = request.files['imagefile']
-    item = ImageAsset(creator=g.user)
-    if file:
-      item.make_from_file(file)
-    elif request.form.has_key('source_image_url'):
-      item.make_from_url(request.form['source_image_url'])
-    else:
-      abort(403)
-    form.populate_obj(item)
-    item.save()
-    r['item'] = item
-    r['next'] = url_for('asset', slug=item.slug)
-    return r
-
-ImageAssetHandler.register_urls(the_app, imageasset_strategy)
-
+  imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', form_class=
+    model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
+  class ImageAssetHandler(ResourceHandler):
+    def new(self, r):
+      '''Override new() to do some custom file pre-handling'''
+      self.strategy.check_operation_any(r['op'])
+      form = self.form_class(request.form, obj=None)
+      # del form.slug # remove slug so it wont throw errors here
+      if not form.validate():
+        r['form'] = form
+        raise ResourceError(400, r)
+      file = request.files['imagefile']
+      item = ImageAsset(creator=g.user)
+      if file:
+        item.make_from_file(file)
+      elif request.form.has_key('source_image_url'):
+        item.make_from_url(request.form['source_image_url'])
+      else:
+        abort(403)
+      form.populate_obj(item)
+      item.save()
+      r['item'] = item
+      r['next'] = url_for('asset', slug=item.slug)
+      return r
+  ImageAssetHandler.register_urls(app, imageasset_strategy)
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):
@@ -303,9 +298,3 @@ ImageAssetHandler.register_urls(the_app, imageasset_strategy)
 #       parts[i] = d[parts[i]]  # Replace with dict content
 #     return ''.join(parts)
 #   return s
-
-
-# i18n
-@babel.localeselector
-def get_locale():
-  return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.

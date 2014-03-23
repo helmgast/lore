@@ -21,7 +21,7 @@ from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 from gridfs.errors import FileExists
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
-from raconteur import auth, db, csrf
+from extensions import db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
@@ -52,7 +52,7 @@ class ArticleHandler(ResourceHandler):
       r['list'] = r['pagination'].iterable.filter(type='blogpost').order_by('-created_date')
     else:
       r['list'] = r['list'].filter(type='blogpost').order_by('-created_date')
-      
+
     r['articles'] = r['list']
     return r
 

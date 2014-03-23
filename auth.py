@@ -212,3 +212,5 @@ class Auth(object):
         self.register_blueprint()
         self.register_handlers()
         self.register_context_processors()
+
+

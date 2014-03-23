@@ -13,7 +13,6 @@
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g
-from raconteur import auth
 from resource import ResourceHandler, ResourceError, ResourceAccessStrategy
 from model.user import User, Group, Member, Conversation, Message
 
@@ -21,7 +20,6 @@ from model.user import User, Group, Member, Conversation, Message
 class SameUserResourceAccessStrategy(ResourceAccessStrategy):
   def is_allowed(self, user, op, instance):
     return user.admin or user == instance or op in ["view", "list"]
-
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
@@ -73,14 +71,14 @@ ResourceHandler.register_urls(social, message_strategy)
 ###
 ### Template filters
 ###
-@social.template_filter('is_following')
 def is_following(from_user, to_user):
   return from_user.is_following(to_user)
 
-wikify_re = compile(r'\b(([A-Z]+[a-z]+){2,})\b')
+social.add_app_template_filter(is_following)
+
 
 @social.route('/')
-@auth.login_required
+# @auth.login_required
 def index():
     following_messages = Message.objects(conversation=None, user__in=g.user.following).order_by('-pub_date')
     return render_template('social/base.html', following_message_list=following_messages)

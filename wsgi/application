@@ -8,4 +8,10 @@ try:
 except IOError:
     pass
 
-from raconteur import the_app as application
+from raconteur import create_app
+
+application = create_app()
+if 'RACONTEUR_INIT_MODE' in os.environ:
+	init_actions(application, os.environ['RACONTEUR_INIT_MODE'])	
+    # Clear the init mode flag to avoid running twice accidentaly
+    del os.environ['RACONTEUR_INIT_MODE']

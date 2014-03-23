@@ -13,6 +13,7 @@ import inspect
 import logging
 
 from flask import request, render_template, flash, redirect, url_for, abort, g
+from flask import current_app as the_app
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
@@ -258,7 +259,6 @@ class ResourceHandler(View):
   default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
-  logger = logging.getLogger(__name__)
 
   def __init__(self, strategy):
     self.form_class = strategy.form_class
@@ -266,6 +266,8 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st):
+    logger = logging.getLogger(__name__)
+
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
@@ -273,7 +275,7 @@ class ResourceHandler(View):
         app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
 
-    logger.info("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
+    logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
     print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
     app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
