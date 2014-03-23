@@ -63,3 +63,5 @@ sudo usermod -a -G vpsadmin niklas
 
 sudo chgrp -R /var/www/helmgast.se
 sudo chmod -R 771 /var/www/helmgast.se
+sudo chgrp -R /var/repo/fablr.git
+sudo chmod -R 771 /var/repo/fablr.git
