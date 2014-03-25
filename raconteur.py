@@ -207,11 +207,20 @@ def register_main_routes(app, auth):
   @auth.admin_required
   @app.route('/admin/', methods=['GET', 'POST'])
   def admin():
+    global app_states, app_features
     if request.method == 'GET':
-      return render_template('admin.html', states=app_states, features=app_features)
+      return render_template('admin.html', states=app_states, features=app_features, dbs=db.connection.database_names())
     elif request.method == 'POST':
-      self.app_states = request.form['states']
-      self.app_features = request.form['features']
+      if request.form['db_copy']:
+        if request.form['db_copy'] in db.connection.database_names():
+          raise Exception("Name already exists")
+        app.logger.info("Copying current database to '%s'", request.form['db_copy'])
+        db.connection.copy_database('raconteurdb', request.form['db_copy'])
+      # if request.form['states']:
+      #   app_states = request.form['states']
+      # if request.form['features']:
+      #   app_features = request.form['features']
+      return redirect('/admin/')
 
 
   JoinForm = model_form(User)

@@ -10,20 +10,38 @@
 <form method="post" action="{{ url_for('admin') }}" role="form">
   <div class="col-md-4">
     <div class="form-group">
+      <h1>Application features</h1>
+      <dl>
+        {% for feature in features %}
+        <dt>{{_(feature)}}</dt>
+        <dd><input type="checkbox" name="features" class="form-control" value="{{ feature }}" {% if features[feature] %}checked="checked"{% endif %}/></dd>
+        {% endfor %}
+      </dl>
+    </div>
+    <div class="form-group">
+      <h1>Application states</h1>
       <dl>
         {% for state in states %}
         <dt>{{_(state)}}</dt>
-        <dd><input type="radio" name="states" class="form-control" {% if states[state] %}checked="checked"{% endif %}/></dd>
-        {% endfor %}
-        <dd>{{ state }}</dd>
-        {% for feature in features %}
-        <dt>{{_(feature)}}</dt>
-        <dd><input type="checkbox" name="features" class="form-control" {% if features[feature] %}checked="checked"{% endif %}/></dd>
+        <dd><input type="radio" name="states" class="form-control" value="{{ state }}" {% if states[state] %}checked="checked"{% endif %}/></dd>
         {% endfor %}
       </dl>
     </div>
   </div>
-  <!--<input type="hidden" name="csrf_token" class="form-control" value="{{ csrf_token() }}"/>-->
-  <button class="btn btn-lg btn-primary" type="submit">{{ _('Save') }}</button>
+  <div class="col-md-4">
+    <div class="form-group">
+      <h1>Database management</h1>
+      <dl>
+        <dt>{{_('Databases')}}</dt>
+        {% for db in dbs %}
+        <dd>{{ db }}</dd>
+        {% endfor %}
+        <dt>{{_('Create new backup')}}</dt>
+        <dd>Backup name: <input type="text" name="db_copy" value=""/></dd>
+      </dl>
+    </div>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button class="btn btn-lg btn-primary" type="submit">{{ _('Save') }}</button>
+  </div>
 </form>
 {% endblock %}
