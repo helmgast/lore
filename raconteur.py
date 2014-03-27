@@ -11,17 +11,30 @@
 import os
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
 from flask.json import JSONEncoder
+from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine import Pagination
 from extensions import db, csrf, babel, AutolinkedImage
 from mongoengine import Document, QuerySet
+from time import gmtime, strftime
 
+# Private = Everything locked down, no access to database (due to maintenance)
+# Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
+# Public = Everyone is allowed to log in and create new accounts
+STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = "private", "protected", "public"
+STATE_TYPES = ((STATE_PRIVATE, _('Private')),
+              (STATE_PROTECTED, _('Protected')),
+              (STATE_PUBLIC, _('Public')))
+
+FEATURE_JOIN, FEATURE_TOOLS = "join", "tools"
+FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
+                (FEATURE_TOOLS, _('Tools')))
+
+
+app_state = STATE_PUBLIC
 app_states = {
-  # Private = Everything locked down, no access to database (due to maintenance)
   "private": False,
-  # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
   "protected": False,
-  # Public = Everyone is allowed to log in and create new accounts
   "public": True
 }
 
@@ -31,15 +44,15 @@ app_features = {
 }
 
 def is_private():
-  return app_states["private"]
+  return app_state == STATE_PRIVATE
 
 
 def is_protected():
-  return app_states["protected"]
+  return app_state == STATE_PROTECTED
 
 
 def is_public():
-  return app_states["public"]
+  return app_state == STATE_PUBLIC
 
 def is_allowed_access(user):
   if is_private():
@@ -198,6 +211,7 @@ def register_main_routes(app, auth):
   from flask.ext.babel import lazy_gettext as _
   from model.user import User
   from model.world import ImageAsset
+  from model.web import ApplicationConfig
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
   @app.route('/')
@@ -207,19 +221,28 @@ def register_main_routes(app, auth):
   @auth.admin_required
   @app.route('/admin/', methods=['GET', 'POST'])
   def admin():
-    global app_states, app_features
+    global app_state, app_features
+
     if request.method == 'GET':
-      return render_template('admin.html', states=app_states, features=app_features, dbs=db.connection.database_names())
+      feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
+      return render_template('admin.html',
+                             config=ApplicationConfig(state=app_state, features=feature_list,
+                                                      backup_name=strftime("backup_%Y_%m_%d", gmtime())),
+                             databases=db.connection.database_names())
     elif request.method == 'POST':
-      if request.form['db_copy']:
-        if request.form['db_copy'] in db.connection.database_names():
+      config = ApplicationConfig(request.form)
+      if not config.validate():
+        raise Exception("Bad request data")
+      if config.backup.data:
+        if config.backup_name.data in db.connection.database_names():
           raise Exception("Name already exists")
-        app.logger.info("Copying current database to '%s'", request.form['db_copy'])
-        db.connection.copy_database('raconteurdb', request.form['db_copy'])
-      # if request.form['states']:
-      #   app_states = request.form['states']
-      # if request.form['features']:
-      #   app_features = request.form['features']
+        app.logger.info("Copying current database to '%s'", config.backup_name.data)
+        db.connection.copy_database('raconteurdb', config.backup_name.data)
+      if config.state.data:
+        app_state = config.state.data
+      if not config.features.data is None:
+        for feature in app_features:
+          app_features[feature] = feature in config.features.data
       return redirect('/admin/')
 
 
