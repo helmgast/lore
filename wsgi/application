@@ -11,10 +11,9 @@ try:
   execfile(virtualenv, dict(__file__=virtualenv))
 except IOError:
   pass
+sys.path.append("../")
 
-print >> sys.stderr, os.getcwd()
-
-from ..raconteur import create_app, init_actions
+from raconteur import create_app, init_actions
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
