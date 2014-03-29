@@ -79,8 +79,12 @@
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
+        {% call IS_ENABLED("social") %}
         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
+        {% endcall %}
+        {% call IS_ENABLED("campaign") %}
         <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
+        {% endcall %}
         {% call IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}

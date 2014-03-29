@@ -26,21 +26,19 @@ STATE_TYPES = ((STATE_PRIVATE, _('Private')),
               (STATE_PROTECTED, _('Protected')),
               (STATE_PUBLIC, _('Public')))
 
-FEATURE_JOIN, FEATURE_TOOLS = "join", "tools"
+FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS = "join", "campaign", "social", "tools"
 FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
+                (FEATURE_TOOLS, _('Campaign')),
+                (FEATURE_TOOLS, _('Social')),
                 (FEATURE_TOOLS, _('Tools')))
 
 
 app_state = STATE_PUBLIC
-app_states = {
-  "private": False,
-  "protected": False,
-  "public": True
-}
-
 app_features = {
-  "tools": True,
-  "join": False
+  FEATURE_TOOLS: False,
+  FEATURE_CAMPAIGN: False,
+  FEATURE_SOCIAL: False,
+  FEATURE_JOIN: False
 }
 
 def is_private():
@@ -129,10 +127,12 @@ def configure_blueprints(app):
   from model.world import ImageAsset
 
   app.register_blueprint(world, url_prefix='/world')
-  if app_features["tools"]:
+  if app_features[FEATURE_TOOLS]:
     app.register_blueprint(generator, url_prefix='/generator')
-  app.register_blueprint(social, url_prefix='/social')
-  app.register_blueprint(campaign, url_prefix='/campaign')
+  if app_features[FEATURE_SOCIAL]:
+    app.register_blueprint(social, url_prefix='/social')
+  if app_features[FEATURE_CAMPAIGN]:
+    app.register_blueprint(campaign, url_prefix='/campaign')
   return auth
  
 def configure_hooks(app):
