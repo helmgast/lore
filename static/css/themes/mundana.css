@@ -48,7 +48,7 @@ body a {
   background-size: 75%;
 }
 
-.worldSideBar ul {
+.worldSideBar > ul {
   padding: 120px 0 0 20px;
 }
 
