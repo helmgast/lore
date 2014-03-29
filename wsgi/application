@@ -1,8 +1,10 @@
 #!/usr/bin/python
 import os
 
-raise Exception(os.getcwd())
-virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
+if 'OPENSHIFT_PYTHON_DIR' in os.environ:
+	virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
+elif os.path.exists('/var/www/helmgast.se/venv'):
+	virtenv = '/var/www/helmgast.se/venv'
 virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
 try:
   execfile(virtualenv, dict(__file__=virtualenv))
