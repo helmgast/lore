@@ -1,13 +1,23 @@
-/* ALTOR THEME
+/* HELMGAST THEME
 
 Generic classes for all world children
 */
+
+@font-face {
+    font-family: 'Goudy';
+    font-weight: bold;
+    src: url('../../../static/fonts/GoudyBookletter1911.otf');
+}
 
 /* needs !important to overwrite other css classes */
 body {
 }
 /* needs !important to overwrite other css classes */
 .content {
+}
+
+.content .page-header h1 {
+    font-family: Goudy;
 }
 
 /*.navbar-default {*/
