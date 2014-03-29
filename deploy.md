@@ -66,6 +66,13 @@ sudo chmod -R 771 /var/www/helmgast.se
 sudo chgrp -R /var/repo/fablr.git
 sudo chmod -R 771 /var/repo/fablr.git
 
+cd /var/www/helmgast.se
+sudo virtualenv venv
+source venv/bin/activate 
+
+sudo vi /etc/apache2/sites-available/fablr
+sudo a2ensite fablr
+
 mkdir -p .ssh/
 
 vi /etc/ssh/sshd_config
@@ -78,3 +85,6 @@ X11Forwarding no
 UsePAM no
 UseDNS no
 AllowUsers michael
+
+##MongoDB Admin
+http://188.226.216.129:28017/
