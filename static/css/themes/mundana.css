@@ -21,6 +21,7 @@ Generic classes for all world children
 /* needs !important to overwrite other css classes */
 body {
   font-family: Goudy;
+  font-size: 18px;
   background: #f6f5ee url("../../../static/img/noise-light.png") !important;
 }
 
