@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os
+import os, sys
 
 if 'OPENSHIFT_PYTHON_DIR' in os.environ:
 	virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
