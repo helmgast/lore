@@ -8,7 +8,7 @@
 {% endif %}
 
 {% if op == 'new' %}
-  {%set tagline = world.title %} {% set title = 'New '+article_type+'!' %}
+  {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
 {% else %}
   {% set tagline = article.type %} {% set title = article.title %}
 {% endif %}
