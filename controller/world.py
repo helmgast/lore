@@ -33,13 +33,16 @@ world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):
-    # Worlds which this user has created articles for
-    # TODO probably not efficient if many articles!
-    arts = Article.objects(creator=g.user).only("world").select_related()
-    worlds = [a.world for a in arts]
-    r['template'] = self.strategy.list_template()
-    r[self.strategy.plural_name] = worlds
-    return r    
+    if g.user:
+      # Worlds which this user has created articles for
+      # TODO probably not efficient if many articles!
+      arts = Article.objects(creator=g.user).only("world").select_related()
+      worlds = [a.world for a in arts]
+      r['template'] = self.strategy.list_template()
+      r[self.strategy.plural_name] = worlds
+      return r
+    else:
+      return self.list(r)
 
 WorldHandler.register_urls(world_app, world_strategy)
 
