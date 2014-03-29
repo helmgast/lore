@@ -17,17 +17,17 @@ def setup_models():
 def add_test_data():
 
     # World.drop_collection()
-    helmgast = World(title="Helmgast", publisher="Helmgast", description=u"En helmgasts historia").save()
-    mundana = World(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling").save()
-    altor = World(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
-    kult = World(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
+    helmgast = World(title=u"Helmgast", publisher=u"Helmgast", description=u"En helmgasts historia").save()
+    mundana = World(title=u"Mundana", publisher=u"Neogames", description=u"En fantasyvärld för grisodling").save()
+    altor = World(title=u"Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
+    kult = World(title=u"Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
 
     # RelationType.drop_collection()
-    RelationType(name="child of").save()
-    RelationType(name="parent of").save()
-    friend = RelationType(name="friend of").save()
-    enemy = RelationType(name="enemy of").save()
-    RelationType(name="distant relative of").save()
+    RelationType(name=u"child of").save()
+    RelationType(name=u"parent of").save()
+    friend = RelationType(name=u"friend of").save()
+    enemy = RelationType(name=u"enemy of").save()
+    RelationType(name=u"distant relative of").save()
 
     # User.drop_collection()
     mf = User(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
