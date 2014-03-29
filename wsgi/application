@@ -14,7 +14,7 @@ except IOError:
 
 print >> sys.stderr, os.getcwd()
 
-from raconteur import create_app, init_actions
+from ..raconteur import create_app, init_actions
 
 import logging
 logging.basicConfig(level=logging.DEBUG,
