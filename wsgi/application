@@ -12,6 +12,8 @@ try:
 except IOError:
   pass
 
+print >> sys.stderr, os.getcwd()
+
 from raconteur import create_app, init_actions
 
 import logging
