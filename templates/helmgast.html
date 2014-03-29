@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content_title %}{{ Helmgast }}{% endblock %}
+{% block container_class %}container{% endblock %}
+
+
+{% block mainblock %}
+<div class="col-md-6">
+  <h1>{{ _('Welcome to') }} Helmgast</h1>
+  <p><i>"Raconteur - a person who tells anecdotes in a skillful and amusing way"</i></p>
+
+  <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
+  {% include "newsletter.html" %}
+
+</div>
+<div class="col-md-6">
+  {{ self.content() }}
+</div>
+
+{% endblock %}

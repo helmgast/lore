@@ -210,13 +210,16 @@ def register_main_routes(app, auth):
   from flask.ext.mongoengine.wtf import model_form
   from flask.ext.babel import lazy_gettext as _
   from model.user import User
-  from model.world import ImageAsset
+  from model.world import ImageAsset, Article
+  from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfig
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
   @app.route('/')
   def homepage():
-    return render_template('homepage.html')
+    world = world_strategy.query_item(world='helmgast')
+    search_result = ArticleHandler(article_strategy).blog({})
+    return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
