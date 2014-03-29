@@ -9,21 +9,22 @@
 {% block content %}
 <form method="post" action="{{ url_for('admin') }}" role="form">
   <div class="col-md-4">
-    <div class="form-group">
+    {{ FORM_FIELD2(config.state) }}
+    {{ FORM_FIELD2(config.features) }}
+  </div>
+  <div class="col-md-4">
       <dl>
-        {% for state in states %}
-        <dt>{{_(state)}}</dt>
-        <dd><input type="radio" name="states" class="form-control" {% if states[state] %}checked="checked"{% endif %}/></dd>
-        {% endfor %}
-        <dd>{{ state }}</dd>
-        {% for feature in features %}
-        <dt>{{_(feature)}}</dt>
-        <dd><input type="checkbox" name="features" class="form-control" {% if features[feature] %}checked="checked"{% endif %}/></dd>
+        <dt>{{_('Databases')}}</dt>
+        {% for db in databases %}
+        <dd>{{ db }}</dd>
         {% endfor %}
       </dl>
-    </div>
+    {{ FORM_FIELD2(config.backup) }}
+    {{ FORM_FIELD2(config.backup_name) }}
   </div>
-  <!--<input type="hidden" name="csrf_token" class="form-control" value="{{ csrf_token() }}"/>-->
-  <button class="btn btn-lg btn-primary" type="submit">{{ _('Save') }}</button>
+  <div class="col-md-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button class="btn btn-lg btn-primary" type="submit">{{ _('Save') }}</button>
+  </div>
 </form>
 {% endblock %}

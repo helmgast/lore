@@ -5,7 +5,21 @@
   <button type="reset" class="btn">{{cancel_title}}</button>
 </div>
 {%- endmacro -%}
- 
+
+{%- macro FORM_FIELD2(field) -%}
+  <dt>{{ field.label }}
+  <dd>{{ field(**kwargs)|safe }}
+  {% if field.errors %}
+    <ul class=errors>
+    {% for error in field.errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  </dd>
+{%- endmacro -%}
+
+
 {%- macro FORM_FIELD(field, type="plain", label=True, cols=None, addlabelcls="", addcontrolcls="") -%}
   {% set labelcls = "control-label"+addlabelcls %}
   {% if type=="inline" %}{% set labelcls= labelcls+" sr-only"%}{%endif%}

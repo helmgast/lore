@@ -137,9 +137,9 @@ class ResourceAccessStrategy:
     self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
 
   def get_url_path(self, part, op=None):
-    parent_url = ('' if (self.parent is None) else self.parent.url_item(None))
-    op_val = ('' if (op is None) else ('/' + op))
-    url = parent_url + '/' + part + op_val
+    parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
+    op_val = ('/' if (op is None) else ('/' + op))
+    url = parent_url + part + op_val
     return url
 
   def url_list(self, op=None):
