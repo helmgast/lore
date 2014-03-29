@@ -21,10 +21,10 @@ from flask.ext.babel import lazy_gettext as _
 class User(db.Document, BaseUser):
     username = db.StringField(unique=True, max_length=60)
     password = db.StringField(max_length=60)
-    email = db.EmailField(max_length=60) # TODO make into email field
+    email = db.EmailField(max_length=60)
     realname = db.StringField(max_length=60)
     location = db.StringField(max_length=60)
-    description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
+    description = db.StringField()  # TODO should have a max length, but if we set it, won't be rendered as TextArea
     xp = db.IntField(default=0)
     join_date = db.DateTimeField(default=now())
     # msglog = db.ReferenceField(Conversation)
@@ -33,14 +33,14 @@ class User(db.Document, BaseUser):
     following = db.ListField(db.ReferenceField('self'))
 
     #i18n
-    username.verbose_name  = _('username')
-    password.verbose_name  = _('password')
-    email.verbose_name  = _('email')
-    realname.verbose_name  = _('real name')
-    location.verbose_name  = _('location')
-    description.verbose_name  = _('description')
-    xp.verbose_name  = _('xp')
-    join_date.verbose_name  = _('join date')
+    username.verbose_name = _('username')
+    password.verbose_name = _('password')
+    email.verbose_name = _('email')
+    realname.verbose_name = _('real name')
+    location.verbose_name = _('location')
+    description.verbose_name = _('description')
+    xp.verbose_name = _('xp')
+    join_date.verbose_name = _('join date')
 
     def __unicode__(self):
         return self.username
@@ -76,7 +76,7 @@ class User(db.Document, BaseUser):
 
     @classmethod
     def get_form(cls):
-        return model_form(User, exclude=['password','admin', 'active', 'xp','username', 'join_date'])
+        return model_form(User, exclude=['password', 'admin', 'active', 'xp', 'username', 'join_date'])
 
     # @classmethod
     # def allowed(cls, user, op='view', instance=None):
@@ -86,6 +86,7 @@ class User(db.Document, BaseUser):
     #         else:
     #             return (user.id == instance.id) # requesting user and passed user instance has same ID - you can edit yourself
     #     return False
+
 
 class Conversation(db.Document):
     modified_date = db.DateTimeField(default=now())
