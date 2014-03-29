@@ -5,12 +5,17 @@ Generic classes for all world children
 
 /* needs !important to overwrite other css classes */
 body {
-    background-color: #101010;
 }
-
 /* needs !important to overwrite other css classes */
 .content {
-    background-color: #101010;
+}
+
+/*.navbar-default {*/
+    /*background-color: #c0c0c0;*/
+/*}*/
+
+body, .content {
+    /*background-color: #101010;*/
 }
 
 body, .blog_header {
@@ -18,7 +23,7 @@ body, .blog_header {
 }
 
 a, a:hover {
-    color: #7d40A9;
+    color: #7d40a9;
     /*color: #3d0069;*/
 }
 
@@ -30,7 +35,7 @@ a, a:hover {
 }
 
 .worldSideBar > ul {
-  padding: 160px 0 0 15px;
+  padding: 170px 0 0 15px;
 }
 
 .worldSideBar li a {
