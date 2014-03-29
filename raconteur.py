@@ -218,8 +218,8 @@ def register_main_routes(app, auth):
   def homepage():
     return render_template('homepage.html')
 
-  @auth.admin_required
   @app.route('/admin/', methods=['GET', 'POST'])
+  @auth.admin_required
   def admin():
     global app_state, app_features
 

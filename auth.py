@@ -106,10 +106,13 @@ class Auth(object):
             @functools.wraps(fn)
             def inner(*args, **kwargs):
                 user = self.get_logged_in_user()
-                
-                if not user or not test_fn(user):
-                    login_url = url_for('%s.login' % self.blueprint.name, next=get_next())
-                    return redirect(login_url)
+
+                if not user:
+                    return redirect(url_for('%s.login' % self.blueprint.name, next=get_next()))
+
+                if not test_fn(user):
+                    return redirect(url_for('%s.login' % self.blueprint.name, next=get_next()))
+
                 return fn(*args, **kwargs)
             return inner
         return decorator
