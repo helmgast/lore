@@ -6,12 +6,12 @@ if 'OPENSHIFT_PYTHON_DIR' in os.environ:
 elif os.path.exists('/var/www/helmgast.se/venv'):
 	virtenv = '/var/www/helmgast.se/venv'
 	os.chdir('/var/www/helmgast.se') # TODO a bit hacky
+	sys.path.append('/var/www/helmgast.se')
 virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
 try:
   execfile(virtualenv, dict(__file__=virtualenv))
 except IOError:
   pass
-sys.path.append("../")
 
 from raconteur import create_app, init_actions
 
