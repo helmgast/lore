@@ -12,8 +12,8 @@
             <dd>{{ world.publisher }}</dd>
             <dt>{{ _('Rule System') }}</dt>
             <dd>{{ world.rule_system }}</dd>
-            <dt>{{ _('Created By') }}</dt>
-            <dd>{{ world.created_by }}</dd>
+            <dt>{{ _('Created date') }}</dt>
+            <dd>{{ world.created_date.strftime('%Y-%m-%d') }}</dd>
         </dl>
     </div>
     {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
