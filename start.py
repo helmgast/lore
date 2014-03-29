@@ -10,12 +10,11 @@ import sys
 from raconteur import create_app, init_actions
 import logging
 
+app = create_app(DEBUG=True)
 if __name__ == '__main__':
   mode = sys.argv[1] if len(sys.argv)>1 else None
   if mode:
-    app = create_app(DEBUG=True)
     init_actions(app, mode)
     exit()
   else:
-    app = create_app(DEBUG=True)
     app.run()  # Debug will reload code automatically, so no need to restart server
