@@ -17,23 +17,24 @@ def setup_models():
 def add_test_data():
 
     # World.drop_collection()
-    mundana = World(title="Mundana", publisher="Neogames", description=u"En fantasyvärld för grisodling").save()
-    altor = World(title="Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
-    kult = World(title="Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
+    helmgast = World(title=u"Helmgast", publisher=u"Helmgast", description=u"En helmgasts historia").save()
+    mundana = World(title=u"Mundana", publisher=u"Neogames", description=u"En fantasyvärld för grisodling").save()
+    altor = World(title=u"Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
+    kult = World(title=u"Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
 
     # RelationType.drop_collection()
-    RelationType(name="child of").save()
-    RelationType(name="parent of").save()
-    friend = RelationType(name="friend of").save()
-    enemy = RelationType(name="enemy of").save()
-    RelationType(name="distant relative of").save()
+    RelationType(name=u"child of").save()
+    RelationType(name=u"parent of").save()
+    friend = RelationType(name=u"friend of").save()
+    enemy = RelationType(name=u"enemy of").save()
+    RelationType(name=u"distant relative of").save()
 
     # User.drop_collection()
     mf = User(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
         admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
     nf = User(username='niklas', password=make_password('niklas'), email='user@user.com', active=True,
-        admin=False, realname='Niklas F').save()
-    pf = User(username='per', password=make_password('per'), email='user@user.com', active=True, admin=False,
+        admin=True, realname='Niklas F').save()
+    pf = User(username='per', password=make_password('per'), email='user@user.com', active=True, admin=True,
         realname='Per F').save()
     mb = User(username='marco', password=make_password('marco'), email='user@user.com', active=True, admin=False,
         realname='Marco B').save()
@@ -41,10 +42,13 @@ def add_test_data():
         admin=False, realname='Fredrik J').save()
     pd = User(username='paul', password=make_password('paul'), email='user@user.com', active=True, admin=False,
         realname='Paul D').save()
-    ar = User(username='alex', password=make_password('alex'), email='user@user.com', active=True, admin=False,
-        realname='Alex R').save()
     pn = User(username='petter', password=make_password('petter'), email='user@user.com', active=True,
         admin=False, realname='Petter N').save()
+    aw = User(username='anton', password=make_password('anton'), email='user@user.com', active=True,
+        admin=False, realname='Anton W').save()
+
+    ar = User(username='alex', password=make_password('alex'), email='user@user.com', active=True, admin=False,
+        realname='Alex R').save()
     ks = User(username='krister', password=make_password('krister'), email='user@user.com', active=True,
         admin=False, realname='Krister S').save()
     User(username='calle', password=make_password('calle'), email='user@user.com', active=True, admin=False,

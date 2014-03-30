@@ -21,6 +21,7 @@ Generic classes for all world children
 /* needs !important to overwrite other css classes */
 body {
   font-family: Goudy;
+  font-size: 18px;
   background: #f6f5ee url("../../../static/img/noise-light.png") !important;
 }
 
@@ -42,14 +43,14 @@ body a {
 }
 
 .worldSideBar {
-  background: url('../../../static/img/goat.png');
+  background: url('../../../static/img/themes/mundana.png');
   background-position: top;
   background-repeat: no-repeat;
   background-size: 75%;
 }
 
-.worldSideBar ul {
-  padding: 120px 0 0 20px;
+.worldSideBar > ul {
+  padding: 120px 0 0 15px;
 }
 
 .worldSideBar li a {
@@ -59,7 +60,7 @@ body a {
 }
 
 .worldSideBar li a:hover {
-  background: #bda362;;
+  background: #bda362;
   
 }
 

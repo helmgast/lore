@@ -14,7 +14,9 @@
 {% block sidebar %}
 <ul class="nav nav-list">
   <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+  {% call IS_USER() %}
   <li><a href="{{ url_for('.world_myworlds') }}"><span class="glyphicon glyphicon-book"></span> {{ _('My worlds') }}</a></li>
+  {% endcall %}
 </ul>
 
 {% endblock %}

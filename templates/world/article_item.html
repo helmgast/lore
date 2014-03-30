@@ -8,7 +8,7 @@
 {% endif %}
 
 {% if op == 'new' %}
-  {%set tagline = world.title %} {% set title = 'New '+article_type+'!' %}
+  {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
 {% else %}
   {% set tagline = article.type %} {% set title = article.title %}
 {% endif %}
@@ -130,7 +130,7 @@
 
    </div>
   <div class="col-md-3 article_comment">
-    Example comment
+    <!--Example comment-->
   </div>
 </div>
 </form>
@@ -142,11 +142,15 @@
 </h1>
 <ul class="nav nav-tabs content-menu">
   {% set articlegroups = article.articlegroups|list %}
-  <li class="content-menu-info" title="Creator"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}System{%endif%}</li>
-  <li class="content-menu-info" title="Created"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  <li class="content-menu-info" title="Visibility"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-  <li class="content-menu-info" title="Relations to other articles"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-  <li class="content-menu-info" title="Other articles relation to this article"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
+  <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
+  {% if articlegroups or g.user %}
+  <li class="content-menu-info" title="{{ _('Visibility') }}"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
+  {% endif %}
+  {% if g.user %}
+  <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
+  <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+  {% endif %}
   {% call IS_USER() %}
     <li class="dropdown">
       <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -190,7 +194,7 @@
     {{ article.content|markdown if article.content else _("Content")}}
   </div>
   <div class="col-md-3 article_comment">
-    Example comment
+    <!--Example comment-->
   </div>
 </div>
 
