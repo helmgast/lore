@@ -14,7 +14,7 @@
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
-  EventData, FractionData)
+  EventData, FractionData, PUBLISH_STATUS_PUBLISHED)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -73,6 +73,10 @@ ResourceHandler.register_urls(world_app, article_relation_strategy)
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
+
+
+def publish_filter(article):
+  return article.status == PUBLISH_STATUS_PUBLISHED or (g.user and (g.user == article.creator or g.user.admin))
 
 
 def rows(objects, char_per_row=40, min_rows=10):
