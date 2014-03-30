@@ -12,7 +12,7 @@
 import inspect
 import logging
 
-from flask import request, render_template, flash, redirect, url_for, abort, g
+from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
@@ -265,9 +265,7 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st):
-    logger = logging.getLogger()
-    print __package__
-    # print logger.name, logger.getEffectiveLevel(), logger.parent.name
+    logger = current_app.logger if current_app else logging.getLogger(__name__)
 
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
@@ -277,7 +275,6 @@ class ResourceHandler(View):
         custom_ops.append(name)
 
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-    # print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
     app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
     # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
