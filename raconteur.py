@@ -119,6 +119,7 @@ def configure_blueprints(app):
   from model.user import User
   from auth import Auth
   auth = Auth(app, db, user_model=User)
+  app.login_required = auth.login_required
   
   with app.app_context():
 
@@ -145,11 +146,8 @@ def configure_hooks(app):
 def configure_logging(app):
   import logging
 
-  # Set info level on logger, which might be overwritten by handers.
-  # Suppress DEBUG messages.
+  # Set info level on logger, which might be overwritten by handlers.
   app.logger.setLevel(logging.INFO if not app.debug else logging.DEBUG)
-
-  print app.logger.name, app.logger.getEffectiveLevel(), app.logger.parent.name
 
   # info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')
   # info_file_handler = logging.handlers.RotatingFileHandler(info_log, maxBytes=100000, backupCount=10)

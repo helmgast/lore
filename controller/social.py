@@ -12,7 +12,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g
+from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
 from resource import ResourceHandler, ResourceError, ResourceAccessStrategy
 from model.user import User, Group, Member, Conversation, Message
 
@@ -76,9 +76,8 @@ def is_following(from_user, to_user):
 
 social.add_app_template_filter(is_following)
 
-
 @social.route('/')
-# @auth.login_required
+@current_app.login_required
 def index():
     following_messages = Message.objects(conversation=None, user__in=g.user.following).order_by('-pub_date')
     return render_template('social/base.html', following_message_list=following_messages)
