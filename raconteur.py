@@ -28,8 +28,8 @@ STATE_TYPES = ((STATE_PRIVATE, _('Private')),
 
 FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS = "join", "campaign", "social", "tools"
 FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
-                (FEATURE_TOOLS, _('Campaign')),
-                (FEATURE_TOOLS, _('Social')),
+                (FEATURE_CAMPAIGN, _('Campaign')),
+                (FEATURE_SOCIAL, _('Social')),
                 (FEATURE_TOOLS, _('Tools')))
 
 
@@ -130,12 +130,10 @@ def configure_blueprints(app):
     from model.world import ImageAsset
 
     app.register_blueprint(world, url_prefix='/world')
-    if app_features[FEATURE_TOOLS]:
-      app.register_blueprint(generator, url_prefix='/generator')
-    if app_features[FEATURE_SOCIAL]:
-      app.register_blueprint(social, url_prefix='/social')
-    if app_features[FEATURE_CAMPAIGN]:
-      app.register_blueprint(campaign, url_prefix='/campaign')
+    app.register_blueprint(generator, url_prefix='/generator')
+    app.register_blueprint(social, url_prefix='/social')
+    app.register_blueprint(campaign, url_prefix='/campaign')
+
   return auth
  
 def configure_hooks(app):
@@ -233,9 +231,11 @@ def register_main_routes(app, auth):
 
     if request.method == 'GET':
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
-      return render_template('admin.html',
-                             config=ApplicationConfig(state=app_state, features=feature_list,
-                                                      backup_name=strftime("backup_%Y_%m_%d", gmtime())),
+      print feature_list
+      # raise Exception
+      config = ApplicationConfig(state=app_state, features=feature_list,
+                               backup_name=strftime("backup_%Y_%m_%d", gmtime()))
+      return render_template('admin.html', config=config,
                              databases=db.connection.database_names())
     elif request.method == 'POST':
       config = ApplicationConfig(request.form)
@@ -250,7 +250,9 @@ def register_main_routes(app, auth):
         app_state = config.state.data
       if not config.features.data is None:
         for feature in app_features:
-          app_features[feature] = feature in config.features.data
+          is_enabled = feature in config.features.data
+          app_features[feature] = is_enabled
+        print app_features
       return redirect('/admin/')
 
 

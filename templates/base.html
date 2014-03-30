@@ -8,7 +8,7 @@
 
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>{% block title %}{{ self.content_title() }}{% endblock %} - Raconteur</title>
+    <title>{% block title %}{{ self.content_title() }}{% endblock %}</title>
     <meta name="description" content="">
     <meta name="author" content="">
 
@@ -73,7 +73,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{ url_for('homepage') }}">Raconteur
+      <a class="navbar-brand" href="{{ url_for('homepage') }}">Helmgast.se
         <small>{{ _('a story engine') }}</small>
       </a>
     </div>
@@ -88,17 +88,19 @@
         {% call IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}
+        {% call IS_USER() %}
         <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
+        {% endcall %}
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not session.logged_in %}
-          <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+          <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('log in') }}</a></li>
           {% call IS_ENABLED("join") %}
              <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
           <li><a {% call IS_ENABLED("social") %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-          <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
+          <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>
     </div>
