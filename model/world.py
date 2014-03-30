@@ -218,6 +218,12 @@ class Article(db.Document):
   def clean(self):
     self.slug = slugify(self.title)
 
+  def is_published(self):
+    return self.status == PUBLISH_STATUS_PUBLISHED
+
+  def status_name(self):
+    return PUBLISH_STATUS_TYPES[self.status][1]
+
   @staticmethod
   def type_data_name(asked_type):
     return asked_type+'data'
