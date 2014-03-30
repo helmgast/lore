@@ -176,10 +176,7 @@ class Auth(object):
                 )
                 if authenticated_user:
                     self.login_user(authenticated_user)
-                    return redirect(
-                        request.args.get('next') or \
-                        self.default_next_url
-                    )
+                    return redirect(request.args.get('next') or self.default_next_url)
                 else:
                     flash('Incorrect username or password', 'warning')
         else:
@@ -189,10 +186,7 @@ class Auth(object):
 
     def logout(self):
         self.logout_user(self.get_logged_in_user())
-        return redirect(
-            request.args.get('next') or \
-            self.default_next_url
-        )
+        return redirect(request.args.get('next') or self.default_next_url)
 
     def configure_routes(self):
         for url, callback in self.get_urls():

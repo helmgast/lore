@@ -39,13 +39,13 @@
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not session.logged_in %}
-          <li><a href="{{ url_for('auth.login') }}">{{ _('log in') }}</a></li>
+          <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('log in') }}</a></li>
           {% call IS_ENABLED("join") %}
             <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
           <li><a {% call IS_ENABLED("social") %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-          <li><a href="{{ url_for('auth.logout') }}">{{ _('log out') }}</a></li>
+          <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>
     </div>
