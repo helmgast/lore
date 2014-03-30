@@ -122,7 +122,7 @@ class RacModelConverter(ModelConverter):
 
 
 class ResourceAccessStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False):
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None):
     self.form_class = form_class if form_class else model_form(model_class, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
@@ -131,6 +131,7 @@ class ResourceAccessStrategy:
     self.id_field = id_field
     self.short_url = short_url
     self.fieldnames = [n for n in self.form_class.__dict__.keys() if (not n.startswith('_') and n is not 'model_class')]
+    self.default_list_filters = list_filters
     # The field name pointing to a parent resource for this resource, e.g. article.world
     self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
 
@@ -175,6 +176,8 @@ class ResourceAccessStrategy:
         if fieldname[0] != '_' and fieldname in self.model_class.__dict__:
           filters[key] = args.get(key)
     # print filters
+    if self.default_list_filters:
+      qr = self.default_list_filters(qr)
     if filters:
       qr = qr.filter(**filters)
     # TODO very little safety in above as all filters are allowed
@@ -330,11 +333,11 @@ class ResourceHandler(View):
       elif r['out'] == 'json':
         return self._return_json(r, err)
       else:
-        raise # Send the error onward, will be picked up by debugger if in debug mode
+        raise  # Send the error onward, will be picked up by debugger if in debug mode
     except DoesNotExist:
       abort(404)
     except ValidationError as err:
-      self.logger.exception("Validation error")
+      logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
         return self._return_json(r, resErr)
@@ -350,8 +353,8 @@ class ResourceHandler(View):
       if r['out'] == 'json':
         return self._return_json(r, err, 500)
       else:
-        self.logger.exception(err)
-        raise # Send the error onward, will be picked up by debugger if in debug mode
+        logger.exception(err)
+        raise  # Send the error onward, will be picked up by debugger if in debug mode
 
     # no error, render output
     if r['out'] == 'json':
@@ -364,7 +367,7 @@ class ResourceHandler(View):
 
   def _return_json(self, r, err=None, status_code=0):
     if err:
-      self.logger.exception(err)
+      logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
       return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
@@ -464,7 +467,7 @@ class ResourceHandler(View):
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
-    self.logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
   def replace(self, r):
@@ -491,7 +494,7 @@ class ResourceHandler(View):
       else:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
     self.strategy.check_operation_on(r['op'], item)
-    self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
+    logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r
 

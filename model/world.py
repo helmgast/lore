@@ -9,7 +9,6 @@
 """
 
 from raconteur import db
-from misc import now
 from slugify import slugify
 from user import User, Group
 import requests
@@ -21,6 +20,8 @@ from flask.ext.babel import lazy_gettext as _
 import hashlib
 from werkzeug.utils import secure_filename
 from mongoengine.queryset import Q
+from datetime import datetime
+from time import strftime
 
 import logging
 from flask import current_app
@@ -45,7 +46,7 @@ class World(db.Document):
   description = db.StringField(max_length=500)
   publisher = db.StringField(max_length=60)
   rule_system = db.StringField(max_length=60)
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
 
   def save(self, *args, **kwargs):
     self.slug = slugify(self.title)
@@ -96,7 +97,7 @@ class ImageAsset(db.Document):
   tags = db.ListField(db.StringField(max_length=30))
   mime_type = db.StringField(choices=MIME_TYPE_CHOICES, required=True)
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
 
@@ -186,14 +187,14 @@ ARTICLE_TYPES = list_to_choices([
   ])
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
-EMBEDDED_TYPES = ['persondata','fractiondata','placedata', 'eventdata', 'campaigndata']
+EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']
 class Article(db.Document):
   meta = {'indexes': ['slug']}
   slug = db.StringField(unique=True, required=False, max_length=62)
   type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
@@ -205,12 +206,12 @@ class Article(db.Document):
   # Changes type by nulling the old field, if it exists,
   # and creating an empty new one, if it exists.
   def change_type(self, new_type):
-    if new_type!=self.type and self.type is not None: # may still be 0
+    if new_type != self.type and self.type is not None:  # may still be 0
       old_type_data = Article.type_data_name(self.type)
       if old_type_data in EMBEDDED_TYPES:
         # Null the old type
         setattr(self, old_type_data, None)
-    if new_type is not None: # may still be 0
+    if new_type is not None:  # may still be 0
       new_type_data = Article.type_data_name(new_type)
       if new_type_data in EMBEDDED_TYPES and getattr(self, new_type_data) is None:
         setattr(self, new_type_data, self._fields[new_type_data].document_type())
@@ -219,9 +220,15 @@ class Article(db.Document):
   def clean(self):
     self.slug = slugify(self.title)
 
+  def is_published(self):
+    return self.status == PUBLISH_STATUS_PUBLISHED and self.created_date <= datetime.utcnow()
+
+  def status_name(self):
+    return PUBLISH_STATUS_TYPES[self.status][1] + (' %s %s' % (_('from'), str(self.created_date)) if self.status == PUBLISH_STATUS_PUBLISHED and self.created_date >= datetime.utcnow() else '')
+
   @staticmethod
   def type_data_name(asked_type):
-    return asked_type+'data'
+    return asked_type + 'data'
 
   def __str__(self):
     return unicode(self).encode('utf-8')

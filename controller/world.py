@@ -14,7 +14,7 @@
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
-  EventData, FractionData)
+  EventData, FractionData, PUBLISH_STATUS_PUBLISHED)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -26,6 +26,7 @@ from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
+from mongoengine.queryset import Q
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -49,6 +50,15 @@ class WorldHandler(ResourceHandler):
 WorldHandler.register_urls(world_app, world_strategy)
 
 
+def publish_filter(qr):
+  if not g.user:
+    return qr.filter(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow())
+  elif g.user.admin:
+    return qr
+  else:
+    return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
+
+
 class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r['op'] = "list"
@@ -63,6 +73,7 @@ class ArticleHandler(ResourceHandler):
     return r
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, short_url=True,
+                                          list_filters=publish_filter,
                                           form_class=model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()))
 ArticleHandler.register_urls(world_app, article_strategy)
 

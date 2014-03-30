@@ -31,6 +31,10 @@ body a {
   font-weight: bold;
 }
 
+h4 small {
+  color: #8f0011;
+}
+
 .well {
   background-color: #bda362;
   border: 1px solid black;

@@ -441,6 +441,10 @@ important
 	margin-top: 20px;
 }
 
+.fixed-width {
+    max-width: 100%;
+}
+
 #hinter {
 	color: #bbb;
   	position: absolute;
