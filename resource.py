@@ -47,7 +47,6 @@ class ArticleBaseForm(ModelForm):
     typedata = Article.type_data_name(self.data.get('type', 'default'))
     for embedded_type in EMBEDDED_TYPES:
       if embedded_type != typedata:
-        print 'Removed field %s' % embedded_type
         del self._fields[embedded_type]
 
   def populate_obj(self, obj):
