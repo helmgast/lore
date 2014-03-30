@@ -1,9 +1,7 @@
 {% extends "world/base.html" if not parent_template else parent_template %}
 
 
-{% block content_title %}
-{{world.title}}
-{% endblock %}
+{% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block navbar %}
