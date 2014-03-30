@@ -26,6 +26,7 @@ from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
+from mongoengine.queryset import Q
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
@@ -47,6 +48,15 @@ class WorldHandler(ResourceHandler):
 WorldHandler.register_urls(world_app, world_strategy)
 
 
+def publish_filter(qr):
+  if not g.user:
+    return qr.filter(status=PUBLISH_STATUS_PUBLISHED)
+  elif g.user.admin:
+    return qr
+  else:
+    return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED) | Q(creator=g.user))
+
+
 class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r['op'] = "list"
@@ -61,6 +71,7 @@ class ArticleHandler(ResourceHandler):
     return r
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, short_url=True,
+                                          list_filters=publish_filter,
                                           form_class=model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()))
 ArticleHandler.register_urls(world_app, article_strategy)
 
@@ -73,10 +84,6 @@ ResourceHandler.register_urls(world_app, article_relation_strategy)
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
-
-
-def publish_filter(article):
-  return article.status == PUBLISH_STATUS_PUBLISHED or (g.user and (g.user == article.creator or g.user.admin))
 
 
 def rows(objects, char_per_row=40, min_rows=10):
