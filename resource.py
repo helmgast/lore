@@ -27,8 +27,7 @@ from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from raconteur import is_allowed_access
 from model.world import EMBEDDED_TYPES, Article
 
-logger = logging.getLogger(__name__)
-
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 def generate_flash(action, name, model_identifiers, dest=''):
   s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
@@ -100,7 +99,7 @@ class RacModelConverter(ModelConverter):
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
     form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
-    logger.info("Converted model %s", model)
+    logger.debug("Converted model %s", model)
     return f.FormField(form_class, **kwargs)
 
   # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
@@ -238,7 +237,6 @@ class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
 
 
 class ResourceError(Exception):
-  logger = logging.getLogger(__name__)
 
   default_messages = {
     400: "Bad request or invalid input",
@@ -263,13 +261,12 @@ class ResourceHandler(View):
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
 
   def __init__(self, strategy):
+    self.logger = current_app.logger
     self.form_class = strategy.form_class
     self.strategy = strategy
 
   @classmethod
   def register_urls(cls, app, st):
-    logger = current_app.logger if current_app else logging.getLogger(__name__)
-
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):

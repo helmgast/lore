@@ -23,8 +23,9 @@ from mongoengine.queryset import Q
 from datetime import datetime
 from time import strftime
 
-# Constants and enumerations
-logger = logging.getLogger(__name__)
+import logging
+from flask import current_app
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 def list_to_choices(list):
   return [(s, _(s)) for s in list]

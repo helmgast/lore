@@ -8,7 +8,7 @@
   :copyright: (c) 2014 by Raconteur
 """
 
-import os
+import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
 from flask.json import JSONEncoder
 from flask.ext.babel import lazy_gettext as _
@@ -72,6 +72,7 @@ default_options = {
   'MONGODB_SETTINGS': {'DB':'raconteurdb'},
   'SECRET_KEY':'raconteur',
   'DEBUG': True,
+  'LOG_FOLDER': '.',
   'LANGUAGES': {
     'en': 'English',
     'sv': 'Swedish'
@@ -145,18 +146,20 @@ def configure_hooks(app):
 
 def configure_logging(app):
   import logging
+  from logging.handlers import RotatingFileHandler
+  app.debug_log_format = '[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s'
+  # Basic app logger will only log when debug is True, otherwise ignore all errors
+  # This is to keep stderr clean in server application scenarios
+  # app.logger.setLevel(logging.INFO)
 
-  # Set info level on logger, which might be overwritten by handlers.
-  app.logger.setLevel(logging.INFO if not app.debug else logging.DEBUG)
-
-  # info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')
-  # info_file_handler = logging.handlers.RotatingFileHandler(info_log, maxBytes=100000, backupCount=10)
-  # info_file_handler.setLevel(logging.INFO)
-  # info_file_handler.setFormatter(logging.Formatter(
-  #     '%(asctime)s %(levelname)s: %(message)s '
-  #     '[in %(pathname)s:%(lineno)d]')
-  # )
-  # app.logger.addHandler(info_file_handler)
+  if 'LOG_FOLDER' in app.config:
+    file_log = os.path.join(app.config['LOG_FOLDER'], app.name+'.log')
+    file_handler = RotatingFileHandler(file_log, maxBytes=100000, backupCount=10)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter(app.debug_log_format))
+    app.logger.addHandler(file_handler)
+  elif not app.debug:
+    print >> sys.stderr,'WARNING: No LOG_FOLDER configured and not running DEBUG'
 
 
 def init_actions(app, init_mode):
