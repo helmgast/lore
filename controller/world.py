@@ -50,11 +50,11 @@ WorldHandler.register_urls(world_app, world_strategy)
 
 def publish_filter(qr):
   if not g.user:
-    return qr.filter(status=PUBLISH_STATUS_PUBLISHED)
+    return qr.filter(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow())
   elif g.user.admin:
     return qr
   else:
-    return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED) | Q(creator=g.user))
+    return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
 
 
 class ArticleHandler(ResourceHandler):
