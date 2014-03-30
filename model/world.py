@@ -9,7 +9,6 @@
 """
 
 from raconteur import db
-from misc import now
 from slugify import slugify
 from user import User, Group
 import requests
@@ -46,7 +45,7 @@ class World(db.Document):
   description = db.StringField(max_length=500)
   publisher = db.StringField(max_length=60)
   rule_system = db.StringField(max_length=60)
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
 
   def save(self, *args, **kwargs):
     self.slug = slugify(self.title)
@@ -97,7 +96,7 @@ class ImageAsset(db.Document):
   tags = db.ListField(db.StringField(max_length=30))
   mime_type = db.StringField(choices=MIME_TYPE_CHOICES, required=True)
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
 
@@ -194,7 +193,7 @@ class Article(db.Document):
   type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=now)
+  created_date = db.DateTimeField(default=datetime.utcnow)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
