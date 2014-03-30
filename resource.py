@@ -265,7 +265,9 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st):
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger()
+    print __package__
+    # print logger.name, logger.getEffectiveLevel(), logger.parent.name
 
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
@@ -275,7 +277,7 @@ class ResourceHandler(View):
         custom_ops.append(name)
 
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-    print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
+    # print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
     app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
     # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
@@ -354,9 +356,10 @@ class ResourceHandler(View):
       if r['out'] == 'json':
         return self._return_json(r, err, 500)
       else:
+        self.logger.exception(err)
         raise # Send the error onward, will be picked up by debugger if in debug mode
 
-    # render output
+    # no error, render output
     if r['out'] == 'json':
       return self._return_json(r)
     elif 'next' in r:

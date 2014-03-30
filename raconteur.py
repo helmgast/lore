@@ -71,6 +71,7 @@ class MongoJSONEncoder(JSONEncoder):
 default_options = {
   'MONGODB_SETTINGS': {'DB':'raconteurdb'},
   'SECRET_KEY':'raconteur',
+  'DEBUG': True,
   'LANGUAGES': {
     'en': 'English',
     'sv': 'Swedish'
@@ -119,20 +120,22 @@ def configure_blueprints(app):
   from auth import Auth
   auth = Auth(app, db, user_model=User)
   
-  from controller.world import world_app as world
-  from controller.social import social
-  from controller.generator import generator
-  from controller.campaign import campaign_app as campaign
-  from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
-  from model.world import ImageAsset
+  with app.app_context():
 
-  app.register_blueprint(world, url_prefix='/world')
-  if app_features[FEATURE_TOOLS]:
-    app.register_blueprint(generator, url_prefix='/generator')
-  if app_features[FEATURE_SOCIAL]:
-    app.register_blueprint(social, url_prefix='/social')
-  if app_features[FEATURE_CAMPAIGN]:
-    app.register_blueprint(campaign, url_prefix='/campaign')
+    from controller.world import world_app as world
+    from controller.social import social
+    from controller.generator import generator
+    from controller.campaign import campaign_app as campaign
+    from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
+    from model.world import ImageAsset
+
+    app.register_blueprint(world, url_prefix='/world')
+    if app_features[FEATURE_TOOLS]:
+      app.register_blueprint(generator, url_prefix='/generator')
+    if app_features[FEATURE_SOCIAL]:
+      app.register_blueprint(social, url_prefix='/social')
+    if app_features[FEATURE_CAMPAIGN]:
+      app.register_blueprint(campaign, url_prefix='/campaign')
   return auth
  
 def configure_hooks(app):
@@ -147,6 +150,8 @@ def configure_logging(app):
   # Set info level on logger, which might be overwritten by handers.
   # Suppress DEBUG messages.
   app.logger.setLevel(logging.INFO if not app.debug else logging.DEBUG)
+
+  print app.logger.name, app.logger.getEffectiveLevel(), app.logger.parent.name
 
   # info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')
   # info_file_handler = logging.handlers.RotatingFileHandler(info_log, maxBytes=100000, backupCount=10)
