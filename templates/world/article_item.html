@@ -70,7 +70,7 @@
 
   <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
   {% for field in type_form %}
-    {{FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2"))}}
+    {{ FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2")) }}
   {% endfor %}
   </div>
 
@@ -91,6 +91,8 @@
       {{ FORM_FIELD(article_form.description, addcontrolcls=' fixed-width')}}
     </div>
     <div class="col-xs-6">
+      {{ FORM_FIELD(article_form.created_date) }}
+      {{ FORM_FIELD(article_form.status) }}
       {{ FORM_FIELD(article_form.type) }}
       {{ FORM_FIELD(article_form.world) }}
       <input type="hidden" name="feature_image" id="feature_image" value="" />

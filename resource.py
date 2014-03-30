@@ -255,7 +255,10 @@ class ResourceError(Exception):
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
+
 class ResourceHandler(View):
+  logger = logging.getLogger(__name__)
+
   default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
@@ -266,7 +269,6 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st):
-    logger = logging.getLogger(__name__)
 
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
@@ -339,7 +341,7 @@ class ResourceHandler(View):
     except DoesNotExist:
       abort(404)
     except ValidationError as err:
-      self.logger.exception("Validation error")
+      logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
         return self._return_json(r, resErr)
@@ -368,7 +370,7 @@ class ResourceHandler(View):
 
   def _return_json(self, r, err=None, status_code=0):
     if err:
-      self.logger.exception(err)
+      logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
       return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
@@ -468,7 +470,7 @@ class ResourceHandler(View):
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
-    self.logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
   def replace(self, r):
@@ -495,7 +497,7 @@ class ResourceHandler(View):
       else:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
     self.strategy.check_operation_on(r['op'], item)
-    self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
+    logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r
 
