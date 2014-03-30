@@ -73,7 +73,7 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{ url_for('homepage') }}">Raconteur
+      <a class="navbar-brand" href="{{ url_for('homepage') }}">Helmgast.se
         <small>{{ _('a story engine') }}</small>
       </a>
     </div>
@@ -88,7 +88,9 @@
         {% call IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}
+        {% call IS_USER() %}
         <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
+        {% endcall %}
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not session.logged_in %}
