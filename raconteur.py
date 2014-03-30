@@ -71,6 +71,7 @@ class MongoJSONEncoder(JSONEncoder):
 default_options = {
   'MONGODB_SETTINGS': {'DB':'raconteurdb'},
   'SECRET_KEY':'raconteur',
+  'DEBUG': True,
   'LANGUAGES': {
     'en': 'English',
     'sv': 'Swedish'
@@ -118,18 +119,22 @@ def configure_blueprints(app):
   from model.user import User
   from auth import Auth
   auth = Auth(app, db, user_model=User)
+  app.login_required = auth.login_required
   
-  from controller.world import world_app as world
-  from controller.social import social
-  from controller.generator import generator
-  from controller.campaign import campaign_app as campaign
-  from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
-  from model.world import ImageAsset
+  with app.app_context():
 
-  app.register_blueprint(world, url_prefix='/world')
-  app.register_blueprint(generator, url_prefix='/generator')
-  app.register_blueprint(social, url_prefix='/social')
-  app.register_blueprint(campaign, url_prefix='/campaign')
+    from controller.world import world_app as world
+    from controller.social import social
+    from controller.generator import generator
+    from controller.campaign import campaign_app as campaign
+    from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
+    from model.world import ImageAsset
+
+    app.register_blueprint(world, url_prefix='/world')
+    app.register_blueprint(generator, url_prefix='/generator')
+    app.register_blueprint(social, url_prefix='/social')
+    app.register_blueprint(campaign, url_prefix='/campaign')
+
   return auth
  
 def configure_hooks(app):
@@ -141,8 +146,7 @@ def configure_hooks(app):
 def configure_logging(app):
   import logging
 
-  # Set info level on logger, which might be overwritten by handers.
-  # Suppress DEBUG messages.
+  # Set info level on logger, which might be overwritten by handlers.
   app.logger.setLevel(logging.INFO if not app.debug else logging.DEBUG)
 
   # info_log = os.path.join(app.config['LOG_FOLDER'], 'info.log')

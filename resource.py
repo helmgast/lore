@@ -12,7 +12,7 @@
 import inspect
 import logging
 
-from flask import request, render_template, flash, redirect, url_for, abort, g
+from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
@@ -47,7 +47,6 @@ class ArticleBaseForm(ModelForm):
     typedata = Article.type_data_name(self.data.get('type', 'default'))
     for embedded_type in EMBEDDED_TYPES:
       if embedded_type != typedata:
-        print 'Removed field %s' % embedded_type
         del self._fields[embedded_type]
 
   def populate_obj(self, obj):
@@ -255,10 +254,7 @@ class ResourceError(Exception):
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
-
 class ResourceHandler(View):
-  logger = logging.getLogger(__name__)
-
   default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
@@ -269,6 +265,7 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st):
+    logger = current_app.logger if current_app else logging.getLogger(__name__)
 
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
@@ -278,7 +275,6 @@ class ResourceHandler(View):
         custom_ops.append(name)
 
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-    print "Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops]
     app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
     # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
@@ -341,7 +337,7 @@ class ResourceHandler(View):
     except DoesNotExist:
       abort(404)
     except ValidationError as err:
-      logger.exception("Validation error")
+      self.logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
         return self._return_json(r, resErr)
@@ -357,9 +353,10 @@ class ResourceHandler(View):
       if r['out'] == 'json':
         return self._return_json(r, err, 500)
       else:
+        self.logger.exception(err)
         raise # Send the error onward, will be picked up by debugger if in debug mode
 
-    # render output
+    # no error, render output
     if r['out'] == 'json':
       return self._return_json(r)
     elif 'next' in r:
@@ -370,7 +367,7 @@ class ResourceHandler(View):
 
   def _return_json(self, r, err=None, status_code=0):
     if err:
-      logger.exception(err)
+      self.logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
       return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
@@ -470,7 +467,7 @@ class ResourceHandler(View):
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
-    logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    self.logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
   def replace(self, r):
@@ -497,7 +494,7 @@ class ResourceHandler(View):
       else:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
     self.strategy.check_operation_on(r['op'], item)
-    logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
+    self.logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r
 

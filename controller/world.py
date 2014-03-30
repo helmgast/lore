@@ -12,7 +12,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort
+from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
   EventData, FractionData)
 from model.user import Group
@@ -30,7 +30,6 @@ from werkzeug.datastructures import ImmutableMultiDict
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
 world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
-
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):

@@ -12,7 +12,7 @@
 # from models import User, GeneratorInputList, GeneratorInputItem
 # 
 # 
-from flask import   render_template, Blueprint
+from flask import render_template, Blueprint
 # from peewee import *
 # 
 # import random
