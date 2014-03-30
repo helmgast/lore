@@ -22,8 +22,9 @@ import hashlib
 from werkzeug.utils import secure_filename
 from mongoengine.queryset import Q
 
-# Constants and enumerations
-logger = logging.getLogger(__name__)
+import logging
+from flask import current_app
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 def list_to_choices(list):
   return [(s, _(s)) for s in list]

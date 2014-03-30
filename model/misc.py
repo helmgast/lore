@@ -12,6 +12,10 @@ from raconteur import db
 import re
 import datetime
 
+import logging
+from flask import current_app
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
 # WTForms would treat the _absence_ of a field in POST data as a reason to
 # to set the data to empty. This is a problem if the same POST receives variations
 # to a form. This method removes form fields if they are not present in postdata.
@@ -19,7 +23,6 @@ import datetime
 def matches_form(formclass, formdata):
     for k in formdata.iterkeys():
         if k in dir(formclass):
-            logger = logging.getLogger(__name__)
             logger.info("Matches field %s!", k)
             return True
     return False

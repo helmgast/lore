@@ -17,6 +17,10 @@ from flask.ext.mongoengine.wtf import model_form
 # i18n (Babel)
 from flask.ext.babel import lazy_gettext as _
 
+import logging
+from flask import current_app
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
 # A user in the system
 class User(db.Document, BaseUser):
     username = db.StringField(unique=True, max_length=60)
@@ -64,7 +68,6 @@ class User(db.Document, BaseUser):
             raise ValueError('Empty list of recipients')
         if not isinstance(recipients, list) or not isinstance(recipients[0], User):
             raise TypeError('Expects a list of User')
-        logger = logging.getLogger(__name__)
         logger.info("recipients is list of %s, first item is %s", type(recipients[0]), recipients[0])
         recipients = recipients + [self]
         # All conversations where all recipients are present and the length of the lists are the same

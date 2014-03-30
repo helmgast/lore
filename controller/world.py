@@ -27,6 +27,8 @@ from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
 
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
 world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
@@ -82,7 +84,6 @@ def rows(objects, char_per_row=40, min_rows=10):
     while start < len(objects):
       i = objects.find('\n', start, end)
       found += 1
-      logger = logging.getLogger(__name__)
       logger.info("Reading char %i-%i, got %i, found %i", start, end - 1, i, found)
       if i == -1:
         start = end
