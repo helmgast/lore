@@ -4,6 +4,7 @@ from model.campaign import *
 from model.misc import *
 from model.user import *
 from model.world import *
+import datetime
 
 from auth import make_password
 
@@ -30,32 +31,32 @@ def add_test_data():
     RelationType(name=u"distant relative of").save()
 
     # User.drop_collection()
-    mf = User(username='admin', password=make_password('admin'), email='ripperdoc@gmail.com', active=True,
+    mf = User(username='admin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', active=True,
         admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
-    nf = User(username='niklas', password=make_password('niklas'), email='user@user.com', active=True,
+    nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', active=True,
         admin=True, realname='Niklas F').save()
-    pf = User(username='per', password=make_password('per'), email='user@user.com', active=True, admin=True,
+    pf = User(username='per', password=make_password('liljansgarde'), email='user@user.com', active=True, admin=True,
         realname='Per F').save()
-    mb = User(username='marco', password=make_password('marco'), email='user@user.com', active=True, admin=False,
+    mb = User(username='marco', password=make_password('carwelan'), email='user@user.com', active=True, admin=False,
         realname='Marco B').save()
-    fj = User(username='fredrik', password=make_password('fredrik'), email='user@user.com', active=True,
+    fj = User(username='fredrik', password=make_password('luberosarv'), email='user@user.com', active=True,
         admin=False, realname='Fredrik J').save()
-    pd = User(username='paul', password=make_password('paul'), email='user@user.com', active=True, admin=False,
+    pd = User(username='paul', password=make_password('tiamelrenovel'), email='user@user.com', active=True, admin=False,
         realname='Paul D').save()
-    pn = User(username='petter', password=make_password('petter'), email='user@user.com', active=True,
+    pn = User(username='petter', password=make_password('thalamur'), email='user@user.com', active=True,
         admin=False, realname='Petter N').save()
-    aw = User(username='anton', password=make_password('anton'), email='user@user.com', active=True,
+    aw = User(username='anton', password=make_password('rhakori'), email='user@user.com', active=True,
         admin=False, realname='Anton W').save()
 
-    ar = User(username='alex', password=make_password('alex'), email='user@user.com', active=True, admin=False,
+    ar = User(username='alex', password=make_password('asharien'), email='user@user.com', active=True, admin=False,
         realname='Alex R').save()
-    ks = User(username='krister', password=make_password('krister'), email='user@user.com', active=True,
+    ks = User(username='krister', password=make_password('ebhronitiska'), email='user@user.com', active=True,
         admin=False, realname='Krister S').save()
-    User(username='calle', password=make_password('calle'), email='user@user.com', active=True, admin=False,
+    User(username='calle', password=make_password('kraggbarbar'), email='user@user.com', active=True, admin=False,
         realname='Carl-Johan S').save()
-    mj = User(username='mattias', password=make_password('mattias'), email='user@user.com', active=True,
+    mj = User(username='mattias', password=make_password('cirefalien'), email='user@user.com', active=True,
         admin=False, realname='Mattias J').save()
-    rl = User(username='robin', password=make_password('robin'), email='user@user.com', active=True, admin=False,
+    rl = User(username='robin', password=make_password('consaber'), email='user@user.com', active=True, admin=False,
         realname='Robin L').save()
     rj = User(username='rikard', password=make_password('rikard'), email='user@user.com', active=True,
         admin=False, realname='Rikard J').save()
