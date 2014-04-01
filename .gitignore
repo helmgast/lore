@@ -1,6 +1,7 @@
 *.pyc
 *.db
 *.log
+*.mo
 *.sublime*
 config.openshift.py
 /.idea
