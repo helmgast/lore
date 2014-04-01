@@ -458,7 +458,6 @@ class ResourceHandler(View):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
-    print request.form, form.data
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)

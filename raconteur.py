@@ -73,6 +73,7 @@ default_options = {
   'SECRET_KEY':'raconteur',
   'DEBUG': True,
   'LOG_FOLDER': '.',
+  'BABEL_DEFAULT_LOCALE':'sv',
   'LANGUAGES': {
     'en': 'English',
     'sv': 'Swedish'
@@ -84,8 +85,7 @@ def create_app(**kwargs):
   the_app.config.update(default_options)  # default, dummy settings
   the_app.config.update(kwargs)  # default, dummy settings
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
-    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE', silent=True)  # db-settings and secrets, should not be shown in code
-  print >> sys.stderr,'App config: %s' % the_app.config
+    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
 
@@ -110,6 +110,7 @@ def configure_extensions(app):
 
   # Internationalization
   babel.init_app(app)
+  print babel.list_translations()
 
   # Secure forms
   csrf.init_app(app)
