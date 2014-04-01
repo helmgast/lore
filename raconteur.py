@@ -225,8 +225,8 @@ def register_main_routes(app, auth):
   def homepage():
     world = world_strategy.query_item(world='helmgast')
     search_result = ArticleHandler(article_strategy).blog({})
-    # return render_template('marco.html', articles=search_result['articles'], world=world)
-    return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
+    return render_template('marco.html', articles=search_result['articles'], world=world)
+    # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
