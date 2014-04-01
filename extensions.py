@@ -4,7 +4,7 @@ db = MongoEngine()
 from flask.ext.babel import Babel
 babel = Babel()
 
-# i18n
+#i18n
 # @babel.localeselector
 # def get_locale():
 #   return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
