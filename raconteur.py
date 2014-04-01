@@ -225,6 +225,7 @@ def register_main_routes(app, auth):
   def homepage():
     world = world_strategy.query_item(world='helmgast')
     search_result = ArticleHandler(article_strategy).blog({})
+    # return render_template('marco.html', articles=search_result['articles'], world=world)
     return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
   @app.route('/admin/', methods=['GET', 'POST'])
@@ -234,10 +235,8 @@ def register_main_routes(app, auth):
 
     if request.method == 'GET':
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
-      print feature_list
-      # raise Exception
       config = ApplicationConfig(state=app_state, features=feature_list,
-                               backup_name=strftime("backup_%Y_%m_%d", gmtime()))
+                                 backup_name=strftime("backup_%Y_%m_%d", gmtime()))
       return render_template('admin.html', config=config,
                              databases=db.connection.database_names())
     elif request.method == 'POST':
@@ -255,7 +254,6 @@ def register_main_routes(app, auth):
         for feature in app_features:
           is_enabled = feature in config.features.data
           app_features[feature] = is_enabled
-        print app_features
       return redirect('/admin/')
 
 

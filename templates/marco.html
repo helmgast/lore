@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block cssimports %}
+{{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/front.css') }}">
+{% endblock %}
+
+
+{% block content_title %}Helmgast.se{% endblock %}
+{% block container_class %}container{% endblock %}
+
+{% block mainblock %}
+{{ self.content() }}
+{% endblock %}
+
+{% block navbar %}
+<!-- ========== HEADERWRAP ====================================================================================================
+=============================================================================================================================-->
+<div id="headerwrap">
+  <div class="container">
+    <div class="row centered">
+      <div class="col-lg-8 col-lg-offset-2 mt">
+        <h1>HELMGAST</h1>
+        <h2>Vi gör rollspel</h2>
+      </div>
+
+    </div>
+    <!-- /row -->
+  </div>
+  <!-- /container -->
+</div> <!-- /headerwrap -->
+
+<!-- ========== BLOG POSTS ====================================================================================================
+=============================================================================================================================-->
+<div class="container">
+
+  <div class="row mt centered ">
+    <div class="col-lg-4 col-lg-offset-4">
+      <h3>Detta är Helmgast</h3>
+      <hr>
+    </div>
+  </div>
+  <!-- /row -->
+
+{% if articles|length == 0 %}{{ _('No articles yet!') }}{% else %}
+  <div class="row mt">
+
+	{% for article in articles %}
+    <div class="col-lg-4 col-md-4 col-xs-12 desc" style="padding-bottom: 20px;">
+      <p><a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{article.title}}</h3></a></p>
+
+    {% if article.feature_image %}
+      <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
+      <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+      </a>
+    {% endif %}
+      <p class="lead">{% if article.description %}{{article.description}}{% else
+        %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
+        <a href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><em
+        style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
+      <hr-d>
+        <ul class="list-inline article-meta" style="margin-bottom: 0;">
+          <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
+            {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+          </li>
+          <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if
+            g.feature and g.feature["social"] %}<a
+            href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else
+            %}{{article.creator}}{%endif%}{% else %}System{%endif%}
+          </li>
+        </ul>
+      </hr-d>
+    </div>
+    <!-- col-lg-4 -->
+	{% endfor %}
+
+  </div>
+  {% endif %}
+  <!-- /row -->
+</div><!-- /container -->
+
+
+<!-- ========== CALL TO ACTION 1 ==============================================================================================
+=============================================================================================================================-->
+<div id="cta01">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8 col-lg-offset-2">
+        <div id="mc_embed_signup" style="width: 500px; height: 130px">
+          <form
+          action="http://helmgast.us8.list-manage.com/subscribe/post?u=4412a3ce4ac556de77513666b&amp;id=8cef8e8de6"
+          method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate"
+          target="_blank" novalidate>
+            <label for="mce-EMAIL"><h2 style="text-shadow: black 3px 3px 6px;">Anmäl dig till vårt nyhetsbrev för att
+              alltid få de senate nyheterna!</h2></label>
+            <input type="email" value="" name="EMAIL" class="email form-control" id="mce-EMAIL"
+                   placeholder="Din e-post" required>
+            <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+            <div style="position: absolute; left: -5000px;"><input type="text"
+                                                                   name="b_4412a3ce4ac556de77513666b_8cef8e8de6"
+                                                                   value=""></div>
+            <div class="clear" style="width: 100%; padding-top: 5px;"><input type="submit" value="Anmäl dig"
+                                                                             name="subscribe" id="mc-embedded-subscribe"
+                                                                             class="btn btn-cta btn-lg pull-right"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- /row -->
+  </div>
+  <!-- /container -->
+</div><!-- --/cta01 ---->
+
+<!-- ========== PORTFOLIO SECTION =============================================================================================
+=============================================================================================================================-->
+<div class="container">
+  <div class="row mt centered ">
+    <div class="col-lg-4 col-lg-offset-4">
+      <h3>Ett urval av våra bilder</h3>
+      <hr>
+    </div>
+  </div>
+  <!-- /row -->
+  <div class="row mt centered">
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port01.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port01.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>RUINERNA</p>
+    </div>
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port02.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port02.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>FÅNGARNA</p>
+    </div>
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port03.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port03.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>SLAGFÄLTET</p>
+    </div>
+  </div>
+  <!-- /row -->
+  <div class="row mt centered">
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port04.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port04.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>ARKETYPEN LÄRD</p>
+    </div>
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port05.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port05.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>ARKETYPEN MYSTIKER</p>
+    </div>
+    <div class="col-lg-4 desc">
+      <a class="b-link-fade b-animate-go" href="{{ url_for('static', filename='img/front/port06.jpg') }}"><img width="350" src="{{ url_for('static', filename='img/front/port06.jpg') }}" alt="">
+
+        <div class="b-top-line"></div>
+      </a>
+
+      <p>ARKETYPEN KRIGARE</p>
+    </div>
+  </div>
+  <!-- /row -->
+
+</div><!-- /container -->
+
+<!-- ========== FOOTER ========================================================================================================
+=============================================================================================================================-->
+
+<div id="f">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3">
+        <h4>Kontakt</h4>
+
+        <p>
+          info@helmgast.se
+        </p>
+
+        <p>
+          © 2014 Helmgast
+        </p>
+      </div>
+      <!-- --/col-lg-3 ---->
+      <div class="col-lg-3">
+        <h4>Helmgastarna</h4>
+
+        <p>
+          Marco Behrmann<br/>
+          Paul Dali<br/>
+          Martin Fröjd<br/>
+          Niklas Fröjd<br/>
+          Petter Nallo<br/>
+          Anton Wahnström
+        </p>
+      </div>
+      <!-- --/col-lg-3 ---->
+    </div>
+    <!-- --/row ---->
+  </div>
+  <!-- /container -->
+</div>
+{% endblock %}
