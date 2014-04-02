@@ -384,19 +384,22 @@ var editor = (function() {
 	function jqueryClean() {
 		// Attempt at making new HTML cleaner that uses jQuery
 		$c = $(contentField)
-		$c.find('div').replaceWith('p')
-		$c.find('em').replaceWith('i')
-		$c.find('strong').replaceWith('b')
-		$c.find('h1').replaceWith('h2')		
-		console.log('Starting')
-		console.log('Removing')
-		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() {
-			return this.innerHTML
+		$c.find('div').replaceWith(function() { 
+			return '<p>'+this.innerHTML+'</p>' 
 		})
+		$c.find('em').replaceWith(function() { 
+			return '<i>'+this.innerHTML+'</i>' 
+		})
+		$c.find('strong').replaceWith(function() { 
+			return '<b>'+this.innerHTML+'</b>' 
+		})
+		$c.find('h1').replaceWith(function() { 
+			return '<h2>'+this.innerHTML+'</h2>' 
+		})		
+
+		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
 		// Doing this twice seems to fix some bugs that some elements not removed. TODO can it be fixed?
-		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() {
-			return this.innerHTML
-		})
+		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
 		$c.find(':empty').not('img').remove()
 		$c.find('*').removeAttr('style id')
 	}

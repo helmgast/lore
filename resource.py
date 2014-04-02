@@ -426,6 +426,10 @@ class ResourceHandler(View):
   def list(self, r):
     self.strategy.check_operation_any(r['op'])
     listquery = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
+    if r.get('parents'):
+      # TODO if the name of the parent resource is different than the reference field name 
+      # it will not work
+      listquery = listquery.filter(**r['parents'])
     page = request.args.get('page', 1)
     if page=='all':
       r['list'] = listquery

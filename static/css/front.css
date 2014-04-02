@@ -314,7 +314,7 @@ p.capitalize:first-letter {
 /* ================== MAIN WRAP SECTIONS ================== */
 
 #headerwrap {
-	background: url(../img/front/main01.jpg) no-repeat center top;
+	background: url(../img/front/laura_4_header.jpg) no-repeat center top;
 	margin-top: 0px;
 	padding-top: 50px;
 	background-attachment: relative;
@@ -428,7 +428,7 @@ p.capitalize:first-letter {
 
 /* ================== CALL TO ACTION WRAP SECTIONS & HELPERS ================== */
 #cta01 {
-	background: url(../img/front/main02.jpg) no-repeat center top;
+	background: url(../img/front/laura_4_main02.jpg) no-repeat center top;
 	margin-top: 0px;
 	padding-top:100px;
 	text-align:center;
