@@ -9,7 +9,7 @@
 """
 
 from hashlib import md5
-from auth import BaseUser
+from auth import BaseUser, make_password
 from slugify import slugify
 from misc import now
 from raconteur import db
@@ -45,6 +45,12 @@ class User(db.Document, BaseUser):
     description.verbose_name = _('description')
     xp.verbose_name = _('xp')
     join_date.verbose_name = _('join date')
+
+    def clean(self):
+    # Our password hashes contain 46 characters, so we can check if the value
+    # set is less, which means it's a user input that we need to hash before saving
+        if len(self.password) <= 40:
+            self.password = make_password(self.password)
 
     def __unicode__(self):
         return self.username

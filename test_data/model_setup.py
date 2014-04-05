@@ -13,10 +13,8 @@ def altor_date(year, month, day):
 
 def setup_models():
     add_test_data()
-
     
 def add_test_data():
-
     # World.drop_collection()
     helmgast = World(title=u"Helmgast", publisher=u"Helmgast", description=u"En helmgasts historia").save()
     mundana = World(title=u"Mundana", publisher=u"Neogames", description=u"En fantasyvärld för grisodling").save()

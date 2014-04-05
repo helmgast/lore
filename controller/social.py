@@ -13,8 +13,11 @@
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
-from resource import ResourceHandler, ResourceError, ResourceAccessStrategy
+from resource import ResourceHandler, ResourceError, ResourceAccessStrategy, RacBaseForm, RacModelConverter
 from model.user import User, Group, Member, Conversation, Message
+from flask.ext.mongoengine.wtf import model_form
+from wtforms import PasswordField, validators
+from flask.ext.babel import lazy_gettext as _
 
 
 class SameUserResourceAccessStrategy(ResourceAccessStrategy):
@@ -23,7 +26,16 @@ class SameUserResourceAccessStrategy(ResourceAccessStrategy):
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
-user_strategy = SameUserResourceAccessStrategy(User, 'users', 'username')
+user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
+  exclude=['password', 'xp', 'join_date', 'active', 'admin'])
+user_form.confirm = PasswordField(_('Repeat Password'), 
+  [validators.Required(), validators.Length(max=40)])
+user_form.password = PasswordField(_('New Password'), [
+  validators.Required(),
+  validators.EqualTo('confirm', message=_('Passwords must match')),
+  validators.Length(max=40)])
+
+user_strategy = SameUserResourceAccessStrategy(User, 'users', 'username', form_class=user_form)
 ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')

@@ -42,9 +42,7 @@ def error_response(msg, level='error'):
 class RacBaseForm(ModelForm):
   def populate_obj(self, obj, fields_to_populate=None):
     if fields_to_populate:
-      #{ your_key: old_dict[your_key] for your_key in your_keys }
       newfields = [ (name,f) for (name,f) in self._fields.items() if name in fields_to_populate]
-      print "New fields", newfields
       for name, field in newfields:
         field.populate_obj(obj, name)
     else:
@@ -472,13 +470,13 @@ class ResourceHandler(View):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
-    print request.form
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)
+    if not isinstance(form, RacBaseForm):
+      raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     form.populate_obj(item, request.form.keys())
     item.save()
-    print item
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
@@ -489,7 +487,6 @@ class ResourceHandler(View):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
-    # self.print_form_inputs(request.form, form.data, item)
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)

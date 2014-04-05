@@ -587,3 +587,39 @@ If request json:
 	403		-> forbidden, return json error dict
 	404		-> not found, return json error dict
 	500		-> return json error dict
+
+
+## Authorization system
+
+The authorization system is there to limit access on the Raconteur system. It's represented
+in a few ways:
+- Limiting access to OPerations / URLs and throwing a 401 error
+- Conditionally displaying links / html fragments only if the user is authorized to see it
+
+Resource.py defines 8 standard operations on a resource, and they can all be generally classified
+as read or write operations. A certain resource can be readable by everyone or only specific groups,
+as well as writable. The exact logic for deciding authentication this depends on the resource.
+
+The key to this is the function ResourceStrategy.allowed(op, instance)
+op is the current operation being tested
+instance refers to the specific instance of a resource, as most ops act on an instance.
+If the op does not act on instances (e.g. list, new), it is not needed.
+The user is automatically read from the flask.g object that keeps the current session.
+allowed() will automaticalyl throw a ResourceError if the user is not allowed.
+
+For templates, there is the macro called IS_ALLOWED() which works in a very similar way
+but doesn't throw exceptions and instead just outputs what's inside the macro if allowed,
+otherwise not.
+
+Access to resources are normally given to groups. A group is a list of users, where 
+there are "members" and "masters". By default, members will have read access, masters
+have write access, and non-members no access.
+Each resource has a special "group" which is the creator group, which normally means
+the user who created the resource, if this is a field existing in the resource. 
+
+Some access:
+User. Read by all (if system-activated), write by user or admin.
+Group. Read by all, write by group master or admin.
+ImageAsset. Read by all, write by creator or admin.
+Article. Read by those in Readgroup, Write by those in write groups.
+World. Read by all, w
