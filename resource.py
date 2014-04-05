@@ -39,7 +39,18 @@ def error_response(msg, level='error'):
   flash(msg, level)
   return render_template('includes/inline.html')
 
-class ArticleBaseForm(ModelForm):
+class RacBaseForm(ModelForm):
+  def populate_obj(self, obj, fields_to_populate=None):
+    if fields_to_populate:
+      #{ your_key: old_dict[your_key] for your_key in your_keys }
+      newfields = [ (name,f) for (name,f) in self._fields.items() if name in fields_to_populate]
+      print "New fields", newfields
+      for name, field in newfields:
+        field.populate_obj(obj, name)
+    else:
+      super(ModelForm, self).populate_obj(obj)
+
+class ArticleBaseForm(RacBaseForm):
   def process(self, formdata=None, obj=None, **kwargs):
     super(ArticleBaseForm, self).process(formdata, obj, **kwargs)
     # remove all *article fields that don't match new type
@@ -48,7 +59,7 @@ class ArticleBaseForm(ModelForm):
       if embedded_type != typedata:
         del self._fields[embedded_type]
 
-  def populate_obj(self, obj):
+  def populate_obj(self, obj, fields_to_populate=None):
     if not type(obj) is Article:
       raise TypeError('ArticleBaseForm can only handle Article models')
     if 'type' in self.data:
@@ -123,7 +134,7 @@ class RacModelConverter(ModelConverter):
 
 class ResourceAccessStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None):
-    self.form_class = form_class if form_class else model_form(model_class, converter=RacModelConverter())
+    self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
     self.plural_name = plural_name
@@ -457,16 +468,17 @@ class ResourceHandler(View):
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
     return r
 
-  # TODO implement proper patch, currently just copy of PUT
   def edit(self, r):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
+    print request.form
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)
-    form.populate_obj(item)
+    form.populate_obj(item, request.form.keys())
     item.save()
+    print item
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))

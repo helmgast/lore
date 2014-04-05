@@ -99,7 +99,7 @@
              <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
-          <li><a {% call IS_ENABLED("social") %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
+          <li><a {% call IS_USER() %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
           <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>

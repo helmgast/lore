@@ -77,10 +77,6 @@ class User(db.Document, BaseUser):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' %\
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
-    @classmethod
-    def get_form(cls):
-        return model_form(User, exclude=['password', 'admin', 'active', 'xp', 'username', 'join_date'])
-
     # @classmethod
     # def allowed(cls, user, op='view', instance=None):
     #     if user:

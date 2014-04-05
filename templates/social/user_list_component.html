@@ -17,6 +17,7 @@
         <td>{{user.realname}}</td>
         <td>{{user.location}}</td>
         <td>
+        {#
         <div class="btn-toolbar">
         {% if user %}
           {% if current_use and user.username != current_user.username %}
@@ -36,7 +37,7 @@
           {% endif %}
  
         {% endif %}
-        </div>
+        </div>#}
         </td>
       </tr>
     {% endfor %}
