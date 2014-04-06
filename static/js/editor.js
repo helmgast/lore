@@ -37,10 +37,15 @@ var editor = (function() {
 			document.onkeyup = function( event ) {
 				checkTextHighlighting( event );
 				saveState();
+				$(contentField).trigger('change')
+
 			}
 
 		} else {
 			document.onkeyup = checkTextHighlighting;
+			// TODO this will notify change listeners but doesn't
+			// cover all scenarios of editing
+			$(contentField).trigger('change')
 		}
 
 		// Mouse bindings
@@ -147,7 +152,6 @@ var editor = (function() {
 			// we're in editor
 			// Text is selected
 			if ( selection.isCollapsed === false && composing === false ) {
-			// Find if highlighting is in the editable area
 				updateBubbleStates();
 				updateBubblePosition();
 
@@ -445,6 +449,8 @@ var editor = (function() {
 				// TODO this is a temporary fix, replaces full src URL string with one without domain and protocol
 				this.outerHTML = '!['+img.alt+(img.className ? '|'+img.className : '')+']('+
 					this.href.replace(/^(\w+:\/\/[^/]+)/g,'')+')'
+			} else {
+				this.innerHTML = '['+this.innerHTML+']('+this.href+')'
 			}
 		});
 		var html = $t.html()

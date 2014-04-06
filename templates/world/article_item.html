@@ -21,9 +21,6 @@
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
-<!--[if lte IE 8]>
-    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.ie.css" />
-<![endif]-->
 {% endblock %}
 
 {% block jsimports %}{{super()}}
@@ -45,23 +42,11 @@
         <small>{{ tagline }}</small>
   </h1>
 <ul class="nav nav-tabs content-menu">
-  {#<li class="content-menu-info">Banan</li>#}
   <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">Metadata</a></li>
   <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> Relations</a></li>
   <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> Details</a></li>
-  <li class="dropdown">
-    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-      Actions <span class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-    {% if op!= 'new'%}
-      <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-      <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-      <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
-    {% endif %}
-    </ul>
-  </li>
+  {% include 'world/article_action_menu.html' %}
   <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
 </ul>
 
@@ -153,20 +138,7 @@
   <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
   <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
   {% endif %}
-  {% call IS_USER() %}
-    <li class="dropdown">
-      <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-        Actions <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu">
-      {% if op!= 'new'%}
-        <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-        <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-        <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
-      {% endif %}
-      </ul>
-    </li>
-  {% endcall %}
+  {% call IS_USER() %}{% include 'world/article_action_menu.html' %}{% endcall %}
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
@@ -255,10 +227,18 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
       );
   {% endif %}
 
+  $('#articleform').one('change', function(e) {
+    console.log('Form has changed')
+    $(window).on('beforeunload', function() {
+      return "{{_('You have unsaved changes')}}";
+    });
+  })
+
 	$(document).ready(
 			function() {
         $ta = $('#content')
         $ta.parents('form').on('submit', function(e) {
+              $(window).off('beforeunload') // remove warning
               var text = editor.exportText()
               $ta.val(text);
               var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)[2]
@@ -313,7 +293,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
         map.on('click', onMapClick);
         */
-
 			});
 {% else %}
   // only load lightbox if we are viewing an article

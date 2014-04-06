@@ -193,6 +193,8 @@
 	opacity: 0;
 }
 
+.
+
 .options .italic {
 	font-style: italic;
 }
@@ -236,6 +238,10 @@
 	border: 0px;
 	float: left;
 	width: 0px;
+}
+
+.url-input {
+	color: #333;
 }
 
 .options button.active {
