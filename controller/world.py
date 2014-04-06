@@ -27,6 +27,7 @@ from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
 from mongoengine.queryset import Q
+from flask.ext.babel import lazy_gettext as _
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ def publish_filter(qr):
   elif g.user.admin:
     return qr
   else:
-    print "Filtering to %s" % qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
+    logger.debug("Filtering to %s" % qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
     return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
 
 
@@ -125,15 +126,15 @@ def by_articletype(objects):
 def prettydate(d):
   diff = datetime.utcnow() - d
   if diff.days < 1:
-      return 'Today'
+      return _('Today')
   elif diff.days < 7:
-      return 'Last week'
+      return _('Last week')
   elif diff.days < 31:
-      return 'Last month'
+      return _('Last month')
   elif diff.days < 365:
-      return 'Last year'
+      return _('Last year')
   else:
-        return 'Older'
+        return _('Older')
 
 
 # Template filter, will group a list by creation date, as measure in delta from now
