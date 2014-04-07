@@ -87,6 +87,7 @@ def create_app(**kwargs):
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
     the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
+  the_app.config['SERVER_NAME'] = 'testdomaina.com:5000'
   the_app.json_encoder = MongoJSONEncoder
 
   configure_logging(the_app)
@@ -101,7 +102,7 @@ def create_app(**kwargs):
   configure_hooks(the_app)
 
   register_main_routes(the_app, auth)
-
+  print the_app.url_map
   return the_app
 
 def configure_extensions(app):
@@ -133,7 +134,7 @@ def configure_blueprints(app):
     from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
     from model.world import ImageAsset
 
-    app.register_blueprint(world, url_prefix='/world')
+    app.register_blueprint(world)
     app.register_blueprint(generator, url_prefix='/generator')
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')

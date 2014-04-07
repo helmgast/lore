@@ -33,7 +33,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
+world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True, use_subdomain=True)
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):
@@ -48,8 +48,7 @@ class WorldHandler(ResourceHandler):
     else:
       return self.list(r)
 
-WorldHandler.register_urls(world_app, world_strategy)
-
+WorldHandler.register_urls(world_app, world_strategy, sub=True)
 
 def publish_filter(qr):
   if not g.user:
@@ -88,7 +87,6 @@ ResourceHandler.register_urls(world_app, article_relation_strategy)
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
-
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0

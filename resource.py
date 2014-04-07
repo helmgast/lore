@@ -131,13 +131,26 @@ class RacModelConverter(ModelConverter):
 
 
 class ResourceAccessStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None):
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, 
+    parent_reference_field=None, short_url=False, list_filters=None, use_subdomain=False):
+    if use_subdomain and parent_strategy:
+      raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
     self.plural_name = plural_name
     self.parent = parent_strategy
     self.id_field = id_field
+    self.use_subdomain = use_subdomain
+    self.subdomain_part = None
+    if self.use_subdomain:
+      self.subdomain_part = '<' + self.resource_name + '>'
+    elif self.parent:
+      p = self
+      while (p.parent and not p.use_subdomain):
+        p = p.parent
+      if p:
+        self.subdomain_part = p.subdomain_part
     self.short_url = short_url
     self.fieldnames = [n for n in self.form_class.__dict__.keys() if (not n.startswith('_') and n is not 'model_class')]
     self.default_list_filters = list_filters
@@ -146,15 +159,18 @@ class ResourceAccessStrategy:
 
   def get_url_path(self, part, op=None):
     parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
-    op_val = ('/' if (op is None) else ('/' + op))
-    url = parent_url + part + op_val
+    op_val = op if op else ''
+    # print "For %s we add %s %s %s" % (self.resource_name, parent_url, part, op_val)
+    url = parent_url + part + ('/' if part else '') + op_val
     return url
 
   def url_list(self, op=None):
     return self.get_url_path(self.plural_name, op)
 
   def url_item(self, op=None):
-    if self.short_url:
+    if self.use_subdomain:
+      return self.get_url_path('', op)
+    elif self.short_url:
       return self.get_url_path('<' + self.resource_name + '>', op)
     else:
       return self.get_url_path(self.plural_name + '/<' + self.resource_name + '>', op)
@@ -275,24 +291,34 @@ class ResourceHandler(View):
     self.strategy = strategy
 
   @classmethod
-  def register_urls(cls, app, st):
+  def register_urls(cls, app, st, sub=False):
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
       if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
-        app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
+        app.add_url_rule(st.get_url_path(name), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
 
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-    app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
-    app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
-    # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
-    app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
-    app.add_url_rule(st.url_list(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
-    app.add_url_rule(st.url_list(), methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
-    app.add_url_rule(st.url_item(), methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
-    app.add_url_rule(st.url_item(), methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
-    app.add_url_rule(st.url_item(), methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
+    app.add_url_rule(st.url_list('new'), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
+    app.add_url_rule(st.url_item('edit'), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
+    app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
+    app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+    
+    # /<resource>/[_,view,edit] -> GET:fablr.co/helmgast/, GET:fablr.co/helmgast/view, GET|POST:fablr.co/helmgast/edit
+    # /resource/[list,new] -> GET:/world/list, GET:/world/new
+    # <resource>.host/[_,view,edit] -> -> GET:helmgast.fablr.co, GET:helmgast.fablr.co/view, GET|POST:helmgast.fablr.co/edit
+
+    # [GET]<world>.<host>/[_,edit]          -> world_view, world_form_edit
+    # [GET]<host>/world/[worlds,new]      -> world_list, world_form_new
+    # [GET]<world>.<host>/<article>   -> article_view
+    # [GET]<world>.<host>/articles
+
 
   def dispatch_request(self, *args, **kwargs):
     # If op is given by argument, we use that, otherwise we take it from endpoint
