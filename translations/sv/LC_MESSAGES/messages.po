@@ -804,19 +804,19 @@ msgstr "Bläddra"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:17
 msgid "By title"
-msgstr "Av titel"
+msgstr "Efter titel"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:18
 msgid "By type"
-msgstr "Av typ"
+msgstr "Efter typ"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:19
 msgid "By time"
-msgstr "Av tid"
+msgstr "Efter tid"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:20
 msgid "By relation"
-msgstr "Av relation"
+msgstr "Efter relation"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:26
 msgid "No articles yet!"
@@ -890,6 +890,22 @@ msgstr "Regelsystem"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:15
 msgid "Created By"
 msgstr "Skapad av"
+
+msgid "Today"
+msgstr "Idag"
+
+msgid "Last week"
+msgstr "Förra veckan"
+
+msgid "Last month"
+msgstr "Förra månaden"
+
+msgid "Last year"
+msgstr "Förra året"
+
+msgid "Older"
+msgstr "Äldre"
+
 
 #~ msgid "Article actions"
 #~ msgstr "Artikelfunktioner"

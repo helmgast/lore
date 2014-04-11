@@ -720,6 +720,11 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 
 .media-object {
 	max-height: 80px;
+	margin-right: 10px;
+}
+
+.item-list {
+	padding: 6px 4px;
 }
 
 .item-list .media {

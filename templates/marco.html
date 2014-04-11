@@ -48,8 +48,7 @@
 
 	{% for article in articles %}
     <div class="col-lg-4 col-md-4 col-xs-12 desc" style="padding-bottom: 20px;">
-      <p><a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{article.title}}</h3></a></p>
-
+      <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{article.title}}</h3></a>
     {% if article.feature_image %}
       <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
       <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
@@ -105,17 +104,6 @@
                                                                              class="btn btn-cta btn-lg pull-right"></div>
           </form>
         </div>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-lg-2 col-lg-offset-2">
-        <a type="button" class="btn btn-cta btn-lg" href="http://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fneogames.neotech&width&layout=button_count&action=like&show_faces=true&share=false&height=21">Likea Eon</a>
-      </div>
-      <div class="col-lg-2">
-        <a type="button" class="btn btn-cta btn-lg" href="http://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fneogames.neotech&width&layout=button_count&action=like&show_faces=true&share=false&height=21">Likea Neotech</a>
-      </div>
-      <div class="col-lg-2">
-        <a type="button" class="btn btn-cta btn-lg" href="http://www.facebook.com/plugins/like.php?href=https%3A%2F%2Fwww.facebook.com%2Fneogames.neotech&width&layout=button_count&action=like&show_faces=true&share=false&height=21">Dela Helmgast</a>
       </div>
     </div>
     <!-- /row -->

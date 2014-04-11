@@ -37,7 +37,7 @@ app_state = STATE_PUBLIC
 app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
-  FEATURE_SOCIAL: True,
+  FEATURE_SOCIAL: False,
   FEATURE_JOIN: False
 }
 
