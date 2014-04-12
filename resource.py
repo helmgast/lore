@@ -130,8 +130,72 @@ class RacModelConverter(ModelConverter):
     return f.TextAreaField(**kwargs)
 
 
+# Checks if user is logged in and authorized
+class ResourceSecurityPolicy:
+
+  def __init__(self, public_ops=["view", "list"]):
+    self.public_ops = public_ops
+
+  def is_public_op(self, op):
+    return op in self.public_ops
+
+  def is_authorized(self, user, op, instance):
+    authorized = user is not None or self.is_public_op(op)
+    if not authorized:
+      logger.info("Anonymous user not authorized to do '%s'", op)
+    return authorized
+
+  # Checks if user itself has access rights
+  def is_allowed_user(self, user, op, instance):
+    return True
+
+  def is_allowed_public(self, op, instance):
+    return ResourceSecurityPolicy.is_public_instance(instance) and self.is_public_op(op)
+
+  def is_public_or_user_allowed(self, user, op, instance):
+    if user:
+      return self.is_allowed_user(user, op, instance)
+    else:
+      return self.is_allowed_public(op, instance)
+
+  @staticmethod
+  def is_public_instance(instance):
+    try:
+      return instance.is_public() if instance else True
+    except AttributeError:
+      return True
+
+  def validate_operation(self, op, instance=None):
+    if not is_allowed_access(g.user):
+      raise ResourceError(403)
+    if not self.is_authorized(g.user, op, instance):
+      raise ResourceError(401)
+    if not self.is_public_or_user_allowed(g.user, op, instance):
+      raise ResourceError(403)
+
+
+class AdminWriteSecurityPolicy(ResourceSecurityPolicy):
+  def is_allowed_user(self, user, op, instance):
+    return user.admin
+
+
+
+class ResourcePrivacyPolicy:
+
+  def __init__(self, security_policy, op):
+    self.op = op
+    self.security_policy = security_policy
+
+  # True if visible due to current user, such as being admin
+  def is_private(self, instance):
+    return g.user \
+            and self.security_policy.is_allowed_user(g.user, self.op, instance) \
+            and not self.security_policy.is_allowed_public(self.op, instance)
+
+
+
 class ResourceAccessStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None):
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None, security_policy=ResourceSecurityPolicy()):
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
@@ -143,6 +207,7 @@ class ResourceAccessStrategy:
     self.default_list_filters = list_filters
     # The field name pointing to a parent resource for this resource, e.g. article.world
     self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
+    self.security = security_policy
 
   def get_url_path(self, part, op=None):
     parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
@@ -211,37 +276,13 @@ class ResourceAccessStrategy:
   def endpoint_name(self, suffix):
     return self.resource_name + '_' + suffix
 
-  # Checks if user is logged in and authorized
-  def is_authorized(self, user, op, instance):
-    authorized = user is not None or op in ["view", "list"]
-    if not authorized:
-      logger.info("Anonymous user not authorized to do '%s'", op)
-    return authorized
-
-  # Checks if user has access rights
-  def is_allowed(self, user, op, instance):
-    return True
-
-  def validate_operation(self, op, instance=None):
-    if not is_allowed_access(g.user):
-      raise ResourceError(403)
-    if not self.is_authorized(g.user, op, instance):
-      raise ResourceError(401)
-    if g.user and not self.is_allowed(g.user, op, instance):
-      raise ResourceError(403)
-
   def check_operation_any(self, op):
-    self.validate_operation(op, None)
+    self.security.validate_operation(op, None)
 
   def check_operation_on(self, op, instance):
     if not instance:
       raise ResourceError(500)
-    self.validate_operation(op, instance)
-
-
-class AdminWriteResourceAccessStrategy(ResourceAccessStrategy):
-  def is_allowed(self, user, op, instance):
-    return user.admin and op not in ["view", "list"]
+    self.security.validate_operation(op, instance)
 
 
 
@@ -450,6 +491,7 @@ class ResourceHandler(View):
     r['url_for_args'] = request.view_args
     r['url_for_args'].update(request.args.to_dict())
     r['template'] = self.strategy.list_template()
+    r['visibility'] = ResourcePrivacyPolicy(self.strategy.security, r['op'])
     return r
 
   def new(self, r):

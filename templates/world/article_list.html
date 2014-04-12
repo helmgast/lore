@@ -30,7 +30,7 @@
             {% for article in group.list %}
                 <div class="media col-sm-6">
                     <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
-                        <h4>{{article.title}}
+                        <h4>{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}
                         {%- if not article.is_published() -%}
                         <small>{{" ["+article.status_name()+"]"}}</small>
                         {%- endif %}

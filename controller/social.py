@@ -13,16 +13,18 @@
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
-from resource import ResourceHandler, ResourceError, ResourceAccessStrategy, RacBaseForm, RacModelConverter
+from resource import ResourceHandler, ResourceError, ResourceAccessStrategy, RacBaseForm, RacModelConverter, \
+  ResourceSecurityPolicy
 from model.user import User, Group, Member, Conversation, Message
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
 from flask.ext.babel import lazy_gettext as _
 
 
-class SameUserResourceAccessStrategy(ResourceAccessStrategy):
-  def is_allowed(self, user, op, instance):
-    return user.admin or user == instance or op in ["view", "list"]
+class SameUserSecurityPolicy(ResourceSecurityPolicy):
+  def is_allowed_user(self, user, op, instance):
+    return user.admin or user == instance
+
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
@@ -35,7 +37,7 @@ user_form.password = PasswordField(_('New Password'), [
   validators.EqualTo('confirm', message=_('Passwords must match')),
   validators.Length(max=40)])
 
-user_strategy = SameUserResourceAccessStrategy(User, 'users', 'username', form_class=user_form)
+user_strategy = ResourceAccessStrategy(User, 'users', 'username', form_class=user_form, security_policy=SameUserSecurityPolicy())
 ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
