@@ -50,11 +50,11 @@ h4 small {
   background: url('../../../static/img/themes/mundana.png');
   background-position: top;
   background-repeat: no-repeat;
-  background-size: 75%;
+  background-size: 130px;
 }
 
 .worldSideBar > ul {
-  padding: 120px 0 0 15px;
+  padding: 130px 0 0 15px;
 }
 
 .worldSideBar li a {
