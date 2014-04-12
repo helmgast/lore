@@ -122,7 +122,6 @@ h4 small {
 
 .panel {
   background: #bda362 !important;
-  border: 1px solid black;
   padding: 0 0 0 10px;
 }
 
@@ -135,14 +134,12 @@ h4 small {
   color: white;
   background: #8f0011;
   border: 1px solid black;
-  border-bottom: 0;
 }
 
 .content .content-menu li.active > a {
-  background: #bda362 !important;
+  background: #8f0011 !important;
   border: 1px solid black;
-  border-bottom: 0;
-  color: #8f0011;
+  color: white;
 }
 
 /* Browse Article container */

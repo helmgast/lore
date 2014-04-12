@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-04-12 11:58+0200\n"
-"PO-Revision-Date: 2014-04-12 12:03+0100\n"
+"PO-Revision-Date: 2014-04-12 14:32+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -517,7 +517,7 @@ msgstr "Galleri"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:20
 msgid "Drag or click to upload file"
-msgstr "Dra eller klicka för att ladda upp"
+msgstr "Dra en bild hit eller klicka för att ladda upp"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:23
 msgid "or link to image online"
@@ -893,7 +893,7 @@ msgstr "Relationer till andra artiklar"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:139
 msgid "Other articles relation to this article"
-msgstr "Andra artiklars relationer till denna artikel"
+msgstr "Artiklar med relationer till denna"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:146
 msgid "Lon"
