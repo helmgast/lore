@@ -57,7 +57,7 @@
 
 <div class="worldSideBar">
   <ul class="nav nav-list">
-      <li><a href="{{ url_for('world.world_view', world=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+      <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
       <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
       <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
     {% call IS_USER() %}
