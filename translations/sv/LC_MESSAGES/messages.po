@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-04-12 15:27+0200\n"
-"PO-Revision-Date: 2014-04-12 15:29+0100\n"
+"POT-Creation-Date: 2014-04-12 15:53+0200\n"
+"PO-Revision-Date: 2014-04-12 15:54+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -201,6 +201,10 @@ msgstr "manlig"
 msgid "female"
 msgstr "kvinnlig"
 
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:56
+msgid " by "
+msgstr " av "
+
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:92
 msgid "Slug"
 msgstr "Slug"
@@ -309,9 +313,13 @@ msgstr "Typ"
 msgid "World"
 msgstr "Världar"
 
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:197
+msgid "Created on"
+msgstr "Skapad"
+
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:201
 msgid "Status"
-msgstr "status"
+msgstr "Status"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:227
 msgid "from"

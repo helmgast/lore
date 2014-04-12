@@ -53,7 +53,7 @@ class World(db.Document):
     return super(World, self).save(*args, **kwargs)
 
   def __unicode__(self):
-    return self.title+(' by '+self.publisher) if self.publisher else ''
+    return self.title+(_(' by ')+self.publisher) if self.publisher else ''
 
   def articles(self):
     return Article.objects(world=self)
@@ -194,7 +194,7 @@ class Article(db.Document):
   type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=datetime.utcnow)
+  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
