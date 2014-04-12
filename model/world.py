@@ -61,7 +61,7 @@ class World(db.Document):
   # startyear = 0
   # daysperyear = 360
   # datestring = "day %i in the year of %i"
-  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]  
+  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
 class RelationType(db.Document):
   name = db.StringField() # human friendly name
@@ -130,10 +130,10 @@ class ImageAsset(db.Document):
   def make_from_file(self, file):
     # block_size=256*128
     # md5 = hashlib.md5()
-    # for chunk in iter(lambda: file.read(block_size), b''): 
+    # for chunk in iter(lambda: file.read(block_size), b''):
     #      md5.update(chunk)
     # print md5.hexdigest()
-    # file.seek(0) # reset 
+    # file.seek(0) # reset
     self.image.put(file)
     self.mime_type = 'image/%s' % self.image.format.lower()
 
@@ -176,14 +176,14 @@ class CampaignData(db.EmbeddedDocument):
   children = db.ListField(db.EmbeddedDocumentField(Episode))
 
 ARTICLE_TYPES = list_to_choices([
-  'default', 
-  'person',
-  'fraction',
-  'place',
-  'event',
-  'campaign',
-  'chronicle',
-  'blogpost'
+  _('default'),
+  _('person'),
+  _('fraction'),
+  _('place'),
+  _('event'),
+  _('campaign'),
+  _('chronicle'),
+  _('blogpost')
   ])
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
@@ -199,7 +199,7 @@ class Article(db.Document):
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
   status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset) 
+  feature_image = db.ReferenceField(ImageAsset)
 
   # modified_date = DateTimeField()
 
