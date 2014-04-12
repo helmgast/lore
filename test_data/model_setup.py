@@ -95,6 +95,7 @@ def add_test_data():
         content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",
         world=altor,
         creator=rl,
+        status=PUBLISH_STATUS_PUBLISHED,
         persondata = PersonData(
             born=altor_date(1653,3,4),
             died=altor_date(1891,12,3),
@@ -103,6 +104,7 @@ def add_test_data():
         ).save()
 
     Article(type='blogpost',
+        status=PUBLISH_STATUS_PUBLISHED,
         title=u"Gift tills döden skiljer oss åt",
         world=mundana,
         creator=pn,
@@ -116,6 +118,7 @@ Så här kan det därför fungera om man drabbas av ett bedövande gift: Under d
 """
         ).save()
     Article(type='blogpost',
+        status=PUBLISH_STATUS_PUBLISHED,
         title=u"Monster",
         content=
 u"""
@@ -127,6 +130,7 @@ I Eon IV följer Monster (samt djur och liknande varelser) ett lite annorlunda s
         creator=nf).save()            
 
     Article(type='blogpost',
+        status=PUBLISH_STATUS_PUBLISHED,
         title=u"Gladiatorkämparna",
         content=
 u"""

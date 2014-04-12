@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-04-12 11:58+0200\n"
-"PO-Revision-Date: 2014-04-12 12:03+0100\n"
+"POT-Creation-Date: 2014-04-12 15:53+0200\n"
+"PO-Revision-Date: 2014-04-12 15:54+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -17,6 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 "X-Generator: Poedit 1.5.4\n"
+
+#: /home/zaifon/Projects/fablr/raconteur/auth.py:144
+msgid "You are logged in as"
+msgstr "Du är nu inloggad som"
+
+#: /home/zaifon/Projects/fablr/raconteur/auth.py:152
+msgid "You are now logged out"
+msgstr "Du är nu utloggad"
+
+#: /home/zaifon/Projects/fablr/raconteur/auth.py:182
+msgid "Incorrect username or password"
+msgstr "Inkorrekt användarnamn eller lösenord"
 
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:25
 msgid "Private"
@@ -189,6 +201,10 @@ msgstr "manlig"
 msgid "female"
 msgstr "kvinnlig"
 
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:56
+msgid " by "
+msgstr " av "
+
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:92
 msgid "Slug"
 msgstr "Slug"
@@ -232,6 +248,7 @@ msgid "occupation"
 msgstr "Yrke"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:151
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:181
 msgid "fraction"
 msgstr "organisation"
 
@@ -255,6 +272,34 @@ msgstr "Från"
 msgid "To"
 msgstr "Till"
 
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:179
+msgid "default"
+msgstr "default"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:180
+msgid "person"
+msgstr "person"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:182
+msgid "place"
+msgstr "place"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:183
+msgid "event"
+msgstr "event"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:184
+msgid "campaign"
+msgstr "campaign"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:185
+msgid "chronicle"
+msgstr "chronicle"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:186
+msgid "blogpost"
+msgstr "blogpost"
+
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:194
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:148
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:150
@@ -268,9 +313,13 @@ msgstr "Typ"
 msgid "World"
 msgstr "Världar"
 
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:197
+msgid "Created on"
+msgstr "Skapad"
+
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:201
 msgid "Status"
-msgstr "status"
+msgstr "Status"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:227
 msgid "from"
@@ -517,7 +566,7 @@ msgstr "Galleri"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:20
 msgid "Drag or click to upload file"
-msgstr "Dra eller klicka för att ladda upp"
+msgstr "Dra en bild hit eller klicka för att ladda upp"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:23
 msgid "or link to image online"
@@ -893,7 +942,7 @@ msgstr "Relationer till andra artiklar"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:139
 msgid "Other articles relation to this article"
-msgstr "Andra artiklars relationer till denna artikel"
+msgstr "Artiklar med relationer till denna"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:146
 msgid "Lon"
@@ -1027,55 +1076,4 @@ msgstr "Regelsystem"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:15
 msgid "Created date"
-msgstr "Skapad"
-
-#~ msgid "Article actions"
-#~ msgstr "Artikelfunktioner"
-
-#~ msgid "Publishers"
-#~ msgstr "Utgivare"
-
-#~ msgid "%(name)s"
-#~ msgstr "NamnPåFält"
-
-#~ msgid "default"
-#~ msgstr "default"
-
-#~ msgid "image"
-#~ msgstr "bild"
-
-#~ msgid "person"
-#~ msgstr "person"
-
-#~ msgid "place"
-#~ msgstr "plats"
-
-#~ msgid "event"
-#~ msgstr "händelse"
-
-#~ msgid "campaign"
-#~ msgstr "kampanjer"
-
-#~ msgid "chronicle"
-#~ msgstr "krönika"
-
-#~ msgid "blogpost"
-#~ msgstr "bloggpost"
-
-#~ msgid "Unfollow"
-#~ msgstr "Sluta följa"
-
-#~ msgid "Follow"
-#~ msgstr "Följ"
-
-#~ msgid "Add to group"
-#~ msgstr "Lägg till i grupp"
-
-#~ msgid "Send message"
-#~ msgstr "Skicka meddelande"
-
-#~ msgid "It's you!"
-#~ msgstr "Dig själv!"
-
-#~ msgid "By relation"
-#~ msgstr "Efter relation"
+msgstr "Created date"
