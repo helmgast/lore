@@ -2,7 +2,7 @@
     raconteur.auth
     ~~~~~~~~~~~~~~~~
 
-   Authentication module that provides login and logout features on top of 
+   Authentication module that provides login and logout features on top of
    User model. Adapted from flask-peewee.
 
     :copyright: (c) 2014 by Raconteur
@@ -16,6 +16,7 @@ from flask import Blueprint, render_template, abort, request, session, flash, re
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, validators
 from hashlib import sha1
+from flask.ext.babel import gettext as _
 
 current_dir = os.path.dirname(__file__)
 
@@ -140,7 +141,7 @@ class Auth(object):
         session['user_pk'] = str(user.id)
         session.permanent = True
         g.user = user
-        flash('You are logged in as %s' % user.username, 'success')
+        flash( _('You are logged in as') + ' %s' % user.username, 'success')
 
     def logout_user(self, user):
         if self.clear_session:
@@ -148,7 +149,7 @@ class Auth(object):
         else:
             session.pop('logged_in', None)
         g.user = None
-        flash('You are now logged out', 'success')
+        flash( _('You are now logged out'), 'success')
 
     def get_logged_in_user(self):
         if session.get('logged_in'):
@@ -178,7 +179,7 @@ class Auth(object):
                     self.login_user(authenticated_user)
                     return redirect(request.args.get('next') or self.default_next_url)
                 else:
-                    flash('Incorrect username or password', 'warning')
+                    flash( _('Incorrect username or password'), 'warning')
         else:
             form = Form()
 
