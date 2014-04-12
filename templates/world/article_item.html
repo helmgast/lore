@@ -296,9 +296,14 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 			});
 {% else %}
   // only load lightbox if we are viewing an article
+  debugger;
    $( function()
     {
-        $( '.article_text a' ).imageLightbox();
+      $( '.article_text .imagelink' ).imageLightbox({
+        onLoadStart:  function() { $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body') },
+        onLoadEnd:    function() { $('#imagelightbox-loading').remove() },
+        onEnd:      function() { $('#imagelightbox-loading').remove() }
+      });
     });
 {% endif %}
 </script>
