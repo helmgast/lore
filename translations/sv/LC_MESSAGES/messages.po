@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-08 13:50+0100\n"
-"PO-Revision-Date: 2014-03-08 13:50+0100\n"
+"POT-Creation-Date: 2014-04-12 11:58+0200\n"
+"PO-Revision-Date: 2014-04-12 12:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -18,242 +18,322 @@ msgstr ""
 "Generated-By: Babel 1.3\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:104
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:25
+msgid "Private"
+msgstr "Privat"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:26
+msgid "Protected"
+msgstr "Skyddad"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:27
+msgid "Public"
+msgstr "Allmän"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:30
+#: /home/zaifon/Projects/fablr/raconteur/templates/join.html:17
+msgid "Join"
+msgstr "Registrera"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:31
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:86
+#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/base.html:3
+#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:21
+#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/sessions.html:45
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:29
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:73
+msgid "Campaign"
+msgstr "Kampanjer"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:32
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:83
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/base.html:3
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:26
+msgid "Social"
+msgstr "Social"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:33
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:89
+msgid "Tools"
+msgstr "Verktyg"
+
+#: /home/zaifon/Projects/fablr/raconteur/raconteur.py:271
 msgid "That username is already taken"
 msgstr "Användarnamnet är redan registrerat"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:36
+#: /home/zaifon/Projects/fablr/raconteur/controller/social.py:31
+msgid "Repeat Password"
+msgstr "Upprepa lösenord"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/social.py:33
+msgid "New Password"
+msgstr "Nytt lösenord"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/social.py:35
+msgid "Passwords must match"
+msgstr "Lösenorden måste stämma överens"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/world.py:129
+msgid "Today"
+msgstr "Idag"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/world.py:131
+msgid "Last week"
+msgstr "Förra veckan"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/world.py:133
+msgid "Last month"
+msgstr "Förra månaden"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/world.py:135
+msgid "Last year"
+msgstr "Förra året"
+
+#: /home/zaifon/Projects/fablr/raconteur/controller/world.py:137
+msgid "Older"
+msgstr "Äldre"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:40
 msgid "username"
 msgstr "Användarnamn"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:37
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:41
 msgid "password"
 msgstr "Lösenord"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:38
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:42
 msgid "email"
 msgstr "Email"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:39
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:43
 msgid "real name"
 msgstr "Namn"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:40
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:44
 msgid "location"
 msgstr "Plats"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:41
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:45
 msgid "description"
 msgstr "Beskrivning"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:42
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:46
 msgid "xp"
 msgstr "xp"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:43
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:47
 msgid "join date"
 msgstr "gick med"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:96
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:102
 msgid "members"
 msgstr "Medlemmar"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:97
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:103
 msgid "title"
 msgstr "Titel"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:98
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:104
 msgid "topic"
 msgstr "ämne"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:115
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:121
 msgid "MASTER"
 msgstr "Ägare"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:115
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:121
 msgid "MEMBER"
 msgstr "Medlem"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/user.py:115
+#: /home/zaifon/Projects/fablr/raconteur/model/user.py:121
 msgid "INVITED"
 msgstr "Inbjuden"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:23
-msgid "default"
-msgstr "default"
+#: /home/zaifon/Projects/fablr/raconteur/model/web.py:17
+msgid "Do backup"
+msgstr "Gör en backup"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:24
-msgid "image"
-msgstr "bild"
+#: /home/zaifon/Projects/fablr/raconteur/model/web.py:18
+msgid "Backup name"
+msgstr "Backup namn"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:25
-msgid "person"
-msgstr "person"
+#: /home/zaifon/Projects/fablr/raconteur/model/web.py:19
+msgid "Application state"
+msgstr "Tillstånd"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:26
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:129
-msgid "fraction"
-msgstr "organisation"
+#: /home/zaifon/Projects/fablr/raconteur/model/web.py:20
+msgid "Application features"
+msgstr "Det här kan du göra"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:27
-msgid "place"
-msgstr "plats"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:28
-msgid "event"
-msgstr "händelse"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:29
-msgid "campaign"
-msgstr "kampanjer"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:30
-msgid "chronicle"
-msgstr "krönika"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:31
-msgid "blogpost"
-msgstr "bloggpost"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:35
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:34
 msgid "draft"
 msgstr "utkast"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:36
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:35
 msgid "revision"
 msgstr "revision"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:37
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:36
 msgid "published"
 msgstr "utgiven"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:40
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:39
 msgid "unknown"
 msgstr "okänd"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:41
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:40
 msgid "male"
 msgstr "manlig"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:42
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:41
 msgid "female"
 msgstr "kvinnlig"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:118
-msgid "born"
-msgstr "Född"
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:92
+msgid "Slug"
+msgstr "Slug"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:119
-msgid "died"
-msgstr "Avliden"
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:99
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:196
+#: /home/zaifon/Projects/fablr/raconteur/templates/marco.html:66
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:16
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:132
+msgid "Creator"
+msgstr "skapare"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:120
-msgid "gender"
-msgstr "Kön"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:121
-msgid "occupation"
-msgstr "Yrke"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:138
-msgid "Coordinate X"
-msgstr "Koordinat X"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:139
-msgid "Coordinate Y"
-msgstr "Koordinat Y"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:140
-msgid "Location type"
-msgstr "Typ av plats"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:146
-msgid "From"
-msgstr "Från"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:147
-msgid "To"
-msgstr "Till"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:156
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:184
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:101
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:166
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:198
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/conversation_item.html:27
 msgid "Title"
 msgstr "Titel"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:157
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:186
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:102
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:167
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:199
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/sessions.html:50
 msgid "Description"
 msgstr "Beskrivning"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:181
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:175
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:177
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:141
+msgid "born"
+msgstr "Född"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:142
+msgid "died"
+msgstr "Avliden"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:143
+msgid "gender"
+msgstr "Kön"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:145
+msgid "occupation"
+msgstr "Yrke"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:151
+msgid "fraction"
+msgstr "organisation"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:155
+msgid "Coordinate X"
+msgstr "Koordinat X"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:156
+msgid "Coordinate Y"
+msgstr "Koordinat Y"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:158
+msgid "Location type"
+msgstr "Typ av plats"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:161
+msgid "From"
+msgstr "Från"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:162
+msgid "To"
+msgstr "Till"
+
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:194
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:148
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:150
 msgid "Type"
 msgstr "Typ"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:182
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:195
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaign_page.html:28
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaigninstance_list.html:22
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:3
 msgid "World"
 msgstr "Världar"
 
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:183
-msgid "Creator"
-msgstr "skapare"
-
-#: /home/zaifon/Projects/fablr/raconteur/model/world.py:185
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:201
 msgid "Status"
 msgstr "status"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:62
+#: /home/zaifon/Projects/fablr/raconteur/model/world.py:227
+msgid "from"
+msgstr "från"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/admin.html:3
+msgid "Admin"
+msgstr "Admin"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/admin.html:18
+msgid "Databases"
+msgstr "Databaser"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/admin.html:28
+msgid "Save"
+msgstr "Spara"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:77
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:21
 msgid "a story engine"
 msgstr "en plattform för berättelser"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:67
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/base.html:3
-msgid "Social"
-msgstr "Social"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:68
-#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/base.html:3
-#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:21
-#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/sessions.html:45
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:55
-msgid "Campaign"
-msgstr "Kampanjer"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:69
-msgid "Tools"
-msgstr "Verktyg"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:70
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:22
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:92
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:35
 msgid "Worlds"
 msgstr "Världar"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:74
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:28
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:97
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:42
 msgid "log in"
 msgstr "Logga in"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:75
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:29
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:99
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:44
 msgid "join"
 msgstr "Registrera"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:78
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:32
+#: /home/zaifon/Projects/fablr/raconteur/templates/base.html:103
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:48
 msgid "log out"
 msgstr "Logga ut"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:11
+#: /home/zaifon/Projects/fablr/raconteur/templates/base_modal.html:11
+#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaign_page.html:64
+#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:35
+#: /home/zaifon/Projects/fablr/raconteur/templates/includes/confirm.html:15
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:61
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:74
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:206
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/base_modal.html:12
+msgid "Insert"
+msgstr "Lägg till"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/helmgast.html:9
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:12
 msgid "Welcome to"
 msgstr "Välkommen till"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:13
+#: /home/zaifon/Projects/fablr/raconteur/templates/helmgast.html:12
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:15
 msgid ""
 "This is the digital engine to keep stories going - role-playing, fiction, TV-"
 "series."
@@ -261,11 +341,18 @@ msgstr ""
 "En digital plattform för att hålla berättelser vid liv - Rollspel, Böcker "
 "och TV-serier."
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:16
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:3
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:60
+msgid "Home"
+msgstr "Hem"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:17
+#: /home/zaifon/Projects/fablr/raconteur/templates/maintenance.html:14
 msgid "Learn more"
 msgstr "Läs mer"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/homepage.html:19
+#: /home/zaifon/Projects/fablr/raconteur/templates/maintenance.html:16
 msgid "Join us!"
 msgstr "Registrera"
 
@@ -416,13 +503,72 @@ msgstr ""
 "på en plattform. Gör det enkelt för andra att dela artiklar och spelmöten\n"
 "på andra sociala nätverk."
 
+#: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:5
+msgid "Insert image"
+msgstr "Lägg till bild"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:9
+msgid "Upload"
+msgstr "Ladda upp"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:10
+msgid "Gallery"
+msgstr "Galleri"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:20
+msgid "Drag or click to upload file"
+msgstr "Dra eller klicka för att ladda upp"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/imageasset_item.html:23
+msgid "or link to image online"
+msgstr "eller länka till en bild"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/join.html:7
 msgid "Sign up"
 msgstr "Registrera"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/join.html:17
-msgid "Join"
-msgstr "Registrera"
+#: /home/zaifon/Projects/fablr/raconteur/templates/maintenance.html:11
+msgid "is currently in maintenance"
+msgstr "underhålls just nu"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/maintenance.html:12
+msgid "Check back with us shortly"
+msgstr "Återkom snart"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/marco.html:46
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:11
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:26
+msgid "No articles yet!"
+msgstr "Inga artiklar än!"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/marco.html:60
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:26
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:50
+msgid "Read more"
+msgstr "Läs mer"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/marco.html:63
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:15
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:133
+msgid "Created"
+msgstr "Skapad"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/marco.html:64
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:15
+msgid "by"
+msgstr "av"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:3
+msgid "Subscribe to our mailing list"
+msgstr "prenumerera på vårat nyhetsbrev"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:5
+msgid "email address"
+msgstr "email address"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:9
+msgid "Subscribe"
+msgstr "Prenumerera"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/base.html:4
 msgid "manage YOUR game"
@@ -454,7 +600,7 @@ msgstr ""
 "I denna sektion kan du hantera de kampanjer och scenarion som du spelar i."
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaign_page.html:23
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:39
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:54
 msgid "Name"
 msgstr "Namn"
 
@@ -490,18 +636,10 @@ msgstr "Dra"
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaign_page.html:63
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:34
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:60
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:60
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:57
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:73
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:50
 msgid "Save changes"
 msgstr "Spara ändringar"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaign_page.html:64
-#: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:35
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:61
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:61
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:232
-msgid "Cancel"
-msgstr "Avbryt"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/campaigninstance_list.html:4
 msgid "where the magic happens"
@@ -510,8 +648,8 @@ msgstr "där magin händer"
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/session_page.html:23
 #: /home/zaifon/Projects/fablr/raconteur/templates/campaign/sessions.html:49
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_list.html:32
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:43
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:75
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:56
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:88
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:6
 msgid "Location"
 msgstr "Plats"
@@ -548,12 +686,21 @@ msgstr "Slut"
 msgid "Present"
 msgstr "Nuvarande"
 
+#: /home/zaifon/Projects/fablr/raconteur/templates/includes/confirm.html:6
+msgid "Are you sure you want to"
+msgstr "Är du säker att du vill"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/includes/confirm.html:16
+msgid "Confirm"
+msgstr "Bekräfta"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/includes/login.html:6
 msgid "Please sign in"
 msgstr "Logga in här"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/includes/login.html:9
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:29
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:52
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:4
 msgid "Username"
 msgstr "Användarnamn"
@@ -580,7 +727,7 @@ msgstr "Spelare"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/base.html:11
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_list.html:3
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:68
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:81
 msgid "Groups"
 msgstr "Grupper"
 
@@ -617,7 +764,7 @@ msgstr "Konversation"
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/conversation_item.html:28
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/conversation_list.html:11
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:49
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:76
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:89
 msgid "Members"
 msgstr "Medlemmar"
 
@@ -631,8 +778,9 @@ msgstr "Senaste aktivitet"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:12
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_list.html:7
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:8
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:9
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:7
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_action_menu.html:3
 msgid "Actions"
 msgstr "Funktioner"
 
@@ -642,9 +790,8 @@ msgid "New"
 msgstr "Ny"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:15
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:9
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:51
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:162
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:10
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_action_menu.html:7
 msgid "Edit"
 msgstr "Redigera"
 
@@ -654,11 +801,12 @@ msgid "Real name"
 msgstr "Namn"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:31
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:77
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:90
 msgid "Role"
 msgstr "Roll"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:43
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:48
 msgid "Details"
 msgstr "Detaljer"
 
@@ -667,9 +815,8 @@ msgid "Meetings"
 msgstr "Möten"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_item.html:63
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:63
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:52
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:163
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:76
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_action_menu.html:9
 msgid "Delete"
 msgstr "Ta bort"
 
@@ -682,7 +829,7 @@ msgid "All groups"
 msgstr "Alla grupper"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/group_list.html:31
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:74
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:87
 msgid "Group name"
 msgstr "Gruppnamn"
 
@@ -691,28 +838,28 @@ msgid "Public Timeline"
 msgstr "Allmän tidslinje"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_followers.html:3
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:49
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:62
 msgid "Followers"
 msgstr "Följare"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_following.html:3
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:47
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:60
 msgid "Following"
 msgstr "Följande"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:41
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:50
 msgid "Email"
 msgstr "Email"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:45
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:58
 msgid "Joined"
 msgstr "Registrerad"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:91
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:104
 msgid "Not member of any groups yet!"
 msgstr "Inte medlem i någon grupp än!"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:96
+#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:109
 msgid "Messages to followers"
 msgstr "Meddelande till följare"
 
@@ -720,85 +867,88 @@ msgstr "Meddelande till följare"
 msgid "All gamers"
 msgstr "Alla spelare"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:24
-msgid "Unfollow"
-msgstr "Sluta följa"
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_action_menu.html:8
+msgid "Edit as Markdown"
+msgstr "Redigera som Markdown"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:25
-msgid "Follow"
-msgstr "Följ"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:29
-msgid "Add to group"
-msgstr "Lägg till i grupp"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:33
-msgid "Send message"
-msgstr "Skicka meddelande"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/social/user_list_component.html:35
-msgid "It's you!"
-msgstr "Dig själv!"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:15
-msgid "by"
-msgstr "av"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_blog.html:19
-msgid "Read more"
-msgstr "Läs mer"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:53
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:164
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_action_menu.html:10
 msgid "View"
-msgstr "Vy"
+msgstr "Visa"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:173
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:46
+msgid "Metadata"
+msgstr "Metadata"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:47
+msgid "Relations"
+msgstr "Relationer"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:135
+msgid "Visibility"
+msgstr "Synlighet"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:138
+msgid "Relations to other articles"
+msgstr "Relationer till andra artiklar"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:139
+msgid "Other articles relation to this article"
+msgstr "Andra artiklars relationer till denna artikel"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:146
 msgid "Lon"
 msgstr "Lon"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:174
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:147
 msgid "Lat"
 msgstr "Lat"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:178
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:151
 msgid "URL"
 msgstr "Address"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:180
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:153
 msgid "Started"
 msgstr "Startad"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:181
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:154
 msgid "Ended"
 msgstr "Avslutad"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:183
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:156
 msgid "Born"
 msgstr "Född"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:184
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:157
 msgid "Died"
 msgstr "Avliden"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:185
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:158
 msgid "Gender"
 msgstr "Kön"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:186
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:159
 msgid "Occupation"
 msgstr "Yrke"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:228
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:168
+msgid "Content"
+msgstr "Innehåll"
+
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:201
 msgid "Are you sure you want to delete"
 msgstr "Är du säker på att du vill ta bort"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:233
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:207
 msgid "Yes"
 msgstr "Ja"
 
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:233
+msgid "You have unsaved changes"
+msgstr "Du har osparade ändringar"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:15
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:44
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:61
 msgid "Browse"
 msgstr "Bläddra"
 
@@ -814,72 +964,60 @@ msgstr "Efter typ"
 msgid "By time"
 msgstr "Efter tid"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:20
-msgid "By relation"
-msgstr "Efter relation"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_list.html:26
-msgid "No articles yet!"
-msgstr "Inga artiklar än!"
-
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:4
 msgid "any fictional world at your fingertips"
-msgstr "fiktiva världar i dina fingerspetsar"
+msgstr "fantastiska världar i dina händer"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:9
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:16
 msgid "All worlds"
 msgstr "Alla världar"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:10
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:18
 msgid "My worlds"
 msgstr "Mina världar"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:22
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:32
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:11
 msgid "Publisher"
 msgstr "Utgivare"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:43
-msgid "Home"
-msgstr "Hem"
-
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:45
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:62
 msgid "Blog"
 msgstr "Blogg"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:47
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:65
 msgid "New article"
 msgstr "Ny artikel"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:50
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:68
 msgid "Basic"
 msgstr "Grundläggande"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:51
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:69
 msgid "Person"
 msgstr "Person"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:52
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:70
 msgid "Fraction"
 msgstr "Organisation"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:53
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:71
 msgid "Place"
 msgstr "Plats"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:54
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:72
 msgid "Event"
 msgstr "Händelse"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:56
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:74
 msgid "Chronicle"
 msgstr "Krönika"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:57
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:75
 msgid "Blog post"
 msgstr "Bloggpost"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:68
+#: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:89
 msgid "IMAGE"
 msgstr "BILD"
 
@@ -888,24 +1026,8 @@ msgid "Rule System"
 msgstr "Regelsystem"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:15
-msgid "Created By"
-msgstr "Skapad av"
-
-msgid "Today"
-msgstr "Idag"
-
-msgid "Last week"
-msgstr "Förra veckan"
-
-msgid "Last month"
-msgstr "Förra månaden"
-
-msgid "Last year"
-msgstr "Förra året"
-
-msgid "Older"
-msgstr "Äldre"
-
+msgid "Created date"
+msgstr "Skapad"
 
 #~ msgid "Article actions"
 #~ msgstr "Artikelfunktioner"
@@ -915,3 +1037,45 @@ msgstr "Äldre"
 
 #~ msgid "%(name)s"
 #~ msgstr "NamnPåFält"
+
+#~ msgid "default"
+#~ msgstr "default"
+
+#~ msgid "image"
+#~ msgstr "bild"
+
+#~ msgid "person"
+#~ msgstr "person"
+
+#~ msgid "place"
+#~ msgstr "plats"
+
+#~ msgid "event"
+#~ msgstr "händelse"
+
+#~ msgid "campaign"
+#~ msgstr "kampanjer"
+
+#~ msgid "chronicle"
+#~ msgstr "krönika"
+
+#~ msgid "blogpost"
+#~ msgstr "bloggpost"
+
+#~ msgid "Unfollow"
+#~ msgstr "Sluta följa"
+
+#~ msgid "Follow"
+#~ msgstr "Följ"
+
+#~ msgid "Add to group"
+#~ msgstr "Lägg till i grupp"
+
+#~ msgid "Send message"
+#~ msgstr "Skicka meddelande"
+
+#~ msgid "It's you!"
+#~ msgstr "Dig själv!"
+
+#~ msgid "By relation"
+#~ msgstr "Efter relation"

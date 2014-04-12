@@ -6,8 +6,8 @@
 
 {% block content %}
 <ul class="nav nav-tabs">
-  <li class="active"><a href="#modalupload" data-toggle="tab">Upload</a></li>
-  <li><a id="modalgallerylink" href="#modalgallery" data-toggle="tab">Gallery</a></li>
+  <li class="active"><a href="#modalupload" data-toggle="tab">{{ _('Upload') }}</a></li>
+  <li><a id="modalgallerylink" href="#modalgallery" data-toggle="tab">{{ _('Gallery') }}</a></li>
 </ul>
 <div class="tab-content">
   <div class="tab-pane active" id="modalupload">
@@ -17,10 +17,10 @@
         <div class="image-container"></div>
       </div>
       <div class="form-group image-form">
-        <p class="help-block">Drag or click to upload file</p>
+        <p class="help-block">{{ _('Drag or click to upload file') }}</p>
         <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
         <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
-        <p class="help-block">... or link to image online</p>
+        <p class="help-block">... {{ _('or link to image online') }}</p>
         <input type="text" class="form-control" name="source_image_url" id="source_image_url" placeholder="http://">
         </div>
       <fieldset class="image-metafields hide">
@@ -33,7 +33,7 @@
   <div class="tab-pane" id="modalgallery">...</div>
 </div>
 <div class="form-inline hide" id="modalinsertoptions">
-  <input type="text" class="form-control" id="imgcaption" style="width: 60%"> 
+  <input type="text" class="form-control" id="imgcaption" style="width: 60%">
   <div class="btn-group" data-toggle="buttons">
     <label class="btn btn-primary btn-sm active">
       <input type="radio" name="imgclass" id="normal" selected> Normal
@@ -70,10 +70,10 @@
           $p.find('.selected').not($t).toggleClass('selected') // turn off all others
           if ($t.hasClass('selected')) {
             $t.removeClass('selected')
-            hidePreview()   
+            hidePreview()
           } else {
             $t.addClass('selected')
-            showPreview()   
+            showPreview()
           }
         })
       })
@@ -107,7 +107,7 @@
       $('#imagefile').prop('files', e.dataTransfer.files)
       var files = e.dataTransfer.files
     } else {
-      var files = e.target.files      
+      var files = e.target.files
     }
     if (files && files.length) {
       var file = files[0]
@@ -138,7 +138,7 @@
   $im.get(0).addEventListener('drop', fileEvent, false)
 
   function imageSelected(src) {
-    var alt=$('#imgcaption').val(), imgclass=$('input:radio[name="imgclass"]:checked').prop('id'), 
+    var alt=$('#imgcaption').val(), imgclass=$('input:radio[name="imgclass"]:checked').prop('id'),
       href= src.replace('/asset/thumbs/','/asset/'), imgstr, $activeBlock=$(editor.getActiveBlock())
     if (imgclass=="thumb" || imgclass=="gallery") {
       src = src.replace('/asset/','/asset/thumbs/')
@@ -149,8 +149,8 @@
     if (imgclass=="gallery") {
       var $gallery
       $gallery = $activeBlock.filter('.gallerylist')
-      $gallery = $gallery.length==0 ? $activeBlock.prev('.gallerylist') : $gallery 
-      $gallery = $gallery.length==0 ? $('<p class="gallerylist"></p>').insertBefore($activeBlock) : $gallery 
+      $gallery = $gallery.length==0 ? $activeBlock.prev('.gallerylist') : $gallery
+      $gallery = $gallery.length==0 ? $('<p class="gallerylist"></p>').insertBefore($activeBlock) : $gallery
       $gallery.append(imgstr)
     } else {
       $activeBlock.prepend(imgstr)
@@ -171,12 +171,12 @@
         if (this.status==200 && res.next) {
           imageSelected(res.next);
         } else {
-          $f.prepend('<div class="alert alert-warning alert-dismissable"><button type="button" class="close"'+ 
+          $f.prepend('<div class="alert alert-warning alert-dismissable"><button type="button" class="close"'+
             'data-dismiss="alert" aria-hidden="true">&times;</button>'+(res.message || 'unknown error')+'</div>')
         }
       }, false);
       req.open('POST', $f.attr('action'))
-      req.send(formData) // does not work in IE9 and below     
+      req.send(formData) // does not work in IE9 and below
     }
     e.preventDefault()
   });

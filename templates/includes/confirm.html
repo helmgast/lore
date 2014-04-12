@@ -3,7 +3,7 @@
 	<h3>{{action|capitalize}} {{field}}?</h3>
 </div>
 <form action="{{ url }}" method="post">
-	<div class="modal-body">Are you sure you want to {{action}} 
+	<div class="modal-body">{{ _('Are you sure you want to') }} {{action}}
 		{% for k,v in model_objs.items() -%}
 		{% if v %}{{k}} <strong>{{v|join(', ')}}</strong>,{% endif %}
 		{%- endfor -%}?
@@ -12,7 +12,7 @@
 	{% if v %}<input type="hidden" class="hide" name="{{k}}" value="{{v|join(', ')}}" />{% endif %}
 	{%- endfor -%}
 	<div class="modal-footer">
-		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-		<button type="submit" class="btn btn-primary">Confirm</button>
+		<button class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</button>
+		<button type="submit" class="btn btn-primary">{{ _('Confirm') }}</button>
 	</div>
 </form>
