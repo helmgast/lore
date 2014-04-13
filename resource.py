@@ -370,6 +370,8 @@ class ResourceHandler(View):
       return self._return_json(r)
     elif 'next' in r:
       return redirect(r['next'])
+    elif 'response' in r:
+      return r['response'] # op function may have rendered the answer itself
     else:
       # if json, return json instead of render
       return render_template(r['template'], **r)

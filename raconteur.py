@@ -115,8 +115,8 @@ def configure_extensions(app):
   # Secure forms
   csrf.init_app(app)
 
-  md = Markdown(app, extensions=['attr_list'])
-  md.register_extension(AutolinkedImage)
+  app.md = Markdown(app, extensions=['attr_list'])
+  app.md.register_extension(AutolinkedImage)
 
 def configure_blueprints(app):
   from model.user import User
