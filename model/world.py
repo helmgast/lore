@@ -220,6 +220,9 @@ class Article(db.Document):
   def clean(self):
     self.slug = slugify(self.title)
 
+  def is_public(self):
+    return self.is_published()
+
   def is_published(self):
     return self.status == PUBLISH_STATUS_PUBLISHED and self.created_date <= datetime.utcnow()
 

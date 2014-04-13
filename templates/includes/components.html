@@ -52,3 +52,7 @@
          {{ caller() }}
     {% endif %}
 {%- endmacro -%}
+
+{%- macro VISIBILITY(condition) -%}
+  {%- if condition -%}<small><span class="glyphicon glyphicon-eye-close"></span>&nbsp;</small>{%- endif %}
+{%- endmacro -%}
