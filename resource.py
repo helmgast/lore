@@ -428,7 +428,7 @@ class ResourceHandler(View):
   def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
     op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1]).lower()
-    if op in ['form_edit', 'form_new','list']:
+    if op in ['form_edit', 'form_new', 'list']:
       # TODO faster, more pythonic way of getting intersection of fieldnames and args
       vals = {}
       for arg in request.args:
