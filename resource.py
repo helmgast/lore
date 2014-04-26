@@ -231,8 +231,8 @@ class ResourceAccessStrategy:
     return '%s_list.html' % self.resource_name
 
   def query_item(self, **kwargs):
-    id = kwargs[self.resource_name]
-    return self.model_class.objects.get(**{self.id_field: id})
+    item_id = kwargs[self.resource_name]
+    return self.model_class.objects.get(**{self.id_field: item_id})
 
   def create_item(self):
     return self.model_class()
