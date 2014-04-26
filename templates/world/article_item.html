@@ -37,7 +37,7 @@
 <form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
   {{ article_form.csrf_token }}
   {{ article_form.title(style="display:none;") }}
-  <h1 class="article_header">
+  <h1 class="article_header">{{ VISIBILITY(visibility.is_private(article)) }}
     <span id="header" class="contenteditable" contenteditable="True">{{ title }}</span>
         <small>{{ tagline }}</small>
   </h1>
@@ -124,7 +124,7 @@
 
 {#### PAGE ####}
 {%- else -%}
-<h1 class="article_header">{{title}}
+<h1 class="article_header">{{ VISIBILITY(visibility.is_private(article)) }}{{ title }}
     <small>{{ tagline }}</small>
 </h1>
 <ul class="nav nav-tabs content-menu">
@@ -198,7 +198,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{article.title}}?</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{ article.title }}?</h4>
       </div>
       <div class="modal-body">
         <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
