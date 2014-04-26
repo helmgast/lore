@@ -139,7 +139,7 @@ class ResourceSecurityPolicy:
   def is_public_op(self, op):
     return op in self.public_ops
 
-  def is_authorized(self, user, op, instance):
+  def is_authorized_for_operation(self, user, op, instance):
     authorized = user is not None or self.is_public_op(op)
     if not authorized:
       logger.info("Anonymous user not authorized to do '%s'", op)
@@ -166,11 +166,14 @@ class ResourceSecurityPolicy:
       return True
 
   def validate_operation(self, op, instance=None):
-    if not is_allowed_access(g.user):
+    user = g.user
+    if not is_allowed_access(user):
       raise ResourceError(403)
-    if not self.is_authorized(g.user, op, instance):
+    if not self.is_authorized_for_operation(user, op, instance):
       raise ResourceError(401)
-    if not self.is_public_or_user_allowed(g.user, op, instance):
+    if not user and not self.is_allowed_public(op, instance):
+      raise ResourceError(401)
+    if user and not self.is_allowed_user(user, op, instance):
       raise ResourceError(403)
 
 
@@ -378,7 +381,8 @@ class ResourceHandler(View):
           return self._return_json(r, err)
         else:
           flash(err.message,'warning')
-          return render_template(r['template'], **r), 403
+          abort(403) # TODO, nicer 403 page?
+          # return render_template(r['template'], **r), 403
 
       elif err.status_code == 404:
         abort(404) # TODO, nicer 404 page?
