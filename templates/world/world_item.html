@@ -94,7 +94,7 @@
   <ul>
     {% for article in world.articles() %}
 
-    <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{article.title}}</a>  <span>[{{ article.type }}]</span></li>
+    <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}</a>  <span>[{{ article.type }}]</span></li>
     {% endfor %}
   </ul>
   {#{% include "includes/pagination.html" %}
