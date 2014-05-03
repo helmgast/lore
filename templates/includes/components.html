@@ -54,5 +54,5 @@
 {%- endmacro -%}
 
 {%- macro VISIBILITY(condition) -%}
-  {%- if condition -%}<small><span class="glyphicon glyphicon-eye-close"></span>&nbsp;</small>{%- endif %}
+  {%- if condition -%}<small title="{{_('Your access rights allow you to view this resource in this view')}}"><span class="glyphicon glyphicon-eye-close"></span>&nbsp;</small>{%- endif %}
 {%- endmacro -%}

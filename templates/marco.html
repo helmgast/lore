@@ -48,7 +48,7 @@
 
 	{% for article in articles %}
     <div class="col-lg-4 col-sm-6 col-xs-12 desc" style="padding-bottom: 20px;">
-      <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{article.title}}</h3></a>
+      <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}</h3></a>
     {% if article.feature_image %}
       <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
       <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">

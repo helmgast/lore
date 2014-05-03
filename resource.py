@@ -231,8 +231,8 @@ class ResourceAccessStrategy:
     return '%s_list.html' % self.resource_name
 
   def query_item(self, **kwargs):
-    id = kwargs[self.resource_name]
-    return self.model_class.objects.get(**{self.id_field: id})
+    item_id = kwargs[self.resource_name]
+    return self.model_class.objects.get(**{self.id_field: item_id})
 
   def create_item(self):
     return self.model_class()
@@ -275,6 +275,9 @@ class ResourceAccessStrategy:
 
   def endpoint_name(self, suffix):
     return self.resource_name + '_' + suffix
+
+  def get_visibility(self, op):
+    return ResourcePrivacyPolicy(self.security, op)
 
   def check_operation_any(self, op):
     self.security.validate_operation(op, None)
@@ -427,7 +430,7 @@ class ResourceHandler(View):
   def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
     op = request.args.get('op', request.endpoint.split('.')[-1].split('_',1)[-1]).lower()
-    if op in ['form_edit', 'form_new','list']:
+    if op in ['form_edit', 'form_new', 'list']:
       # TODO faster, more pythonic way of getting intersection of fieldnames and args
       vals = {}
       for arg in request.args:
@@ -440,6 +443,7 @@ class ResourceHandler(View):
     r['out'] = request.args.get('out','html') # default to HTML
     if 'next' in request.args:
       r['next'] = request.args['next']
+    r['visibility'] = self.strategy.get_visibility(r['op'])
     return r
 
   def _query_url_components(self, r, **kwargs):
@@ -493,7 +497,6 @@ class ResourceHandler(View):
     r['url_for_args'] = request.view_args
     r['url_for_args'].update(request.args.to_dict())
     r['template'] = self.strategy.list_template()
-    r['visibility'] = ResourcePrivacyPolicy(self.strategy.security, r['op'])
     return r
 
   def new(self, r):
