@@ -17,6 +17,8 @@ from flask.ext.mongoengine import Pagination
 from extensions import db, csrf, babel, AutolinkedImage
 from mongoengine import Document, QuerySet
 from time import gmtime, strftime
+import bugsnag
+from bugsnag.flask import handle_exceptions
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -77,7 +79,8 @@ default_options = {
   'LANGUAGES': {
     'en': 'English',
     'sv': 'Swedish'
-  }
+  },
+  'BUGSNAG_API_KEY': '7c403b36155babc3df60b8def80938aa'
 }
 
 def create_app(**kwargs):
@@ -91,6 +94,13 @@ def create_app(**kwargs):
 
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
+
+  if 'BUGSNAG_API_KEY' in the_app.config:
+      # api_key = "YOUR_API_KEY_HERE",
+      # project_root = "/path/to/your/app",
+    the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
+    bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
+    handle_exceptions(the_app)
 
   # Configure all extensions
   configure_extensions(the_app)
@@ -110,7 +120,6 @@ def configure_extensions(app):
 
   # Internationalization
   babel.init_app(app)
-  print babel.list_translations()
 
   # Secure forms
   csrf.init_app(app)
