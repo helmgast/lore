@@ -9,6 +9,6 @@ setup(name='Raconteur', version='0.4',
     #  for the specific client drivers/modules your application needs.
     install_requires=[
         'Flask', 'flask-mongoengine', 'python-slugify', 'Flask-Markdown', 
-        'requests', 'Pillow', 'flask-babel', 'bugsnag'
+        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'Flask-Mail'
     ]
 )

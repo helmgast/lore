@@ -4,6 +4,9 @@ db = MongoEngine()
 from flask.ext.babel import Babel
 babel = Babel()
 
+from flask.ext.mail import Mail
+mail = Mail()
+
 #i18n
 # @babel.localeselector
 # def get_locale():

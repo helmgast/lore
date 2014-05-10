@@ -14,11 +14,9 @@ from flask.json import JSONEncoder
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine import Pagination
-from extensions import db, csrf, babel, AutolinkedImage
+from extensions import db, csrf, babel, mail, AutolinkedImage
 from mongoengine import Document, QuerySet
 from time import gmtime, strftime
-import bugsnag
-from bugsnag.flask import handle_exceptions
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -80,7 +78,9 @@ default_options = {
     'en': 'English',
     'sv': 'Swedish'
   },
-  'BUGSNAG_API_KEY': '7c403b36155babc3df60b8def80938aa'
+  'MAIL_SERVER':'localhost',
+  'MAIL_PORT':25,
+  'MAIL_USE_SSL':False
 }
 
 def create_app(**kwargs):
@@ -98,9 +98,12 @@ def create_app(**kwargs):
   if 'BUGSNAG_API_KEY' in the_app.config:
       # api_key = "YOUR_API_KEY_HERE",
       # project_root = "/path/to/your/app",
+    import bugsnag
+    from bugsnag.flask import handle_exceptions
     the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
     bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
     handle_exceptions(the_app)
+
 
   # Configure all extensions
   configure_extensions(the_app)
@@ -120,6 +123,8 @@ def configure_extensions(app):
 
   # Internationalization
   babel.init_app(app)
+
+  mail.init_app(app)
 
   # Secure forms
   csrf.init_app(app)
@@ -230,6 +235,8 @@ def register_main_routes(app, auth):
   from model.web import ApplicationConfig
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
+  from flask.ext.mail import Message
+
   @app.route('/')
   def homepage():
     world = world_strategy.query_item(world='helmgast')
@@ -243,6 +250,10 @@ def register_main_routes(app, auth):
     global app_state, app_features
 
     if request.method == 'GET':
+      msg = Message("Hello",
+        sender="info@helmgast.se",
+        recipients=["theripperdoc@hotmail.com"])
+      mail.send(msg)
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
       config = ApplicationConfig(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
