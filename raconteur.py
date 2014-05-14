@@ -68,27 +68,14 @@ class MongoJSONEncoder(JSONEncoder):
       return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
     return JSONEncoder.default(self, o)
 
-default_options = {
-  'MONGODB_SETTINGS': {'DB':'raconteurdb'},
-  'SECRET_KEY':'raconteur',
-  'DEBUG': True,
-  'LOG_FOLDER': '.',
-  'BABEL_DEFAULT_LOCALE':'sv',
-  'LANGUAGES': {
-    'en': 'English',
-    'sv': 'Swedish'
-  },
-  'MAIL_SERVER':'localhost',
-  'MAIL_PORT':25,
-  'MAIL_USE_SSL':False
-}
-
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
-  the_app.config.update(default_options)  # default, dummy settings
-  the_app.config.update(kwargs)  # default, dummy settings
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
     the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
+  else:
+    print >> sys.stderr, 'Using DEFAULT CONFIG FILE'
+    the_app.config.from_pyfile('config.py')
+  the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
 
@@ -96,8 +83,6 @@ def create_app(**kwargs):
   the_app.logger.info("App created: %s", the_app)
 
   if 'BUGSNAG_API_KEY' in the_app.config:
-      # api_key = "YOUR_API_KEY_HERE",
-      # project_root = "/path/to/your/app",
     import bugsnag
     from bugsnag.flask import handle_exceptions
     the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
@@ -120,6 +105,10 @@ def create_app(**kwargs):
 def configure_extensions(app):
   # flask-sqlalchemy
   db.init_app(app)
+  # TODO this is a hack to allow authentication via source db admin,
+  # will likely break if connection is recreated later
+  # mongocfg =   app.config['MONGODB_SETTINGS']
+  # db.connection[mongocfg['DB']].authenticate(mongocfg['USERNAME'], mongocfg['PASSWORD'], source="admin")
 
   # Internationalization
   babel.init_app(app)
@@ -189,8 +178,13 @@ def init_actions(app, init_mode):
 
 def setup_models(app):
   app.logger.info("Resetting data models")
-  app.logger.info(app.config['MONGODB_SETTINGS'])
-  db.connection.drop_database(app.config['MONGODB_SETTINGS']['DB'])
+  print app.config['MONGODB_SETTINGS']
+  from mongoengine.connection import get_db
+  db = get_db()
+  # Drop all collections but not the full db as we'll lose user table then
+  for c in db.collection_names(False):
+    app.logger.info("Dropping collection %s" % c)
+    db.drop_collection(c)
   from test_data import model_setup
   model_setup.setup_models()
   # This hack sets a unique index on the md5 of image files to prevent us from 
@@ -257,8 +251,9 @@ def register_main_routes(app, auth):
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
       config = ApplicationConfig(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
-      return render_template('admin.html', config=config,
-                             databases=db.connection.database_names())
+      return render_template('admin.html', config=config)
+                            # Requires additional auth, so skipped now
+                             #databases=db.connection.database_names())
     elif request.method == 'POST':
       config = ApplicationConfig(request.form)
       if not config.validate():
