@@ -622,4 +622,27 @@ User. Read by all (if system-activated), write by user or admin.
 Group. Read by all, write by group master or admin.
 ImageAsset. Read by all, write by creator or admin.
 Article. Read by those in Readgroup, Write by those in write groups.
-World. Read by all, w
+World. Read by all, write by world creator group or admin.
+
+### Domains and URLS
+Fablr runs on fablr.co as host.
+Blueprints point to a path of /blueprint/, e.g. fablr.co/blueprint, for example 
+fablr.co/social
+Static assets are served from either fablr.co/static or from asset.fablr.co. Asset
+allows us to use several subdomains to allow parallell download.
+
+Worlds are special cases, as they may want to stand on their own. A world is found
+at <world>.fablr.co.
+Some world publishers may have purchased their own domains. As such, they may want to
+point publisherdomain.com to publisherdomain.fablr.co and they may even have other
+worlds pointing to sub.publisherdomain.com.
+
+The only place host matters is to match the URL route to a correct endpoint, and
+when creating URLs using url_for.
+When we use <world>.fablr.co it's important that fablr.co/world redirects to world.fablr.co
+Also, when we use a publisherdomain, it's important that world.fablr.co still exists and
+redirects to publisherdomain.
+
+Logic:
+@app.route('/', hostname=<worldslug>)
+@app.route('/<worldslug>', hostname=<worldslug>)

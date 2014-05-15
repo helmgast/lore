@@ -53,7 +53,7 @@ class World(db.Document):
     return super(World, self).save(*args, **kwargs)
 
   def __unicode__(self):
-    return self.title+(' by '+self.publisher) if self.publisher else ''
+    return self.title+(_(' by ')+self.publisher) if self.publisher else ''
 
   def articles(self):
     return Article.objects(world=self)
@@ -61,7 +61,7 @@ class World(db.Document):
   # startyear = 0
   # daysperyear = 360
   # datestring = "day %i in the year of %i"
-  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]  
+  # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
 class RelationType(db.Document):
   name = db.StringField() # human friendly name
@@ -130,10 +130,10 @@ class ImageAsset(db.Document):
   def make_from_file(self, file):
     # block_size=256*128
     # md5 = hashlib.md5()
-    # for chunk in iter(lambda: file.read(block_size), b''): 
+    # for chunk in iter(lambda: file.read(block_size), b''):
     #      md5.update(chunk)
     # print md5.hexdigest()
-    # file.seek(0) # reset 
+    # file.seek(0) # reset
     self.image.put(file)
     self.mime_type = 'image/%s' % self.image.format.lower()
 
@@ -176,14 +176,14 @@ class CampaignData(db.EmbeddedDocument):
   children = db.ListField(db.EmbeddedDocumentField(Episode))
 
 ARTICLE_TYPES = list_to_choices([
-  'default', 
-  'person',
-  'fraction',
-  'place',
-  'event',
-  'campaign',
-  'chronicle',
-  'blogpost'
+  _('default'),
+  _('person'),
+  _('fraction'),
+  _('place'),
+  _('event'),
+  _('campaign'),
+  _('chronicle'),
+  _('blogpost')
   ])
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
@@ -194,12 +194,12 @@ class Article(db.Document):
   type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=datetime.utcnow)
+  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
   status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset) 
+  feature_image = db.ReferenceField(ImageAsset)
 
   # modified_date = DateTimeField()
 
@@ -219,6 +219,9 @@ class Article(db.Document):
   # Executes before saving
   def clean(self):
     self.slug = slugify(self.title)
+
+  def is_public(self):
+    return self.is_published()
 
   def is_published(self):
     return self.status == PUBLISH_STATUS_PUBLISHED and self.created_date <= datetime.utcnow()

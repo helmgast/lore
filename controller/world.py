@@ -28,6 +28,7 @@ from wtforms.fields import FieldList, HiddenField
 from werkzeug.datastructures import ImmutableMultiDict
 from mongoengine.queryset import Q
 from flask.ext.babel import lazy_gettext as _
+from werkzeug.contrib.atom import AtomFeed
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ def publish_filter(qr):
 
 class ArticleHandler(ResourceHandler):
   def blog(self, r):
-    r['op'] = "list"
+    r['op'] = 'list'
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
     if r['pagination']:
@@ -71,6 +72,22 @@ class ArticleHandler(ResourceHandler):
       r['list'] = r['list'].filter(type='blogpost').order_by('-created_date')
 
     r['articles'] = r['list']
+    return r
+
+  def feed(self, r):
+    world = r['parents']['world']
+    feed = AtomFeed(_('Recent Articles in ')+world.title,
+      feed_url=request.url, url=request.url_root)
+    articles = Article.objects(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
+    for article in articles:
+        # print current_app.md._instance.convert(article.content), type(current_app.md._instance.convert(article.content))
+        feed.add(article.title, current_app.md._instance.convert(article.content),
+           content_type='html',
+           author=str(article.creator) if article.creator else 'System',
+           url=url_for('world.article_view', world=world.slug, article=article.slug, _external=True),
+           updated=article.created_date,
+           published=article.created_date)
+    r['response'] = feed.get_response()
     return r
 
 article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, short_url=True,
