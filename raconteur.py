@@ -244,7 +244,6 @@ def register_main_routes(app, auth):
     global app_state, app_features
 
     if request.method == 'GET':
-
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
       config = ApplicationConfigForm(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
