@@ -35,8 +35,12 @@ db = MongoEngine()
 from flask.ext.babel import Babel
 babel = Babel()
 
-from flask.ext.mail import Mail
+from flask.ext.mail import Mail, Message
 mail = Mail()
+
+class MailMessage(Message):
+  def send_out(self):
+    return mail.send(self)
 
 #i18n
 # @babel.localeselector

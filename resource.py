@@ -195,8 +195,9 @@ class ResourcePrivacyPolicy:
 
 
 class ResourceAccessStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, 
-    parent_reference_field=None, short_url=False, list_filters=None, use_subdomain=False):
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
+    parent_strategy=None, parent_reference_field=None, short_url=False, 
+    list_filters=None, use_subdomain=False, security_policy=ResourceSecurityPolicy()):
     if use_subdomain and parent_strategy:
       raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())

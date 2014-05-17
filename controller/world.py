@@ -34,7 +34,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True, use_subdomain=True)
+world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):

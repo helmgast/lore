@@ -77,9 +77,8 @@ def create_app(**kwargs):
     the_app.config.from_pyfile('config.py')
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
-  the_app.config['SERVER_NAME'] = 'testdomaina.com:5000'
   the_app.json_encoder = MongoJSONEncoder
-
+  print the_app.config
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
@@ -230,7 +229,6 @@ def register_main_routes(app, auth):
   from model.web import ApplicationConfigForm, AdminEmailForm
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
-  from flask.ext.mail import Message
   from mailer import render_mail
 
   @app.route('/')
@@ -255,12 +253,12 @@ def register_main_routes(app, auth):
                              #databases=db.connection.database_names())
     elif request.method == 'POST':
       if request.args['action']=='mail':
-        email = AdminEmailForm(request.form)
-        if not email.validate():
-          raise Exception("Email fields not filled correctly")
-        if email.to_field.data:
-          mail = render_mail([email.to_field.data], 'Welcome to Helmgast!', template='mail/welcome.html')
-          mail.send(mail)
+        mailform = AdminEmailForm(request.form)
+        if not mailform.validate():
+          raise Exception("Email fields not filled correctly %s" % mailform.errors)
+        email = render_mail([mailform.to_field.data], mailform.subject.data , template='mail/welcome.html', user=g.user)
+        # raise Exception()
+        email.send_out()
       else:
         config = ApplicationConfigForm(request.form)
         if not config.validate():
