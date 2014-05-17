@@ -37,8 +37,8 @@ app_state = STATE_PUBLIC
 app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
-  FEATURE_SOCIAL: False,
-  FEATURE_JOIN: False
+  FEATURE_SOCIAL: True,
+  FEATURE_JOIN: True
 }
 
 def is_private():
