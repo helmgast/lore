@@ -12,5 +12,6 @@ LANGUAGES = {
 # MAIL_SERVER='smtp.gmail.com'
 # MAIL_PORT=465
 # MAIL_USE_SSL=True
-# MAIL_USERNAME = 'you@google.com'
+# MAIL_USERNAME = 'you@gmail.com'
 # MAIL_PASSWORD = 'secret'
+# DEFAULT_MAIL_SENDER = 'info@helmgast.se'

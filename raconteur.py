@@ -231,6 +231,7 @@ def register_main_routes(app, auth):
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
 
   from flask.ext.mail import Message
+  from mailer import render_mail
 
   @app.route('/')
   def homepage():
@@ -258,11 +259,8 @@ def register_main_routes(app, auth):
         if not email.validate():
           raise Exception("Email fields not filled correctly")
         if email.to_field.data:
-          msg = Message(email.subject.data,
-            sender="info@helmgast.se",
-            recipients=[email.to_field.data],
-            body=email.message.data)
-          mail.send(msg)
+          mail = render_mail([email.to_field.data], 'Welcome to Helmgast!', template='mail/welcome.html')
+          mail.send(mail)
       else:
         config = ApplicationConfigForm(request.form)
         if not config.validate():
