@@ -109,56 +109,52 @@
 {% endblock %}
 
 <div class="{% block container_class %}container{% endblock %}">
-
   {% block mainblock %}
-  <div class="row">
-    <div class="col-md-2">
-      {% block sidebar %}
-          &nbsp;
+  <div class="col-md-2">
+  {% block sidebar %}
+    &nbsp;
+  {% endblock %}
+  </div>
+  <!-- /sidebar -->
+
+  <div class="col-md-10">
+    <div class="content">
+      {% block middle %}
+      {% block pre_content %}
+      {% block hero_box %}{% endblock %}
+      <div class="page-header">
+        <h1>{% block content_title %}{% endblock %}
+          <small>{% block content_tagline %}{% endblock %}</small>
+        </h1>
+        {% block content_subheader %}{% endblock %}
+      </div>
+      {% include "includes/flash.html" %}
+      {% endblock %}
+      {% block content %}{% endblock %}
       {% endblock %}
     </div>
-    <!-- /sidebar -->
-
-    <div class="col-md-10">
-      <div class="content">
-        {% block middle %}
-        {% block pre_content %}
-        {% block hero_box %}{% endblock %}
-        <div class="page-header">
-          <h1>{% block content_title %}{% endblock %}
-            <small>{% block content_tagline %}{% endblock %}</small>
-          </h1>
-          {% block content_subheader %}{% endblock %}
-        </div>
-        {% include "includes/flash.html" %}
-        {% endblock %}
-        {% block content %}{% endblock %}
-        {% endblock %}
-      </div>
-        <!-- /content -->
-    </div>
-    <!-- /row -->
-    <hr/>
-    <footer>
-        <p></p>
-    </footer>
-    <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">Hej</div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="itsafuckingmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">Hej</div>
-        </div>
-    </div>
-    </div>
+    <!-- /content -->
   </div>
-  {% endblock %}
-  {% block final %}{% endblock %}
+  <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">Hej</div>
+      </div>
+  </div>
+
+  <div class="modal fade" id="itsafuckingmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">Hej</div>
+      </div>
+  </div>
 </div>
-<!-- /container-fluid -->
+{% endblock %}
+<footer>
+  <p class="text-center small">
+  Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})  
+  </p>
+</footer>
+
+{% block final %}{% endblock %}
 </body>
 </html>
 {# IMPORTANT this section activates if we have set the modal parameter
