@@ -29,7 +29,7 @@ def add_test_data():
     RelationType(name=u"distant relative of").save()
 
     # User.drop_collection()
-    mf = User(username='admin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', active=True,
+    mf = User(username='martin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', active=True,
         admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
     nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', active=True,
         admin=True, realname='Niklas F').save()

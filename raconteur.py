@@ -78,7 +78,6 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
-  print the_app.config
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
@@ -89,7 +88,6 @@ def create_app(**kwargs):
     bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
     handle_exceptions(the_app)
 
-
   # Configure all extensions
   configure_extensions(the_app)
 
@@ -99,6 +97,22 @@ def create_app(**kwargs):
   configure_hooks(the_app)
 
   register_main_routes(the_app, auth)
+
+  from model.user import User
+  from auth import make_password
+  if len(User.objects(admin=True))==0:
+    try:
+      admin_password = the_app.config['SECRET_KEY']
+      admin_email = the_app.config['MAIL_DEFAULT_SENDER']
+      User(username='admin',
+        password=make_password(the_app.config['SECRET_KEY']),
+        email=the_app.config['MAIL_DEFAULT_SENDER'],
+        admin=True,
+        active=True).save()
+    except KeyError as e:
+      raise Exception("Trying to create first admin user, need to have SECRET"+\
+        " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
+
   print the_app.url_map
   return the_app
 
@@ -228,7 +242,6 @@ def register_main_routes(app, auth):
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm, AdminEmailForm
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
-
   from mailer import render_mail
 
   @app.route('/')
