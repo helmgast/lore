@@ -317,9 +317,10 @@ class ResourceError(Exception):
   }
 
   def __init__(self, status_code, r=None, message=None):
+    message = message if message else self.default_messages.get(status_code, 'Unknown error')
     Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
-    self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
+    self.message = message
     if status_code == 400 and r and 'form' in r:
       self.message += ", invalid fields %s" % r['form'].errors.keys()
     self.r = r

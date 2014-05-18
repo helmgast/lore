@@ -88,6 +88,9 @@
         {% call IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}
+        {% call IS_ENABLED("shop") %}
+        <li{% block shop_active %}{% endblock %}><a href="{{ url_for('shop.index') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
+        {% endcall %}
         {% call IS_USER() %}
         <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
         {% endcall %}

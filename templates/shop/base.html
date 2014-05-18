@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content_title %}{{ _('Shop') }}{% endblock %}
+{% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
+{% block shop_active %} class="active"{% endblock %}
+
+{% block sidebar %}
+<ul class="nav nav-list">
+  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
+  {% call IS_ADMIN() %}
+    <li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
+  {% endcall %}
+</ul>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+    {% for product in products %}
+
+    <div class="col-md-4">
+        <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
+        <div class="well">{{ product.description }}</div>
+        <dl class="dl-horizontal">
+            <dt>{{ _('Publisher') }}</dt>
+            <dd>{{ product.publisher }}</dd>
+        </dl>
+    </div>
+    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
+    {% endfor %}
+  </div>
+{% endblock %}

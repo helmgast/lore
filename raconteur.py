@@ -10,12 +10,9 @@
 
 import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
-from flask.json import JSONEncoder
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from flask.ext.mongoengine import Pagination
-from extensions import db, csrf, babel, mail, AutolinkedImage
-from mongoengine import Document, QuerySet
+from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -26,19 +23,21 @@ STATE_TYPES = ((STATE_PRIVATE, _('Private')),
               (STATE_PROTECTED, _('Protected')),
               (STATE_PUBLIC, _('Public')))
 
-FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS = "join", "campaign", "social", "tools"
+FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS, FEATURE_SHOP = 'join', 'campaign', 'social', 'tools', 'shop'
 FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
                 (FEATURE_CAMPAIGN, _('Campaign')),
                 (FEATURE_SOCIAL, _('Social')),
-                (FEATURE_TOOLS, _('Tools')))
-
+                (FEATURE_TOOLS, _('Tools')),
+                (FEATURE_SHOP, _('Shop'))
+                )
 
 app_state = STATE_PUBLIC
 app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
   FEATURE_SOCIAL: True,
-  FEATURE_JOIN: True
+  FEATURE_JOIN: True,
+  FEATURE_SHOP: True
 }
 
 def is_private():
@@ -60,14 +59,6 @@ def is_allowed_access(user):
   else:
     return True
 
-class MongoJSONEncoder(JSONEncoder):
-  def default(self, o):
-    if isinstance(o, Document) or isinstance(o, QuerySet):
-      return o.to_json()
-    elif isinstance(o, Pagination):
-      return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
-    return JSONEncoder.default(self, o)
-
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
@@ -79,7 +70,6 @@ def create_app(**kwargs):
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   # Reads version info for later display
   the_app.config.from_pyfile('version.cfg', silent=True)
-  the_app.json_encoder = MongoJSONEncoder
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
@@ -119,6 +109,8 @@ def create_app(**kwargs):
   return the_app
 
 def configure_extensions(app):
+  app.json_encoder = MongoJSONEncoder
+
   # flask-sqlalchemy
   db.init_app(app)
   # TODO this is a hack to allow authentication via source db admin,
@@ -149,6 +141,7 @@ def configure_blueprints(app):
     from controller.social import social
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
+    from controller.shop import shop_app as shop
     from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
     from model.world import ImageAsset
 
@@ -156,6 +149,7 @@ def configure_blueprints(app):
     app.register_blueprint(generator, url_prefix='/generator')
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')
+    app.register_blueprint(shop, url_prefix='/shop')
 
   return auth
  
