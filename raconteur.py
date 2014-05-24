@@ -111,7 +111,6 @@ def create_app(**kwargs):
 def configure_extensions(app):
   app.json_encoder = MongoJSONEncoder
 
-  # flask-sqlalchemy
   db.init_app(app)
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later

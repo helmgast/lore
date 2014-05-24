@@ -327,7 +327,7 @@ class ResourceError(Exception):
     logger.warning("%d: %s", self.status_code, self.message)
 
 class ResourceHandler(View):
-  default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
+  allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
 
@@ -337,14 +337,24 @@ class ResourceHandler(View):
     self.strategy = strategy
 
   @classmethod
+  def methods(cls, resource_methods):
+    def real_decorator(func):
+      func.resource_methods = resource_methods
+      return func
+    return real_decorator
+
+  @classmethod
   def register_urls(cls, app, st, sub=False):
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
-      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
-        app.add_url_rule(st.get_url_path(name), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
+      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.allowed_ops):
+        app.add_url_rule(st.get_url_path(name), 
+          subdomain=st.parent.subdomain_part if st.parent else None, 
+          methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'], 
+          view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
-
+    cls.allowed_ops.extend(custom_ops)
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
 
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
@@ -355,7 +365,7 @@ class ResourceHandler(View):
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
-    
+
     # /<resource>/[_,view,edit] -> GET:fablr.co/helmgast/, GET:fablr.co/helmgast/view, GET|POST:fablr.co/helmgast/edit
     # /resource/[list,new] -> GET:/world/list, GET:/world/new
     # <resource>.host/[_,view,edit] -> -> GET:helmgast.fablr.co, GET:helmgast.fablr.co/view, GET|POST:helmgast.fablr.co/edit
@@ -372,6 +382,8 @@ class ResourceHandler(View):
     # TODO unsafe to let us call a custom methods based on request args!
     r = self._parse_url(**kwargs)
     try:
+      if r['op'] not in self.__class__.allowed_ops:
+        raise ResourceError(400, "Attempted op %s is not allowed for this handler" % r['op'])
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
@@ -385,9 +397,11 @@ class ResourceHandler(View):
         # if json, return json instead of render
         if r['out'] == 'json':
           return self._return_json(r, err)
-        else:
+        elif 'template' in r:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 400
+        else:
+          return err.message, 400
 
       elif err.status_code == 401: # unauthorized
         if r['out'] == 'json':
@@ -404,9 +418,11 @@ class ResourceHandler(View):
         # if json, return json instead of render
         if r['out'] == 'json':
           return self._return_json(r, err)
-        else:
+        elif 'template' in r:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 403
+        else:
+          return err.message, 403
 
       elif err.status_code == 404:
         abort(404) # TODO, nicer 404 page?
