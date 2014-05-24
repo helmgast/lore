@@ -198,7 +198,9 @@ class ResourcePrivacyPolicy:
 
 
 class ResourceAccessStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, parent_strategy=None, parent_reference_field=None, short_url=False, list_filters=None, security_policy=ResourceSecurityPolicy()):
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
+      parent_strategy=None, parent_reference_field=None, short_url=False, 
+      list_filters=None, security_policy=ResourceSecurityPolicy()):
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name

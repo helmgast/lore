@@ -646,4 +646,3 @@ redirects to publisherdomain.
 Logic:
 @app.route('/', hostname=<worldslug>)
 @app.route('/<worldslug>', hostname=<worldslug>)
-

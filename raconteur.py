@@ -14,11 +14,9 @@ from flask.json import JSONEncoder
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from flask.ext.mongoengine import Pagination
-from extensions import db, csrf, babel, AutolinkedImage
+from extensions import db, csrf, babel, mail, AutolinkedImage
 from mongoengine import Document, QuerySet
 from time import gmtime, strftime
-import bugsnag
-from bugsnag.flask import handle_exceptions
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -70,25 +68,14 @@ class MongoJSONEncoder(JSONEncoder):
       return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
     return JSONEncoder.default(self, o)
 
-default_options = {
-  'MONGODB_SETTINGS': {'DB':'raconteurdb'},
-  'SECRET_KEY':'raconteur',
-  'DEBUG': True,
-  'LOG_FOLDER': '.',
-  'BABEL_DEFAULT_LOCALE':'sv',
-  'LANGUAGES': {
-    'en': 'English',
-    'sv': 'Swedish'
-  },
-  'BUGSNAG_API_KEY': '7c403b36155babc3df60b8def80938aa'
-}
-
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
-  the_app.config.update(default_options)  # default, dummy settings
-  the_app.config.update(kwargs)  # default, dummy settings
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
     the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
+  else:
+    print >> sys.stderr, 'Using DEFAULT CONFIG FILE'
+    the_app.config.from_pyfile('config.py')
+  the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.json_encoder = MongoJSONEncoder
 
@@ -96,11 +83,12 @@ def create_app(**kwargs):
   the_app.logger.info("App created: %s", the_app)
 
   if 'BUGSNAG_API_KEY' in the_app.config:
-      # api_key = "YOUR_API_KEY_HERE",
-      # project_root = "/path/to/your/app",
+    import bugsnag
+    from bugsnag.flask import handle_exceptions
     the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
     bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
     handle_exceptions(the_app)
+
 
   # Configure all extensions
   configure_extensions(the_app)
@@ -117,9 +105,15 @@ def create_app(**kwargs):
 def configure_extensions(app):
   # flask-sqlalchemy
   db.init_app(app)
+  # TODO this is a hack to allow authentication via source db admin,
+  # will likely break if connection is recreated later
+  # mongocfg =   app.config['MONGODB_SETTINGS']
+  # db.connection[mongocfg['DB']].authenticate(mongocfg['USERNAME'], mongocfg['PASSWORD'], source="admin")
 
   # Internationalization
   babel.init_app(app)
+
+  mail.init_app(app)
 
   # Secure forms
   csrf.init_app(app)
@@ -184,8 +178,13 @@ def init_actions(app, init_mode):
 
 def setup_models(app):
   app.logger.info("Resetting data models")
-  app.logger.info(app.config['MONGODB_SETTINGS'])
-  db.connection.drop_database(app.config['MONGODB_SETTINGS']['DB'])
+  print app.config['MONGODB_SETTINGS']
+  from mongoengine.connection import get_db
+  db = get_db()
+  # Drop all collections but not the full db as we'll lose user table then
+  for c in db.collection_names(False):
+    app.logger.info("Dropping collection %s" % c)
+    db.drop_collection(c)
   from test_data import model_setup
   model_setup.setup_models()
   # This hack sets a unique index on the md5 of image files to prevent us from 
@@ -227,8 +226,10 @@ def register_main_routes(app, auth):
   from model.user import User
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
-  from model.web import ApplicationConfig
+  from model.web import ApplicationConfigForm, AdminEmailForm
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
+
+  from flask.ext.mail import Message
 
   @app.route('/')
   def homepage():
@@ -244,25 +245,38 @@ def register_main_routes(app, auth):
 
     if request.method == 'GET':
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
-      config = ApplicationConfig(state=app_state, features=feature_list,
+      config = ApplicationConfigForm(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
-      return render_template('admin.html', config=config,
-                             databases=db.connection.database_names())
+      mail_form = AdminEmailForm()
+      return render_template('admin.html', config=config, email=mail_form)
+                            # Requires additional auth, so skipped now
+                             #databases=db.connection.database_names())
     elif request.method == 'POST':
-      config = ApplicationConfig(request.form)
-      if not config.validate():
-        raise Exception("Bad request data")
-      if config.backup.data:
-        if config.backup_name.data in db.connection.database_names():
-          raise Exception("Name already exists")
-        app.logger.info("Copying current database to '%s'", config.backup_name.data)
-        db.connection.copy_database('raconteurdb', config.backup_name.data)
-      if config.state.data:
-        app_state = config.state.data
-      if not config.features.data is None:
-        for feature in app_features:
-          is_enabled = feature in config.features.data
-          app_features[feature] = is_enabled
+      if request.args['action']=='mail':
+        email = AdminEmailForm(request.form)
+        if not email.validate():
+          raise Exception("Email fields not filled correctly")
+        if email.to_field.data:
+          msg = Message(email.subject.data,
+            sender="info@helmgast.se",
+            recipients=[email.to_field.data],
+            body=email.message.data)
+          mail.send(msg)
+      else:
+        config = ApplicationConfigForm(request.form)
+        if not config.validate():
+          raise Exception("Bad request data")
+        if config.backup.data:
+          if config.backup_name.data in db.connection.database_names():
+            raise Exception("Name already exists")
+          app.logger.info("Copying current database to '%s'", config.backup_name.data)
+          db.connection.copy_database('raconteurdb', config.backup_name.data)
+        if config.state.data:
+          app_state = config.state.data
+        if not config.features.data is None:
+          for feature in app_features:
+            is_enabled = feature in config.features.data
+            app_features[feature] = is_enabled
       return redirect('/admin/')
 
 

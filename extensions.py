@@ -1,8 +1,42 @@
+# import mongoengine.connection
+# mongoengine.connection.old_get_connection = mongoengine.connection.get_connection
+
+# def new_get_connection(alias='default', reconnect=False):
+#   conn = mongoengine.connection.old_get_connection(alias, reconnect)
+#   conn = 
+#   return False
+
+# mongoengine.connection.get_connection = new_get_connection
+
 from flask.ext.mongoengine import MongoEngine
+
+# class MyMongoEngine(MongoEngine):
+  # def
+
+  # def get_db(alias='default', reconnect=False):
+  #   global _dbs
+  #   if reconnect:
+  #     disconnect(alias)
+
+  #   if alias not in _dbs:
+  #     conn = get_connection(alias)
+  #     conn_settings = _connection_settings[alias]
+  #     db = conn[conn_settings['name']]
+  #     # Authenticate if necessary
+  #     if conn_settings['username'] and conn_settings['password']:
+  #       db.authenticate(conn_settings['username'], conn_settings['password'],
+  #         source=conn_settings['auth_source'])
+  #     _dbs[alias] = db
+  #   print "Using get_db"
+  #   return _dbs[alias]
+
 db = MongoEngine()
 
 from flask.ext.babel import Babel
 babel = Babel()
+
+from flask.ext.mail import Mail
+mail = Mail()
 
 #i18n
 # @babel.localeselector

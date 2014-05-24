@@ -3,7 +3,7 @@
 *.log
 *.mo
 *.sublime*
-config.openshift.py
+config.py
 /.idea
 /.settings
 /.project

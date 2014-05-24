@@ -4,9 +4,6 @@ import sys
 
 # This is just a startup script for launching the server locally.
 
-# IMPORTANT: Put any additional includes below this line.  If placed above this
-# line, it's possible required libraries won't be in your searchable path
-
 from raconteur import create_app, init_actions
 import logging
 
