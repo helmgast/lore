@@ -14,4 +14,4 @@ LANGUAGES = {
 # MAIL_USE_SSL=True
 # MAIL_USERNAME = 'you@gmail.com'
 # MAIL_PASSWORD = 'secret'
-# DEFAULT_MAIL_SENDER = 'info@helmgast.se'
+# MAIL_DEFAULT_SENDER = 'info@helmgast.se'
