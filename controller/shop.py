@@ -12,6 +12,7 @@ from flask import render_template, Blueprint, current_app
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter
 from model.shop import Product
 from flask.ext.mongoengine.wtf import model_form
+import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -25,3 +26,9 @@ ResourceHandler.register_urls(shop_app, product_strategy)
 def index():
     products = Product.objects()
     return render_template('shop/product_list.html', products=products)
+
+@shop_app.route('/download/<file>/')
+def download(file):
+  pdf_file = tasks.fetch_pdf_eon_cf.delay('a', 'b')
+  print "Test for %s" % file
+  return pdf_file.get()
