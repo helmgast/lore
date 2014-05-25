@@ -9,11 +9,11 @@
 """
 
 import os, sys
-from celery import Celery
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
+from tasks import make_celery
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -130,6 +130,12 @@ def configure_extensions(app):
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
 
+  celery = make_celery(app)
+
+  @celery.task
+  def fetch_pdf_eon_cf(x, y):
+    return x + y
+
 def configure_blueprints(app):
   from model.user import User
   from auth import Auth
@@ -137,8 +143,6 @@ def configure_blueprints(app):
   app.login_required = auth.login_required
   
   with app.app_context():
-    from tasks import celery
-    app.celery = celery
 
     from controller.world import world_app as world
     from controller.social import social

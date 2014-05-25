@@ -1,6 +1,4 @@
 from celery import Celery
-from flask import current_app
-
 
 def make_celery(flask_app):
   celery = Celery(flask_app.import_name, broker=flask_app.config['CELERY_BROKER_URL'])
@@ -16,11 +14,3 @@ def make_celery(flask_app):
 
   celery.Task = ContextTask
   return celery
-
-
-celery = make_celery(current_app)
-
-
-@celery.task
-def fetch_pdf_eon_cf(x, y):
-  return x + y

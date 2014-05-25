@@ -41,7 +41,7 @@
     </div>
 </div>
 <div class="row form-actions">
-  <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+  <button type="submit" class="btn btn-primary">{{ _('Gå till kassan') }}</button>
   <a href="{{url_for('.order_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
   {% if order %}
     <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>

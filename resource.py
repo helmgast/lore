@@ -109,7 +109,6 @@ class RacModelConverter(ModelConverter):
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
     form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
-    logger.debug("Converted model %s", model)
     return f.FormField(form_class, **kwargs)
 
   # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
