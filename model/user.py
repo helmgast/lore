@@ -9,7 +9,7 @@
 """
 
 from hashlib import md5
-from auth import BaseUser, make_password
+from auth import BaseUser, make_password, create_token
 from slugify import slugify
 from misc import now
 from raconteur import db
@@ -60,6 +60,9 @@ class User(db.Document, BaseUser):
 
     def log(self, msg):
         pass # TODO
+
+    def create_token(self):
+        return create_token(self.email)
 
     def groups(self):
         return Group.objects(members__user=self)

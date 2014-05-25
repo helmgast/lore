@@ -15,7 +15,7 @@ import random
 from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, validators
-from hashlib import sha1
+from hashlib import sha1, md5
 from flask.ext.babel import gettext as _
 
 current_dir = os.path.dirname(__file__)
@@ -40,9 +40,17 @@ def get_next():
         return request.path
     return '%s?%s' % (request.path, request.query_string)
 
+def create_token(input_string):
+  return md5(input_string.strip().lower().encode('utf-8') + u'e3af71457ddb83c51c43c7cdf6d6ddb3').hexdigest()
+
+
 class LoginForm(Form):
     username = TextField('Username', validators=[validators.Required()])
     password = PasswordField('Password', validators=[validators.Required()])
+
+class TokenForm(Form):
+    email = TextField('email', validators=[validators.Required()])
+    token = TextField('token', validators=[validators.Required()])
 
 
 class BaseUser(object):
@@ -97,6 +105,7 @@ class Auth(object):
         return (
             ('/logout/', self.logout),
             ('/login/', self.login),
+            ('/auth/', self.token_login)
         )
 
     def get_login_form(self):
@@ -163,6 +172,20 @@ class Auth(object):
             except self.User.DoesNotExist:
                 session.pop('logged_in', None)
                 pass
+
+    def token_login(self):
+        values = request.values
+        email = values['email']
+        token = values['token']
+        if email:
+            user = self.User.objects(email=email).first()
+            print user
+            if create_token() == token:
+                self.login_user(user)
+                return redirect(request.args.get('next') or self.default_next_url)
+
+        return render_template('includes/login.html', form=self.get_login_form()())
+
 
     def login(self):
         error = None

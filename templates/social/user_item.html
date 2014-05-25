@@ -61,6 +61,8 @@
       <td><span class="badge">N/A</span></td></tr>
       <tr><td><strong>{{ _('Followers') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
+      <tr><td><strong>{{ _('Token') }}</strong></td>
+      <td><span class="badge">{{ user.create_token() }}</span></td></tr>
     </table>
     <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description }}</div>
     {% endif %}
