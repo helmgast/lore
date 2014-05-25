@@ -62,6 +62,6 @@ def index():
 ### my orders
 @shop_app.route('/download/<file>/')
 def download(file):
-  pdf_file = tasks.fetch_pdf_eon_cf.delay('a', 'b')
+  pdf_file = current_app.celery.fetch_pdf_eon_cf.delay('a', 'b')
   print "Test for %s" % file
   return pdf_file.get()

@@ -130,11 +130,7 @@ def configure_extensions(app):
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
 
-  celery = make_celery(app)
-
-  @celery.task
-  def fetch_pdf_eon_cf(x, y):
-    return x + y
+  app.celery = make_celery(app)
 
 def configure_blueprints(app):
   from model.user import User

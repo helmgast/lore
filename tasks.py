@@ -13,4 +13,11 @@ def make_celery(flask_app):
         return TaskBase.__call__(self, *args, **kwargs)
 
   celery.Task = ContextTask
+
+  @celery.task
+  def fetch_pdf_eon_cf(x, y):
+    return x + y
+
+  celery.fetch_pdf_eon_cf = fetch_pdf_eon_cf
+
   return celery
