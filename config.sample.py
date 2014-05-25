@@ -15,3 +15,8 @@ LANGUAGES = {
 # MAIL_USERNAME = 'you@gmail.com'
 # MAIL_PASSWORD = 'secret'
 # MAIL_DEFAULT_SENDER = 'info@helmgast.se'
+
+CELERY_BROKER_URL = 'mongodb://localhost'
+CELERY_RESULT_BACKEND = 'mongodb://localhost'
+CELERY_TIMEZONE = 'Europe/Stockholm'
+CELERY_ENABLE_UTC = True

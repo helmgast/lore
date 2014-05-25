@@ -9,6 +9,7 @@
 """
 
 import os, sys
+from celery import Celery
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
@@ -73,6 +74,7 @@ def create_app(**kwargs):
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
+
   if 'BUGSNAG_API_KEY' in the_app.config:
     import bugsnag
     from bugsnag.flask import handle_exceptions
@@ -135,6 +137,8 @@ def configure_blueprints(app):
   app.login_required = auth.login_required
   
   with app.app_context():
+    from tasks import celery
+    app.celery = celery
 
     from controller.world import world_app as world
     from controller.social import social
@@ -151,7 +155,8 @@ def configure_blueprints(app):
     app.register_blueprint(shop, url_prefix='/shop')
 
   return auth
- 
+
+
 def configure_hooks(app):
   
   @app.before_request

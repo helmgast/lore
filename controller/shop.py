@@ -12,6 +12,7 @@ from flask import render_template, Blueprint, current_app, g, request
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm
 from model.shop import Product, Order
 from flask.ext.mongoengine.wtf import model_form
+import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -59,3 +60,8 @@ def index():
 ### GET cart - current order, displayed differently depending on current state
 
 ### my orders
+@shop_app.route('/download/<file>/')
+def download(file):
+  pdf_file = tasks.fetch_pdf_eon_cf.delay('a', 'b')
+  print "Test for %s" % file
+  return pdf_file.get()
