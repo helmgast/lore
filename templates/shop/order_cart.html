@@ -1,0 +1,52 @@
+{% extends "shop/base.html" if not parent_template else parent_template %}
+
+{% from 'includes/components.html' import FORM_FIELD %}
+
+{% block content_title %}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block content %}{% block inline %}
+<form method="post" action="{{order_form.action_url}}">
+<div class="row">
+    <div class="col-md-7">
+      <table class="table">
+      <thead>
+        <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
+      </thead>
+      <tbody>
+        {% for line in order.order_lines %}
+        <tr>
+          <td>{{line.quantity}}</td>
+          <td>{{line.product}}</td>
+          <td>{{line.price}}</td>
+          <td>{{line.comment}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+    <div class="col-md-5">
+      <table class="table">
+        <tr><td><strong>{{ _('User') }}</strong></td>
+        <td><small>{{ order.user }}</small></td></tr>      
+        <tr><td><strong>{{ _('Email') }}</strong></td>
+        <td><small>{{ order.email }}</small></td></tr>      
+        <tr><td><strong>{{ _('Created') }}</strong></td>
+        <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+        <tr><td><strong>{{ _('Updated') }}</strong></td>
+        <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+        <tr><td><strong>{{ _('Status') }}</strong></td>
+        <td><small>{{ order.status }}</small></td></tr>      
+      </table>
+    </div>
+</div>
+<div class="row form-actions">
+  <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+  <a href="{{url_for('.order_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+  {% if order %}
+    <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+  {% endif %}
+</div>
+</form>
+
+{% endblock %}{% endblock %}

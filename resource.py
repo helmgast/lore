@@ -11,6 +11,7 @@
 
 import inspect
 import logging
+import sys
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -437,15 +438,19 @@ class ResourceHandler(View):
       logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
-        return self._return_json(r, resErr)
+        return self._return_json(r, resErr) 
       else:
-        raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+        # Send the error onward, will be picked up by debugger if in debug mode
+        # 3rd args is the current traceback, as we have created a new exception
+        raise resErr, None, sys.exc_info()[2]
     except NotUniqueError as err:
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
         return self._return_json(r, resErr)
       else:
-        raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+        # Send the error onward, will be picked up by debugger if in debug mode
+        # 3rd args is the current traceback, as we have created a new exception
+        raise resErr, None, sys.exc_info()[2]
     except Exception as err:
       if r['out'] == 'json':
         return self._return_json(r, err, 500)

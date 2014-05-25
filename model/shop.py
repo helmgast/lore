@@ -41,7 +41,7 @@ class Address(db.EmbeddedDocument):
   country = db.StringField(max_length=60, required=True, verbose_name=_('Country'))
 
 ORDER_STATUS = list_to_choices([
-  'created',
+  'cart',
   'ordered',
   'paid',
   'shipped',
@@ -54,5 +54,5 @@ class Order(db.Document):
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
-  status = db.StringField(choices=ORDER_STATUS, default=ORDER_STATUS[0], verbose_name=_('Status'))
+  status = db.StringField(choices=ORDER_STATUS, default='cart', verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)

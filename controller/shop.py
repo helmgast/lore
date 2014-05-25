@@ -8,7 +8,7 @@
 
   :copyright: (c) 2014 by Raconteur
 """
-from flask import render_template, Blueprint, current_app
+from flask import render_template, Blueprint, current_app, g, request
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm
 from model.shop import Product, Order
 from flask.ext.mongoengine.wtf import model_form
@@ -26,8 +26,22 @@ order_strategy = ResourceAccessStrategy(Order, 'orders')
 
 class OrderHandler(ResourceHandler):
 
-  @ResourceHandler.methods(['POST'])
+  @ResourceHandler.methods(['GET','POST'])
   def cart(self, r):
+    if g.user:
+      cart_order = Order.objects(user=g.user, status='cart').first()
+      if not cart_order:
+        cart_order = Order(user=g.user, email=g.user.email).save()
+      r['item'] = cart_order
+      r['order'] = cart_order
+      r['url_args'] = {'order':cart_order.id}
+    else:
+      raise ResourceError(401, "Need to log in to use shopping cart")
+    if request.method == 'GET':
+      r = self.form_edit(r)
+    elif request.method == 'POST':
+      r = self.edit(r)
+    r['template'] = 'shop/order_cart.html'
     return r
 
 OrderHandler.register_urls(shop_app, order_strategy)

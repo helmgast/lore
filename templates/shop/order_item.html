@@ -1,0 +1,94 @@
+{% extends "shop/base.html" if not parent_template else parent_template %}
+
+{% from 'includes/components.html' import FORM_FIELD %}
+
+{% block content_title %}{{order.id if order else "New order"}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list">
+<li class="nav-header">{{ _('Actions') }}</li>
+<li><a href="{{ url_for('.order_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+{% if product %}
+  <li><a href="{{ url_for('.order_form_edit', order=order.id) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% endif %}
+</ul>
+{%endblock%}
+
+{% block content %}{% block inline %}
+{% if order_form %}
+<form method="post" action="{{order_form.action_url}}">
+  <div class="row">
+    <div class="col-md-5">
+      {{ FORM_FIELD(order_form.user) }}
+      {{ FORM_FIELD(order_form.email) }}
+      {{ FORM_FIELD(order_form.created) }}
+      {{ FORM_FIELD(order_form.updated) }}
+      {{ FORM_FIELD(order_form.status) }}
+      {% for field in order_form.shipping_address %}
+        {{ FORM_FIELD(field) }}
+      {% endfor %}
+      {{ order_form.csrf_token }}
+    </div>
+    <div class="col-md-7">
+      <table class="table">
+      <thead>
+        <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
+      </thead>
+      <tbody>
+        {% for line in order_form.order_lines %}
+        <tr>
+          <td>{{line.quantity}}</td>
+          <td>{{line.product}}</td>
+          <td>{{line.price}}</td>
+          <td>{{line.comment}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row form-actions">
+    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+    <a href="{{url_for('.order_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+    {% if order %}
+      <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+    {% endif %}
+  </div>
+</form>
+{% else %}
+<div class="row">
+    <div class="col-md-6">
+      <table class="table">
+        <tr><td><strong>{{ _('User') }}</strong></td>
+        <td><small>{{ order.user }}</small></td></tr>      
+        <tr><td><strong>{{ _('Email') }}</strong></td>
+        <td><small>{{ order.email }}</small></td></tr>      
+        <tr><td><strong>{{ _('Created') }}</strong></td>
+        <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+        <tr><td><strong>{{ _('Updated') }}</strong></td>
+        <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+        <tr><td><strong>{{ _('Status') }}</strong></td>
+        <td><small>{{ order.status }}</small></td></tr>      
+      </table>
+    </div>
+    <div class="col-md-6">
+      <table class="table">
+      <thead>
+        <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
+      </thead>
+      <tbody>
+        {% for line in order.order_lines %}
+        <tr>
+          <td>{{line.quantity}}</td>
+          <td>{{line.product}}</td>
+          <td>{{line.price}}</td>
+          <td>{{line.comment}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}{% endblock %}
