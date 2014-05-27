@@ -15,9 +15,21 @@
             <dt>{{ _('Created date') }}</dt>
             <dd>{{ product.created.strftime('%Y-%m-%d') }}</dd>
         </dl>
+        <h4><a class="buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></h4>
     </div>
     {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
     {% endfor %} 
   </div>
   {% include "includes/pagination.html" %}
+{% endblock %}
+
+{% block final %}
+{{super() }}
+<script>
+$('.buy-link').click(function(e) {
+    $c = $('#cart-counter')
+    $c.html(parseInt($c.html())+1)
+    e.preventDefault();
+});
+</script>
 {% endblock %}

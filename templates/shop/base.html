@@ -5,11 +5,14 @@
 {% block shop_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-<ul class="nav nav-list">
+<ul class="nav nav-pills nav-stacked">
+  <li class="active"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span id="cart-counter" class="badge alert-danger">0</span></a></li>
+
   <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
   {% call IS_ADMIN() %}
     <li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
   {% endcall %}
+
 </ul>
 {% endblock %}
 
