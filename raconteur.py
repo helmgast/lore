@@ -129,8 +129,10 @@ def configure_extensions(app):
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
-
-  app.celery = make_celery(app)
+  try:
+    app.celery = make_celery(app)
+  except KeyError as e:
+    app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
   from model.user import User

@@ -62,6 +62,10 @@ def index():
 ### my orders
 @shop_app.route('/download/<file>/')
 def download(file):
-  pdf_file = current_app.celery.fetch_pdf_eon_cf.delay('a', 'b')
-  print "Test for %s" % file
-  return pdf_file.get()
+  if current_app.celery:
+    pdf_file = current_app.celery.fetch_pdf_eon_cf.delay('a', 'b')
+    print "Test for %s" % file
+    return pdf_file.get()
+  else:
+    logger.error("Celery has not been set up for tasks")
+    abort(500)
