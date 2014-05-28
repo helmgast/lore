@@ -17,7 +17,7 @@
         {% for line in order.order_lines %}
         <tr>
           <td>{{line.quantity}}</td>
-          <td>{{line.product}}</td>
+          <td>{{line.product.title}}</td>
           <td>{{line.price}}</td>
           <td>{{line.comment}}</td>
         </tr>

@@ -10,7 +10,7 @@
 """
 from flask import render_template, Blueprint, current_app, g, request
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm
-from model.shop import Product, Order
+from model.shop import Product, Order, OrderLine
 from flask.ext.mongoengine.wtf import model_form
 import tasks
 
@@ -24,6 +24,15 @@ product_strategy = ResourceAccessStrategy(Product, 'products', 'slug',
 ResourceHandler.register_urls(shop_app, product_strategy)
 
 order_strategy = ResourceAccessStrategy(Order, 'orders')
+
+@shop_app.context_processor
+def inject_test():
+    cart_order = Order.objects(user=g.user, status='cart').only('order_items').first()
+    # raise Exception()
+    return dict(cart_items=cart_order.order_items)
+
+# class CartForm(RacBaseForm):
+#   product = StringField(u'First Name', validators=[validators.input_required()])
 
 class OrderHandler(ResourceHandler):
 
@@ -41,7 +50,25 @@ class OrderHandler(ResourceHandler):
     if request.method == 'GET':
       r = self.form_edit(r)
     elif request.method == 'POST':
-      r = self.edit(r)
+      if request.form.has_key('product'):
+        slug = request.form.get('product')
+        p = Product.objects(slug=slug).first()
+        if p:
+          found = False
+          for ol in cart_order.order_lines:
+            if ol.product == p:
+              ol.quantity = ol.quantity + 1
+              found = True
+          if not found: # create new orderline with this product
+            newol = OrderLine(product=p, price=p.price)
+            cart_order.order_lines.append(newol)
+          cart_order.save()
+          r['item'] = cart_order.order_items
+        else:
+          raise ResourceError(400, r, 'No product with slug %s exists' % slug)
+      else:
+        raise ResourceError(400, r, 'Not supported')
+
     r['template'] = 'shop/order_cart.html'
     return r
 
