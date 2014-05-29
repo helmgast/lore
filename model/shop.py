@@ -52,7 +52,7 @@ class Order(db.Document):
   session = db.StringField(verbose_name=_('Session ID'))
   email = db.EmailField(max_length=60, required=True, verbose_name=_('Email'))
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
-  order_items = db.IntField(min_value=0, default=0)
+  order_items = db.IntField(min_value=0, default=0) # Total number of items
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=ORDER_STATUS, default='cart', verbose_name=_('Status'))

@@ -25,6 +25,7 @@ ResourceHandler.register_urls(shop_app, product_strategy)
 
 order_strategy = ResourceAccessStrategy(Order, 'orders')
 
+# This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor
 def inject_test():
     cart_order = Order.objects(user=g.user, status='cart').only('order_items').first()

@@ -11,47 +11,52 @@
       var $this   = $(this)
       var remote  = $this.data('remote')
       var listname = $this.data('editable')
-      var $button = $('<button type="button" class="btn btn-default btn-xs el-deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
-      var $add = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
+      if ($this.data('option-remove')!= 'off' )
+        var $removeBtn = $('<button type="button" class="btn btn-default btn-xs el-deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
+      if ($this.data('option-add')!= 'off' )
+        var $addBtn = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
       var $type = $this.prop('tagName');
       var selectors = {
         TABLE : {
-          item: 'td:last-child',
-          row: 'tr',
-          add : 'tbody'
+          item: 'tbody td:last-child',
+          remove: 'tr',
+          addTo : 'tbody'
         },
         UL : {
           item: 'li',
-          row: 'li',
-          add : ''          
+          remove: 'li',
+          addTo : ''
         }
       }
       selectors.OL = selectors.UL
       if (!selectors[$type]) {
         return // not correct type
       }
-      $this.find(selectors[$type].item).append($button)
-
-      $add.click(function() {
-        jQuery.get(remote, function(data) {
-          var newel = $(data)
-          // get # of rows, so we can correctly index the added inputs
-          var name = listname +'-'+ $this.find(selectors[$type].item).length+'-'+newel.find('input, select').first().attr('name')
-          newel.find('input, select, label').each(function() {
-            this.name = this.name && name
-            this.id = this.id && name
-            this.htmlFor = this.htmlFor && name
-          })
-          newel.append($button.clone())
-          selectors[$type].add ? $this.find(selectors[$type].add).append(newel) : $this.append(newel)
-          // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
-          $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
+      if ($removeBtn) {
+        $this.find(selectors[$type].item).append($removeBtn)
+        $this.on('click','.el-deletebtn', function() {
+          $(this).parents(selectors[$type].remove).first().remove()
         })
-      })
-      $this.after($add)
-      $this.on('click','.el-deletebtn', function() {
-        $(this).parents(selectors[$type].row).first().remove()
-      })
+      }
+      if ($addBtn) {
+        $addBtn.click(function() {
+          jQuery.get(remote, function(data) {
+            var newel = $(data)
+            // get # of rows, so we can correctly index the added inputs
+            var name = listname +'-'+ $this.find(selectors[$type].item).length+'-'+newel.find('input, select').first().attr('name')
+            newel.find('input, select, label').each(function() {
+              this.name = this.name && name
+              this.id = this.id && name
+              this.htmlFor = this.htmlFor && name
+            })
+            newel.append($removeBtn.clone())
+            selectors[$type].addTo ? $this.find(selectors[$type].addTo).append(newel) : $this.append(newel)
+            // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
+            $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
+          })
+        })
+        $this.after($addBtn)
+      }
     })
   }
 

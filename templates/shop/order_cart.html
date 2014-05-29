@@ -9,17 +9,17 @@
 <form method="post" action="{{order_form.action_url}}">
 <div class="row">
     <div class="col-md-7">
-      <table class="table">
+      <table class="table" data-editable="orderlines" data-option-add="off">
       <thead>
         <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
       </thead>
       <tbody>
-        {% for line in order.order_lines %}
+        {% for line in order_form.order_lines %}
         <tr>
-          <td>{{line.quantity}}</td>
-          <td>{{line.product.title}}</td>
-          <td>{{line.price}}</td>
-          <td>{{line.comment}}</td>
+          <td>{{line.quantity(type="number", min="1", max="100")}}</td>
+          <td>{{line.data.product.title}}</td>
+          <td>{{line.data.price}}</td>
+          <td>{{line.data.comment}}</td>
         </tr>
         {% endfor %}
       </tbody>
