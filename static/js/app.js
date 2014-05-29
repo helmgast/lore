@@ -33,7 +33,7 @@
         return // not correct type
       }
       if ($removeBtn) {
-        $this.find(selectors[$type].item).append($removeBtn)
+        $this.find(selectors[$type].item).css('position', 'relative').append($removeBtn)
         $this.on('click','.el-deletebtn', function() {
           $(this).parents(selectors[$type].remove).first().remove()
         })

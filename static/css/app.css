@@ -581,8 +581,11 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 
 .el-deletebtn {
 	position: absolute;
-	right: 0px;
-	margin-top: 15px;
+	right: 0; top: 0; bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: -12px;
+  height: 24px;
 }
 
 .image-upload {
