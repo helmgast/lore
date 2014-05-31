@@ -11,6 +11,7 @@
   {{ join_form['password'](type="password", class="form-control",placeholder="Password", required="")}}
   {{ join_form['email'](class="form-control",placeholder="Email", required="")}}
   {{ join_form['realname'](class="form-control",placeholder="Name")}}
+  {{ join_form.csrf_token }}
 
 {% include "includes/flash.html" %}
 

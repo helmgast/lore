@@ -68,7 +68,8 @@ class Auth(object):
     self.db = db
 
     self.User = user_model or self.get_user_model()
-    self.JoinForm = model_form(self.User)
+    self.JoinForm = model_form(self.User, only=['username', 'password', 'email',
+      'realname', 'location', 'description'])
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
 
@@ -216,17 +217,18 @@ class Auth(object):
     if request.method == 'POST' and request.form['username']:
       # Read username from the form that was posted in the POST request
       try:
-        User.objects().get(username=request.form['username'])
-        flash(_('That username is already taken'))
-      except User.DoesNotExist:
-        user = User(
+        self.User.objects().get(username=request.form['username'])
+        flash(_('That username is already taken'), 'warning')
+      except self.User.DoesNotExist:
+        user = self.User(
           username=request.form['username'],
           email=request.form['email'],
+          status='invited'
         )
         user.set_password(request.form['password'])
         user.save()
 
-        auth.login_user(user)
+        self.login_user(user)
         return redirect(url_for('homepage'))
     join_form = self.JoinForm()
     return render_template('auth/join.html', join_form=join_form)
