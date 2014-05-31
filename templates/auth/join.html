@@ -3,7 +3,7 @@
 
 {% block mainblock %}
 
-<form method="post" action="{{ url_for('join') }}" class="form-signin" role="form">
+<form method="post" action="{{ url_for('auth.join') }}" class="form-signin" role="form">
   <h2 class="form-signin-heading">{{ _('Sign up') }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
   {% set css_class = "form-control" %}

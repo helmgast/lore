@@ -102,12 +102,12 @@ def create_app(**kwargs):
         password=make_password(the_app.config['SECRET_KEY']),
         email=the_app.config['MAIL_DEFAULT_SENDER'],
         admin=True,
-        active=True).save()
+        status='active').save()
     except KeyError as e:
       raise Exception("Trying to create first admin user, need to have SECRET"+\
         " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
 
-  print the_app.url_map
+  # print the_app.url_map
   return the_app
 
 def configure_extensions(app):
@@ -290,32 +290,6 @@ def register_main_routes(app, auth):
             is_enabled = feature in config.features.data
             app_features[feature] = is_enabled
       return redirect('/admin/')
-
-
-  JoinForm = model_form(User)
-
-  # Page to sign up, takes both GET and POST so that it can save the form
-  @app.route('/join/', methods=['GET', 'POST'])
-  def join():
-    if not app_features["join"]:
-      raise ResourceError(403)
-    if request.method == 'POST' and request.form['username']:
-      # Read username from the form that was posted in the POST request
-      try:
-        User.objects().get(username=request.form['username'])
-        flash(_('That username is already taken'))
-      except User.DoesNotExist:
-        user = User(
-            username=request.form['username'],
-            email=request.form['email'],
-        )
-        user.set_password(request.form['password'])
-        user.save()
-
-        auth.login_user(user)
-        return redirect(url_for('homepage'))
-    join_form = JoinForm()
-    return render_template('join.html', join_form=join_form)
 
   @app.route('/asset/<slug>')
   def asset(slug):

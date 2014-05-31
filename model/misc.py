@@ -11,6 +11,7 @@
 from raconteur import db
 import re
 import datetime
+from flask.ext.babel import lazy_gettext as _
 
 import logging
 from flask import current_app
@@ -26,7 +27,10 @@ def matches_form(formclass, formdata):
             logger.info("Matches field %s!", k)
             return True
     return False
-  
+
+def list_to_choices(list):
+  return [(s.lower(), _(s)) for s in list]
+
 def now():
     return datetime.datetime.now;
 

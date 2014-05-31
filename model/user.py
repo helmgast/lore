@@ -12,6 +12,7 @@ from hashlib import md5
 from auth import BaseUser, make_password, create_token
 from slugify import slugify
 from misc import now
+from model.misc import list_to_choices
 from raconteur import db
 from flask.ext.mongoengine.wtf import model_form
 # i18n (Babel)
@@ -20,6 +21,12 @@ from flask.ext.babel import lazy_gettext as _
 import logging
 from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+USER_STATUS = list_to_choices([
+  'Invited', 
+  'Active', 
+  'Deleted'
+  ])
 
 # A user in the system
 class User(db.Document, BaseUser):
@@ -32,7 +39,7 @@ class User(db.Document, BaseUser):
     xp = db.IntField(default=0)
     join_date = db.DateTimeField(default=now())
     # msglog = db.ReferenceField(Conversation)
-    active = db.BooleanField(default=True)
+    status = db.StringField(choices=USER_STATUS, default='Invited', verbose_name=_('Status'))
     admin = db.BooleanField(default=False)
     following = db.ListField(db.ReferenceField('self'))
 

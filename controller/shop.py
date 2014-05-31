@@ -32,8 +32,7 @@ def inject_test():
     # raise Exception()
     return dict(cart_items=cart_order.order_items)
 
-# class CartForm(RacBaseForm):
-#   product = StringField(u'First Name', validators=[validators.input_required()])
+cartform = model_form(Order, base_class=RacBaseForm, only=['order_lines'])
 
 class OrderHandler(ResourceHandler):
 

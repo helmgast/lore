@@ -16,6 +16,7 @@ from StringIO import StringIO
 import re
 import logging
 import imghdr
+from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
 import hashlib
 from werkzeug.utils import secure_filename
@@ -26,9 +27,6 @@ from time import strftime
 import logging
 from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
-
-def list_to_choices(list):
-  return [(s, _(s)) for s in list]
 
 PUBLISH_STATUS_DRAFT, PUBLISH_STATUS_REVISION, PUBLISH_STATUS_PUBLISHED = 0, 1, 2
 PUBLISH_STATUS_TYPES = ((PUBLISH_STATUS_DRAFT, _('draft')),

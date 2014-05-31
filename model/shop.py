@@ -1,5 +1,5 @@
 from raconteur import db
-from model.world import list_to_choices
+from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
 from datetime import datetime
 from model.user import User
