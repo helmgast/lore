@@ -1,5 +1,8 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
 
+{% from 'includes/components.html' import FORM_FIELD_COLS %}
+
+
 {% block content_title %}{{ user.username }}{% endblock %}
 {% block content_tagline %}{{ user.realname }}{% endblock %}
 
@@ -37,14 +40,14 @@
   <div class="col-md-8">
     {% if user_form %}
       {% if user and user==g.user %}
-        {{ FORM_FIELD(user_form.username, type='cols', cols=('col-sm-3', 'col-sm-9'))}}
-        {{ FORM_FIELD(user_form.password, type='cols', cols=('col-sm-3', 'col-sm-9'))}}
-        {{ FORM_FIELD(user_form.confirm, type='cols', cols=('col-sm-3', 'col-sm-9'))}}
+        {{ FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9')}}
+        {{ FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
+        {{ FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}}
       {% endif %}
-      {{ FORM_FIELD(user_form.email, type='cols', cols=('col-sm-3', 'col-sm-9'))}}
-      {{ FORM_FIELD(user_form.realname, type='cols', cols=('col-sm-3', 'col-sm-9'))}}
-      {{ FORM_FIELD(user_form.location, type='cols', cols=('col-sm-3', 'col-sm-9'))}} 
-      {{ FORM_FIELD(user_form.description, type='cols', cols=('col-sm-3', 'col-sm-9'))}} 
+      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}}
+      {{ FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9')}}
+      {{ FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9')}}
+      {{ FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9')}} 
     {% else %}
     <table class="table">
       <tr><td><strong>{{ _('Email') }}</strong></td>

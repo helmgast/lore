@@ -19,38 +19,64 @@
   </dd>
 {%- endmacro -%}
 
-
-{%- macro FORM_FIELD(field, type="plain", label=True, cols=None, addlabelcls="", addcontrolcls="") -%}
-  {% set labelcls = "control-label"+addlabelcls %}
-  {% if type=="inline" %}{% set labelcls= labelcls+" sr-only"%}{%endif%}
-  {% if cols %}{% set labelcls= labelcls+" "+cols[0]%}{%endif%}
-  {% set controlcls = "form-control"+addcontrolcls %}
-
+{%- macro FORM_FIELD(field, controlclass="", labelclass="") -%}
+  {% set fieldargs = {'class':'form-control '+controlclass} %}
+  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
-    {{ field.label(class=labelcls) if label }}
-    {% if type=="cols" %}<div class="{{cols[1]}}">{% endif %}
-    {{ field(class=controlcls) }}
-    {%- if field.errors -%}<span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>{% endif %}
-    {% if type=="cols" %}</div>{% endif %}
+    {{ field.label(class="control-label "+labelclass) if field.label }}
+    {{ field(**fieldargs) }}
+    {%- if field.errors -%}
+    <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+    {%- endif -%}
+  </div>
+{%- endmacro -%}
+
+{%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="") -%}
+  {% set fieldargs = {'class':'form-control '+controlclass, 'placeholder':field.label.text} %}
+  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update(kwargs) if kwargs %}
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
+    {{ field.label(class="sr-only control-label "+labelclass) if field.label }}
+    {{ field(**fieldargs) }}
+    {%- if field.errors -%}
+    <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+    <span class="help-block">{{ field.errors|join(', ') }}</span>
+    {%- endif -%}
+  </div>
+{%- endmacro -%}
+
+{%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="") -%}
+  {% set fieldargs = {'class':'form-control '+controlclass} %}
+  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update(kwargs) if kwargs %}
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
+    {{ field.label(class="control-label "+labelclass+" "+labelcol) if field.label }}
+    <div class="{{inputcol}}">
+    {{ field(**fieldargs) }}
+      {%- if field.errors -%}
+      <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+      {%- endif -%}
+    </div>
   </div>
 {%- endmacro -%}
 
 {%- macro IS_USER(user=None) -%}
-    {% if g.user and (not user or g.user == user or g.user.admin) %}
-         {{ caller() }}
-    {% endif %}
+  {% if g.user and (not user or g.user == user or g.user.admin) %}
+     {{ caller() }}
+  {% endif %}
 {%- endmacro -%}
 
 {%- macro IS_ADMIN() -%}
-    {% if g.user and g.user.admin %}
-         {{ caller() }}
-    {% endif %}
+  {% if g.user and g.user.admin %}
+     {{ caller() }}
+  {% endif %}
 {%- endmacro -%}
 
  {%- macro IS_ENABLED(feature) -%}
-    {% if g.feature and g.feature[feature] %}
-         {{ caller() }}
-    {% endif %}
+  {% if g.feature and g.feature[feature] %}
+     {{ caller() }}
+  {% endif %}
 {%- endmacro -%}
 
 {%- macro VISIBILITY(condition) -%}

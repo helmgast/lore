@@ -69,6 +69,8 @@ def create_app(**kwargs):
     the_app.config.from_pyfile('config.py')
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
+  the_app.jinja_env.add_extension('jinja2.ext.do')
+  # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   # Reads version info for later display
   the_app.config.from_pyfile('version.cfg', silent=True)
   configure_logging(the_app)

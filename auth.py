@@ -21,6 +21,12 @@ from flask.ext.mongoengine.wtf import model_form
 
 current_dir = os.path.dirname(__file__)
 
+def pretty_form_errors(errors):
+  out = ""
+  for e in errors.keys():
+    out += '<dt>%s</dt><dd>%s</dd><br>' % (_(e), errors[e])
+  return out
+
 # Provides
 
 # borrowing these methods, slightly modified, from django.contrib.auth
@@ -46,12 +52,12 @@ def create_token(input_string):
 
 
 class LoginForm(Form):
-  username = TextField('Username', validators=[validators.Required()])
-  password = PasswordField('Password', validators=[validators.Required()])
+  username = TextField(_('Username'), validators=[validators.Required()])
+  password = PasswordField(_('Password'), validators=[validators.Required()])
 
 class TokenForm(Form):
-  email = TextField('email', validators=[validators.Required()])
-  token = TextField('token', validators=[validators.Required()])
+  email = TextField(_('Email'), validators=[validators.Required()])
+  token = TextField(_('Token'), validators=[validators.Required()])
 
 class BaseUser(object):
     def set_password(self, password):
@@ -69,7 +75,9 @@ class Auth(object):
 
     self.User = user_model or self.get_user_model()
     self.JoinForm = model_form(self.User, only=['username', 'password', 'email',
-      'realname', 'location', 'description'])
+      'realname', 'location', 'description'], field_args={'password':{'password':True}})
+    self.JoinForm.confirm_password = PasswordField(_('Confirm Password'), 
+        validators=[validators.Required(), validators.EqualTo('password', message=_('Passwords must match'))])
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
 
@@ -214,23 +222,23 @@ class Auth(object):
   def join(self):
     if g.feature and not g.feature['join']:
       raise ResourceError(403)
+    join_form = self.JoinForm()
     if request.method == 'POST' and request.form['username']:
       # Read username from the form that was posted in the POST request
-      try:
-        self.User.objects().get(username=request.form['username'])
-        flash(_('That username is already taken'), 'warning')
-      except self.User.DoesNotExist:
-        user = self.User(
-          username=request.form['username'],
-          email=request.form['email'],
-          status='invited'
-        )
-        user.set_password(request.form['password'])
-        user.save()
+      join_form.process(request.form)
+      if join_form.validate():
+        try:
+          self.User.objects().get(username=join_form.username.data)
+          flash(_('That username is already taken'), 'warning')
+        except self.User.DoesNotExist:
+          user = self.User(status='invited')
+          join_form.populate_obj(user)
+          # user.set_password(request.form['password'])
+          user.save()
 
-        self.login_user(user)
-        return redirect(url_for('homepage'))
-    join_form = self.JoinForm()
+          self.login_user(user)
+          return redirect(url_for('homepage'))
+      flash(_('Error in form' ), 'warning')
     return render_template('auth/join.html', join_form=join_form)
 
   def configure_routes(self):

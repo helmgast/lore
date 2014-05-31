@@ -30,16 +30,16 @@ USER_STATUS = list_to_choices([
 
 # A user in the system
 class User(db.Document, BaseUser):
-    username = db.StringField(unique=True, max_length=60)
-    password = db.StringField(max_length=60)
-    email = db.EmailField(max_length=60)
+    username = db.StringField(unique=True, max_length=60, min_length=6)
+    password = db.StringField(required=True, max_length=60, min_length=8)
+    email = db.EmailField(required=True, max_length=60, min_length=6)
     realname = db.StringField(max_length=60)
     location = db.StringField(max_length=60)
     description = db.StringField()  # TODO should have a max length, but if we set it, won't be rendered as TextArea
     xp = db.IntField(default=0)
     join_date = db.DateTimeField(default=now())
     # msglog = db.ReferenceField(Conversation)
-    status = db.StringField(choices=USER_STATUS, default='Invited', verbose_name=_('Status'))
+    status = db.StringField(choices=USER_STATUS, default='invited', verbose_name=_('Status'))
     admin = db.BooleanField(default=False)
     following = db.ListField(db.ReferenceField('self'))
 
