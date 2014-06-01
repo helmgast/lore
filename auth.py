@@ -21,14 +21,6 @@ from flask.ext.mongoengine.wtf import model_form
 
 current_dir = os.path.dirname(__file__)
 
-def pretty_form_errors(errors):
-  out = ""
-  for e in errors.keys():
-    out += '<dt>%s</dt><dd>%s</dd><br>' % (_(e), errors[e])
-  return out
-
-# Provides
-
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):
   return sha1(salt + raw_password).hexdigest()
@@ -186,6 +178,7 @@ class Auth(object):
           user.save()
           # Verify account
           self.login_user(user)
+          flash( "%s %s %s" % (_('Username'), user.username,_('is now verified!')), 'success')
           return redirect(request.args.get('next') or url_for('homepage'))
         else: # email is verified, but account registration hasn't completed
           form = self.JoinForm(obj=user)

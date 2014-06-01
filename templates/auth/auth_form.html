@@ -10,6 +10,10 @@
   {% set title = _('Please sign in') %}
   {% set submit = _('Sign in') %}
   {% set action = '' %}
+{% elif op=='verify' %}
+  {% set title = _('Complete your account') %}
+  {% set submit = _('Join') %}
+  {% set action = url_for('auth.join') %}
 {% endif %}
 {% block pre_content %}{% endblock %}
 {% block content %}
@@ -24,11 +28,15 @@
 
   <hr>
   <span class="help-block">{{submit}} {{_('with Fablr account')}}</span>
-  {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg", autofocus=True) }}
-  {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg") }}
-  {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if op=='join'}}
-  {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", type='email') if op=='join' }}
-  {{ FORM_FIELD_INLINE(form.realname, controlclass="input-lg") if op=='join'}}
+  {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg", required=True, autofocus=True) }}
+  {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) }}
+  {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if op!='login'}}
+  {% if op=='join'%}
+  {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", type='email') }}
+  {% elif op=='verify' %}
+  {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", type='email', disabled=True) }}
+  {% endif %}
+  {{ FORM_FIELD_INLINE(form.realname, controlclass="input-lg") if op!='login'}}
   {{ form.csrf_token }}
 
   <button class="btn btn-lg btn-success btn-block" type="submit">{{ submit }}</button>
