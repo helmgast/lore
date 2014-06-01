@@ -3,25 +3,35 @@
 {% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_INLINE %}
 
 {% if op=='join' %}
-{% set title = _('Sign up') %}{% set submit = _('Join') %}
+  {% set title = _('Sign up') %}
+  {% set submit = _('Join') %}
+  {% set action = url_for('auth.join') %}
 {% elif op=='login' %}
-{% set title = _('Please sign in') %}{% set submit = _('Sign in') %}
+  {% set title = _('Please sign in') %}
+  {% set submit = _('Sign in') %}
+  {% set action = '' %}
 {% endif %}
+{% block pre_content %}{% endblock %}
+{% block content %}
 
-{% block mainblock %}
-
-<form method="post" action="{{ url_for('auth.join') }}" class="col-sm-6 col-sm-offset-3" role="form">
+<form method="post" action="{{ action }}" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ title }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
-  {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg") }}
+  <span class="help-block">{{submit}} {{_('with external provider (safer!)')}}</span>
+  <button class="btn btn-lg btn-danger btn-block" type="button">Google</button>
+  <button class="btn btn-lg btn-primary btn-block" type="button">Facebook</button>
+
+  <hr>
+  <span class="help-block">{{submit}} {{_('with Fablr account')}}</span>
+  {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg", autofocus=True) }}
   {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg") }}
   {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if op=='join'}}
   {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", type='email') if op=='join' }}
   {{ FORM_FIELD_INLINE(form.realname, controlclass="input-lg") if op=='join'}}
   {{ form.csrf_token }}
 
-  <button class="btn btn-lg btn-primary btn-block" type="submit">{{ submit }}</button>
+  <button class="btn btn-lg btn-success btn-block" type="submit">{{ submit }}</button>
 </form>
 
 {% endblock %}

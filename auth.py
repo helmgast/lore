@@ -69,7 +69,7 @@ class BaseUser(object):
 
 class Auth(object):
   def __init__(self, app, db, user_model=None, prefix='/auth', name='auth',
-       clear_session=False, default_next_url='/'):
+       clear_session=False):
     self.app = app
     self.db = db
 
@@ -82,7 +82,6 @@ class Auth(object):
     self.url_prefix = prefix
 
     self.clear_session = clear_session
-    self.default_next_url = default_next_url
 
     self.setup()
 
@@ -113,7 +112,7 @@ class Auth(object):
     return (
       ('/logout/', self.logout),
       ('/login/', self.login),
-      ('/verify/', self.token_login),
+      ('/verify/', self.verify),
       ('/join/', self.join)
     )
 
@@ -141,17 +140,6 @@ class Auth(object):
   def admin_required(self, func):
     return self.test_user(lambda u: u.admin)(func)
 
-  def authenticate(self, username, password):
-    active = self.User.objects(status='active')
-    try:
-      user = active(username=username).get()
-    except self.User.DoesNotExist:
-      return False
-    else:
-      if not user.check_password(password):
-        return False
-    return user
-
   def login_user(self, user):
     session['logged_in'] = True
     session['user_pk'] = str(user.id)
@@ -171,7 +159,6 @@ class Auth(object):
     if session.get('logged_in'):
       if getattr(g, 'user', None):
         return g.user
-
       try:
         return self.User.objects(
           status='active', id=session.get('user_pk')
@@ -180,43 +167,53 @@ class Auth(object):
         session.pop('logged_in', None)
         pass
 
-  def token_login(self):
-    values = request.values
-    email = values['email']
-    token = values['token']
-    if email:
+  def verify(self):
+    email = request.args.get('email')
+    token = request.args.get('token')
+    if request.method == 'POST':
+      pass
+    if email and token:
       user = self.User.objects(email=email).first()
-      print user
-      if create_token() == token:
-        self.login_user(user)
-        return redirect(request.args.get('next') or self.default_next_url)
-      else:
-        flash( _('Incorrect username or password'), 'warning')
-    return render_template('auth/auth_form.html', form=self.get_login_form()())
-
+      if user and create_token(user.email) == token:
+        if user.status != 'invited':
+          flash( _('You have already verified this account'), 'warning')
+          return redirect(url_for('homepage'))
+          # Return error, already active!
+        elif len(user.password)>40: # 40+ char hash
+          # User has given password before, we are just doing the email verification
+          # For max security, we should check password here again
+          user.status = 'active'
+          user.save()
+          # Verify account
+          self.login_user(user)
+          return redirect(request.args.get('next') or url_for('homepage'))
+        else: # email is verified, but account registration hasn't completed
+          form = self.JoinForm(obj=user)
+          return render_template('auth/auth_form.html', form=form, op='verify')
+    flash( _('Incorrect verification link'), 'danger')
+    return redirect(url_for('homepage'))
 
   def login(self):
     Form = self.get_login_form()
-
     if request.method == 'POST':
       form = Form(request.form)
       if form.validate():
-        authenticated_user = self.authenticate(
-          form.username.data,
-          form.password.data,
-        )
-        if authenticated_user:
-          self.login_user(authenticated_user)
-          return redirect(request.args.get('next') or self.default_next_url)
-        else:
-          flash( _('Incorrect username or password'), 'warning')
+        try:
+          user = self.User.objects(username=form.username.data).get()
+          if user.status == 'active' and user.check_password(form.password.data):
+            self.login_user(user)
+            return redirect(request.args.get('next') or url_for('homepage'))
+        except self.User.DoesNotExist:
+          pass # will get to error state below
+        flash( _('Incorrect username or password (or you need to verify the \
+          account - check your email)'), 'danger')
     else:
       form = Form()
     return render_template('auth/auth_form.html', form=form, op='login')
 
   def logout(self):
     self.logout_user(self.get_logged_in_user())
-    return redirect(request.args.get('next') or self.default_next_url)
+    return redirect(request.args.get('next') or url_for('homepage'))
 
   def join(self):
     if g.feature and not g.feature['join']:
@@ -232,9 +229,7 @@ class Auth(object):
         except self.User.DoesNotExist:
           user = self.User(status='invited')
           form.populate_obj(user)
-          # user.set_password(request.form['password'])
           user.save()
-
           self.login_user(user)
           return redirect(url_for('homepage'))
       flash(_('Error in form' ), 'warning')
@@ -249,6 +244,7 @@ class Auth(object):
 
   def load_user(self):
     g.user = self.get_logged_in_user()
+    print session
 
   def register_handlers(self):
     self.app.before_request(self.load_user)
