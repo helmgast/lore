@@ -192,11 +192,10 @@ class Auth(object):
         return redirect(request.args.get('next') or self.default_next_url)
       else:
         flash( _('Incorrect username or password'), 'warning')
-    return render_template('auth/login.html', form=self.get_login_form()())
+    return render_template('auth/auth_form.html', form=self.get_login_form()())
 
 
   def login(self):
-    error = None
     Form = self.get_login_form()
 
     if request.method == 'POST':
@@ -213,7 +212,7 @@ class Auth(object):
           flash( _('Incorrect username or password'), 'warning')
     else:
       form = Form()
-    return render_template('auth/login.html', error=error, form=form)
+    return render_template('auth/auth_form.html', form=form, op='login')
 
   def logout(self):
     self.logout_user(self.get_logged_in_user())
@@ -222,24 +221,24 @@ class Auth(object):
   def join(self):
     if g.feature and not g.feature['join']:
       raise ResourceError(403)
-    join_form = self.JoinForm()
+    form = self.JoinForm()
     if request.method == 'POST' and request.form['username']:
       # Read username from the form that was posted in the POST request
-      join_form.process(request.form)
-      if join_form.validate():
+      form.process(request.form)
+      if form.validate():
         try:
-          self.User.objects().get(username=join_form.username.data)
+          self.User.objects().get(username=form.username.data)
           flash(_('That username is already taken'), 'warning')
         except self.User.DoesNotExist:
           user = self.User(status='invited')
-          join_form.populate_obj(user)
+          form.populate_obj(user)
           # user.set_password(request.form['password'])
           user.save()
 
           self.login_user(user)
           return redirect(url_for('homepage'))
       flash(_('Error in form' ), 'warning')
-    return render_template('auth/join.html', join_form=join_form)
+    return render_template('auth/auth_form.html', form=form, op='join')
 
   def configure_routes(self):
     for url, callback in self.get_urls():

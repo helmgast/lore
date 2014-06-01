@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_INLINE %}
+
+{% if op=='join' %}
+{% set title = _('Sign up') %}{% set submit = _('Join') %}
+{% elif op=='login' %}
+{% set title = _('Please sign in') %}{% set submit = _('Sign in') %}
+{% endif %}
+
+{% block mainblock %}
+
+<form method="post" action="{{ url_for('auth.join') }}" class="col-sm-6 col-sm-offset-3" role="form">
+  {% include "includes/flash.html" %}
+  <h2 class="form-signin-heading">{{ title }}</h2>
+  <input type="hidden" name="next" value="{{ next }}" />
+  {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg") }}
+  {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg") }}
+  {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if op=='join'}}
+  {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", type='email') if op=='join' }}
+  {{ FORM_FIELD_INLINE(form.realname, controlclass="input-lg") if op=='join'}}
+  {{ form.csrf_token }}
+
+  <button class="btn btn-lg btn-primary btn-block" type="submit">{{ submit }}</button>
+</form>
+
+{% endblock %}

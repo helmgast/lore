@@ -41,7 +41,7 @@
     {{ field(**fieldargs) }}
     {%- if field.errors -%}
     <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
-    <span class="help-block">{{ field.errors|join(', ') }}</span>
+    <span class="help-block">{{ field.errors|join(' ') }}</span>
     {%- endif -%}
   </div>
 {%- endmacro -%}
