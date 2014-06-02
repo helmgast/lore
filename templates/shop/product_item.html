@@ -19,9 +19,6 @@
 {% if product_form %}
 <form method="post" action="{{product_form.action_url}}">
   <div class="row">
-    <div class="col-md-4">
-    Image
-    </div>
     <div class="col-md-8">
       {{ FORM_FIELD(product_form.title) }}
       {{ FORM_FIELD(product_form.description) }}
@@ -33,6 +30,9 @@
       {{ FORM_FIELD(product_form.delivery_fee) }}
       {{ FORM_FIELD(product_form.status) }}
       {{ product_form.csrf_token }}
+    </div>
+    <div class="col-md-4">
+      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselector':True})}}
     </div>
   </div>
   <div class="row form-actions">

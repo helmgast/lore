@@ -1,11 +1,15 @@
 
-function flash_error(message, level) {
+function flash_error(message, level, target) {
   var $error = $('<div class="alert alert-'+(level || 'warning')+
             ' alert-dismissable"> <button type="button" class="close" \
             data-dismiss="alert" aria-hidden="true">&times;</button> \
             <p>'+message+'</p> \
             </div>');
-  $('#alerts').append($error)
+  if ( target ) {
+    $(target).append($error)
+  } else {
+    $('#alerts').append($error)
+  }
 };
 
 /* ========================================================================
@@ -198,6 +202,225 @@ $("a[data-toggle='tooltip']").tooltip()
       return s
     } 
   });  
+
+/* ========================================================================
+ * Image Selector
+ * ========================================================================
+ * Copyright Raconteur 2014
+
+ * Activate on a button or input control, which will launch a modal to upload an 
+ * image and place a preview in it. The modal will take care of all user 
+ * interfacing and remove itself when done. The selected image can be represented 
+ * as an image tag into a text field (e.g. an article text) or it can be added to 
+ * a input control as the reference to the ImageAsset.
+
+data-imageselector: activates the button or control as an image selector
+data-target: the target is a selector. If the selector returns a compatible input
+control, the value of it will be set to the image ID. Otherwise, an image element
+will be appended to the target.
+
+*/
+
++function ($) {
+  'use strict';
+
+  // IMAGESELECTOR CLASS DEFINITION
+  // ======================
+  var self, ImageSelector = function (element, modal, options) {
+    self = this
+    self.options   = options
+    self.$element  = $(element)
+    self.$modal = modal
+    self.$modal.on('loaded.bs.modal', self.load)
+    // this.$backdrop =
+    // this.isShown   = null
+
+    // if (this.options.remote) {
+    //   this.$element
+    //     .find('.modal-content')
+    //     .load(this.options.remote, $.proxy(function () {
+    //       this.$element.trigger('loaded.bs.modal')
+    //     }, this))
+    // }
+  }
+
+  ImageSelector.prototype.load = function () {
+    self.hidePreview()
+    self.$modal.find('.modal-submit').prop('disabled', true).on('click', self.imageSelected)
+    self.$modal.find('#modalgallerylink').on('show.bs.tab', self.tabSwitch)
+    self.$modal.find('#imagefile').change(self.fileSelected)
+    self.$modal.find('.image-preview .close').click(self.hidePreview)
+    var file_label = self.$modal.find('.image-upload').get(0)
+    file_label.addEventListener('dragover', function(e) {
+      e.stopPropagation()
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+    }, false);
+    file_label.addEventListener('drop', self.fileSelected, false)
+  }
+
+  ImageSelector.prototype.tabSwitch = function (e) {
+    var $target = $($(e.target).attr('href'))
+    if ($target.children().length == 0) {
+      $target.load($target.data('remote'), function() {
+        var $imgs = $target.find('img')
+        // need to find if all images have finished loading
+        var imgsLoaded = 0;
+        $imgs.load(function() {
+          saveImgSize.call(this)
+          imgsLoaded++
+          if (imgsLoaded==$imgs.length) {
+            $(window).resize();
+          }
+        })
+        $target.on('click', 'img', function(e) {
+          var $t = $(e.target), $p = $t.closest('.gallerylist')
+          $p.find('.selected').not($t).toggleClass('selected') // turn off all others
+          if ($t.hasClass('selected')) {
+            $t.removeClass('selected')
+            self.hidePreview()
+          } else {
+            $t.addClass('selected')
+            self.showPreview()
+          }
+        })
+      })
+    }
+  }
+
+  ImageSelector.prototype.showPreview = function () {
+    self.$modal.find('.no-image-selected').addClass('hide')
+    self.$modal.find('.image-selected').removeClass('hide')
+    //self.$modal.find('.image-preview, .image-metafields').removeClass('hide')
+    //self.$c.insertoptions.removeClass('hide')
+    self.$modal.find('.modal-submit').prop('disabled', false)
+  }
+
+  ImageSelector.prototype.hidePreview = function (e) {
+    if (e) { e.preventDefault() }
+    self.$modal.find('.image-selected').addClass('hide')
+    self.$modal.find('.no-image-selected').removeClass('hide')
+    self.$modal.find('.image-form:input').not('#csrf_token').val(null)
+    // self.$c.image_input.val(null)
+    // self.$modal.find('#imagedata.source_image_url').val(null)
+
+    // self.$c.form.removeClass('hide')
+
+    // self.$modal.find('.image-preview, .image-metafields').addClass('hide')
+    // self.$c.insertoptions..addClass('hide')
+    self.$modal.find('.modal-submit').prop('disabled', true)
+
+  }
+
+  ImageSelector.prototype.fileSelected = function (e) {
+    if (e.dataTransfer && e.dataTransfer.files) {
+      self.$modal.find('#imagefile').prop('files', e.dataTransfer.files)
+      var files = e.dataTransfer.files
+    } else {
+      var files = e.target.files
+    }
+    if (files && files.length) {
+      var file = files[0]
+      self.$modal.find('#title').val(file.name)
+      var reader = new FileReader()
+      reader.onload = (function(tfile) {
+        return function(e) {
+          self.$modal.find('.image-container').html('<img src="' + e.target.result + '"  />')
+        };
+      }(file));
+      reader.readAsDataURL(file);
+      self.showPreview()
+    }
+    e.preventDefault()
+  }
+
+  ImageSelector.prototype.imageSelected = function (e) {
+    var $selected = self.$modal.find('#modalgallery .selected')
+    if ($selected.length > 0 ) {
+      self.insertImage($selected[0].src)
+    } else {
+      var $form = self.$modal.find('.image-form')
+      var formData = new FormData($form.get(0))
+      var req = new XMLHttpRequest();
+      req.addEventListener("load", function() {
+        var res = JSON.parse(this.responseText)
+        if (this.status==200 && res.next) {
+          self.insertImage(res.next);
+        } else {
+          flash_error(res.message || 'unknown error', 'warning', '.modal-body')
+        }
+      }, false);
+      req.open('POST', $form.attr('action'))
+      req.send(formData) // does not work in IE9 and below
+    }
+    e.preventDefault()
+  }
+
+  ImageSelector.prototype.insertImage = function (src) {
+    var alt=$('#imgcaption').val(), 
+      imgclass=$('input:radio[name="imgclass"]:checked').prop('id'),
+      href= src.replace('/asset/thumbs/','/asset/'), 
+      imgstr, 
+      $activeBlock=$(editor.getActiveBlock())
+
+    if ((imgclass=="thumb" || imgclass=="gallery") && src.indexOf('/thumbs/')==-1) {
+      src = src.replace('/asset/','/asset/thumbs/')
+    } else if (imgclass=="normal") {
+      imgclass = ""
+    }
+    imgstr = '<a class="imagelink" href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
+    if (imgclass=="gallery") {
+      var $gallery
+      $gallery = $activeBlock.filter('.gallerylist')
+      $gallery = $gallery.length==0 ? $activeBlock.prev('.gallerylist') : $gallery
+      $gallery = $gallery.length==0 ? $('<p class="gallerylist"></p>').insertBefore($activeBlock) : $gallery
+      $gallery.append(imgstr)
+    } else {
+      $activeBlock.prepend(imgstr)
+    }
+    self.$modal.modal('hide')  
+  }
+
+
+  $.fn.imageselector = function (option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('rac.imageselector')
+      var options = $.extend({}, ImageSelector.DEFAULTS, $this.data(), typeof option == 'object' && option)
+      var $modal = $('#themodal')
+      if ($modal.data('bs.modal')) {
+        $modal.data('bs.modal', null) // remove old modal, only way to reload the content
+      }
+      $modal.modal({remote: options.href})
+      // If no data set, create a ImageSelector object and attach to this element
+      if (!data) $this.data('rac.imageselector', (data = new ImageSelector(this, $modal , options)))
+      // if (typeof option == 'string') data[option](_relatedTarget)
+      // else if (options.show) data.show(_relatedTarget)
+    })
+  }
+
+  $.fn.imageselector.Constructor = ImageSelector
+
+
+  $(document).on('click', '[data-imageselector]', function (e) {
+    var $this   = $(this)
+    var href    = $this.attr('href')
+    var target = $this.attr('data-target')
+    var option  = $.extend({ href: href }, $this.data())
+
+    if ($this.is('a')) e.preventDefault()
+
+    $this.imageselector(option)
+    $this.data('rac.imageselector').$modal.modal('show')
+    // $target
+    //   .modal(option, this)
+    //   .one('hide', function () {
+    //     $this.is(':visible') && $this.focus()
+    //   })
+    })
+
+}(jQuery);
+
 
 // Deprecated
 /*

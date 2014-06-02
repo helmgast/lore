@@ -32,54 +32,54 @@ def add_test_data():
   # User.drop_collection()
   mf = User(username='martin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', status=UserStatus.active,
     admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
-  nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', status='active',
+  nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', status=UserStatus.active,
     admin=True, realname='Niklas F').save()
-  pf = User(username='per', password=make_password('liljansgarde'), email='user@user.com', status='active', admin=True,
+  pf = User(username='per', password=make_password('liljansgarde'), email='user@user.com', status=UserStatus.active, admin=True,
     realname='Per F').save()
-  mb = User(username='marco', password=make_password('carwelan'), email='user@user.com', status='active', admin=False,
+  mb = User(username='marco', password=make_password('carwelan'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Marco B').save()
-  fj = User(username='fredrik', password=make_password('luberosarv'), email='user@user.com', status='active',
+  fj = User(username='fredrik', password=make_password('luberosarv'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Fredrik J').save()
-  pd = User(username='paul', password=make_password('tiamelrenovel'), email='user@user.com', status='active', admin=False,
+  pd = User(username='paul', password=make_password('tiamelrenovel'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Paul D').save()
-  pn = User(username='petter', password=make_password('thalamur'), email='user@user.com', status='active',
+  pn = User(username='petter', password=make_password('thalamur'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Petter N').save()
-  aw = User(username='anton', password=make_password('rhakori'), email='user@user.com', status='active',
+  aw = User(username='anton', password=make_password('rhakori'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Anton W').save()
 
-  ar = User(username='alex', password=make_password('asharien'), email='user@user.com', status='active', admin=False,
+  ar = User(username='alex', password=make_password('asharien'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Alex R').save()
-  ks = User(username='krister', password=make_password('ebhronitiska'), email='user@user.com', status='active',
+  ks = User(username='krister', password=make_password('ebhronitiska'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Krister S').save()
-  User(username='calle', password=make_password('kraggbarbar'), email='user@user.com', status='active', admin=False,
+  User(username='calle', password=make_password('kraggbarbar'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Carl-Johan S').save()
-  mj = User(username='mattias', password=make_password('cirefalien'), email='user@user.com', status='active',
+  mj = User(username='mattias', password=make_password('cirefalien'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Mattias J').save()
-  rl = User(username='robin', password=make_password('consaber'), email='user@user.com', status='active', admin=False,
+  rl = User(username='robin', password=make_password('consaber'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Robin L').save()
-  rj = User(username='rikard', password=make_password('rikard'), email='user@user.com', status='active',
+  rj = User(username='rikard', password=make_password('rikard'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Rikard J').save()
-  vs = User(username='victoria', password=make_password('victoria'), email='user@user.com', status='active',
+  vs = User(username='victoria', password=make_password('victoria'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Victoria S').save()
-  User(username='john', password=make_password('john'), email='user@user.com', status='active', admin=False,
+  User(username='john', password=make_password('john'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='John E').save()
-  User(username='anders', password=make_password('anders'), email='user@user.com', status='active',
+  User(username='anders', password=make_password('anders'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Anders D').save()
-  jc = User(username='johan', password=make_password('johan'), email='user@user.com', status='active', admin=False,
+  jc = User(username='johan', password=make_password('johan'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Johan C').save()
-  cm = User(username='claes', password=make_password('claes'), email='user@user.com', status='active', admin=False,
+  cm = User(username='claes', password=make_password('claes'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Claes M').save()
-  dm = User(username='daniel', password=make_password('daniel'), email='user@user.com', status='active', admin=False,
+  dm = User(username='daniel', password=make_password('daniel'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='Daniel M').save()
-  jg = User(username='jonathan', password=make_password('jonathan'), email='user@user.com', status='active',
+  jg = User(username='jonathan', password=make_password('jonathan'), email='user@user.com', status=UserStatus.active,
     admin=False, realname='Jonathan G').save()
-  User(username='user1', password=make_password('user'), email='user@user.com', status='active', admin=False,
+  User(username='user1', password=make_password('user'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='User Userson').save()
-  User(username='user2', password=make_password('user'), email='user@user.com', status='active', admin=False,
+  User(username='user2', password=make_password('user'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='User Userson').save()
-  User(username='user3', password=make_password('user'), email='user@user.com', status='active', admin=False,
+  User(username='user3', password=make_password('user'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='User Userson').save()
-  User(username='user4', password=make_password('user'), email='user@user.com', status='active', admin=False,
+  User(username='user4', password=make_password('user'), email='user@user.com', status=UserStatus.active, admin=False,
     realname='User Userson').save()
     
   mf.following = [nf, ks, ar, mb]

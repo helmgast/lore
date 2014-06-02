@@ -37,6 +37,9 @@ $('.buy-link').click(function(e) {
         success: function (data) {
             $c = $('#cart-counter')
             $c.html(data.item)
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            flash_error(errorThrown)
         }
     });
     e.preventDefault();

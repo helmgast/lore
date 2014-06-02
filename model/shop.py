@@ -2,9 +2,10 @@ from raconteur import db
 from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
 from datetime import datetime
-from model.user import User
+from user import User
 from slugify import slugify
 from misc import Choices
+from world import ImageAsset
 
 ProductTypes = Choices(
   book=_('Book'),
@@ -28,10 +29,15 @@ class Product(db.Document):
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
   delivery_fee = db.FloatField(min_value=0, default=0, verbose_name=_('Delivery Fee'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
+  feature_image = db.ReferenceField(ImageAsset)
 
   # Executes before saving
   def clean(self):
     self.slug = slugify(self.title)
+
+  def __unicode__(self):
+    return u'%s %s %s' % (self.title, _('by'), self.publisher)
+
 
 class OrderLine(db.EmbeddedDocument):
   quantity = db.IntField(min_value=1, default=1, verbose_name=_('Quantity'))
@@ -63,6 +69,20 @@ class Order(db.Document):
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
   
+  def __unicode__(self):
+    max_prod, max_price = None, 0
+    for ol in self.order_lines:
+      if ol.price > max_price:
+        max_prod, max_price = ol.product, ol.price
+    if max_prod:
+      s = u'%s %s%s' % (
+        _('Order for'), 
+        max_prod.title, 
+        ' '+_('and more') if len(self.order_lines)>1 else '')
+    else:
+      s = u'Empty order'
+    return s
+
   # Executes before saving
   def clean(self):
     self.order_items = sum(ol.quantity for ol in self.order_lines)

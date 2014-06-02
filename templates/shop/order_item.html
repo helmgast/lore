@@ -2,7 +2,7 @@
 
 {% from 'includes/components.html' import FORM_FIELD %}
 
-{% block content_title %}{{order.id if order else "New order"}}{% endblock %}
+{% block content_title %}{{ order if order else "New order"}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
@@ -39,9 +39,9 @@
         {% for line in order_form.order_lines %}
         <tr>
           <td>{{line.quantity}}</td>
-          <td>{{line.product}}</td>
+          <td>{{line.product.title}}</td>
           <td>{{line.price}}</td>
-          <td>{{line.comment}}</td>
+          <td>{{line.comment if line.comment }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -81,9 +81,9 @@
         {% for line in order.order_lines %}
         <tr>
           <td>{{line.quantity}}</td>
-          <td>{{line.product}}</td>
+          <td>{{line.product.title}}</td>
           <td>{{line.price}}</td>
-          <td>{{line.comment}}</td>
+          <td>{{line.comment if line.comment }}</td>
         </tr>
         {% endfor %}
       </tbody>

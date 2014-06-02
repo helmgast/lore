@@ -9,7 +9,7 @@
   :copyright: (c) 2014 by Raconteur
 """
 from flask import render_template, Blueprint, current_app, g, request
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm
+from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
 import tasks

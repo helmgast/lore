@@ -64,6 +64,12 @@
 
 <body class="{% block body_class %}admin{% endblock %}">
 
+<div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">Modal loading...</div>
+    </div>
+</div>
+
 {% block navbar %}
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
@@ -138,11 +144,7 @@
     </div>
     <!-- /content -->
   </div>
-  <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">Hej</div>
-      </div>
-  </div>
+
 
   <div class="modal fade" id="itsafuckingmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
       <div class="modal-dialog">
