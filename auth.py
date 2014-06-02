@@ -12,12 +12,15 @@ import functools
 import os
 import random
 
-from flask import Blueprint, render_template, abort, request, session, flash, redirect, url_for, g
+from flask import Blueprint, render_template, abort, request, session, flash
+from flask import redirect, url_for, g, make_response
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, validators
 from hashlib import sha1, md5
 from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
+
+from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, FlowExchangeError
 
 current_dir = os.path.dirname(__file__)
 
@@ -72,7 +75,7 @@ class Auth(object):
         validators=[validators.Required(), validators.EqualTo('password', message=_('Passwords must match'))])
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
-
+    self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
     self.clear_session = clear_session
 
     self.setup()
@@ -105,7 +108,8 @@ class Auth(object):
       ('/logout/', self.logout),
       ('/login/', self.login),
       ('/verify/', self.verify),
-      ('/join/', self.join)
+      ('/join/', self.join),
+      ('/connect/', self.connect_google),      
     )
 
   def get_login_form(self):
@@ -159,7 +163,37 @@ class Auth(object):
         session.pop('logged_in', None)
         pass
 
+  def join(self):
+    # if request has google code
+      # run google process to get auth token
+      # if success, add user google data to user profile, and login immediately
+    # else check form as below
+
+    if g.feature and not g.feature['join']:
+      raise ResourceError(403)
+    form = self.JoinForm()
+    if request.method == 'POST' and request.form['username']:
+      # Read username from the form that was posted in the POST request
+      form.process(request.form)
+      if form.validate():
+        try:
+          self.User.objects().get(username=form.username.data)
+          flash(_('That username is already taken'), 'warning')
+        except self.User.DoesNotExist:
+          user = self.User(status='invited')
+          form.populate_obj(user)
+          user.save()
+          self.login_user(user)
+          return redirect(url_for('homepage'))
+      flash(_('Error in form' ), 'warning')
+    return render_template('auth/auth_form.html', form=form, op='join')
+
   def verify(self):
+    # if request has google code
+      # run google process to get auth token
+      # if success, add user google data to user profile, and login immediately
+    # else check form as below
+
     email = request.args.get('email')
     token = request.args.get('token')
     if request.method == 'POST':
@@ -186,47 +220,58 @@ class Auth(object):
     flash( _('Incorrect verification link'), 'danger')
     return redirect(url_for('homepage'))
 
+  def connect_google(self, one_time_code):
+    try:
+      # Upgrade the authorization code into a credentials object
+      # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+      oauth_flow = OAuth2WebServerFlow(*self.google_client)
+      oauth_flow.redirect_uri = 'postmessage'
+      credentials = oauth_flow.step2_exchange(one_time_code)
+    except FlowExchangeError:
+      raise Forbidden('Failed to upgrade the authorization code.') # 401
+    gplus_id = credentials.id_token['sub']
+    
+    stored_credentials = session.get('gplus_token')
+    stored_gplus_id = session.get('gplus_id')
+    if stored_credentials is not None and gplus_id == stored_gplus_id:
+      return 'Current user is already connected.', 200
+    # Store the access token in the session for later use.
+    session['gplus_token'] = credentials.access_token
+    session['gplus_id'] = gplus_id
+    return 'Successfully connected user.', 200
+
   def login(self):
+    # if request has google code
+      # run google process to get auth token
+      # if success, process successful login as below
+    # else check form as below
+
     Form = self.get_login_form()
     if request.method == 'POST':
-      form = Form(request.form)
-      if form.validate():
-        try:
-          user = self.User.objects(username=form.username.data).get()
-          if user.status == 'active' and user.check_password(form.password.data):
-            self.login_user(user)
-            return redirect(request.args.get('next') or url_for('homepage'))
-        except self.User.DoesNotExist:
-          pass # will get to error state below
-        flash( _('Incorrect username or password (or you need to verify the \
-          account - check your email)'), 'danger')
+      if request.args.has_key('connect_google'):
+        self.connect_google(request.data)
+        user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()            
+        # TBD
+      else:
+        form = Form(request.form)
+        if form.validate():
+          try:
+            user = self.User.objects(username=form.username.data).get()
+            if user.status == 'active' and user.check_password(form.password.data):
+              self.login_user(user)
+              return redirect(request.args.get('next') or url_for('homepage'))
+          except self.User.DoesNotExist:
+            pass # will get to error state below
+          flash( _('Incorrect username or password (or you need to verify the \
+            account - check your email)'), 'danger')
     else:
       form = Form()
     return render_template('auth/auth_form.html', form=form, op='login')
 
   def logout(self):
+    # if user is logged in via google, send token revoke
     self.logout_user(self.get_logged_in_user())
     return redirect(request.args.get('next') or url_for('homepage'))
-
-  def join(self):
-    if g.feature and not g.feature['join']:
-      raise ResourceError(403)
-    form = self.JoinForm()
-    if request.method == 'POST' and request.form['username']:
-      # Read username from the form that was posted in the POST request
-      form.process(request.form)
-      if form.validate():
-        try:
-          self.User.objects().get(username=form.username.data)
-          flash(_('That username is already taken'), 'warning')
-        except self.User.DoesNotExist:
-          user = self.User(status='invited')
-          form.populate_obj(user)
-          user.save()
-          self.login_user(user)
-          return redirect(url_for('homepage'))
-      flash(_('Error in form' ), 'warning')
-    return render_template('auth/auth_form.html', form=form, op='join')
 
   def configure_routes(self):
     for url, callback in self.get_urls():

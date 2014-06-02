@@ -176,6 +176,38 @@ For templates, there is the macro called IS_ALLOWED() which works in a very simi
 Access to resources are normally given to groups. A group is a list of users, where there are "members" and "masters". By default, members will have read access, masters have write access, and non-members no access. Each resource has a special "group" which is the creator group, which normally means
 the user who created the resource, if this is a field existing in the resource. 
 
+    Login: Create/refresh logged in session for an existing user.
+    If user is not completed or if google auth works but no user, send on to verify. If user exist and auth correct, redirect to next. Otherwise throw error.
+    
+    GET: 
+         IF: not logged in, just show message with logout link
+         ELSE: show FORM
+    POST:
+        IF: Logged in, just show message with logout link
+        ELSE:
+            IF: google_code # received google code
+                connect_google
+                IF success
+                    IF user exists
+                        login_user w/ google details
+                        return JSON to redirect
+                    ELSE # no user, must connect to existing user or make new
+                        TBD
+                ELSE
+                    return JSON error
+            ELIF formdata
+                IF valid and user exists
+                ELSE
+                    return error
+            
+         ELSE: 400
+    
+    Join: Create a new user.
+    Create a new user from scratch or from external auth. Create in unverified stage before email has been confirmed.
+    
+    Verify: Complete registration of a previously created but incomplete user.
+    Same as join more or less, but assumes user exists but needs additional info. If email and token are given, verify user.
+
 Some access patterns
 ------------------------------------------------------------------
 

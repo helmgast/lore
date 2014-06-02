@@ -2,6 +2,22 @@
 
 {% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_INLINE %}
 
+{% block jsimports %}
+  {{super()}}
+{#}  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
+  </script>#}
+  <script type="text/javascript">
+    (function () {
+      var po = document.createElement('script');
+      po.type = 'text/javascript';
+      po.async = true;
+      po.src = 'https://plus.google.com/js/client:plusone.js?onload=start';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(po, s);
+    })();
+  </script>
+{% endblock %}
+
 {% if op=='join' %}
   {% set title = _('Sign up') %}
   {% set submit = _('Join') %}
@@ -23,7 +39,18 @@
   <h2 class="form-signin-heading">{{ title }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
   <span class="help-block">{{submit}} {{_('with external provider (safer!)')}}</span>
-  <button class="btn btn-lg btn-danger btn-block" type="button">Google</button>
+  <div id="signinButton">
+    <span class="g-signin"
+      data-scope="https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read"
+      data-clientid="852791556464-vbn49e0lkc9tvpferm4otdtbpjbk11r1.apps.googleusercontent.com"
+      data-width="wide"
+      data-height="tall"
+      data-redirecturi="postmessage"
+      data-accesstype="offline"
+      data-cookiepolicy="single_host_origin"
+      data-callback="googleCallback">
+    </span>
+  </div>
   <button class="btn btn-lg btn-primary btn-block" type="button">Facebook</button>
 
   <hr>
@@ -41,5 +68,29 @@
 
   <button class="btn btn-lg btn-success btn-block" type="submit">{{ submit }}</button>
 </form>
+{% endblock %}
 
+{% block final %}
+{{super()}}
+<script>
+function googleCallback(authResult) {
+  console.log(authResult)
+  if (authResult['code']) {
+    $.ajax({
+      type: 'POST',
+      url: "{{url_for('auth.connect_google')}}",
+      headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
+      contentType: 'application/octet-stream; charset=utf-8',
+      success: function(result) { alert(result) },
+      processData: false,
+      data: authResult['code']
+    })
+  } else {
+    var error = authResult['error'] || "Network problem"
+    if (error!='immediate_failed') { // couldn't auto-signin
+      alert('Error: '+error)      
+    }
+  }
+}
+</script>
 {% endblock %}

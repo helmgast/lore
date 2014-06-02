@@ -27,31 +27,26 @@ USER_STATUS = list_to_choices([
   'Active', 
   'Deleted'
   ])
+EXTERNAL_AUTH = list_to_choices(['Google', 'Facebook'])
 
 # A user in the system
 class User(db.Document, BaseUser):
-    username = db.StringField(unique=True, max_length=60, min_length=6)
-    password = db.StringField(max_length=60, min_length=8)
-    email = db.EmailField(max_length=60, min_length=6)
-    realname = db.StringField(max_length=60)
-    location = db.StringField(max_length=60)
-    description = db.StringField()  # TODO should have a max length, but if we set it, won't be rendered as TextArea
-    xp = db.IntField(default=0)
-    join_date = db.DateTimeField(default=now())
+    username = db.StringField(unique=True, max_length=60, min_length=6, verbose_name=_('username'))
+    password = db.StringField(max_length=60, min_length=8, verbose_name = _('password'))
+    email = db.EmailField(max_length=60, min_length=6, verbose_name = _('email'))
+    realname = db.StringField(max_length=60, verbose_name = _('real name'))
+    location = db.StringField(max_length=60, verbose_name = _('location'))
+    description = db.StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
+    xp = db.IntField(default=0, verbose_name = _('xp'))
+    join_date = db.DateTimeField(default=now(), verbose_name = _('join date'))
     # msglog = db.ReferenceField(Conversation)
     status = db.StringField(choices=USER_STATUS, default='invited', verbose_name=_('Status'))
     admin = db.BooleanField(default=False)
-    following = db.ListField(db.ReferenceField('self'))
+    external_access_token = db.StringField()
+    external_id = db.StringField()
+    external_service = db.StringField(choices=EXTERNAL_AUTH)
 
-    #i18n
-    username.verbose_name = _('username')
-    password.verbose_name = _('password')
-    email.verbose_name = _('email')
-    realname.verbose_name = _('real name')
-    location.verbose_name = _('location')
-    description.verbose_name = _('description')
-    xp.verbose_name = _('xp')
-    join_date.verbose_name = _('join date')
+    following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
 
     def clean(self):
     # Our password hashes contain 46 characters, so we can check if the value

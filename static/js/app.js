@@ -1,3 +1,13 @@
+
+function flash_error(message, level) {
+  var $error = $('<div class="alert alert-'+(level || 'warning')+
+            ' alert-dismissable"> <button type="button" class="close" \
+            data-dismiss="alert" aria-hidden="true">&times;</button> \
+            <p>'+message+'</p> \
+            </div>');
+  $('#alerts').append($error)
+};
+
 /* ========================================================================
  * Editable list
  * ========================================================================
