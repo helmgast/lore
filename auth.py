@@ -109,7 +109,6 @@ class Auth(object):
       ('/login/', self.login),
       ('/verify/', self.verify),
       ('/join/', self.join),
-      ('/connect/', self.connect_google),      
     )
 
   def get_login_form(self):

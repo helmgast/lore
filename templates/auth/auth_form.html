@@ -75,6 +75,7 @@
 <script>
 function googleCallback(authResult) {
   console.log(authResult)
+  /*
   if (authResult['code']) {
     $.ajax({
       type: 'POST',
@@ -91,6 +92,7 @@ function googleCallback(authResult) {
       alert('Error: '+error)      
     }
   }
+  */
 }
 </script>
 {% endblock %}
