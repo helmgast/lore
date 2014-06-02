@@ -16,7 +16,7 @@ from StringIO import StringIO
 import re
 import logging
 import imghdr
-from model.misc import list_to_choices
+from misc import list_to_choices, Choices
 from flask.ext.babel import lazy_gettext as _
 import hashlib
 from werkzeug.utils import secure_filename
@@ -28,15 +28,15 @@ import logging
 from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-PUBLISH_STATUS_DRAFT, PUBLISH_STATUS_REVISION, PUBLISH_STATUS_PUBLISHED = 0, 1, 2
-PUBLISH_STATUS_TYPES = ((PUBLISH_STATUS_DRAFT, _('draft')),
-                        (PUBLISH_STATUS_REVISION, _('revision')),
-                        (PUBLISH_STATUS_PUBLISHED, _('published')))
+PublishStatus = Choices(
+  draft=_('Draft'),
+  revision=_('Revision'),
+  published=_('Published'))
 
-GENDER_UNKNOWN, GENDER_MALE, GENDER_FEMALE = 0, 1, 2
-GENDER_TYPES = ((GENDER_UNKNOWN, _('unknown')),
-                (GENDER_MALE, _('male')),
-                (GENDER_FEMALE, _('female')))
+GenderTypes = Choices(
+  male=_('Male'),
+  female=_('Female'),
+  unknown=_('Unknown'))
 
 class World(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
@@ -84,7 +84,11 @@ class ArticleRelation(db.EmbeddedDocument):
   def __unicode__(self):
     return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
-MIME_TYPE_CHOICES = (('image/jpeg','JPEG'),('image/png','PNG'), ('image/gif','GIF'))
+MimeTypes = Choices({
+  'image/jpeg': 'JPEG',
+  'image/png':'PNG',
+  'image/gif':'GIF'
+  })
 IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
 class ImageAsset(db.Document):
   slug = db.StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
@@ -93,7 +97,7 @@ class ImageAsset(db.Document):
   source_image_url = db.URLField()
   source_page_url = db.URLField()
   tags = db.ListField(db.StringField(max_length=30))
-  mime_type = db.StringField(choices=MIME_TYPE_CHOICES, required=True)
+  mime_type = db.StringField(choices=MimeTypes.to_tuples(), required=True)
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
   created_date = db.DateTimeField(default=datetime.utcnow)
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
@@ -138,12 +142,12 @@ class ImageAsset(db.Document):
 class PersonData(db.EmbeddedDocument):
   born = db.IntField(verbose_name = _('born'))
   died = db.IntField(verbose_name = _('died'))
-  gender = db.IntField(default=GENDER_UNKNOWN, choices=GENDER_TYPES, verbose_name = _('gender'))
+  gender = db.StringField(default=GenderTypes.unknown, choices=GenderTypes.to_tuples(), verbose_name = _('gender'))
   # otherNames = CharField()
   occupation = db.StringField(max_length=60, verbose_name = _('occupation'))
 
   def gender_name(self):
-    return GENDER_TYPES[self.gender][1].title()
+    return GenderTypes[self.gender]
 
 class FractionData(db.EmbeddedDocument):
   fraction_type = db.StringField(max_length=60, verbose_name = _('fraction'))
@@ -173,30 +177,29 @@ Episode.children = db.ListField(db.EmbeddedDocumentField(Episode)) # references 
 class CampaignData(db.EmbeddedDocument):
   children = db.ListField(db.EmbeddedDocumentField(Episode))
 
-ARTICLE_TYPES = list_to_choices([
-  _('default'),
-  _('person'),
-  _('fraction'),
-  _('place'),
-  _('event'),
-  _('campaign'),
-  _('chronicle'),
-  _('blogpost')
-  ])
+ArticleTypes = Choices(
+  default=_('Default'),
+  person=_('Person'),
+  fraction=_('Fraction'),
+  place=_('Place'),
+  event=_('Event'),
+  campaign=_('Campaign'),
+  chronicles=_('Chronicle'),
+  blogpost=_('Blog Post'))
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']
 class Article(db.Document):
   meta = {'indexes': ['slug']}
   slug = db.StringField(unique=True, required=False, max_length=62)
-  type = db.StringField(choices=ARTICLE_TYPES, default='default', verbose_name=_('Type'))
+  type = db.StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))
   world = db.ReferenceField(World, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
-  status = db.IntField(choices=PUBLISH_STATUS_TYPES, default=PUBLISH_STATUS_DRAFT, verbose_name=_('Status'))
+  status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.draft, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
 
   # modified_date = DateTimeField()
@@ -222,10 +225,11 @@ class Article(db.Document):
     return self.is_published()
 
   def is_published(self):
-    return self.status == PUBLISH_STATUS_PUBLISHED and self.created_date <= datetime.utcnow()
+    return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
 
   def status_name(self):
-    return PUBLISH_STATUS_TYPES[self.status][1] + (' %s %s' % (_('from'), str(self.created_date)) if self.status == PUBLISH_STATUS_PUBLISHED and self.created_date >= datetime.utcnow() else '')
+    return PublishStatus[self.status] + ( (' %s %s' % (_('from'), str(self.created_date)) 
+        if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else '') )
 
   @staticmethod
   def type_data_name(asked_type):

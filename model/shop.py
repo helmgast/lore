@@ -4,14 +4,19 @@ from flask.ext.babel import lazy_gettext as _
 from datetime import datetime
 from model.user import User
 from slugify import slugify
+from misc import Choices
 
-PRODUCT_TYPES = list_to_choices(['Book', 'Item', 'Digital'])
-PRODUCT_STATUS = list_to_choices([
-  'Pre-order', 
-  'Available', 
-  'Out of stock',
-  'Hidden'
-  ])
+ProductTypes = Choices(
+  book=_('Book'),
+  item=_('Item'),
+  digital=_('Digital'))
+
+ProductStatus = Choices(
+  pre_order = _('Pre-order'),
+  available = _('Available'),
+  out_of_stock = _('Out of stock'),
+  hidden = _('Hidden'))
+
 class Product(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
@@ -19,10 +24,10 @@ class Product(db.Document):
   publisher = db.StringField(max_length=60, required=True, verbose_name=_('Publisher'))
   family = db.StringField(max_length=60, verbose_name=_('Family'))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
-  type = db.StringField(choices=PRODUCT_TYPES, required=True, verbose_name=_('Type'))
+  type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
   delivery_fee = db.FloatField(min_value=0, default=0, verbose_name=_('Delivery Fee'))
-  status = db.StringField(choices=PRODUCT_STATUS, default=PRODUCT_STATUS[3], verbose_name=_('Status'))
+  status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
 
   # Executes before saving
   def clean(self):
@@ -40,13 +45,13 @@ class Address(db.EmbeddedDocument):
   city = db.StringField(max_length=60, required=True, verbose_name=_('City'))
   country = db.StringField(max_length=60, required=True, verbose_name=_('Country'))
 
-ORDER_STATUS = list_to_choices([
-  'cart',
-  'ordered',
-  'paid',
-  'shipped',
-  'error'
-  ])
+OrderStatus = Choices(
+  cart = _('Cart'),
+  ordered = _('Ordered'),
+  paid = _('Paid'),
+  shipped = _('Shipped'),
+  error = _('Error'))
+
 class Order(db.Document):
   user = db.ReferenceField(User, verbose_name=_('User'))
   session = db.StringField(verbose_name=_('Session ID'))
@@ -55,10 +60,9 @@ class Order(db.Document):
   order_items = db.IntField(min_value=0, default=0) # Total number of items
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
-  status = db.StringField(choices=ORDER_STATUS, default='cart', verbose_name=_('Status'))
+  status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
   
   # Executes before saving
   def clean(self):
     self.order_items = sum(ol.quantity for ol in self.order_lines)
-

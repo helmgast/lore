@@ -4,111 +4,112 @@ from model.campaign import *
 from model.misc import *
 from model.user import *
 from model.world import *
+from model.shop import *
 import datetime
 
 from auth import make_password
 
 def altor_date(year, month, day):
-    return year*360+(month-1)*30+(day-1)
+  return year*360+(month-1)*30+(day-1)
 
 def setup_models():
-    add_test_data()
+  add_test_data()
     
 def add_test_data():
-    # World.drop_collection()
-    helmgast = World(title=u"Helmgast", publisher=u"Helmgast", description=u"En helmgasts historia").save()
-    mundana = World(title=u"Mundana", publisher=u"Neogames", description=u"En fantasyvärld för grisodling").save()
-    altor = World(title=u"Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
-    kult = World(title=u"Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
+  # World.drop_collection()
+  helmgast = World(title=u"Helmgast", publisher=u"Helmgast", description=u"En helmgasts historia").save()
+  mundana = World(title=u"Mundana", publisher=u"Neogames", description=u"En fantasyvärld för grisodling").save()
+  altor = World(title=u"Altor", publisher=u"Niklas Fröjd", description=u"Drakar Demoner advanced").save()
+  kult = World(title=u"Kult", publisher=u"Äventyrsspel", description=u"Demiurger och nefariter").save()
 
-    # RelationType.drop_collection()
-    RelationType(name=u"child of").save()
-    RelationType(name=u"parent of").save()
-    friend = RelationType(name=u"friend of").save()
-    enemy = RelationType(name=u"enemy of").save()
-    RelationType(name=u"distant relative of").save()
+  # RelationType.drop_collection()
+  RelationType(name=u"child of").save()
+  RelationType(name=u"parent of").save()
+  friend = RelationType(name=u"friend of").save()
+  enemy = RelationType(name=u"enemy of").save()
+  RelationType(name=u"distant relative of").save()
 
-    # User.drop_collection()
-    mf = User(username='martin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', status='active',
-        admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
-    nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', status='active',
-        admin=True, realname='Niklas F').save()
-    pf = User(username='per', password=make_password('liljansgarde'), email='user@user.com', status='active', admin=True,
-        realname='Per F').save()
-    mb = User(username='marco', password=make_password('carwelan'), email='user@user.com', status='active', admin=False,
-        realname='Marco B').save()
-    fj = User(username='fredrik', password=make_password('luberosarv'), email='user@user.com', status='active',
-        admin=False, realname='Fredrik J').save()
-    pd = User(username='paul', password=make_password('tiamelrenovel'), email='user@user.com', status='active', admin=False,
-        realname='Paul D').save()
-    pn = User(username='petter', password=make_password('thalamur'), email='user@user.com', status='active',
-        admin=False, realname='Petter N').save()
-    aw = User(username='anton', password=make_password('rhakori'), email='user@user.com', status='active',
-        admin=False, realname='Anton W').save()
+  # User.drop_collection()
+  mf = User(username='martin', password=make_password('ljusbringaren'), email='ripperdoc@gmail.com', status=UserStatus.active,
+    admin=True, realname='Martin F', description='Always games in a hat. Has a cat.').save()
+  nf = User(username='niklas', password=make_password('fexiororden'), email='user@user.com', status='active',
+    admin=True, realname='Niklas F').save()
+  pf = User(username='per', password=make_password('liljansgarde'), email='user@user.com', status='active', admin=True,
+    realname='Per F').save()
+  mb = User(username='marco', password=make_password('carwelan'), email='user@user.com', status='active', admin=False,
+    realname='Marco B').save()
+  fj = User(username='fredrik', password=make_password('luberosarv'), email='user@user.com', status='active',
+    admin=False, realname='Fredrik J').save()
+  pd = User(username='paul', password=make_password('tiamelrenovel'), email='user@user.com', status='active', admin=False,
+    realname='Paul D').save()
+  pn = User(username='petter', password=make_password('thalamur'), email='user@user.com', status='active',
+    admin=False, realname='Petter N').save()
+  aw = User(username='anton', password=make_password('rhakori'), email='user@user.com', status='active',
+    admin=False, realname='Anton W').save()
 
-    ar = User(username='alex', password=make_password('asharien'), email='user@user.com', status='active', admin=False,
-        realname='Alex R').save()
-    ks = User(username='krister', password=make_password('ebhronitiska'), email='user@user.com', status='active',
-        admin=False, realname='Krister S').save()
-    User(username='calle', password=make_password('kraggbarbar'), email='user@user.com', status='active', admin=False,
-        realname='Carl-Johan S').save()
-    mj = User(username='mattias', password=make_password('cirefalien'), email='user@user.com', status='active',
-        admin=False, realname='Mattias J').save()
-    rl = User(username='robin', password=make_password('consaber'), email='user@user.com', status='active', admin=False,
-        realname='Robin L').save()
-    rj = User(username='rikard', password=make_password('rikard'), email='user@user.com', status='active',
-        admin=False, realname='Rikard J').save()
-    vs = User(username='victoria', password=make_password('victoria'), email='user@user.com', status='active',
-        admin=False, realname='Victoria S').save()
-    User(username='john', password=make_password('john'), email='user@user.com', status='active', admin=False,
-        realname='John E').save()
-    User(username='anders', password=make_password('anders'), email='user@user.com', status='active',
-        admin=False, realname='Anders D').save()
-    jc = User(username='johan', password=make_password('johan'), email='user@user.com', status='active', admin=False,
-        realname='Johan C').save()
-    cm = User(username='claes', password=make_password('claes'), email='user@user.com', status='active', admin=False,
-        realname='Claes M').save()
-    dm = User(username='daniel', password=make_password('daniel'), email='user@user.com', status='active', admin=False,
-        realname='Daniel M').save()
-    jg = User(username='jonathan', password=make_password('jonathan'), email='user@user.com', status='active',
-        admin=False, realname='Jonathan G').save()
-    User(username='user1', password=make_password('user'), email='user@user.com', status='active', admin=False,
-        realname='User Userson').save()
-    User(username='user2', password=make_password('user'), email='user@user.com', status='active', admin=False,
-        realname='User Userson').save()
-    User(username='user3', password=make_password('user'), email='user@user.com', status='active', admin=False,
-        realname='User Userson').save()
-    User(username='user4', password=make_password('user'), email='user@user.com', status='active', admin=False,
-        realname='User Userson').save()
+  ar = User(username='alex', password=make_password('asharien'), email='user@user.com', status='active', admin=False,
+    realname='Alex R').save()
+  ks = User(username='krister', password=make_password('ebhronitiska'), email='user@user.com', status='active',
+    admin=False, realname='Krister S').save()
+  User(username='calle', password=make_password('kraggbarbar'), email='user@user.com', status='active', admin=False,
+    realname='Carl-Johan S').save()
+  mj = User(username='mattias', password=make_password('cirefalien'), email='user@user.com', status='active',
+    admin=False, realname='Mattias J').save()
+  rl = User(username='robin', password=make_password('consaber'), email='user@user.com', status='active', admin=False,
+    realname='Robin L').save()
+  rj = User(username='rikard', password=make_password('rikard'), email='user@user.com', status='active',
+    admin=False, realname='Rikard J').save()
+  vs = User(username='victoria', password=make_password('victoria'), email='user@user.com', status='active',
+    admin=False, realname='Victoria S').save()
+  User(username='john', password=make_password('john'), email='user@user.com', status='active', admin=False,
+    realname='John E').save()
+  User(username='anders', password=make_password('anders'), email='user@user.com', status='active',
+    admin=False, realname='Anders D').save()
+  jc = User(username='johan', password=make_password('johan'), email='user@user.com', status='active', admin=False,
+    realname='Johan C').save()
+  cm = User(username='claes', password=make_password('claes'), email='user@user.com', status='active', admin=False,
+    realname='Claes M').save()
+  dm = User(username='daniel', password=make_password('daniel'), email='user@user.com', status='active', admin=False,
+    realname='Daniel M').save()
+  jg = User(username='jonathan', password=make_password('jonathan'), email='user@user.com', status='active',
+    admin=False, realname='Jonathan G').save()
+  User(username='user1', password=make_password('user'), email='user@user.com', status='active', admin=False,
+    realname='User Userson').save()
+  User(username='user2', password=make_password('user'), email='user@user.com', status='active', admin=False,
+    realname='User Userson').save()
+  User(username='user3', password=make_password('user'), email='user@user.com', status='active', admin=False,
+    realname='User Userson').save()
+  User(username='user4', password=make_password('user'), email='user@user.com', status='active', admin=False,
+    realname='User Userson').save()
     
-    mf.following = [nf, ks, ar, mb]
-    mf.save()
+  mf.following = [nf, ks, ar, mb]
+  mf.save()
 
-    # Article.drop_collection()
+  # Article.drop_collection()
     
-    im = ImageAsset(creator=mj)
-    im.make_from_url("http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
-    # im.update_slug()
-    im.save()
-    Article(type='person',
-        title=u"Ljusbringaren",
-        content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",
-        world=altor,
-        creator=rl,
-        status=PUBLISH_STATUS_PUBLISHED,
-        persondata = PersonData(
-            born=altor_date(1653,3,4),
-            died=altor_date(1891,12,3),
-            gender=GENDER_MALE,
-            occupation=u"Ljusbringare")
-        ).save()
+  im = ImageAsset(creator=mj)
+  im.make_from_url("http://kaigon.se/wiki/images/6/6b/Ljusets_son.jpg")
+  # im.update_slug()
+  im.save()
+  Article(type='person',
+    title=u"Ljusbringaren",
+    content=u"Erövraren av världen, nedstigen från de astrala planen, med syftet att sprida ljus. Även kallad Edison.",
+    world=altor,
+    creator=rl,
+    status=PublishStatus.published,
+    persondata = PersonData(
+      born=altor_date(1653,3,4),
+      died=altor_date(1891,12,3),
+      gender=GenderTypes.male,
+      occupation=u"Ljusbringare")
+    ).save()
 
-    Article(type='blogpost',
-        status=PUBLISH_STATUS_PUBLISHED,
-        title=u"Gift tills döden skiljer oss åt",
-        world=mundana,
-        creator=pn,
-        content=
+  Article(type='blogpost',
+    status=PublishStatus.published,
+    title=u"Gift tills döden skiljer oss åt",
+    world=mundana,
+    creator=pn,
+    content=
 u"""
 Nu har vi kommit tillbaka från den mörkaste tiden på året då de skotropiska krafterna har härjat fritt. Vår stora checklista som vi tog fram i början av hösten på "allt som måste göras" börjar nu komma ner i hanterliga mängder (en fingervisning är väl att 50 saker är kvar av 600).
 
@@ -116,23 +117,23 @@ Den här posten kommer däremot att kika lite på hur gifter kommer att fungera.
 
 Så här kan det därför fungera om man drabbas av ett bedövande gift: Under de följande tre rundorna kommer man att slå sin Livskraft mot svårigheten 12. Om man lyckas med slaget klarar man sig den rundan (för att gå helt opåverkad måste man alltså klara tre slag i rad). Om man misslyckas drabbas man av den första effekten, i detta fallet Omtöcknad (som ger temporärt avdrag likt Smärta). Andra gången man misslyckas blir effekten lite värre och om man skulle misslyckas tre gånger så blir man Utslagen.
 """
-        ).save()
-    Article(type='blogpost',
-        status=PUBLISH_STATUS_PUBLISHED,
-        title=u"Monster",
-        content=
+  ).save()
+  Article(type='blogpost',
+    status=PublishStatus.published,
+    title=u"Monster",
+    content=
 u"""
 Monster fungerar inte på samma sätt som människor och andra folkslag. När du får in en träff med morgonstjärnan som skulle sända tiraken hem till sin gudinna så får du hyggelmonstret att bli än mer uppretad och aggressiv. Monster är oförutsägbara och en del är så fulla av ursinne och adrenalin att smärta inte bekommer dem.
 
 I Eon IV följer Monster (samt djur och liknande varelser) ett lite annorlunda skadesystem än vad vanliga folkslag gör. Det handlar både om att göra det enklare för en spelledare att administrera striderna men även att bidra med en annan känsla när man står öga mot öga med ett hyggelmonster på gladiatorarenans blodstänka sand. Istället för olika kroppsdelar och skadetabeller så har varje viktigare monster en egen skadetabell. På detta sätt finns det även variation mellan monster så att en strid mot ett halvdussin zombier blir en annan upplevelse än en strid mot ett grottroll. Skadetabellerna är också designade på ett annat sätt så om man slår lågt på dessa så råkar man ofta själv illa ut - så akta dig för det syraskvättande hyggelmonstret!
 """,
-        world=mundana,
-        creator=nf).save()            
+    world=mundana,
+    creator=nf).save()            
 
-    Article(type='blogpost',
-        status=PUBLISH_STATUS_PUBLISHED,
-        title=u"Gladiatorkämparna",
-        content=
+  Article(type='blogpost',
+    status=PublishStatus.published,
+    title=u"Gladiatorkämparna",
+    content=
 u"""
 De två gladiatorkämparna Ademar och Brutus möts i den stora finalen i Jarum. Striden är på liv och död och guvernören har betalat stora pengar för att få se och bjuda på detta. Nedan är ett spelexempel mellan dessa två. Många regler har nämnts i tidigare blogginlägg men några är även nya här.
 
@@ -154,8 +155,35 @@ Den ödesmättade tärningen slås, blir 8 och totalt resultat 12. En träff i t
 
 Här lämnar vi våra kämpar.
 """,
-        world=mundana,
-        creator=nf).save()            
+    world=mundana,
+    creator=nf).save()
+
+  Product(title='Eon IV Grundbok',
+          description='Grundbok för nya Eon',
+          publisher='Helmgast AB',
+          family='Eon',
+          type=ProductTypes.book,
+          price=419,
+          delivery_fee=50,
+          status=ProductStatus.pre_order).save()
+
+  Product(title='Helgonboken',
+          description='Specialutgåva av grundbok för nya Eon',
+          publisher='Helmgast AB',
+          family='Eon',
+          type=ProductTypes.book,
+          price=1099,
+          delivery_fee=50,
+          status=ProductStatus.pre_order).save()
+
+  Product(title='Spelpaketet',
+          description='Paket med crowdfunderunikt extramaterial',
+          publisher='Helmgast AB',
+          family='Eon',
+          type=ProductTypes.book,
+          price=399,
+          delivery_fee=50,
+          status=ProductStatus.pre_order).save()
 
 #     Relationship(from_user=mf, to_user=nf).save()
 #     Relationship(from_user=nf, to_user=mf).save()
@@ -189,107 +217,107 @@ Här lämnar vi våra kämpar.
 #     Relationship(from_user=mb, to_user=vs).save()
 #     Relationship(from_user=ar, to_user=mb).save()
 
-    # Conversation.drop_collection()
-    c1 = Conversation(members=[mf, nf]).save()
-    c2 = Conversation(members=[mf, mb]).save()
-    c3 = Conversation(members=[nf, ks]).save()
-    
-    # Group.drop_collection()
-    ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
-    ng.add_masters([mf])
-    ng.add_members([nf, mb, fj, pd, pf, pn])
-    ng.save()
-    mg = Group(name='Nemesis', location='Gothenburg', description=u'Test').save()
-    mg.add_masters([nf])
-    mg.add_members([jg,pn,jc,pf,cm,dm])
-    mg.save()
-    kg = Group(name='Kulthack', location='Gothenburg', description=u'Test').save()
-    kg.add_masters([rl])
-    kg.add_members([mb, pn, ks])
-    kg.save()
-    
-    # Message.drop_collection()
-    # Make sure you use unicode strings by prefixing with u''
-    Message(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1).save()
-    Message(user=jg, content=u'Kul spel sist!').save()
-    Message(user=vs, content=u'Min karaktär dog, helvete!').save()
-    Message(user=ks, content=u'När får jag vara med då?').save()
-    Message(user=ar, content=u'Jag tar med ölen').save()
-    Message(user=mf, content=u'Visst, inga problem1', conversation=c1).save()
-    Message(user=mf, content=u'Vi borde testa raconteur snart!', conversation=c2).save()
-    Message(user=mb, content=u'Definitivt!', conversation=c2).save()
-    Message(user=nf, content=u'Hallå?', conversation=c3).save()
+  # Conversation.drop_collection()
+  c1 = Conversation(members=[mf, nf]).save()
+  c2 = Conversation(members=[mf, mb]).save()
+  c3 = Conversation(members=[nf, ks]).save()
+  
+  # Group.drop_collection()
+  ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
+  ng.add_masters([mf])
+  ng.add_members([nf, mb, fj, pd, pf, pn])
+  ng.save()
+  mg = Group(name='Nemesis', location='Gothenburg', description=u'Test').save()
+  mg.add_masters([nf])
+  mg.add_members([jg,pn,jc,pf,cm,dm])
+  mg.save()
+  kg = Group(name='Kulthack', location='Gothenburg', description=u'Test').save()
+  kg.add_masters([rl])
+  kg.add_members([mb, pn, ks])
+  kg.save()
+  
+  # Message.drop_collection()
+  # Make sure you use unicode strings by prefixing with u''
+  Message(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1).save()
+  Message(user=jg, content=u'Kul spel sist!').save()
+  Message(user=vs, content=u'Min karaktär dog, helvete!').save()
+  Message(user=ks, content=u'När får jag vara med då?').save()
+  Message(user=ar, content=u'Jag tar med ölen').save()
+  Message(user=mf, content=u'Visst, inga problem1', conversation=c1).save()
+  Message(user=mf, content=u'Vi borde testa raconteur snart!', conversation=c2).save()
+  Message(user=mb, content=u'Definitivt!', conversation=c2).save()
+  Message(user=nf, content=u'Hallå?', conversation=c3).save()
 
-    scmpa = Article(type='campaign', title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
-    cd4ka = Article(type='campaign', title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
-    cd6ka = Article(type='campaign', title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
-    kcmpa = Article(type='campaign', title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
-    ycmpa = Article(type='campaign', title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
+  scmpa = Article(type='campaign', title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
+  cd4ka = Article(type='campaign', title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
+  cd6ka = Article(type='campaign', title=u"Den Sjätte Konfluxen", world=altor, description=u"Kampanjen handlar om professor Joseph Tiesen och hans expedition som sägs ha sänts ut av Kublai Shakkar, kejsare och arkon över Mergal. Expeditionen kommer att resa runt i både Jargal och Pandaros i jakt på allt som kan vara relevant för den kommande sjätte konfluxen.").save()
+  kcmpa = Article(type='campaign', title=u"Kult AW", world=kult, description=u"Drama in victorian England at the edge of reality").save()
+  ycmpa = Article(type='campaign', title=u"Yerlog", world=mundana, description=u"Time to take over the world!").save()
 
-    ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa), ArticleRelation(relation_type=friend, article=kcmpa)]
-    ycmpa.save()
-    
-    scmpa.children = [Episode(id=u"1", title=u"Intro"),
-                      Episode(id=u"2", title=u"The old man in the taverna"),
-                      Episode(id=u"3", title=u"Going to the cave"),
-                      Episode(id=u"4", title=u"Not finding the way"),
-                      Episode(id=u"5", title=u"The general comes all over")]
-    scmpa.save()
+  ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa), ArticleRelation(relation_type=friend, article=kcmpa)]
+  ycmpa.save()
+  
+  scmpa.children = [Episode(id=u"1", title=u"Intro"),
+                    Episode(id=u"2", title=u"The old man in the taverna"),
+                    Episode(id=u"3", title=u"Going to the cave"),
+                    Episode(id=u"4", title=u"Not finding the way"),
+                    Episode(id=u"5", title=u"The general comes all over")]
+  scmpa.save()
 
     # CampaignInstance.drop_collection()
 
-    scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
-    cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()
-    cd6k = CampaignInstance(campaign=cd6ka, name=u"Den Sjätte Konfluxen", group=mg, rule_system=u"Fate").save()
-    kcmp = CampaignInstance(campaign=kcmpa, name=u"Kult AW", group=kg, rule_system=u"AW").save()
-    CampaignInstance(campaign=ycmpa, name=u"Yerlog", group=ng, rule_system=u"Eon").save()
+  scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
+  cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()
+  cd6k = CampaignInstance(campaign=cd6ka, name=u"Den Sjätte Konfluxen", group=mg, rule_system=u"Fate").save()
+  kcmp = CampaignInstance(campaign=kcmpa, name=u"Kult AW", group=kg, rule_system=u"AW").save()
+  CampaignInstance(campaign=ycmpa, name=u"Yerlog", group=ng, rule_system=u"Eon").save()
 
-    scmp.sessions = [Session(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), location=u'Snöflingeg')]
-    scmp.save()
+  scmp.sessions = [Session(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), location=u'Snöflingeg')]
+  scmp.save()
 
-    kcmp.sessions = [Session(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), location=u'Åby')]
-    kcmp.save()
+  kcmp.sessions = [Session(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), location=u'Åby')]
+  kcmp.save()
 
-    cd4k.sessions = [Session(play_start=datetime.datetime(2006,07,28,18,0), play_end=datetime.datetime(2006,07,28,23,0), location=u'Snöflingegatan'),
-                     Session(play_start=datetime.datetime(2006,07,29,18,0), play_end=datetime.datetime(2006,07,29,23,0), location=u'Snöflingegatan'),
-                     Session(play_start=datetime.datetime(2006,07,30,18,0), play_end=datetime.datetime(2006,07,30,23,0), location=u'Snöflingegatan'),
-                     Session(play_start=datetime.datetime(2006,12,28,18,0), play_end=datetime.datetime(2006,12,28,23,0), location=u'Mor märtas väg'),
-                     Session(play_start=datetime.datetime(2006,12,29,18,0), play_end=datetime.datetime(2006,12,29,23,0), location=u'Mor märtas väg'),
-                     Session(play_start=datetime.datetime(2006,12,30,18,0), play_end=datetime.datetime(2006,12,30,23,0), location=u'Persmässvägen'),
-                     Session(play_start=datetime.datetime(2007,01,02,18,0), play_end=datetime.datetime(2007,01,02,23,0), location=u'Mjödvägen'),
-                     Session(play_start=datetime.datetime(2007,01,03,18,0), play_end=datetime.datetime(2007,01,03,23,0), location=u'Mjödvägen'),
-                     Session(play_start=datetime.datetime(2007,01,04,18,0), play_end=datetime.datetime(2007,01,04,23,0), location=u'Storsvängen'),
-                     Session(play_start=datetime.datetime(2007,01,05,18,0), play_end=datetime.datetime(2007,01,05,23,0), location=u'Storsvängen')]
-    cd4k.save()
+  cd4k.sessions = [Session(play_start=datetime.datetime(2006,07,28,18,0), play_end=datetime.datetime(2006,07,28,23,0), location=u'Snöflingegatan'),
+                   Session(play_start=datetime.datetime(2006,07,29,18,0), play_end=datetime.datetime(2006,07,29,23,0), location=u'Snöflingegatan'),
+                   Session(play_start=datetime.datetime(2006,07,30,18,0), play_end=datetime.datetime(2006,07,30,23,0), location=u'Snöflingegatan'),
+                   Session(play_start=datetime.datetime(2006,12,28,18,0), play_end=datetime.datetime(2006,12,28,23,0), location=u'Mor märtas väg'),
+                   Session(play_start=datetime.datetime(2006,12,29,18,0), play_end=datetime.datetime(2006,12,29,23,0), location=u'Mor märtas väg'),
+                   Session(play_start=datetime.datetime(2006,12,30,18,0), play_end=datetime.datetime(2006,12,30,23,0), location=u'Persmässvägen'),
+                   Session(play_start=datetime.datetime(2007,01,02,18,0), play_end=datetime.datetime(2007,01,02,23,0), location=u'Mjödvägen'),
+                   Session(play_start=datetime.datetime(2007,01,03,18,0), play_end=datetime.datetime(2007,01,03,23,0), location=u'Mjödvägen'),
+                   Session(play_start=datetime.datetime(2007,01,04,18,0), play_end=datetime.datetime(2007,01,04,23,0), location=u'Storsvängen'),
+                   Session(play_start=datetime.datetime(2007,01,05,18,0), play_end=datetime.datetime(2007,01,05,23,0), location=u'Storsvängen')]
+  cd4k.save()
 
-    cd6k.sessions = [Session(play_start=datetime.datetime(2009,01,05,18,0), play_end=datetime.datetime(2009,01,05,23,0), location=u'Ulvsbygatan'),
-                     Session(play_start=datetime.datetime(2009,01,06,18,0), play_end=datetime.datetime(2009,01,06,23,0), location=u'Ulvsbygatan'),
-                     Session(play_start=datetime.datetime(2009,8,9,18,0), play_end=datetime.datetime(2009,8,9,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2009,8,10,18,0), play_end=datetime.datetime(2009,8,10,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2009,8,11,18,0), play_end=datetime.datetime(2009,8,11,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2009,8,12,18,0), play_end=datetime.datetime(2009,8,12,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2010,4,19,18,0), play_end=datetime.datetime(2010,4,19,23,0), location=u'Ulvsbygatan'),
-                     Session(play_start=datetime.datetime(2010,4,20,18,0), play_end=datetime.datetime(2010,4,20,23,0), location=u'Ulvsbygatan'),
-                     Session(play_start=datetime.datetime(2010,4,21,18,0), play_end=datetime.datetime(2010,4,21,23,0), location=u'Ulvsbygatan'),
-                     Session(play_start=datetime.datetime(2010,9,3,18,0), play_end=datetime.datetime(2010,9,3,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2010,9,4,18,0), play_end=datetime.datetime(2010,9,4,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2010,9,5,18,0), play_end=datetime.datetime(2010,9,5,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2011,5,27,18,0), play_end=datetime.datetime(2011,5,27,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2011,5,28,18,0), play_end=datetime.datetime(2011,5,28,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2011,5,29,18,0), play_end=datetime.datetime(2011,5,29,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2011,8,20,18,0), play_end=datetime.datetime(201,8,20,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2011,8,21,18,0), play_end=datetime.datetime(201,8,21,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2011,8,22,18,0), play_end=datetime.datetime(201,8,22,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2011,8,24,18,0), play_end=datetime.datetime(201,8,24,23,0), location=u'Olsäter'),
-                     Session(play_start=datetime.datetime(2012,1,27,18,0), play_end=datetime.datetime(2012,1,27,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,1,28,18,0), play_end=datetime.datetime(2012,1,28,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,1,29,18,0), play_end=datetime.datetime(2012,1,29,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,4,28,18,0), play_end=datetime.datetime(2012,4,28,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,4,29,18,0), play_end=datetime.datetime(2012,4,29,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), location=u'Mölndalsvägen'),
-                     Session(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), location=u'Mölndalsvägen')] 
-    cd6k.save()
+  cd6k.sessions = [Session(play_start=datetime.datetime(2009,01,05,18,0), play_end=datetime.datetime(2009,01,05,23,0), location=u'Ulvsbygatan'),
+                   Session(play_start=datetime.datetime(2009,01,06,18,0), play_end=datetime.datetime(2009,01,06,23,0), location=u'Ulvsbygatan'),
+                   Session(play_start=datetime.datetime(2009,8,9,18,0), play_end=datetime.datetime(2009,8,9,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2009,8,10,18,0), play_end=datetime.datetime(2009,8,10,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2009,8,11,18,0), play_end=datetime.datetime(2009,8,11,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2009,8,12,18,0), play_end=datetime.datetime(2009,8,12,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2010,4,19,18,0), play_end=datetime.datetime(2010,4,19,23,0), location=u'Ulvsbygatan'),
+                   Session(play_start=datetime.datetime(2010,4,20,18,0), play_end=datetime.datetime(2010,4,20,23,0), location=u'Ulvsbygatan'),
+                   Session(play_start=datetime.datetime(2010,4,21,18,0), play_end=datetime.datetime(2010,4,21,23,0), location=u'Ulvsbygatan'),
+                   Session(play_start=datetime.datetime(2010,9,3,18,0), play_end=datetime.datetime(2010,9,3,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2010,9,4,18,0), play_end=datetime.datetime(2010,9,4,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2010,9,5,18,0), play_end=datetime.datetime(2010,9,5,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2011,5,27,18,0), play_end=datetime.datetime(2011,5,27,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2011,5,28,18,0), play_end=datetime.datetime(2011,5,28,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2011,5,29,18,0), play_end=datetime.datetime(2011,5,29,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2011,8,20,18,0), play_end=datetime.datetime(201,8,20,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2011,8,21,18,0), play_end=datetime.datetime(201,8,21,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2011,8,22,18,0), play_end=datetime.datetime(201,8,22,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2011,8,24,18,0), play_end=datetime.datetime(201,8,24,23,0), location=u'Olsäter'),
+                   Session(play_start=datetime.datetime(2012,1,27,18,0), play_end=datetime.datetime(2012,1,27,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,1,28,18,0), play_end=datetime.datetime(2012,1,28,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,1,29,18,0), play_end=datetime.datetime(2012,1,29,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,4,28,18,0), play_end=datetime.datetime(2012,4,28,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,4,29,18,0), play_end=datetime.datetime(2012,4,29,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), location=u'Mölndalsvägen'),
+                   Session(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), location=u'Mölndalsvägen')] 
+  cd6k.save()
     
     # gil1 = GeneratorInputList(name=u'Korhiv start letter').save()
     # gil2 = GeneratorInputList(name=u'Korhiv middle syllables').save()

@@ -10,7 +10,7 @@
 """
 from flask import render_template, Blueprint, current_app, g, request
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm
-from model.shop import Product, Order, OrderLine
+from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
 import tasks
 
@@ -27,10 +27,9 @@ order_strategy = ResourceAccessStrategy(Order, 'orders')
 
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor
-def inject_test():
-    cart_order = Order.objects(user=g.user, status='cart').only('order_items').first()
-    # raise Exception()
-    return dict(cart_items=cart_order.order_items)
+def inject_cart():
+    cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('order_items').first()
+    return dict(cart_items=cart_order.order_items if cart_order else 0)
 
 cartform = model_form(Order, base_class=RacBaseForm, only=['order_lines'])
 
@@ -39,7 +38,7 @@ class OrderHandler(ResourceHandler):
   @ResourceHandler.methods(['GET','POST'])
   def cart(self, r):
     if g.user:
-      cart_order = Order.objects(user=g.user, status='cart').first()
+      cart_order = Order.objects(user=g.user, status=OrderStatus.cart).first()
       if not cart_order:
         cart_order = Order(user=g.user, email=g.user.email).save()
       r['item'] = cart_order
