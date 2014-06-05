@@ -9,6 +9,7 @@
 # mongoengine.connection.get_connection = new_get_connection
 
 from flask.json import JSONEncoder
+from bson.objectid import ObjectId
 from mongoengine import Document, QuerySet
 from flask.ext.mongoengine import Pagination, MongoEngine
 
@@ -38,9 +39,12 @@ db = MongoEngine()
 class MongoJSONEncoder(JSONEncoder):
   def default(self, o):
     if isinstance(o, Document) or isinstance(o, QuerySet):
-      return o.to_json()
+      return o.to_mongo()
+    elif isinstance(o, ObjectId) or isinstance(o, QuerySet):
+      return str(o)
     elif isinstance(o, Pagination):
       return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
+    print JSONEncoder.default(self, o)
     return JSONEncoder.default(self, o)
 
 from flask.ext.babel import Babel

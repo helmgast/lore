@@ -473,7 +473,8 @@ class ResourceHandler(View):
       logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
-      return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
+      d = {k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']}
+      return jsonify(d)
 
   def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
