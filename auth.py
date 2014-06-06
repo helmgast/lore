@@ -281,7 +281,6 @@ class Auth(object):
 
   def load_user(self):
     g.user = self.get_logged_in_user()
-    print session
 
   def register_handlers(self):
     self.app.before_request(self.load_user)

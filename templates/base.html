@@ -28,6 +28,14 @@
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}
+<script>
+  var i18n={
+    'Drag or click to upload file':"{{_('Drag or click to upload file')}}",
+    'URL to image online':"{{_('URL to image online')}}",
+    'Caption':"{{_('Caption')}}",
+    'Select from library':"{{_('Select from library')}}"
+  }
+</script>
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
     <script src="{{ url_for('static', filename='js/bootstrap-datepicker.js') }}"></script>
@@ -43,6 +51,7 @@
 
     <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/imagelightbox.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {#    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/list.min.js') }}"></script> #}
@@ -146,9 +155,9 @@
   </div>
 
 
-  <div class="modal fade" id="itsafuckingmodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">Hej</div>
+  <div class="modal fade" id="large-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+          <div class="modal-content">Loading...</div>
       </div>
   </div>
 </div>

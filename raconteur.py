@@ -328,11 +328,12 @@ def register_main_routes(app, auth):
       '''Override new() to do some custom file pre-handling'''
       self.strategy.check_operation_any(r['op'])
       form = self.form_class(request.form, obj=None)
+      print request.form
       # del form.slug # remove slug so it wont throw errors here
       if not form.validate():
         r['form'] = form
         raise ResourceError(400, r)
-      file = request.files['imagefile']
+      file = request.files.get('imagefile', None)
       item = ImageAsset(creator=g.user)
       if file:
         item.make_from_file(file)

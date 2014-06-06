@@ -17,6 +17,7 @@
 
 {% block content %}{% block inline %}
 {% if product_form %}
+<img id="testimage">
 <form method="post" action="{{product_form.action_url}}">
   <div class="row">
     <div class="col-md-8">
@@ -32,7 +33,8 @@
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
-      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselector':True})}}
+      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
+
     </div>
   </div>
   <div class="row form-actions">
@@ -46,7 +48,7 @@
 {% else %}
 <div class="row">
     <div class="col-md-4">
-    Image
+      {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>{% endif %}
     </div>
     <div class="col-md-8">
       <table class="table">
@@ -72,3 +74,14 @@
 </div>
 {% endif %}
 {% endblock %}{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
+    image_upload_url: "{{url_for('imageasset_new', out='json')}}"
+  }
+</script>
+{% endblock %}

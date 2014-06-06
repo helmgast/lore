@@ -103,6 +103,9 @@ class ImageAsset(db.Document):
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
 
+  def __unicode__(self):
+    return u'%s' % self.slug
+
   # Executes before saving
   def clean(self):
     if self.title:
@@ -193,7 +196,7 @@ class Article(db.Document):
   meta = {'indexes': ['slug']}
   slug = db.StringField(unique=True, required=False, max_length=62)
   type = db.StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))
-  world = db.ReferenceField(World, verbose_name=_('World'))
+  world = db.ReferenceField(World, required=True, verbose_name=_('World'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))

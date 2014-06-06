@@ -538,43 +538,112 @@ important
           transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
 
-tr:hover .el-deletebtn, li:hover .el-deletebtn {
+tr:hover .btn-delete, 
+li:hover .btn-delete,
+.image-preview:hover .btn-delete {
   color: #fff;
   background-color: #d9534f;
   border-color: #d43f3a;
 }
 
-.el-deletebtn {
+.btn-delete {
 	position: absolute;
 	right: 0; top: 0; bottom: 0;
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-right: -12px;
-  height: 24px;
+	margin-top: auto;
+ 	margin-bottom: auto;
+	margin-right: -12px;
+	height: 24px;
 }
 
-.image-upload {
-	font-size: 10em;
-	color: #aaa;
-	cursor: pointer;
-	text-align: center;
-	display: block;
+.image-preview .btn-delete {
+	margin-right: 5px;
+	margin-top: 5px;
+	height: 40px;
+
 }
 
-.image-upload:hover {
-	color: #ddd;
-}
-
-.image-preview {
+.image-selector {
 	text-align: center;
 	position: relative;
 }
 
-.image-preview .image-container {
+.image-upload label {
+	font-size: 190px;
+	line-height: 200px;
+	height: 200px;
+	overflow: hidden;
+	color: #fff;
+	cursor: pointer;
+	text-align: center;
+	display: block;
+	position: relative;
+	background: #bbb;
+	border-radius: 4px;
+}
+
+.image-upload label:hover {
+	color: #ddd;
+}
+
+.image-upload .btn {
+	width: 100%;
+	margin-top: 5px;
+}
+
+.image-preview-caption {
+	display: block;
+	width: 100%;
+	height: 20px;
+	padding: 6px 12px;
+	font-size: 10px;
+	/* line-height: 1.428571429; */
+	/* color: #555; */
+	background-color: rgba(255, 255, 255, .90);
+	background-image: none;
+	border: 1px solid #ccc;
+	position: absolute;
+	bottom: 0px;
+	-webkit-transform: translateY(100%);
+	transform: translateY(100%);
+	transition: all .5s ease-in-out;
+}
+
+.image-container:hover .image-preview-caption {
+	-webkit-transform: translateY(0);
+	transform: translateY(0);
+}
+
+/*.image-upload:after {
+	position: absolute;
+	content: attr(title);
+	font-size: 15px;
+	width: 100%;
+	margin-top: -20px;
+	color: #000;
+}*/
+
+.image-selector .image-preview {
+	display: none;
+	position: relative;
+	overflow: hidden;
+}
+
+.image-selector .selected {
 	display: inline-block;
 }
 
-.image-preview .close {
+.image-selector .selected + .image-upload {
+	display: none;
+}
+
+.image-selector .image-preview img {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	max-height: 300px;
+}
+
+.image-selector .close {
 	float: none;
 	position: absolute;
 	top: 0px;
@@ -586,17 +655,11 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	border-radius: 50%;
 }
 
-.image-preview .close span {
+.image-selector .close span {
 	position: relative;
 	top: -4px;
 }
 
-.image-preview .image-container img {
-	display: block;
-	max-width: 100%;
-	height: auto;
-	max-height: 300px;
-}
 
 .imagelink {
 	display: block-inline;
@@ -617,6 +680,19 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	display: block;
 	float: right;
 	margin: 10px;
+}
+
+.gallerylist2 {
+	width: 100%;
+}
+
+.gallerylist2 img {
+	max-width: 100%;
+	height: auto;
+}
+
+#content-editor p:hover {
+	background-color: #eee;	
 }
 
 .gallerylist {
@@ -646,6 +722,15 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	overflow: hidden;
 	position: relative;
 	-webkit-backface-visibility: hidden; /* To fix webkit 1px rendering bug */
+}
+
+.gallery input[type="radio"] {
+	display: none;
+}
+
+.gallery label {
+	margin-bottom: 0px;
+	display: inline;
 }
 
 .gallerylist figcaption {
@@ -681,8 +766,8 @@ tr:hover .el-deletebtn, li:hover .el-deletebtn {
 	transition: all .25s ease-in-out;
 }
 
-.gallery .selected {
-	border: 4px solid rgba(102,175,233,1)
+input[type="radio"]:checked + img {
+ 	border: 6px solid rgba(102,175,233,1)
 }
 
 #modalgallery {

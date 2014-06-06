@@ -1,4 +1,3 @@
-
 function flash_error(message, level, target) {
   var $error = $('<div class="alert alert-'+(level || 'warning')+
             ' alert-dismissable"> <button type="button" class="close" \
@@ -26,7 +25,7 @@ function flash_error(message, level, target) {
       var remote  = $this.data('remote')
       var listname = $this.data('editable')
       if ($this.data('option-remove')!= 'off' )
-        var $removeBtn = $('<button type="button" class="btn btn-default btn-xs el-deletebtn"><span class="glyphicon glyphicon-trash"></span></button>')
+        var $removeBtn = $('<button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>')
       if ($this.data('option-add')!= 'off' )
         var $addBtn = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
       var $type = $this.prop('tagName');
@@ -48,7 +47,7 @@ function flash_error(message, level, target) {
       }
       if ($removeBtn) {
         $this.find(selectors[$type].item).css('position', 'relative').append($removeBtn)
-        $this.on('click','.el-deletebtn', function() {
+        $this.on('click','.btn-delete', function() {
           $(this).parents(selectors[$type].remove).first().remove()
         })
       }
@@ -128,7 +127,7 @@ $(function() {
 
       // Generate array containing all image aspect ratios
       var ratios = $pi.map(function () {
-        return $(this).find('img').data('org-width') / $(this).find('img').data('org-height');
+        return $(this).find('img').data('aspect');
       }).get();
 
       // Get sum of widths
@@ -155,53 +154,55 @@ $(function() {
 
 function saveImgSize() {
   $(this).data('org-width', $(this)[0].naturalWidth).data('org-height', $(this)[0].naturalHeight);
+  // $(this).data('org-width', $(this)[0].width).data('org-height', $(this)[0].height);
+
 }
 
 /* Wait for images to be loaded */
-$(window).on('load', function (e) {
+$(window).on('load shown.bs.modal', function (e) {
   // Store original image dimensions
   $(e.target).find('.gallery img').each(saveImgSize);
   $(window).resize();
 });
 
-$(document).on('hidden.bs.modal', function (e) {
-    $(e.target).removeData('bs.modal'); // clears modals after they have been hidden
-});
+// $(document).on('', function (e) {
+//     $(e.target).removeData('bs.modal'); // clears modals after they have been hidden
+// });
 
 $(document).ready(function() {
-$("a[data-toggle='tooltip']").tooltip()
+  $("a[data-toggle='tooltip']").tooltip()
+});
 
+// function serializeObject(form) {
+//   var o = {};
+//   var a = form.serializeArray();
+//   $.each(a, function() {
+//     if (o[this.name] !== undefined) {
+//       if (!o[this.name].push) {
+//         o[this.name] = [o[this.name]];
+//       }
+//         o[this.name].push(this.value || '');
+//       } else {
+//         o[this.name] = this.value || '';
+//       }
+//   });
+//   return o;
+// };
 
-  function serializeObject(form) {
-    var o = {};
-    var a = form.serializeArray();
-    $.each(a, function() {
-      if (o[this.name] !== undefined) {
-        if (!o[this.name].push) {
-          o[this.name] = [o[this.name]];
-        }
-          o[this.name].push(this.value || '');
-        } else {
-          o[this.name] = this.value || '';
-        }
-    });
-    return o;
-  };
-  
-  jQuery.extend( {
-    dictreplace: function(s, d) {
-      if (s && d) {
-        var p = s.split("__")
-        for (i=1; i<p.length;i=i+2) {
-          if (d[p[i]]) {
-            p[i] = d[p[i]]
-          }
-        }
-        return p.join('')
-      }
-      return s
-    } 
-  });  
+// jQuery.extend( {
+//   dictreplace: function(s, d) {
+//     if (s && d) {
+//       var p = s.split("__")
+//       for (i=1; i<p.length;i=i+2) {
+//         if (d[p[i]]) {
+//           p[i] = d[p[i]]
+//         }
+//       }
+//       return p.join('')
+//     }
+//     return s
+//   } 
+// });  
 
 /* ========================================================================
  * Image Selector
@@ -224,309 +225,271 @@ will be appended to the target.
 +function ($) {
   'use strict';
 
-  // IMAGESELECTOR CLASS DEFINITION
-  // ======================
-  var self, ImageSelector = function (element, modal, options) {
+  var tempImage;
+
+  var self, ImageSelect = function (element, options) {
     self = this
     self.options   = options
     self.$element  = $(element)
-    self.$modal = modal
-    self.$modal.on('loaded.bs.modal', self.load)
-    // this.$backdrop =
-    // this.isShown   = null
 
-    // if (this.options.remote) {
-    //   this.$element
-    //     .find('.modal-content')
-    //     .load(this.options.remote, $.proxy(function () {
-    //       this.$element.trigger('loaded.bs.modal')
-    //     }, this))
-    // }
-  }
+    self.$imageEl = 
+    $('<div class="image-selector" contenteditable="false"> \
+        <div class="image-preview"> \
+          <input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'"> \
+          <button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button> \
+        </div> \
+        <div class="image-upload form-group"> \
+          <label for="imagefile" title="'+i18n['Drag or click to upload file']+'"> \
+            <span class="glyphicon glyphicon-picture"></span> \
+          </label> \
+          <input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*"> \
+          <input type="text" class="form-control" name="source_image_url" \
+          id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
+          (options.image_list_url ? '<button type="button" data-toggle="modal" data-target="#large-modal" \
+            data-remote="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</button>' : '') + 
+        '</div></div>');
+    
+    self.$element.addClass('hide')
+    self.$element.after(self.$imageEl)
+    if (self.$element.is('select, input')) {
+      self.setVal = function(src, slug) {
+        self.$element.val(slug ? slug : '---')
+      }
+      var val = self.$element.val()
+      if ( val && val!="__None")
+        self.imageSelected('/asset/'+val, val)
+    } else if (self.$element.is('a.lightbox')) {
+      self.setVal = function(src, slug) {
+        self.$element.attr('href', src)
+        self.$element.find('img').attr('src', src)
+      }
+      if ( self.$element.attr('href'))
+        self.imageSelected(self.$element.attr('href'))
+    } else {
+      console.log("ImageSelect doesn't work on this element")
+      return
+    }
 
-  ImageSelector.prototype.load = function () {
-    self.hidePreview()
-    self.$modal.find('.modal-submit').prop('disabled', true).on('click', self.imageSelected)
-    self.$modal.find('#modalgallerylink').on('show.bs.tab', self.tabSwitch)
-    self.$modal.find('#imagefile').change(self.fileSelected)
-    self.$modal.find('.image-preview .close').click(self.hidePreview)
-    var file_label = self.$modal.find('.image-upload').get(0)
-    file_label.addEventListener('dragover', function(e) {
+    self.$imageEl.on('click', '.btn-delete', function(e){
+      self.$imageEl.find('.image-preview img').remove()
+      $('#large-modal .gallerylist input[type="radio"]:checked').prop('checked', false)
+      self.$imageEl.find('.image-preview').removeClass('selected')
+      self.$element.val('---') // blank choice in Select box...
+    })
+
+    $(document).on('hide.bs.modal', '#large-modal', function(e) {
+      var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
+      if ($sel[0])
+        self.imageSelected($sel.next('img')[0].src, $sel.val())
+    })
+    $('#imagefile').change(self.fileSelected)
+    $('.image-upload label').on('drop', self.fileSelected).on('dragover', function(e) {
       e.stopPropagation()
       e.preventDefault()
-      e.dataTransfer.dropEffect = 'copy'
-    }, false);
-    file_label.addEventListener('drop', self.fileSelected, false)
+      e.originalEvent.dataTransfer.dropEffect = 'copy'  
+    })
+
+    tempImage = tempImage || new Image()
+    $('#source_image_url').on('input', function(e) {
+      if ( /^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
+        tempImage.onload = self.fileSelected
+        tempImage.src = e.target.value
+        e.target.style.color = ''
+      } else {
+        tempImage.src = ''
+        tempImage.onload = undefined
+        e.target.style.color = 'red'
+      }
+    })
   }
 
-  ImageSelector.prototype.tabSwitch = function (e) {
-    var $target = $($(e.target).attr('href'))
-    if ($target.children().length == 0) {
-      $target.load($target.data('remote'), function() {
-        var $imgs = $target.find('img')
-        // need to find if all images have finished loading
-        var imgsLoaded = 0;
-        $imgs.load(function() {
-          saveImgSize.call(this)
-          imgsLoaded++
-          if (imgsLoaded==$imgs.length) {
-            $(window).resize();
-          }
-        })
-        $target.on('click', 'img', function(e) {
-          var $t = $(e.target), $p = $t.closest('.gallerylist')
-          $p.find('.selected').not($t).toggleClass('selected') // turn off all others
-          if ($t.hasClass('selected')) {
-            $t.removeClass('selected')
-            self.hidePreview()
-          } else {
-            $t.addClass('selected')
-            self.showPreview()
-          }
-        })
-      })
-    }
+  ImageSelect.prototype.imageSelected = function(src, slug, no_set) {
+    var div = self.$imageEl.find('.image-preview')
+    div.children('img').remove()
+    div.append('<img src="'+src+'">')
+    self.$imageEl.find('.image-preview').addClass('selected')
+    if(!no_set)
+      self.setVal(src, slug)
   }
 
-  ImageSelector.prototype.showPreview = function () {
-    self.$modal.find('.no-image-selected').addClass('hide')
-    self.$modal.find('.image-selected').removeClass('hide')
-    //self.$modal.find('.image-preview, .image-metafields').removeClass('hide')
-    //self.$c.insertoptions.removeClass('hide')
-    self.$modal.find('.modal-submit').prop('disabled', false)
-  }
-
-  ImageSelector.prototype.hidePreview = function (e) {
-    if (e) { e.preventDefault() }
-    self.$modal.find('.image-selected').addClass('hide')
-    self.$modal.find('.no-image-selected').removeClass('hide')
-    self.$modal.find('.image-form:input').not('#csrf_token').val(null)
-    // self.$c.image_input.val(null)
-    // self.$modal.find('#imagedata.source_image_url').val(null)
-
-    // self.$c.form.removeClass('hide')
-
-    // self.$modal.find('.image-preview, .image-metafields').addClass('hide')
-    // self.$c.insertoptions..addClass('hide')
-    self.$modal.find('.modal-submit').prop('disabled', true)
-
-  }
-
-  ImageSelector.prototype.fileSelected = function (e) {
-    if (e.dataTransfer && e.dataTransfer.files) {
-      self.$modal.find('#imagefile').prop('files', e.dataTransfer.files)
-      var files = e.dataTransfer.files
-    } else {
-      var files = e.target.files
-    }
+  ImageSelect.prototype.fileSelected = function (e) {
+    var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files)
+      , formData = new FormData();
     if (files && files.length) {
       var file = files[0]
-      self.$modal.find('#title').val(file.name)
       var reader = new FileReader()
       reader.onload = (function(tfile) {
         return function(e) {
-          self.$modal.find('.image-container').html('<img src="' + e.target.result + '"  />')
+          self.imageSelected(e.target.result)
         };
       }(file));
-      reader.readAsDataURL(file);
-      self.showPreview()
+      formData.append('imagefile', file)
+      formData.append('title', file.name)
+      reader.readAsDataURL(file);  
+    } else if (e.target.src) {
+      formData.append('source_image_url', e.target.src)
+      formData.append('title', /[^/]+$/.exec(e.target.src)[0])
+    } else {
+      formData = null; return
     }
+
+    formData.append('csrf_token', self.options.csrf_token)
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener("load", function() {
+      var res = JSON.parse(this.responseText)
+      if (this.status==200 && res.next) {
+        self.imageSelected(res.next, res.item._id);
+      } else {
+        flash_error(res.message || 'unknown error', 'warning')
+      }
+    }, false);
+    xhr.open('POST', self.options.image_upload_url)
+    xhr.send(formData) // does not work in IE9 and below
     e.preventDefault()
   }
 
-  ImageSelector.prototype.imageSelected = function (e) {
-    var $selected = self.$modal.find('#modalgallery .selected')
-    if ($selected.length > 0 ) {
-      self.insertImage($selected[0].src)
-    } else {
-      var $form = self.$modal.find('.image-form')
-      var formData = new FormData($form.get(0))
-      var req = new XMLHttpRequest();
-      req.addEventListener("load", function() {
-        var res = JSON.parse(this.responseText)
-        if (this.status==200 && res.next) {
-          self.insertImage(res.next);
-        } else {
-          flash_error(res.message || 'unknown error', 'warning', '.modal-body')
-        }
-      }, false);
-      req.open('POST', $form.attr('action'))
-      req.send(formData) // does not work in IE9 and below
-    }
-    e.preventDefault()
-  }
-
-  ImageSelector.prototype.insertImage = function (src) {
-    var alt=$('#imgcaption').val(), 
-      imgclass=$('input:radio[name="imgclass"]:checked').prop('id'),
-      href= src.replace('/asset/thumbs/','/asset/'), 
-      imgstr, 
-      $activeBlock=$(editor.getActiveBlock())
-
-    if ((imgclass=="thumb" || imgclass=="gallery") && src.indexOf('/thumbs/')==-1) {
-      src = src.replace('/asset/','/asset/thumbs/')
-    } else if (imgclass=="normal") {
-      imgclass = ""
-    }
-    imgstr = '<a class="imagelink" href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
-    if (imgclass=="gallery") {
-      var $gallery
-      $gallery = $activeBlock.filter('.gallerylist')
-      $gallery = $gallery.length==0 ? $activeBlock.prev('.gallerylist') : $gallery
-      $gallery = $gallery.length==0 ? $('<p class="gallerylist"></p>').insertBefore($activeBlock) : $gallery
-      $gallery.append(imgstr)
-    } else {
-      $activeBlock.prepend(imgstr)
-    }
-    self.$modal.modal('hide')  
-  }
-
-
-  $.fn.imageselector = function (option) {
+  $.fn.imageselect = function (option) {
     return this.each(function () {
       var $this   = $(this)
-      var data    = $this.data('rac.imageselector')
-      var options = $.extend({}, ImageSelector.DEFAULTS, $this.data(), typeof option == 'object' && option)
-      var $modal = $('#themodal')
-      if ($modal.data('bs.modal')) {
-        $modal.data('bs.modal', null) // remove old modal, only way to reload the content
-      }
-      $modal.modal({remote: options.href})
-      // If no data set, create a ImageSelector object and attach to this element
-      if (!data) $this.data('rac.imageselector', (data = new ImageSelector(this, $modal , options)))
+      var data    = $this.data('rac.imageselect')
+      var options = $.extend(imageselect_options, ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
+      // If no data set, create a ImageSelect object and attach to this element
+      if (!data) $this.data('rac.imageselect', (data = new ImageSelect(this, options)))
       // if (typeof option == 'string') data[option](_relatedTarget)
       // else if (options.show) data.show(_relatedTarget)
     })
   }
+  $.fn.imageselect.Constructor = ImageSelect
 
-  $.fn.imageselector.Constructor = ImageSelector
-
-
-  $(document).on('click', '[data-imageselector]', function (e) {
-    var $this   = $(this)
-    var href    = $this.attr('href')
-    var target = $this.attr('data-target')
-    var option  = $.extend({ href: href }, $this.data())
-
-    if ($this.is('a')) e.preventDefault()
-
-    $this.imageselector(option)
-    $this.data('rac.imageselector').$modal.modal('show')
-    // $target
-    //   .modal(option, this)
-    //   .one('hide', function () {
-    //     $this.is(':visible') && $this.focus()
-    //   })
-    })
-
-}(jQuery);
-
-
-// Deprecated
-/*
-  
-  // Extends Typeahead with a different updater() function
-  var extended_typeahead = {
-    // remove the name and space from the username
-    updater: function(item) { return item.replace(/ \(.*\)/,'') },
-    matcher: function(item) { 
-      var it=item.toLowerCase(), pre=it.split(" ")[0], qu = this.query.toLowerCase()
-      return !~this.options.exclude.indexOf(pre) && ~it.indexOf(qu) // not in exclude and in query
-    }
-  }
-  $.extend(true, $.fn.typeahead.Constructor.prototype, extended_typeahead)
-
-  $('.typeahead-input input').keydown(function(e) {
-    if (e.which == 188 && e.target.value.length > 0) {
-      $(e.target).parent().before('<li class="typeahead-item">'+e.target.value+'<input type="hidden" name="players" value="'+e.target.value+'" /></li>')
-      e.target.value=''
-      return false
-    } else if (e.which == 8 && e.target.value.length == 0) {
-      $(e.target).parent().prev().remove()
-      return false
-    }
-    return true;
+  $(window).on('load', function () {
+    $('[data-imageselect]').imageselect()
   })
-  .focus(function(e) {
-    var $t = $(this)
-    $t.parent().parent().addClass('typeahead-focus')
-    var el, els = $($t.data('exclude-view')).find('.m_field[name="username"]'), s ="";
-    for (var i = els.length - 1; i >= 0; i--) {
-      el = $(els[i]); s += (el.data('value') ? el.data('value') : el.html()) + ",";
-    }
-    $t.data('typeahead').options.exclude = s.toLowerCase()
-    return true;
-  })
-  .blur(function(e) {
-    $(this).parent().parent().removeClass('typeahead-focus')
-    return true;
-  });
-  
-  $('.typeahead-item').on('click','.typeahead-item', function(e) {
-    $(this).remove()
-  });
 
-  */ 
-  function post_action($t) {
-    var vars, type = $t.data('action-type'), href=$t.attr('href'),
-      action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
-      action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
-    if(type==='modal') {
-      vars = $('#themodal').find('form').serialize()
-    } else if (type==='inplace') {
-      //vars = $t.parents('form').serialize()
-    } else {
-      vars = action_parent.find('input, textarea').serialize()
-    }
-    $t.button('reset') // reset button
-    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function(data) { // always add inline to the actual request
-      var $d = $(data), $a = $d.filter('#alerts')
-      var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
-      switch(action) {
-        case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-        case 'new': action_parent.find('.m_instance').last().after($d.filter('#changes').html()); break;
-        case 'edit': break;
-        case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-        case 'delete': action_parent.remove(); break;// remove the selected instance
-        case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
-        case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
-        default:
+ }(jQuery); 
+
+$( '.lightbox' ).imageLightbox({
+  onLoadStart:  function() { $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body') },
+  onLoadEnd:    function() { $('#imagelightbox-loading').remove() },
+  onEnd:      function() { $('#imagelightbox-loading').remove() }
+});
+
+/**
+ * jQuery Unveil
+ * A very lightweight jQuery plugin to lazy load images
+ * http://luis-almeida.github.com/unveil
+ *
+ * Licensed under the MIT license.
+ * Copyright 2013 Luís Almeida
+ * https://github.com/luis-almeida
+ */
+
+;(function($) {
+
+  $.fn.unveil = function(threshold, callback) {
+
+    var $w = $(window),
+        th = threshold || 0,
+        retina = window.devicePixelRatio > 1,
+        attrib = retina? "data-src-retina" : "data-src",
+        images = this,
+        loaded;
+
+    this.one("unveil", function() {
+      var source = this.getAttribute(attrib);
+      source = source || this.getAttribute("data-src");
+      if (source) {
+        this.setAttribute("src", source);
+        if (typeof callback === "function") callback.call(this);
       }
-
-      if(type==='modal') { // show response in modal
-        $('#themodal').html(data)
-        setTimeout(function() {$('#themodal').modal('hide')},3000)
-      } else if ($a.children().length > 0) {
-        $t.popover({trigger: 'manual', html:true, content:$a.html()})
-        $t.popover('show')
-        $('body').one('click', function() {$t.popover('destroy')})
-      }
-
-    }).error(function(xhr, errorType, exception) {
-      if(type==='modal') { $('#themodal').modal('hide') }
-      var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
-      alert( "There was an error: " + errorMessage );
     });
-  }
 
-  function handle_action(e) {
-    var $t = $(e.currentTarget); // current to make sure we capture the button with .m_action, not children of it
-    if (!$t.hasClass('disabled')) { // if not disabled, means no action is current with this button
-      $t.button('loading') // disables the button until we're done
-      // preparations
-      switch ($t.data('action-type')) {
-        case 'modal':
-          var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
-//          $('#themodal').data('modal').options.caller = $t P: options.caller deprecated as of Bootstrap 3?
-          $('#themodal').load(href).modal('show'); break;
-        case 'inplace': break;// replace instance with form
-        default: // post directly
-          post_action($t);
-      }
-      
+    function unveil() {
+      var inview = images.filter(function() {
+        var $e = $(this);
+        if ($e.is(":hidden")) return;
+
+        var wt = $w.scrollTop(),
+            wb = wt + $w.height(),
+            et = $e.offset().top,
+            eb = et + $e.height();
+
+        return eb >= wt - th && et <= wb + th;
+      });
+
+      loaded = inview.trigger("unveil");
+      images = images.not(loaded);
     }
-    e.preventDefault()
+
+    $w.on("scroll.unveil resize.unveil lookup.unveil", unveil);
+
+    unveil();
+
+    return this;
+
+  };
+
+})(window.jQuery || window.Zepto);
+
+function post_action($t) {
+  var vars, type = $t.data('action-type'), href=$t.attr('href'),
+    action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
+    action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
+  if(type==='modal') {
+    vars = $('#themodal').find('form').serialize()
+  } else if (type==='inplace') {
+    //vars = $t.parents('form').serialize()
+  } else {
+    vars = action_parent.find('input, textarea').serialize()
   }
+  $t.button('reset') // reset button
+  $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function(data) { // always add inline to the actual request
+    var $d = $(data), $a = $d.filter('#alerts')
+    var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
+    switch(action) {
+      case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
+      case 'new': action_parent.find('.m_instance').last().after($d.filter('#changes').html()); break;
+      case 'edit': break;
+      case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
+      case 'delete': action_parent.remove(); break;// remove the selected instance
+      case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
+      case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
+      default:
+    }
+
+    if(type==='modal') { // show response in modal
+      $('#themodal').html(data)
+      setTimeout(function() {$('#themodal').modal('hide')},3000)
+    } else if ($a.children().length > 0) {
+      $t.popover({trigger: 'manual', html:true, content:$a.html()})
+      $t.popover('show')
+      $('body').one('click', function() {$t.popover('destroy')})
+    }
+
+  }).error(function(xhr, errorType, exception) {
+    if(type==='modal') { $('#themodal').modal('hide') }
+    var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
+    alert( "There was an error: " + errorMessage );
+  });
+}
+
+function handle_action(e) {
+  var $t = $(e.currentTarget); // current to make sure we capture the button with .m_action, not children of it
+  if (!$t.hasClass('disabled')) { // if not disabled, means no action is current with this button
+    $t.button('loading') // disables the button until we're done
+    // preparations
+    switch ($t.data('action-type')) {
+      case 'modal':
+        var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
+//          $('#themodal').data('modal').options.caller = $t P: options.caller deprecated as of Bootstrap 3?
+        $('#themodal').load(href).modal('show'); break;
+      case 'inplace': break;// replace instance with form
+      default: // post directly
+        post_action($t);
+    }
+    
+  }
+  e.preventDefault()
+}
 
   $('#themodal').modal({show:false})
   $('#themodal').on('submit', 'form', function(e) {
@@ -552,4 +515,3 @@ will be appended to the target.
       // Required, not sure why
       e.preventDefault();
   });
-});

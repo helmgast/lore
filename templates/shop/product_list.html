@@ -2,6 +2,7 @@
 
 {% block content %}
     <div class="row">
+    
     {% for product in products %}
     <div class="col-md-4">
         <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a>

@@ -82,7 +82,7 @@ class NewImagePattern(ImagePattern):
       if parts[1] in ['gallery', 'thumb']:
         el.set('src', src.replace('/asset/','/asset/thumbs/'))
     a_el = etree.Element('a')
-    a_el.set('class', 'imagelink')
+    a_el.set('class', 'lightbox')
     a_el.append(el)
     a_el.set('href', src)
     return a_el
