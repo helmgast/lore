@@ -2,21 +2,19 @@
 
 {% block content %}
     <div class="row">
-    
+
     {% for product in products %}
-    <div class="col-md-4">
-        <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a>
-        <br><small>{{ product.description }}</small></h3>
-        <hr>
-        <dl class="dl-horizontal">
-            <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ product.publisher }}</dd>
-            <dt>{{ _('Price') }}</dt>
-            <dd>{{ product.price }}</dd>
-            <dt>{{ _('Created date') }}</dt>
-            <dd>{{ product.created.strftime('%Y-%m-%d') }}</dd>
-        </dl>
-        <h4><a id="{{product.slug}}" class="buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></h4>
+    <div class="col-md-4 product">
+        {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
+        <div class="product-intro">
+            <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
+            <p>{{ product.description }}</p>
+        </div>
+        <ul class="product-details">
+            <li>{{ product.publisher }}</li>
+            <li class="product-price">{{ product.price }}</li>
+            <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
+        </ul>
     </div>
     {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
     {% endfor %} 

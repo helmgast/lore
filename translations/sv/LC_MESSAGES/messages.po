@@ -55,7 +55,7 @@ msgstr "Registrera"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:29
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:73
 msgid "Campaign"
-msgstr "Kampanjer"
+msgstr "Kampanj"
 
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:32
 #: /home/zaifon/Projects/fablr/raconteur/templates/base.html:83

@@ -367,11 +367,33 @@ will be appended to the target.
 
  }(jQuery); 
 
-$( '.lightbox' ).imageLightbox({
-  onLoadStart:  function() { $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body') },
-  onLoadEnd:    function() { $('#imagelightbox-loading').remove() },
-  onEnd:      function() { $('#imagelightbox-loading').remove() }
-});
+$(window).on('load', function () {
+  var lb = $( '.lightbox' ).imageLightbox({
+  onStart:    function() { 
+    $( '<div id="imagelightbox-overlay"></div>' ).appendTo( 'body' );
+    $( '<a href="#" id="imagelightbox-close">Close</a>' ).appendTo( 'body' )
+      .on( 'click touchend', function(){ $( this ).remove(); lb.quitImageLightbox(); return false; }); 
+  },
+  onEnd:      function() { 
+    $( '#imagelightbox-overlay' ).remove();
+    $( '#imagelightbox-caption' ).remove();
+    $( '#imagelightbox-close' ).remove();
+    $( '#imagelightbox-loading' ).remove();
+  },
+  onLoadStart:  function() { 
+    $( '#imagelightbox-caption' ).remove();
+    $( '<div id="imagelightbox-loading"><div></div></div>' ).appendTo( 'body' );
+
+  },
+  onLoadEnd:    function() { 
+    var description = $( 'a[href="' + $( '#imagelightbox' ).attr( 'src' ) + '"] img' ).attr( 'alt' );
+    if( description && description.length > 0 )
+      $( '<div id="imagelightbox-caption">' + description + '</div>' ).appendTo( 'body' );
+    $( '#imagelightbox-loading' ).remove();
+  }
+  });
+})
+
 
 /**
  * jQuery Unveil
