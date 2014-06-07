@@ -20,7 +20,9 @@ footer {
   /* Set the fixed height of the footer here */
   height: 40px;
   background-color: #f5f5f5;
+  margin-top: 15px;
 }
+
 
 footer p {
   margin-top: 10px;
@@ -53,6 +55,22 @@ form input[type="text"].datetime-widget {
 
 div.sidebar li.active {
 	font-weight: bold;
+}
+
+.table tr:first-of-type {
+	border-top: none;
+}
+
+thead {
+	font-weight: 700;
+}
+
+.td-bottom {
+	vertical-align: bottom !important;
+}
+ 
+.table tr:first-of-type td {
+  border-top: none !important; 
 }
 
 table.table-striped td.links .inline {
@@ -538,10 +556,19 @@ important
           transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 }
 
+.product {
+	min-height: 100px;
+	padding-top: 10px;
+}
+
+.product:hover {
+	background-color: #eee;
+}
+
 .product-image {
 	max-width: 80px;
-	max-height: 200px;
-	padding: 5px;
+	max-height: 150px;
+	padding: 5px 10px;
 	float: left;
 }
 
@@ -554,7 +581,6 @@ important
 .product-intro h3 {
 	margin-top: 5px;
 	font-size: 18px;
-	border-bottom: 1px solid #ddd;
 }
 
 .product-details {
@@ -567,20 +593,29 @@ important
 .product-details li {
 	display: inline-block;
 	padding-right: 5px;
+}
+
+
+.product-publisher {
 	font-size: 10px;
 	text-transform: uppercase;
 	font-weight: 700;
 	color: #aaa;
 }
 
-.product-details .product-price {
+.product-price {
 	font-size: 18px;
 	color: #000;
 }
 
+.product-subtotals {
+	text-align: right;
+}
+
 tr:hover .btn-delete, 
 li:hover .btn-delete,
-.image-preview:hover .btn-delete {
+.image-preview:hover .btn-delete,
+.row:hover .btn-delete {
   color: #fff;
   background-color: #d9534f;
   border-color: #d43f3a;
@@ -770,7 +805,7 @@ input[type="radio"]:checked + img {
 }
 
 .item-list {
-	padding: 6px 4px;
+	padding: 6px 10px;
 }
 
 .item-list .media {

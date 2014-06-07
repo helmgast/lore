@@ -1,52 +1,116 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
 
-{% from 'includes/components.html' import FORM_FIELD %}
+{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS, FORM_FIELD_INLINE %}
 
-{% block content_title %}{% endblock %}
+{% block content_title %}{{ _('Cart') }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block content %}{% block inline %}
 <form method="post" action="{{order_form.action_url}}">
-<div class="row">
-    <div class="col-md-7">
-      <table class="table" data-editable="orderlines" data-option-add="off">
-      <thead>
-        <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
-      </thead>
-      <tbody>
-        {% for line in order_form.order_lines %}
-        <tr>
-          <td>{{line.quantity(type="number", min="1", max="100")}}</td>
-          <td>{{line.data.product.title}}</td>
-          <td>{{line.data.price}}</td>
-          <td>{{line.data.comment}}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      </table>
+    <div class="row">
+      <div class="col-xs-2 col-md-2"></div>
+      <div class="col-xs-10 col-md-10">
+        <div class="col-md-offset-6">
+         <ul class="product-details">
+              <li>{{_('Publisher')}}</li>
+              <li>{{_('Price')}}</li>
+              <li>{{_('Quantity')}}</li>
+              <li>{{_('Total')}}</li>
+        </ul>
+        </div>
+      </div>
     </div>
-    <div class="col-md-5">
-      <table class="table">
-        <tr><td><strong>{{ _('User') }}</strong></td>
-        <td><small>{{ order.user }}</small></td></tr>      
-        <tr><td><strong>{{ _('Email') }}</strong></td>
-        <td><small>{{ order.email }}</small></td></tr>      
-        <tr><td><strong>{{ _('Created') }}</strong></td>
-        <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
-        <tr><td><strong>{{ _('Updated') }}</strong></td>
-        <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td></tr>
-        <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ order.status }}</small></td></tr>      
-      </table>
+    {% for line in order_form.order_lines %}
+    <div class="product row">
+      <div class="col-xs-2 col-md-2">
+        {% if line.data.product.feature_image %}<a href="{{ url_for('.product_view', product=line.data.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.data.product.feature_image.slug)}}"></a>{% endif %}
+      </div>
+      <div class="col-xs-10 col-md-10">
+        <div class="row">
+          <div class="col-md-6 product-intro">
+            <h3><a href="{{ url_for('.product_view', product=line.data.product.slug)}}">{{ line.data.product.title }}</a></h3>
+            <p>{{ line.data.product.description }}</p>
+          </div>
+          <div class="col-md-6">
+            <ul class="product-details">
+              <li class="product-publisher">{{ line.data.product.publisher }}</li>
+              <li class="product-price">{{ line.data.price|int }}:-</li>
+              <li>{{line.quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}</li>
+              <li class="product-price product-total">Total</li>
+            </ul>
+            {{ FORM_FIELD_INLINE(line.comment) }}
+          </div>   
+        </div>
+      </div>
+      <button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>
     </div>
-</div>
-<div class="row form-actions">
-  <button type="submit" class="btn btn-primary">{{ _('Gå till kassan') }}</button>
-  <a href="{{url_for('.order_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
-  {% if order %}
-    <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
-  {% endif %}
-</div>
-</form>
+    {% endfor %}
+    <div class="row" style="margin-top: 20px">
+      <div class="col-md-7 col-md-offset-1">
+      {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+      {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-2", "col-sm-4") }}
+      {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
+      {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+      </div>
+      <div class="col-md-4">
+        <table class="table product-subtotals">
+          <tr><td>{{_('Subtotal')}}</td><td class="product-price">12</td></tr>
+          <tr><td>{{_('Tax')}}</td><td class="product-price">12</td></tr>
+          <tr><td>{{_('Shipping')}}</td><td class="product-price">12</td></tr>
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">12</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-offset-8">
+      {% if order %}
+        <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</a>
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
+      </div>
+    </div>
 
+    {#
+      <td class="product-publisher">
+        {% if order %}
+      <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</a>
+    {% endif %}
+    <button type="submit" class="btn btn-primary">{{ _('Checkout') }}</button>
+      </td>
+      <td class="product-price"></td>
+    </tr>
+    
+    <table class="table" data-editable="orderlines" data-option-add="off">
+    <thead>
+      <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
+    </thead>
+    <tbody>
+      {% for line in order_form.order_lines %}
+      <tr>
+        <td>{{line.quantity(type="number", min="1", max="100")}}</td>
+        <td>{{line.data.product.title}}</td>
+        <td>{{line.data.price}}</td>
+        <td>{{line.data.comment}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    </table>#}
+
+</form>
 {% endblock %}{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+function calcTotal(e) {
+  var $prod = $(e.delegateTarget)
+  $prod.find('.product-total').text(parseInt(e.target.value) *
+    parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0]))
+  // alert('qty for '+$(e.delegateTarget).find('.product-intro h3 a').text() +)
+}
+$('.product').on('change', '.product-quantity', calcTotal)
+$('.product').each(function() {
+  calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
+})
+</script>
+{% endblock %}

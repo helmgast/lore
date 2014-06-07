@@ -204,6 +204,46 @@ $(document).ready(function() {
 //   } 
 // });  
 
+// li class="total"
+// "/text=|#order_lines-0-quantityval/val| * |.product_price/text|"
+
+
+// +function ($) {
+//   'use strict';
+
+//     var self, CalcQuery = function (element, options) {
+//       var q = $(element).data('calcquery'), vars = q.match(/\|.+?\|/g), varmap = {}
+//       for (var i = 0, n=97; i<vars.length;i++) {
+//         if (!varmap[vars[i]]) {
+//           varmap[vars[i]] = String.fromCharCode(n++)
+//           q = q.replace(vars[i], varmap[vars[i]])
+//         }
+//       }
+//       for (var path in varmap) {
+//         var p_parts = path.split('|/')[1].split('/')
+//         var $path = $(p_parts[0])
+//       }
+//     }
+
+//     $.fn.calcquery = function (option) {
+//     return this.each(function () {
+//       var $this   = $(this)
+//       var data    = $this.data('rac.calcquery')
+//       var options = $.extend({}, CalcQuery.DEFAULTS, $this.data(), typeof option == 'object' && option)
+//       // If no data set, create a ImageSelect object and attach to this element
+//       if (!data) $this.data('rac.calcquery', (data = new CalcQuery(this, options)))
+//       // if (typeof option == 'string') data[option](_relatedTarget)
+//       // else if (options.show) data.show(_relatedTarget)
+//     })
+//   }
+//   $.fn.calcquery.Constructor = CalcQuery
+
+//   $(window).on('load', function () {
+//     $('[data-calcquery]').calcquery()
+//   })
+
+//  }(jQuery); 
+
 /* ========================================================================
  * Image Selector
  * ========================================================================

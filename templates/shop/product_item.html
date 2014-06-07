@@ -63,7 +63,7 @@
         <tr><td><strong>{{ _('Type') }}</strong></td>
         <td><small>{{ product.type }}</small></td></tr>      
         <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ product.price }}</small></td></tr>      
+        <td><small>{{ product.price|int }}:-</small></td></tr>      
         <tr><td><strong>{{ _('Delivery fee') }}</strong></td>
         <td><small>{{ product.delivery_fee }}</small></td></tr>      
         <tr><td><strong>{{ _('Status') }}</strong></td>

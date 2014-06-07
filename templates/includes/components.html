@@ -19,11 +19,11 @@
   </dd>
 {%- endmacro -%}
 
-{%- macro FORM_FIELD(field, controlclass="", labelclass="") -%}
+{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
   {% do fieldargs.update({'required':True}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
-  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass) if field.label }}
     {{ field(**fieldargs) }}
     {%- if field.errors -%}
@@ -32,11 +32,11 @@
   </div>
 {%- endmacro -%}
 
-{%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="") -%}
+{%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass, 'placeholder':field.label.text} %}
   {% do fieldargs.update({'required':True}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
-  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="sr-only control-label "+labelclass) if field.label }}
     {{ field(**fieldargs) }}
     {%- if field.errors -%}
@@ -46,11 +46,11 @@
   </div>
 {%- endmacro -%}
 
-{%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="") -%}
+{%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
   {% do fieldargs.update({'required':True}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
-  <div class="form-group{{ ' has-error has-feedback' if field.errors }}">
+  <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass+" "+labelcol) if field.label }}
     <div class="{{inputcol}}">
     {{ field(**fieldargs) }}

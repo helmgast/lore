@@ -1,10 +1,13 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
 
+{% block content_title %}{{ _('Orders') }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
 {% block content %}
 <table class="table">
 <thead>
 	<tr>
-		<td>{{_('ID')}}</td>
+		<td>{{_('Order')}}</td>
 		<td>{{_('User')}}</td>
 		<td>{{_('Created')}}</td>
 		<td>{{_('Updated')}}</td>
@@ -14,7 +17,7 @@
 <tbody>
 	{% for o in orders %}
 	<tr>
-		<td><a href="{{ url_for('.order_view', order=o.id)}}">{{o.id}}</a></td>
+		<td><a href="{{ url_for('.order_view', order=o.id)}}">{{o}}</a></td>
 		<td>{{o.user}}</td>
 		<td>{{o.created.strftime('%Y-%m-%d %H:%M')}}</td>
 		<td>{{o.updated.strftime('%Y-%m-%d %H:%M')}}</td>
