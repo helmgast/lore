@@ -27,7 +27,9 @@ class Product(db.Document):
   family = db.StringField(max_length=60, verbose_name=_('Family'))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
-  price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
+  # should be required=True, but that currently maps to Required, not InputRequired validator
+  # Required will check the value and 0 is determined as false, which blocks prices for 0
+  price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
 
@@ -46,6 +48,7 @@ class OrderLine(db.EmbeddedDocument):
   comment = db.StringField(max_length=256, verbose_name=_('Comment'))
   
 class Address(db.EmbeddedDocument):
+  name = db.StringField(max_length=60, required=True, verbose_name=_('Name'))
   street = db.StringField(max_length=60, required=True, verbose_name=_('Street'))
   zipcode = db.StringField(max_length=8, required=True, verbose_name=_('Zipcode'))
   city = db.StringField(max_length=60, required=True, verbose_name=_('City'))

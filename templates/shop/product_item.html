@@ -2,6 +2,8 @@
 
 {% from 'includes/components.html' import FORM_FIELD %}
 
+{% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
+
 {% block content_title %}{{product.title if product else "New product"}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
@@ -27,8 +29,7 @@
       {{ FORM_FIELD(product_form.family) }}
       {{ FORM_FIELD(product_form.created) }}
       {{ FORM_FIELD(product_form.type) }}
-      {{ FORM_FIELD(product_form.price) }}
-      {{ FORM_FIELD(product_form.delivery_fee) }}
+      {{ FORM_FIELD(product_form.price, required=True) }}
       {{ FORM_FIELD(product_form.status) }}
       {{ product_form.csrf_token }}
     </div>
@@ -48,7 +49,10 @@
 {% else %}
 <div class="row">
     <div class="col-md-4">
-      {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>{% endif %}
+      {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>
+      {% else %}
+        <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
+      {% endif %}
     </div>
     <div class="col-md-8">
       <table class="table">

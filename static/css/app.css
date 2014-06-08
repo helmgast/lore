@@ -10,7 +10,7 @@ html,body {
 body {
   min-height: 100%;
 	padding-top: 60px;
-  margin-bottom: 40px;
+  margin-bottom: 50px;
 }
 
 footer {
@@ -92,6 +92,19 @@ table.table-striped td.links .inline li:last-child a {
 
 table.table-narrow {
 	width: inherit;
+}
+
+.underline-row {
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.large-text {
+	font-size: 16px;
+}
+
+.gianticon {
+	font-size: 10em;
+	color: #aaa;
 }
 
 .bs-icon {
@@ -596,8 +609,8 @@ important
 }
 
 
-.product-publisher {
-	font-size: 10px;
+.product-type {
+	font-size: 12px;
 	text-transform: uppercase;
 	font-weight: 700;
 	color: #aaa;
