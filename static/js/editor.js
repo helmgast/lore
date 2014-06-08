@@ -35,25 +35,25 @@ var editor = (function() {
 		if ( supportsHtmlStorage() ) {
 
 			document.onkeyup = function( event ) {
-				checkTextHighlighting( event );
+				checkTextAndImageHighlighting( event );
 				saveState();
 				$(contentField).trigger('change')
 
 			}
 
 		} else {
-			document.onkeyup = checkTextHighlighting;
+			document.onkeyup = checkTextAndImageHighlighting;
 			// TODO this will notify change listeners but doesn't
 			// cover all scenarios of editing
 			$(contentField).trigger('change')
 		}
 
 		// Mouse bindings
-		document.onmousedown = checkTextHighlighting;
+		document.onmousedown = checkTextAndImageHighlighting;
 		document.onmouseup = function( event ) {
 
 			setTimeout( function() {
-				checkTextHighlighting( event );
+				checkTextAndImageHighlighting( event );
 			}, 1);
 		};
 		
@@ -119,10 +119,26 @@ var editor = (function() {
 		urlInput.onkeydown = onUrlInputKeyDown;
 	}
 
-	function checkTextHighlighting( event ) {
+	function checkTextAndImageHighlighting( event ) {
 
 		var selection = window.getSelection();
-
+		
+		if (event.target.className === "thumb") {
+			var frameDoc = parent.document;
+			if (frameDoc.createRange) {
+				frameDoc.onclick = function(e) {
+					if (e.target.nodeName.toLowerCase() == "img") {
+						var range = frameDoc.createRange();
+						range.selectNode(e.target);
+						selection.removeAllRanges();
+						selection.addRange(range);
+					}
+				};
+			}
+			
+			return;
+		}
+		
 		if ( (event.target.className === "url-input" ||
 		     event.target.classList.contains( "url" ) ||
 		     event.target.parentNode.classList.contains( "ui-inputs")) ) {
