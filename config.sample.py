@@ -20,3 +20,9 @@ CELERY_BROKER_URL = 'mongodb://localhost'
 CELERY_RESULT_BACKEND = 'mongodb://localhost'
 CELERY_TIMEZONE = 'Europe/Stockholm'
 CELERY_ENABLE_UTC = True
+CELERY_TASK_SERIALIZER='json'
+CELERY_ACCEPT_CONTENT=['json']
+CELERY_RESULT_SERIALIZER='json'
+
+GOOGLE_CLIENT_ID = 'yada-yada'
+GOOGLE_CLIENT_SECRET = 'yada-yada'
