@@ -2,7 +2,7 @@ from celery import Celery, task
 
 
 def make_celery(flask_app):
-  if not flask_app or not flask_app.config['CELERY_BROKER_URL']:
+  if 'CELERY_BROKER_URL' not in flask_app.config:
     return {}
   celery = Celery(flask_app.import_name, broker=flask_app.config['CELERY_BROKER_URL'])
   celery.conf.update(flask_app.config)
