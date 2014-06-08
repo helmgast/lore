@@ -77,7 +77,7 @@ class Auth(object):
     self.url_prefix = prefix
     self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
     self.clear_session = clear_session
-
+    self.logger = app.logger
     self.setup()
 
   def get_context_user(self):
@@ -151,6 +151,8 @@ class Auth(object):
     flash( _('You are now logged out'), 'success')
 
   def get_logged_in_user(self):
+    if request.endpoint[0:4]=='auth':
+      print session
     if session.get('logged_in'):
       if getattr(g, 'user', None):
         return g.user

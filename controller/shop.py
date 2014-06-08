@@ -78,10 +78,6 @@ def index():
     products = Product.objects()
     return render_template('shop/product_list.html', products=products)
 
-# @shop_app.route('/cart')
-# def cart():
-#   return "Test"
-
 ### POST cart - add products, create order if needed
 ### GET cart - current order, displayed differently depending on current state
 
