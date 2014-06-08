@@ -89,7 +89,7 @@ def index():
 @shop_app.route('/download/<file>/')
 def download(file):
   if current_app.celery:
-    pdf_file = current_app.celery.fetch_pdf_eon_cf.delay('a', 'b')
+    pdf_file = current_app.celery.send_task("tasks.fetch_pdf_eon_cf", [2, 2])
     print "Test for %s" % file
     return pdf_file.get()
   else:
