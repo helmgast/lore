@@ -1,0 +1,136 @@
+{% extends "shop/base.html" if not parent_template else parent_template %}
+
+{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS, FORM_FIELD_INLINE %}
+
+{% block content_title %}{{ _('Cart') if order.status=='cart' else _('Order') }}{% endblock %}
+{% block content_tagline %}{{ '%s %s, %s %s' % (_('by'), order.user, _('placed'), order.created.strftime('%Y-%m-%d %H:%M'))}} {% endblock %}
+
+{#
+  What user can edit in different order stages:
+  cart: editable list, editable quantity, address, editable comment
+  ordered: editable comment, address
+  paid: editable comment, address
+  shipped: nothing editable
+#}
+
+{% block content %}{% block inline %}
+{% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
+    <div class="row">
+      <div class="col-xs-2 col-md-2"></div>
+      <div class="col-xs-10 col-md-10">
+        <div class="col-md-offset-6">
+         <ul class="product-details">
+              <li>{{_('Publisher')}}</li>
+              <li>{{_('Price')}}</li>
+              <li>{{_('Quantity')}}</li>
+              <li>{{_('Total')}}</li>
+        </ul>
+        </div>
+      </div>
+    </div>
+    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if order.status == 'cart'}}>
+    {% for line in order.order_lines %}
+    <div class="product row">
+      <div class="col-xs-2 col-md-2">
+        {% if line.product.feature_image %}<a href="{{ url_for('.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}
+      </div>
+      <div class="col-xs-10 col-md-10">
+        <div class="row">
+          <div class="col-md-6 product-intro">
+            <h3><a href="{{ url_for('.product_view', product=line.product.slug)}}">{{ line.product.title }}</a></h3>
+            <p>{{ line.product.description }}</p>
+          </div>
+          <div class="col-md-6">
+            <ul class="product-details">
+              <li class="product-publisher">{{ line.product.publisher }}</li>
+              <li class="product-price">{{ line.product.price|currency if order.status=='cart' else line.price|currency }}:-</li>
+              <li>
+              {% if order_form and order.status=='cart' %}
+                {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
+              {% else %}
+                {{ line.quantity }}
+              {% endif %}
+              </li>
+              <li class="product-price product-total">{{(line.quantity*line.price)|currency}}:-</li>
+            </ul>
+            {{ FORM_FIELD_INLINE(order_form.order_lines[loop.index0].comment, controlclass="product-comment") 
+              if order_form and order.status !='shipped' else line.comment}}
+          </div>   
+        </div>
+      </div>
+
+    </div>
+    {% endfor %}
+    </div>
+    <div class="row" style="margin-top: 20px">
+      <div class="col-md-7 col-md-offset-1">
+      {% if order_form and order.status == 'cart' %}
+        {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-2", "col-sm-4") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+      {% else %}
+        <address>
+          {{order.shipping_address.street}}<br>
+          {{order.shipping_address.zipcode}} {{order.shipping_address.city}}<br>
+          {{order.shipping_address.country}}<br>
+        </address>
+      {% endif %}
+      </div>
+      <div class="col-md-4">
+        <table class="table product-subtotals">
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{order.total_price|currency}}:-</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-offset-8">
+      {% if order %}
+        <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</a>
+      {% endif %}
+      <button type="button" id="formsave" class="btn btn-info">{{ _('Save') }}</button>
+      {% if order_form and order.status == 'cart' %}
+        <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
+      {% endif %}
+      </div>
+    </div>
+    {{ order_form.csrf_token if order_form }}
+</form>
+{% endblock %}{% endblock %}
+
+{% block final %}
+{{super()}}
+{% if order_form %}
+<script>
+{% if order.status=='cart' %}
+  function calcTotal(e) {
+    var $prod = $(e.delegateTarget)
+    var qty = parseInt((e.target && e.target.value) || "0")
+    var price = parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0])
+    var total = $prod.find('.product-total').text()
+    total = total.replace(/[0-9.,]+/, qty*price)
+    $prod.find('.product-total').text(total)
+    calcGrandtotal()
+  }
+  function calcGrandtotal(e) {
+    var grandtot = $('.product-subtotals .product-price')
+    var sum = 0.0, num=0
+    $('.product').each(function() {
+      sum += parseFloat(/[0-9.,]+/.exec($(this).find('.product-total').text())[0])
+      num += parseInt($(this).find('.product-quantity').val())
+    })
+    grandtot.text(grandtot.text().replace(/[0-9.,]+/, sum))
+    $('#cart-counter').text(num)
+  }
+  $('.product').on('change', '.product-quantity', calcTotal)
+  $('.product-list').on('rac.removed', calcGrandtotal)
+  $('.product').each(function() {
+    calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
+  })
+{% endif %}
+$('#formsave').click(function(e){
+  $.post('{{order_form.action_url}}', $('.order-cart').serialize());
+})
+</script>
+{% endif %}
+{% endblock %}

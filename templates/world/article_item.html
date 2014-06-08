@@ -1,6 +1,6 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% from 'includes/components.html' import FORM_FIELD %}
+{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS %}
 
 {% set article_type = article.type if article else prefill.get('type',None) %}
 {% if article_form %}
@@ -25,7 +25,6 @@
 
 {% block jsimports %}{{super()}}
 <script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
-<script src="{{ url_for('static', filename='js/imagelightbox.min.js') }}"></script>
 {% endblock %}
 
 {% block middle %}
@@ -55,7 +54,7 @@
 
   <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
   {% for field in type_form %}
-    {{ FORM_FIELD(field, type="cols", cols=("col-sm-2", "col-sm-2")) }}
+    {{ FORM_FIELD_COLS(field, "col-sm-2", "col-sm-2") }}
   {% endfor %}
   </div>
 
@@ -73,7 +72,7 @@
 
   <div class="tab-pane panel panel-default fade row" id="details">
     <div class="col-xs-6">
-      {{ FORM_FIELD(article_form.description, addcontrolcls=' fixed-width')}}
+      {{ FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
     </div>
     <div class="col-xs-6">
       {{ FORM_FIELD(article_form.created_date) }}
@@ -111,7 +110,7 @@
     </div>
     <div class="bubble-bar" id="margin-options">
       <div class="options ui-inputs">
-            <a data-toggle="modal" href="{{url_for('imageasset_form_new')}}" data-target="#itsafuckingmodal"><span class="glyphicon glyphicon-picture"></span></a>
+            <a href="#" data-target=""><span class="glyphicon glyphicon-picture"></span></a>
       </div>
     </div>
 
@@ -227,6 +226,18 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
       );
   {% endif %}
 
+  var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
+    image_upload_url: "{{url_for('imageasset_new', out='json')}}"
+  }
+
+  $('#content-editor a.lightbox').imageselect();
+
+  $('.bubble-bar .ui-inputs a').click(function(e){
+    $(editor.getActiveBlock()).imageselect()
+  })
+
   $('#articleform').one('change', function(e) {
     console.log('Form has changed')
     $(window).on('beforeunload', function() {
@@ -239,6 +250,9 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         $ta = $('#content')
         $ta.parents('form').on('submit', function(e) {
               $(window).off('beforeunload') // remove warning
+              $('#content-editor .image-selector').replaceWith(function() {
+                return $(this).find('.image-link')
+              })
               var text = editor.exportText()
               $ta.val(text);
               var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)[2]
@@ -294,16 +308,6 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         map.on('click', onMapClick);
         */
 			});
-{% else %}
-  // only load lightbox if we are viewing an article
-   $( function()
-    {
-      $( '.article_text .imagelink' ).imageLightbox({
-        onLoadStart:  function() { $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body') },
-        onLoadEnd:    function() { $('#imagelightbox-loading').remove() },
-        onEnd:      function() { $('#imagelightbox-loading').remove() }
-      });
-    });
 {% endif %}
 </script>
 {% endblock %}

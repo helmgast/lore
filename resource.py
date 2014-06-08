@@ -11,6 +11,7 @@
 
 import inspect
 import logging
+import sys
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -30,10 +31,10 @@ from model.world import EMBEDDED_TYPES, Article
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 def generate_flash(action, name, model_identifiers, dest=''):
-  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
+  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 
+    else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
   flash(s, 'success')
   return s
-
 
 def error_response(msg, level='error'):
   flash(msg, level)
@@ -42,11 +43,18 @@ def error_response(msg, level='error'):
 class RacBaseForm(ModelForm):
   def populate_obj(self, obj, fields_to_populate=None):
     if fields_to_populate:
-      newfields = [ (name,f) for (name,f) in self._fields.items() if name in fields_to_populate]
-      for name, field in newfields:
-        field.populate_obj(obj, name)
+      # FormFields in form args will have '-' do denote it's subfields. We 
+      # only want the first part, or it won't match the field names
+      fields_to_populate = set([fld.split('-',1)[0] for fld in fields_to_populate])
+      newfields = [ (name,fld) for (name,fld) in iteritems(self._fields) if name in fields_to_populate]
     else:
-      super(ModelForm, self).populate_obj(obj)
+      newfields = iteritems(self._fields)
+    for name, field in newfields:
+      if ( isinstance(field, f.FormField) 
+        and getattr(obj, name, None) is None 
+        and field._obj is None ):
+        field._obj = field.model_class()
+      field.populate_obj(obj, name)
 
 class ArticleBaseForm(RacBaseForm):
   def process(self, formdata=None, obj=None, **kwargs):
@@ -107,14 +115,13 @@ class RacModelConverter(ModelConverter):
     # insecure WTForms form base class instead of the CSRF enabled one from
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
-    form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
-    logger.debug("Converted model %s", model)
+    form_class = model_form(field.document_type_obj, converter=RacModelConverter(), 
+      base_class=OrigForm, field_args={})
     return f.FormField(form_class, **kwargs)
-
-  # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
 
   @converts('ReferenceField')
   def conv_Reference(self, model, field, kwargs):
+      kwargs['allow_blank'] = not field.required
       return RacModelSelectField(model=field.document_type, **kwargs)
 
   @converts('StringField')
@@ -196,14 +203,26 @@ class ResourcePrivacyPolicy:
 
 class ResourceAccessStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
-      parent_strategy=None, parent_reference_field=None, short_url=False, 
-      list_filters=None, security_policy=ResourceSecurityPolicy()):
+    parent_strategy=None, parent_reference_field=None, short_url=False, 
+    list_filters=None, use_subdomain=False, security_policy=ResourceSecurityPolicy()):
+    if use_subdomain and parent_strategy:
+      raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
     self.model_class = model_class
     self.resource_name = model_class.__name__.lower().split('.')[-1]  # class name, ignoring package name
     self.plural_name = plural_name
     self.parent = parent_strategy
     self.id_field = id_field
+    self.use_subdomain = use_subdomain
+    self.subdomain_part = None
+    if self.use_subdomain:
+      self.subdomain_part = '<' + self.resource_name + '>'
+    elif self.parent:
+      p = self
+      while (p.parent and not p.use_subdomain):
+        p = p.parent
+      if p:
+        self.subdomain_part = p.subdomain_part
     self.short_url = short_url
     self.fieldnames = [n for n in self.form_class.__dict__.keys() if (not n.startswith('_') and n is not 'model_class')]
     self.default_list_filters = list_filters
@@ -213,15 +232,18 @@ class ResourceAccessStrategy:
 
   def get_url_path(self, part, op=None):
     parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
-    op_val = ('/' if (op is None) else ('/' + op))
-    url = parent_url + part + op_val
+    op_val = op if op else ''
+    # print "For %s we add %s %s %s" % (self.resource_name, parent_url, part, op_val)
+    url = parent_url + part + ('/' if part else '') + op_val
     return url
 
   def url_list(self, op=None):
     return self.get_url_path(self.plural_name, op)
 
   def url_item(self, op=None):
-    if self.short_url:
+    if self.use_subdomain:
+      return self.get_url_path('', op)
+    elif self.short_url:
       return self.get_url_path('<' + self.resource_name + '>', op)
     else:
       return self.get_url_path(self.plural_name + '/<' + self.resource_name + '>', op)
@@ -302,16 +324,17 @@ class ResourceError(Exception):
   }
 
   def __init__(self, status_code, r=None, message=None):
+    message = message if message else self.default_messages.get(status_code, 'Unknown error')
     Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
-    self.message = message if message else self.default_messages.get(status_code, 'Unknown error')
+    self.message = message
     if status_code == 400 and r and 'form' in r:
       self.message += ", invalid fields %s" % r['form'].errors.keys()
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
 class ResourceHandler(View):
-  default_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
+  allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
   ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
 
@@ -321,24 +344,44 @@ class ResourceHandler(View):
     self.strategy = strategy
 
   @classmethod
-  def register_urls(cls, app, st):
+  def methods(cls, resource_methods):
+    def real_decorator(func):
+      func.resource_methods = resource_methods
+      return func
+    return real_decorator
+
+  @classmethod
+  def register_urls(cls, app, st, sub=False):
     # We try to parse out any methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
-      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.default_ops):
-        app.add_url_rule(st.get_url_path(name), methods=['GET'], view_func=cls.as_view(st.endpoint_name(name), st))
+      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.allowed_ops):
+        app.add_url_rule(st.get_url_path(name), 
+          subdomain=st.parent.subdomain_part if st.parent else None, 
+          methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'], 
+          view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
-
+    cls.allowed_ops.extend(custom_ops)
     logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
-    app.add_url_rule(st.url_item(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
-    app.add_url_rule(st.url_list('new'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
-    # app.add_url_rule(st.url_list('edit'), methods=['GET'], view_func=ResourceHandler.as_view(st.endpoint_name('get_edit_list'), st))
-    app.add_url_rule(st.url_item('edit'), methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
-    app.add_url_rule(st.url_list(), methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
-    app.add_url_rule(st.url_list(), methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
-    app.add_url_rule(st.url_item(), methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
-    app.add_url_rule(st.url_item(), methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
-    app.add_url_rule(st.url_item(), methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
+    app.add_url_rule(st.url_list('new'), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
+    app.add_url_rule(st.url_item('edit'), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
+    app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
+    app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+
+    # /<resource>/[_,view,edit] -> GET:fablr.co/helmgast/, GET:fablr.co/helmgast/view, GET|POST:fablr.co/helmgast/edit
+    # /resource/[list,new] -> GET:/world/list, GET:/world/new
+    # <resource>.host/[_,view,edit] -> -> GET:helmgast.fablr.co, GET:helmgast.fablr.co/view, GET|POST:helmgast.fablr.co/edit
+
+    # [GET]<world>.<host>/[_,edit]          -> world_view, world_form_edit
+    # [GET]<host>/world/[worlds,new]      -> world_list, world_form_new
+    # [GET]<world>.<host>/<article>   -> article_view
+    # [GET]<world>.<host>/articles
+
 
   def dispatch_request(self, *args, **kwargs):
     # If op is given by argument, we use that, otherwise we take it from endpoint
@@ -346,6 +389,8 @@ class ResourceHandler(View):
     # TODO unsafe to let us call a custom methods based on request args!
     r = self._parse_url(**kwargs)
     try:
+      if r['op'] not in self.__class__.allowed_ops:
+        raise ResourceError(400, "Attempted op %s is not allowed for this handler" % r['op'])
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
@@ -359,9 +404,11 @@ class ResourceHandler(View):
         # if json, return json instead of render
         if r['out'] == 'json':
           return self._return_json(r, err)
-        else:
+        elif 'template' in r:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 400
+        else:
+          return err.message, 400
 
       elif err.status_code == 401: # unauthorized
         if r['out'] == 'json':
@@ -378,9 +425,11 @@ class ResourceHandler(View):
         # if json, return json instead of render
         if r['out'] == 'json':
           return self._return_json(r, err)
-        else:
+        elif 'template' in r:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 403
+        else:
+          return err.message, 403
 
       elif err.status_code == 404:
         abort(404) # TODO, nicer 404 page?
@@ -395,15 +444,19 @@ class ResourceHandler(View):
       logger.exception("Validation error")
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
-        return self._return_json(r, resErr)
+        return self._return_json(r, resErr) 
       else:
-        raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+        # Send the error onward, will be picked up by debugger if in debug mode
+        # 3rd args is the current traceback, as we have created a new exception
+        raise resErr, None, sys.exc_info()[2]
     except NotUniqueError as err:
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
         return self._return_json(r, resErr)
       else:
-        raise resErr # Send the error onward, will be picked up by debugger if in debug mode
+        # Send the error onward, will be picked up by debugger if in debug mode
+        # 3rd args is the current traceback, as we have created a new exception
+        raise resErr, None, sys.exc_info()[2]
     except Exception as err:
       if r['out'] == 'json':
         return self._return_json(r, err, 500)
@@ -427,7 +480,8 @@ class ResourceHandler(View):
       logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code
     else:
-      return jsonify({k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']})
+      d = {k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']}
+      return jsonify(d)
 
   def _parse_url(self, **kwargs):
     r = {'url_args':kwargs}
@@ -519,6 +573,7 @@ class ResourceHandler(View):
     item = r['item']
     self.strategy.check_operation_on(r['op'], item)
     form = self.form_class(request.form, obj=item)
+    print request.form
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)

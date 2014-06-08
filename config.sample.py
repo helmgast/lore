@@ -12,5 +12,17 @@ LANGUAGES = {
 # MAIL_SERVER='smtp.gmail.com'
 # MAIL_PORT=465
 # MAIL_USE_SSL=True
-# MAIL_USERNAME = 'you@google.com'
+# MAIL_USERNAME = 'you@gmail.com'
 # MAIL_PASSWORD = 'secret'
+# MAIL_DEFAULT_SENDER = 'info@helmgast.se'
+
+CELERY_BROKER_URL = 'amqp://'
+CELERY_RESULT_BACKEND = 'amqp'
+CELERY_TIMEZONE = 'Europe/Stockholm'
+CELERY_ENABLE_UTC = True
+CELERY_TASK_SERIALIZER='json'
+CELERY_ACCEPT_CONTENT=['json']
+CELERY_RESULT_SERIALIZER='json'
+
+GOOGLE_CLIENT_ID = 'yada-yada'
+GOOGLE_CLIENT_SECRET = 'yada-yada'

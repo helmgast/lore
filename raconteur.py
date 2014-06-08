@@ -10,12 +10,10 @@
 
 import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
-from flask.json import JSONEncoder
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from flask.ext.mongoengine import Pagination
-from extensions import db, csrf, babel, mail, AutolinkedImage
-from mongoengine import Document, QuerySet
+from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
+from tasks import make_celery
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -26,19 +24,21 @@ STATE_TYPES = ((STATE_PRIVATE, _('Private')),
               (STATE_PROTECTED, _('Protected')),
               (STATE_PUBLIC, _('Public')))
 
-FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS = "join", "campaign", "social", "tools"
+FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS, FEATURE_SHOP = 'join', 'campaign', 'social', 'tools', 'shop'
 FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
                 (FEATURE_CAMPAIGN, _('Campaign')),
                 (FEATURE_SOCIAL, _('Social')),
-                (FEATURE_TOOLS, _('Tools')))
-
+                (FEATURE_TOOLS, _('Tools')),
+                (FEATURE_SHOP, _('Shop'))
+                )
 
 app_state = STATE_PUBLIC
 app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
-  FEATURE_SOCIAL: False,
-  FEATURE_JOIN: False
+  FEATURE_SOCIAL: True,
+  FEATURE_JOIN: True,
+  FEATURE_SHOP: True
 }
 
 def is_private():
@@ -60,14 +60,6 @@ def is_allowed_access(user):
   else:
     return True
 
-class MongoJSONEncoder(JSONEncoder):
-  def default(self, o):
-    if isinstance(o, Document) or isinstance(o, QuerySet):
-      return o.to_json()
-    elif isinstance(o, Pagination):
-      return {'page':o.page, 'per_page':o.per_page, 'total':o.total}
-    return JSONEncoder.default(self, o)
-
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
   if 'RACONTEUR_CONFIG_FILE' in os.environ:
@@ -77,10 +69,13 @@ def create_app(**kwargs):
     the_app.config.from_pyfile('config.py')
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
-  the_app.json_encoder = MongoJSONEncoder
-
+  the_app.jinja_env.add_extension('jinja2.ext.do')
+  # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
+  # Reads version info for later display
+  the_app.config.from_pyfile('version.cfg', silent=True)
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
+
 
   if 'BUGSNAG_API_KEY' in the_app.config:
     import bugsnag
@@ -88,7 +83,6 @@ def create_app(**kwargs):
     the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
     bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
     handle_exceptions(the_app)
-
 
   # Configure all extensions
   configure_extensions(the_app)
@@ -100,10 +94,33 @@ def create_app(**kwargs):
 
   register_main_routes(the_app, auth)
 
+  from model.user import User, UserStatus
+  if len(User.objects(admin=True))==0:
+    admin_password = the_app.config['SECRET_KEY']
+    admin_email = the_app.config['MAIL_DEFAULT_SENDER']
+    print dict(username='admin',
+      password=the_app.config['SECRET_KEY'],
+      email=the_app.config['MAIL_DEFAULT_SENDER'],
+      admin=True,
+      status=UserStatus.active)
+
+    u = User(username='admin',
+      password=the_app.config['SECRET_KEY'],
+      email=the_app.config['MAIL_DEFAULT_SENDER'],
+      admin=True,
+      status=UserStatus.active)
+    u.save()
+    # except KeyError as e:
+    #   the_app.logger.error("Trying to create first admin user, need to have SECRET"+\
+    #     " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
+    #   raise
+
+  # print the_app.url_map
   return the_app
 
 def configure_extensions(app):
-  # flask-sqlalchemy
+  app.json_encoder = MongoJSONEncoder
+
   db.init_app(app)
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later
@@ -120,6 +137,10 @@ def configure_extensions(app):
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
+  try:
+    app.celery = make_celery(app)
+  except KeyError as e:
+    app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
   from model.user import User
@@ -133,16 +154,19 @@ def configure_blueprints(app):
     from controller.social import social
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
+    from controller.shop import shop_app as shop
     from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
     from model.world import ImageAsset
 
-    app.register_blueprint(world, url_prefix='/world')
+    app.register_blueprint(world)
     app.register_blueprint(generator, url_prefix='/generator')
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')
+    app.register_blueprint(shop, url_prefix='/shop')
 
   return auth
- 
+
+
 def configure_hooks(app):
   
   @app.before_request
@@ -228,8 +252,7 @@ def register_main_routes(app, auth):
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm, AdminEmailForm
   from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
-
-  from flask.ext.mail import Message
+  from mailer import render_mail
 
   @app.route('/')
   def homepage():
@@ -253,15 +276,12 @@ def register_main_routes(app, auth):
                              #databases=db.connection.database_names())
     elif request.method == 'POST':
       if request.args['action']=='mail':
-        email = AdminEmailForm(request.form)
-        if not email.validate():
-          raise Exception("Email fields not filled correctly")
-        if email.to_field.data:
-          msg = Message(email.subject.data,
-            sender="info@helmgast.se",
-            recipients=[email.to_field.data],
-            body=email.message.data)
-          mail.send(msg)
+        mailform = AdminEmailForm(request.form)
+        if not mailform.validate():
+          raise Exception("Email fields not filled correctly %s" % mailform.errors)
+        email = render_mail([mailform.to_field.data], mailform.subject.data , template='mail/welcome.html', user=g.user)
+        # raise Exception()
+        email.send_out()
       else:
         config = ApplicationConfigForm(request.form)
         if not config.validate():
@@ -278,32 +298,6 @@ def register_main_routes(app, auth):
             is_enabled = feature in config.features.data
             app_features[feature] = is_enabled
       return redirect('/admin/')
-
-
-  JoinForm = model_form(User)
-
-  # Page to sign up, takes both GET and POST so that it can save the form
-  @app.route('/join/', methods=['GET', 'POST'])
-  def join():
-    if not app_features["join"]:
-      raise ResourceError(403)
-    if request.method == 'POST' and request.form['username']:
-      # Read username from the form that was posted in the POST request
-      try:
-        User.objects().get(username=request.form['username'])
-        flash(_('That username is already taken'))
-      except User.DoesNotExist:
-        user = User(
-            username=request.form['username'],
-            email=request.form['email'],
-        )
-        user.set_password(request.form['password'])
-        user.save()
-
-        auth.login_user(user)
-        return redirect(url_for('homepage'))
-    join_form = JoinForm()
-    return render_template('join.html', join_form=join_form)
 
   @app.route('/asset/<slug>')
   def asset(slug):
@@ -334,11 +328,12 @@ def register_main_routes(app, auth):
       '''Override new() to do some custom file pre-handling'''
       self.strategy.check_operation_any(r['op'])
       form = self.form_class(request.form, obj=None)
+      print request.form
       # del form.slug # remove slug so it wont throw errors here
       if not form.validate():
         r['form'] = form
         raise ResourceError(400, r)
-      file = request.files['imagefile']
+      file = request.files.get('imagefile', None)
       item = ImageAsset(creator=g.user)
       if file:
         item.make_from_file(file)

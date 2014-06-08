@@ -18,7 +18,7 @@
       <ul class="nav navbar-nav">
         <li>
           <a class="navbar-brand" href="{{ url_for('homepage') }}">Helmgast.se
-            <small>{{ _('a story engine') }}</small>
+            {#<small>{{ _('a story engine') }}</small>#}
           </a>
           <!--<a href="{{ url_for('homepage') }}"><span class="glyphicon glyphicon-home"></span></a>-->
         </li>
@@ -41,7 +41,7 @@
         {% if not session.logged_in %}
           <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('log in') }}</a></li>
           {% call IS_ENABLED("join") %}
-            <li><a href="{{ url_for('join') }}">{{ _('join') }}</a></li>
+            <li><a href="{{ url_for('auth.join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
           <li><a {% call IS_ENABLED("social") %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>

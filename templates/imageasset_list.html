@@ -1,22 +1,31 @@
 {% extends "base.html" if not out=='fragment' else 'base_fragment.html' %}
 
 {% block content %}
+
+
+
 <div class="gallerylist">
 	<div class="gallery-row">
   {% for imageasset in images %}
     <figure class="gallery">
-      {# will make last 1 or 2 images large asset, as they are in a row with less
-      than 3 images in total and will be zoomed in #}
-      {% if (loop.length % 3 > 0) and (loop.revindex0 < loop.length % 3) %}
-      <img src="{{url_for('asset', slug = imageasset.slug)}}">
-    	{% else %}
-      <img src="{{url_for('asset_thumb', slug = imageasset.slug)}}">
-      {% endif %}
-    	<figcaption>{{imageasset.title}}</figcaption>
+      <label>
+        <input type="radio" name="images" value="{{imageasset.slug}}">    
+        <img data-aspect="{{imageasset.image.width/imageasset.image.height}}" src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+        {#
+        <img src="{{ url_for('static', filename='img/graypixel.gif') }}" data-src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+      	#}
+      </label>
+  	<figcaption>{{imageasset.title}}</figcaption>
     </figure>
   {% if loop.index is divisibleby 3 %}</div><div class="gallery-row">{% endif %}
   {% endfor %} 
   </div>
 </div>
+<script>
+  // $(document).on('hidden.bs.modal', function(e) {
+  //   $('.gallerylist .gallery img').each(saveImgSize);
+  //   $(window).resize();    
+  // }
+</script>
 
 {% endblock %}

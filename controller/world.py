@@ -14,7 +14,7 @@
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
 from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
-  EventData, FractionData, PUBLISH_STATUS_PUBLISHED)
+  EventData, FractionData, PublishStatus)
 from model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -49,17 +49,16 @@ class WorldHandler(ResourceHandler):
     else:
       return self.list(r)
 
-WorldHandler.register_urls(world_app, world_strategy)
-
+WorldHandler.register_urls(world_app, world_strategy, sub=True)
 
 def publish_filter(qr):
   if not g.user:
-    return qr.filter(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow())
+    return qr.filter(status=PublishStatus.published, created_date__lte=datetime.utcnow())
   elif g.user.admin:
     return qr
   else:
-    logger.debug("Filtering to %s" % qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
-    return qr.filter(Q(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
+    logger.debug("Filtering to %s" % qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
+    return qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
 
 
 class ArticleHandler(ResourceHandler):
@@ -79,7 +78,7 @@ class ArticleHandler(ResourceHandler):
     world = r['parents']['world']
     feed = AtomFeed(_('Recent Articles in ')+world.title,
       feed_url=request.url, url=request.url_root)
-    articles = Article.objects(status=PUBLISH_STATUS_PUBLISHED, created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
+    articles = Article.objects(status=PublishStatus.published, created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
     for article in articles:
         # print current_app.md._instance.convert(article.content), type(current_app.md._instance.convert(article.content))
         feed.add(article.title, current_app.md._instance.convert(article.content),
@@ -105,7 +104,6 @@ ResourceHandler.register_urls(world_app, article_relation_strategy)
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)
-
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0

@@ -25,7 +25,6 @@ class SameUserSecurityPolicy(ResourceSecurityPolicy):
   def is_allowed_user(self, user, op, instance):
     return user.admin or user == instance
 
-
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
