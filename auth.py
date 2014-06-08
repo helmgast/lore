@@ -75,7 +75,8 @@ class Auth(object):
         validators=[validators.Required(), validators.EqualTo('password', message=_('Passwords must match'))])
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
-    self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
+    if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
+      self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
     self.clear_session = clear_session
     self.logger = app.logger
     self.setup()
