@@ -20,6 +20,7 @@
         </div>
       </div>
     </div>
+    <div class="product-list" data-editable data-option-add="off" data-each-item=".product">
     {% for line in order_form.order_lines %}
     <div class="product row">
       <div class="col-xs-2 col-md-2">
@@ -36,15 +37,16 @@
               <li class="product-publisher">{{ line.data.product.publisher }}</li>
               <li class="product-price">{{ line.data.price|int }}:-</li>
               <li>{{line.quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}</li>
-              <li class="product-price product-total">Total</li>
+              <li class="product-price product-total">0:-</li>
             </ul>
-            {{ FORM_FIELD_INLINE(line.comment) }}
+            {{ FORM_FIELD_INLINE(line.comment, controlclass="product-comment") }}
           </div>   
         </div>
       </div>
-      <button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>
+
     </div>
     {% endfor %}
+    </div>
     <div class="row" style="margin-top: 20px">
       <div class="col-md-7 col-md-offset-1">
       {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
@@ -54,10 +56,7 @@
       </div>
       <div class="col-md-4">
         <table class="table product-subtotals">
-          <tr><td>{{_('Subtotal')}}</td><td class="product-price">12</td></tr>
-          <tr><td>{{_('Tax')}}</td><td class="product-price">12</td></tr>
-          <tr><td>{{_('Shipping')}}</td><td class="product-price">12</td></tr>
-          <tr><td>{{_('Grand Total')}}</td><td class="product-price">12</td></tr>
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">12:-</td></tr>
         </table>
       </div>
     </div>
@@ -69,33 +68,7 @@
       <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
       </div>
     </div>
-
-    {#
-      <td class="product-publisher">
-        {% if order %}
-      <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</a>
-    {% endif %}
-    <button type="submit" class="btn btn-primary">{{ _('Checkout') }}</button>
-      </td>
-      <td class="product-price"></td>
-    </tr>
-    
-    <table class="table" data-editable="orderlines" data-option-add="off">
-    <thead>
-      <tr><td>{{_('Qty')}}</td><td>{{_('Product')}}</td><td>{{_('Price')}}</td><td>{{_('Comment')}}</td></tr>
-    </thead>
-    <tbody>
-      {% for line in order_form.order_lines %}
-      <tr>
-        <td>{{line.quantity(type="number", min="1", max="100")}}</td>
-        <td>{{line.data.product.title}}</td>
-        <td>{{line.data.price}}</td>
-        <td>{{line.data.comment}}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-    </table>#}
-
+    {{ order_form.csrf_token }}
 </form>
 {% endblock %}{% endblock %}
 
@@ -104,11 +77,25 @@
 <script>
 function calcTotal(e) {
   var $prod = $(e.delegateTarget)
-  $prod.find('.product-total').text(parseInt(e.target.value) *
-    parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0]))
-  // alert('qty for '+$(e.delegateTarget).find('.product-intro h3 a').text() +)
+  var qty = parseInt(e.target.value)
+  var price = parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0])
+  var total = $prod.find('.product-total').text()
+  total = total.replace(/[0-9.,]+/, qty*price)
+  $prod.find('.product-total').text(total)
+  calcGrandtotal()
+}
+function calcGrandtotal(e) {
+  var grandtot = $('.product-subtotals .product-price')
+  var sum = 0.0, num=0
+  $('.product').each(function() {
+    sum += parseFloat(/[0-9.,]+/.exec($(this).find('.product-total').text())[0])
+    num += parseInt($(this).find('.product-quantity').val())
+  })
+  grandtot.text(grandtot.text().replace(/[0-9.,]+/, sum))
+  $('#cart-counter').text(num)
 }
 $('.product').on('change', '.product-quantity', calcTotal)
+$('.product-list').on('rac.removed', calcGrandtotal)
 $('.product').each(function() {
   calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
 })

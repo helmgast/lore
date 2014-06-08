@@ -31,10 +31,10 @@ from model.world import EMBEDDED_TYPES, Article
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 def generate_flash(action, name, model_identifiers, dest=''):
-  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
+  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 
+    else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
   flash(s, 'success')
   return s
-
 
 def error_response(msg, level='error'):
   flash(msg, level)
@@ -43,11 +43,18 @@ def error_response(msg, level='error'):
 class RacBaseForm(ModelForm):
   def populate_obj(self, obj, fields_to_populate=None):
     if fields_to_populate:
-      newfields = [ (name,f) for (name,f) in self._fields.items() if name in fields_to_populate]
-      for name, field in newfields:
-        field.populate_obj(obj, name)
+      # FormFields in form args will have '-' do denote it's subfields. We 
+      # only want the first part, or it won't match the field names
+      fields_to_populate = set([fld.split('-',1)[0] for fld in fields_to_populate])
+      newfields = [ (name,fld) for (name,fld) in iteritems(self._fields) if name in fields_to_populate]
     else:
-      super(ModelForm, self).populate_obj(obj)
+      newfields = iteritems(self._fields)
+    for name, field in newfields:
+      if ( isinstance(field, f.FormField) 
+        and getattr(obj, name, None) is None 
+        and field._obj is None ):
+        field._obj = field.model_class()
+      field.populate_obj(obj, name)
 
 class ArticleBaseForm(RacBaseForm):
   def process(self, formdata=None, obj=None, **kwargs):
@@ -108,14 +115,13 @@ class RacModelConverter(ModelConverter):
     # insecure WTForms form base class instead of the CSRF enabled one from
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
-    form_class = model_form(field.document_type_obj, converter=RacModelConverter(), base_class=OrigForm, field_args={})
+    form_class = model_form(field.document_type_obj, converter=RacModelConverter(), 
+      base_class=OrigForm, field_args={})
     return f.FormField(form_class, **kwargs)
-
-  # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
 
   @converts('ReferenceField')
   def conv_Reference(self, model, field, kwargs):
-      kwargs['allow_blank']= not field.required
+      kwargs['allow_blank'] = not field.required
       return RacModelSelectField(model=field.document_type, **kwargs)
 
   @converts('StringField')

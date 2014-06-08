@@ -11,6 +11,22 @@ function flash_error(message, level, target) {
   }
 };
 
+// var order_line = {
+//   product: {},
+//   total: {
+//     value: function() { self.quantity*self.price },
+//     render: function() { return value+":-"}
+//   },
+//   price: function() {},
+//   quantity: {
+//     value: 0,
+//   },
+// }
+
+// var order = {
+
+// }
+
 /* ========================================================================
  * Editable list
  * ========================================================================
@@ -19,36 +35,45 @@ function flash_error(message, level, target) {
 +function ($) {
   'use strict';
 
-  $.fn.editablelist = function (option) {
+  $.fn.editablelist = function (options) {
     return this.each(function () {
       var $this   = $(this)
-      var remote  = $this.data('remote')
-      var listname = $this.data('editable')
-      if ($this.data('option-remove')!= 'off' )
+      var remote  = options['remote']
+      var listname = options['editable']
+      if (options['optionRemove']!= 'off' )
         var $removeBtn = $('<button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>')
-      if ($this.data('option-add')!= 'off' )
+      if (options['optionAdd']!= 'off' )
         var $addBtn = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
       var $type = $this.prop('tagName');
       var selectors = {
         TABLE : {
-          item: 'tbody td:last-child',
-          remove: 'tr',
-          addTo : 'tbody'
+          eachItem: 'tr',
+          removeAt: ' td:last-child',
+          addAt : 'tbody'
         },
         UL : {
-          item: 'li',
-          remove: 'li',
-          addTo : ''
+          eachItem: 'li',
+          removeAt: '',
+          addAt : ''
+        },
+       DIV : {
+          eachItem: 'div.row',
+          removeAt: '',
+          addAt : ''
         }
       }
       selectors.OL = selectors.UL
-      if (!selectors[$type]) {
+      if (!selectors[$type])
         return // not correct type
+      for (var opt in options) {
+        if(selectors[$type][opt])
+          selectors[$type][opt] = options[opt]
       }
       if ($removeBtn) {
-        $this.find(selectors[$type].item).css('position', 'relative').append($removeBtn)
+        $this.find(selectors[$type].eachItem+selectors[$type].removeAt).css('position', 'relative').append($removeBtn)
         $this.on('click','.btn-delete', function() {
-          $(this).parents(selectors[$type].remove).first().remove()
+          $(this).parents(selectors[$type].eachItem).first().remove()
+          $this.trigger('rac.removed')
         })
       }
       if ($addBtn) {
@@ -56,14 +81,14 @@ function flash_error(message, level, target) {
           jQuery.get(remote, function(data) {
             var newel = $(data)
             // get # of rows, so we can correctly index the added inputs
-            var name = listname +'-'+ $this.find(selectors[$type].item).length+'-'+newel.find('input, select').first().attr('name')
+            var name = listname +'-'+ $this.find(selectors[$type].eachItem).length+'-'+newel.find('input, select').first().attr('name')
             newel.find('input, select, label').each(function() {
               this.name = this.name && name
               this.id = this.id && name
               this.htmlFor = this.htmlFor && name
             })
             newel.append($removeBtn.clone())
-            selectors[$type].addTo ? $this.find(selectors[$type].addTo).append(newel) : $this.append(newel)
+            selectors[$type].addAt ? $this.find(selectors[$type].addAt).append(newel) : $this.append(newel)
             // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
             $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
           })
@@ -74,7 +99,7 @@ function flash_error(message, level, target) {
   }
 
   $(window).on('load', function () {
-    $('table, ul, ol').filter('[data-editable]').each(function () {
+    $('div, table, ul, ol').filter('[data-editable]').each(function () {
       var $editablelist = $(this)
       $editablelist.editablelist($editablelist.data())
     })
