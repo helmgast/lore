@@ -12,7 +12,7 @@
         </div>
         <ul class="product-details">
             <li class="product-publisher">{{ product.publisher }}</li>
-            <li class="product-price">{{ product.price|int }}:-</li>
+            <li class="product-price">{{ product.price|currency }}:-</li>
             <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
         </ul>
     </div>

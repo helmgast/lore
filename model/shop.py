@@ -10,7 +10,8 @@ from world import ImageAsset
 ProductTypes = Choices(
   book=_('Book'),
   item=_('Item'),
-  digital=_('Digital'))
+  digital=_('Digital'),
+  shipping=_('Shipping fee'))
 
 ProductStatus = Choices(
   pre_order = _('Pre-order'),
@@ -27,7 +28,6 @@ class Product(db.Document):
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
-  delivery_fee = db.FloatField(min_value=0, default=0, verbose_name=_('Delivery Fee'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
 
@@ -63,7 +63,8 @@ class Order(db.Document):
   session = db.StringField(verbose_name=_('Session ID'))
   email = db.EmailField(max_length=60, required=True, verbose_name=_('Email'))
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
-  order_items = db.IntField(min_value=0, default=0) # Total number of items
+  total_items = db.IntField(min_value=0, default=0) # Total number of items
+  total_price = db.FloatField(min_value=0, default=0.0) # Total price of order
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
@@ -85,4 +86,9 @@ class Order(db.Document):
 
   # Executes before saving
   def clean(self):
-    self.order_items = sum(ol.quantity for ol in self.order_lines)
+    num, sum =0, 0.0
+    for ol in self.order_lines:
+      num += ol.quantity
+      sum += ol.quantity * ol.price
+    self.total_items = num
+    self.total_price = sum

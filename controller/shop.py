@@ -28,8 +28,8 @@ order_strategy = ResourceAccessStrategy(Order, 'orders')
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor
 def inject_cart():
-    cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('order_items').first()
-    return dict(cart_items=cart_order.order_items if cart_order else 0)
+    cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('total_items').first()
+    return dict(cart_items=cart_order.total_items if cart_order else 0)
 
 cartform = model_form(Order, base_class=RacBaseForm, only=['order_lines'])
 
@@ -62,13 +62,13 @@ class OrderHandler(ResourceHandler):
             newol = OrderLine(product=p, price=p.price)
             cart_order.order_lines.append(newol)
           cart_order.save()
-          r['item'] = cart_order.order_items
+          r['item'] = cart_order.total_items
         else:
           raise ResourceError(400, r, 'No product with slug %s exists' % slug)
       else:
         raise ResourceError(400, r, 'Not supported')
 
-    r['template'] = 'shop/order_cart.html'
+    r['template'] = 'shop/order_item.html'
     return r
 
 OrderHandler.register_urls(shop_app, order_strategy)
@@ -95,3 +95,7 @@ def download(file):
   else:
     logger.error("Celery has not been set up for tasks")
     abort(500)
+
+@current_app.template_filter('currency')
+def currency(value):
+  return ("{:.0f}" if float(value).is_integer() else "{:.2f}").format(value)

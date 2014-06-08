@@ -6,7 +6,7 @@
 {% block content_tagline %}{% endblock %}
 
 {% block content %}{% block inline %}
-<form method="post" action="{{order_form.action_url}}">
+<form class="order-cart" method="post" action="{{order_form.action_url}}">
     <div class="row">
       <div class="col-xs-2 col-md-2"></div>
       <div class="col-xs-10 col-md-10">
@@ -65,6 +65,7 @@
       {% if order %}
         <a href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</a>
       {% endif %}
+      <button type="button" id="formsave" class="btn btn-info">{{ _('Save') }}</button>
       <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
       </div>
     </div>
@@ -99,5 +100,9 @@ $('.product-list').on('rac.removed', calcGrandtotal)
 $('.product').each(function() {
   calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
 })
+$('#formsave').click(function(e){
+  $.post('{{order_form.action_url}}', $('.order-cart').serialize());
+})
+
 </script>
 {% endblock %}
