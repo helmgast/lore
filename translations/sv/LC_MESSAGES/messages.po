@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-06-08 13:13+0200\n"
-"PO-Revision-Date: 2014-06-08 13:14+0100\n"
+"PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1053,7 +1053,7 @@ msgstr "Bekräfta"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:4
 msgid "get your inspiration"
-msgstr "hitta din inspiration"
+msgstr "hitta inspirationen"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:11
 msgid "All products"
@@ -1062,7 +1062,7 @@ msgstr "Alla produkter"
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:13
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_list.html:3
 msgid "Orders"
-msgstr "Ordrar"
+msgstr "Orderhistorik"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:16
 msgid "New products"
