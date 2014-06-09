@@ -12,6 +12,7 @@
 import inspect
 import logging
 import sys
+import re
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -29,6 +30,8 @@ from raconteur import is_allowed_access
 from model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 
 def generate_flash(action, name, model_identifiers, dest=''):
   s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 
@@ -256,7 +259,10 @@ class ResourceAccessStrategy:
 
   def query_item(self, **kwargs):
     item_id = kwargs[self.resource_name]
-    return self.model_class.objects.get(**{self.id_field: item_id})
+    if objid_matcher.match(item_id):
+      return self.model_class.objects.get(id=item_id)
+    else:
+      return self.model_class.objects.get(**{self.id_field: item_id})
 
   def create_item(self):
     return self.model_class()

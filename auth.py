@@ -252,8 +252,12 @@ class Auth(object):
     if request.method == 'POST':
       if request.args.has_key('connect_google'):
         self.connect_google(request.data)
-        user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()            
-        # TBD
+        user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()
+        if user: # if user, log in and redirect to next
+          self.login_user(user)
+          return redirect(request.args.get('next') or url_for('homepage'))
+        else: # if no user, redirect to verify
+          flash( _('No user with this google ID'), 'danger')
       else:
         form = Form(request.form)
         if form.validate():
