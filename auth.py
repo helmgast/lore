@@ -42,8 +42,8 @@ def get_next():
     return request.path
   return '%s?%s' % (request.path, request.query_string)
 
-def create_token(input_string):
-  return md5(input_string.strip().lower().encode('utf-8') + u'e3af71457ddb83c51c43c7cdf6d6ddb3').hexdigest()
+def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
+  return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
 
 
 class LoginForm(Form):
