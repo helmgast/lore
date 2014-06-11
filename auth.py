@@ -68,6 +68,8 @@ class Auth(object):
     self.url_prefix = prefix
     if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
       self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
+    if 'FACEBOOK_APP_ID' in app.config and 'FACEBOOK_APP_SECRET' in app.config:
+      self.facebook_client = {'app_id': app.config['FACEBOOK_APP_ID'], 'app_secret':app.config['FACEBOOK_APP_SECRET']}
     self.clear_session = clear_session
     self.logger = app.logger
     self.setup()
@@ -153,6 +155,8 @@ class Auth(object):
         pass
 
   def connect_google(self, one_time_code):
+    if not self.google_client:
+      raise Exception('No Google client configured')
     # Upgrade the authorization code into a credentials object
     # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
     oauth_flow = OAuth2WebServerFlow(*self.google_client)
@@ -163,6 +167,24 @@ class Auth(object):
     google_request = GOOGLE.people().get(userId='me')
     profile = google_request.execute(http=http)
     return credentials, profile
+
+  def connect_facebook(self, short_access_token):
+    if not self.facebook_client:
+      raise Exception('No Facebook client configured')
+    # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}
+    # &client_secret={app-secret}&fb_exchange_token={short-lived-token} 
+    url = "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s"
+    headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json; charset=UTF-8'
+    }
+    h = httplib2.Http()
+    print url
+    response, content = h.request(url % (
+      self.facebook_client['app_id'],
+      self.facebook_client['app_secret'],
+      short_access_token), 'GET', headers=headers)
+    print response, content
 
   def join(self):
     # This function does joining in several steps.
@@ -202,14 +224,23 @@ class Auth(object):
             flash( _('A user with this email already exists'), 'warning')
           except self.User.DoesNotExist:
             try:
-              credentials, profile = self.connect_google(form.auth_code.data)
+              if form.external_service.data == 'google':
+                credentials, profile = self.connect_google(form.auth_code.data)
+                external_id, external_access_token = credentials.id_token['sub'], credentials.access_token
+                emails = [line['value'] for line in profile['emails']]
+              elif form.external_service.data == 'facebook':
+                response = self.connect_facebook(form.auth_code.data)
+                external_access_token = form.auth_code.data
+                emails = []
+
               user = self.User()
               form.populate_obj(user) # this creates the user with all details
-              user.external_id = credentials.id_token['sub'] # store unique Google ID
-              user.external_access_token = credentials.access_token
+              if not user.external_access_token:
+                user.external_access_token = external_access_token
+              if not user.external_id:
+                user.external_id = external_id
 
-              if (form.email.data in [line['value'] for line in profile['emails']] or
-                create_token(form.email.data) == form.email_token.data):
+              if form.email.data in emails or (create_token(form.email.data) == form.email_token.data):
                 user.status = 'active'
                 user.save()
                 self.login_user(user)
@@ -273,8 +304,18 @@ class Auth(object):
         try:
           user = self.User.objects(email=form.email.data).get()
           if user.status == 'active':
-            credentials, profile = self.connect_google(form.auth_code.data)
-            if user.external_id == credentials.id_token['sub']:
+
+            if user.external_service.data == 'google':
+              credentials, profile = self.connect_google(form.auth_code.data)
+              provided_external_id = credentials.id_token['sub']
+            elif user.external_service.data == 'facebook':
+              # TODO, is this unsafe, if someone guesses someones ID?
+              provided_external_id = form.external_id.data
+
+            if user.external_id == provided_external_id:
+              # Update the token, as it may have expired and been renewed
+              user.external_access_token = credentials.access_token
+              user.save()
               self.login_user(user)
               return redirect(request.args.get('next') or url_for('homepage'))
             else:

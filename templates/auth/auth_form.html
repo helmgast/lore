@@ -8,9 +8,7 @@
     src="https://plus.google.com/js/client:plusone.js?onload=start"></script>
   {{super()}}
 
-{#}  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js">
-  </script>
-  
+{#
   <script type="text/javascript">
     (function () {
       var po = document.createElement('script');
@@ -40,14 +38,97 @@
   {% set action = url_for('auth.join') %}
   {% set option_args = {} %}
 {% endif %}
-{% block pre_content %}{% endblock %}
+{% block pre_content %}
+
+<script>
+  // This is called with the results from from FB.getLoginStatus().
+  // function statusChangeCallback(response) {
+  //   console.log('statusChangeCallback');
+  //   console.log(response);
+  //   // The response object is returned with a status field that lets the
+  //   // app know the current login status of the person.
+  //   // Full docs on the response object can be found in the documentation
+  //   // for FB.getLoginStatus().
+  //   if (response.status === 'connected') {
+  //     // Logged into your app and Facebook.
+  //     testAPI();
+  //   } else if (response.status === 'not_authorized') {
+  //     // The person is logged into Facebook, but not your app.
+  //     document.getElementById('status').innerHTML = 'Please log ' +
+  //       'into this app.';
+  //   } else {
+  //     // The person is not logged into Facebook, so we're not sure if
+  //     // they are logged into this app or not.
+  //     document.getElementById('status').innerHTML = 'Please log ' +
+  //       'into Facebook.';
+  //   }
+  // }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  // function checkLoginState() {
+  //   FB.getLoginStatus(function(response) {
+  //     statusChangeCallback(response);
+  //   });
+  // }
+
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1511162782440441',
+      cookie     : true,  // enable cookies to allow the server to access 
+                          // the session
+      xfbml      : true,  // parse social plugins on this page
+      version    : 'v2.0' // use version 2.0
+    });
+
+    // Now that we've initialized the JavaScript SDK, we call 
+    // FB.getLoginStatus().  This function gets the state of the
+    // person visiting this page and can return one of three states to
+    // the callback you provide.  They can be:
+    //
+    // 1. Logged into your app ('connected')
+    // 2. Logged into Facebook, but not your app ('not_authorized')
+    // 3. Not logged into Facebook and can't tell if they are logged into
+    //    your app or not.
+    //
+    // These three cases are handled in the callback function.
+
+    // FB.getLoginStatus(function(response) {
+    //   statusChangeCallback(response);
+    // });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  // function testAPI() {
+  //   console.log('Welcome!  Fetching your information.... ');
+  //   FB.api('/me', function(response) {
+  //     console.log('Successful login for: ' + response.name);
+  //     document.getElementById('status').innerHTML =
+  //       'Thanks for logging in, ' + response.name + '!';
+  //   });
+  // }
+</script>
+{% endblock %}
 {% block content %}
 <form id="auth-form" method="post" action="" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ title }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
-  <div id="external-auth">
+  <div id="signin-buttons">
     <span class="help-block">{{submit}} {{_('with external provider (safer!)')}}</span>
+    {#
     <div id="signinButton">
       <span class="g-signin"
         data-scope="https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read"
@@ -60,15 +141,21 @@
         data-callback="googleCallback">
       </span>
     </div>
-  {#  <button class="btn btn-lg btn-primary btn-block" type="button">Facebook</button> #}
+  <fb:login-button auto_logout_link="true" max_rows="1" size="xlarge" scope="public_profile,email" onlogin="checkLoginState();">
+  </fb:login-button>
+    #}
+    <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Sign in with Google')}}</button>
+    <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Sign in with Facebook')}}</button>
   </div>
   <hr>
   <div id="profile"></div>
 
-  <span class="help-block">{{submit}} {{_('with Fablr account')}}</span>
+  <span id="traditional-signup-text" class="help-block">{{submit}} {{_('with Fablr account')}}</span>
   {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
-  {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
-  {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_passwor }}
+  <div id="password-inputs">
+    {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
+    {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_passwor }}
+  </div>
   {% if op!='login' %}
   <div id="optional-inputs" class="well">
     <span class="help-block">{{_('Optional details')}}</span>
@@ -89,16 +176,28 @@
   {{ form.auth_code }}
   {{ form.csrf_token }}
 
-  <button class="btn btn-lg btn-success btn-block" type="submit">{{ submit }}</button>
+  <button class="btn btn-signin btn-success btn-block" type="submit">{{ submit }}</button>
 </form>
 {% endblock %}
 
 {% block final %}
 {{super()}}
 <script>
+$('#google-signin').click(function(e){
+  gapi.auth.signIn({
+    'clientid': "852791556464-vbn49e0lkc9tvpferm4otdtbpjbk11r1.apps.googleusercontent.com",
+    'scope': "https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read",
+    'redirecturi':"postmessage",
+    'cookiepolicy': "single_host_origin",
+    'callback':"googleCallback" });
+});
+
 function googleCallback(authResult) {  
   if (authResult['code']) {
-    $('#external-auth').hide()
+    $('#signin-buttons').hide()
+    $('#traditional-signup-text').hide()
+    $('#password-inputs').hide().find('input').attr('disabled', true)
+    $('#optional-inputs input').attr('disabled', false)
 
     gapi.client.load('plus','v1', function(){
       var request = gapi.client.plus.people.get( {'userId' : 'me'} );
@@ -113,17 +212,10 @@ function googleCallback(authResult) {
         $('#realname').val(profile.displayName)
         $('#email').val(profile.emails.length && profile.emails[0].value).focus()
         $('#location').val(profile.placesLived.length && profile.placesLived[0].value)
-        $('#password').attr('disabled', true).hide()
-        $('#confirm_password').attr('disabled', true).hide()
-        $('#optional-inputs input').attr('disabled', false)
         $('#profile').append(
             $('<p><img src=\"' + profile.image.url + '\"></p>'));
         $('#profile').append(
             $('<p>Hello ' + profile.displayName + '!</p>'));
-        if (profile.cover && profile.coverPhoto) {
-          $('#profile').append(
-              $('<p><img src=\"' + profile.cover.coverPhoto.url + '\"></p>'));
-        }
         // var signout = $('<button class="btn" type="button">Sign out from Google</button>')
         //   .click(function(e) {
         //     gapi.auth.signOut();
@@ -138,7 +230,41 @@ function googleCallback(authResult) {
     //   alert('Error: '+error)      
     // }
   }
-  
 }
+
+//----------------------------------------------------------//
+
+$('#facebook-signin').click(function(e){
+  FB.getLoginStatus(function(response){
+    if(response.status==='connected') {
+      facebookCallback(response)
+    } else {
+      FB.login(function(response) {
+        if(response.authResponse) {
+          facebookCallback(response)
+        } else{
+          console.log('Error in Facebook login process')
+        }
+      }, {scope: 'public_profile,email'})
+    }
+  });
+});
+
+function facebookCallback(response) {
+  $('#signin-buttons').hide()
+  $('#traditional-signup-text').hide()
+  $('#password-inputs').hide().find('input').attr('disabled', true)
+  $('#optional-inputs input').attr('disabled', false)
+  $('#external_service').val('facebook')
+  $('#auth_code').val(response.authResponse.accessToken)
+  $('#external_id').val(response.authResponse.userID)
+  FB.api('/me', function(response) {
+    console.log(response)
+    $('#profile').html('Thanks for logging in, ' + response.name + '!')
+    $('#realname').val(response.name)
+    $('#email').val(response.email).focus()
+  });
+}
+
 </script>
 {% endblock %}
