@@ -27,6 +27,37 @@ footer {
 footer p {
   margin-top: 10px;
 }
+
+.betaribbon {
+  background-color: #a00;
+  overflow: hidden;
+  white-space: nowrap;
+  position: fixed;
+  z-index: 1090;
+  left: -50px;
+  top: 40px;
+  -webkit-transform: rotate(-45deg);
+     -moz-transform: rotate(-45deg);
+      -ms-transform: rotate(-45deg);
+       -o-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+	-webkit-box-shadow: 0 0 10px #888;
+     -moz-box-shadow: 0 0 10px #888;
+          box-shadow: 0 0 10px #888;
+}
+.betaribbon a {
+  border: 1px solid #faa;
+  color: #fff;
+  display: block;
+  font: bold 81.25% 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 1px 0;
+  padding: 10px 50px;
+  text-align: center;
+  text-decoration: none;
+}
+
+
+
 /* The white background content wrapper */
 .content {
 	background-color: #fff;

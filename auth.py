@@ -15,12 +15,16 @@ import random
 from flask import Blueprint, render_template, abort, request, session, flash
 from flask import redirect, url_for, g, make_response
 from flask_wtf import Form
-from wtforms import TextField, PasswordField, validators
+from wtforms import TextField, PasswordField, HiddenField, validators
+from wtforms.widgets import HiddenInput
 from hashlib import sha1, md5
 from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 
+import httplib2
 from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, FlowExchangeError
+from apiclient.discovery import build
+GOOGLE = build('plus', 'v1')
 
 current_dir = os.path.dirname(__file__)
 
@@ -37,22 +41,13 @@ def check_password(raw_password, enc_password):
   salt, hsh = enc_password.split('$', 1)
   return hsh == get_hexdigest(salt, raw_password)
 
+def create_token(input_string):
+  return md5(input_string.strip().lower().encode('utf-8') + u'e3af71457ddb83c51c43c7cdf6d6ddb3').hexdigest()
+
 def get_next():
   if not request.query_string:
     return request.path
   return '%s?%s' % (request.path, request.query_string)
-
-def create_token(input_string):
-  return md5(input_string.strip().lower().encode('utf-8') + u'e3af71457ddb83c51c43c7cdf6d6ddb3').hexdigest()
-
-
-class LoginForm(Form):
-  username = TextField(_('Username'), validators=[validators.Required()])
-  password = PasswordField(_('Password'), validators=[validators.Required()])
-
-class TokenForm(Form):
-  email = TextField(_('Email'), validators=[validators.Required()])
-  token = TextField(_('Token'), validators=[validators.Required()])
 
 class BaseUser(object):
     def set_password(self, password):
@@ -69,10 +64,6 @@ class Auth(object):
     self.db = db
 
     self.User = user_model or self.get_user_model()
-    self.JoinForm = model_form(self.User, only=['username', 'password', 'email',
-      'realname', 'location', 'description'], field_args={'password':{'password':True}})
-    self.JoinForm.confirm_password = PasswordField(_('Confirm Password'), 
-        validators=[validators.Required(), validators.EqualTo('password', message=_('Passwords must match'))])
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
     if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
@@ -108,12 +99,8 @@ class Auth(object):
     return (
       ('/logout/', self.logout),
       ('/login/', self.login),
-      ('/verify/', self.verify),
       ('/join/', self.join),
     )
-
-  def get_login_form(self):
-    return LoginForm
 
   def test_user(self, test_fn):
     def decorator(fn):
@@ -141,7 +128,7 @@ class Auth(object):
     session['user_pk'] = str(user.id)
     session.permanent = True
     g.user = user
-    flash( _('You are logged in as') + ' %s' % user.username, 'success')
+    flash( "%s %s" % (_('You are logged in as'), user), 'success')
 
   def logout_user(self, user):
     if self.clear_session:
@@ -152,7 +139,7 @@ class Auth(object):
     flash( _('You are now logged out'), 'success')
 
   def get_logged_in_user(self):
-    if request.endpoint[0:4]=='auth':
+    if request.endpoint and request.endpoint[0:4]=='auth':
       print session
     if session.get('logged_in'):
       if getattr(g, 'user', None):
@@ -165,114 +152,211 @@ class Auth(object):
         session.pop('logged_in', None)
         pass
 
-  def join(self):
-    # if request has google code
-      # run google process to get auth token
-      # if success, add user google data to user profile, and login immediately
-    # else check form as below
+  def connect_google(self, one_time_code):
+    # Upgrade the authorization code into a credentials object
+    # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+    oauth_flow = OAuth2WebServerFlow(*self.google_client)
+    oauth_flow.redirect_uri = 'postmessage'
+    credentials = oauth_flow.step2_exchange(one_time_code)
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+    google_request = GOOGLE.people().get(userId='me')
+    profile = google_request.execute(http=http)
+    return credentials, profile
 
+  def join(self):
+    # This function does joining in several steps.
+    # Join-step: no user (should) exist
+    # Verify-step: a user exists, and we are amending details
+    # bb@bb.com, 9db26ad4ea2469e547f45b873c19ff99
+
+    print request.form
     if g.feature and not g.feature['join']:
       raise ResourceError(403)
+
     form = self.JoinForm()
-    if request.method == 'POST' and request.form['username']:
-      # Read username from the form that was posted in the POST request
-      form.process(request.form)
-      if form.validate():
-        try:
-          self.User.objects().get(username=form.username.data)
-          flash(_('That username is already taken'), 'warning')
-        except self.User.DoesNotExist:
-          user = self.User(status='invited')
-          form.populate_obj(user)
-          user.save()
-          self.login_user(user)
-          return redirect(url_for('homepage'))
-      flash(_('Error in form' ), 'warning')
-    return render_template('auth/auth_form.html', form=form, op='join')
-
-  def verify(self):
-    # if request has google code
-      # run google process to get auth token
-      # if success, add user google data to user profile, and login immediately
-    # else check form as below
-
-    email = request.args.get('email')
-    token = request.args.get('token')
+    op = 'join'
+    if request.method == 'GET':
+      if request.args.has_key('email') and request.args.has_key('email_token'):
+        op = 'verify'
+        form.process(request.args) # add email and email_token to the form
     if request.method == 'POST':
-      pass
-    if email and token:
-      user = self.User.objects(email=email).first()
-      if user and create_token(user.email) == token:
-        if user.status != 'invited':
-          flash( _('You have already verified this account'), 'warning')
-          return redirect(url_for('homepage'))
-          # Return error, already active!
-        elif len(user.password)>40: # 40+ char hash
-          # User has given password before, we are just doing the email verification
-          # For max security, we should check password here again
-          user.status = 'active'
-          user.save()
-          # Verify account
-          self.login_user(user)
-          flash( "%s %s %s" % (_('Username'), user.username,_('is now verified!')), 'success')
-          return redirect(request.args.get('next') or url_for('homepage'))
-        else: # email is verified, but account registration hasn't completed
-          form = self.JoinForm(obj=user)
-          return render_template('auth/auth_form.html', form=form, op='verify')
-    flash( _('Incorrect verification link'), 'danger')
-    return redirect(url_for('homepage'))
+      form.process(request.form)
 
-  def connect_google(self, one_time_code):
-    try:
-      # Upgrade the authorization code into a credentials object
-      # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
-      oauth_flow = OAuth2WebServerFlow(*self.google_client)
-      oauth_flow.redirect_uri = 'postmessage'
-      credentials = oauth_flow.step2_exchange(one_time_code)
-    except FlowExchangeError:
-      raise Forbidden('Failed to upgrade the authorization code.') # 401
-    gplus_id = credentials.id_token['sub']
-    
-    stored_credentials = session.get('gplus_token')
-    stored_gplus_id = session.get('gplus_id')
-    if stored_credentials is not None and gplus_id == stored_gplus_id:
-      return 'Current user is already connected.', 200
-    # Store the access token in the session for later use.
-    session['gplus_token'] = credentials.access_token
-    session['gplus_id'] = gplus_id
-    return 'Successfully connected user.', 200
+      # Need to deal with email and password specifically here.
+      # If we are coming from here with external auth or email token, we shouldn't
+      # change any existing password, so remove from form
+      if (form.auth_code.data and form.external_service.data) or form.email_token.data:
+        # User is either using external auth or verifying an email, no need for
+        # password so remove to make sure nothing can be changed
+        del form.password
+        del form.confirm_password
+      if form.validate():
+        if form.auth_code.data and form.external_service.data:
+          # User is trying to create data from external auth (can come here both
+          # with an email_token as well or without)
+          try:
+            user = self.User.objects(email=form.email.data).get()
+            # we shouldn't get here if no user existed, so it means we are joining
+            # with an existing email!
+            flash( _('A user with this email already exists'), 'warning')
+          except self.User.DoesNotExist:
+            try:
+              credentials, profile = self.connect_google(form.auth_code.data)
+              user = self.User()
+              form.populate_obj(user) # this creates the user with all details
+              user.external_id = credentials.id_token['sub'] # store unique Google ID
+              user.external_access_token = credentials.access_token
+
+              if (form.email.data in [line['value'] for line in profile['emails']] or
+                create_token(form.email.data) == form.email_token.data):
+                user.status = 'active'
+                user.save()
+                self.login_user(user)
+                return redirect(request.args.get('next') or url_for('homepage'))               
+              else:
+                user.save()
+                #send_verification_email()
+                print "Sending verification email" #TODO
+                flash( _("You have registered, but as your preferred email didn't \
+                  match the ones in external auth, you have to verify it manually, \
+                  please check your inbox"), 'success')
+            except Exception as e:
+              flash( '%s: %s' % (_('Error logging in'), e), 'warning') 
+
+        elif form.email_token.data:
+          # User is not using external auth but came here with email token, so
+          # account already exists
+          if create_token(form.email.data) == form.email_token.data:
+            # Email has been verified, so we set to active and populate the user
+            try:
+              user = self.User.objects(email=form.email.data).get()
+              if user.status == 'invited':
+                user.status = 'active'
+                form.populate_obj(user) # any optional data that has been added
+                user.save()
+                self.login_user(user)
+                return redirect(request.args.get('next') or url_for('homepage'))                
+              else:
+                flash( _('This user is already verified!'), 'warning')
+            except:
+              flash( _('Incorrect email or email token, cannot verify'), 'warning')
+          else:
+            # Something wrong with the token
+            flash( _('Incorrect email or email token, cannot verify'), 'warning')
+        
+        else:
+          # User is submitting a "vanilla" user registration without external auth
+          try:
+            user = self.User.objects(email=form.email.data).get()
+            # we shouldn't get here if no user existed, so it means we are joining
+            # with an existing email!
+            flash( _('A user with this email already exists'), 'warning')
+          except self.User.DoesNotExist:
+            # No user above was found with the provided email
+            user = self.User()
+            form.populate_obj(user)
+            user.save()
+            #send_verification_email()
+            print "Sending verification email" #TODO
+            flash( _('A verification email have been sent out %s') + create_token(form.email.data), 'success')
+
+    return render_template('auth/auth_form.html', form=form, op=op)
 
   def login(self):
-    # if request has google code
-      # run google process to get auth token
-      # if success, process successful login as below
-    # else check form as below
-
-    Form = self.get_login_form()
+    print request.form
+    form = self.LoginForm()
     if request.method == 'POST':
-      if request.args.has_key('connect_google'):
-        self.connect_google(request.data)
-        user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()
-        if user: # if user, log in and redirect to next
-          self.login_user(user)
-          return redirect(request.args.get('next') or url_for('homepage'))
-        else: # if no user, redirect to verify
-          flash( _('No user with this google ID'), 'danger')
-      else:
-        form = Form(request.form)
-        if form.validate():
-          try:
-            user = self.User.objects(username=form.username.data).get()
-            if user.status == 'active' and user.check_password(form.password.data):
+      form.process(request.form)
+      if form.auth_code.data and form.external_service.data:
+        # We have been authorized through external service
+        try:
+          user = self.User.objects(email=form.email.data).get()
+          if user.status == 'active':
+            credentials, profile = self.connect_google(form.auth_code.data)
+            if user.external_id == credentials.id_token['sub']:
               self.login_user(user)
               return redirect(request.args.get('next') or url_for('homepage'))
-          except self.User.DoesNotExist:
-            pass # will get to error state below
-          flash( _('Incorrect username or password (or you need to verify the \
-            account - check your email)'), 'danger')
-    else:
-      form = Form()
+            else:
+              flash( _('Error, this external user does not match the one in database'), 'danger')
+          else:
+            flash( _('No active user'), 'danger')
+        except self.User.DoesNotExist:
+          flash( _('No such user exist'), 'danger')
+      elif form.validate():
+        try:
+          user = self.User.objects(email=form.email.data).get()
+          if user.status=='active' and user.check_password(form.password.data):
+            self.login_user(user)
+            return redirect(request.args.get('next') or url_for('homepage'))
+          else:
+            flash( _('Incorrect username or password'), 'danger')
+        except self.User.DoesNotExist:
+          flash( _('No such user exist'), 'danger')
+      else:
+        flash( _('Errors in form'), 'danger')
     return render_template('auth/auth_form.html', form=form, op='login')
+
+  # def verify(self):
+  #   form = self.VerifyForm()
+  #   if request.method == 'POST':
+  #     form.process(request.form)
+  #     if form.validate():
+  #       try:
+  #         user = User.objects(email=form.email.data).first()
+  #         if user.status == 'active':
+  #           flash( _('This user is already active, no need to verify'), 'warning')   
+  #         elif user.status != 'inactive':
+  #           flash( _('This user cannot be verified'), 'warning')   
+  #         else:
+  #           form.populate_obj(user) # username, realname, newsletter
+  #           user.save()
+  #           return redirect(request.args.get('next') or url_for('homepage'))
+  #       except self.User.DoesNotExist:
+  #         flash( _('No such user to verify'), 'danger')   
+  #   elif request.method == 'GET':
+  #     pass
+  #     # if # TBD user exists
+  #     #   if # user has external auth
+  #     #     external_info = get_info() # us
+  #     #     # add email to form
+  #     #   if request.args.has_key('email_token'):
+  #     #     form.email_token.data = request.args.get('email_token')
+  #     #     form.email.data = request.args.get('email')
+  #   return render_template('auth/auth_form.html', form=form, op='verify')
+
+
+  # def login(self):
+  #   # if request has google code
+  #     # run google process to get auth token
+  #     # if success, process successful login as below
+  #   # else check form as below
+
+  #   Form = self.get_login_form()
+  #   if request.method == 'POST':
+  #     if request.args.has_key('connect_google'):
+  #       self.connect_google(request.data)
+  #       user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()
+  #       if user: # if user, log in and redirect to next
+  #         self.login_user(user)
+  #         return redirect(request.args.get('next') or url_for('homepage'))
+  #       else: # if no user, redirect to verify
+  #         flash( _('No user with this google ID'), 'danger')
+  #     else:
+  #       form = Form(request.form)
+  #       if form.validate():
+  #         try:
+  #           user = self.User.objects(username=form.username.data).get()
+  #           if user.status == 'active' and user.check_password(form.password.data):
+  #             self.login_user(user)
+  #             return redirect(request.args.get('next') or url_for('homepage'))
+  #         except self.User.DoesNotExist:
+  #           pass # will get to error state below
+  #         flash( _('Incorrect username or password (or you need to verify the \
+  #           account - check your email)'), 'danger')
+  #   else:
+  #     form = Form()
+  #   return render_template('auth/auth_form.html', form=form, op='login')
 
   def logout(self):
     # if user is logged in via google, send token revoke
@@ -296,6 +380,23 @@ class Auth(object):
     self.app.template_context_processors[None].append(self.get_context_user)
 
   def setup(self):
+    self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
+      'email', 'realname', 'location', 'newsletter'], 
+      field_args={ 'password':{'password':True} })
+    self.JoinForm.confirm_password = PasswordField(_('Confirm Password'), 
+        validators=[validators.Required(), validators.EqualTo('password', 
+        message=_('Passwords must match'))])
+    self.JoinForm.auth_code = HiddenField(_('Auth Code'))
+    self.JoinForm.email_token = HiddenField(_('Email Token'))
+    # We add these manually, because model_form will render them differently
+    self.JoinForm.external_id = HiddenField(_('External ID'))
+    self.JoinForm.external_service = HiddenField(_('External Service'))
+
+
+    self.LoginForm = model_form(self.User, only=['email', 'password'], field_args={'password':{'password':True}})
+    self.LoginForm.auth_code = HiddenField(_('Auth Code'))
+    self.LoginForm.external_service = HiddenField(_('External Service'))
+
     self.configure_routes()
     self.register_blueprint()
     self.register_handlers()

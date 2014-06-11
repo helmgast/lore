@@ -164,7 +164,6 @@ Här lämnar vi våra kämpar.
           family='Eon',
           type=ProductTypes.book,
           price=419,
-          delivery_fee=50,
           status=ProductStatus.pre_order).save()
 
   Product(title='Helgonboken',
@@ -173,7 +172,6 @@ Här lämnar vi våra kämpar.
           family='Eon',
           type=ProductTypes.book,
           price=1099,
-          delivery_fee=50,
           status=ProductStatus.pre_order).save()
 
   Product(title='Spelpaketet',
@@ -182,7 +180,6 @@ Här lämnar vi våra kämpar.
           family='Eon',
           type=ProductTypes.book,
           price=399,
-          delivery_fee=50,
           status=ProductStatus.pre_order).save()
 
 #     Relationship(from_user=mf, to_user=nf).save()

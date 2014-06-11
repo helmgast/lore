@@ -15,6 +15,7 @@ from misc import now, Choices
 from raconteur import db
 from mongoengine import ValidationError
 from flask.ext.mongoengine.wtf import model_form
+from wtforms.fields import HiddenField
 # i18n (Babel)
 from flask.ext.babel import lazy_gettext as _
 
@@ -46,6 +47,7 @@ class User(db.Document, BaseUser):
   # msglog = db.ReferenceField(Conversation)
   status = db.StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
   admin = db.BooleanField(default=False)
+  newsletter = db.BooleanField(default=True)
   external_access_token = db.StringField()
   external_id = db.StringField()
   external_service = db.StringField(choices=ExternalAuth.to_tuples())
@@ -55,13 +57,13 @@ class User(db.Document, BaseUser):
   def clean(self):
     # Our password hashes contain 46 characters, so we can check if the value
     # set is less, which means it's a user input that we need to hash before saving
-    if len(self.password) <= 40:
+    if self.password and len(self.password) <= 40:
       self.password = make_password(self.password)
     if self.username and User.objects(username=self.username).only('username').first():
       raise ValidationError('Username %s is not unique' % self.username)
 
   def __unicode__(self):
-    return self.username
+    return self.username if self.username else self.realname.split(' ')[0]
 
   def full_string(self):
     return "%s (%s)" % (self.username, self.realname)
