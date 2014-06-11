@@ -8,11 +8,15 @@
 
   :copyright: (c) 2014 by Raconteur
 """
-from flask import render_template, Blueprint, current_app, g, request
+import os
+
+from flask import render_template, Blueprint, current_app, g, request, abort, send_file
+import re
+from flask.helpers import send_from_directory
+
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
-import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -24,6 +28,16 @@ product_strategy = ResourceAccessStrategy(Product, 'products', 'slug',
 ResourceHandler.register_urls(shop_app, product_strategy)
 
 order_strategy = ResourceAccessStrategy(Order, 'orders')
+
+@shop_app.route('/eon-iv-pdf/')
+def eon_iv_pdf():
+  file_name = "Eon_IV_%s.pdf" % re.sub(r'@|\.', '_', g.user.email)
+  directory = os.path.join(current_app.root_path, "resources", "pdf")
+  if os.path.exists(os.path.join(directory, file_name)):
+    return send_from_directory(directory, file_name)
+  else:
+    abort(404)
+
 
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor
@@ -82,16 +96,6 @@ def index():
 ### GET cart - current order, displayed differently depending on current state
 
 ### my orders
-@shop_app.route('/download/<file>/')
-def download(file):
-  if current_app.celery:
-    pdf_file = current_app.celery.send_task("tasks.fetch_pdf_eon_cf", [2, 2])
-    print "Test for %s" % file
-    return pdf_file.get()
-  else:
-    logger.error("Celery has not been set up for tasks")
-    abort(500)
-
 @current_app.template_filter('currency')
 def currency(value):
   return ("{:.0f}" if float(value).is_integer() else "{:.2f}").format(value)

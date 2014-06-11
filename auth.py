@@ -41,13 +41,14 @@ def check_password(raw_password, enc_password):
   salt, hsh = enc_password.split('$', 1)
   return hsh == get_hexdigest(salt, raw_password)
 
-def create_token(input_string):
-  return md5(input_string.strip().lower().encode('utf-8') + u'e3af71457ddb83c51c43c7cdf6d6ddb3').hexdigest()
-
 def get_next():
   if not request.query_string:
     return request.path
   return '%s?%s' % (request.path, request.query_string)
+
+
+def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
+  return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
 
 class BaseUser(object):
     def set_password(self, password):
