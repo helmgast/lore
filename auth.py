@@ -22,6 +22,7 @@ from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 
 import httplib2
+from urlparse import parse_qs
 from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, FlowExchangeError
 from apiclient.discovery import build
 GOOGLE = build('plus', 'v1')
@@ -142,8 +143,8 @@ class Auth(object):
     flash( _('You are now logged out'), 'success')
 
   def get_logged_in_user(self):
-    if request.endpoint and request.endpoint[0:4]=='auth':
-      print session
+    # if request.endpoint and request.endpoint[0:4]=='auth':
+    #   print session
     if session.get('logged_in'):
       if getattr(g, 'user', None):
         return g.user
@@ -180,12 +181,19 @@ class Auth(object):
       'Content-Type': 'application/json; charset=UTF-8'
     }
     h = httplib2.Http()
-    print url
     response, content = h.request(url % (
       self.facebook_client['app_id'],
       self.facebook_client['app_secret'],
       short_access_token), 'GET', headers=headers)
-    print response, content
+    print response
+    print content
+    if response['status']=='200':
+      content = parse_qs(content)
+      if 'access_token' in content:
+        response, content = h.request('https://graph.facebook.com/me?access_token=%s' % content['access_token'], 'GET', headers=headers)
+        print response
+        print content
+
 
   def join(self):
     # This function does joining in several steps.
