@@ -110,11 +110,19 @@ def setup_customer():
             order_lines[order_product].quantity += 1
           else:
             db_product = Product.objects(slug=order_product).get()
-            order_lines[order_product] = OrderLine(product=db_product, price=0)
+            order_lines[order_product] = OrderLine(product=db_product, price=db_product.price)
+
+      order_sum = 0
+      order_items = 0
+      for order_line in order_lines.values():
+        order_sum += order_line.quantity * order_line.price
+        order_items += order_line.quantity
 
       order = Order(user=customer_user,
             email=customer_user.email,
             order_lines=order_lines.values(),
+            total_items=order_items,
+            total_price=order_sum,
             status=OrderStatus.paid,
             shipping_address=customer_address)
 
