@@ -251,6 +251,7 @@ $('#facebook-signin').click(function(e){
 });
 
 function facebookCallback(response) {
+  console.log(response)
   $('#signin-buttons').hide()
   $('#traditional-signup-text').hide()
   $('#password-inputs').hide().find('input').attr('disabled', true)

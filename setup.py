@@ -10,6 +10,6 @@ setup(name='Raconteur', version='0.4',
     install_requires=[
         'Flask', 'flask-mongoengine', 'python-slugify', 'Flask-Markdown', 
         'requests', 'Pillow', 'flask-babel', 'bugsnag', 'Flask-Mail', 'celery',
-        'google-api-python-client'
+        'google-api-python-client', 'facebook-sdk'
     ]
 )

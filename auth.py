@@ -22,9 +22,10 @@ from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 
 import httplib2
-from urlparse import parse_qs
+import requests
 from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, FlowExchangeError
 from apiclient.discovery import build
+import facebook
 GOOGLE = build('plus', 'v1')
 
 current_dir = os.path.dirname(__file__)
@@ -173,27 +174,10 @@ class Auth(object):
   def connect_facebook(self, short_access_token):
     if not self.facebook_client:
       raise Exception('No Facebook client configured')
-    # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}
-    # &client_secret={app-secret}&fb_exchange_token={short-lived-token} 
-    url = "https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s"
-    headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json; charset=UTF-8'
-    }
-    h = httplib2.Http()
-    response, content = h.request(url % (
-      self.facebook_client['app_id'],
-      self.facebook_client['app_secret'],
-      short_access_token), 'GET', headers=headers)
-    print response
-    print content
-    if response['status']=='200':
-      content = parse_qs(content)
-      if 'access_token' in content:
-        response, content = h.request('https://graph.facebook.com/me?access_token=%s' % content['access_token'], 'GET', headers=headers)
-        print response
-        print content
-
+    graph = facebook.GraphAPI(short_access_token)
+    resp1 = graph.extend_access_token(self.facebook_client['app_id'], self.facebook_client['app_secret'])
+    resp2 = graph.get_object('me')
+    return resp1['access_token'], resp2['id'], resp2['email']
 
   def join(self):
     # This function does joining in several steps.
@@ -238,14 +222,13 @@ class Auth(object):
                 external_id, external_access_token = credentials.id_token['sub'], credentials.access_token
                 emails = [line['value'] for line in profile['emails']]
               elif form.external_service.data == 'facebook':
-                response = self.connect_facebook(form.auth_code.data)
-                external_access_token = form.auth_code.data
-                emails = []
+                external_access_token, external_id, email = self.connect_facebook(form.auth_code.data)
+                emails = [email]
 
               user = self.User()
               form.populate_obj(user) # this creates the user with all details
-              if not user.external_access_token:
-                user.external_access_token = external_access_token
+              # Always upgrade token, it may be newer?
+              user.external_access_token = external_access_token
               if not user.external_id:
                 user.external_id = external_id
 
