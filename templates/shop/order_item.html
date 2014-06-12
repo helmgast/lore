@@ -52,6 +52,10 @@
           <div class="col-md-6 product-intro">
             <h3><a href="{{ url_for('.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{line.product.publisher}}</small></h3>
             <p>{{ line.product.description }}</p>
+            {% if line.product.status == 'available' and line.product.type == 'digital' %}
+            <h4><a href="{{ url_for('.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
+            </h4>
+            {% endif%}
           </div>
           <div class="col-md-6">
             <ul class="product-details">

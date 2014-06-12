@@ -10,7 +10,7 @@
 """
 import os
 
-from flask import render_template, Blueprint, current_app, g, request, abort, send_file
+from flask import render_template, Blueprint, current_app, g, request, abort, send_file, make_response
 import re
 from flask.helpers import send_from_directory
 
@@ -41,15 +41,17 @@ ProductHandler.register_urls(shop_app, product_strategy)
 
 order_strategy = ResourceAccessStrategy(Order, 'orders')
 
-@shop_app.route('/eon-iv-pdf/')
-def eon_iv_pdf():
-  file_name = "Eon_IV_%s.pdf" % re.sub(r'@|\.', '_', g.user.email)
-  directory = os.path.join(current_app.root_path, "resources", "pdf")
-  print file_name
-  if os.path.exists(os.path.join(directory, file_name)):
-    return send_from_directory(directory, file_name)
-  else:
-    abort(404)
+@shop_app.route('/download-pdf/')
+def download_pdf():
+  if request.args['product'] == 'eon-iv-cf-grundbok-digital':
+    file_name = "Eon_IV_%s.pdf" % re.sub(r'@|\.', '_', g.user.email)
+    directory = os.path.join(current_app.root_path, "resources", "pdf")
+    file_path = os.path.join(directory, file_name)
+    print file_path
+    if os.path.exists(file_path):
+      return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
+
+  abort(404)
 
 
 # This injects the "cart_items" into templates in shop_app

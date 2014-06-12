@@ -19,6 +19,8 @@ from time import gmtime, strftime
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
 # Public = Everyone is allowed to log in and create new accounts
+from tools import customer_data
+
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = "private", "protected", "public"
 STATE_TYPES = ((STATE_PRIVATE, _('Private')),
               (STATE_PROTECTED, _('Protected')),
@@ -207,7 +209,6 @@ def import_orders(app):
   print app.config['MONGODB_SETTINGS']
   from mongoengine.connection import get_db
   db = get_db()
-  from test_data import customer_data # Temporarily placing these in /model_setup
   customer_data.setup_customer()
 
 def setup_models(app):
