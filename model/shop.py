@@ -84,7 +84,7 @@ class Order(db.Document):
         max_prod.title, 
         ' '+_('and more') if len(self.order_lines)>1 else '')
     else:
-      s = u'Empty order'
+      s = _('Empty order')
     return s
 
   # Executes before saving

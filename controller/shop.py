@@ -17,6 +17,8 @@ from flask.helpers import send_from_directory
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
+from flask.ext.babel import gettext as _
+import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -59,7 +61,7 @@ class OrderHandler(ResourceHandler):
       r['order'] = cart_order
       r['url_args'] = {'order':cart_order.id}
     else:
-      raise ResourceError(401, "Need to log in to use shopping cart")
+      raise ResourceError(401, _('Need to log in to use shopping cart'))
     if request.method == 'GET':
       r = self.form_edit(r)
     elif request.method == 'POST':
