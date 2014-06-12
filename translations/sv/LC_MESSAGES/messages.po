@@ -104,6 +104,18 @@ msgstr "Allmän"
 msgid "Join"
 msgstr "Registrera"
 
+msgid "Sign in with Facebook"
+msgstr "Logga in med Facebook"
+
+msgid "Sign in with Google"
+msgstr "Logga in med Google"
+
+msgid "Receive newsletter"
+msgstr "Prenumerera på nyhetsbrev"
+
+msgid "Optional details"
+msgstr "Frivilliga uppgifter"
+
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:29
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:189
 #: /home/zaifon/Projects/fablr/raconteur/templates/base.html:103
@@ -196,6 +208,9 @@ msgstr "Tillgänglig"
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:19
 msgid "Out of stock"
 msgstr "Slut på lager"
+
+msgid "Product Type"
+msgstr "Produkttyp"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:20
 msgid "Hidden"

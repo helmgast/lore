@@ -1,6 +1,7 @@
 from raconteur import db
 from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
+from mongoengine.errors import ValidationError
 from datetime import datetime
 from user import User
 from slugify import slugify
@@ -19,17 +20,23 @@ ProductStatus = Choices(
   out_of_stock = _('Out of stock'),
   hidden = _('Hidden'))
 
+Currencies = Choices(
+  eur = 'EUR',
+  sek = 'SEK'
+  )
+
 class Product(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   publisher = db.StringField(max_length=60, required=True, verbose_name=_('Publisher'))
-  family = db.StringField(max_length=60, verbose_name=_('Family'))
+  family = db.StringField(max_length=60, verbose_name=_('Product Family'))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
   # should be required=True, but that currently maps to Required, not InputRequired validator
   # Required will check the value and 0 is determined as false, which blocks prices for 0
   price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
+  currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek)
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
 
@@ -68,10 +75,12 @@ class Order(db.Document):
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
   total_items = db.IntField(min_value=0, default=0) # Total number of items
   total_price = db.FloatField(min_value=0, default=0.0) # Total price of order
+  currency = db.StringField(choices=Currencies.to_tuples())
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
+  shipping_mobile = db.StringField(min_length=8, max_length=14, verbose_name=_('SMS Number'))
   
   def __unicode__(self):
     max_prod, max_price = None, 0
@@ -84,13 +93,18 @@ class Order(db.Document):
         max_prod.title, 
         ' '+_('and more') if len(self.order_lines)>1 else '')
     else:
-      s = _('Empty order')
+      s = u'%s' % _('Empty order')
     return s
 
   # Executes before saving
   def clean(self):
     num, sum =0, 0.0
     for ol in self.order_lines:
+      if self.currency:
+        if ol.product.currency != self.currency:
+          raise ValidationError('This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency)) 
+      else:
+        self.currency = ol.product.currency
       num += ol.quantity
       sum += ol.quantity * ol.price
     self.total_items = num

@@ -122,7 +122,7 @@
              <li><a href="{{ url_for('auth.join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
-          <li><a {% call IS_USER() %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user }}</a></li>
+          <li><a {% call IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user }}</a></li>
           <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>
@@ -133,14 +133,14 @@
 
 <div class="{% block container_class %}container{% endblock %}">
   {% block mainblock %}
-  <div class="col-md-2">
+  <div class="col-md-3">
   {% block sidebar %}
     &nbsp;
   {% endblock %}
   </div>
   <!-- /sidebar -->
 
-  <div class="col-md-10">
+  <div class="col-md-9">
     <div class="content">
       {% block middle %}
       {% block pre_content %}

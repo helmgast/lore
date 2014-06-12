@@ -10,7 +10,7 @@
   {% call IS_USER(user) %}
   <ul class="nav nav-list" style="float:left">
     <li class="nav-header">{{ _('Actions') }}</li>
-    <li><a href="{{ url_for('.user_form_edit', user=user.username) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
   </ul>
   {% endcall %}
 {%endblock%}
@@ -22,7 +22,7 @@
     <img src="{{ user.gravatar_url(256) }}" class="img-polaroid"/>
     <h4 class="pagination-centered">{{ user.exp }} XP</h4>
     <div class="btn-toolbar">
-{#        {% if resource.op == 'view' %}
+{#        {% if resouxrce.op == 'view' %}
       <button type="button" class="btn btn-small m_action
         {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
         {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">{{ _('Follow') }} ...
@@ -64,8 +64,6 @@
       <td><span class="badge">N/A</span></td></tr>
       <tr><td><strong>{{ _('Followers') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
-      <tr><td><strong>{{ _('Token') }}</strong></td>
-      <td><span class="badge">{{ user.create_token() }}</span></td></tr>
     </table>
     <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description }}</div>
     {% endif %}
@@ -76,9 +74,9 @@
 <div class="row form-actions">
   {{ user_form.csrf_token }}
   <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-  <a href="{{ url_for('.user_view', user=user.username) }}" class="btn btn-default">{{ _('Cancel') }}</a>
+  <a href="{{ url_for('.user_view', user=user.identifier()) }}" class="btn btn-default">{{ _('Cancel') }}</a>
   {% if op!='new' %}
-  <a href="{{url_for('.user_delete', user=user.username)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+  <a href="{{url_for('.user_delete', user=user.identifier())}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
   {% endif %}
 </div></form>{%endif%}
 <div class="row">

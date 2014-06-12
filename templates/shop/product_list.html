@@ -1,5 +1,10 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
 
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
+
 {% block content %}
 
     <div class="row">
@@ -13,7 +18,7 @@
         </div>
         <ul class="product-details">
             <li class="product-type">{{ product.publisher }}</li>
-            <li class="product-price">{{ product.price|currency }}:-</li>
+            <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
             <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
         </ul>
     </div>
@@ -28,7 +33,7 @@
 <script>
 $('.buy-link').click(function(e) {
     var csrftoken = "{{ csrf_token() }}";
-    $.ajax({
+    var jqxhr = $.ajax({
         url: "{{ url_for('.order_cart', out='json')}}",
         type: 'post',
         data: {product: this.id},
@@ -37,10 +42,10 @@ $('.buy-link').click(function(e) {
         success: function (data) {
             $c = $('#cart-counter')
             $c.html(data.item)
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            flash_error(errorThrown)
-        }
+    }})
+    .fail(function(jqXHR) {
+        var res = JSON.parse(jqXHR.responseText)
+        flash_error(res.message, 'danger')
     });
     e.preventDefault();
 });

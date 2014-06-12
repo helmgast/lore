@@ -9,7 +9,7 @@
     </a>
     <span class="message_name">
       <a href="{{ url_for('.user_view', user=message.user.username) }}">
-        <strong>{{message.user.username}}</strong>
+        <strong>{{message.user}}</strong>
       </a>
       <small>{{ message.pub_date.strftime('%Y-%m-%d %H:%M') }}</small>
     </span>

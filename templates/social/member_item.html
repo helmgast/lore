@@ -15,7 +15,7 @@
       {% endif %}
       <a href="{{ url_for('.user_view', user=member.user.username) }}">        
       <img class="avatar" src="{{ member.user.gravatar_url() }}" />
-      <strong class="message_name">{{member.user.username}}</strong></a>
+      <strong class="message_name">{{member.user}}</strong></a>
     </td>
     <td>{{member.user.realname if member}}</td>
     {% endif %}

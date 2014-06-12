@@ -23,12 +23,15 @@ from flask.ext.babel import lazy_gettext as _
 
 class SameUserSecurityPolicy(ResourceSecurityPolicy):
   def is_allowed_user(self, user, op, instance):
-    return user.admin or user == instance
+    if op=='list':
+      return True if user else False
+    else:
+      return user.admin or user == instance
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
-  exclude=['password', 'xp', 'join_date', 'active', 'admin'])
+  only=['username', 'realname', 'location', 'description'])
 user_form.confirm = PasswordField(_('Repeat Password'), 
   [validators.Required(), validators.Length(max=40)])
 user_form.password = PasswordField(_('New Password'), [
@@ -36,7 +39,7 @@ user_form.password = PasswordField(_('New Password'), [
   validators.EqualTo('confirm', message=_('Passwords must match')),
   validators.Length(max=40)])
 
-user_strategy = ResourceAccessStrategy(User, 'users', 'username', form_class=user_form, security_policy=SameUserSecurityPolicy())
+user_strategy = ResourceAccessStrategy(User, 'users', 'id', form_class=user_form, security_policy=SameUserSecurityPolicy())
 ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')

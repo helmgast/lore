@@ -400,6 +400,9 @@ class ResourceHandler(View):
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
+      print "%s %s" % (request.args.has_key('debug'), current_app.debug)
+      if request.args.has_key('debug') and current_app.debug:
+        raise # send onward if we are debugging
       if err.status_code == 400: # bad request
         if r['op'] in self.get_post_pairs:
           # we were posting a form

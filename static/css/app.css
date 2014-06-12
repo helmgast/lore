@@ -870,6 +870,15 @@ input[type="radio"]:checked + img {
 	margin-top: 0px;
 }
 
+.btn-buy {
+	padding: 10px 16px;
+	font-size: 20px;
+	line-height: 1.33;
+	border-radius: 6px;
+	width: 80%;
+	margin-top: 20px;
+}
+
 .btn-signin {
 	padding: 10px 16px;
 	font-size: 24px;

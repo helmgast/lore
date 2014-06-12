@@ -4,6 +4,7 @@
 {% block content_tagline %}{% endblock %}
 
 {% block content %}
+{% if orders %}
 <table class="table">
 <thead>
 	<tr>
@@ -15,15 +16,18 @@
 	</tr>
 </thead>
 <tbody>
-	{% for o in orders %}
+	{% for order in orders %}
 	<tr>
-		<td><a href="{{ url_for('.order_view', order=o.id)}}">{{o}}</a></td>
-		<td>{{o.user}}</td>
-		<td>{{o.created.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{o.updated.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{o.status}}</td>
+		<td><a href="{{ url_for('.order_form_edit', order=order.id)}}">{{order}}</a></td>
+		<td>{{order.user}}</td>
+		<td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
+		<td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
+		<td>{{order.status}}</td>
 	</tr>
 	{% endfor %}
 </tbody>
 </table>
+{% else %}
+<h3>{{_('You have not made any orders yet!')}}</h3>
+{% endif %}
 {% endblock %}

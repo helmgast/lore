@@ -4,6 +4,11 @@
 
 {% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
 
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
+
 {% block content_title %}{{product.title if product else "New product"}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
@@ -30,6 +35,7 @@
       {{ FORM_FIELD(product_form.created) }}
       {{ FORM_FIELD(product_form.type) }}
       {{ FORM_FIELD(product_form.price, required=True) }}
+      {{ FORM_FIELD(product_form.currency, required=True) }}
       {{ FORM_FIELD(product_form.status) }}
       {{ product_form.csrf_token }}
     </div>
@@ -53,6 +59,7 @@
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
+      <a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>
     </div>
     <div class="col-md-8">
       <table class="table">
@@ -67,7 +74,9 @@
         <tr><td><strong>{{ _('Type') }}</strong></td>
         <td><small>{{ product.type }}</small></td></tr>      
         <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ product.price|currency }}:-</small></td></tr>    
+        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>    
+        <tr><td><strong>{{ _('Currency') }}</strong></td>
+        <td><small>{{ product.currency }}:-</small></td></tr> 
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ product.status }}</small></td></tr>      
       </table>
@@ -85,5 +94,24 @@ var imageselect_options = {
     image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
     image_upload_url: "{{url_for('imageasset_new', out='json')}}"
   }
+
+$('.buy-link').click(function(e) {
+    var csrftoken = "{{ csrf_token() }}";
+    $.ajax({
+        url: "{{ url_for('.order_cart', out='json')}}",
+        type: 'post',
+        data: {product: this.id},
+        headers: { 'X-CSRFToken': csrftoken },
+        dataType: 'json',
+        success: function (data) {
+            $c = $('#cart-counter')
+            $c.html(data.item)
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            flash_error(errorThrown)
+        }
+    });
+    e.preventDefault();
+});
 </script>
 {% endblock %}

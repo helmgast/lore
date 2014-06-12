@@ -62,8 +62,12 @@ class User(db.Document, BaseUser):
     if self.username and User.objects(username=self.username).only('username').first():
       raise ValidationError('Username %s is not unique' % self.username)
 
+  def display_name(self):
+    return self.__unicode__()
+
   def __unicode__(self):
-    return self.username if self.username else self.realname.split(' ')[0]
+    return self.username if self.username else (
+      self.realname.split(' ')[0] if self.realname else unicode(_('Anonymous')))
 
   def full_string(self):
     return "%s (%s)" % (self.username, self.realname)
@@ -78,7 +82,7 @@ class User(db.Document, BaseUser):
     return Group.objects(members__user=self)
 
   def identifier(self):
-    return self.username if self.username else self._id
+    return self.username if self.username else self.id
 
   def messages(self):
     return Message.objects(user=self).order_by('-pub_date')

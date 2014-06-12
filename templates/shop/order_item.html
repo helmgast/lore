@@ -6,6 +6,17 @@
 {% block content_tagline %}{{ '%s %s, %s %s' % (_('by'), order.user, _('placed'), order.created.strftime('%Y-%m-%d %H:%M')) if order.status != 'cart' }} 
 {% endblock %}
 
+{% set prod_types = {
+  'book':_('Book'),
+  'item':_('Item'),
+  'digital':_('Digital'),
+  'shipping':_('Shipping fee')}
+  %}
+
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
 {#
   What user can edit in different order stages:
   cart: editable list, editable quantity, address, editable comment
@@ -44,8 +55,8 @@
           </div>
           <div class="col-md-6">
             <ul class="product-details">
-              <li class="product-type">{{ line.product.type }}</li>
-              <li class="product-price">{{ line.product.price|currency if order.status=='cart' else line.price|currency }}:-</li>
+              <li class="product-type">{{ prod_types[line.product.type] }}</li>
+              <li class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</li>
               <li>
               {% if order_form and order.status=='cart' %}
                 {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
@@ -53,7 +64,7 @@
                 {{ line.quantity }}
               {% endif %}
               </li>
-              <li class="product-price product-total">{{(line.quantity*line.price)|currency}}:-</li>
+              <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
             {{ FORM_FIELD_INLINE(order_form.order_lines[loop.index0].comment, controlclass="product-comment") 
               if order_form and order.status !='shipped' else line.comment}}
@@ -65,29 +76,42 @@
     {% endfor %}
     </div>
     <div class="row" style="margin-top: 20px">
-      <div class="col-md-7 col-md-offset-1">
+      <div class="col-md-8">
       {% if order_form and order.status != 'shipping' %}
         {{FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-2", "col-sm-10", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-2", "col-sm-4") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_mobile, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
       {% else %}
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Name</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.name}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Street</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.street}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Zip Code</strong></div><div class="col-sm-4 large-text">{{order.shipping_address.zipcode}}</div>
-          <div class="col-sm-1"><strong>City</strong></div><div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Country</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.country}}</div>
+          <div class="col-sm-2"><strong>{{_('Name')}}</strong></div>
+          <div class="col-sm-10 large-text">{{order.shipping_address.name}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-2"><strong>{{_('Street')}}</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.street}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-2"><strong>{{_('Zip Code')}}</strong></div>
+          <div class="col-sm-4 large-text">{{order.shipping_address.zipcode}}</div>
+          <div class="col-sm-1"><strong>{{_('Country')}}</strong></div>
+          <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-2"><strong>{{_('Country')}}</strong></div>
+          <div class="col-sm-10 large-text">{{order.shipping_address.country}}</div>
+        </div>
+         <div class="form-group clearfix">
+          <div class="col-sm-2"><strong>{{_('SMS Number')}}</strong></div>
+          <div class="col-sm-10 large-text">{{order.shipping_mobile}}</div>
         </div>
       {% endif %}
       </div>
       <div class="col-md-4">
         <table class="table product-subtotals">
-          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{order.total_price|currency}}:-</td></tr>
+          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies[order.currency] % order.total_price|currency}}</td></tr>
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies[order.currency] % order.total_price|currency}}</td></tr>
         </table>
       </div>
     </div>
@@ -115,7 +139,7 @@
 {{super()}}
 {% if order_form %}
 <script>
-{% if order.status=='cart' %}
+{% if False and order.status=='cart' %}
   function calcTotal(e) {
     var $prod = $(e.delegateTarget)
     var qty = parseInt((e.target && e.target.value) || "0")

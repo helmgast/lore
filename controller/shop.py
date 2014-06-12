@@ -27,7 +27,17 @@ product_strategy = ResourceAccessStrategy(Product, 'products', 'slug',
   short_url=False, form_class=model_form(Product, base_class=RacBaseForm, 
   exclude=['slug'], converter=RacModelConverter()))
 
-ResourceHandler.register_urls(shop_app, product_strategy)
+class ProductHandler(ResourceHandler):
+  def list(self, r):
+    if not (g.user and g.user.admin):
+      filter = r.get('filter',{})
+      filter.update({'status__ne':'hidden'})
+      print filter
+      r['filter'] = filter
+    return super(ProductHandler, self).list(r)
+
+ProductHandler.register_urls(shop_app, product_strategy)
+
 
 order_strategy = ResourceAccessStrategy(Order, 'orders')
 
@@ -35,6 +45,7 @@ order_strategy = ResourceAccessStrategy(Order, 'orders')
 def eon_iv_pdf():
   file_name = "Eon_IV_%s.pdf" % re.sub(r'@|\.', '_', g.user.email)
   directory = os.path.join(current_app.root_path, "resources", "pdf")
+  print file_name
   if os.path.exists(os.path.join(directory, file_name)):
     return send_from_directory(directory, file_name)
   else:
@@ -50,6 +61,13 @@ def inject_cart():
 cartform = model_form(Order, base_class=RacBaseForm, only=['order_lines'])
 
 class OrderHandler(ResourceHandler):
+
+  def list(self, r):
+    if not (g.user and g.user.admin):
+      filter = r.get('filter',{})
+      filter.update({'user':g.user})
+      r['filter'] = filter
+    return super(OrderHandler, self).list(r)
 
   @ResourceHandler.methods(['GET','POST'])
   def cart(self, r):
