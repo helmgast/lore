@@ -30,23 +30,24 @@ class Customer:
 def setup_customer():
   product_map = {
     "Stöd Eon IV": ["eon-iv-cf-stod"],
-    "Grundboken + Spelpaketet": ["eon-iv-cf-grundbok", "eon-iv-cf-spelpaket", "eon-iv-cf-spelarbok-digital"],
+    "Grundboken + Spelpaketet": ["eon-iv-cf-grundbok", "eon-iv-cf-spelpaket", "eon-iv-cf-grundbok-digital",
+                                 "eon-iv-cf-spelarbok-digital"],
     "Spelpaket-boken": ["eon-iv-cf-spelpaketbok"],
-    "Helgon-boken": ["eon-iv-cf-helgonbok", "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelpaket",
+    "Helgon-boken": ["eon-iv-cf-helgonbok", "eon-iv-cf-spelpaket", "eon-iv-cf-grundbok-digital",
                      "eon-iv-cf-spelarbok-digital"],
-    "Helmgast-boken": ["eon-iv-cf-helmgastbok", "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelpaket",
+    "Helmgast-boken": ["eon-iv-cf-helmgastbok", "eon-iv-cf-spelpaket", "eon-iv-cf-grundbok-digital",
                        "eon-iv-cf-spelarbok-digital"],
-    "Mörkerherre-boken": ["eon-iv-cf-morkerherrebok", "eon-iv-cf-grundbok", "eon-iv-cf-grundbok-digital",
-                          "eon-iv-cf-spelpaket", "eon-iv-cf-spelarbok-digital"],
+    "Mörkerherre-boken": ["eon-iv-cf-morkerherrebok", "eon-iv-cf-grundbok", "eon-iv-cf-spelpaket",
+                          "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelarbok-digital"],
     "Grundboken": ["eon-iv-cf-grundbok", "eon-iv-cf-grundbok-digital"],
     "Uppgradering till Helgon-boken": ["eon-iv-cf-helgonbok"],
     "Spelgruppspaketet": ["eon-iv-cf-grundbok", "eon-iv-cf-grundbok", "eon-iv-cf-grundbok",
-                          "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelpaket", "eon-iv-cf-spelarbok-digital"],
-    "Xinu-boken": ["eon-iv-cf-xinuboken", "eon-iv-cf-helmgastbok", "eon-iv-cf-helgonbok", "eon-iv-cf-grundbok-digital",
-                   "eon-iv-cf-spelpaketbok", "eon-iv-cf-spelpaket", "eon-iv-cf-spelarbok-digital"]
+                          "eon-iv-cf-spelpaket", "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelarbok-digital"],
+    "Xinu-boken": ["eon-iv-cf-xinuboken", "eon-iv-cf-helmgastbok", "eon-iv-cf-helgonbok", "eon-iv-cf-spelpaketbok",
+                   "eon-iv-cf-spelpaket", "eon-iv-cf-grundbok-digital", "eon-iv-cf-spelarbok-digital"]
   }
 
-  with open('test_data/eon.csv', 'rb') as csvfile:
+  with open('tools/eon.csv', 'rb') as csvfile:
     customers = {}
 
     spamreader = csv.reader(csvfile, delimiter=';')
@@ -119,5 +120,7 @@ def setup_customer():
 
       orders.append(order)
 
-    orders[0].user.save()
-    orders[0].save()
+    print "orders %d" % len(orders)
+    for order in orders[1:]:
+      order.user.save()
+      order.save()
