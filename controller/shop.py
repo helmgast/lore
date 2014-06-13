@@ -49,7 +49,7 @@ def download_pdf():
     file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
     directory = os.path.join(current_app.root_path, "resources", "pdf")
     file_path = os.path.join(directory, file_name)
-    print file_path
+    logger.info("Download request for %s" % file_path)
     if os.path.exists(file_path):
       return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
 
