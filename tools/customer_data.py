@@ -184,8 +184,8 @@ def setup_customer():
       order_lines = {}
       for order in customer_orders["raw"]:
         order_products = product_map[order.perk]
-        if not shippable_customer and order_products[0] != "eon-iv-cf-stod":
-          raise Exception("Invalid purchas for customer: " + customer_user.email)
+        if not shippable_customer and order.perk != "Stöd Eon IV":
+          raise Exception("Invalid purchase for customer: " + customer_user.email)
 
         for order_product in order_products:
           if order_product in order_lines:
