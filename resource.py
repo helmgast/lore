@@ -59,6 +59,36 @@ class RacBaseForm(ModelForm):
         field._obj = field.model_class()
       field.populate_obj(obj, name)
 
+# class PartialEditForm(OrigForm):
+#   def populate_obj(self, obj, fields_to_populate=None):
+#     if fields_to_populate:
+#       # FormFields in form args will have '-' do denote it's subfields. We 
+#       # only want the first part, or it won't match the field names
+#       fielddict = {}
+#       for fld in fields_to_populate:
+#         fld = fld.split('-',1)
+#         subfields = fielddict.setdefault(fld[0], [])
+#         if len(fld)>1:
+#           subfields.append(fld[1])
+#       # fields_to_populate = set([fld.split('-',1)[0] for fld in fields_to_populate])
+#       newfields = [ (name,fld) for (name,fld) in iteritems(self._fields) if name in fields_to_populate]
+#     else:
+#       newfields = iteritems(self._fields)
+#     for name, field in newfields:
+#       if isinstance(field, PartialEditForm):
+#         subfields_to_populate = None
+#         if isinstance(field, f.FormField):
+#           if getattr(obj, name, None) is None and field._obj is None:
+#             field._obj = field.model_class()
+#           if len(fielddict[name])>0:
+#             subfields_to_populate = fielddict[name]
+#         field.populate_obj(obj, name, subfields_to_populate)  
+#       else:
+#         field.populate_obj(obj, name) 
+
+# class RacBaseForm(ModelForm, PartialEditForm):
+#   pass # double inheritance from ModelForm and our special populate_obj
+
 class ArticleBaseForm(RacBaseForm):
   def process(self, formdata=None, obj=None, **kwargs):
     super(ArticleBaseForm, self).process(formdata, obj, **kwargs)

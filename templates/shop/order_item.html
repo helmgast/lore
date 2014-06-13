@@ -71,10 +71,10 @@
               <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
             
-            {% if line.product.acknowledgement %}
+            {% if order_form and line.product.acknowledgement %}
             <div class="form-group">
             <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in Acknowledgement')}}</label>
-            {{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
+            {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
             {% endif %}
           </div>   
         </div>
@@ -118,17 +118,15 @@
       </div>
       <div class="col-md-4">
         <table class="table product-subtotals">
-          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
+          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % (0.06*order.total_price)|currency}}</td></tr>
           <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
         </table>
       </div>
     </div>
     <div class="row">
-      <div class="col-md-offset-8 pull-right">
-      {% if order and order_form and order.status == 'cart' %}
-        <button type="button" href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</button>
-      {% endif %}
-      <button type="submit" id="formsave" class="btn btn-info">{{ _('Save') }}</button>
+      <div class="col-md-offset-8 pull-right">    
+        <button type="submit" class="btn btn-primary btn-lg">{{ _('Save') }}</button>
+
       {% if order_form and order.status == 'cart' %}
         <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
       {% endif %}

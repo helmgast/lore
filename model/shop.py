@@ -39,7 +39,7 @@ class Product(db.Document):
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek)
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
-  acknowledgment = db.BooleanField(default=False)
+  acknowledgement = db.BooleanField(default=False)
 
   # Executes before saving
   def clean(self):
@@ -56,11 +56,11 @@ class OrderLine(db.EmbeddedDocument):
   comment = db.StringField(max_length=256, verbose_name=_('Comment'))
   
 class Address(db.EmbeddedDocument):
-  name = db.StringField(max_length=60, required=True, verbose_name=_('Name'))
-  street = db.StringField(max_length=60, required=True, verbose_name=_('Street'))
-  zipcode = db.StringField(max_length=8, required=True, verbose_name=_('Zipcode'))
-  city = db.StringField(max_length=60, required=True, verbose_name=_('City'))
-  country = db.StringField(max_length=60, required=True, verbose_name=_('Country'))
+  name = db.StringField(max_length=60, verbose_name=_('Name'))
+  street = db.StringField(max_length=60, verbose_name=_('Street'))
+  zipcode = db.StringField(max_length=8, verbose_name=_('Zipcode'))
+  city = db.StringField(max_length=60, verbose_name=_('City'))
+  country = db.StringField(max_length=60, verbose_name=_('Country'))
 
 OrderStatus = Choices(
   cart = _('Cart'),

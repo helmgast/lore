@@ -37,6 +37,7 @@
       {{ FORM_FIELD(product_form.price, required=True) }}
       {{ FORM_FIELD(product_form.currency, required=True) }}
       {{ FORM_FIELD(product_form.status) }}
+      {{ FORM_FIELD(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
@@ -76,9 +77,12 @@
         <tr><td><strong>{{ _('Price') }}</strong></td>
         <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>    
         <tr><td><strong>{{ _('Currency') }}</strong></td>
-        <td><small>{{ product.currency }}:-</small></td></tr> 
+        <td><small>{{ product.currency }}</small></td></tr> 
         <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ product.status }}</small></td></tr>      
+        <td><small>{{ product.status }}</small></td></tr>
+        <tr><td><strong>{{ _('Acknowledgement') }}</strong></td>
+        <td><small>{{ product.acknowledgement }}</small></td></tr>
+
       </table>
       <div class="well">{{ product.description }}</div>
     </div>

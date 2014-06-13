@@ -320,6 +320,9 @@ msgstr "Stad"
 msgid "Country"
 msgstr "Land"
 
+msgid "SMS Number"
+msgstr "Mobilnummer (SMS-avisering)"
+
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:55
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:9
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:5
@@ -359,7 +362,7 @@ msgstr "Uppdaterad"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:80
 msgid "Order for"
-msgstr "Order för"
+msgstr "Order av"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:82
 msgid "and more"
@@ -1088,10 +1091,13 @@ msgstr "Nya produkter"
 msgid "Total"
 msgstr "Total"
 
+msgid "Including tax"
+msgstr "Varav moms"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:59
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:82
 msgid "Grand Total"
-msgstr "Slutkostnad"
+msgstr "Totalsumma"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:66
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:89
@@ -1245,6 +1251,9 @@ msgstr "Följare"
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:61
 msgid "Joined"
 msgstr "Registrerad"
+
+msgid "Download"
+msgstr "Ladda ner"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:109
 msgid "Not member of any groups yet!"
