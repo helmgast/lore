@@ -120,7 +120,7 @@
       </div>
       <div class="col-md-4">
         <table class="table product-subtotals">
-          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
+          <tr><td>{{_('Including tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
           <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
         </table>
       </div>
