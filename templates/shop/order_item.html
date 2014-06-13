@@ -87,12 +87,12 @@
     <div class="row" style="margin-top: 20px">
       <div class="col-md-8">
       {% if order_form and order.status != 'shipping' %}
-        {{FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-2", "col-sm-10", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-2", "col-sm-4") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_mobile, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{FORM_FIELD_COLS(order_form.shipping_mobile, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
       {% else %}
         <div class="form-group clearfix">
           <div class="col-sm-2"><strong>{{_('Name')}}</strong></div>
@@ -104,7 +104,7 @@
         <div class="form-group clearfix">
           <div class="col-sm-2"><strong>{{_('Zip Code')}}</strong></div>
           <div class="col-sm-4 large-text">{{order.shipping_address.zipcode}}</div>
-          <div class="col-sm-1"><strong>{{_('Country')}}</strong></div>
+          <div class="col-sm-1"><strong>{{_('City')}}</strong></div>
           <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
         </div>
         <div class="form-group clearfix">
