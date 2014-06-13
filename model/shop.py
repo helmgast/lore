@@ -17,7 +17,6 @@ ProductTypes = Choices(
 ProductStatus = Choices(
   pre_order = _('Pre-order'),
   available = _('Available'),
-  ready_for_download = _('Ready for download'),
   out_of_stock = _('Out of stock'),
   hidden = _('Hidden'))
 
@@ -55,7 +54,7 @@ class OrderLine(db.EmbeddedDocument):
   product = db.ReferenceField(Product, required=True, verbose_name=_('Product'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
   comment = db.StringField(max_length=256, verbose_name=_('Comment'))
-  
+
 class Address(db.EmbeddedDocument):
   name = db.StringField(max_length=60, verbose_name=_('Name'))
   street = db.StringField(max_length=60, verbose_name=_('Street'))
@@ -82,8 +81,8 @@ class Order(db.Document):
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
-  shipping_mobile = db.StringField(min_length=8, max_length=14, verbose_name=_('SMS Number'))
-  
+  shipping_mobile = db.StringField(min_length=8, max_length=14, default="07XXXXXXXX", verbose_name=_('SMS Number'))
+
   def __unicode__(self):
     max_prod, max_price = None, 0
     for ol in self.order_lines:
@@ -91,8 +90,8 @@ class Order(db.Document):
         max_prod, max_price = ol.product, ol.price
     if max_prod:
       s = u'%s %s%s' % (
-        _('Order for'), 
-        max_prod.title, 
+        _('Order for'),
+        max_prod.title,
         ' '+_('and more') if len(self.order_lines)>1 else '')
     else:
       s = u'%s' % _('Empty order')
@@ -104,7 +103,7 @@ class Order(db.Document):
     for ol in self.order_lines:
       if self.currency:
         if ol.product.currency != self.currency:
-          raise ValidationError('This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency)) 
+          raise ValidationError('This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
       else:
         self.currency = ol.product.currency
       num += ol.quantity
