@@ -38,7 +38,8 @@
   {% set action = url_for('auth.join') %}
   {% set option_args = {} %}
 {% endif %}
-{% block pre_content %}
+
+{% block mainblock %}
 
 <script>
   // This is called with the results from from FB.getLoginStatus().
@@ -74,12 +75,29 @@
   // }
 
   window.fbAsyncInit = function() {
+    console.log('FB was inited');
     FB.init({
       appId      : '1511162782440441',
       cookie     : true,  // enable cookies to allow the server to access 
                           // the session
       xfbml      : true,  // parse social plugins on this page
       version    : 'v2.0' // use version 2.0
+    });
+
+    $('#facebook-signin').click(function(e){
+      FB.getLoginStatus(function(response){
+        if(response.status==='connected') {
+          facebookCallback(response)
+        } else {
+          FB.login(function(response) {
+            if(response.authResponse) {
+              facebookCallback(response)
+            } else{
+              console.log('Error in Facebook login process')
+            }
+          }, {scope: 'public_profile,email'})
+        }
+      });
     });
 
     // Now that we've initialized the JavaScript SDK, we call 
@@ -120,9 +138,8 @@
   //   });
   // }
 </script>
-{% endblock %}
-{% block content %}
-<form id="auth-form" method="post" action="" class="col-sm-6 col-sm-offset-3" role="form">
+
+<form id="auth-form" method="post" action="" class="col-sm-4 col-sm-offset-4" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ title }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
@@ -234,22 +251,6 @@ function googleCallback(authResult) {
 
 //----------------------------------------------------------//
 
-$('#facebook-signin').click(function(e){
-  FB.getLoginStatus(function(response){
-    if(response.status==='connected') {
-      facebookCallback(response)
-    } else {
-      FB.login(function(response) {
-        if(response.authResponse) {
-          facebookCallback(response)
-        } else{
-          console.log('Error in Facebook login process')
-        }
-      }, {scope: 'public_profile,email'})
-    }
-  });
-});
-
 function facebookCallback(response) {
   console.log(response)
   $('#signin-buttons').hide()
@@ -261,7 +262,7 @@ function facebookCallback(response) {
   $('#external_id').val(response.authResponse.userID)
   FB.api('/me', function(response) {
     console.log(response)
-    $('#profile').html('Thanks for logging in, ' + response.name + '!')
+    $('#profile').html('You are authorized as, ' + response.name + '!')
     $('#realname').val(response.name)
     $('#email').val(response.email).focus()
   });

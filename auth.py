@@ -296,22 +296,24 @@ class Auth(object):
         try:
           user = self.User.objects(email=form.email.data).get()
           if user.status == 'active':
+            if user.external_service == form.external_service.data:
+              if user.external_service == 'google':
+                credentials, profile = self.connect_google(form.auth_code.data)
+                provided_external_id = credentials.id_token['sub']
+                external_access_token = credentials.access_token
+              elif user.external_service == 'facebook':
+                external_access_token, provided_external_id, email = self.connect_facebook(form.auth_code.data)
 
-            if user.external_service == 'google':
-              credentials, profile = self.connect_google(form.auth_code.data)
-              provided_external_id = credentials.id_token['sub']
-              external_access_token = credentials.access_token
-            elif user.external_service == 'facebook':
-              external_access_token, provided_external_id, email = self.connect_facebook(form.auth_code.data)
-
-            if user.external_id == provided_external_id:
-              # Update the token, as it may have expired and been renewed
-              user.external_access_token = external_access_token
-              user.save()
-              self.login_user(user)
-              return redirect(request.args.get('next') or url_for('homepage'))
+              if user.external_id == provided_external_id:
+                # Update the token, as it may have expired and been renewed
+                user.external_access_token = external_access_token
+                user.save()
+                self.login_user(user)
+                return redirect(request.args.get('next') or url_for('homepage'))
+              else:
+                flash( _('Error, this external user does not match the one in database'), 'danger')
             else:
-              flash( _('Error, this external user does not match the one in database'), 'danger')
+              flash( "%s %s" % (_('Error, this email is associated with a different service than'), form.external_service.data), 'danger')
           else:
             flash( _('No active user'), 'danger')
         except self.User.DoesNotExist:
