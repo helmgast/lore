@@ -35,8 +35,25 @@ def setup_customer():
                  type=ProductTypes.book,
                  price=5,
                  currency=Currencies.eur,
-                 status=ProductStatus.available,
-                 acknowledgment=True).save()
+                 status=ProductStatus.available).save()
+  namn_i_boken = Product(title='Eon IV - Namn i boken',
+                         description='Som tack för att du crowdfundat får du ditt namn i boken.',
+                         publisher='Helmgast AB',
+                         family='Eon',
+                         type=ProductTypes.digital,
+                         price=0,
+                         currency=Currencies.eur,
+                         status=ProductStatus.available,
+                         acknowledgment=True).save()
+  namn_i_boken_st = Product(title='Eon IV - Helgonnamn i boken',
+                            description='Som tack för att du crowdfundat får du ditt namn i boken skrivet som ett helgon (S:t).',
+                            publisher='Helmgast AB',
+                            family='Eon',
+                            type=ProductTypes.digital,
+                            price=0,
+                            currency=Currencies.eur,
+                            status=ProductStatus.available,
+                            acknowledgment=True).save()
   grundboken = Product(title='Eon IV - Grundboken',
                        description='Grundbok för Eon IV på 286 sidor',
                        publisher='Helmgast AB',
@@ -44,8 +61,7 @@ def setup_customer():
                        type=ProductTypes.book,
                        price=45,
                        currency=Currencies.eur,
-                       status=ProductStatus.available,
-                       acknowledgment=True).save()
+                       status=ProductStatus.available).save()
   grundboken_spelpaketet = Product(title='Eon IV - Grundboken + Spelpaketet',
                                    description='Grundbok för Eon IV med Spelpaketet',
                                    publisher='Helmgast AB',
@@ -53,8 +69,7 @@ def setup_customer():
                                    type=ProductTypes.book,
                                    price=69,
                                    currency=Currencies.eur,
-                                   status=ProductStatus.available,
-                                   acknowledgment=True).save()
+                                   status=ProductStatus.available).save()
   spelpaketboken = Product(title='Eon IV - Spelpaketboken',
                            description='Få PDF:material från spelpaketet samlat och tryckt i en crowdfunder-unik bok och hemskickat till dig.',
                            publisher='Helmgast AB',
@@ -70,8 +85,7 @@ def setup_customer():
                               type=ProductTypes.book,
                               price=147,
                               currency=Currencies.eur,
-                              status=ProductStatus.available,
-                              acknowledgment=True).save()
+                              status=ProductStatus.available).save()
   helgonboken = Product(title='Eon IV - Helgonboken',
                         description='Grundbok för Eon IV i helgonutgåva',
                         publisher='Helmgast AB',
@@ -79,8 +93,7 @@ def setup_customer():
                         type=ProductTypes.book,
                         price=119,
                         currency=Currencies.eur,
-                        status=ProductStatus.available,
-                        acknowledgment=True).save()
+                        status=ProductStatus.available).save()
   helmgastboken = Product(title='Eon IV - Helmgastboken',
                           description='Grundbok för Eon IV i helmgastutgåva',
                           publisher='Helmgast AB',
@@ -88,8 +101,7 @@ def setup_customer():
                           type=ProductTypes.book,
                           price=99,
                           currency=Currencies.eur,
-                          status=ProductStatus.available,
-                          acknowledgment=True).save()
+                          status=ProductStatus.available).save()
   morkerherreboken = Product(title='Eon IV - Mörkerherreboken',
                              description='Grundbok för Eon IV i mörkerherreutgåva',
                              publisher='Helmgast AB',
@@ -97,8 +109,7 @@ def setup_customer():
                              type=ProductTypes.book,
                              price=299,
                              currency=Currencies.eur,
-                             status=ProductStatus.available,
-                             acknowledgment=True).save()
+                             status=ProductStatus.available).save()
   xinuboken = Product(title='Eon IV - Xinuboken',
                       description='Grundbok för Eon IV i den enda Xinuutgåvan',
                       publisher='Helmgast AB',
@@ -106,8 +117,7 @@ def setup_customer():
                       type=ProductTypes.book,
                       price=45,
                       currency=Currencies.eur,
-                      status=ProductStatus.available,
-                      acknowledgment=True).save()
+                      status=ProductStatus.available).save()
   grundboken_digital = Product(title='Eon IV - Grundbok PDF',
                                description='PDF för Grundboken',
                                publisher='Helmgast AB',
@@ -115,7 +125,7 @@ def setup_customer():
                                type=ProductTypes.digital,
                                price=0,
                                currency=Currencies.eur,
-                               status=ProductStatus.available).save()
+                               status=ProductStatus.ready_for_download).save()
   spelpaketet_digital = Product(title='Eon IV - Spelpaketet PDF',
                                 description='PDF för Spelpaketet',
                                 publisher='Helmgast AB',
@@ -126,15 +136,15 @@ def setup_customer():
                                 status=ProductStatus.available).save()
   product_map = {
     "Stöd Eon IV": [stod],
-    "Grundboken + Spelpaketet": [grundboken_spelpaketet, grundboken_digital, spelpaketet_digital],
+    "Grundboken + Spelpaketet": [grundboken_spelpaketet, grundboken_digital, spelpaketet_digital, namn_i_boken],
     "Spelpaket-boken": [spelpaketboken],
-    "Helgon-boken": [helgonboken, grundboken_digital, spelpaketet_digital],
-    "Helmgast-boken": [helmgastboken, grundboken_digital, spelpaketet_digital],
-    "Mörkerherre-boken": [morkerherreboken, grundboken_digital, spelpaketet_digital],
-    "Grundboken": [grundboken, grundboken_digital],
+    "Helgon-boken": [helgonboken, grundboken_digital, spelpaketet_digital, namn_i_boken_st],
+    "Helmgast-boken": [helmgastboken, grundboken_digital, spelpaketet_digital, namn_i_boken],
+    "Mörkerherre-boken": [morkerherreboken, grundboken_digital, spelpaketet_digital, namn_i_boken],
+    "Grundboken": [grundboken, grundboken_digital, namn_i_boken],
     "Uppgradering till Helgon-boken": [],
-    "Spelgruppspaketet": [spelgruppspaketet, grundboken_digital, spelpaketet_digital],
-    "Xinu-boken": [xinuboken, spelpaketboken, grundboken_digital, spelpaketet_digital]
+    "Spelgruppspaketet": [spelgruppspaketet, grundboken_digital, spelpaketet_digital, namn_i_boken, namn_i_boken, namn_i_boken],
+    "Xinu-boken": [xinuboken, spelpaketboken, grundboken_digital, spelpaketet_digital, namn_i_boken]
   }
 
   with open('tools/eon.csv', 'rb') as csvfile:

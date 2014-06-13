@@ -17,6 +17,7 @@ ProductTypes = Choices(
 ProductStatus = Choices(
   pre_order = _('Pre-order'),
   available = _('Available'),
+  ready_for_download = _('Ready for download'),
   out_of_stock = _('Out of stock'),
   hidden = _('Hidden'))
 
