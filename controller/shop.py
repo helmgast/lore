@@ -9,16 +9,14 @@
   :copyright: (c) 2014 by Raconteur
 """
 import os
-
-from flask import render_template, Blueprint, current_app, g, request, abort, send_file, make_response
 import re
-from flask.helpers import send_from_directory
+
+from flask import render_template, Blueprint, current_app, g, request, abort, send_file
 
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.babel import lazy_gettext as _
-import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -92,7 +90,7 @@ class OrderHandler(ResourceHandler):
           found = False
           for ol in cart_order.order_lines:
             if ol.product == p:
-              ol.quantity = ol.quantity + 1
+              ol.quantity += 1
               found = True
           if not found: # create new orderline with this product
             newol = OrderLine(product=p, price=p.price)
