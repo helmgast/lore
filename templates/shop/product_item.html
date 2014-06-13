@@ -60,7 +60,7 @@
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
-      <a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>
+      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
     </div>
     <div class="col-md-8">
       <table class="table">
@@ -80,8 +80,8 @@
         <td><small>{{ product.currency }}</small></td></tr> 
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ product.status }}</small></td></tr>
-        <tr><td><strong>{{ _('Acknowledgement') }}</strong></td>
-        <td><small>{{ product.acknowledgement }}</small></td></tr>
+        <!--<tr><td><strong>{{ _('Acknowledgement') }}</strong></td>-->
+        <!--<td><small>{{ product.acknowledgement }}</small></td></tr>-->
 
       </table>
       <div class="well">{{ product.description }}</div>
