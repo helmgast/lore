@@ -95,25 +95,26 @@
         {{FORM_FIELD_COLS(order_form.shipping_mobile, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
       {% else %}
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>{{_('Name')}}</strong></div>
-          <div class="col-sm-10 large-text">{{order.shipping_address.name}}</div>
+          <div class="col-sm-3"><strong>{{_('Name')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.name}}</div>
         </div>
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>{{_('Street')}}</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.street}}</div>
+          <div class="col-sm-3"><strong>{{_('Street')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.street}}</div>
         </div>
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>{{_('Zip Code')}}</strong></div>
-          <div class="col-sm-4 large-text">{{order.shipping_address.zipcode}}</div>
+          <div class="col-sm-3"><strong>{{_('Zip Code')}}</strong></div>
+          <div class="col-sm-3 large-text">{{order.shipping_address.zipcode}}</div>
           <div class="col-sm-1"><strong>{{_('City')}}</strong></div>
           <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
         </div>
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>{{_('Country')}}</strong></div>
-          <div class="col-sm-10 large-text">{{order.shipping_address.country}}</div>
+          <div class="col-sm-3"><strong>{{_('Country')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.country}}</div>
         </div>
          <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>{{_('SMS Number')}}</strong></div>
-          <div class="col-sm-10 large-text">{{order.shipping_mobile}}</div>
+          <div class="col-sm-3"><strong>{{_('SMS Number')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_mobile}}</div>
         </div>
       {% endif %}
       </div>
