@@ -45,8 +45,8 @@ order_strategy = ResourceAccessStrategy(Order, 'orders', form_class=model_form(
 
 @shop_app.route('/download-pdf/')
 def download_pdf():
-  if request.args['product'] == 'eon-iv-cf-grundbok-digital':
-    file_name = "Eon_IV_%s.pdf" % re.sub(r'@|\.', '_', g.user.email)
+  if request.args['product'] == 'eon-iv-grundbok-pdf':
+    file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
     directory = os.path.join(current_app.root_path, "resources", "pdf")
     file_path = os.path.join(directory, file_name)
     print file_path
