@@ -17,7 +17,7 @@ from flask.helpers import send_from_directory
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
-from flask.ext.babel import gettext as _
+from flask.ext.babel import lazy_gettext as _
 import tasks
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
