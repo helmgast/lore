@@ -119,13 +119,13 @@
       </div>
       <div class="col-md-4">
         <table class="table product-subtotals">
-          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % (0.06*order.total_price)|currency}}</td></tr>
+          <tr><td>{{_('Tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
           <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
         </table>
       </div>
     </div>
     <div class="row">
-      <div class="col-md-offset-8 pull-right">    
+      <div class="col-md-offset-8 pull-right">
         <button type="submit" class="btn btn-primary btn-lg">{{ _('Save') }}</button>
 
       {% if order_form and order.status == 'cart' %}
