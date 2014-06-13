@@ -18,8 +18,9 @@ from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
 from hashlib import sha1, md5
-from flask.ext.babel import gettext as _
+from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine.wtf import model_form
+from mongoengine import ValidationError
 
 import httplib2
 import requests
@@ -133,7 +134,7 @@ class Auth(object):
     session['user_pk'] = str(user.id)
     session.permanent = True
     g.user = user
-    flash( "%s %s" % (_('You are logged in as'), user), 'success')
+    flash( u"%s %s" % (_('You are logged in as'), user), 'success')
 
   def logout_user(self, user):
     if self.clear_session:
@@ -245,7 +246,7 @@ class Auth(object):
                   match the ones in external auth, you have to verify it manually, \
                   please check your inbox"), 'success')
             except Exception as e:
-              flash( '%s: %s' % (_('Error logging in'), e), 'warning') 
+              flash( u'%s: %s' % (_('Error logging in'), e), 'warning') 
 
         elif form.email_token.data:
           # User is not using external auth but came here with email token, so
@@ -282,7 +283,10 @@ class Auth(object):
             user.save()
             #send_verification_email()
             print "Sending verification email" #TODO
-            flash( _('A verification email have been sent out %s') + create_token(form.email.data), 'success')
+            flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
+      else:
+        raise Exception()
+        flash( _('Error in form')+form.errors, 'warning')
 
     return render_template('auth/auth_form.html', form=form, op=op)
 
@@ -317,7 +321,9 @@ class Auth(object):
           else:
             flash( _('No active user'), 'danger')
         except self.User.DoesNotExist:
-          flash( _('No such user exist'), 'danger')
+          flash( _('No such user exist, are you sure you registered first?'), 'danger')
+        except ValidationError:
+          flash( _('You have chosen a username that is not unique, please try another!'), 'warning')
       elif form.validate():
         try:
           user = self.User.objects(email=form.email.data).get()
@@ -327,71 +333,10 @@ class Auth(object):
           else:
             flash( _('Incorrect username or password'), 'danger')
         except self.User.DoesNotExist:
-          flash( _('No such user exist'), 'danger')
+          flash( _('No such user exist, are you sure you registered first?'), 'danger')
       else:
         flash( _('Errors in form'), 'danger')
     return render_template('auth/auth_form.html', form=form, op='login')
-
-  # def verify(self):
-  #   form = self.VerifyForm()
-  #   if request.method == 'POST':
-  #     form.process(request.form)
-  #     if form.validate():
-  #       try:
-  #         user = User.objects(email=form.email.data).first()
-  #         if user.status == 'active':
-  #           flash( _('This user is already active, no need to verify'), 'warning')   
-  #         elif user.status != 'inactive':
-  #           flash( _('This user cannot be verified'), 'warning')   
-  #         else:
-  #           form.populate_obj(user) # username, realname, newsletter
-  #           user.save()
-  #           return redirect(request.args.get('next') or url_for('homepage'))
-  #       except self.User.DoesNotExist:
-  #         flash( _('No such user to verify'), 'danger')   
-  #   elif request.method == 'GET':
-  #     pass
-  #     # if # TBD user exists
-  #     #   if # user has external auth
-  #     #     external_info = get_info() # us
-  #     #     # add email to form
-  #     #   if request.args.has_key('email_token'):
-  #     #     form.email_token.data = request.args.get('email_token')
-  #     #     form.email.data = request.args.get('email')
-  #   return render_template('auth/auth_form.html', form=form, op='verify')
-
-
-  # def login(self):
-  #   # if request has google code
-  #     # run google process to get auth token
-  #     # if success, process successful login as below
-  #   # else check form as below
-
-  #   Form = self.get_login_form()
-  #   if request.method == 'POST':
-  #     if request.args.has_key('connect_google'):
-  #       self.connect_google(request.data)
-  #       user = self.User.objects(external_service='google', external_id=session['gplus_id']).get()
-  #       if user: # if user, log in and redirect to next
-  #         self.login_user(user)
-  #         return redirect(request.args.get('next') or url_for('homepage'))
-  #       else: # if no user, redirect to verify
-  #         flash( _('No user with this google ID'), 'danger')
-  #     else:
-  #       form = Form(request.form)
-  #       if form.validate():
-  #         try:
-  #           user = self.User.objects(username=form.username.data).get()
-  #           if user.status == 'active' and user.check_password(form.password.data):
-  #             self.login_user(user)
-  #             return redirect(request.args.get('next') or url_for('homepage'))
-  #         except self.User.DoesNotExist:
-  #           pass # will get to error state below
-  #         flash( _('Incorrect username or password (or you need to verify the \
-  #           account - check your email)'), 'danger')
-  #   else:
-  #     form = Form()
-  #   return render_template('auth/auth_form.html', form=form, op='login')
 
   def logout(self):
     # if user is logged in via google, send token revoke
@@ -418,7 +363,7 @@ class Auth(object):
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
       'email', 'realname', 'location', 'newsletter'], 
       field_args={ 'password':{'password':True} })
-    self.JoinForm.confirm_password = PasswordField(_('Confirm Password'), 
+    self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'), 
         validators=[validators.Required(), validators.EqualTo('password', 
         message=_('Passwords must match'))])
     self.JoinForm.auth_code = HiddenField(_('Auth Code'))

@@ -59,7 +59,9 @@ class User(db.Document, BaseUser):
     # set is less, which means it's a user input that we need to hash before saving
     if self.password and len(self.password) <= 40:
       self.password = make_password(self.password)
-    if self.username and User.objects(username=self.username).only('username').first():
+    cur_id = self.id if self.id else ''
+    # Check if someone with other id has the same username
+    if self.username and User.objects(id__ne=cur_id, username=self.username).only('username').first():
       raise ValidationError('Username %s is not unique' % self.username)
 
   def display_name(self):

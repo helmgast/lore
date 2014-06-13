@@ -26,7 +26,7 @@
   {% set title = _('Sign up') %}
   {% set submit = _('Join') %}
   {% set action = url_for('auth.join') %}
-  {% set option_args = {'disabled': True} %}
+  {% set option_args = {} %}
 {% elif op=='login' %}
   {% set title = _('Please sign in') %}
   {% set submit = _('Sign in') %}
@@ -145,33 +145,19 @@
   <input type="hidden" name="next" value="{{ next }}" />
   <div id="signin-buttons">
     <span class="help-block">{{submit}} {{_('with external provider (safer!)')}}</span>
-    {#
-    <div id="signinButton">
-      <span class="g-signin"
-        data-scope="https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read"
-        data-clientid="852791556464-vbn49e0lkc9tvpferm4otdtbpjbk11r1.apps.googleusercontent.com"
-        data-width="wide"
-        data-height="tall"
-        data-redirecturi="postmessage"
-        data-accesstype="offline"
-        data-cookiepolicy="single_host_origin"
-        data-callback="googleCallback">
-      </span>
-    </div>
-  <fb:login-button auto_logout_link="true" max_rows="1" size="xlarge" scope="public_profile,email" onlogin="checkLoginState();">
-  </fb:login-button>
-    #}
     <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Sign in with Google')}}</button>
     <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Sign in with Facebook')}}</button>
   </div>
+  <p class="arrow_box">{{_('Recommended for safety and speed!')}}</p>
   <hr>
   <div id="profile"></div>
 
   <span id="traditional-signup-text" class="help-block">{{submit}} {{_('with Fablr account')}}</span>
   {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
   <div id="password-inputs">
+    {{_('Confirm Password')}}
     {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
-    {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_passwor }}
+    {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
   </div>
   {% if op!='login' %}
   <div id="optional-inputs" class="well">
@@ -181,7 +167,7 @@
     {{ FORM_FIELD_INLINE(form.location, controlclass="input-lg", **option_args)}}
     <div class="checkbox">
     <label>
-      {{form.newsletter(disabled=True)}}
+      {{form.newsletter(**option_args)}}
       {{_('Receive newsletter')}}
     </label>
     </div>
