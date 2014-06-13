@@ -18,7 +18,7 @@ from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
 from hashlib import sha1, md5
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
 
@@ -246,7 +246,7 @@ class Auth(object):
                   match the ones in external auth, you have to verify it manually, \
                   please check your inbox"), 'success')
             except Exception as e:
-              flash( u'%s: %s' % (_('Error logging in'), e), 'warning') 
+              flash( u'%s %s: %s' % (_('Error verifying with'), form.external_data.service, e), 'warning') 
 
         elif form.email_token.data:
           # User is not using external auth but came here with email token, so

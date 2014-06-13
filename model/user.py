@@ -50,7 +50,7 @@ class User(db.Document, BaseUser):
   newsletter = db.BooleanField(default=True)
   external_access_token = db.StringField()
   external_id = db.StringField()
-  external_service = db.StringField(choices=ExternalAuth.to_tuples())
+  external_service = db.StringField(choices=ExternalAuth.to_tuples(True))
 
   following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
 
