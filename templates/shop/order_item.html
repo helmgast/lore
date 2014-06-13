@@ -70,8 +70,12 @@
               </li>
               <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
-            {{ FORM_FIELD_INLINE(order_form.order_lines[loop.index0].comment, controlclass="product-comment") 
-              if order_form and order.status !='shipped' else line.comment}}
+            
+            {% if line.product.acknowledgement %}
+            <div class="form-group">
+            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in Acknowledgement')}}</label>
+            {{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
+            {% endif %}
           </div>   
         </div>
       </div>

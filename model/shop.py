@@ -39,6 +39,7 @@ class Product(db.Document):
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek)
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset)
+  acknowledgment = db.BooleanField(default=False)
 
   # Executes before saving
   def clean(self):

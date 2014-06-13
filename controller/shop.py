@@ -39,7 +39,9 @@ class ProductHandler(ResourceHandler):
 ProductHandler.register_urls(shop_app, product_strategy)
 
 
-order_strategy = ResourceAccessStrategy(Order, 'orders')
+order_strategy = ResourceAccessStrategy(Order, 'orders', form_class=model_form(
+  Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
+  'shipping_mobile']))
 
 @shop_app.route('/download-pdf/')
 def download_pdf():
@@ -59,8 +61,6 @@ def download_pdf():
 def inject_cart():
     cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('total_items').first()
     return dict(cart_items=cart_order.total_items if cart_order else 0)
-
-cartform = model_form(Order, base_class=RacBaseForm, only=['order_lines'])
 
 class OrderHandler(ResourceHandler):
 
