@@ -21,8 +21,8 @@ from flask.ext.babel import lazy_gettext as _
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
-product_strategy = ResourceAccessStrategy(Product, 'products', 'slug', 
-  short_url=False, form_class=model_form(Product, base_class=RacBaseForm, 
+product_strategy = ResourceAccessStrategy(Product, 'products', 'slug',
+  short_url=False, form_class=model_form(Product, base_class=RacBaseForm,
   exclude=['slug'], converter=RacModelConverter()))
 
 class ProductHandler(ResourceHandler):
@@ -110,7 +110,7 @@ OrderHandler.register_urls(shop_app, order_strategy)
 @shop_app.route('/')
 def index():
     products = Product.objects()
-    return render_template('shop/product_list.html', products=products)
+    return render_template('shop/product_list.html', products=[])  # Do not display products
 
 ### POST cart - add products, create order if needed
 ### GET cart - current order, displayed differently depending on current state
