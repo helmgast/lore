@@ -26,7 +26,7 @@
 #}
 
 {% block content %}{% block inline %}
-<a href="{{ url_for('auth.join', email=order.user.email, email_token=order.user.create_token(), next=request.path) }}">Temporär länk till användaren</a>
+<a href="{{ url_for('auth.join', email=order.user.email, email_token=order.user.create_token(), next=request.path) }}">Temporär länk till användaren</a> (länk till registreringen, hitta på ett lösenord, fungerar högst en gång per användare)
 {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
   {% if order.order_lines %}
     <div class="row underline-row">
