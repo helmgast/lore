@@ -14,7 +14,7 @@
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
 from resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
-  ResourceAccessPolicy
+  ResourceAccessPolicy, Authorization
 from model.user import User, Group, Member, Conversation, Message
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
@@ -32,10 +32,31 @@ user_form.password = PasswordField(_('New Password'), [
   validators.EqualTo('confirm', message=_('Passwords must match')),
   validators.Length(max=40)])
 
-user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form)
+class UserAccessPolicy(ResourceAccessPolicy):
+  def authorize(self, op, instance=None):
+    if op not in self.ops_levels:
+      level = self.ops_levels['_default']
+    else:
+      level = self.ops_levels[op]
+    if level=='private':
+      if g.user and instance==g.user:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (g.user, op, instance))
+    return super(UserAccessPolicy, self).authorize(op, instance)
+
+
+user_access = UserAccessPolicy({
+  'view':'private',
+  'edit':'private',
+  'form_new':'private',
+  '_default':'admin'
+  })
+
+admin_only_access = ResourceAccessPolicy({'_default':'admin'})
+
+user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form, access_policy=user_access)
 ResourceHandler.register_urls(social, user_strategy)
 
-group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug')
+group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug', access_policy=admin_only_access)
 ResourceHandler.register_urls(social, group_strategy)
 
 member_strategy = ResourceRoutingStrategy(Member, 'members', None, parent_strategy=group_strategy)
@@ -56,7 +77,7 @@ class MemberHandler(ResourceHandler):
 
 MemberHandler.register_urls(social, member_strategy)
 
-conversation_strategy = ResourceRoutingStrategy(Conversation, 'conversations')
+conversation_strategy = ResourceRoutingStrategy(Conversation, 'conversations', access_policy=admin_only_access)
 
 class ConversationHandler(ResourceHandler):
   def new(self, r):

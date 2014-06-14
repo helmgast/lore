@@ -1210,11 +1210,11 @@ msgstr "Forum"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/base.html:21
 msgid ""
-"Here you can interact with other gamers, create and manage your game "
+"Here you will be able to interact with other gamers, create and manage your game "
 "groups,\n"
 "  events, etc."
 msgstr ""
-"Här kan du interagera med andra spelare, skapa och hantera dina "
+"Här kommer du kunna interagera med andra spelare, skapa och hantera dina "
 "spelgrupper, \n"
 "möten, etc."
 
@@ -1437,6 +1437,9 @@ msgstr "BILD"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:13
 msgid "Rule System"
 msgstr "Regelsystem"
+
+msgid "Not all users can see this"
+msgstr "Inte alla användare kan se detta"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"

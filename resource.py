@@ -184,7 +184,7 @@ class Authorization:
     return self.is_authorized
 
 # Checks if user is logged in and authorized
-class ResourceAccessPolicy:
+class ResourceAccessPolicy(object):
   model_class = None
   levels = ['public', 'user', 'private', 'admin']
   
@@ -197,6 +197,7 @@ class ResourceAccessPolicy:
       }
     else:
       self.ops_levels = ops_levels
+    self.user_field = user_field
 
   def authorize(self, op, instance=None):
     if op not in self.ops_levels:
@@ -219,6 +220,8 @@ class ResourceAccessPolicy:
         return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (self.user_field, instance))
       elif not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
+      elif g.user.admin:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_user, op, instance))
       elif not g.user == instance_user:
         return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
       else:

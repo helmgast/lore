@@ -9,33 +9,19 @@
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
-  <li class="active"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span id="cart-counter" class="badge alert-danger">{{ cart_items if cart_items else 0}}</span>
+  <li class="active {{privileged}}"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span id="cart-counter" class="badge alert-danger">{{ cart_items if cart_items else 0}}</span>
   </a></li>
   {% endcall %}
-  {#<li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>#}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
+  <li class="{{privileged}}"><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
+  {% endcall %}
+
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list')) %}
-    <li><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('Orders') }}</a></li>
+    <li class="{{privileged}}"><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('Orders') }}</a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-    <li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
+    <li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
   {% endcall %}
 
 </ul>
-{% endblock %}
-
-{% block content %}
-    <div class="row">
-    {% for product in products %}
-
-    <div class="col-md-4">
-        <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
-        <div class="well">{{ product.description }}</div>
-        <dl class="dl-horizontal">
-            <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ product.publisher }}</dd>
-        </dl>
-    </div>
-    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
-    {% endfor %}
-  </div>
 {% endblock %}

@@ -6,9 +6,9 @@
 {% block content_tagline %}{{ user.realname if user.username else ''}}{% endblock %}
 
 {% block sidebar %}{{super()}}
-  {% call MACRO.IS_USER(user) %}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit')) %}
   <ul class="nav nav-list" style="float:left">
-    <li class="nav-header">{{ _('Actions') }}</li>
+    <li class="nav-header {{privileged}}">{{ _('Actions') }}</li>
     <li><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
   </ul>
   {% endcall %}
@@ -81,9 +81,9 @@
   {{ user_form.csrf_token }}
   <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
   <a href="{{ url_for('.user_view', user=user.identifier()) }}" class="btn btn-default">{{ _('Cancel') }}</a>
-  {% if op!='new' %}
+  {#{% if op!='new' %}
   <a href="{{url_for('.user_delete', user=user.identifier())}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
-  {% endif %}
+  {% endif %}#}
 </div></form>{%endif%}
 <div class="row">
   <div class="col-md-5">

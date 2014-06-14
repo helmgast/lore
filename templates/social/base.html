@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ _('Social') }}{% endblock %}
 {% block content_tagline %}{{ _('bringing you closer to other gamers') }}{% endblock %}
@@ -6,26 +7,27 @@
 
 {% block sidebar %}
   <ul class="nav nav-list">
-    <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-home"></span> {{ _('Main') }}</a></li>
-    <li><a href="{{ url_for('.user_list') }}"><span class="glyphicon glyphicon-user"></span> {{ _('Gamers') }}</a></li>
-    <li><a href="{{ url_for('.group_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
-    <li><a href="{{ url_for('.conversation_list') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list')) %}
+    <li class="{{privileged}}"><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-home"></span> {{ _('Main') }}</a></li>
+    {% endcall %}    
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list')) %}
+    <li class="{{privileged}}"><a href="{{ url_for('.user_list') }}"><span class="glyphicon glyphicon-user"></span> {{ _('Gamers') }}</a></li>
+    {% endcall %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('list')) %}
+    <li class="{{privileged}}"><a href="{{ url_for('.group_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
+    {% endcall %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['conversation'].authorize('list')) %}
+    <li class="{{privileged}}"><a href="{{ url_for('.conversation_list') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
+    {% endcall %}
   </ul>
 {% endblock %}
 
 {% block content %}
   <p>
   {% if session.logged_in %}
-  {{ _('Welcome') }} <strong>{{ g.user.realname }}</strong>!
+  {{ _('Welcome') }} <strong>{{ g.user }}</strong>!
   {% endif %}
-  {{ _('Here you can interact with other gamers, create and manage your game groups,
+  {{ _('Here you will be able to interact with other gamers, create and manage your game groups,
   events, etc.') }}</p>
-  
-  <h3>{{ _('Messages from those you follow') }}</h3>
-  <ul class="list-unstyled">
-    {% for message in following_message_list %}
-      <li>{% include "social/message_item.html" %}</li>
-    {% endfor %}
-  </ul>
   
 {% endblock %}
