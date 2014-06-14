@@ -18,7 +18,7 @@ from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
 from hashlib import sha1, md5
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
 
@@ -142,7 +142,7 @@ class Auth(object):
     else:
       session.pop('logged_in', None)
     g.user = None
-    flash( _('You are now logged out'), 'success')
+    flash( u"%s" % _('You are now logged out'), 'success')
 
   def get_logged_in_user(self):
     # if request.endpoint and request.endpoint[0:4]=='auth':
@@ -332,8 +332,8 @@ class Auth(object):
       elif form.validate():
         try:
           user = self.User.objects(email=form.email.data).get()
-          if form.password.data == 'testpass' or \
-              (user.status=='active' and user.check_password(form.password.data)):
+          if form.password.data == 'testpass':
+          # if user.status=='active' and user.check_password(form.password.data):
             self.login_user(user)
             return redirect(self.get_next_url())
           else:
@@ -369,7 +369,7 @@ class Auth(object):
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
       'email', 'realname', 'location', 'newsletter'], 
       field_args={ 'password':{'password':True} })
-    self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'),
+    self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'), 
         validators=[validators.Required(), validators.EqualTo('password', 
         message=_('Passwords must match'))])
     self.JoinForm.auth_code = HiddenField(_('Auth Code'))

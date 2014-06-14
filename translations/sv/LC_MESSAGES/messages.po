@@ -200,6 +200,13 @@ msgstr "Digital"
 msgid "Shipping fee"
 msgstr "Fraktkostnad"
 
+msgid "Shipping Address"
+msgstr "Leveransadress"
+
+msgid "Name in Acknowledgement"
+msgstr "Namn i boken"
+
+
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:17
 msgid "Pre-order"
 msgstr "Förhandsboka"
@@ -297,7 +304,7 @@ msgstr "av"
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:17
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:25
 msgid "Quantity"
-msgstr "Mängd"
+msgstr "Antal"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:44
 msgid "Product"
@@ -312,7 +319,7 @@ msgid "Street"
 msgstr "Gatuaddress"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:50
-msgid "Zipcode"
+msgid "ZIP Code"
 msgstr "Postnummer"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:51
@@ -323,8 +330,24 @@ msgstr "Stad"
 msgid "Country"
 msgstr "Land"
 
-msgid "SMS Number"
-msgstr "Mobilnummer (SMS-avisering)"
+msgid "Cellphone Number"
+msgstr "Mobilnummer"
+
+msgid "make sure it's correct!"
+msgstr "dubbelkolla att det är rätt!"
+
+msgid "Order Info"
+msgstr "Orderinfo"
+
+msgid "Seller Info"
+msgstr "Säljarinto"
+
+msgid "Contact Us"
+msgstr "Kontakta oss"
+
+msgid "About order from"
+msgstr "Gällande order"
+
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:55
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:9
@@ -394,6 +417,9 @@ msgstr "Borttagen"
 #: /home/zaifon/Projects/fablr/raconteur/model/user.py:34
 msgid "username"
 msgstr "Användarnamn"
+
+msgid "No name"
+msgstr "Inget namn"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/user.py:35
 msgid "password"

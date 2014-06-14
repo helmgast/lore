@@ -256,6 +256,7 @@ def register_main_routes(app, auth):
 
   @app.route('/')
   def homepage():
+    print "HOMEPAGE"
     world = world_strategy.query_item(world='helmgast')
     search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
     return render_template('marco.html', articles=search_result['articles'], world=world, visibility=article_strategy.get_visibility('list'))

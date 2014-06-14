@@ -11,8 +11,7 @@
 import os
 import re
 
-from flask import render_template, Blueprint, current_app, g, request, abort, send_file
-
+from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
 from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
@@ -109,8 +108,7 @@ OrderHandler.register_urls(shop_app, order_strategy)
 
 @shop_app.route('/')
 def index():
-    products = Product.objects()
-    return render_template('shop/product_list.html', products=[])  # Do not display products
+    return redirect(url_for('.order_list'))
 
 ### POST cart - add products, create order if needed
 ### GET cart - current order, displayed differently depending on current state
