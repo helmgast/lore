@@ -86,6 +86,9 @@ msgstr ""
 "Inkorrekt användarnamn eller lösenord (eller så behöver kontot verifieras - "
 "kolla din epost)"
 
+msgdid "Forbidden, this is not an allowed operation"
+msgstr "Förbjudet, detta är inte en tillåten handling"
+
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:23
 msgid "Private"
 msgstr "Privat"
@@ -350,6 +353,9 @@ msgstr "Fel"
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_list.html:11
 msgid "User"
 msgstr "Användare"
+
+msgid "Empty..."
+msgstr "Tom..."
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:63
 msgid "Session ID"
