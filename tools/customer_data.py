@@ -135,7 +135,7 @@ def setup_customer():
                                 currency=Currencies.eur,
                                 status=ProductStatus.available).save()
   product_map = {
-    "Stöd Eon IV": [stod],
+    "Stöd Eon IV": [stod, namn_i_boken],
     "Grundboken + Spelpaketet": [grundboken_spelpaketet, grundboken_digital, spelpaketet_digital, namn_i_boken],
     "Spelpaket-boken": [spelpaketboken],
     "Helgon-boken": [helgonboken, grundboken_digital, spelpaketet_digital, namn_i_boken_st],
