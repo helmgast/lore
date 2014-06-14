@@ -1,13 +1,12 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
-
-{% from 'includes/components.html' import FORM_FIELD_COLS %}
+{% import 'includes/macros.html' as MACRO %}
 
 
 {% block content_title %}{{ user }}{% endblock %}
 {% block content_tagline %}{{ user.realname if user.username else ''}}{% endblock %}
 
 {% block sidebar %}{{super()}}
-  {% call IS_USER(user) %}
+  {% call MACRO.IS_USER(user) %}
   <ul class="nav nav-list" style="float:left">
     <li class="nav-header">{{ _('Actions') }}</li>
     <li><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
@@ -21,6 +20,10 @@
 <div class="row">
   <div class="col-md-4">
     <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
+    {% if user_form %}
+      {{ _('Select avatar by signing up at Gravatar with the email used by this account')}}
+      <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
+    {% endif %}
     {#<h4 class="pagination-centered">{{ user.exp }} XP</h4>#}
     <div class="btn-toolbar">
 {#        {% if resouxrce.op == 'view' %}
@@ -41,14 +44,14 @@
   <div class="col-md-8">
     {% if user_form %}
       {% if user and user==g.user %}
-        {{ FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9')}}
-        {{ FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
-        {{ FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}}
+        {{ MACRO.FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9')}}
+        {{ MACRO.FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
+        {{ MACRO.FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}}
       {% endif %}
-      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}}
-      {{ FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9')}}
-      {{ FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9')}}
-      {{ FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9')}} 
+{#      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}} #}
+      {{ MACRO.FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9')}}
+      {{ MACRO.FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9')}}
+      {{ MACRO.FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9')}} 
     {% else %}
     <table class="table">
       <tr><td><strong>{{ _('Email') }}</strong></td>

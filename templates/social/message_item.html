@@ -1,14 +1,14 @@
 <div class="message
 {%- if is_conversation -%}
-  {%- if user.username == message.user.username -%} bubble_mine
+  {%- if user.email == message.user.email -%} bubble_mine
   {%- else -%} bubble_others
   {%- endif -%}
 {%- endif -%}">
-    <a href="{{ url_for('.user_view', user=message.user.username) }}">
+    <a href="{{ url_for('.user_view', user=message.user.identifier()) }}">
       <img class="avatar" src="{{ message.user.gravatar_url() }}" />
     </a>
     <span class="message_name">
-      <a href="{{ url_for('.user_view', user=message.user.username) }}">
+      <a href="{{ url_for('.user_view', user=message.user.identifier()) }}">
         <strong>{{message.user}}</strong>
       </a>
       <small>{{ message.pub_date.strftime('%Y-%m-%d %H:%M') }}</small>

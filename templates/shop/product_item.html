@@ -1,6 +1,5 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
-
-{% from 'includes/components.html' import FORM_FIELD %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
 
@@ -28,20 +27,20 @@
 <form method="post" action="{{product_form.action_url}}">
   <div class="row">
     <div class="col-md-8">
-      {{ FORM_FIELD(product_form.title) }}
-      {{ FORM_FIELD(product_form.description) }}
-      {{ FORM_FIELD(product_form.publisher) }}
-      {{ FORM_FIELD(product_form.family) }}
-      {{ FORM_FIELD(product_form.created) }}
-      {{ FORM_FIELD(product_form.type) }}
-      {{ FORM_FIELD(product_form.price, required=True) }}
-      {{ FORM_FIELD(product_form.currency, required=True) }}
-      {{ FORM_FIELD(product_form.status) }}
-      {{ FORM_FIELD(product_form.acknowledgement) }}
+      {{ MACRO.FORM_FIELD(product_form.title) }}
+      {{ MACRO.FORM_FIELD(product_form.description) }}
+      {{ MACRO.FORM_FIELD(product_form.publisher) }}
+      {{ MACRO.FORM_FIELD(product_form.family) }}
+      {{ MACRO.FORM_FIELD(product_form.created) }}
+      {{ MACRO.FORM_FIELD(product_form.type) }}
+      {{ MACRO.FORM_FIELD(product_form.price, required=True) }}
+      {{ MACRO.FORM_FIELD(product_form.currency, required=True) }}
+      {{ MACRO.FORM_FIELD(product_form.status) }}
+      {{ MACRO.FORM_FIELD(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
-      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
+      {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
 
     </div>
   </div>

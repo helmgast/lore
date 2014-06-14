@@ -22,7 +22,7 @@
         <td>
           {% set comma = joiner(', ') %} {# Outputs a comma every time except first time, makes nice comma list#}
           {% for member in conversation.members %}
-            {{ comma() }}<a href="{{ url_for('.user_view', user=member.username) }}">{{ member.username }}</a>
+            {{ comma() }}<a href="{{ url_for('.user_view', user=member.identifier()) }}">{{ member.display_name() }}</a>
           {% endfor %}
         </td>
       </tr>

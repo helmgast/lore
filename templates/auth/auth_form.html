@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_INLINE %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block jsimports %}
 
@@ -152,18 +152,18 @@
   <div id="profile"></div>
 
   <span id="traditional-signup-text" class="help-block">{{submit}} {{_('with Fablr account')}}</span>
-  {{ FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
+  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
   <div id="password-inputs">
     {{_('Confirm Password')}}
-    {{ FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
-    {{ FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
+    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
+    {{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
   </div>
   {% if op!='login' %}
   <div id="optional-inputs" class="well">
     <span class="help-block">{{_('Optional details')}}</span>
-    {{ FORM_FIELD_INLINE(form.username, controlclass="input-lg", **option_args)}}
-    {{ FORM_FIELD_INLINE(form.realname, controlclass="input-lg", **option_args)}}
-    {{ FORM_FIELD_INLINE(form.location, controlclass="input-lg", **option_args)}}
+    {{ MACRO.FORM_FIELD_INLINE(form.username, controlclass="input-lg", **option_args)}}
+    {{ MACRO.FORM_FIELD_INLINE(form.realname, controlclass="input-lg", **option_args)}}
+    {{ MACRO.FORM_FIELD_INLINE(form.location, controlclass="input-lg", **option_args)}}
     <div class="checkbox">
     <label>
       {{form.newsletter(**option_args)}}

@@ -31,11 +31,17 @@ ExternalAuth = Choices(
   google='Google', 
   facebook='Facebook')
 
+class ExternalAuth(db.EmbeddedDocument):
+  id = db.StringField(required=True)
+  long_token = db.StringField()
+  service = db.StringField(choices=ExternalAuth.to_tuples())
+  emails = db.ListField(db.EmailField)
 
 # A user in the system
 class User(db.Document, BaseUser):
   # We want to set username unique, but then it cannot be empty, 
   # but in case where username is created, we want to allow empty values
+  # Currently it's only a display name, not used for URLs!
   username = db.StringField(max_length=60, verbose_name=_('username'))
   password = db.StringField(max_length=60, min_length=8, verbose_name = _('password'))
   email = db.EmailField(max_length=60, required=True, min_length=6, verbose_name = _('email'))
@@ -48,9 +54,8 @@ class User(db.Document, BaseUser):
   status = db.StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
   admin = db.BooleanField(default=False)
   newsletter = db.BooleanField(default=True)
-  external_access_token = db.StringField()
-  external_id = db.StringField()
-  external_service = db.StringField(choices=ExternalAuth.to_tuples(True))
+  google_auth = db.EmbeddedDocumentField(ExternalAuth)
+  facebook_auth = db.EmbeddedDocumentField(ExternalAuth)
 
   following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
 
@@ -59,10 +64,6 @@ class User(db.Document, BaseUser):
     # set is less, which means it's a user input that we need to hash before saving
     if self.password and len(self.password) <= 40:
       self.password = make_password(self.password)
-    cur_id = self.id if self.id else ''
-    # Check if someone with other id has the same username
-    if self.username and User.objects(id__ne=cur_id, username=self.username).only('username').first():
-      raise ValidationError('Username %s is not unique' % self.username)
 
   def display_name(self):
     return self.__unicode__()
@@ -84,7 +85,8 @@ class User(db.Document, BaseUser):
     return Group.objects(members__user=self)
 
   def identifier(self):
-    return self.username if self.username else self.id
+    # TODO to also allow username here
+    return self.id
 
   def messages(self):
     return Message.objects(user=self).order_by('-pub_date')

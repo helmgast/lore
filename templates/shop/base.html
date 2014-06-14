@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% import 'includes/macros.html' as MACRO %}
+
 
 {% block content_title %}{{ _('Shop') }}{% endblock %}
 {% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
@@ -6,15 +8,15 @@
 
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
   <li class="active"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span id="cart-counter" class="badge alert-danger">{{ cart_items if cart_items else 0}}</span>
-
   </a></li>
-
-  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
-  {% call IS_USER() %}
+  {% endcall %}
+  {#<li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>#}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list')) %}
     <li><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('Orders') }}</a></li>
   {% endcall %}
-  {% call IS_ADMIN() %}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
     <li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
   {% endcall %}
 

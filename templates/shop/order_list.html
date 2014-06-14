@@ -35,6 +35,8 @@
 	{% endfor %}
 </tbody>
 </table>
+{% include "includes/pagination.html" %}
+
 {% else %}
 <h3>{{_('You have not made any orders yet!')}}</h3>
 {% endif %}

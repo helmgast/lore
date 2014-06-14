@@ -115,11 +115,11 @@ def setup_customer():
                       publisher='Helmgast AB',
                       family='Eon',
                       type=ProductTypes.book,
-                      price=45,
+                      price=999,
                       currency=Currencies.eur,
                       status=ProductStatus.available).save()
   grundboken_digital = Product(title='Eon IV - Grundbok PDF',
-                               description='PDF för Grundboken',
+                               description='PDF för Grundboken - ladda ned nu!',
                                publisher='Helmgast AB',
                                family='Eon',
                                type=ProductTypes.digital,
@@ -127,7 +127,7 @@ def setup_customer():
                                currency=Currencies.eur,
                                status=ProductStatus.ready_for_download).save()
   spelpaketet_digital = Product(title='Eon IV - Spelpaketet PDF',
-                                description='PDF för Spelpaketet',
+                                description='PDF för Spelpaketet. Kommer göras tillgänglig senare!',
                                 publisher='Helmgast AB',
                                 family='Eon',
                                 type=ProductTypes.digital,

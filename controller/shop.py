@@ -12,7 +12,7 @@ import os
 import re
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, RacBaseForm, ResourceError
+from resource import ResourceHandler, ResourceRoutingStrategy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.babel import lazy_gettext as _
@@ -20,7 +20,7 @@ from flask.ext.babel import lazy_gettext as _
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
-product_strategy = ResourceAccessStrategy(Product, 'products', 'slug',
+product_strategy = ResourceRoutingStrategy(Product, 'products', 'slug',
   short_url=False, form_class=model_form(Product, base_class=RacBaseForm,
   exclude=['slug'], converter=RacModelConverter()))
 
@@ -36,7 +36,7 @@ class ProductHandler(ResourceHandler):
 ProductHandler.register_urls(shop_app, product_strategy)
 
 
-order_strategy = ResourceAccessStrategy(Order, 'orders', form_class=model_form(
+order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
   Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
   'shipping_mobile']))
 

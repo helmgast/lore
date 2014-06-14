@@ -148,14 +148,16 @@ def configure_blueprints(app):
   auth = Auth(app, db, user_model=User)
   app.login_required = auth.login_required
   
-  with app.app_context():
+  app.access_policy = {} # Set up dict for access policies to be stored in
 
+  with app.app_context():
+    
     from controller.world import world_app as world
     from controller.social import social
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
-    from resource import ResourceError, ResourceHandler, ResourceAccessStrategy, RacModelConverter
+    from resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
     app.register_blueprint(world)
@@ -172,6 +174,10 @@ def configure_hooks(app):
   @app.before_request
   def load_user():
     g.feature = app_features
+
+  @app.context_processor
+  def inject_access():
+    return dict(access_policy=app.access_policy)
 
 def configure_logging(app):
   import logging
@@ -251,14 +257,14 @@ def register_main_routes(app, auth):
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm, AdminEmailForm
-  from resource import ResourceAccessStrategy, RacModelConverter, ResourceHandler
+  from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler
   from mailer import render_mail
 
   @app.route('/')
   def homepage():
     world = world_strategy.query_item(world='helmgast')
     search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
-    return render_template('marco.html', articles=search_result['articles'], world=world, visibility=article_strategy.get_visibility('list'))
+    return render_template('marco.html', articles=search_result['articles'], world=world)
     # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
   @app.route('/admin/', methods=['GET', 'POST'])
@@ -321,7 +327,7 @@ def register_main_routes(app, auth):
     response.mimetype = asset.mime_type
     return response
 
-  imageasset_strategy = ResourceAccessStrategy(ImageAsset, 'images', form_class=
+  imageasset_strategy = ResourceRoutingStrategy(ImageAsset, 'images', form_class=
     model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
   class ImageAssetHandler(ResourceHandler):
     def new(self, r):

@@ -203,6 +203,9 @@ msgstr "Fraktkostnad"
 msgid "Shipping Address"
 msgstr "Leveransadress"
 
+msgid "Address"
+msgstr "Adress"
+
 msgid "Name in Acknowledgement"
 msgstr "Namn i boken"
 
@@ -340,7 +343,7 @@ msgid "Order Info"
 msgstr "Orderinfo"
 
 msgid "Seller Info"
-msgstr "Säljarinto"
+msgstr "Säljarinfo"
 
 msgid "Contact Us"
 msgstr "Kontakta oss"
@@ -1341,9 +1344,6 @@ msgstr "Lon"
 msgid "Lat"
 msgstr "Lat"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:150
-msgid "URL"
-msgstr "Address"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:152
 msgid "Started"
@@ -1404,7 +1404,7 @@ msgstr "Efter tid"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:4
 msgid "any fictional world at your fingertips"
-msgstr "fantastiska världar i dina händer"
+msgstr "rollspelsvärldar bara ett klick bort"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:16
 msgid "All worlds"

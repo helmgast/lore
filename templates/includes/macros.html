@@ -61,6 +61,14 @@
   </div>
 {%- endmacro -%}
 
+{%- macro AUTHORIZED(auth) -%}
+  {% if auth %}
+    {{ caller("privileged" if auth.is_privileged() else '') }}
+  {% endif %}
+{%- endmacro -%}
+
+
+
 {%- macro IS_USER(user=None) -%}
   {% if g.user and (not user or g.user == user or g.user.admin) %}
      {{ caller() }}

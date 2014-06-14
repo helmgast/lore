@@ -958,3 +958,33 @@ input[type="radio"]:checked + img {
 	border-width: 36px;
 	margin-top: -36px;
 }
+
+.privileged>a:hover:before {
+  display: block;
+  position: absolute; 
+  padding: .5em;
+  content: 'Not all users can see this';
+  min-width: 120px;
+  text-align: center;
+  width: auto;
+  height: auto;
+  white-space: nowrap;
+  bottom: -20px;
+  background: rgba(0,0,0,.8);
+  -moz-border-radius:10px;
+  -webkit-border-radius:10px;
+  border-radius:10px;    
+  color: #fff;
+  font-size: .75em;
+}
+
+.privileged>a:after {	
+	position: absolute;
+  display: inline-block;
+  font-family: 'Glyphicons Halflings';
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+content: "\e106";
+	margin-left: 10px;
+}

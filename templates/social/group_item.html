@@ -1,6 +1,5 @@
 {% extends "social/base.html" if not parent_template else parent_template %}
-
-{% from 'includes/components.html' import FORM_FIELD %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% set members=group.members if group else [] %}
 
@@ -41,9 +40,9 @@
   </div>
   <div class="col-md-6">
     <h5>{{ _('Details') }}</h5>
-    {{ FORM_FIELD(group_form.description) if group_form else group.description }}
-    {{ FORM_FIELD(group_form.name) if group_form else group.name }}
-    {{ FORM_FIELD(group_form.location) if group_form else group.location }}
+    {{ MACRO.FORM_FIELD(group_form.description) if group_form else group.description }}
+    {{ MACRO.FORM_FIELD(group_form.name) if group_form else group.name }}
+    {{ MACRO.FORM_FIELD(group_form.location) if group_form else group.location }}
 
     <table class="table">
       <tr><td><strong>{{ _('Members') }}</strong></td>

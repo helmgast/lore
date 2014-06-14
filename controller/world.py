@@ -4,7 +4,7 @@
 
     This is the controller and Flask blueprint for game world features,
     it initializes URL routes based on the Resource module and specific
-    ResourceAccessStrategy for each world related model class. This module is then
+    ResourceRoutingStrategy for each world related model class. This module is then
     responsible for taking incoming URL requests, parse their parameters,
     perform operations on the Model classes and then return responses via 
     associated template files.
@@ -20,7 +20,7 @@ from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 from gridfs.errors import FileExists
-from resource import ResourceHandler, ResourceAccessStrategy, RacModelConverter, ArticleBaseForm
+from resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, ArticleBaseForm
 from extensions import db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta
@@ -34,7 +34,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_strategy = ResourceAccessStrategy(World, 'worlds', 'slug', short_url=True)
+world_strategy = ResourceRoutingStrategy(World, 'worlds', 'slug', short_url=True)
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):
@@ -57,7 +57,8 @@ def publish_filter(qr):
   elif g.user.admin:
     return qr
   else:
-    logger.debug("Filtering to %s" % qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
+    logger.debug("Filtering to %s" % qr.filter(Q(status=PublishStatus.published, 
+      created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
     return qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
 
 
@@ -78,7 +79,8 @@ class ArticleHandler(ResourceHandler):
     world = r['parents']['world']
     feed = AtomFeed(_('Recent Articles in ')+world.title,
       feed_url=request.url, url=request.url_root)
-    articles = Article.objects(status=PublishStatus.published, created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
+    articles = Article.objects(status=PublishStatus.published, 
+      created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
     for article in articles:
         # print current_app.md._instance.convert(article.content), type(current_app.md._instance.convert(article.content))
         feed.add(article.title, current_app.md._instance.convert(article.content),
@@ -90,20 +92,32 @@ class ArticleHandler(ResourceHandler):
     r['response'] = feed.get_response()
     return r
 
-article_strategy = ResourceAccessStrategy(Article, 'articles', 'slug', parent_strategy=world_strategy, short_url=True,
-                                          list_filters=publish_filter,
-                                          form_class=model_form(Article, base_class=ArticleBaseForm, exclude=['slug'], converter=RacModelConverter()))
+article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug', 
+  parent_strategy=world_strategy, 
+  short_url=True,
+  list_filters=publish_filter,
+  form_class=model_form(Article, 
+  base_class=ArticleBaseForm, 
+  exclude=['slug'], 
+  converter=RacModelConverter()))
+
 ArticleHandler.register_urls(world_app, article_strategy)
 
-article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations', None, parent_strategy=article_strategy)
+# @current_app.context_processor
+# def inject_access():
+#     print _app_ctx_stack.top
+#     return dict(article_access=article_strategy.access)
+
+article_relation_strategy = ResourceRoutingStrategy(ArticleRelation, 'relations', 
+  None, parent_strategy=article_strategy)
 
 ResourceHandler.register_urls(world_app, article_relation_strategy)
 
-
-@world_app.route('/hej')
-def index():
-    worlds = World.objects()
-    return render_template('world/world_list.html', worlds=worlds)
+# Not needed, now that World has same root as main app
+# @world_app.route('/hej')
+# def index():
+#     worlds = World.objects()
+#     return render_template('world/world_list.html', worlds=worlds)
 
 def rows(objects, char_per_row=40, min_rows=10):
   found = 0

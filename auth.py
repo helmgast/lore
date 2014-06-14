@@ -251,7 +251,7 @@ class Auth(object):
                   match the ones in external auth, you have to verify it manually, \
                   please check your inbox"), 'success')
             except Exception as e:
-              flash( u'%s %s: %s' % (_('Error verifying with'), form.external_data.service, e), 'warning') 
+              flash( u'%s %s: %s' % (_('Error verifying with'), form.external_service.data, e), 'warning') 
 
         elif form.email_token.data:
           # User is not using external auth but came here with email token, so
@@ -290,8 +290,7 @@ class Auth(object):
             print "Sending verification email" #TODO
             flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
       else:
-        raise Exception()
-        flash( _('Error in form')+form.errors, 'warning')
+        flash( u"%s: %s" % (_('Error in form'), form.errors), 'warning')
 
     return render_template('auth/auth_form.html', form=form, op=op)
 
@@ -332,8 +331,7 @@ class Auth(object):
       elif form.validate():
         try:
           user = self.User.objects(email=form.email.data).get()
-          if form.password.data == 'testpass':
-          # if user.status=='active' and user.check_password(form.password.data):
+          if user.status=='active' and user.check_password(form.password.data):
             self.login_user(user)
             return redirect(self.get_next_url())
           else:

@@ -1,5 +1,5 @@
 {% extends "world/base.html" if not parent_template else parent_template %}
-
+{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
@@ -11,8 +11,8 @@
       <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
       <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
       <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-    {% call IS_USER() %}
-      <li class="dropdown">
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new')) %}
+      <li class="dropdown {{privileged}}">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
@@ -44,8 +44,7 @@
   {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
   <ul>
     {% for article in world.articles() %}
-
-    <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}</a>  <span>[{{ article.type }}]</span></li>
+      <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{ article.title }}</a>  <span>[{{ article.type }}]</span></li>
     {% endfor %}
   </ul>
   {#{% include "includes/pagination.html" %}

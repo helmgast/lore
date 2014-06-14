@@ -67,7 +67,7 @@
           </li>
           <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if
             g.feature and g.feature["social"] %}<a
-            href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else
+            href="{{url_for('social.user_view', user=article.creator.id)}}">{{article.creator}}</a>{% else
             %}{{article.creator}}{%endif%}{% else %}System{%endif%}
           </li>
         </ul>
