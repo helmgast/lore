@@ -100,7 +100,7 @@ article_relation_strategy = ResourceAccessStrategy(ArticleRelation, 'relations',
 ResourceHandler.register_urls(world_app, article_relation_strategy)
 
 
-@world_app.route('/')
+@world_app.route('/hej')
 def index():
     worlds = World.objects()
     return render_template('world/world_list.html', worlds=worlds)

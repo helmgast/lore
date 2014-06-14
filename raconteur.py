@@ -19,8 +19,6 @@ from time import gmtime, strftime
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
 # Public = Everyone is allowed to log in and create new accounts
-from tools import customer_data
-
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = "private", "protected", "public"
 STATE_TYPES = ((STATE_PRIVATE, _('Private')),
               (STATE_PROTECTED, _('Protected')),
@@ -197,19 +195,10 @@ def init_actions(app, init_mode):
   if init_mode:
     if init_mode=='reset':
       setup_models(app)
-    elif init_mode=="import":
-      import_orders(app)
     elif init_mode=='lang':
       setup_language()
     elif init_mode=='test':
       run_tests()
-
-def import_orders(app):
-  app.logger.info("Importing customer data")
-  print app.config['MONGODB_SETTINGS']
-  from mongoengine.connection import get_db
-  db = get_db()
-  customer_data.setup_customer()
 
 def setup_models(app):
   app.logger.info("Resetting data models")
@@ -358,6 +347,13 @@ def register_main_routes(app, auth):
       r['next'] = url_for('asset', slug=item.slug)
       return r
   ImageAssetHandler.register_urls(app, imageasset_strategy)
+
+  @app.template_filter('hidenone')
+  def filter_supress_none(val, default=''):
+    if not val is None:
+      return val
+    else:
+      return default
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

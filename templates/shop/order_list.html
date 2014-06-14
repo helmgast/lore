@@ -3,6 +3,14 @@
 {% block content_title %}{{ _('Orders') }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+{% set order_statuses = {
+  'cart' : _('Cart'),
+  'ordered' : _('Ordered'),
+  'paid' : _('Paid'),
+  'shipped' : _('Shipped'),
+  'error' : _('Error')}
+%}
+
 {% block content %}
 {% if orders %}
 <table class="table">
@@ -22,7 +30,7 @@
 		<td>{{order.user}}</td>
 		<td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
 		<td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{order.status}}</td>
+		<td>{{order_statuses[order.status]}}</td>
 	</tr>
 	{% endfor %}
 </tbody>

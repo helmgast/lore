@@ -14,8 +14,8 @@
           <img class="avatar" src="{{ user.gravatar_url() }}" />
           <strong class="message_name">{{user}}</strong>
         </a></td>
-        <td>{{user.realname}}</td>
-        <td>{{user.location}}</td>
+        <td>{{user.realname|hidenone}}</td>
+        <td>{{user.location|hidenone}}</td>
         <td>
         {#
         <div class="btn-toolbar">

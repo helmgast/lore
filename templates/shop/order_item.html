@@ -3,8 +3,7 @@
 {% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS, FORM_FIELD_INLINE %}
 
 {% block content_title %}{{ _('Cart') if order.status=='cart' else _('Order') }}{% endblock %}
-{% block content_tagline %}{{ '%s %s, %s %s' % (_('by'), order.user, _('placed'), order.created.strftime('%Y-%m-%d %H:%M')) if order.status != 'cart' }} 
-{% endblock %}
+{% block content_tagline %}{% endblock %}
 
 {% set prod_types = {
   'book':_('Book'),
@@ -17,6 +16,15 @@
   'eur' : '€ %s',
   'sek' : '%s :-'
 }%}
+
+{% set order_statuses = {
+  'cart' : _('Cart'),
+  'ordered' : _('Ordered'),
+  'paid' : _('Paid'),
+  'shipped' : _('Shipped'),
+  'error' : _('Error')}
+%}
+
 {#
   What user can edit in different order stages:
   cart: editable list, editable quantity, address, editable comment
@@ -26,7 +34,31 @@
 #}
 
 {% block content %}{% block inline %}
-<a href="{{ url_for('auth.join', email=order.user.email, email_token=order.user.create_token(), next=request.path) }}">Temporär länk till användaren</a> (länk till registreringen, hitta på ett lösenord, fungerar högst en gång per användare)
+{% if order.status != 'cart' %}
+<div class="row">
+  <div class="col-md-4 col-sm-6">
+  <h4>{{_('Order Info')}}</h4>
+  <table class="table table-condensed">
+    <tr><th>{{_('Name')}}</th><td>{{order.user.realname|hidenone(_('No name'))}}</td></tr>
+    <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
+    <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+    <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+    <tr><th>{{_('Status')}}</th><td>{{order_statuses[order.status]}}</td></tr>
+  </table>
+  </div>
+  <div class="col-md-4 col-md-offset-4 col-sm-6">
+  <h4>{{_('Seller Info')}}</h4>
+    <table class="table table-condensed">
+    <tr><th>{{_('Publisher')}}</th><td>Helmgast AB</td></tr>
+    <tr><th>{{_('Email')}}</th><td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td></tr>
+    <tr><th>{{_('Address')}}</th><td>
+    Surbrunnsgatan 33<br>
+    Stockholm 113 48<br>
+    </td></tr>
+  </table>
+  </div>
+</div>
+{% endif %}
 {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
   {% if order.order_lines %}
     <div class="row underline-row">
@@ -35,14 +67,14 @@
         <div class="col-md-offset-6">
          <ul class="product-details">
               <li><strong>{{_('Product Type')}}</strong></li>
-              <li><strong>{{_('Price')}}</strong></li>
               <li><strong>{{_('Quantity')}}</strong></li>
+              <li><strong>{{_('Price')}}</strong></li>
               <li><strong>{{_('Total')}}</strong></li>
         </ul>
         </div>
       </div>
     </div>
-    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if order.status == 'cart'}}>
+    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
     {% for line in order.order_lines %}
     <div class="product row underline-row">
       <div class="col-xs-2 col-md-2">
@@ -61,7 +93,6 @@
           <div class="col-md-6">
             <ul class="product-details">
               <li class="product-type">{{ prod_types[line.product.type] }}</li>
-              <li class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</li>
               <li>
               {% if order_form and order.status=='cart' %}
                 {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
@@ -69,6 +100,7 @@
                 {{ line.quantity }}
               {% endif %}
               </li>
+              <li class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</li>
               <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
             
@@ -76,6 +108,8 @@
             <div class="form-group">
             <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in Acknowledgement')}}</label>
             {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+            {% elif line.comment %}
+             {{_('Name')+': '+line.comment }}
             {% endif %}
           </div>   
         </div>
@@ -85,18 +119,32 @@
     {% endfor %}
     </div>
     <div class="row" style="margin-top: 20px">
-      <div class="col-md-8">
+      <div class="col-md-4 col-md-push-8">
+        <table class="table product-subtotals">
+          <tr><td>{{_('Including tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
+        </table>
+      </div>
+      <div class="col-md-8 col-md-pull-4">
+      <h4>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h4>
+
       {% if order_form and order.status != 'shipping' %}
         {{FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
         {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_mobile, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        <div class="form-group clearfix">
+          <label class="control-label  col-sm-3" for="shipping_mobile">{{order_form.shipping_mobile.label}}</label>
+          <div class="col-sm-9">
+            {{order_form.shipping_mobile(class="form-control")}}
+            <span class="help-block">För SMS-avisering</span>
+          </div>
+        </div>
       {% else %}
         <div class="form-group clearfix">
           <div class="col-sm-3"><strong>{{_('Name')}}</strong></div>
-          <div class="col-sm-9 large-text">{{order.shipping_address.name}}</div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.name|default('test')}}</div>
         </div>
         <div class="form-group clearfix">
           <div class="col-sm-3"><strong>{{_('Street')}}</strong></div>
@@ -118,19 +166,20 @@
         </div>
       {% endif %}
       </div>
-      <div class="col-md-4">
-        <table class="table product-subtotals">
-          <tr><td>{{_('Including tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
-          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
-        </table>
-      </div>
     </div>
     <div class="row">
-      <div class="col-md-offset-8 pull-right">
-        <button type="submit" class="btn btn-primary btn-lg">{{ _('Save') }}</button>
+      <div class="col-md-offset-8">
+        {% if order_form %}
+        <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
+          {% if order.status != 'cart' %}
+          <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block">{{ _('Contact Us') }}</a>
+          {% endif %}
+        {% else %}
+        <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
+        {% endif %}
 
       {% if order_form and order.status == 'cart' %}
-        <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
       {% endif %}
       </div>
     </div>

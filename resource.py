@@ -21,6 +21,7 @@ from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.ext.mongoengine.wtf.fields import ModelSelectField
 from flask.views import View
+from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
@@ -106,15 +107,6 @@ class ArticleBaseForm(RacBaseForm):
       # Tell the Article we have changed type
       obj.change_type(new_type)
     super(ArticleBaseForm, self).populate_obj(obj)
-    # for name, field in iteritems(self._fields):
-    #     # Avoid populating meta fields that are not currently active
-    #     if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
-    #         logger = logging.getLogger(__name__)
-    #         logger.info("Skipping populating %s, as it's in %s and is != %s", name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
-    #         pass
-    #     else:
-    #         field.populate_obj(obj, name)
-
 
 class RacModelSelectField(ModelSelectField):
   # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
@@ -237,7 +229,7 @@ class ResourcePrivacyPolicy:
 class ResourceAccessStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
     parent_strategy=None, parent_reference_field=None, short_url=False, 
-    list_filters=None, use_subdomain=False, security_policy=ResourceSecurityPolicy()):
+    list_filters=None, use_subdomain=False, security_policy=None):
     if use_subdomain and parent_strategy:
       raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
@@ -261,7 +253,7 @@ class ResourceAccessStrategy:
     self.default_list_filters = list_filters
     # The field name pointing to a parent resource for this resource, e.g. article.world
     self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
-    self.security = security_policy
+    self.security = security_policy if security_policy else ResourceSecurityPolicy()
 
   def get_url_path(self, part, op=None):
     parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
@@ -352,15 +344,15 @@ class ResourceAccessStrategy:
 class ResourceError(Exception):
 
   default_messages = {
-    400: "Bad request or invalid input",
-    401: "Unathorized access, please login",
-    403: "Forbidden, this is not an allowed operation",
-    404: "Resource not found",
-    500: "Internal server error"
+    400: _("Bad request or invalid input"),
+    401: _("Unathorized access, please login"),
+    403: _("Forbidden, this is not an allowed operation"),
+    404: _("Resource not found"),
+    500: _("Internal server error")
   }
 
   def __init__(self, status_code, r=None, message=None):
-    message = message if message else self.default_messages.get(status_code, 'Unknown error')
+    message = message if message else self.default_messages.get(status_code, _('Unknown error'))
     Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
     self.message = message

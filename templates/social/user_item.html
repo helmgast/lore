@@ -3,8 +3,8 @@
 {% from 'includes/components.html' import FORM_FIELD_COLS %}
 
 
-{% block content_title %}{{ user.username }}{% endblock %}
-{% block content_tagline %}{{ user.realname }}{% endblock %}
+{% block content_title %}{{ user }}{% endblock %}
+{% block content_tagline %}{{ user.realname if user.username else ''}}{% endblock %}
 
 {% block sidebar %}{{super()}}
   {% call IS_USER(user) %}
@@ -16,11 +16,12 @@
 {%endblock%}
 
 {% block content %}
+<a href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=request.path) }}">Temporär länk till användaren</a> (länk till registreringen, hitta på ett lösenord, fungerar högst en gång per användare)
 {% if user_form %}<form class="form-horizontal" role="form" id='userform' method="post" action="{{ user_form.action_url }}">{%endif%}
 <div class="row">
   <div class="col-md-4">
-    <img src="{{ user.gravatar_url(256) }}" class="img-polaroid"/>
-    <h4 class="pagination-centered">{{ user.exp }} XP</h4>
+    <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
+    {#<h4 class="pagination-centered">{{ user.exp }} XP</h4>#}
     <div class="btn-toolbar">
 {#        {% if resouxrce.op == 'view' %}
       <button type="button" class="btn btn-small m_action
@@ -53,19 +54,21 @@
       <tr><td><strong>{{ _('Email') }}</strong></td>
       <td><small>{{ user.email }}</small></td></tr>      
       <tr><td><strong>{{ _('Username') }}</strong></td>
-      <td><small>{{ user.username }}</small></td></tr>      
+      <td><small>{{ user.username|hidenone }}</small></td></tr>      
       <tr><td><strong>{{ _('Name') }}</strong></td>
-      <td>{{ user.realname }}</td></tr>
+      <td>{{ user.realname|hidenone }}</td></tr>
       <tr><td><strong>{{ _('Location') }}</strong></td>
-      <td>{{ user.location }}</td></tr>
+      <td>{{ user.location|hidenone }}</td></tr>
       <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+      {#
       <tr><td><strong>{{ _('Following') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
       <tr><td><strong>{{ _('Followers') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
+      #}
     </table>
-    <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description }}</div>
+    <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|hidenone(_('Empty...')) }}</div>
     {% endif %}
   </div>
 </div> 

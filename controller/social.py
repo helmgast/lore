@@ -39,7 +39,7 @@ user_form.password = PasswordField(_('New Password'), [
   validators.EqualTo('confirm', message=_('Passwords must match')),
   validators.Length(max=40)])
 
-user_strategy = ResourceAccessStrategy(User, 'users', 'username', form_class=user_form, security_policy=SameUserSecurityPolicy())
+user_strategy = ResourceAccessStrategy(User, 'users', 'username', form_class=user_form)
 ResourceHandler.register_urls(social, user_strategy)
 
 group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
