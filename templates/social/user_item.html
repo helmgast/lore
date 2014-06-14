@@ -16,6 +16,7 @@
 {%endblock%}
 
 {% block content %}
+<a href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=request.path) }}">Temporär länk till användaren</a> (länk till registreringen, hitta på ett lösenord, fungerar högst en gång per användare)
 {% if user_form %}<form class="form-horizontal" role="form" id='userform' method="post" action="{{ user_form.action_url }}">{%endif%}
 <div class="row">
   <div class="col-md-4">

@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="row">
-    {% for world in worlds %}
+    {% for world in blubb %}
     <div class="col-md-5 col-xs-6 world_item">
         <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a>
         <br><small>{{ world.description }}</small></h3>
@@ -17,6 +17,10 @@
         </dl>
     </div>
     {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
+    {% else %}
+    <div class="jumbotron text-center">
+    <h2>{{_('Aeon is working on some worlds, please check back later!')}}</h2>
+    </div>
     {% endfor %} 
   </div>
   {% include "includes/pagination.html" %}

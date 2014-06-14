@@ -348,6 +348,8 @@ msgstr "Kontakta oss"
 msgid "About order from"
 msgstr "Gällande order"
 
+msgid "Aeon is working on some worlds, please check back later!"
+msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:55
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:9
