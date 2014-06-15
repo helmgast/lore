@@ -199,8 +199,8 @@ class Auth(object):
     # bb@bb.com, 9db26ad4ea2469e547f45b873c19ff99
 
     print request.form
-    if g.feature and not g.feature['join']:
-      raise ResourceError(403)
+    # if g.feature and not g.feature['join']:
+    #   raise ResourceError(403)
 
     form = self.JoinForm()
     op = 'join'

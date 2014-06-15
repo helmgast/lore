@@ -13,7 +13,6 @@ from flask import Flask, Markup, render_template, request, redirect, url_for, fl
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
-from tasks import make_celery
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -37,7 +36,7 @@ app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
   FEATURE_SOCIAL: True,
-  FEATURE_JOIN: True,
+  FEATURE_JOIN: False,
   FEATURE_SHOP: True
 }
 
@@ -137,10 +136,10 @@ def configure_extensions(app):
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
-  try:
-    app.celery = make_celery(app)
-  except KeyError as e:
-    app.logger.warning("Missing config %s" % e)
+  # try:
+  #   app.celery = make_celery(app)
+  # except KeyError as e:
+  #   app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
   from model.user import User, ExternalAuth
@@ -201,10 +200,21 @@ def init_actions(app, init_mode):
   if init_mode:
     if init_mode=='reset':
       setup_models(app)
+    elif init_mode=="import":
+      import_orders(app)
     elif init_mode=='lang':
       setup_language()
     elif init_mode=='test':
       run_tests()
+
+def import_orders(app):
+  from tools import customer_data
+
+  app.logger.info("Importing customer data")
+  print app.config['MONGODB_SETTINGS']
+  from mongoengine.connection import get_db
+  get_db()
+  customer_data.setup_customer()
 
 def setup_models(app):
   app.logger.info("Resetting data models")
