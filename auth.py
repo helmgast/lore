@@ -224,7 +224,7 @@ class Auth(object):
             # User is trying to create data from external auth (can come here both
             # with an email_token as well or without)
             try:
-              user = self.User.objects(email=form.email.data).get()
+              user = self.User.objects(email=form.email.data.lower()).get()
             except self.User.DoesNotExist:            
               user = self.User()
             # We could get here if someone puts in another person's email
