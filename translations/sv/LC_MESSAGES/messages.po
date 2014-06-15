@@ -1119,6 +1119,9 @@ msgstr "Alla produkter"
 msgid "Orders"
 msgstr "Orderhistorik"
 
+msgid "You have not made any orders yet!"
+msgstr "Du har inte gjort några beställningar ännu!"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:16
 msgid "New products"
 msgstr "Nya produkter"

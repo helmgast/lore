@@ -33,6 +33,7 @@ user_form.password = PasswordField(_('New Password'), [
   validators.Length(max=40)])
 
 class UserAccessPolicy(ResourceAccessPolicy):
+
   def authorize(self, op, instance=None):
     if op not in self.ops_levels:
       level = self.ops_levels['_default']
@@ -49,7 +50,7 @@ user_access = UserAccessPolicy({
   'edit':'private',
   'form_new':'private',
   '_default':'admin'
-  })
+  }, get_owner_func=lambda user: user) # return user itself to check for owner of a user object
 
 admin_only_access = ResourceAccessPolicy({'_default':'admin'})
 

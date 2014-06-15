@@ -189,7 +189,7 @@ class ResourceAccessPolicy(object):
   model_class = None
   levels = ['public', 'user', 'private', 'admin']
   
-  def __init__(self, ops_levels=None, user_field='user'):
+  def __init__(self, ops_levels=None, get_owner_func=None):
     if not ops_levels:
       self.ops_levels = {
         'view': 'public',
@@ -198,7 +198,10 @@ class ResourceAccessPolicy(object):
       }
     else:
       self.ops_levels = ops_levels
-    self.user_field = user_field
+    if not get_owner_func:
+      self.get_owner_func = lambda x: getattr(x, 'user', None)
+    else:
+      self.get_owner_func = get_owner_func
 
   def authorize(self, op, instance=None):
     if op not in self.ops_levels:
@@ -216,17 +219,19 @@ class ResourceAccessPolicy(object):
     elif level=='private':
       if not instance:
         return Authorization(False, 'Error: Cannot apply private access without an instance')
-      instance_user = getattr(instance, self.user_field, None)
-      if not instance_user:
+      instance_owner = self.get_owner_func(instance)
+      
+      if g.user and g.user.admin:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
+
+      if not instance_owner:
         return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (self.user_field, instance))
       elif not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
-      elif g.user.admin:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_user, op, instance))
-      elif not g.user == instance_user:
+      elif not g.user == instance_owner:
         return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
       else:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_user, op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
     elif level=='admin':
       if not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
