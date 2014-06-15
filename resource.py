@@ -427,7 +427,6 @@ class ResourceHandler(View):
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
-      print "%s %s" % (request.args.has_key('debug'), current_app.debug)
       if request.args.has_key('debug') and current_app.debug:
         raise # send onward if we are debugging
       if err.status_code == 400: # bad request
@@ -541,6 +540,7 @@ class ResourceHandler(View):
       r[self.strategy.resource_name] = r['item']
     r['parents'] = self.strategy.query_parents(**kwargs)
     r.update(r['parents'])
+    # print "url comps %s, r %s" % (kwargs, r)
     return r
 
   def view(self, r):

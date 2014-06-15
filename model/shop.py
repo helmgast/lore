@@ -36,10 +36,10 @@ class Product(db.Document):
   # should be required=True, but that currently maps to Required, not InputRequired validator
   # Required will check the value and 0 is determined as false, which blocks prices for 0
   price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
-  currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek)
+  currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Valuta'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset)
-  acknowledgement = db.BooleanField(default=False)
+  feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+  acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
 
   # Executes before saving
   def clean(self):

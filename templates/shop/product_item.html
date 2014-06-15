@@ -8,15 +8,23 @@
   'sek' : '%s :-'
 }%}
 
-{% block content_title %}{{product.title if product else "New product"}}{% endblock %}
+{% block content_title %}{{product.title if product else _("New product")}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list">
 <li class="nav-header">{{ _('Actions') }}</li>
-<li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+
+{% if not product %}
+{% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
+<li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+{% endcall %}
+{% endif %}
+
 {% if product %}
-  <li><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
+  <li class="{{privileged}}"><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% endcall %}
 {% endif %}
 </ul>
 {%endblock%}
@@ -41,7 +49,6 @@
     </div>
     <div class="col-md-4">
       {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
-
     </div>
   </div>
   <div class="row form-actions">

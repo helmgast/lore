@@ -13,7 +13,7 @@
   </a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
-  <li class="{{privileged}}"><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
+  <li class="{{privileged}}"><a href="{{ url_for('.product_list') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
   {% endcall %}
 
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list')) %}

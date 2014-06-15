@@ -172,12 +172,14 @@
           <div class="modal-content">Loading...</div>
       </div>
   </div>
+  {% endblock %}
 </div>
-{% endblock %}
 <footer>
+{% block footer %}
   <p class="text-center small">
   Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})  
   </p>
+{% endblock %}
 </footer>
 
 {% block final %}{% endblock %}

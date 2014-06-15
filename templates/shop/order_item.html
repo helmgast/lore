@@ -104,10 +104,18 @@
               <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
             
-            {% if order_form and line.product.acknowledgement %}
-            <div class="form-group">
-            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in Acknowledgement')}}</label>
-            {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+            {% if order_form %}
+              {% if line.product.acknowledgement %}
+              <div class="form-group">
+              <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
+              {% if not line.comment %}
+                {{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>              
+              {% else %}
+                {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+              {% endif %}
+              {% else %}
+              {{order_form.order_lines[loop.index0].comment(class="hide")}}
+              {% endif %}
             {% elif line.comment %}
              {{_('Name')+': '+line.comment }}
             {% endif %}

@@ -206,7 +206,7 @@ msgstr "Leveransadress"
 msgid "Address"
 msgstr "Adress"
 
-msgid "Name in Acknowledgement"
+msgid "Name in book"
 msgstr "Namn i boken"
 
 
@@ -258,8 +258,8 @@ msgstr "Utgivare"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:27
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/product_item.html:59
-msgid "Family"
-msgstr "Familj"
+msgid "Product Family"
+msgstr "Produktfamilj"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:28
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:68
@@ -947,11 +947,11 @@ msgstr "Läs mer"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:3
 msgid "Subscribe to our mailing list"
-msgstr "prenumerera på vårat nyhetsbrev"
+msgstr "Prenumerera på vårt nyhetsbrev"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:5
 msgid "email address"
-msgstr "email address"
+msgstr "emailadress"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:9
 msgid "Subscribe"
@@ -1122,6 +1122,9 @@ msgstr "Orderhistorik"
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:16
 msgid "New products"
 msgstr "Nya produkter"
+
+msgid "New product"
+msgstr "Ny produkt"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:18
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:26
@@ -1440,6 +1443,9 @@ msgstr "Regelsystem"
 
 msgid "Not all users can see this"
 msgstr "Inte alla användare kan se detta"
+
+msgid "Feature Image"
+msgstr "Presentationsbild"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"

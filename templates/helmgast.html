@@ -1,20 +1,158 @@
 {% extends "base.html" %}
+{% import 'includes/macros.html' as MACRO %}
 
+
+{% block body_class %}template-helmgast{% endblock %}
 {% block content_title %}Helmgast{% endblock %}
 {% block container_class %}container{% endblock %}
 
+{% block navbar %}
+<div class="jumbotron helmgast-header text-center">
+  <h1 class="h-shadow">HELMGAST</h1>
+  <h2>Vi gör rollspel</h2>
+</div>
+{{super()}}
+{% endblock %}
 
 {% block mainblock %}
-<div class="col-md-6">
-  <h1>{{ _('Welcome to') }} Helmgast</h1>
-  <p><i>"Raconteur - a person who tells anecdotes in a skillful and amusing way"</i></p>
-
-  <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
-  {% include "newsletter.html" %}
-
+<div class="row">
+	<div class="col-md-6">
+	  <h1>{{ _('Welcome to') }} Helmgast</h1>
+	  <h4><i>Ny utgivare av klassiska rollspelen Eon, Neotech <br> med många fler i pipelinen!</i></h4>
+	</div>
+	<div class="col-md-6">
+ 	{% include "newsletter.html" %}
+	</div>
 </div>
-<div class="col-md-6">
-  {{ self.content() }}
+<div class="row">
+{% for article in articles %}
+    <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
+      <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{ article.title }}</h3></a>
+    {% if article.feature_image %}
+      <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
+      <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+      </a>
+    {% endif %}
+	  <p class="lead">{% if article.description %}{{article.description}}{% else
+	    %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
+	    <a href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><em
+	    style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
+	  <hr-d>
+	    <ul class="list-inline article-meta" style="margin-bottom: 0;">
+	      <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
+	        {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+	      </li>
+	      <li title="{{ _('Creator') }}">
+	      <span class="glyphicon glyphicon-user"></span>
+	      {{article.creator if article.creator else 'System'}}
+	      </li>
+	    </ul>
+	  </hr-d>
+    </div>
+    {% else %}
+    <div class="jumbotron text-center">
+      <h2>{{ _('No articles yet!') }}</h2>
+    </div>
+    <!-- col-lg-4 -->
+	{% endfor %}
 </div>
+<div class="row">
+	<div class="col-lg-12">
+		<h2>Visioner av våra spel</h2>
+	</div>
+<div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port01.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port01.jpg') }}" alt="">
+      </a>
 
+      <p>RUINERNA</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port02.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port02.jpg') }}" alt="">
+      </a>
+
+      <p>FÅNGARNA</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port03.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port03.jpg') }}" alt="">
+      </a>
+
+      <p>SLAGFÄLTET</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port04.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port04.jpg') }}" alt="">
+      </a>
+
+      <p>ARKETYPEN LÄRD</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port05.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port05.jpg') }}" alt="">
+      </a>
+
+      <p>ARKETYPEN MYSTIKER</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port06.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port06.jpg') }}" alt="">
+      </a>
+
+      <p>ARKETYPEN KRIGARE</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port07.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port07.jpg') }}" alt="">
+      </a>
+
+      <p>PSYCHO TRIBE</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port08.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port08.jpg') }}" alt="">
+      </a>
+
+      <p>NATURAL CHILD</p>
+    </div>
+    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+      <a class="lightbox" href="{{ url_for('static', filename='img/front/port09.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port09.jpg') }}" alt="">
+      </a>
+
+      <p>LIVET I MING ESTATES</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3 col-xs-6">
+        <h4>Kontakt</h4>
+
+        <p>
+          info@helmgast.se
+        </p>
+
+        <p>
+          © 2014 Helmgast AB
+        </p>
+      </div>
+      <!-- --/col-lg-3 ---->
+      <div class="col-lg-3 col-xs-6">
+        <h4>Helmgastarna</h4>
+
+        <p>
+          Marco Behrmann<br/>
+          Paul Dali<br/>
+          Martin Fröjd<br/>
+          Niklas Fröjd<br/>
+          Petter Nallo<br/>
+          Anton Wahnström
+        </p>
+      </div>
+      <!-- --/col-lg-3 ---->
+    </div>
+    <!-- --/row ---->
+  </div>
+{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+  $('a.lightbox').imageselect();
+</script>
 {% endblock %}

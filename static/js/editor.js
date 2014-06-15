@@ -240,7 +240,7 @@ var editor = (function() {
 
 		var nodeNames = {};
 
-		while ( element.parentNode ) {
+		while ( element && element.parentNode ) {
 
 			if (element.id === 'content-editor') {
 				nodeNames['CONTENT-EDITOR'] = true

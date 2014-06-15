@@ -72,6 +72,10 @@ def inject_cart():
 
 class OrderHandler(ResourceHandler):
 
+  def edit(self, r):
+    r['next'] = url_for('.order_form_edit', order=r['item'].id)
+    return super(OrderHandler, self).edit(r)
+
   def list(self, r):
     if not (g.user and g.user.admin):
       filter = r.get('filter',{})
