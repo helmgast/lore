@@ -1524,8 +1524,7 @@ msgstr "Rekommenderat val!"
 
 
 msgid "Logging in with an external service is both <strong>safer</strong> and <strong>quicker</strong>. We will NOT post anything to your profile without asking, this is just for login!"
-msgstr "Att logga in med extern tjänst är både <strong>säkrare</strong> och <strong>snabbare</strong>. Vi kommer ALDRIG
-posta något till din profil utan att fråga, detta är bara för login!"
+msgstr "Att logga in med extern tjänst är både <strong>säkrare</strong> och <strong>snabbare</strong>. Vi kommer ALDRIG posta något till din profil utan att fråga, detta är bara för login!"
 
 msgid "Don't change, only this email is verified"
 msgstr "Ändra ej, den måste matcha din inbjudan"
