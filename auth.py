@@ -210,7 +210,7 @@ class Auth(object):
       # Need to deal with email and password specifically here.
       # If we are coming from here with external auth or email token, we shouldn't
       # change any existing password, so remove from form
-      if (form.auth_code.data and form.external_service.data) or form.email_token.data:
+      if (form.auth_code.data and form.external_service.data):
         # User is either using external auth or verifying an email, no need for
         # password so remove to make sure nothing can be changed
         del form.password

@@ -30,6 +30,9 @@ msgstr "Användarnamn"
 msgid "Password"
 msgstr "Lösenord"
 
+msgid "Minimum 8 characters!"
+msgstr "Minst 8 tecken långt!"
+
 #: /home/zaifon/Projects/fablr/raconteur/auth.py:54
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:64
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:53
