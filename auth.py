@@ -280,7 +280,7 @@ class Auth(object):
           if (create_token(form.email.data) == form.email_token.data):
             # Email has been verified, so we set to active and populate the user
             try:
-              user = self.User.objects(email=form.email.data).get()
+              user = self.User.objects(email=form.email.data.lower()).get()
               if user.status == 'invited':
                 user.status = 'active'
                 form.populate_obj(user) # any optional data that has been added
