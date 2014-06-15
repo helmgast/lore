@@ -200,10 +200,21 @@ def init_actions(app, init_mode):
   if init_mode:
     if init_mode=='reset':
       setup_models(app)
+    elif init_mode=="import":
+      import_orders(app)
     elif init_mode=='lang':
       setup_language()
     elif init_mode=='test':
       run_tests()
+
+def import_orders(app):
+  from tools import customer_data
+
+  app.logger.info("Importing customer data")
+  print app.config['MONGODB_SETTINGS']
+  from mongoengine.connection import get_db
+  get_db()
+  customer_data.setup_customer()
 
 def setup_models(app):
   app.logger.info("Resetting data models")

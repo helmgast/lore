@@ -229,6 +229,6 @@ def setup_customer():
       orders.append(order)
 
     print "importing %d orders" % len(orders)
-    for order in orders[1:]:
-      order.user.save()
-      order.save()
+    # for order in orders:
+    #   order.user.save()
+    #   order.save()
