@@ -53,7 +53,7 @@ class OrderLine(db.EmbeddedDocument):
   quantity = db.IntField(min_value=1, default=1, verbose_name=_('Quantity'))
   product = db.ReferenceField(Product, required=True, verbose_name=_('Product'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
-  comment = db.StringField(max_length=256, verbose_name=_('Comment'))
+  comment = db.StringField(max_length=99, verbose_name=_('Comment'))
 
 class Address(db.EmbeddedDocument):
   name = db.StringField(max_length=60, verbose_name=_('Name'))

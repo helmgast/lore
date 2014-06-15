@@ -22,6 +22,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
 
 product_access = ResourceAccessPolicy({
+  'view':'user',
   '_default':'admin'
 })
 
@@ -49,7 +50,7 @@ order_access = ResourceAccessPolicy({
 
 order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
   Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
-  'shipping_mobile']), access_policy=order_access)
+  'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
 @shop_app.route('/download-pdf/')
 def download_pdf():

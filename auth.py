@@ -41,8 +41,11 @@ def make_password(raw_password):
   return '%s$%s' % (salt, hsh)
 
 def check_password(raw_password, enc_password):
-  salt, hsh = enc_password.split('$', 1)
-  return hsh == get_hexdigest(salt, raw_password)
+  if enc_password and raw_password:
+    salt, hsh = enc_password.split('$', 1)
+    return hsh == get_hexdigest(salt, raw_password)
+  else:
+    return False
 
 def get_next():
   if not request.query_string:

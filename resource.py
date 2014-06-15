@@ -358,7 +358,8 @@ class ResourceError(Exception):
     self.status_code = status_code
     self.message = message
     if status_code == 400 and r and 'form' in r:
-      self.message += ", invalid fields %s" % r['form'].errors.keys()
+      self.message += ", invalid fields %s" % r['form'].errors
+      logger.warning("error in request %s with form.errors %s" % (request.form, r['form'].errors))
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
