@@ -37,7 +37,7 @@ def setup_customer():
                  currency=Currencies.eur,
                  status=ProductStatus.available).save()
   namn_i_boken = Product(title='Eon IV - Namn i boken',
-                         description='Som tack för att du crowdfundat får du ditt namn i boken.',
+                         description='Som tack för att du crowdfundat får du ditt namn i boken. Vänligen välj ett namn på högst 30 tecken.',
                          publisher='Helmgast AB',
                          family='Eon',
                          type=ProductTypes.digital,
@@ -46,7 +46,7 @@ def setup_customer():
                          status=ProductStatus.available,
                          acknowledgement=True).save()
   namn_i_boken_st = Product(title='Eon IV - Helgonnamn i boken',
-                            description='Som tack för att du crowdfundat får du ditt namn i boken skrivet som ett helgon (S:t).',
+                            description='Som tack för att du crowdfundat får du ditt namn i boken skrivet som ett helgon (S:t). Vänligen välj ett namn på högst 30 tecken.',
                             publisher='Helmgast AB',
                             family='Eon',
                             type=ProductTypes.digital,
