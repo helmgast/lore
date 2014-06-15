@@ -1,0 +1,37 @@
+{% extends "auth/base.html" %}
+{% import 'includes/macros.html' as MACRO %}
+
+{% block mainblock %}
+<form id="auth-form" method="post" action="" class="col-sm-4 col-sm-offset-4" role="form">
+  {% include "includes/flash.html" %}
+  <h2 class="form-signin-heading">{{ _('Please sign in') }}</h2>
+  <input type="hidden" name="next" value="{{ next }}" />
+  <div id="signin-buttons">
+    <span class="help-block">{{_('Join')}} {{_('with external provider (safer!)')}}</span>
+    <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Login via Google')}}</button>
+    <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Login via Facebook')}}</button>
+    <div class="popover right popover-external-auth">
+      <div class="arrow"></div>
+      <h3 class="popover-title">{{_('Choose method')}}</h3>
+      <div class="popover-content">
+        <p>{{_("Pick the sign-in method used when you signed up!")}}</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+  <h4>{{_('Login with own password')}}</h4>
+  <div class="clearfix" id="profile"></div>
+  
+  <div id="password-inputs">
+    {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
+    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) }}
+    <span class="help-block">{{_('Minimum 8 characters!')}}</span>
+  </div>
+  {{ form.external_service }}
+  {{ form.auth_code }}
+  {{ form.csrf_token }}
+
+  <button class="btn btn-signin btn-success btn-block" type="submit">{{ _('Sign in') }}</button>
+</form>
+{% endblock %}

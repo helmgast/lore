@@ -1,9 +1,7 @@
 {% extends "base.html" %}
-
 {% import 'includes/macros.html' as MACRO %}
 
 {% block jsimports %}
-
   <script type="text/javascript" async 
     src="https://plus.google.com/js/client:plusone.js?onload=start"></script>
   {{super()}}
@@ -22,11 +20,7 @@
   #}
 {% endblock %}
 
-{% if op=='join' %}
-  {% set title = _('Sign up') %}
-  {% set submit = _('Join') %}
-  {% set action = url_for('auth.join') %}
-  {% set option_args = {} %}
+{#
 {% elif op=='login' %}
   {% set title = _('Please sign in') %}
   {% set submit = _('Sign in') %}
@@ -38,9 +32,10 @@
   {% set action = url_for('auth.join') %}
   {% set option_args = {} %}
 {% endif %}
+#}
 
-{% block mainblock %}
-
+{% block navbar %}
+{{super()}}
 <script>
   // This is called with the results from from FB.getLoginStatus().
   // function statusChangeCallback(response) {
@@ -138,68 +133,41 @@
   //   });
   // }
 </script>
-
-<form id="auth-form" method="post" action="" class="col-sm-4 col-sm-offset-4" role="form">
-  {% include "includes/flash.html" %}
-  <h2 class="form-signin-heading">{{ title }}</h2>
-  <input type="hidden" name="next" value="{{ next }}" />
-  <div id="signin-buttons">
-    <span class="help-block">{{submit}} {{_('with external provider (safer!)')}}</span>
-    <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Sign in with Google')}}</button>
-    <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Sign in with Facebook')}}</button>
-  </div>
-  <hr>
-  <div id="profile"></div>
-
-  <span id="traditional-signup-text" class="help-block">{{submit}} {{_('with Fablr account')}}</span>
-  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
-  <div id="password-inputs">
-    {{_('Confirm Password')}}
-    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
-    {{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
-  </div>
-  {% if op!='login' %}
-  <div id="optional-inputs" class="well">
-    <span class="help-block">{{_('Optional details')}}</span>
-    {{ MACRO.FORM_FIELD_INLINE(form.username, controlclass="input-lg", **option_args)}}
-    {{ MACRO.FORM_FIELD_INLINE(form.realname, controlclass="input-lg", **option_args)}}
-    {{ MACRO.FORM_FIELD_INLINE(form.location, controlclass="input-lg", **option_args)}}
-    <div class="checkbox">
-    <label>
-      {{form.newsletter(**option_args)}}
-      {{_('Receive newsletter')}}
-    </label>
-    </div>
-  </div>
-  {% endif %}
-  {{ form.email_token if form.email_token }}
-  {{ form.external_service }}
-  {{ form.external_id }}
-  {{ form.auth_code }}
-  {{ form.csrf_token }}
-
-  <button class="btn btn-signin btn-success btn-block" type="submit">{{ submit }}</button>
-</form>
 {% endblock %}
+
 
 {% block final %}
 {{super()}}
 <script>
-$('#google-signin').click(function(e){
-  gapi.auth.signIn({
+
+$('#password-signin').click(function(e){
+	$('#signin-buttons').addClass('hide')
+	$('#password-inputs').removeClass('hide')
+    $('#optional-inputs input').attr('disabled', false)
+  	$('#optional-inputs').removeClass('hide')
+  	$('#signin-submit').attr('disabled', false)
+});
+
+//----------------------------------------------------------//
+
+$('#google-signin').click(googleInit);
+
+function googleInit() {
+	gapi.auth.signIn({
     'clientid': "852791556464-vbn49e0lkc9tvpferm4otdtbpjbk11r1.apps.googleusercontent.com",
     'scope': "https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.profile.emails.read",
     'redirecturi':"postmessage",
     'cookiepolicy': "single_host_origin",
-    'callback':"googleCallback" });
-});
+    'callback':"googleCallback"
+	});
+}
 
 function googleCallback(authResult) {  
   if (authResult['code']) {
-    $('#signin-buttons').hide()
-    $('#traditional-signup-text').hide()
-    $('#password-inputs').hide().find('input').attr('disabled', true)
+    $('#signin-buttons').addClass('hide')
+    $('#password-inputs').addClass('hide').find('input').attr('disabled', true)
     $('#optional-inputs input').attr('disabled', false)
+  	$('#optional-inputs').removeClass('hide')
 
     gapi.client.load('plus','v1', function(){
       var request = gapi.client.plus.people.get( {'userId' : 'me'} );
@@ -212,12 +180,15 @@ function googleCallback(authResult) {
         $('#auth_code').val(authResult['code'])
         $('#external_service').val('google')
         $('#realname').val(profile.displayName)
-        $('#email').val(profile.emails.length && profile.emails[0].value).focus()
+        var form_email = $('#email').val()
+        var google_email = profile.emails.length && profile.emails[0].value
+        if (!form_email)
+        	$('#email').val(google_email)
         $('#location').val(profile.placesLived.length && profile.placesLived[0].value)
-        $('#profile').append(
-            $('<p><img src=\"' + profile.image.url + '\"></p>'));
-        $('#profile').append(
-            $('<p>Hello ' + profile.displayName + '!</p>'));
+        var profileEl = '<img class="pull-left" src=\"' + profile.image.url + '\">'+
+        	'<p>Authorized with Google as ' + profile.displayName + ', associated email '+google_email+'!</p>'
+        $('#profile').html(profileEl);
+        $('#signin-submit').attr('disabled', false)
         // var signout = $('<button class="btn" type="button">Sign out from Google</button>')
         //   .click(function(e) {
         //     gapi.auth.signOut();
@@ -238,18 +209,26 @@ function googleCallback(authResult) {
 
 function facebookCallback(response) {
   console.log(response)
-  $('#signin-buttons').hide()
-  $('#traditional-signup-text').hide()
-  $('#password-inputs').hide().find('input').attr('disabled', true)
+  $('#signin-buttons').addClass('hide')
+  $('#password-inputs').addClass('hide').find('input').attr('disabled', true)
+  $('#optional-inputs').removeClass('hide')
   $('#optional-inputs input').attr('disabled', false)
   $('#external_service').val('facebook')
   $('#auth_code').val(response.authResponse.accessToken)
-  $('#external_id').val(response.authResponse.userID)
   FB.api('/me', function(response) {
-    console.log(response)
+    // console.log(response)
     $('#profile').html('You are authorized as, ' + response.name + '!')
     $('#realname').val(response.name)
-    $('#email').val(response.email).focus()
+    var form_email = $('#email').val()
+    if (!form_email)
+    	$('#email').val(response.email)
+    var profileEl = 
+    	'<p>Authorized with Facebook as '+ response.name + ', associated email '+response.email+'!</p>'
+    $('#profile').empty().append(profileEl);
+    FB.api('/me/picture?redirect=true', function(response) {
+    	$('#profile').prepend('<img class="pull-left" src=\"' + response.data.url + '\">')
+  	})
+  	$('#signin-submit').attr('disabled', false)
   });
 }
 

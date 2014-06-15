@@ -143,15 +143,15 @@ def configure_extensions(app):
     app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
-  from model.user import User
+  from model.user import User, ExternalAuth
   from auth import Auth
-  auth = Auth(app, db, user_model=User)
+  auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
   app.login_required = auth.login_required
   
   app.access_policy = {} # Set up dict for access policies to be stored in
 
   with app.app_context():
-    
+
     from controller.world import world_app as world
     from controller.social import social
     from controller.generator import generator

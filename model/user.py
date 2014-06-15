@@ -34,8 +34,7 @@ ExternalAuth = Choices(
 class ExternalAuth(db.EmbeddedDocument):
   id = db.StringField(required=True)
   long_token = db.StringField()
-  service = db.StringField(choices=ExternalAuth.to_tuples())
-  emails = db.ListField(db.EmailField)
+  emails = db.ListField(db.EmailField())
 
 # A user in the system
 class User(db.Document, BaseUser):
@@ -44,7 +43,7 @@ class User(db.Document, BaseUser):
   # Currently it's only a display name, not used for URLs!
   username = db.StringField(max_length=60, verbose_name=_('username'))
   password = db.StringField(max_length=60, min_length=8, verbose_name = _('password'))
-  email = db.EmailField(max_length=60, required=True, min_length=6, verbose_name = _('email'))
+  email = db.EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
   realname = db.StringField(max_length=60, verbose_name = _('real name'))
   location = db.StringField(max_length=60, verbose_name = _('location'))
   description = db.StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea

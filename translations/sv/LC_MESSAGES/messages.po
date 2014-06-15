@@ -110,17 +110,25 @@ msgstr "Allmän"
 msgid "Join"
 msgstr "Registrera"
 
-msgid "Sign in with Facebook"
-msgstr "Logga in med Facebook"
+msgid "Join via Facebook"
+msgstr "Registrera via Facebook"
 
-msgid "Sign in with Google"
-msgstr "Logga in med Google"
+msgid "Join via Google"
+msgstr "Registrera via Google"
+
+msgid "Join with own password"
+msgstr "Använd eget lösenord"
 
 msgid "Receive newsletter"
 msgstr "Prenumerera på nyhetsbrev"
 
 msgid "Optional details"
 msgstr "Frivilliga uppgifter"
+
+msgid "Recommended choice"
+msgstr "Rekommenderat val!"
+
+
 
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:29
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:189
@@ -1452,6 +1460,9 @@ msgstr "Inte alla användare kan se detta"
 
 msgid "Feature Image"
 msgstr "Presentationsbild"
+
+msgid "Pick your avatar at"
+msgstr "Välj din avatar hos"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"
