@@ -13,7 +13,6 @@ from flask import Flask, Markup, render_template, request, redirect, url_for, fl
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
-from tasks import make_celery
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -137,10 +136,10 @@ def configure_extensions(app):
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
-  try:
-    app.celery = make_celery(app)
-  except KeyError as e:
-    app.logger.warning("Missing config %s" % e)
+  # try:
+  #   app.celery = make_celery(app)
+  # except KeyError as e:
+  #   app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
   from model.user import User
