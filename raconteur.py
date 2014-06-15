@@ -36,7 +36,7 @@ app_features = {
   FEATURE_TOOLS: False,
   FEATURE_CAMPAIGN: False,
   FEATURE_SOCIAL: True,
-  FEATURE_JOIN: True,
+  FEATURE_JOIN: False,
   FEATURE_SHOP: True
 }
 
