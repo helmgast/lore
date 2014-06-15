@@ -1548,6 +1548,9 @@ msgstr "Identifierad av Facebook som"
 msgid "Registration without invite link is not yet open, please come back later!"
 msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
 
+msgid "Login with own password"
+msgstr "Logga in med eget lösenord"
+
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"
 
