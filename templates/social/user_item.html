@@ -83,6 +83,7 @@
   <a href="{{url_for('.user_delete', user=user.identifier())}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
   {% endif %}#}
 </div></form>{%endif%}
+{#
 <div class="row">
   <div class="col-md-5">
   <h4>{{ _('Groups') }}</h4>
@@ -121,4 +122,5 @@
     </ul>
   {% endif %}
 </div>
+#}
 {% endblock %}

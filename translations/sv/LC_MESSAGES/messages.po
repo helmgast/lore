@@ -1467,6 +1467,63 @@ msgstr "Presentationsbild"
 msgid "Pick your avatar at"
 msgstr "Välj din avatar hos"
 
+msgid "External Service"
+msgstr "Extern service"
+
+msgid "Email Token"
+msgstr "Email-token"
+
+msgid "Errors in form"
+msgstr "Fel i formuläret"
+
+msgid "No such user exist, are you sure you registered first?"
+msgstr "Ingen sådan användare existerar, är du säker på att du registrerat dig först?"
+
+msgid "Incorrect username or password"
+msgstr "Felaktigt användarnamn eller lösenord"
+
+msgid "Incorrect external service supplied"
+msgstr "Felaktig extern inloggningsservice angiven"
+
+msgid "Error contacting external service"
+msgstr "Fel under kommunikationen med extern inloggningsservice"
+
+msgid "No matching external authentication, are you sure you signed up with this method?"
+msgstr "Inget matchade konto för extern inloggning, är du säker på att du registrerade med denna metoden?"
+
+msgid "This user account is not active or verified"
+msgstr "Detta kontot är inte aktivt eller verifierat"
+
+msgid "A verification email have been sent out to"
+msgstr "Ett verifieringsemail har skickats till"
+
+msgid "A user with this email already exists"
+msgstr "En användare med denna email existerar redan"
+
+msgid "Incorrect email or email token, did you use the right link?"
+msgstr "Felaktig email eller email-token, använde du rätt länk?"
+
+msgid "No invitation for this email and token exists"
+msgstr "Ingen inbjudan existerar för denna email och/eller email-token"
+
+msgid "This user is already verified!"
+msgstr "Denna användaren är redan verifierad!"
+
+msgid "Form data has been manipulated, unsupported external auth service"
+msgstr "Formulärdatat kan ha manipulerats, vi stödjer inte denna inloggningstjänst"
+
+msgid "Someone has already created this user!"
+msgstr "Någon har redan skapat denna användaren!"
+
+msgid "There is a problem with your login, please contact us info@helmgast.se!"
+msgstr "Det är ett problem med din inloggning, var vänlig kontakta oss på info@helmgast.se"
+
+msgid "Error connecting to Google"
+msgstr "Fel under kommunikationen med Google"
+
+msgid "Error connecting to Facebook"
+msgstr "Fel under kommunikationen med Facebook"
+
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"
 

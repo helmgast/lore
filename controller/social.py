@@ -48,7 +48,7 @@ class UserAccessPolicy(ResourceAccessPolicy):
 user_access = UserAccessPolicy({
   'view':'private',
   'edit':'private',
-  'form_new':'private',
+  'form_edit':'private',
   '_default':'admin'
   }, get_owner_func=lambda user: user) # return user itself to check for owner of a user object
 

@@ -54,8 +54,7 @@ def get_next():
 
 
 def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
-  return input_string
-  #return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
+  return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
 
 class BaseUser(object):
     def set_password(self, password):
@@ -234,7 +233,7 @@ class Auth(object):
                 credentials, profile = self.connect_google(form.auth_code.data)
                 external_id, external_access_token = credentials.id_token['sub'], credentials.access_token
                 emails = [line['value'] for line in profile['emails']]
-                print "Google email", emails, profile['emails']
+                # print "Google email", emails, profile['emails']
                 if not (external_id or external_access_token):
                   raise ValueError('Error connecting to Google')
                 user.google_auth = self.ExternalAuth(
@@ -244,9 +243,9 @@ class Auth(object):
               elif form.external_service.data == 'facebook':
                 external_access_token, external_id, email = self.connect_facebook(form.auth_code.data)
                 emails = [email]
-                print "Facebook email", emails
+                # print "Facebook email", emails
                 if not (external_id or external_access_token):
-                  raise ValueError('Error connecting to Google')
+                  raise ValueError('Error connecting to Facebook')
                 user.facebook_auth = self.ExternalAuth(
                   id=external_id,
                   long_token=external_access_token, 
