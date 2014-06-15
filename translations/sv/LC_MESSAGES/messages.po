@@ -1551,7 +1551,7 @@ msgid "Login with own password"
 msgstr "Logga in med eget lösenord"
 
 msgid "If you encounter any problems during registration, please send an email to info@helmgast.se"
-msgstr "Om du stöter på några problem under registreringen, vänligen skicka att mail till info@helmgast.se"
+msgstr "Om du stöter på några problem under registreringen, vänligen skicka ett mail till info@helmgast.se"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"
