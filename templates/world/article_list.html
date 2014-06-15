@@ -25,7 +25,7 @@
     <div class="panel panel-default item-list">
     {% if articles|length == 0 %}{{ _('No articles yet!') }}{% else %}
         {% for group in groups %}
-            <h3>{{ group.grouper|capitalize }}</h3>
+            <h3>{{ _(group.grouper|capitalize) }}</h3>
             <div class="row">
             {% for article in group.list %}
                 <div class="media col-sm-6">

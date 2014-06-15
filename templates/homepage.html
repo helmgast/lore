@@ -16,7 +16,7 @@
     <p>
       <a class="btn btn-primary btn-lg">{{ _('Learn more') }}</a>
       {% call IS_ENABLED("join") %}
-        <a href="{{url_for('join')}}" class="btn btn-success btn-lg">{{ _('Join us!') }}</a>
+        <a href="{{url_for('auth.join')}}" class="btn btn-success btn-lg">{{ _('Join us!') }}</a>
       {% endcall %}
     </p>
   </div>

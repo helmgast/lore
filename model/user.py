@@ -9,9 +9,9 @@
 """
 
 from hashlib import md5
-from auth import BaseUser, make_password
+from auth import BaseUser, make_password, create_token
 from slugify import slugify
-from misc import now
+from misc import now, Choices
 from raconteur import db
 from flask.ext.mongoengine.wtf import model_form
 # i18n (Babel)
@@ -21,30 +21,32 @@ import logging
 from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
+UserStatus = Choices(
+    invited=_('Invited'), 
+    active=_('Active'),
+    deleted=_('Deleted'))
+ExternalAuth = Choices(
+    google='Google', 
+    facebook='Facebook')
+
 # A user in the system
 class User(db.Document, BaseUser):
-    username = db.StringField(unique=True, max_length=60)
-    password = db.StringField(max_length=60)
-    email = db.EmailField(max_length=60)
-    realname = db.StringField(max_length=60)
-    location = db.StringField(max_length=60)
-    description = db.StringField()  # TODO should have a max length, but if we set it, won't be rendered as TextArea
-    xp = db.IntField(default=0)
-    join_date = db.DateTimeField(default=now())
+    username = db.StringField(unique=True, max_length=60, verbose_name=_('username'))
+    password = db.StringField(max_length=60, min_length=8, verbose_name = _('password'))
+    email = db.EmailField(max_length=60, min_length=6, verbose_name = _('email'))
+    realname = db.StringField(max_length=60, verbose_name = _('real name'))
+    location = db.StringField(max_length=60, verbose_name = _('location'))
+    description = db.StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
+    xp = db.IntField(default=0, verbose_name = _('xp'))
+    join_date = db.DateTimeField(default=now(), verbose_name = _('join date'))
     # msglog = db.ReferenceField(Conversation)
-    active = db.BooleanField(default=True)
+    status = db.StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
     admin = db.BooleanField(default=False)
-    following = db.ListField(db.ReferenceField('self'))
+    external_access_token = db.StringField()
+    external_id = db.StringField()
+    external_service = db.StringField(choices=ExternalAuth.to_tuples())
 
-    #i18n
-    username.verbose_name = _('username')
-    password.verbose_name = _('password')
-    email.verbose_name = _('email')
-    realname.verbose_name = _('real name')
-    location.verbose_name = _('location')
-    description.verbose_name = _('description')
-    xp.verbose_name = _('xp')
-    join_date.verbose_name = _('join date')
+    following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
 
     def clean(self):
     # Our password hashes contain 46 characters, so we can check if the value
@@ -60,6 +62,9 @@ class User(db.Document, BaseUser):
 
     def log(self, msg):
         pass # TODO
+
+    def create_token(self):
+        return create_token(self.email)
 
     def groups(self):
         return Group.objects(members__user=self)
@@ -117,37 +122,38 @@ class Conversation(db.Document):
     def __unicode__(self):
         return u'conversation'
 
-MASTER, MEMBER, INVITED = 0,1,2
-ROLE_TYPES = ((MASTER, _('MASTER')),(MEMBER, _('MEMBER')),(INVITED, _('INVITED')))
+MemberRoles = Choices(
+    master=_('Master'), 
+    member=_('Member'),
+    invited=_('Invited'))
 class Member(db.EmbeddedDocument):
     user = db.ReferenceField(User)
-    role = db.IntField(choices=ROLE_TYPES, default=MEMBER)
+    role = db.StringField(choices=MemberRoles.to_tuples(), default=MemberRoles.member)
 
     def get_role(self):
-        return ROLE_TYPES[self.role][1]
+        return MemberRoles[self.role]
 
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
-GAME_GROUP, WORLD_GROUP, ARTICLE_GROUP = 1,2,3
-GROUP_TYPES = ((GAME_GROUP, 'gamegroup'),
-               (WORLD_GROUP, 'worldgroup'),
-               (ARTICLE_GROUP, 'articlegroup'))
+GroupTypes = Choices(   gamegroup=_('Game Group'), 
+                        worldgroup=_('World Group'), 
+                        articlegroup=_('Article Group'))
 class Group(db.Document):
     name = db.StringField(max_length=60, required=True)
     location = db.StringField(max_length=60)
     slug = db.StringField()
     description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
-    type = db.IntField(choices=GROUP_TYPES,default=GAME_GROUP)
+    type = db.StringField(choices=GroupTypes.to_tuples(),default=GroupTypes.gamegroup)
     members = db.ListField(db.EmbeddedDocumentField(Member))
 
     def __unicode__(self):
         return self.name
 
     def add_masters(self, new_masters):
-        self.members.extend([Member(user=m,role=MASTER) for m in new_masters])
+        self.members.extend([Member(user=m,role=MemberRoles.master) for m in new_masters])
 
     def add_members(self, new_members):
-        self.members.extend([Member(user=m,role=MEMBER) for m in new_members])
+        self.members.extend([Member(user=m,role=MemberRoles.master) for m in new_members])
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

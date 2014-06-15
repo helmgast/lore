@@ -1,0 +1,89 @@
+{% extends "shop/base.html" if not parent_template else parent_template %}
+
+{% from 'includes/components.html' import FORM_FIELD %}
+
+{% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
+
+{% block content_title %}{{product.title if product else "New product"}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list">
+<li class="nav-header">{{ _('Actions') }}</li>
+<li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+{% if product %}
+  <li><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% endif %}
+</ul>
+{%endblock%}
+
+{% block content %}{% block inline %}
+{% if product_form %}
+<img id="testimage">
+<form method="post" action="{{product_form.action_url}}">
+  <div class="row">
+    <div class="col-md-8">
+      {{ FORM_FIELD(product_form.title) }}
+      {{ FORM_FIELD(product_form.description) }}
+      {{ FORM_FIELD(product_form.publisher) }}
+      {{ FORM_FIELD(product_form.family) }}
+      {{ FORM_FIELD(product_form.created) }}
+      {{ FORM_FIELD(product_form.type) }}
+      {{ FORM_FIELD(product_form.price, required=True) }}
+      {{ FORM_FIELD(product_form.status) }}
+      {{ product_form.csrf_token }}
+    </div>
+    <div class="col-md-4">
+      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
+
+    </div>
+  </div>
+  <div class="row form-actions">
+    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+    <a href="{{url_for('.product_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+    {% if product %}
+      <a href="{{url_for('.product_delete', product=product.slug)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+    {% endif %}
+  </div>
+</form>
+{% else %}
+<div class="row">
+    <div class="col-md-4">
+      {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>
+      {% else %}
+        <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
+      {% endif %}
+    </div>
+    <div class="col-md-8">
+      <table class="table">
+        <tr><td><strong>{{ _('Title') }}</strong></td>
+        <td><small>{{ product.title }}</small></td></tr>      
+        <tr><td><strong>{{ _('Publisher') }}</strong></td>
+        <td><small>{{ product.publisher }}</small></td></tr>      
+        <tr><td><strong>{{ _('Family') }}</strong></td>
+        <td>{{ product.family }}</td></tr>
+        <tr><td><strong>{{ _('Created') }}</strong></td>
+        <td>{{ product.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+        <tr><td><strong>{{ _('Type') }}</strong></td>
+        <td><small>{{ product.type }}</small></td></tr>      
+        <tr><td><strong>{{ _('Price') }}</strong></td>
+        <td><small>{{ product.price|currency }}:-</small></td></tr>    
+        <tr><td><strong>{{ _('Status') }}</strong></td>
+        <td><small>{{ product.status }}</small></td></tr>      
+      </table>
+      <div class="well">{{ product.description }}</div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
+    image_upload_url: "{{url_for('imageasset_new', out='json')}}"
+  }
+</script>
+{% endblock %}

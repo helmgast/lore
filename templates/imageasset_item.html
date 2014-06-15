@@ -11,174 +11,39 @@
 </ul>
 <div class="tab-content">
   <div class="tab-pane active" id="modalupload">
-    <form role="form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
-      <div class="image-preview hide">
+    <form role="form" class="image-form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
+      <div class="image-preview image-selected">
         <button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
         <div class="image-container"></div>
       </div>
-      <div class="form-group image-form">
+      <div class="form-group no-image-selected">
         <p class="help-block">{{ _('Drag or click to upload file') }}</p>
         <label for="imagefile" class="image-upload"><span class="glyphicon glyphicon-picture"></span></label>
         <input type="file" class="invisible" name="imagefile" id="imagefile" accept="image/*">
         <p class="help-block">... {{ _('or link to image online') }}</p>
         <input type="text" class="form-control" name="source_image_url" id="source_image_url" placeholder="http://">
-        </div>
-      <fieldset class="image-metafields hide">
-        {{ FORM_FIELD(imageasset_form.title, addcontrolcls=" image-title")}}
+      </div>
+      <fieldset class="image-selected">
+        {{ FORM_FIELD(imageasset_form.title, controlclass="image-title")}}
         {{ imageasset_form.csrf_token }}
         {{ FORM_FIELD(imageasset_form.description)}}
       </fieldset>
     </form>
   </div>
-  <div class="tab-pane" id="modalgallery">...</div>
+  <div class="tab-pane" id="modalgallery" data-remote="{{url_for('imageasset_list', out='fragment')}}">...</div>
 </div>
-<div class="form-inline hide" id="modalinsertoptions">
+<div class="form-inline image-selected">
   <input type="text" class="form-control" id="imgcaption" style="width: 60%">
   <div class="btn-group" data-toggle="buttons">
     <label class="btn btn-primary btn-sm active">
-      <input type="radio" name="imgclass" id="normal" selected> Normal
+      <input type="radio" name="imgclass" id="normal" selected> {{ _('Normal') }}
     </label>
     <label class="btn btn-primary btn-sm">
-      <input type="radio" name="imgclass" id="thumb"> Thumbnail
+      <input type="radio" name="imgclass" id="thumb"> {{ _('Thumbnail') }}
     </label>
     <label class="btn btn-primary btn-sm">
-      <input type="radio" name="imgclass" id="gallery"> Gallery
+      <input type="radio" name="imgclass" id="gallery">{{ _(' Gallery') }}
     </label>
   </div>
 </div>
-
-<script>
-  // debugger;
-
-  $('#modalgallerylink').on('show.bs.tab', function (e) {
-    var $target = $($(e.target).attr('href'))
-    if ($target.children().length == 0) {
-      $target.load("{{url_for('imageasset_list', out='fragment')}}", function() {
-        $imgs = $target.find('img')
-        // need to find if all images have loaded
-        var imgsLoaded = 0;
-        $imgs.load(function() {
-          saveImgSize.call(this)
-          imgsLoaded++
-          if (imgsLoaded==$imgs.length) {
-            $(window).resize();
-          }
-        })
-        $target.on('click', 'img', function(e) {
-          $t = $(e.target)
-          $p = $t.closest('.gallerylist')
-          $p.find('.selected').not($t).toggleClass('selected') // turn off all others
-          if ($t.hasClass('selected')) {
-            $t.removeClass('selected')
-            hidePreview()
-          } else {
-            $t.addClass('selected')
-            showPreview()
-          }
-        })
-      })
-    }
-  })
-
-  $modal = $('.image-preview').parents('.modal')
-  $modal_submit = $modal.find('.modal-submit')
-  $modal_submit.prop('disabled', true)
-
-  function showPreview() {
-    $('.image-form').addClass('hide')
-    $('.image-preview, .image-metafields').removeClass('hide')
-    $('.image-preview .close').click(hidePreview)
-    $('#modalinsertoptions').removeClass('hide')
-    $modal_submit.prop('disabled', false)
-  }
-
-  function hidePreview(e) {
-    if (e) { e.preventDefault() }
-    $('#imagefile').val(null)
-    $('#imagedata.source_image_url').val(null)
-    $('.image-form').removeClass('hide')
-    $('.image-preview, .image-metafields').addClass('hide')
-    $('#modalinsertoptions').addClass('hide')
-    $modal_submit.prop('disabled', true)
-  }
-
-  var fileEvent = function(e) {
-    if (e.dataTransfer && e.dataTransfer.files) {
-      $('#imagefile').prop('files', e.dataTransfer.files)
-      var files = e.dataTransfer.files
-    } else {
-      var files = e.target.files
-    }
-    if (files && files.length) {
-      var file = files[0]
-      $('.image-title').val(file.name)
-      reader = new FileReader()
-      reader.onload = (function(tfile) {
-        return function(e) {
-          $('.image-container').html('<img src="' + e.target.result + '"  />')
-        };
-      }(file));
-      reader.readAsDataURL(file);
-      showPreview()
-    }
-    e.preventDefault()
-  }
-  $('#imagefile').change(fileEvent)
-  $('#imagedata\\.source_image_url').change(function(e) {
-    showPreview()
-    $('.image-container').html('<img src="' + this.value + '"  />')
-    $('.image-title').val(this.value.substr(this.value.lastIndexOf('/') + 1))
-  })
-  var $im = $('.image-upload')
-  $im.get(0).addEventListener('dragover', function(e) {
-    e.stopPropagation()
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-  }, false);
-  $im.get(0).addEventListener('drop', fileEvent, false)
-
-  function imageSelected(src) {
-    var alt=$('#imgcaption').val(), imgclass=$('input:radio[name="imgclass"]:checked').prop('id'),
-      href= src.replace('/asset/thumbs/','/asset/'), imgstr, $activeBlock=$(editor.getActiveBlock())
-    if (imgclass=="thumb" || imgclass=="gallery") {
-      src = src.replace('/asset/','/asset/thumbs/')
-    } else if (imgclass=="normal") {
-      imgclass = ""
-    }
-    imgstr = '<a class="imagelink" href="'+href+'"><img alt="'+alt+'"'+(imgclass ? ' class="'+imgclass+'"' : '')+' src="'+src+'" ></a>'
-    if (imgclass=="gallery") {
-      var $gallery
-      $gallery = $activeBlock.filter('.gallerylist')
-      $gallery = $gallery.length==0 ? $activeBlock.prev('.gallerylist') : $gallery
-      $gallery = $gallery.length==0 ? $('<p class="gallerylist"></p>').insertBefore($activeBlock) : $gallery
-      $gallery.append(imgstr)
-    } else {
-      $activeBlock.prepend(imgstr)
-    }
-    $modal.modal('hide')
-  }
-
-  $modal_submit.click(function(e) {
-    var $selected = $('#modalgallery .selected')
-    if ($selected.length > 0 ) {
-      imageSelected($selected[0].src)
-    } else {
-      $f = $modal.find('form')
-      var formData = new FormData($f.get(0))
-      var req = new XMLHttpRequest();
-      req.addEventListener("load", function() {
-        var res = JSON.parse(this.responseText)
-        if (this.status==200 && res.next) {
-          imageSelected(res.next);
-        } else {
-          $f.prepend('<div class="alert alert-warning alert-dismissable"><button type="button" class="close"'+
-            'data-dismiss="alert" aria-hidden="true">&times;</button>'+(res.message || 'unknown error')+'</div>')
-        }
-      }, false);
-      req.open('POST', $f.attr('action'))
-      req.send(formData) // does not work in IE9 and below
-    }
-    e.preventDefault()
-  });
-</script>
 {% endblock %}
