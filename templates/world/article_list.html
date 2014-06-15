@@ -23,37 +23,39 @@
 
 {% block content %}
     <div class="panel panel-default item-list">
-    {% if articles|length == 0 %}{{ _('No articles yet!') }}{% else %}
-        {% for group in groups %}
-            <h3>{{ _(group.grouper|capitalize) }}</h3>
-            <div class="row">
-            {% for article in group.list %}
-                <div class="media col-sm-6">
-                    <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
-                        <h4>{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}
-                        {%- if not article.is_published() -%}
-                        <small>{{" ["+article.status_name()+"]"}}</small>
-                        {%- endif %}
-                        {%- if groupby=='title' -%}
-                        <small>{{" ["+article.type+"]"}}</small>
-                        {%- elif groupby=='time' -%}
-                        <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
-                        {%- endif %}</h4>
-                    </a>
-                    {% if article.feature_image %}
-                    <a class="pull-left" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
-                    <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
-                    </a>
-                    {% endif %}
-          
-                    {{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}
-                    <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-                </div> 
-            {% if not loop.last and loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
-            {% endfor %}
-            </div>
+    {% for group in groups %}
+        <h3>{{ _(group.grouper|capitalize) }}</h3>
+        <div class="row">
+        {% for article in group.list %}
+            <div class="media col-sm-6">
+                <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
+                    <h4>{{ article.title }}
+                    {%- if not article.is_published() -%}
+                    <small>{{" ["+article.status_name()+"]"}}</small>
+                    {%- endif %}
+                    {%- if groupby=='title' -%}
+                    <small>{{" ["+article.type+"]"}}</small>
+                    {%- elif groupby=='time' -%}
+                    <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
+                    {%- endif %}</h4>
+                </a>
+                {% if article.feature_image %}
+                <a class="pull-left" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
+                <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+                </a>
+                {% endif %}
+      
+                {{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}
+                <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
+            </div> 
+        {% if not loop.last and loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
         {% endfor %}
+        </div>
+    {% else %}
+    <div class="jumbotron text-center">
+      <h2>{{ _('No articles yet!') }}</h2>
+    </div>
+    {% endfor %}
     </div>
     {% include "includes/pagination.html" %}
-    {% endif %}
 {% endblock %}

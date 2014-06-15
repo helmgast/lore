@@ -20,6 +20,8 @@
   <div class="container">
     <div class="row centered">
       <div class="col-lg-8 col-lg-offset-2 mt">
+        {% include "includes/flash.html" %}
+
         <h1 class="h-shadow">HELMGAST</h1>
         <h2 class="h-shadow">Vi gör rollspel</h2>
       </div>
@@ -65,7 +67,7 @@
           </li>
           <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if
             g.feature and g.feature["social"] %}<a
-            href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else
+            href="{{url_for('social.user_view', user=article.creator.id)}}">{{article.creator}}</a>{% else
             %}{{article.creator}}{%endif%}{% else %}System{%endif%}
           </li>
         </ul>
@@ -97,11 +99,11 @@
                    placeholder="Din e-post" required>
             <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
             <div style="position: absolute; left: -5000px;"><input type="text"
-                                                                   name="b_4412a3ce4ac556de77513666b_8cef8e8de6"
-                                                                   value=""></div>
+               name="b_4412a3ce4ac556de77513666b_8cef8e8de6"
+               value=""></div>
             <div class="clear" style="width: 100%; padding-top: 5px;"><input type="submit" value="Anmäl dig"
-                                                                             name="subscribe" id="mc-embedded-subscribe"
-                                                                             class="btn btn-cta btn-lg pull-right"></div>
+               name="subscribe" id="mc-embedded-subscribe"
+               class="btn btn-cta btn-lg pull-right"></div>
           </form>
         </div>
       </div>

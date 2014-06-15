@@ -30,8 +30,11 @@ class Choices(dict):
             return name
         raise AttributeError(name)
 
-    def to_tuples(self):
-        return [(s, self[s]) for s in self.keys()]
+    def to_tuples(self, empty_value=False):
+        tuples = [(s, self[s]) for s in self.keys()]
+        if empty_value:
+            tuples.append(('',''))
+        return tuples
 
 def list_to_choices(list):
   return [(s.lower(), _(s)) for s in list]

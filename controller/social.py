@@ -4,7 +4,7 @@
 
     This is the controller and Flask blueprint for social features,
     it initializes URL routes based on the Resource module and specific
-    ResourceAccessStrategy for each related model class. This module is then
+    ResourceRoutingStrategy for each related model class. This module is then
     responsible for taking incoming URL requests, parse their parameters,
     perform operations on the Model classes and then return responses via 
     associated template files.
@@ -13,36 +13,54 @@
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
-from resource import ResourceHandler, ResourceError, ResourceAccessStrategy, RacBaseForm, RacModelConverter, \
-  ResourceSecurityPolicy
+from resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
+  ResourceAccessPolicy, Authorization
 from model.user import User, Group, Member, Conversation, Message
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
 from flask.ext.babel import lazy_gettext as _
 
 
-class SameUserSecurityPolicy(ResourceSecurityPolicy):
-  def is_allowed_user(self, user, op, instance):
-    return user.admin or user == instance
-
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
-  exclude=['password', 'xp', 'join_date', 'active', 'admin'])
-user_form.confirm = PasswordField(_('Repeat Password'), 
-  [validators.Required(), validators.Length(max=40)])
-user_form.password = PasswordField(_('New Password'), [
-  validators.Required(),
-  validators.EqualTo('confirm', message=_('Passwords must match')),
-  validators.Length(max=40)])
+  only=['username', 'realname', 'location', 'description'])
+# user_form.confirm = PasswordField(_('Repeat Password'), 
+#   [validators.Required(), validators.Length(max=40)])
+# user_form.password = PasswordField(_('New Password'), [
+#   validators.Required(),
+#   validators.EqualTo('confirm', message=_('Passwords must match')),
+#   validators.Length(max=40)])
 
-user_strategy = ResourceAccessStrategy(User, 'users', 'username', form_class=user_form, security_policy=SameUserSecurityPolicy())
+class UserAccessPolicy(ResourceAccessPolicy):
+
+  def authorize(self, op, instance=None):
+    if op not in self.ops_levels:
+      level = self.ops_levels['_default']
+    else:
+      level = self.ops_levels[op]
+    if level=='private':
+      if g.user and instance==g.user:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (g.user, op, instance))
+    return super(UserAccessPolicy, self).authorize(op, instance)
+
+
+user_access = UserAccessPolicy({
+  'view':'private',
+  'edit':'private',
+  'form_new':'private',
+  '_default':'admin'
+  }, get_owner_func=lambda user: user) # return user itself to check for owner of a user object
+
+admin_only_access = ResourceAccessPolicy({'_default':'admin'})
+
+user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form, access_policy=user_access)
 ResourceHandler.register_urls(social, user_strategy)
 
-group_strategy = ResourceAccessStrategy(Group, 'groups', 'slug')
+group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug', access_policy=admin_only_access)
 ResourceHandler.register_urls(social, group_strategy)
 
-member_strategy = ResourceAccessStrategy(Member, 'members', None, parent_strategy=group_strategy)
+member_strategy = ResourceRoutingStrategy(Member, 'members', None, parent_strategy=group_strategy)
 
 class MemberHandler(ResourceHandler):
   def form_new(self, r):
@@ -60,7 +78,7 @@ class MemberHandler(ResourceHandler):
 
 MemberHandler.register_urls(social, member_strategy)
 
-conversation_strategy = ResourceAccessStrategy(Conversation, 'conversations')
+conversation_strategy = ResourceRoutingStrategy(Conversation, 'conversations', access_policy=admin_only_access)
 
 class ConversationHandler(ResourceHandler):
   def new(self, r):
@@ -78,7 +96,7 @@ class ConversationHandler(ResourceHandler):
 
 ConversationHandler.register_urls(social, conversation_strategy)
 
-message_strategy = ResourceAccessStrategy(Message, 'messages', parent_strategy=conversation_strategy)
+message_strategy = ResourceRoutingStrategy(Message, 'messages', parent_strategy=conversation_strategy)
 ResourceHandler.register_urls(social, message_strategy)
 
 ###

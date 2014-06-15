@@ -1,6 +1,5 @@
 {% set index = loop.index0 if loop %}
-
-{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_INLINE %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block inline %}
   <tr class="user-tablerow">
@@ -11,17 +10,17 @@
     {% else %}
       <td name="username">
       {% if member_form %}
-      	<input type="hidden" name="members-{{index}}-user" value="{{member.user.id}}" />
+      	<input type="hidden" name="members-{{index}}-user" value="{{member.user.identifier()}}" />
       {% endif %}
-      <a href="{{ url_for('.user_view', user=member.user.username) }}">        
+      <a href="{{ url_for('.user_view', user=member.user.identifier()) }}">        
       <img class="avatar" src="{{ member.user.gravatar_url() }}" />
-      <strong class="message_name">{{member.user.username}}</strong></a>
+      <strong class="message_name">{{member.user}}</strong></a>
     </td>
     <td>{{member.user.realname if member}}</td>
     {% endif %}
     <td>
     {% if member_form %}
-    {{ FORM_FIELD_INLINE(member_form.role)}}
+    {{ MACRO.FORM_FIELD_INLINE(member_form.role)}}
     {% else %}{{member.get_role()}}
     {% endif %}
     </td>

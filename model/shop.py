@@ -1,6 +1,7 @@
 from raconteur import db
 from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
+from mongoengine.errors import ValidationError
 from datetime import datetime
 from user import User
 from slugify import slugify
@@ -19,19 +20,26 @@ ProductStatus = Choices(
   out_of_stock = _('Out of stock'),
   hidden = _('Hidden'))
 
+Currencies = Choices(
+  eur = 'EUR',
+  sek = 'SEK'
+  )
+
 class Product(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   publisher = db.StringField(max_length=60, required=True, verbose_name=_('Publisher'))
-  family = db.StringField(max_length=60, verbose_name=_('Family'))
+  family = db.StringField(max_length=60, verbose_name=_('Product Family'))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
   # should be required=True, but that currently maps to Required, not InputRequired validator
   # Required will check the value and 0 is determined as false, which blocks prices for 0
   price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
+  currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Valuta'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset)
+  feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+  acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
 
   # Executes before saving
   def clean(self):
@@ -42,17 +50,18 @@ class Product(db.Document):
 
 
 class OrderLine(db.EmbeddedDocument):
-  quantity = db.IntField(min_value=1, default=1, verbose_name=_('Quantity'))
+  quantity = db.IntField(min_value=1, default=1, verbose_name=_('Comment'))
   product = db.ReferenceField(Product, required=True, verbose_name=_('Product'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
-  comment = db.StringField(max_length=256, verbose_name=_('Comment'))
-  
+  comment = db.StringField(max_length=99, verbose_name=_('Comment'))
+
 class Address(db.EmbeddedDocument):
-  name = db.StringField(max_length=60, required=True, verbose_name=_('Name'))
-  street = db.StringField(max_length=60, required=True, verbose_name=_('Street'))
-  zipcode = db.StringField(max_length=8, required=True, verbose_name=_('Zipcode'))
-  city = db.StringField(max_length=60, required=True, verbose_name=_('City'))
-  country = db.StringField(max_length=60, required=True, verbose_name=_('Country'))
+  name = db.StringField(max_length=60, verbose_name=_('Name'))
+  street = db.StringField(max_length=60, verbose_name=_('Street'))
+  zipcode = db.StringField(max_length=8, verbose_name=_('ZIP Code'))
+  city = db.StringField(max_length=60, verbose_name=_('City'))
+  country = db.StringField(max_length=60, verbose_name=_('Country'))
+  mobile = db.StringField(min_length=8, max_length=14, default="07XXXXXXXX", verbose_name=_('Cellphone Number'))
 
 OrderStatus = Choices(
   cart = _('Cart'),
@@ -68,11 +77,12 @@ class Order(db.Document):
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
   total_items = db.IntField(min_value=0, default=0) # Total number of items
   total_price = db.FloatField(min_value=0, default=0.0) # Total price of order
+  currency = db.StringField(choices=Currencies.to_tuples())
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
-  
+
   def __unicode__(self):
     max_prod, max_price = None, 0
     for ol in self.order_lines:
@@ -80,17 +90,23 @@ class Order(db.Document):
         max_prod, max_price = ol.product, ol.price
     if max_prod:
       s = u'%s %s%s' % (
-        _('Order for'), 
-        max_prod.title, 
+        _('Order for'),
+        max_prod.title,
         ' '+_('and more') if len(self.order_lines)>1 else '')
     else:
-      s = _('Empty order')
+      s = u'%s' % _('Empty order')
     return s
 
   # Executes before saving
   def clean(self):
+    self.updated = datetime.utcnow
     num, sum =0, 0.0
     for ol in self.order_lines:
+      if self.currency:
+        if ol.product.currency != self.currency:
+          raise ValidationError('This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
+      else:
+        self.currency = ol.product.currency
       num += ol.quantity
       sum += ol.quantity * ol.price
     self.total_items = num

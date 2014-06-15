@@ -30,6 +30,9 @@ msgstr "Användarnamn"
 msgid "Password"
 msgstr "Lösenord"
 
+msgid "Minimum 8 characters!"
+msgstr "Minst 8 tecken långt!"
+
 #: /home/zaifon/Projects/fablr/raconteur/auth.py:54
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:64
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:53
@@ -86,6 +89,9 @@ msgstr ""
 "Inkorrekt användarnamn eller lösenord (eller så behöver kontot verifieras - "
 "kolla din epost)"
 
+msgdid "Forbidden, this is not an allowed operation"
+msgstr "Förbjudet, detta är inte en tillåten handling"
+
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:23
 msgid "Private"
 msgstr "Privat"
@@ -103,6 +109,18 @@ msgstr "Allmän"
 #: /home/zaifon/Projects/fablr/raconteur/templates/auth/auth_form.html:31
 msgid "Join"
 msgstr "Registrera"
+
+msgid "Sign in with Facebook"
+msgstr "Logga in med Facebook"
+
+msgid "Sign in with Google"
+msgstr "Logga in med Google"
+
+msgid "Receive newsletter"
+msgstr "Prenumerera på nyhetsbrev"
+
+msgid "Optional details"
+msgstr "Frivilliga uppgifter"
 
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:29
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:189
@@ -185,6 +203,16 @@ msgstr "Digital"
 msgid "Shipping fee"
 msgstr "Fraktkostnad"
 
+msgid "Shipping Address"
+msgstr "Leveransadress"
+
+msgid "Address"
+msgstr "Adress"
+
+msgid "Name in book"
+msgstr "Namn i boken"
+
+
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:17
 msgid "Pre-order"
 msgstr "Förhandsboka"
@@ -196,6 +224,9 @@ msgstr "Tillgänglig"
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:19
 msgid "Out of stock"
 msgstr "Slut på lager"
+
+msgid "Product Type"
+msgstr "Produkttyp"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:20
 msgid "Hidden"
@@ -230,8 +261,8 @@ msgstr "Utgivare"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:27
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/product_item.html:59
-msgid "Family"
-msgstr "Familj"
+msgid "Product Family"
+msgstr "Produktfamilj"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:28
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:68
@@ -279,7 +310,7 @@ msgstr "av"
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:17
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:25
 msgid "Quantity"
-msgstr "Mängd"
+msgstr "Antal"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:44
 msgid "Product"
@@ -294,7 +325,7 @@ msgid "Street"
 msgstr "Gatuaddress"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:50
-msgid "Zipcode"
+msgid "ZIP Code"
 msgstr "Postnummer"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:51
@@ -304,6 +335,27 @@ msgstr "Stad"
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:52
 msgid "Country"
 msgstr "Land"
+
+msgid "Cellphone Number"
+msgstr "Mobilnummer"
+
+msgid "make sure it's correct!"
+msgstr "dubbelkolla att det är rätt!"
+
+msgid "Order Info"
+msgstr "Orderinfo"
+
+msgid "Seller Info"
+msgstr "Säljarinfo"
+
+msgid "Contact Us"
+msgstr "Kontakta oss"
+
+msgid "About order from"
+msgstr "Gällande order"
+
+msgid "Aeon is working on some worlds, please check back later!"
+msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:55
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:9
@@ -333,6 +385,9 @@ msgstr "Fel"
 msgid "User"
 msgstr "Användare"
 
+msgid "Empty..."
+msgstr "Tom..."
+
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:63
 msgid "Session ID"
 msgstr "Sessions ID"
@@ -344,7 +399,7 @@ msgstr "Uppdaterad"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:80
 msgid "Order for"
-msgstr "Order för"
+msgstr "Order av"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:82
 msgid "and more"
@@ -370,6 +425,9 @@ msgstr "Borttagen"
 #: /home/zaifon/Projects/fablr/raconteur/model/user.py:34
 msgid "username"
 msgstr "Användarnamn"
+
+msgid "No name"
+msgstr "Inget namn"
 
 #: /home/zaifon/Projects/fablr/raconteur/model/user.py:35
 msgid "password"
@@ -892,11 +950,11 @@ msgstr "Läs mer"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:3
 msgid "Subscribe to our mailing list"
-msgstr "prenumerera på vårat nyhetsbrev"
+msgstr "Prenumerera på vårt nyhetsbrev"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:5
 msgid "email address"
-msgstr "email address"
+msgstr "emailadress"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/newsletter.html:9
 msgid "Subscribe"
@@ -1064,19 +1122,28 @@ msgstr "Alla produkter"
 msgid "Orders"
 msgstr "Orderhistorik"
 
+msgid "You have not made any orders yet!"
+msgstr "Du har inte gjort några beställningar ännu!"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/base.html:16
 msgid "New products"
 msgstr "Nya produkter"
+
+msgid "New product"
+msgstr "Ny produkt"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:18
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:26
 msgid "Total"
 msgstr "Total"
 
+msgid "Including tax"
+msgstr "Varav moms"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:59
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:82
 msgid "Grand Total"
-msgstr "Slutkostnad"
+msgstr "Totalsumma"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_cart.html:66
 #: /home/zaifon/Projects/fablr/raconteur/templates/shop/order_item.html:89
@@ -1152,11 +1219,11 @@ msgstr "Forum"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/base.html:21
 msgid ""
-"Here you can interact with other gamers, create and manage your game "
+"Here you will be able to interact with other gamers, create and manage your game "
 "groups,\n"
 "  events, etc."
 msgstr ""
-"Här kan du interagera med andra spelare, skapa och hantera dina "
+"Här kommer du kunna interagera med andra spelare, skapa och hantera dina "
 "spelgrupper, \n"
 "möten, etc."
 
@@ -1231,6 +1298,9 @@ msgstr "Följare"
 msgid "Joined"
 msgstr "Registrerad"
 
+msgid "Download"
+msgstr "Ladda ner"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/social/user_item.html:109
 msgid "Not member of any groups yet!"
 msgstr "Inte medlem i någon grupp än!"
@@ -1283,9 +1353,6 @@ msgstr "Lon"
 msgid "Lat"
 msgstr "Lat"
 
-#: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:150
-msgid "URL"
-msgstr "Address"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/article_item.html:152
 msgid "Started"
@@ -1346,7 +1413,7 @@ msgstr "Efter tid"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:4
 msgid "any fictional world at your fingertips"
-msgstr "fantastiska världar i dina händer"
+msgstr "rollspelsvärldar bara ett klick bort"
 
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/base.html:16
 msgid "All worlds"
@@ -1379,6 +1446,12 @@ msgstr "BILD"
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_list.html:13
 msgid "Rule System"
 msgstr "Regelsystem"
+
+msgid "Not all users can see this"
+msgstr "Inte alla användare kan se detta"
+
+msgid "Feature Image"
+msgstr "Presentationsbild"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"

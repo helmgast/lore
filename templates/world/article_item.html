@@ -1,13 +1,12 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
-
-{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% set article_type = article.type if article else prefill.get('type',None) %}
 {% if article_form %}
   {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
 
-{% if op == 'new' %}
+{% if op=='new' or op=='form_new' %}
   {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
 {% else %}
   {% set tagline = article.type %} {% set title = article.title %}
@@ -36,7 +35,7 @@
 <form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
   {{ article_form.csrf_token }}
   {{ article_form.title(style="display:none;") }}
-  <h1 class="article_header">{{ VISIBILITY(visibility.is_private(article)) }}
+  <h1 class="article_header">
     <span id="header" class="contenteditable" contenteditable="True">{{ title }}</span>
         <small>{{ tagline }}</small>
   </h1>
@@ -54,7 +53,7 @@
 
   <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
   {% for field in type_form %}
-    {{ FORM_FIELD_COLS(field, "col-sm-2", "col-sm-2") }}
+    {{ MACRO.FORM_FIELD_COLS(field, "col-sm-2", "col-sm-2") }}
   {% endfor %}
   </div>
 
@@ -72,13 +71,13 @@
 
   <div class="tab-pane panel panel-default fade row" id="details">
     <div class="col-xs-6">
-      {{ FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
+      {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
     </div>
     <div class="col-xs-6">
-      {{ FORM_FIELD(article_form.created_date) }}
-      {{ FORM_FIELD(article_form.status) }}
-      {{ FORM_FIELD(article_form.type) }}
-      {{ FORM_FIELD(article_form.world) }}
+      {{ MACRO.FORM_FIELD(article_form.created_date) }}
+      {{ MACRO.FORM_FIELD(article_form.status) }}
+      {{ MACRO.FORM_FIELD(article_form.type) }}
+      {{ MACRO.FORM_FIELD(article_form.world) }}
       <input type="hidden" name="feature_image" id="feature_image" value="" />
       {% if g.user.id %}
         <input type="hidden" name="creator" value="{{g.user.id}}" />
@@ -123,12 +122,12 @@
 
 {#### PAGE ####}
 {%- else -%}
-<h1 class="article_header">{{ VISIBILITY(visibility.is_private(article)) }}{{ title }}
+<h1 class="article_header">{{ title }}
     <small>{{ tagline }}</small>
 </h1>
 <ul class="nav nav-tabs content-menu">
   {% set articlegroups = article.articlegroups|list %}
-  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
+  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
   <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   {% if articlegroups or g.user %}
   <li class="content-menu-info" title="{{ _('Visibility') }}"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
@@ -137,7 +136,9 @@
   <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
   <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
   {% endif %}
-  {% call IS_USER() %}{% include 'world/article_action_menu.html' %}{% endcall %}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
+  {% include 'world/article_action_menu.html' %}
+  {% endcall %}
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
@@ -234,8 +235,11 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
   $('#content-editor a.lightbox').imageselect();
 
-  $('.bubble-bar .ui-inputs a').click(function(e){
-    $(editor.getActiveBlock()).imageselect()
+  $('.bubble-bar .ui-inputs a').click(function(e) {
+    var $a = $('<a class="lightbox"><img src=""></a>')
+    var $block = $(editor.getActiveBlock())
+    $block.before($a)
+    $a.imageselect()
   })
 
   $('#articleform').one('change', function(e) {

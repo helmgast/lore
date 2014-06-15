@@ -6,7 +6,7 @@ from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf import model_form
 
 import raconteur
-from resource import ResourceHandler, ResourceAccessStrategy
+from resource import ResourceHandler, ResourceRoutingStrategy
 from raconteur import db
 
 
@@ -21,7 +21,7 @@ class CSRFDisabledModelForm(ModelForm):
 
 class RaconteurTestCase(unittest.TestCase):
   def test_strategy_simple(self):
-    strategy = ResourceAccessStrategy(TestObject, 'test_objects', short_url=True)
+    strategy = ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
     self.assertEqual('/test_objects', strategy.url_list())
     self.assertEqual('/test_objects/new', strategy.url_list('new'))
     self.assertEqual('/<testobject>', strategy.url_item())
@@ -31,7 +31,7 @@ class RaconteurTestCase(unittest.TestCase):
     self.assertEqual('testobject_view', strategy.endpoint_name('view'))
 
   def test_strategy_query(self):
-    strategy = ResourceAccessStrategy(TestObject, 'test_objects', short_url=True)
+    strategy = ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
     obj = TestObject(name="test_name").save()
     self.assertIn(obj, strategy.query_list({"name": "test_name"}))
     self.assertEqual(0, len(strategy.query_list({"name": "test_name_1"})))
@@ -41,13 +41,13 @@ class RaconteurTestCase(unittest.TestCase):
     self.assertEqual({'testobject': None}, strategy.all_view_args(TestObject()))
 
   def test_strategy_access(self):
-    strategy = ResourceAccessStrategy(TestObject, 'test_objects', short_url=True)
+    strategy = ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
     strategy.check_operation_any('view')
     obj = TestObject(name="test_name")
     strategy.check_operation_on('edit', obj)
 
   def test_handler(self):
-    strategy = ResourceAccessStrategy(TestObject, 'test_objects',
+    strategy = ResourceRoutingStrategy(TestObject, 'test_objects',
                                       form_class=model_form(TestObject, base_class=CSRFDisabledModelForm))
     handler = ResourceHandler(strategy)
     handler.register_urls(raconteur.the_app, strategy)

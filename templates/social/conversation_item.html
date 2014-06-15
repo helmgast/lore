@@ -2,7 +2,7 @@
 
 {% set recipients = conversation.members if conversation else [] %}
 
-{% block content_title %}{% if op=='new' %}{{ _('New conversation') }}{% elif conversation.title %}{{conversation.title}}{% else %}{{ _('Conversation') }}{%endif%}{% endblock %} 
+{% block content_title %}{% if op=='new' or op=='form_new' %}{{ _('New conversation') }}{% elif conversation.title %}{{conversation.title}}{% else %}{{ _('Conversation') }}{%endif%}{% endblock %} 
 
 {% block content_tagline %}{% endblock %}
 {% block content_subheader %}<span class="nav-header">{{ _('Members') }}:</span> {{ recipients|join(', ')|truncate(20) }}{%endblock%}

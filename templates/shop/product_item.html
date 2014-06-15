@@ -1,18 +1,30 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
-
-{% from 'includes/components.html' import FORM_FIELD %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
 
-{% block content_title %}{{product.title if product else "New product"}}{% endblock %}
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
+
+{% block content_title %}{{product.title if product else _("New product")}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list">
 <li class="nav-header">{{ _('Actions') }}</li>
-<li><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+
+{% if not product %}
+{% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
+<li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+{% endcall %}
+{% endif %}
+
 {% if product %}
-  <li><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
+  <li class="{{privileged}}"><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% endcall %}
 {% endif %}
 </ul>
 {%endblock%}
@@ -23,19 +35,20 @@
 <form method="post" action="{{product_form.action_url}}">
   <div class="row">
     <div class="col-md-8">
-      {{ FORM_FIELD(product_form.title) }}
-      {{ FORM_FIELD(product_form.description) }}
-      {{ FORM_FIELD(product_form.publisher) }}
-      {{ FORM_FIELD(product_form.family) }}
-      {{ FORM_FIELD(product_form.created) }}
-      {{ FORM_FIELD(product_form.type) }}
-      {{ FORM_FIELD(product_form.price, required=True) }}
-      {{ FORM_FIELD(product_form.status) }}
+      {{ MACRO.FORM_FIELD(product_form.title) }}
+      {{ MACRO.FORM_FIELD(product_form.description) }}
+      {{ MACRO.FORM_FIELD(product_form.publisher) }}
+      {{ MACRO.FORM_FIELD(product_form.family) }}
+      {{ MACRO.FORM_FIELD(product_form.created) }}
+      {{ MACRO.FORM_FIELD(product_form.type) }}
+      {{ MACRO.FORM_FIELD(product_form.price, required=True) }}
+      {{ MACRO.FORM_FIELD(product_form.currency, required=True) }}
+      {{ MACRO.FORM_FIELD(product_form.status) }}
+      {{ MACRO.FORM_FIELD(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
-      {{ FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
-
+      {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
     </div>
   </div>
   <div class="row form-actions">
@@ -53,6 +66,7 @@
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
+      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
     </div>
     <div class="col-md-8">
       <table class="table">
@@ -65,11 +79,16 @@
         <tr><td><strong>{{ _('Created') }}</strong></td>
         <td>{{ product.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
         <tr><td><strong>{{ _('Type') }}</strong></td>
-        <td><small>{{ product.type }}</small></td></tr>      
+        <td><small>{{ product.get_type_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ product.price|currency }}:-</small></td></tr>    
+        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>    
+        <tr><td><strong>{{ _('Currency') }}</strong></td>
+        <td><small>{{ product.get_currency_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ product.status }}</small></td></tr>      
+        <td><small>{{ product.get_status_display() }}</small></td></tr>
+        <!--<tr><td><strong>{{ _('Acknowledgement') }}</strong></td>-->
+        <!--<td><small>{{ product.acknowledgement }}</small></td></tr>-->
+
       </table>
       <div class="well">{{ product.description }}</div>
     </div>
@@ -85,5 +104,24 @@ var imageselect_options = {
     image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
     image_upload_url: "{{url_for('imageasset_new', out='json')}}"
   }
+
+$('.buy-link').click(function(e) {
+    var csrftoken = "{{ csrf_token() }}";
+    $.ajax({
+        url: "{{ url_for('.order_cart', out='json')}}",
+        type: 'post',
+        data: {product: this.id},
+        headers: { 'X-CSRFToken': csrftoken },
+        dataType: 'json',
+        success: function (data) {
+            $c = $('#cart-counter')
+            $c.html(data.item)
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            flash_error(errorThrown)
+        }
+    });
+    e.preventDefault();
+});
 </script>
 {% endblock %}

@@ -27,6 +27,11 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/zenstyle.css') }}">
+    <style>
+      .privileged>a:hover:before {
+        content: "{{_('Not all users can see this')}}";
+      }
+    </style>
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}
@@ -71,7 +76,7 @@
 
 </head>
 
-{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD2, IS_USER, IS_ADMIN, IS_ENABLED, VISIBILITY %}
+{% import 'includes/macros.html' as MACRO %}
 
 <body class="{% block body_class %}admin{% endblock %}">
 
@@ -82,6 +87,9 @@
 </div>
 
 {% block navbar %}
+<div class="betaribbon">
+  <a href="#">Beta!</a>
+</div>
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -96,31 +104,33 @@
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        {% call IS_ENABLED("social") %}
+        <li{% block blog_active %}{% endblock %}><a href="{{ url_for('world.article_blog', world='helmgast') }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+
+        {% call MACRO.IS_USER() %}
         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
         {% endcall %}
-        {% call IS_ENABLED("campaign") %}
+        {% call MACRO.IS_ENABLED("campaign") %}
         <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
         {% endcall %}
-        {% call IS_ENABLED("tools") %}
+        {% call MACRO.IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}
-        {% call IS_ENABLED("shop") %}
+        {% call MACRO.IS_USER() %}
         <li{% block shop_active %}{% endblock %}><a href="{{ url_for('shop.index') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
         {% endcall %}
-        {% call IS_USER() %}
-        <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
+        {% call MACRO.IS_USER() %}
+        <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
         {% endcall %}
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not session.logged_in %}
           <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('log in') }}</a></li>
-          {% call IS_ENABLED("join") %}
+          {% call MACRO.IS_ENABLED("join") %}
              <li><a href="{{ url_for('auth.join') }}">{{ _('join') }}</a></li>
           {% endcall %}
         {% else %}
-          <li><a {% call IS_USER() %}href="{{ url_for('social.user_view', user=g.user) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user.username }}</a></li>
-          <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
+          <li><a {% call MACRO.IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user }}</a></li>
+          <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>
     </div>
@@ -130,14 +140,14 @@
 
 <div class="{% block container_class %}container{% endblock %}">
   {% block mainblock %}
-  <div class="col-md-2">
+  <div class="col-md-3">
   {% block sidebar %}
     &nbsp;
   {% endblock %}
   </div>
   <!-- /sidebar -->
 
-  <div class="col-md-10">
+  <div class="col-md-9">
     <div class="content">
       {% block middle %}
       {% block pre_content %}
@@ -162,12 +172,14 @@
           <div class="modal-content">Loading...</div>
       </div>
   </div>
+  {% endblock %}
 </div>
-{% endblock %}
 <footer>
+{% block footer %}
   <p class="text-center small">
   Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})  
   </p>
+{% endblock %}
 </footer>
 
 {% block final %}{% endblock %}

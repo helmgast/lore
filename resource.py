@@ -12,6 +12,7 @@
 import inspect
 import logging
 import sys
+import re
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -20,6 +21,7 @@ from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.ext.mongoengine.wtf.fields import ModelSelectField
 from flask.views import View
+from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 from wtforms import fields as f
 from wtforms import Form as OrigForm
@@ -29,6 +31,8 @@ from raconteur import is_allowed_access
 from model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 
 def generate_flash(action, name, model_identifiers, dest=''):
   s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 
@@ -56,6 +60,36 @@ class RacBaseForm(ModelForm):
         field._obj = field.model_class()
       field.populate_obj(obj, name)
 
+# class PartialEditForm(OrigForm):
+#   def populate_obj(self, obj, fields_to_populate=None):
+#     if fields_to_populate:
+#       # FormFields in form args will have '-' do denote it's subfields. We 
+#       # only want the first part, or it won't match the field names
+#       fielddict = {}
+#       for fld in fields_to_populate:
+#         fld = fld.split('-',1)
+#         subfields = fielddict.setdefault(fld[0], [])
+#         if len(fld)>1:
+#           subfields.append(fld[1])
+#       # fields_to_populate = set([fld.split('-',1)[0] for fld in fields_to_populate])
+#       newfields = [ (name,fld) for (name,fld) in iteritems(self._fields) if name in fields_to_populate]
+#     else:
+#       newfields = iteritems(self._fields)
+#     for name, field in newfields:
+#       if isinstance(field, PartialEditForm):
+#         subfields_to_populate = None
+#         if isinstance(field, f.FormField):
+#           if getattr(obj, name, None) is None and field._obj is None:
+#             field._obj = field.model_class()
+#           if len(fielddict[name])>0:
+#             subfields_to_populate = fielddict[name]
+#         field.populate_obj(obj, name, subfields_to_populate)  
+#       else:
+#         field.populate_obj(obj, name) 
+
+# class RacBaseForm(ModelForm, PartialEditForm):
+#   pass # double inheritance from ModelForm and our special populate_obj
+
 class ArticleBaseForm(RacBaseForm):
   def process(self, formdata=None, obj=None, **kwargs):
     super(ArticleBaseForm, self).process(formdata, obj, **kwargs)
@@ -73,15 +107,6 @@ class ArticleBaseForm(RacBaseForm):
       # Tell the Article we have changed type
       obj.change_type(new_type)
     super(ArticleBaseForm, self).populate_obj(obj)
-    # for name, field in iteritems(self._fields):
-    #     # Avoid populating meta fields that are not currently active
-    #     if name in EMBEDDED_TYPES and name!=Article.create_type_name(new_type)+'article':
-    #         logger = logging.getLogger(__name__)
-    #         logger.info("Skipping populating %s, as it's in %s and is != %s", name, EMBEDDED_TYPES, Article.create_type_name(new_type)+'article')
-    #         pass
-    #     else:
-    #         field.populate_obj(obj, name)
-
 
 class RacModelSelectField(ModelSelectField):
   # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
@@ -115,6 +140,7 @@ class RacModelConverter(ModelConverter):
     # insecure WTForms form base class instead of the CSRF enabled one from
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
+
     form_class = model_form(field.document_type_obj, converter=RacModelConverter(), 
       base_class=OrigForm, field_args={})
     return f.FormField(form_class, **kwargs)
@@ -137,74 +163,88 @@ class RacModelConverter(ModelConverter):
     return f.TextAreaField(**kwargs)
 
 
-# Checks if user is logged in and authorized
-class ResourceSecurityPolicy:
+class Authorization:
 
-  def __init__(self, public_ops=["view", "list"]):
-    self.public_ops = public_ops
-
-  def is_public_op(self, op):
-    return op in self.public_ops
-
-  def is_authorized(self, user, op, instance):
-    authorized = user is not None or self.is_public_op(op)
-    if not authorized:
-      logger.info("Anonymous user not authorized to do '%s'", op)
-    return authorized
-
-  # Checks if user itself has access rights
-  def is_allowed_user(self, user, op, instance):
-    return True
-
-  def is_allowed_public(self, op, instance):
-    return ResourceSecurityPolicy.is_public_instance(instance) and self.is_public_op(op)
-
-  def is_public_or_user_allowed(self, user, op, instance):
-    if user:
-      return self.is_allowed_user(user, op, instance)
+  def __init__(self, is_authorized, message='', only_fields=None, error_code=403):
+    self.is_authorized = is_authorized
+    self.message = message
+    self.error_code = error_code
+    # Privleged means that this authorization would not apply to the public
+    # or a normal user. E.g. a user can only edit their own profile (privilege),
+    # or an admin can see other people's orders
+    self.only_fields = only_fields
+    if is_authorized:
+      logger.debug("Authorized: %s" % message)
     else:
-      return self.is_allowed_public(op, instance)
+      logger.info("UNAUTHORIZED: %s" % message)
 
-  @staticmethod
-  def is_public_instance(instance):
-    try:
-      return instance.is_public() if instance else True
-    except AttributeError:
-      return True
+  def is_privileged(self):
+    return (self.error_code == 403 and self.is_authorized)
 
-  def validate_operation(self, op, instance=None):
-    if not is_allowed_access(g.user):
-      raise ResourceError(403)
-    if not self.is_authorized(g.user, op, instance):
-      raise ResourceError(401)
-    if not self.is_public_or_user_allowed(g.user, op, instance):
-      raise ResourceError(403)
+  def __nonzero__(self):
+    return self.is_authorized
 
+# Checks if user is logged in and authorized
+class ResourceAccessPolicy(object):
+  model_class = None
+  levels = ['public', 'user', 'private', 'admin']
+  
+  def __init__(self, ops_levels=None, get_owner_func=None):
+    if not ops_levels:
+      self.ops_levels = {
+        'view': 'public',
+        'list': 'public',
+        '_default': 'admin'
+      }
+    else:
+      self.ops_levels = ops_levels
+    if not get_owner_func:
+      self.get_owner_func = lambda x: getattr(x, 'user', None)
+    else:
+      self.get_owner_func = get_owner_func
 
-class AdminWriteSecurityPolicy(ResourceSecurityPolicy):
-  def is_allowed_user(self, user, op, instance):
-    return user.admin
+  def authorize(self, op, instance=None):
+    if op not in self.ops_levels:
+      level = self.ops_levels['_default']
+    else:
+      level = self.ops_levels[op]
+    msg = '%s requires a logged in user' % op
+    if level=='public':
+      return Authorization(True,'%s is a publicly allowed operation' % op)
+    elif level=='user':
+      if g.user:
+        return Authorization(True, msg)
+      else:
+        return Authorization(False, msg, error_code=401) # Denoted that the user should log in first
+    elif level=='private':
+      if not instance:
+        return Authorization(False, 'Error: Cannot apply private access without an instance')
+      instance_owner = self.get_owner_func(instance)
+      
+      if g.user and g.user.admin:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
 
+      if not instance_owner:
+        return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (self.user_field, instance))
+      elif not g.user:
+        return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
+      elif not g.user == instance_owner:
+        return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
+      else:
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
+    elif level=='admin':
+      if not g.user:
+        return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
+      elif not g.user.admin:
+        return Authorization(False, 'Need to be logged in with admin access')
+      elif g.user:
+        return Authorization(True, '%s is an admin' % g.user)
+    return Authorization(False, 'error', 'This is catch all denied authorization, should not be here')
 
-
-class ResourcePrivacyPolicy:
-
-  def __init__(self, security_policy, op):
-    self.op = op
-    self.security_policy = security_policy
-
-  # True if visible due to current user, such as being admin
-  def is_private(self, instance):
-    return g.user \
-            and self.security_policy.is_allowed_user(g.user, self.op, instance) \
-            and not self.security_policy.is_allowed_public(self.op, instance)
-
-
-
-class ResourceAccessStrategy:
+class ResourceRoutingStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
     parent_strategy=None, parent_reference_field=None, short_url=False, 
-    list_filters=None, use_subdomain=False, security_policy=ResourceSecurityPolicy()):
+    list_filters=None, use_subdomain=False, access_policy=None):
     if use_subdomain and parent_strategy:
       raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
@@ -228,7 +268,8 @@ class ResourceAccessStrategy:
     self.default_list_filters = list_filters
     # The field name pointing to a parent resource for this resource, e.g. article.world
     self.parent_reference_field = self.parent.resource_name if (self.parent and not parent_reference_field) else None
-    self.security = security_policy
+    self.access = access_policy if access_policy else ResourceAccessPolicy()
+    self.access.model_class = self.model_class
 
   def get_url_path(self, part, op=None):
     parent_url = ('/' if (self.parent is None) else self.parent.url_item(None))
@@ -256,7 +297,10 @@ class ResourceAccessStrategy:
 
   def query_item(self, **kwargs):
     item_id = kwargs[self.resource_name]
-    return self.model_class.objects.get(**{self.id_field: item_id})
+    if objid_matcher.match(item_id):
+      return self.model_class.objects.get(id=item_id)
+    else:
+      return self.model_class.objects.get(**{self.id_field: item_id})
 
   def create_item(self):
     return self.model_class()
@@ -300,36 +344,28 @@ class ResourceAccessStrategy:
   def endpoint_name(self, suffix):
     return self.resource_name + '_' + suffix
 
-  def get_visibility(self, op):
-    return ResourcePrivacyPolicy(self.security, op)
-
-  def check_operation_any(self, op):
-    self.security.validate_operation(op, None)
-
-  def check_operation_on(self, op, instance):
-    if not instance:
-      raise ResourceError(500)
-    self.security.validate_operation(op, instance)
-
+  def authorize(self, op, instance=None):
+    return self.access.authorize(op, instance)
 
 
 class ResourceError(Exception):
 
   default_messages = {
-    400: "Bad request or invalid input",
-    401: "Unathorized access, please login",
-    403: "Forbidden, this is not an allowed operation",
-    404: "Resource not found",
-    500: "Internal server error"
+    400: u"%s" % _("Bad request or invalid input"),
+    401: u"%s" % _("Unathorized access, please login"),
+    403: u"%s" % _("Forbidden, this is not an allowed operation"),
+    404: u"%s" % _("Resource not found"),
+    500: u"%s" % _("Internal server error")
   }
 
   def __init__(self, status_code, r=None, message=None):
-    message = message if message else self.default_messages.get(status_code, 'Unknown error')
+    message = message if message else self.default_messages.get(status_code, _('Unknown error'))
     Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
     self.message = message
     if status_code == 400 and r and 'form' in r:
-      self.message += ", invalid fields %s" % r['form'].errors.keys()
+      self.message += ", invalid fields %s" % r['form'].errors
+      logger.warning("error in request %s with form.errors %s" % (request.form, r['form'].errors))
     self.r = r
     logger.warning("%d: %s", self.status_code, self.message)
 
@@ -372,7 +408,11 @@ class ResourceHandler(View):
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+    
+    if current_app:
+      current_app.access_policy[st.resource_name] = st.access
 
+    # print "in register url %s" % app.app
     # /<resource>/[_,view,edit] -> GET:fablr.co/helmgast/, GET:fablr.co/helmgast/view, GET|POST:fablr.co/helmgast/edit
     # /resource/[list,new] -> GET:/world/list, GET:/world/new
     # <resource>.host/[_,view,edit] -> -> GET:helmgast.fablr.co, GET:helmgast.fablr.co/view, GET|POST:helmgast.fablr.co/edit
@@ -394,6 +434,8 @@ class ResourceHandler(View):
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
+      if request.args.has_key('debug') and current_app.debug:
+        raise # send onward if we are debugging
       if err.status_code == 400: # bad request
         if r['op'] in self.get_post_pairs:
           # we were posting a form
@@ -419,15 +461,13 @@ class ResourceHandler(View):
           return redirect(url_for('auth.login', next=request.path))
 
       elif err.status_code == 403: # forbidden
-        r['op'] = self.get_post_pairs[r['op']] if r['op'] in self.get_post_pairs else r['op']  # change the effective op
-        r['template'] = self.strategy.item_template()
-        # r[self.strategy.resource_name + '_form'] = form
-        # if json, return json instead of render
+        # r['op'] = self.get_post_pairs[r['op']] if r['op'] in self.get_post_pairs else r['op']  # change the effective op
+        # r['template'] = self.strategy.item_template()
         if r['out'] == 'json':
           return self._return_json(r, err)
-        elif 'template' in r:
-          flash(err.message,'warning')
-          return render_template(r['template'], **r), 403
+        # elif 'template' in r:
+        #   flash(err.message,'warning')
+        #   return render_template(r['template'], **r), 403
         else:
           return err.message, 403
 
@@ -499,7 +539,6 @@ class ResourceHandler(View):
     r['out'] = request.args.get('out','html') # default to HTML
     if 'next' in request.args:
       r['next'] = request.args['next']
-    r['visibility'] = self.strategy.get_visibility(r['op'])
     return r
 
   def _query_url_components(self, r, **kwargs):
@@ -508,17 +547,27 @@ class ResourceHandler(View):
       r[self.strategy.resource_name] = r['item']
     r['parents'] = self.strategy.query_parents(**kwargs)
     r.update(r['parents'])
+    # print "url comps %s, r %s" % (kwargs, r)
     return r
 
   def view(self, r):
     item = r['item']
-    self.strategy.check_operation_on(r['op'], item)
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+    
     r['template'] = self.strategy.item_template()
     return r
 
   def form_edit(self, r):
     item = r['item']
-    self.strategy.check_operation_on(r['op'], item)
+    
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
     form = self.form_class(obj=item, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
@@ -527,7 +576,11 @@ class ResourceHandler(View):
     return r
 
   def form_new(self, r):
-    self.strategy.check_operation_any(r['op'])
+    auth = self.strategy.authorize(r['op'])
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+    
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
@@ -536,7 +589,11 @@ class ResourceHandler(View):
     return r
 
   def list(self, r):
-    self.strategy.check_operation_any(r['op'])
+    auth = self.strategy.authorize(r['op'])
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+    
     listquery = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
     if r.get('parents'):
       # TODO if the name of the parent resource is different than the reference field name 
@@ -556,7 +613,11 @@ class ResourceHandler(View):
     return r
 
   def new(self, r):
-    self.strategy.check_operation_any(r['op'])
+    auth = self.strategy.authorize(r['op'])
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
     form = self.form_class(request.form, obj=None)
     if not form.validate():
       r['form'] = form
@@ -571,8 +632,13 @@ class ResourceHandler(View):
 
   def edit(self, r):
     item = r['item']
-    self.strategy.check_operation_on(r['op'], item)
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
     form = self.form_class(request.form, obj=item)
+    logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)
@@ -588,7 +654,11 @@ class ResourceHandler(View):
 
   def replace(self, r):
     item = r['item']
-    self.strategy.check_operation_on(r['op'], item)
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
     form = self.form_class(request.form, obj=item)
     if not form.validate():
       r['form'] = form
@@ -602,13 +672,17 @@ class ResourceHandler(View):
 
   def delete(self, r):
     item = r['item']
-    self.strategy.check_operation_on(r['op'], item)
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
     if not 'next' in r:
       if 'parents' in r:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
       else:
         r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
-    self.strategy.check_operation_on(r['op'], item)
+    self.strategy.authorize(r['op'], item)
     logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r

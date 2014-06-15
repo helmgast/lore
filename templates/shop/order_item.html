@@ -1,10 +1,29 @@
 {% extends "shop/base.html" if not parent_template else parent_template %}
 
-{% from 'includes/components.html' import FORM_FIELD, FORM_FIELD_COLS, FORM_FIELD_INLINE %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ _('Cart') if order.status=='cart' else _('Order') }}{% endblock %}
-{% block content_tagline %}{{ '%s %s, %s %s' % (_('by'), order.user, _('placed'), order.created.strftime('%Y-%m-%d %H:%M')) if order.status != 'cart' }} 
-{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% set prod_types = {
+  'book':_('Book'),
+  'item':_('Item'),
+  'digital':_('Digital'),
+  'shipping':_('Shipping fee')}
+  %}
+
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
+
+{% set order_statuses = {
+  'cart' : _('Cart'),
+  'ordered' : _('Ordered'),
+  'paid' : _('Paid'),
+  'shipped' : _('Shipped'),
+  'error' : _('Error')}
+%}
 
 {#
   What user can edit in different order stages:
@@ -15,6 +34,31 @@
 #}
 
 {% block content %}{% block inline %}
+{% if order.status != 'cart' %}
+<div class="row">
+  <div class="col-md-4 col-sm-6">
+  <h4>{{_('Order Info')}}</h4>
+  <table class="table table-condensed">
+    <tr><th>{{_('Name')}}</th><td>{{order.user.realname|hidenone(_('No name'))}}</td></tr>
+    <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
+    <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+    <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+    <tr><th>{{_('Status')}}</th><td>{{order_statuses[order.status]}}</td></tr>
+  </table>
+  </div>
+  <div class="col-md-4 col-md-offset-4 col-sm-6">
+  <h4>{{_('Seller Info')}}</h4>
+    <table class="table table-condensed">
+    <tr><th>{{_('Publisher')}}</th><td>Helmgast AB</td></tr>
+    <tr><th>{{_('Email')}}</th><td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td></tr>
+    <tr><th>{{_('Address')}}</th><td>
+    Surbrunnsgatan 33<br>
+    Stockholm 113 48<br>
+    </td></tr>
+  </table>
+  </div>
+</div>
+{% endif %}
 {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
   {% if order.order_lines %}
     <div class="row underline-row">
@@ -23,14 +67,14 @@
         <div class="col-md-offset-6">
          <ul class="product-details">
               <li><strong>{{_('Product Type')}}</strong></li>
-              <li><strong>{{_('Price')}}</strong></li>
               <li><strong>{{_('Quantity')}}</strong></li>
+              <li><strong>{{_('Price')}}</strong></li>
               <li><strong>{{_('Total')}}</strong></li>
         </ul>
         </div>
       </div>
     </div>
-    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if order.status == 'cart'}}>
+    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
     {% for line in order.order_lines %}
     <div class="product row underline-row">
       <div class="col-xs-2 col-md-2">
@@ -41,11 +85,17 @@
           <div class="col-md-6 product-intro">
             <h3><a href="{{ url_for('.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{line.product.publisher}}</small></h3>
             <p>{{ line.product.description }}</p>
+            {% if order_form %}
+            {{ order_form.order_lines[loop.index0].product(class="hide")}}
+            {% endif %}
+            {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
+            <h4><a href="{{ url_for('.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
+            </h4>
+            {% endif%}
           </div>
           <div class="col-md-6">
             <ul class="product-details">
-              <li class="product-type">{{ line.product.type }}</li>
-              <li class="product-price">{{ line.product.price|currency if order.status=='cart' else line.price|currency }}:-</li>
+              <li class="product-type">{{ prod_types[line.product.type] }}</li>
               <li>
               {% if order_form and order.status=='cart' %}
                 {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
@@ -53,10 +103,25 @@
                 {{ line.quantity }}
               {% endif %}
               </li>
-              <li class="product-price product-total">{{(line.quantity*line.price)|currency}}:-</li>
+              <li class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</li>
+              <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
             </ul>
-            {{ FORM_FIELD_INLINE(order_form.order_lines[loop.index0].comment, controlclass="product-comment") 
-              if order_form and order.status !='shipped' else line.comment}}
+            
+            {% if order_form %}
+              {% if line.product.acknowledgement %}
+              <div class="form-group">
+              <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
+              {% if not line.comment %}
+                {{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>              
+              {% else %}
+                {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+              {% endif %}
+              {% else %}
+              {{order_form.order_lines[loop.index0].comment(class="hide")}}
+              {% endif %}
+            {% elif line.comment %}
+             {{_('Name')+': '+line.comment }}
+            {% endif %}
           </div>   
         </div>
       </div>
@@ -65,40 +130,67 @@
     {% endfor %}
     </div>
     <div class="row" style="margin-top: 20px">
-      <div class="col-md-7 col-md-offset-1">
+      <div class="col-md-4 col-md-push-8">
+        <table class="table product-subtotals">
+          <tr><td>{{_('Including tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
+          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
+        </table>
+      </div>
+      <div class="col-md-8 col-md-pull-4">
+      <h4>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h4>
+
       {% if order_form and order.status != 'shipping' %}
-        {{FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-2", "col-sm-10", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-2", "col-sm-4") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
-        {{FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-2", "col-sm-10", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        <div class="form-group clearfix">
+          <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
+          <div class="col-sm-9">
+            {{order_form.shipping_address.mobile(class="form-control")}}
+            <span class="help-block">För SMS-avisering</span>
+          </div>
+        </div>
       {% else %}
         <div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Name</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.name}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Street</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.street}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Zip Code</strong></div><div class="col-sm-4 large-text">{{order.shipping_address.zipcode}}</div>
-          <div class="col-sm-1"><strong>City</strong></div><div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
-        </div><div class="form-group clearfix">
-          <div class="col-sm-2"><strong>Country</strong></div><div class="col-sm-10 large-text">{{order.shipping_address.country}}</div>
+          <div class="col-sm-3"><strong>{{_('Name')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.name|default('test')}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-3"><strong>{{_('Street')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.street}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-3"><strong>{{_('Zip Code')}}</strong></div>
+          <div class="col-sm-3 large-text">{{order.shipping_address.zipcode}}</div>
+          <div class="col-sm-1"><strong>{{_('City')}}</strong></div>
+          <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
+        </div>
+        <div class="form-group clearfix">
+          <div class="col-sm-3"><strong>{{_('Country')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.country}}</div>
+        </div>
+         <div class="form-group clearfix">
+          <div class="col-sm-3"><strong>{{_('SMS Number')}}</strong></div>
+          <div class="col-sm-9 large-text">{{order.shipping_address.mobile}}</div>
         </div>
       {% endif %}
       </div>
-      <div class="col-md-4">
-        <table class="table product-subtotals">
-          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{order.total_price|currency}}:-</td></tr>
-        </table>
-      </div>
     </div>
     <div class="row">
-      <div class="col-md-offset-8 pull-right">
-      {% if order and order_form and order.status == 'cart' %}
-        <button type="button" href="{{url_for('.order_delete', order=order.id)}}" class="btn btn-danger">{{ _('Delete') }}</button>
-      {% endif %}
-      <button type="submit" id="formsave" class="btn btn-info">{{ _('Save') }}</button>
+      <div class="col-md-offset-8">
+        {% if order_form %}
+        <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
+          {% if order.status != 'cart' %}
+          <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block">{{ _('Contact Us') }}</a>
+          {% endif %}
+        {% else %}
+        <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
+        {% endif %}
+
       {% if order_form and order.status == 'cart' %}
-        <button type="submit" class="btn btn-primary btn-lg">{{ _('Checkout') }}</button>
+        <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
       {% endif %}
       </div>
     </div>
@@ -115,7 +207,7 @@
 {{super()}}
 {% if order_form %}
 <script>
-{% if order.status=='cart' %}
+{% if False and order.status=='cart' %}
   function calcTotal(e) {
     var $prod = $(e.delegateTarget)
     var qty = parseInt((e.target && e.target.value) || "0")

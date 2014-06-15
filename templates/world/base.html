@@ -1,8 +1,10 @@
 {% extends "base.html" %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ _('World') }}{% endblock %}
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
 {% block world_active %} class="active"{% endblock %}
+
 
 {% block cssimports %}
 {{ super() }}
@@ -13,10 +15,15 @@
 
 {% block sidebar %}
 <ul class="nav nav-list">
-  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+
+  {% call(isvisible) MACRO.AUTHORIZED(access_policy['world'].authorize('list')) %}
+  <li class="{{isvisible}}"><a href="{{ url_for('.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+  {% endcall %}
+  {#
   {% call IS_USER() %}
   <li><a href="{{ url_for('.world_myworlds') }}"><span class="glyphicon glyphicon-book"></span> {{ _('My worlds') }}</a></li>
   {% endcall %}
+  #}
 </ul>
 
 {% endblock %}

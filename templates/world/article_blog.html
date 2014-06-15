@@ -8,12 +8,14 @@
 {% block pre_content %}{% endblock %}
 
 {% block content %}
-{% if articles|length == 0 %}{{ _('No articles yet!') }}{% else %}
 	{% for article in articles %}
-	<a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h2>{{ VISIBILITY(visibility.is_private(article)) }}{{ article. title}}</h2></a>
+	<a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h2>{{ article. title}}</h2></a>
 	<ul class="list-inline article-meta" style="margin-bottom: 0px">
     <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
-    <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.username)}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
+	<li title="{{ _('Creator') }}">
+	<span class="glyphicon glyphicon-user"></span>
+	{{article.creator if article.creator else 'System'}}
+	</li>
 	</ul>
 	<div class="media">
 	{% if article.feature_image %}
@@ -26,6 +28,9 @@
 			<a href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
 		</div>
 	</div>
+	{% else %}
+    <div class="jumbotron text-center">
+      <h2>{{ _('No articles yet!') }}</h2>
+    </div>
 	{% endfor %}
-{% endif %}
 {% endblock %}
