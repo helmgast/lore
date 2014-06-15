@@ -50,7 +50,7 @@ class Product(db.Document):
 
 
 class OrderLine(db.EmbeddedDocument):
-  quantity = db.IntField(min_value=1, default=1, verbose_name=_('Quantity'))
+  quantity = db.IntField(min_value=1, default=1, verbose_name=_('Comment'))
   product = db.ReferenceField(Product, required=True, verbose_name=_('Product'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
   comment = db.StringField(max_length=99, verbose_name=_('Comment'))
@@ -61,6 +61,7 @@ class Address(db.EmbeddedDocument):
   zipcode = db.StringField(max_length=8, verbose_name=_('ZIP Code'))
   city = db.StringField(max_length=60, verbose_name=_('City'))
   country = db.StringField(max_length=60, verbose_name=_('Country'))
+  mobile = db.StringField(min_length=8, max_length=14, default="07XXXXXXXX", verbose_name=_('Cellphone Number'))
 
 OrderStatus = Choices(
   cart = _('Cart'),
@@ -81,7 +82,6 @@ class Order(db.Document):
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   shipping_address = db.EmbeddedDocumentField(Address)
-  shipping_mobile = db.StringField(min_length=8, max_length=14, default="07XXXXXXXX", verbose_name=_('Cellphone Number'))
 
   def __unicode__(self):
     max_prod, max_price = None, 0

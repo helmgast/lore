@@ -13,8 +13,9 @@ import re
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
 from resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
-from model.shop import Product, Order, OrderLine, OrderStatus
+from model.shop import Product, Order, OrderLine, OrderStatus, Address
 from flask.ext.mongoengine.wtf import model_form
+from wtforms.fields import FormField, FieldList
 from flask.ext.babel import lazy_gettext as _
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -71,11 +72,48 @@ def inject_cart():
     cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('total_items').first()
     return dict(cart_items=cart_order.total_items if cart_order else 0)
 
+CartOrderLineForm = model_form(OrderLine, base_class=RacBaseForm, converter=RacModelConverter())
+LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
+ShippingForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
+
+class CartForm(RacBaseForm):
+  order_lines = FieldList(FormField(CartOrderLineForm))
+  shipping_address = FormField(ShippingForm)
+
+class PostCartForm(RacBaseForm):
+  order_lines = FieldList(FormField(LimitedOrderLineForm))
+  shipping_address = FormField(ShippingForm)
+
 class OrderHandler(ResourceHandler):
 
+  # We have to tailor our own edit because the form needs to be conditionally
+  # modified
   def edit(self, r):
+    item = r['item']
+    auth = self.strategy.authorize(r['op'], item)
+    r['auth'] = auth
+    if not auth:
+      raise ResourceError(auth.error_code, r, message=auth.message)
+
+    if item.status=='cart':
+      Formclass = CartForm
+    else:
+      Formclass = PostCartForm
+    form = Formclass(request.form, obj=item)
+
+    logger.warning('Form %s validates to %s' % (request.form, form.validate()))
+    if not form.validate():
+      r['form'] = form
+      raise ResourceError(400, r)
+    if not isinstance(form, RacBaseForm):
+      raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+    form.populate_obj(item, request.form.keys())
+    item.save()
+    # In case slug has changed, query the new value before redirecting!
     r['next'] = url_for('.order_form_edit', order=r['item'].id)
-    return super(OrderHandler, self).edit(r)
+
+    logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    return r
 
   def list(self, r):
     if not (g.user and g.user.admin):
