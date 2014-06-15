@@ -18,7 +18,7 @@ from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
 from hashlib import sha1, md5
-from flask.ext.babel import gettext as _
+from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
 

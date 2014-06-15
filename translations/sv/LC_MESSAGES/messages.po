@@ -236,6 +236,9 @@ msgstr "Slut på lager"
 msgid "Product Type"
 msgstr "Produkttyp"
 
+msgid "Ready for download"
+msgstr "Redo att laddas ned"
+
 #: /home/zaifon/Projects/fablr/raconteur/model/shop.py:20
 msgid "Hidden"
 msgstr "Gömd"

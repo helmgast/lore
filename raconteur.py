@@ -342,7 +342,7 @@ def register_main_routes(app, auth):
   class ImageAssetHandler(ResourceHandler):
     def new(self, r):
       '''Override new() to do some custom file pre-handling'''
-      self.strategy.check_operation_any(r['op'])
+      self.strategy.authorize(r['op'])
       form = self.form_class(request.form, obj=None)
       print request.form
       # del form.slug # remove slug so it wont throw errors here
