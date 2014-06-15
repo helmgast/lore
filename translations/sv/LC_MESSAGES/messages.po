@@ -110,26 +110,6 @@ msgstr "Allmän"
 msgid "Join"
 msgstr "Registrera"
 
-msgid "Join via Facebook"
-msgstr "Registrera via Facebook"
-
-msgid "Join via Google"
-msgstr "Registrera via Google"
-
-msgid "Join with own password"
-msgstr "Använd eget lösenord"
-
-msgid "Receive newsletter"
-msgstr "Prenumerera på nyhetsbrev"
-
-msgid "Optional details"
-msgstr "Frivilliga uppgifter"
-
-msgid "Recommended choice"
-msgstr "Rekommenderat val!"
-
-
-
 #: /home/zaifon/Projects/fablr/raconteur/raconteur.py:29
 #: /home/zaifon/Projects/fablr/raconteur/model/world.py:189
 #: /home/zaifon/Projects/fablr/raconteur/templates/base.html:103
@@ -1523,6 +1503,50 @@ msgstr "Fel under kommunikationen med Google"
 
 msgid "Error connecting to Facebook"
 msgstr "Fel under kommunikationen med Facebook"
+
+msgid "Join via Facebook"
+msgstr "Registrera via Facebook"
+
+msgid "Join via Google"
+msgstr "Registrera via Google"
+
+msgid "Join with own password"
+msgstr "Använd eget lösenord"
+
+msgid "Receive newsletter"
+msgstr "Prenumerera på nyhetsbrev"
+
+msgid "Optional details"
+msgstr "Frivilliga uppgifter"
+
+msgid "Recommended choice"
+msgstr "Rekommenderat val!"
+
+
+msgid "Logging in with an external service is both <strong>safer</strong> and <strong>quicker</strong>. We will NOT post anything to your profile without asking, this is just for login!"
+msgstr "Att logga in med extern tjänst är både <strong>säkrare</strong> och <strong>snabbare</strong>. Vi kommer ALDRIG
+posta något till din profil utan att fråga, detta är bara för login!"
+
+msgid "Don't change, only this email is verified"
+msgstr "Ändra ej, den måste matcha din inbjudan"
+
+msgid "Pick the sign-in method you signed up with!"
+msgstr "Välj den inloggningsmetod du valde när du registrerade dig!"
+
+msgid "Choose method"
+msgstr "Välj metod"
+
+msgid "associated email"
+msgstr "associerad email"
+
+msgid "Authorized with Google as"
+msgstr "Identifierad av Google som"
+
+msgid "Authorized with Facebook as"
+msgstr "Identifierad av Facebook som"
+
+msgid "Registration without invite link is not yet open, please come back later!"
+msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"

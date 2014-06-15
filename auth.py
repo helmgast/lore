@@ -296,20 +296,22 @@ class Auth(object):
             flash( _('Incorrect email or email token, did you use the right link?'), 'danger')
         
         else:
+          flash( _('Registration without invite link is not yet open, please come back later!'), 'danger')
+
           # User is submitting a "vanilla" user registration without external auth
-          try:
-            user = self.User.objects(email=form.email.data).get()
-            # we shouldn't get here if no user existed, so it means we are joining
-            # with an existing email!
-            flash( _('A user with this email already exists'), 'warning')
-          except self.User.DoesNotExist:
-            # No user above was found with the provided email
-            user = self.User()
-            form.populate_obj(user)
-            user.save()
-            #send_verification_email()
-            print "Sending verification email" #TODO
-            flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
+          # try:
+          #   user = self.User.objects(email=form.email.data).get()
+          #   # we shouldn't get here if no user existed, so it means we are joining
+          #   # with an existing email!
+          #   flash( _('A user with this email already exists'), 'warning')
+          # except self.User.DoesNotExist:
+          #   # No user above was found with the provided email
+          #   user = self.User()
+          #   form.populate_obj(user)
+          #   user.save()
+          #   #send_verification_email()
+          #   print "Sending verification email" #TODO
+          #   flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
       else:
         flash( u"%s: %s" % (_('Error in form'), form.errors), 'warning')
 
