@@ -140,6 +140,7 @@ class RacModelConverter(ModelConverter):
     # insecure WTForms form base class instead of the CSRF enabled one from
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
+
     form_class = model_form(field.document_type_obj, converter=RacModelConverter(), 
       base_class=OrigForm, field_args={})
     return f.FormField(form_class, **kwargs)
@@ -632,6 +633,7 @@ class ResourceHandler(View):
       raise ResourceError(auth.error_code, r, message=auth.message)
 
     form = self.form_class(request.form, obj=item)
+    logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
       r['form'] = form
       raise ResourceError(400, r)
