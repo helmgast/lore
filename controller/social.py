@@ -25,12 +25,12 @@ social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
   only=['username', 'realname', 'location', 'description'])
-user_form.confirm = PasswordField(_('Repeat Password'), 
-  [validators.Required(), validators.Length(max=40)])
-user_form.password = PasswordField(_('New Password'), [
-  validators.Required(),
-  validators.EqualTo('confirm', message=_('Passwords must match')),
-  validators.Length(max=40)])
+# user_form.confirm = PasswordField(_('Repeat Password'), 
+#   [validators.Required(), validators.Length(max=40)])
+# user_form.password = PasswordField(_('New Password'), [
+#   validators.Required(),
+#   validators.EqualTo('confirm', message=_('Passwords must match')),
+#   validators.Length(max=40)])
 
 class UserAccessPolicy(ResourceAccessPolicy):
 

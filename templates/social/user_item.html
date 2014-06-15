@@ -6,10 +6,10 @@
 {% block content_tagline %}{{ user.realname if user.username else ''}}{% endblock %}
 
 {% block sidebar %}{{super()}}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit')) %}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
   <ul class="nav nav-list" style="float:left">
-    <li class="nav-header {{privileged}}">{{ _('Actions') }}</li>
-    <li><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li class="nav-header">{{ _('Actions') }}</li>
+    <li class="{{privileged}}"><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
   </ul>
   {% endcall %}
 {%endblock%}
@@ -20,9 +20,8 @@
 <div class="row">
   <div class="col-md-4">
     <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
-    {% if user_form %}
-      {{ _('Select avatar by signing up at Gravatar with the email used by this account')}}
-      <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
+    {% if user_form or g.user==user %}
+      {{ _('Pick your avatar at') }} <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
     {% endif %}
     {#<h4 class="pagination-centered">{{ user.exp }} XP</h4>#}
     <div class="btn-toolbar">
@@ -45,8 +44,8 @@
     {% if user_form %}
       {% if user and user==g.user %}
         {{ MACRO.FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9')}}
-        {{ MACRO.FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
-        {{ MACRO.FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}}
+{#        {{ MACRO.FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
+        {{ MACRO.FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}} #}
       {% endif %}
 {#      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}} #}
       {{ MACRO.FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9')}}
