@@ -130,7 +130,7 @@
           {% endcall %}
         {% else %}
           <li><a {% call MACRO.IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}><span class="glyphicon glyphicon-user"></span> {{ g.user }}</a></li>
-          <li><a href="{{ url_for('auth.logout', next=request.path) }}">{{ _('log out') }}</a></li>
+          <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('log out') }}</a></li>
         {% endif %}
       </ul>
     </div>

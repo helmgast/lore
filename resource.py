@@ -346,11 +346,11 @@ class ResourceRoutingStrategy:
 class ResourceError(Exception):
 
   default_messages = {
-    400: _("Bad request or invalid input"),
-    401: _("Unathorized access, please login"),
-    403: _("Forbidden, this is not an allowed operation"),
-    404: _("Resource not found"),
-    500: _("Internal server error")
+    400: u"%s" % _("Bad request or invalid input"),
+    401: u"%s" % _("Unathorized access, please login"),
+    403: u"%s" % _("Forbidden, this is not an allowed operation"),
+    404: u"%s" % _("Resource not found"),
+    500: u"%s" % _("Internal server error")
   }
 
   def __init__(self, status_code, r=None, message=None):

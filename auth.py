@@ -334,7 +334,7 @@ class Auth(object):
       elif form.validate():
         try:
           user = self.User.objects(email=form.email.data).get()
-          if user.status=='active' and user.check_password(form.password.data):
+          if user.status=='active' and self.check_password(form.password.data):
             self.login_user(user)
             return redirect(self.get_next_url())
           else:
