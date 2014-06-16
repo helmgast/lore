@@ -353,7 +353,7 @@ class Auth(object):
         
       elif form.validate():
         try:
-          user = self.User.objects(email=form.email.data).get()
+          user = self.User.objects(email=form.email.data.lower()).get()
           if user.status=='active' and check_password(form.password.data, user.password):
             self.login_user(user)
             return redirect(self.get_next_url())
