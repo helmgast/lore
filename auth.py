@@ -33,7 +33,7 @@ current_dir = os.path.dirname(__file__)
 
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):
-  return sha1(salt + raw_password).hexdigest()
+  return sha1(salt + raw_password.encode('utf-8')).hexdigest()
 
 def make_password(raw_password):
   salt = get_hexdigest(str(random.random()), str(random.random()))[:5]
