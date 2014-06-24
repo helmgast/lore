@@ -41,7 +41,7 @@ class UserAccessPolicy(ResourceAccessPolicy):
       level = self.ops_levels[op]
     if level=='private':
       if g.user and instance==g.user:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (g.user, op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(g.user), op, instance))
     return super(UserAccessPolicy, self).authorize(op, instance)
 
 
