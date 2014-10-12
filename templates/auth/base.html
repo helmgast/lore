@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% import 'includes/macros.html' as MACRO %}
 
+
+{% block content_title %}
+	{% if op=='login' %}
+		{{ _('Please sign in') }} 
+	{% elif opp=='verify' %}
+		{{ _('Complete your account') }}
+	{% else %}
+		{{ _('Login') }}
+	{% endif %}
+{% endblock %}
+  
+
 {% block jsimports %}
   <script type="text/javascript" async 
     src="https://plus.google.com/js/client:plusone.js?onload=start"></script>
@@ -27,6 +39,7 @@
   {% set action = '' %}
   {% set option_args = {'disabled': True} %}
 {% elif op=='verify' %}
+  {% block content_title %}{{ _('Complete your account') }}{% endblock %}
   {% set title = _('Complete your account') %}
   {% set submit = _('Join') %}
   {% set action = url_for('auth.join') %}
