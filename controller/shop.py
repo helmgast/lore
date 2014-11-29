@@ -58,7 +58,7 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
 def download_pdf():
   product = request.args.get('product')
   if g.user and product:
-    resource = request.args.get('resource')
+    resource = request.args.get('resource').encode("utf-8")
     if product == 'eon-iv-grundbok-pdf':
       file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
       directory = os.path.join(current_app.root_path, "resources", "pdf")
