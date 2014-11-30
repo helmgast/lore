@@ -778,7 +778,7 @@ li:hover .btn-delete,
 }
 
 .article_text img {
-  width: 100%;
+  max-width: 100%;
 }
 
 #content-editor p:hover {
