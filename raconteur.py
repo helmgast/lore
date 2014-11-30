@@ -146,7 +146,8 @@ def configure_blueprints(app):
   from auth import Auth
   auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
   app.login_required = auth.login_required
-  
+  app.admin_required = auth.admin_required
+
   app.access_policy = {} # Set up dict for access policies to be stored in
 
   with app.app_context():

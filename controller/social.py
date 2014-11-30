@@ -13,9 +13,10 @@
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
+import auth
 from resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
-  ResourceAccessPolicy, Authorization
-from model.user import User, Group, Member, Conversation, Message
+  ResourceAccessPolicy, Authorization, logger
+from model.user import User, Group, Member, Conversation, Message, UserStatus
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
 from flask.ext.babel import lazy_gettext as _
@@ -106,6 +107,22 @@ def is_following(from_user, to_user):
   return from_user.is_following(to_user)
 
 social.add_app_template_filter(is_following)
+
+@social.route('/reset-auth/')
+@current_app.admin_required
+def reset_auth():
+  if g.user and g.user.admin and request.args.has_key('user_id'):
+    user = User.objects(id=request.args.get('user_id')).get()
+    if user:
+      del user.password
+      del user.facebook_auth
+      del user.google_auth
+      user.status = UserStatus.invited
+      user.save()
+      logger.info("Authentication reset for user (%s)" % user.email)
+      return redirect(url_for('.user_view', user=user.identifier()))
+
+  raise ResourceError(403)
 
 @social.route('/')
 @current_app.login_required

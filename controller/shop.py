@@ -65,7 +65,7 @@ def download_pdf():
       logger.info("Download request for %s" % file_path)
       if os.path.exists(file_path):
         return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
-    elif product == 'eon-iv-spelpaketet-pdf' and request.args.get('resource'):
+    elif product == 'eon-iv-spelpaketet-pdf' and request.args.has_key('resource'):
       resource = request.args.get('resource').encode("utf-8")
       file_name = "%s.pdf" % slugify(resource)
       directory = os.path.join(current_app.root_path, "resources", "eon", "spelpaketet")
