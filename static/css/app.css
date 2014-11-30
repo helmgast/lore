@@ -777,6 +777,10 @@ li:hover .btn-delete,
 	margin: 10px;
 }
 
+.article_text img {
+  width: 100%;
+}
+
 #content-editor p:hover {
 	background-color: #eee;	
 }
