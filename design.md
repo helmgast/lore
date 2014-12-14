@@ -67,52 +67,127 @@ E.g.
     GET world/<worldid>/<articleid> <- static article view
     PUT,PATCH,DELETE world/<worldid>/<articleid> <- edit article
 
-**TODO - below incomplete and not fully implemented**
-
-Typical access:
-
-1) Fetch Article complete content with metadata and relations
-2) Fetch article title, description and thumbnail only
-3) Fetch article titles eligible for choice (similar to 2)
-4) Fetch campaign with all scenes and summaries of relating articles
-
-Above define the acceptable resources in raconteur. All of above will be requested through a REST-like interface. The REST interface and URL rules should be the same between fetching a page for viewing, and fetching JSON for machine reading. Some principles:
-
-- Use the standard verbs; GET, POST, PUT, PATCH, DELETE
-- For basic HTTP browsers that don't support all verbs, also accept POST, with the param ?method=PUT, PATCH, etc and interpret it as above
-- The response can be full HTML (no param), partial HTML (?format=partial) and JSON (?format=json). Full HTML is a complete website with headers, etc. Partial HTML is only the affected "snippet" intended to be inserted somewhere. JSON is the raw format for machine reading.
-- Use correct HTTP status codes. Error codes should come with a response explaining the error, in the same format as was requesteded
-- For all GETs, the returned HTML can either be of a static representation, or a form. It can be decided by the view which will be returned (e.g. a static if no write access for current user) but appending /edit will always try to load the editable form version.
-- When viewing list views, it should always be possible with the following operations:
-    - filter: ?<field>=value . Will filter responses to only match having those values. If it cannot filter on this, respond with a 400 Bad Request with information
-    - sort: ?sort=-<field>,<field>
-    - search: ?q=value
-
-Visual components
-
-- Article (a text focused view). Only for single resource views.
-- Widget (a small representation for a popup, modal, etc for single resource view. Used by Gallery.)
-- Row (a row representation of a single resource. Used by Table.)
-- Table (a sortable table with rows). Only for list resource views.
-- Gallery (a stacked set of boxes). Only for list resource views.
+**Notes**
+- For basic HTTP browsers that don't support all verbs, we also accept POST, with the param ?method=PUT, PATCH, etc and interpret it as above
 
 Arguments
 ------------------------------------------------------------------
 
-                                            ?render=page;json;in_table;in_page;in_box
-    GET     Resources/                      ?render=...
-                                            ?order_by=<field>;-<field>
-                                            ?<field>=x;<field__gt>=y;
-                                            ?do=view;edit;new;  
-    POST    Resources/                      ?render=...
-    GET     (Resources/)<SingleResource>/   ?render=...
-                                            ?<field>=x;
-                                            ?do=view;edit;new;
-    POST    (Resources/)<SingleResource>/   ?render=...
-                                            ?method=PUT;PATCH;DELETE
-    PUT     (Resources/)<SingleResource>/   ?render=...
-    PATCH   (Resources/)<SingleResource>/   ?render=...
-    DELETE  (Resources/)<SingleResource>/   ?render=...
+Most endpoints also support URL arguments to tailor the request. Below we list the current ones.
+Special note on ?out . ?out=fragment means that we return HTML, but only the content part. What exactly is defined as the limits of the fragment depends on the view, but overll, fragments are intended to replace a part of HTML with new data. ?out=json means we get the query representation in JSON.
+
+    GET     /<resources>            list        
+                                    return_type ?out=full (default)
+                                                ?out=fragment
+                                                ?out=json
+                                    ordering    ?order_by=<field>
+                                                ?order_by=-<field>
+                                    filtering   ?<field>=<val>
+                                                ?<field__gt>=<val>
+    
+    GET     /<resources>/new        form_new    get form for new resource
+                                    return_type ?out=full (default)
+                                                ?out=fragment
+                                                ?out=json
+                                    prefilling  ?<field>=<val>
+                                                ?<field__gt>=<val>
+    
+    POST    /<resources>            new         
+                                    next url    ?next=<url>
+    
+    GET     /<resource>/<slug>      view        get resource
+                                    return_type ?out=full (default)
+                                                ?out=fragment
+                                                ?out=json
+    
+    GET     /<resource>/<slug>/edit form_edit   get resource as form
+                                    return_type ?out=full (default)
+                                                ?out=fragment
+                                                ?out=json
+                                    prefilling  ?<field>=<val>
+                                                ?<field__gt>=<val>
+    
+    PUT;POST    /<resource>/<slug>  replace     replace resource
+                                    next url    ?next=<url>
+    
+    PATCH;POST  /<resource>/<slug>  edit        resource
+                                    next url    ?next=<url>
+    
+    DELETE;POST /<resource>/<slug>  delete      delete resource
+                                    next url    ?next=<url>
+
+Errors
+==================================================================
+
+Responses
+------------------------------------------------------------------
+    200     Rendered output as per argument
+    400     Bad request (general error or incorrect validation)
+            If on HTML, we can just highlight the errors on the page
+    404     Not found (given resource id does not exist)
+    401     Unauthorized (not logged in or not access to article)
+            If on HTML and not logged in, send to login page first
+    403     Forbidden (operation is not allowed)
+    500     Internal Server Error (python exception)
+
+Error inputs:
+- Not found
+    - API error
+    - Partial error
+    - Error page
+    - Logging
+- Not authorized
+    - API error
+    - Partial error
+    - Error page
+    - Logging
+- Server error
+    - API error
+    - Partial error
+    - Error page
+    - Logging
+- Malformed request
+- Form doesn't validate
+
+Output:
+- API JSON error
+- Partial-HTML response error (as attached JSON)
+- Flash (as response to POSTs or on-page errors)
+- Logging
+- Debug exception
+- Error page
+
+**If request full html**
+
+    400     -> bad request
+            if a edit/new of form, return original form with validation errors highlighted in requsted form and flash message shown
+            if error with URL args, just flash message
+    401     -> Unauthorized, redirect to login-page if not logged in, else flash message not allowed
+    403     -> forbidden operation, just flash message that not possible with current user
+    404     -> not found page
+    500     -> flash message about internal server error
+            if debug, go to debug instead
+
+**If request fragment**
+
+    400     -> bad request
+            if a validation error, return fragment html of complete form with validation errors
+            else return text line to insert into flash
+    401     -> return flash message that "need to be logged in (with a link to click?)"
+    403     -> forbidden, return flash message that not possible
+    404     -> return flash message
+    500     -> return flash message
+
+**If request json**
+
+    400     -> bad request
+            if validation error, return json representation of form.errors
+            else return normal json error dict
+    401     -> unauthorized, return json error dict
+    403     -> forbidden, return json error dict
+    404     -> not found, return json error dict
+    500     -> return json error dict
+
 
 Flow
 ------------------------------------------------------------------
@@ -216,80 +291,6 @@ Some access patterns
 - ImageAsset. Read by all, write by creator or admin.
 - Article. Read by those in Readgroup, Write by those in write groups.
 - World. Read by all, write by world creator group or admin.
-
-
-Errors
-==================================================================
-
-Responses
-------------------------------------------------------------------
-    200     Rendered output as per argument
-    400     Bad request (general error or incorrect validation)
-            If on HTML, we can just highlight the errors on the page
-    404     Not found (given resource id does not exist)
-    401     Unauthorized (not logged in or not access to article)
-            If on HTML and not logged in, send to login page first
-    403     Forbidden (operation is not allowed)
-    500     Internal Server Error (python exception)
-
-Error inputs:
-- Not found
-    - API error
-    - Partial error
-    - Error page
-    - Logging
-- Not authorized
-    - API error
-    - Partial error
-    - Error page
-    - Logging
-- Server error
-    - API error
-    - Partial error
-    - Error page
-    - Logging
-- Malformed request
-- Form doesn't validate
-
-Output:
-- API JSON error
-- Partial-HTML response error (as attached JSON)
-- Flash (as response to POSTs or on-page errors)
-- Logging
-- Debug exception
-- Error page
-
-**If request full html**
-
-    400     -> bad request
-            if a edit/new of form, return original form with validation errors highlighted in requsted form and flash message shown
-            if error with URL args, just flash message
-    401     -> Unauthorized, redirect to login-page if not logged in, else flash message not allowed
-    403     -> forbidden operation, just flash message that not possible with current user
-    404     -> not found page
-    500     -> flash message about internal server error
-            if debug, go to debug instead
-
-**If request fragment**
-
-    400     -> bad request
-            if a validation error, return fragment html of complete form with validation errors
-            else return text line to insert into flash
-    401     -> return flash message that "need to be logged in (with a link to click?)"
-    403     -> forbidden, return flash message that not possible
-    404     -> return flash message
-    500     -> return flash message
-
-**If request json**
-
-    400     -> bad request
-            if validation error, return json representation of form.errors
-            else return normal json error dict
-    401     -> unauthorized, return json error dict
-    403     -> forbidden, return json error dict
-    404     -> not found, return json error dict
-    500     -> return json error dict
-
 
 Forms
 ==================================================================
