@@ -222,23 +222,23 @@ class ResourceAccessPolicy(object):
       instance_owner = self.get_owner_func(instance)
       
       if g.user and g.user.admin:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance))
 
       if not instance_owner:
-        return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (self.user_field, instance))
+        return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (unicode(self.user_field), instance))
       elif not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
       elif not g.user == instance_owner:
         return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
       else:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (instance_owner, op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance))
     elif level=='admin':
       if not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
       elif not g.user.admin:
         return Authorization(False, 'Need to be logged in with admin access')
       elif g.user:
-        return Authorization(True, '%s is an admin' % g.user)
+        return Authorization(True, '%s is an admin' % unicode(g.user))
     return Authorization(False, 'error', 'This is catch all denied authorization, should not be here')
 
 class ResourceRoutingStrategy:

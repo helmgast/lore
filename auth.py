@@ -33,7 +33,7 @@ current_dir = os.path.dirname(__file__)
 
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):
-  return sha1(salt + raw_password).hexdigest()
+  return sha1(salt + raw_password.encode('utf-8')).hexdigest()
 
 def make_password(raw_password):
   salt = get_hexdigest(str(random.random()), str(random.random()))[:5]
@@ -54,8 +54,7 @@ def get_next():
 
 
 def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
-  return input_string
-  #return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
+  return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
 
 class BaseUser(object):
     def set_password(self, password):
@@ -225,7 +224,7 @@ class Auth(object):
             # User is trying to create data from external auth (can come here both
             # with an email_token as well or without)
             try:
-              user = self.User.objects(email=form.email.data).get()
+              user = self.User.objects(email=form.email.data.lower()).get()
             except self.User.DoesNotExist:            
               user = self.User()
             # We could get here if someone puts in another person's email
@@ -234,7 +233,7 @@ class Auth(object):
                 credentials, profile = self.connect_google(form.auth_code.data)
                 external_id, external_access_token = credentials.id_token['sub'], credentials.access_token
                 emails = [line['value'] for line in profile['emails']]
-                print "Google email", emails, profile['emails']
+                # print "Google email", emails, profile['emails']
                 if not (external_id or external_access_token):
                   raise ValueError('Error connecting to Google')
                 user.google_auth = self.ExternalAuth(
@@ -244,9 +243,9 @@ class Auth(object):
               elif form.external_service.data == 'facebook':
                 external_access_token, external_id, email = self.connect_facebook(form.auth_code.data)
                 emails = [email]
-                print "Facebook email", emails
+                # print "Facebook email", emails
                 if not (external_id or external_access_token):
-                  raise ValueError('Error connecting to Google')
+                  raise ValueError('Error connecting to Facebook')
                 user.facebook_auth = self.ExternalAuth(
                   id=external_id,
                   long_token=external_access_token, 
@@ -281,7 +280,7 @@ class Auth(object):
           if (create_token(form.email.data) == form.email_token.data):
             # Email has been verified, so we set to active and populate the user
             try:
-              user = self.User.objects(email=form.email.data).get()
+              user = self.User.objects(email=form.email.data.lower()).get()
               if user.status == 'invited':
                 user.status = 'active'
                 form.populate_obj(user) # any optional data that has been added
@@ -297,20 +296,22 @@ class Auth(object):
             flash( _('Incorrect email or email token, did you use the right link?'), 'danger')
         
         else:
+          flash( _('Registration without invite link is not yet open, please come back later!'), 'danger')
+
           # User is submitting a "vanilla" user registration without external auth
-          try:
-            user = self.User.objects(email=form.email.data).get()
-            # we shouldn't get here if no user existed, so it means we are joining
-            # with an existing email!
-            flash( _('A user with this email already exists'), 'warning')
-          except self.User.DoesNotExist:
-            # No user above was found with the provided email
-            user = self.User()
-            form.populate_obj(user)
-            user.save()
-            #send_verification_email()
-            print "Sending verification email" #TODO
-            flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
+          # try:
+          #   user = self.User.objects(email=form.email.data).get()
+          #   # we shouldn't get here if no user existed, so it means we are joining
+          #   # with an existing email!
+          #   flash( _('A user with this email already exists'), 'warning')
+          # except self.User.DoesNotExist:
+          #   # No user above was found with the provided email
+          #   user = self.User()
+          #   form.populate_obj(user)
+          #   user.save()
+          #   #send_verification_email()
+          #   print "Sending verification email" #TODO
+          #   flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data, create_token(form.email.data)), 'success')
       else:
         flash( u"%s: %s" % (_('Error in form'), form.errors), 'warning')
 
@@ -352,7 +353,7 @@ class Auth(object):
         
       elif form.validate():
         try:
-          user = self.User.objects(email=form.email.data).get()
+          user = self.User.objects(email=form.email.data.lower()).get()
           if user.status=='active' and check_password(form.password.data, user.password):
             self.login_user(user)
             return redirect(self.get_next_url())
