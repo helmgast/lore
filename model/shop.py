@@ -39,6 +39,8 @@ class Product(db.Document):
   price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Valuta'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
+  # Names of resources (downloadable files)
+  resources = db.ListField(db.StringField())
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
   acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
 

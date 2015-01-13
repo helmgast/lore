@@ -76,6 +76,7 @@
     </div>
     <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
     {% for line in order.order_lines %}
+    {% if line.product.status != 'hidden' %}
     <div class="product row underline-row">
       <div class="col-xs-2 col-md-2">
         {% if line.product.feature_image %}<a href="{{ url_for('.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}
@@ -89,8 +90,15 @@
             {{ order_form.order_lines[loop.index0].product(class="hide")}}
             {% endif %}
             {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
-            <h4><a href="{{ url_for('.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
-            </h4>
+            {% if line.product.resources %}
+              {% for resource in line.product.resources %}
+                <h4><a href="{{ url_for('.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
+                </h4>
+              {% endfor %}
+            {% else %}
+              <h4><a href="{{ url_for('.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
+              </h4>
+            {% endif %}
             {% endif%}
           </div>
           <div class="col-md-6">
@@ -127,6 +135,7 @@
       </div>
 
     </div>
+    {% endif %}
     {% endfor %}
     </div>
     <div class="row" style="margin-top: 20px">

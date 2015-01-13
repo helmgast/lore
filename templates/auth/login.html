@@ -1,6 +1,8 @@
 {% extends "auth/base.html" %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block title %}{{_('Login')}}{% endblock %}
+
 {% block mainblock %}
 <form id="auth-form" method="post" action="" class="col-sm-4 col-sm-offset-4" role="form">
   {% include "includes/flash.html" %}
@@ -14,13 +16,13 @@
       <div class="arrow"></div>
       <h3 class="popover-title">{{_('Choose method')}}</h3>
       <div class="popover-content">
-        <p>{{_("Pick the sign-in method used when you signed up!")}}</p>
+        <p>{{_("Pick the sign-in method you signed up with!")}}</p>
       </div>
     </div>
   </div>
 
   <hr>
-  <h4>{{_('Login with own password')}}</h4>
+  <h4>{{_('Login')}}</h4>
   <div class="clearfix" id="profile"></div>
   
   <div id="password-inputs">

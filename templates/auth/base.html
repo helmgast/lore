@@ -197,9 +197,10 @@ function googleCallback(authResult) {
         var google_email = profile.emails.length && profile.emails[0].value
         if (!form_email)
         	$('#email').val(google_email)
-        $('#location').val(profile.placesLived.length && profile.placesLived[0].value)
+        if(profile.placesLived)
+          $('#location').val(profile.placesLived.length && profile.placesLived[0].value)
         var profileEl = '<img class="pull-left" src=\"' + profile.image.url + '\">'+
-        	'<p>Authorized with Google as ' + profile.displayName + ', associated email '+google_email+'!</p>'
+        	'<p>{{_("Authorized with Google as")}} ' + profile.displayName + ', {{_("associated email")}} '+google_email+'!</p>'
         $('#profile').html(profileEl);
         $('#signin-submit').attr('disabled', false)
         // var signout = $('<button class="btn" type="button">Sign out from Google</button>')
@@ -230,13 +231,12 @@ function facebookCallback(response) {
   $('#auth_code').val(response.authResponse.accessToken)
   FB.api('/me', function(response) {
     // console.log(response)
-    $('#profile').html('You are authorized as, ' + response.name + '!')
     $('#realname').val(response.name)
     var form_email = $('#email').val()
     if (!form_email)
     	$('#email').val(response.email)
     var profileEl = 
-    	'<p>Authorized with Facebook as '+ response.name + ', associated email '+response.email+'!</p>'
+    	'<p>{{_("Authorized with Facebook as")}} '+ response.name + ', {{_("associated email")}} '+response.email+'!</p>'
     $('#profile').empty().append(profileEl);
     FB.api('/me/picture?redirect=true', function(response) {
     	$('#profile').prepend('<img class="pull-left" src=\"' + response.data.url + '\">')
