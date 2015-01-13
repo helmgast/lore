@@ -690,6 +690,9 @@ msgstr "Världar"
 msgid "log in"
 msgstr "Logga in"
 
+msgid "Login"
+msgstr "Logga in"
+
 #: /home/zaifon/Projects/fablr/raconteur/templates/base.html:119
 #: /home/zaifon/Projects/fablr/raconteur/templates/world/world_item.html:44
 msgid "join"
@@ -1469,7 +1472,7 @@ msgid "Error contacting external service"
 msgstr "Fel under kommunikationen med extern inloggningsservice"
 
 msgid "No matching external authentication, are you sure you signed up with this method?"
-msgstr "Inget matchade konto för extern inloggning, är du säker på att du registrerade med denna metoden?"
+msgstr "Inget matchande konto för extern inloggning, är du säker på att du registrerade med denna metoden?"
 
 msgid "This user account is not active or verified"
 msgstr "Detta kontot är inte aktivt eller verifierat"
@@ -1546,9 +1549,6 @@ msgstr "Identifierad av Facebook som"
 
 msgid "Registration without invite link is not yet open, please come back later!"
 msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
-
-msgid "Login with own password"
-msgstr "Logga in med eget lösenord"
 
 msgid "If you encounter any problems during registration, please send an email to info@helmgast.se"
 msgstr "Om du stöter på några problem under registreringen, vänligen skicka ett mail till info@helmgast.se"
