@@ -1061,7 +1061,7 @@ body.template-helmgast {
 	color: #fff;
 }
 
-/* Underline From Center */
+/* Underline From Center, from hover.css*/
 .navbar-nav a {
   display: inline-block;
   vertical-align: middle;
