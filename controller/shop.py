@@ -58,13 +58,27 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
 def download_pdf():
   product = request.args.get('product')
   if g.user and product:
-    if product == 'eon-iv-grundbok-pdf':
+    if request.args.has_key('file'):
+      _product = Product.objects(slug=product).first()
+      _download_file = _product.find_matching_download_file(request.args.get('file').encode("utf-8"))
+      if _download_file is not None:
+        _directory = os.path.join(current_app.root_path, "resources", *_product.get_download_directory())
+        _filename = _download_file.get_filename(g.user)
+        _filepath = os.path.join(_directory, _filename)
+        logger.info("Download request for %s" % _filepath)
+        if os.path.exists(_filepath):
+          return send_file(_filepath, as_attachment=True,
+                           attachment_filename=_download_file.get_attachment_filename(),
+                           mimetype=_download_file.get_mimetype())
+
+    elif product == 'eon-iv-grundbok-pdf':
       file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
       directory = os.path.join(current_app.root_path, "resources", "pdf")
       file_path = os.path.join(directory, file_name)
       logger.info("Download request for %s" % file_path)
       if os.path.exists(file_path):
         return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
+
     elif product == 'eon-iv-spelpaketet-pdf' and request.args.has_key('resource'):
       resource = request.args.get('resource').encode("utf-8")
       file_name = "%s.pdf" % slugify(resource)

@@ -90,7 +90,12 @@
             {{ order_form.order_lines[loop.index0].product(class="hide")}}
             {% endif %}
             {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
-            {% if line.product.resources %}
+            {% if line.product.files %}
+              {% for file in line.product.files %}
+                <h4><a href="{{ url_for('.download_pdf', product=line.product.slug, file=file.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{file.title}}</a>
+                </h4>
+              {% endfor %}
+            {% elif line.product.resources %}
               {% for resource in line.product.resources %}
                 <h4><a href="{{ url_for('.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
                 </h4>
