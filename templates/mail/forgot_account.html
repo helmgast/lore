@@ -1,0 +1,75 @@
+{# To be sent from login procedure when clicking a forgot link.
+SHould have different instructions depending on signup method. #}
+
+{% extends "mail/base.html" %}
+
+{% block subject %}Instructions on logging in{% endblock %}
+
+{% block preview %}Instructions on logging in to helmgast.se{% endblock %}
+
+{% block content %}
+{% set auth = user.auth_type() if user else None %}
+<p>You just requested information on how to login to helmgast.se:</p>
+
+{% if not auth %}
+<p>We can't find any record of this email registered to helmgast.se. Is it 
+possible that you used a different email, or that you used a social login 
+(Facebook, Google) and have a different email registered there? We suggest you
+search your email accounts for the text "Welcome to helmgast.se". If you can't
+find the right email, either contact us directly at <a href="mailto:info@helmgast.se">
+info@helmgast.se</a>for more support, or <a href="mailto:info@helmgast.se">
+create a new account</a>.<p>
+{% else %}
+
+<p>You registered with this email ({{user.email}}) on {{user.join_date.strftime("%Y-%m-%d")}} and your
+authentication method was: <strong>{{auth}}</strong></p>
+
+	{% if auth == "Password" %}
+		<p>If you have forgotten your password, click below link to reset your password:</p>
+		<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock">
+		    <tbody class="mcnButtonBlockOuter">
+		        <tr>
+		            <td style="padding-top:0; padding-right:18px; padding-bottom:18px; padding-left:18px;" valign="top" align="center" class="mcnButtonBlockInner">
+		                <table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border: 2px solid #707070;border-radius: 5px;background-color: #909090;">
+		                    <tbody>
+		                        <tr>
+		                            <td align="center" valign="middle" class="mcnButtonContent" style="font-family: Arial; font-size: 16px; padding: 16px;">
+		                                <a class="mcnButton " title="Reset password" href="http://" target="_blank" style="font-weight: bold;letter-spacing: normal;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;">Reset password</a>
+
+		                            </td>
+		                        </tr>
+		                    </tbody>
+		                </table>
+		            </td>
+		        </tr>
+		    </tbody>
+		</table>
+	{% else %}
+		<p>To login again, just click the {{auth}}-button on the login page:</p>
+		<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock">
+		    <tbody class="mcnButtonBlockOuter">
+		        <tr>
+		            <td style="padding-top:0; padding-right:18px; padding-bottom:18px; padding-left:18px;" valign="top" align="center" class="mcnButtonBlockInner">
+		                <table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border: 2px solid #707070;border-radius: 5px;background-color: #909090;">
+		                    <tbody>
+		                        <tr>
+		                            <td align="center" valign="middle" class="mcnButtonContent" style="font-family: Arial; font-size: 16px; padding: 16px;">
+		                                <a class="mcnButton " title="Login again" href="http://" target="_blank" style="font-weight: bold;letter-spacing: normal;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;">Login again</a>
+
+		                            </td>
+		                        </tr>
+		                    </tbody>
+		                </table>
+		            </td>
+		        </tr>
+		    </tbody>
+		</table>
+	{% endif %}
+{% endif %}
+
+<p><em>You received this email as you had trouble logging in to Helmgast. If you 
+did not do that, please ignore this email as it may have been someone typing your 
+mail by mistake. If you believe there is suspicious activity, please contact us 
+directly at <a href="mailto:info@helmgast.se">
+info@helmgast.se</a></em></p>
+{% endblock %}

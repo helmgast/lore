@@ -14,6 +14,7 @@ from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
 from time import gmtime, strftime
+from werkzeug.utils import secure_filename
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -278,6 +279,15 @@ def register_main_routes(app, auth):
     return render_template('helmgast.html', articles=search_result['articles'], world=world)
     # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
+  @app.route('/mail/<template>')
+  @auth.admin_required
+  def mail_view(template='base'):
+    template = secure_filename(template)
+    user = request.args.get('user', None)
+    if user:
+      user = User.objects(id=user).get()
+    return render_template('mail/%s.html' % template, user=user, invite=True)
+
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
   def admin():
@@ -371,6 +381,10 @@ def register_main_routes(app, auth):
       return val
     else:
       return default
+
+  @app.template_filter('currentyear')
+  def currentyear():
+    return datetime.utcnow().strftime('%Y')
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

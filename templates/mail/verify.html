@@ -1,0 +1,48 @@
+{# To be sent from sign up procedure if we need to verify email. 
+Should also work as invite mail. #}
+
+{% extends "mail/base.html" %}
+
+{# To be sent from successful verification / invitation #}
+{% block subject %}{{user.display_name()}}, welcome to Helmgast!{% endblock %}
+
+{% block preview %}Verify your email to complete registration on helmgast.se{% endblock %}
+
+{% block content %}
+
+<p>Thank you, {{user.display_name()}}, for registering at Helmgast.se! You registered
+this email ({{user.email}}) and authentication method was: {{user.auth_type()}}</p>
+
+<p>We just need to verify that you own this email, and then you can start using your account:</p>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnButtonBlock">
+    <tbody class="mcnButtonBlockOuter">
+        <tr>
+            <td style="padding-top:0; padding-right:18px; padding-bottom:18px; padding-left:18px;" valign="top" align="center" class="mcnButtonBlockInner">
+                <table border="0" cellpadding="0" cellspacing="0" class="mcnButtonContentContainer" style="border-collapse: separate !important;border: 2px solid #707070;border-radius: 5px;background-color: #909090;">
+                    <tbody>
+                        <tr>
+                            <td align="center" valign="middle" class="mcnButtonContent" style="font-family: Arial; font-size: 16px; padding: 16px;">
+                                <a class="mcnButton " title="Verify email" href="{{verification_url}}" target="_blank" style="font-weight: bold;letter-spacing: normal;line-height: 100%;text-align: center;text-decoration: none;color: #FFFFFF;">Verify email</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>Or, paste this link into your browser: <a href="{{verification_url}}">{{verification_url}}</a><p>
+<p>As a user of Helmgast you will be able to interact with the worlds of Helmgast
+as well as purchasing Helmgast products. The platform is constantly evolving so
+we will be sending you updates by email whenever major changes have happened.</p>
+<p><strong>Many thanks for your support!</strong></p>
+
+<p><em>If you did not sign up for this service, please ignore this email
+as it may have been someone typing your mail by mistake. If you believe there
+is suspicious activity, please contact us directly at <a href="mailto:info@helmgast.se">
+info@helmgast.se</a></em></p>
+{% endblock %}
+
+{% block recipient%}{{user.email}}{% endblock %}
