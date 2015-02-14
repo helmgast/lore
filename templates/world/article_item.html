@@ -235,7 +235,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
   var imageselect_options = {
     csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
+    image_list_url: "{{url_for('imageasset_list', order_by='-created_date', page='all', out='fragment')}}",
     image_upload_url: "{{url_for('imageasset_new', out='json')}}"
   }
 
