@@ -45,6 +45,9 @@
   <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
   <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
   {% include 'world/article_action_menu.html' %}
+  {% if not article or not article.is_published() %}
+  <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
+  {% endif %}
   <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
 </ul>
 
@@ -74,8 +77,8 @@
       {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
     </div>
     <div class="col-xs-6">
-      {{ MACRO.FORM_FIELD(article_form.created_date) }}
       {{ MACRO.FORM_FIELD(article_form.status) }}
+      {{ MACRO.FORM_FIELD(article_form.created_date) }}
       {{ MACRO.FORM_FIELD(article_form.type) }}
       {{ MACRO.FORM_FIELD(article_form.world) }}
       <input type="hidden" name="feature_image" id="feature_image" value="" />
@@ -139,6 +142,9 @@
   {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
   {% include 'world/article_action_menu.html' %}
   {% endcall %}
+  {% if not article.is_published() %}
+  <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Unpublished') }}</li>
+  {% endif %}
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
