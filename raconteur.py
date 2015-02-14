@@ -152,6 +152,7 @@ def configure_blueprints(app):
 
   with app.app_context():
 
+    from controller.asset import asset_app as asset_app
     from controller.world import world_app as world
     from controller.social import social
     from controller.generator import generator
@@ -165,6 +166,7 @@ def configure_blueprints(app):
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')
     app.register_blueprint(shop, url_prefix='/shop')
+    app.register_blueprint(asset_app, url_prefix='/assets')
 
   return auth
 

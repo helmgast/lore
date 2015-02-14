@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% import 'includes/macros.html' as MACRO %}
+
+{% block content_title %}{{ _('Campaign') }}{% endblock %}
+{% block content_tagline %}{{ _('manage YOUR game') }}{% endblock %}
+{% block campaign_active %} class="active"{% endblock %}
+
+{% block sidebar %}
+  <ul class="nav nav-list">
+    <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaigns') }}</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> {{ _('My sessions') }}</a></li>
+    <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('Chronicles') }}</a></li>
+  </ul>
+{% endblock %}
+
+{% block content %}
+  <p>
+  {% if session.logged_in %}
+  {{ _('Welcome') }} <strong>{{ user.realname }}</strong>!
+  {% endif %}
+  {{ _('In this section you can manage the campaigns and scenarios that you play.') }}</p>
+{% endblock %}

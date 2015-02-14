@@ -1,0 +1,19 @@
+{% extends "asset/base.html" if not parent_template else parent_template %}
+
+{% block content %}
+<div class="row">
+    {% for file in files %}
+    <div class="col-md-6">
+      <h3><a href="{{ url_for('.fileasset_view', fileasset=file.id) }}">{{file}}</a></h3>
+      {% if file.description %}
+	  <div class="well">{{ file.description }}</div>
+	  {% endif %}
+      <dl class="dl-horizontal">
+        <dt>{{ _('Group') }}</dt>
+        <dd>{{ file.source_filename }}</dd>
+      </dl>
+    </div>
+    {% endfor %}
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}
