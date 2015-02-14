@@ -22,4 +22,5 @@ def render_mail(recipients, subject, sender=None, body=None, template=None, **kw
     mailargs['body'] = body
   else:
     raise TypeError("We need either a body string or a template to render mail!")
+  mailargs['extra_headers'] = {'X-MC-InlineCSS':'true'} # Inline CSS in template
   return MailMessage(**mailargs)

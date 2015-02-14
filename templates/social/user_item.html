@@ -1,4 +1,4 @@
-{% extends "social/base.html" if not parent_template else parent_template %}
+{% extends "social/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 
@@ -80,12 +80,8 @@
       <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">{{_('Type')}}<span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Verify')}}</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Invite')}}</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Reset')}}</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Order')}}</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Forgot')}}</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{_('Free form')}}</a></li>
+        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='verify', user=user.id)}}">{{_('Verify')}}</a></li>
+        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='forgot_account', user=user.id)}}">{{_('Forgot')}}</a></li>
       </ul>
       </div>
       </td></tr>

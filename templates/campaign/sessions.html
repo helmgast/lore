@@ -1,4 +1,4 @@
-{% extends "campaign/campaign.html" %}
+{% extends "campaign/_page.html" if not parent_template else parent_template%}
 
 {% block content_title %}{{ _('Sessions') }}{% endblock %}
 {% block content_tagline %}{{ _('upcoming and already done') }}{% endblock %}

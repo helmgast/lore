@@ -292,6 +292,19 @@ Some access patterns
 - Article. Read by those in Readgroup, Write by those in write groups.
 - World. Read by all, write by world creator group or admin.
 
+Login-flow
+------------------------------------------------------------------
+A user can currently be either Invited, Active or Deleted. The definitions:
+- Invited: user exists in the database but has not verified its email, meaning it cannot be considered secure (someone can send up with another persons email). No communication can happen with an invited user, except to verify the email.
+- Active: A normal user. Must have at least one authentication method.
+- Deleted: A user that has been removed but is kept in database to keep consistency. Can theoretically be re-activated.
+
+1) Join: A visitor goes to /auth/join to create a new user. He/she provides
+an email (required) and then chooses to authenticate with Google, Facebook or
+Password.
+
+
+
 Forms
 ==================================================================
 
@@ -331,14 +344,14 @@ Templates
 
 When we render, we have many different scenarios to deal with. We have the following type of template files:
 
-- Base-files. These are complete with header, footer, sidebar etc but inhering form parent category, ultimately base.html.
+- Base-files. These are complete with header, footer, sidebar etc but inhering form parent category, ultimately _page.html.
 - View-files. A view fills the main content part of a Base file with either a Instance, or a list of Instances. It is the response to e.g. /list, /view, etc. Most views are simply a 1-to-1 with an Instance view, e.g. user/edit for account form. As the template is very similar, the same view is used to show all operations /new, /view and /edit.
 - Instance-files. These are an atomic representation of an instance. Instance can be of different types, where the default is "full". Full will typically show all the non-internal fields of an Instance. "row" will be a minimal representation based to fit into a table, and "inline" will be small view/form intended to be shown in modals or similar. As the instance files are re-usable across views, the views should only refer to instance-files.
 
 Template structure
 ------------------------------------------------------------------
 
-    page.html
+    _page.html
         section.html
             model.html
 
@@ -354,6 +367,53 @@ Template structure
         block: in_box
     <model>_list
     <model>_custom
+
+    _page.html
+    ---------
+
+    <html>
+    <head></head>
+    <body>
+    {% block body %}
+    {% endblock %}
+    </body>
+    </html>
+
+    mail.html
+    ---------
+    <html>
+    <head></head>
+    <body>
+    {% block body %}
+    {% endblock %}
+    </body>
+    </html>
+    # As above, but with some specialities for mail
+
+    modal.html
+    ----------
+
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h4 class="modal-title">{% block content_title %}{% endblock %}</h4>
+    </div>
+    <div class="modal-body">
+      {% block content %}{% endblock %}
+    </div>
+    <div class="modal-footer">
+      {% block footer %}
+      <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+      <button type="button" class="btn btn-primary modal-submit" data-loading-text="Loading...">{{ _('Insert') }}</button>
+      {% endblock %}
+    </div>
+    {% block final %}{% endblock %}
+
+    fragment.html
+    ----------
+    {% block content %}{% endblock %}
+
+    resource_item.html
+    {% extends _page.html if not template else template}
 
 Example
 ------------------------------------------------------------------

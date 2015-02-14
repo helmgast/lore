@@ -556,6 +556,14 @@ $(window).on('load', function () {
 
 })(window.jQuery || window.Zepto);
 
+$('#themodal').on('show.bs.modal', function(event) {
+  var initiator = event.relatedTarget
+  if (initiator.href) {
+    var dest = $(this).find('.modal-content')
+    dest.load(initiator.href + (initiator.href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
+  }
+})
+
 function post_action($t) {
   var vars, type = $t.data('action-type'), href=$t.attr('href'),
     action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
@@ -617,6 +625,7 @@ function handle_action(e) {
   e.preventDefault()
 }
 
+
   $('#themodal').modal({show:false})
   $('#themodal').on('submit', 'form', function(e) {
     if (e.target.action.match(/[?&]inline/)) {
@@ -640,4 +649,21 @@ function handle_action(e) {
       history.back();
       // Required, not sure why
       e.preventDefault();
+  });
+
+
+//////////////// new modal code ///////////
+  var $modal = $('#themodal')
+  $modal.on('click', '.modal-submit', function(e) {
+    var form = $modal.find('form')
+    if (form.length) {
+      var jqxhr = $.post(form[0].action, form.serialize())
+        .done(function(data, textStatus, jqXHR) {
+          console.log(data)
+          $modal.modal('hide')
+        })
+        .fail(function( jqXHR, textStatus, errorThrown) {
+          alert("Error: "+errorThrown)
+        })
+    }
   });

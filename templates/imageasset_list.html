@@ -1,9 +1,6 @@
-{% extends "base.html" if not out=='fragment' else 'base_fragment.html' %}
+{% extends "_page.html" if not parent_template else parent_template %}
 
 {% block content %}
-
-
-
 <div class="gallerylist">
 	<div class="gallery-row">
   {% for imageasset in images %}

@@ -1,4 +1,4 @@
-{% extends "campaign/base.html" %}
+{% extends "campaign/_page.html" if not parent_template else parent_template%}
 
 {% block content_title %}{{ _('Campaigns') }}{% endblock %}
 {% block content_tagline %}{{ _('where the magic happens') }}{% endblock %}

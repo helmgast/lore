@@ -1,5 +1,4 @@
-{% if not inline %}{% extends "campaign/campaign.html" %}
-{% else %}{% extends "includes/inline.html" %}{% endif %}
+{% extends "campaign/_page.html" if not parent_template else parent_template%}
 
 {% if resource.op_is_new() %}
   {% set action_url = url_for('campaign.campaign_new', inline=inline) %}

@@ -1,4 +1,4 @@
-{% extends "auth/base.html" %}
+{% extends "auth/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block title %}{{_('Login')}}{% endblock %}

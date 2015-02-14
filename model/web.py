@@ -23,4 +23,4 @@ class ApplicationConfigForm(Form):
 class AdminEmailForm(Form):
 	to_field = StringField(_('To'), [validators.Email(), validators.Required() ])
 	subject = StringField(_('Subject'), [validators.Length(min=1, max=200), validators.Required()])
-	message = StringField(_('Message'), [validators.Length(min=1), validators.Required()])
+	message = StringField(_('Message'))

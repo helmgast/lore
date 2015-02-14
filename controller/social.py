@@ -128,4 +128,4 @@ def reset_auth():
 @current_app.login_required
 def index():
     following_messages = Message.objects(conversation=None, user__in=g.user.following).order_by('-pub_date')
-    return render_template('social/base.html', following_message_list=following_messages)
+    return render_template('social/_page.html', following_message_list=following_messages)
