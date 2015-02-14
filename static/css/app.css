@@ -544,6 +544,7 @@ important
 	float: right !important;
 	top: -4px;
 	right: 10%;
+	padding-left: 8px;
 }
 
 #editor-toolbar {
