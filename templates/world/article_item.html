@@ -242,10 +242,15 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
   $('#content-editor a.lightbox').imageselect();
 
   $('.bubble-bar .ui-inputs a').click(function(e) {
-    var $a = $('<a class="lightbox"><img src=""></a>')
-    var $block = $(editor.getActiveBlock())
-    $block.before($a)
-    $a.imageselect()
+    var $block = $(editor.getActiveBlock());
+    var $existing_insert = $('#insert_image_asset');
+    if ($existing_insert.length) {
+        $existing_insert.next('.image-selector').remove();
+        $existing_insert.remove();
+    }
+    var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
+    $block.before($a);
+    $a.imageselect();
   })
 
   $('#articleform').one('change', function(e) {
