@@ -9,11 +9,12 @@
 """
 
 import os, sys
-from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app
+from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
 from time import gmtime, strftime
+from werkzeug.utils import secure_filename
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -267,10 +268,11 @@ def register_main_routes(app, auth):
   from flask.ext.mongoengine.wtf import model_form
   from flask.ext.babel import lazy_gettext as _
   from model.user import User
+  from model.shop import Order
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm, AdminEmailForm
-  from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler
+  from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
   from mailer import render_mail
 
   @app.route('/')
@@ -279,6 +281,41 @@ def register_main_routes(app, auth):
     search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
     return render_template('helmgast.html', articles=search_result['articles'], world=world)
     # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
+
+  @app.route('/mail/<mail_type>', methods=['GET', 'POST'])
+  @auth.admin_required
+  def mail_view(mail_type):
+    mail_type = secure_filename(mail_type)
+    user = request.args.get('user', None)
+    if user:
+      user = User.objects(id=user).get()
+    order = request.args.get('order', None)
+    if order:
+      order = Order.objects(id=order).get()
+    parent_template = parse_out_arg(request.args.get('out', None))
+    if request.method == 'GET':
+      return render_template('mail/%s.html' % mail_type, 
+        mail_type=mail_type, 
+        parent_template=parent_template, 
+        user=user,
+        order=order)
+    elif request.method == 'POST' and user:
+      mailform = AdminEmailForm(request.form)
+      mailform.to_field.data = user.email
+      if mailform.validate():
+        email = render_mail(
+          ['ripperdoc@gmail.com'], 
+          mailform.subject.data , 
+          template='mail/%s.html' % mail_type, 
+          user=user,
+          order=order)
+        email.send_out()
+        return "Mail sent!"
+      else:
+        print mailform.errors
+        abort(400)  
+    else:
+      abort(400)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
@@ -373,6 +410,10 @@ def register_main_routes(app, auth):
       return val
     else:
       return default
+
+  @app.template_filter('currentyear')
+  def currentyear():
+    return datetime.utcnow().strftime('%Y')
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

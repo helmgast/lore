@@ -1,4 +1,4 @@
-{% extends "shop/base.html" if not parent_template else parent_template %}
+{% extends "shop/_page.html" if not parent_template else parent_template %}
 
 {% import 'includes/macros.html' as MACRO %}
 
@@ -14,8 +14,8 @@
 
 {% set currencies = {
   'eur' : '€ %s',
-  'sek' : '%s :-'
-}%}
+  'sek' : '%s :-'}
+  %}
 
 {% set order_statuses = {
   'cart' : _('Cart'),
@@ -24,6 +24,16 @@
   'shipped' : _('Shipped'),
   'error' : _('Error')}
 %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-list">
+<li class="nav-header">{{ _('Actions') }}</li>
+
+{% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('view')) %}
+<li class="{{privileged}}"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='order', user=user.id, order=order.id)}}"><span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}</a></li>
+
+{% endcall %}
+{% endblock %}
 
 {#
   What user can edit in different order stages:
@@ -66,7 +76,7 @@
       <div class="col-xs-10 col-md-10">
         <div class="col-md-offset-6">
          <ul class="product-details">
-              <li><strong>{{_('Product Type')}}</strong></li>
+              <li><strong>{{_('Type')}}</strong></li>
               <li><strong>{{_('Quantity')}}</strong></li>
               <li><strong>{{_('Price')}}</strong></li>
               <li><strong>{{_('Total')}}</strong></li>
@@ -176,7 +186,7 @@
           <div class="col-sm-9 large-text">{{order.shipping_address.street}}</div>
         </div>
         <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('Zip Code')}}</strong></div>
+          <div class="col-sm-3"><strong>{{_('ZIP Code')}}</strong></div>
           <div class="col-sm-3 large-text">{{order.shipping_address.zipcode}}</div>
           <div class="col-sm-1"><strong>{{_('City')}}</strong></div>
           <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>

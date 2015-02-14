@@ -1,0 +1,17 @@
+{# A base template for delivering content into modals #}
+<div class="modal-header">
+  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+  {% block header %}
+  <h4 class="modal-title">{% block content_title %}{% endblock %}</h4>
+  {% endblock %}
+</div>
+<div class="modal-body">
+  {% block body %}{% block content %}{% endblock %}{% endblock %}
+</div>
+<div class="modal-footer">
+  {% block footer %}
+  <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+  <button type="button" class="btn btn-primary modal-submit" data-loading-text="Loading...">{% block submit_title %}{{ _('Insert') }}{% endblock %}</button>
+  {% endblock %}
+</div>
+{% block final %}{% endblock %}

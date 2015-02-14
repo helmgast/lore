@@ -1,0 +1,40 @@
+{# To be sent from sign up procedure if we need to verify email. 
+Should also work as invite mail. #}
+
+{% extends "mail/one_column_mail.html" %}
+
+{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname, _external=True) %}
+
+{# To be sent from successful verification / invitation #}
+{% block subject %}{{user.display_name() if user}}, welcome to Helmgast!{% endblock %}
+
+{% block preview %}Verify your email to complete registration on helmgast.se{% endblock %}
+
+{% block content %}
+<p>Thank you, {{user.display_name() if user}}, for registering at Helmgast.se! You registered
+this email ({{user.email if user}}) and authentication method was: {{user.auth_type() if user}}</p>
+
+<p>We just need to verify that you own this email, and then you can start using your account:</p>
+
+<table>
+    <tr>
+        <td class="padding">
+            <p><a class="btn btn-primary " title="Verify email" href="{{verification_url}}" target="_blank">Verify email</a></p>
+        </td>
+    </tr>
+</table>
+
+<p>Or, paste this link into your browser: <br><a href="{{verification_url}}">{{verification_url|wordwrap}}</a><p>
+<p>As a user of Helmgast you will be able to interact with the worlds of Helmgast
+as well as purchasing Helmgast products. The platform is constantly evolving so
+we will be sending you updates by email whenever major changes have happened.</p>
+<p><strong>Many thanks for your support!</strong></p>
+
+<p><em>If you did not sign up for this service, please ignore this email
+as it may have been someone typing your mail by mistake. If you believe there
+is suspicious activity, please contact us directly at <a href="mailto:info@helmgast.se">
+info@helmgast.se</a></em></p>
+
+{% endblock %}
+
+{% block recipient%}{{user.email if user}}{% endblock %}

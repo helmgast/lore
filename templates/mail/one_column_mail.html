@@ -1,0 +1,85 @@
+{% extends "mail/_page.html" if not parent_template else parent_template %}
+
+{% block body %}
+<table class="body-wrap">
+    <tr>
+        <td></td>
+        <td class="container" bgcolor="#FFFFFF">
+
+            <!-- content -->
+            <div class="content">
+
+            <table>
+                <tr>
+                    <td>
+                        <p><em>{% block preview %}Email from Helmgast... {% endblock %}</em></p>
+                        <img alt="Helmgast" src="https://gallery.mailchimp.com/4412a3ce4ac556de77513666b/images/52203b43-b091-40c9-b4f5-ee3e5df197ae.jpg" width="100%" style="max-width:900px; padding-bottom: 0; display: inline !important; vertical-align: bottom;">
+
+                        <h1>{{ self.subject() }}</h1>
+                        {% block content %}
+                        <h2>How do I use it?</h2>
+                        <p>All the information you need is on GitHub.</p>
+                        <table>
+                            <tr>
+                                <td class="padding">
+                                    <p><a href="https://github.com/leemunroe/html-email-template" class="btn btn-primary">View the source and instructions on GitHub</a></p>
+                                </td>
+                            </tr>
+                        </table>
+                        {% endblock %}
+
+                        <p><a href="https://www.facebook.com/helmgast"><img style="vertical-align: middle;margin-right: 5px;" width="72" height="30" src="https://gallery.mailchimp.com/4412a3ce4ac556de77513666b/images/adc42642-7da1-49c2-b9af-b7e9a3a41a97.png">Helmgast on Facebook!</a></p>
+                    </td>
+                </tr>
+            </table>
+            </div>
+            <!-- /content -->
+            
+        </td>
+        <td></td>
+    </tr>
+</table>
+<!-- /body -->
+
+<!-- footer -->
+<table class="footer-wrap">
+    <tr>
+        <td></td>
+        <td class="container">
+            
+            <!-- content -->
+            <div class="content">
+                <table>
+                    <tr>
+                        <td align="center">
+                            <p>You are receiving this email to {{user.email if user}} as a user of <a href="http://helmgast.se" class="utilityLink">http://helmgast.se</a></p>
+                            <p><em>Copyright © 2015 Helmgast AB, All rights reserved.<br>
+                            Surbrunnsgatan 33, Stockholm 113 48, Sweden</em></p>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <!-- /content -->
+            
+        </td>
+        <td></td>
+    </tr>
+</table>
+
+{% endblock %}
+
+{% block header %}
+<address style="margin-bottom: -10px">
+<strong>Subject:</strong> {{ self.subject() }}<br>
+<strong>From:</strong> info@helmgast.se<br>
+<strong>To:</strong> {{user.email if user}}<br>
+</address>
+<form method="post" action="{{request.url}}">
+<input type="hidden" name="subject" value="{{ self.subject() }}" />
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+</form>
+{% endblock %}
+
+{% block submit_title %}{{ _('Send') }}{% endblock %}
+

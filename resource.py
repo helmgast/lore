@@ -40,6 +40,15 @@ def generate_flash(action, name, model_identifiers, dest=''):
   flash(s, 'success')
   return s
 
+def parse_out_arg(out_param):
+  if out_param == 'json':
+    return out_param
+  elif out_param in ['page', 'modal', 'fragment']:
+    return '_%s.html' % out_param  # to use as template path
+                          # used in Jinja
+  else:
+    return None # Same as page, but set as None in order to not override template given inheritance
+
 def error_response(msg, level='error'):
   flash(msg, level)
   return render_template('includes/inline.html')
@@ -536,7 +545,7 @@ class ResourceHandler(View):
             vals[arg] = val
       r['filter' if op is 'list' else 'prefill'] = vals
     r['op'] = op
-    r['out'] = request.args.get('out','html') # default to HTML
+    r['out'] = parse_out_arg(request.args.get('out',None)) # defaults to None, meaning _page.html
     if 'next' in request.args:
       r['next'] = request.args['next']
     return r

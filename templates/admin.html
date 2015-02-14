@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends "_page.html" %}
+{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ _('Admin') }}{% endblock %}
 {% block container_class %}container{% endblock %}
@@ -11,8 +12,8 @@
 <div class="row">
 <form method="post" action="{{ url_for('admin') }}" role="form">
   <div class="col-md-4">
-    {{ FORM_FIELD2(config.state) }}
-    {{ FORM_FIELD2(config.features) }}
+    {{ MACRO.FORM_FIELD2(config.state) }}
+    {{ MACRO.FORM_FIELD2(config.features) }}
   </div>
   <div class="col-md-4">
       <dl>
@@ -21,8 +22,8 @@
         <dd>{{ db }}</dd>
         {% endfor %}
       </dl>
-    {{ FORM_FIELD2(config.backup) }}
-    {{ FORM_FIELD2(config.backup_name) }}
+    {{ MACRO.FORM_FIELD2(config.backup) }}
+    {{ MACRO.FORM_FIELD2(config.backup_name) }}
   </div>
   <div class="col-md-4">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -33,9 +34,9 @@
 <div class="row">
 <div class="col-md-4">
 <form role="form" id='articleform' method="post" action="{{ url_for('admin', action='mail') }}">
-  {{ FORM_FIELD(email.to_field) }}
-  {{ FORM_FIELD(email.subject) }}
-  {{ FORM_FIELD(email.message) }}
+  {{ MACRO.FORM_FIELD(email.to_field) }}
+  {{ MACRO.FORM_FIELD(email.subject) }}
+  {{ MACRO.FORM_FIELD(email.message) }}
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <button class="btn btn-lg btn-primary" type="submit">{{ _('Send') }}</button>
 </form>

@@ -1,4 +1,4 @@
-{% extends "social/base.html" if not parent_template else parent_template %}
+{% extends "social/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 
@@ -62,6 +62,7 @@
       <td>{{ user.location|hidenone }}</td></tr>
       <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+      
       {% call MACRO.IS_ADMIN() %}
       <tr><td><strong>{{ _('Authentication') }}</strong></td>
         <td>{{ user.auth_type() }}
@@ -73,6 +74,17 @@
         href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname) }}">{{
           url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname) }}</a></td>
       </tr>
+      <tr><td><strong>{{ _('Send email') }}</strong></td>
+      <td>
+      <div class="dropdown">
+      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">{{_('Type')}}<span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='verify', user=user.id)}}">{{_('Verify')}}</a></li>
+        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='forgot_account', user=user.id)}}">{{_('Forgot')}}</a></li>
+      </ul>
+      </div>
+      </td></tr>
       {% endcall %}
       {#
       <tr><td><strong>{{ _('Following') }}</strong></td>

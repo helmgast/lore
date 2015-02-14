@@ -1,37 +1,28 @@
-{% extends "base.html" if not out=='fragment' else 'base_fragment.html' %}
+{% extends "_page.html" if not parent_template else parent_template %}
 
 {% block content %}
-
-
 <div class="gallerylist">
-    <div class="gallery-row">
-        {% for imageasset in images %}
-        <figure class="gallery">
-            <label>
-                <input type="radio" name="images" value="{{imageasset.slug}}">
-                <img data-aspect="{{imageasset.image.width/imageasset.image.height}}"
-                     src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}"
-                     height="{{imageasset.image.height}}">
-                {#
-                <img src="{{ url_for('static', filename='img/graypixel.gif') }}"
-                     data-src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}"
-                     height="{{imageasset.image.height}}">
-                #}
-            </label>
-            <figcaption>{{imageasset.title}}</figcaption>
-        </figure>
-        {% if loop.index is divisibleby 3 %}
-    </div>
-    <div class="gallery-row">{% endif %}
-        {% endfor %}
-    </div>
+	<div class="gallery-row">
+  {% for imageasset in images %}
+    <figure class="gallery">
+      <label>
+        <input type="radio" name="images" value="{{imageasset.slug}}">    
+        <img data-aspect="{{imageasset.image.width/imageasset.image.height}}" src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+        {#
+        <img src="{{ url_for('static', filename='img/graypixel.gif') }}" data-src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+      	#}
+      </label>
+  	<figcaption>{{imageasset.title}}</figcaption>
+    </figure>
+  {% if loop.index is divisibleby 3 %}</div><div class="gallery-row">{% endif %}
+  {% endfor %} 
+  </div>
 </div>
 <script>
   // $(document).on('hidden.bs.modal', function(e) {
   //   $('.gallerylist .gallery img').each(saveImgSize);
   //   $(window).resize();    
   // }
-
 </script>
 
 {% endblock %}

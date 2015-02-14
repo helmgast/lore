@@ -59,7 +59,6 @@
     <script src="{{ url_for('static', filename='js/chosen.jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.nestable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/imagelightbox.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {#    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/list.min.js') }}"></script> #}
 <script>
@@ -72,19 +71,13 @@
   ga('send', 'pageview');
 
 </script>
-  {% endblock jsimports %}
+{% endblock jsimports %}
 
 </head>
 
 {% import 'includes/macros.html' as MACRO %}
 
 <body class="{% block body_class %}admin{% endblock %}">
-
-<div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">Modal loading...</div>
-    </div>
-</div>
 
 {% block navbar %}
 <div class="betaribbon">
@@ -115,14 +108,14 @@
         {% call MACRO.IS_ENABLED("tools") %}
         <li{% block generator_active %}{% endblock %}><a href="#"><span class="glyphicon glyphicon-wrench"></span> {{ _('Tools') }}</a></li>
         {% endcall %}
-        <li{% block ext_shop_active %}{% endblock %}><a href="http://webshop.helmgast.se"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
+        <li{% block ext_shop_active %}{% endblock %}><a href="http://webshop.helmgast.se" target="_blank"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
         {% call MACRO.IS_USER() %}
         <li{% block shop_active %}{% endblock %}><a href="{{ url_for('shop.index') }}"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Order') }}</a></li>
         {% endcall %}
         {% call MACRO.IS_USER() %}
         <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
         {% endcall %}
-        <li{% block campaign_active %}{% endblock %}><a href="http://www.rollspel.nu/forum/neogames"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
+        <li ><a href="http://www.rollspel.nu/forum/neogames" target="_blank"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if not session.logged_in %}
@@ -174,6 +167,13 @@
           <div class="modal-content">Loading...</div>
       </div>
   </div>
+
+  <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">Modal loading...</div>
+      </div>
+  </div>
+
   {% endblock %}
 </div>
 <footer>
@@ -183,7 +183,7 @@
   </p>
 {% endblock %}
 </footer>
-
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% block final %}{% endblock %}
 </body>
 </html>

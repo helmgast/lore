@@ -1,4 +1,4 @@
-{% extends "world/base.html" if not parent_template else parent_template %}
+{% extends "world/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
