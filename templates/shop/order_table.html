@@ -1,3 +1,5 @@
+{% import 'includes/macros.html' as MACRO %}
+
 {% set prod_types = {
   'book':_('Book'),
   'item':_('Item'),
@@ -18,7 +20,7 @@
   'error' : _('Error')}
 %}
 
-<table>
+<table style="width: 100%">
 <!-- Order info-->
 {% if order.status != 'cart' %}
 <tr>
@@ -52,10 +54,11 @@
 {% endif %}
 
 <!-- Items -->
-{% if order.order_lines %}
+
 <tr>
 	<td>
-	<table class="table table-condensed">
+{% if order.order_lines %}
+	<table class="table table-condensed{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}">
 		<tr><th colspan=2><h3>{{_('Product')}}</h3></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th></tr>
     	{% for line in order.order_lines %}
     	{% if line.product.status != 'hidden' %}
@@ -112,14 +115,32 @@
     		<td colspan=3 style="text-align:right">{{_('Grand Total')}}</td><td></td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td>
     	</tr>
 	</table>
+{% else %}
+  <div class="jumbotron text-center">
+      <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
+   </div>
+{% endif %}
 	</td>
 </tr>
-{% endif %}
 
 <!-- Address -->
 <tr>
 	<td>
 	<h3>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h3>
+	{% if order_form and order.status != 'shipping' %}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        <div class="form-group clearfix">
+          <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
+          <div class="col-sm-9">
+            {{order_form.shipping_address.mobile(class="form-control")}}
+            <span class="help-block">För SMS-avisering</span>
+          </div>
+        </div>
+    {% else %}
 	<table class="table">
 		<tr>
           <th width="30%">{{_('Name')}}</th>
@@ -144,6 +165,8 @@
           <td colspan=3 style="text-align: left">{{order.shipping_address.mobile|default(_('No data'),true)}}</td>
         </tr>
 	</table>
+	{% endif %}
+
 	</td>
 </tr>
 </table>

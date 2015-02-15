@@ -5,26 +5,6 @@
 {% block content_title %}{{ _('Cart') if order.status=='cart' else _('Order') }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% set prod_types = {
-  'book':_('Book'),
-  'item':_('Item'),
-  'digital':_('Digital'),
-  'shipping':_('Shipping fee')}
-  %}
-
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'}
-  %}
-
-{% set order_statuses = {
-  'cart' : _('Cart'),
-  'ordered' : _('Ordered'),
-  'paid' : _('Paid'),
-  'shipped' : _('Shipped'),
-  'error' : _('Error')}
-%}
-
 {% block sidebar %}{{super()}}
 <ul class="nav nav-list">
 <li class="nav-header">{{ _('Actions') }}</li>
@@ -43,187 +23,27 @@
 #}
 
 {% block content %}{% block inline %}
-{% if order.status != 'cart' %}
-<div class="row">
-  <div class="col-md-4 col-sm-6">
-  <h4>{{_('Order Info')}}</h4>
-  <table class="table table-condensed">
-    <tr><th>{{_('Name')}}</th><td>{{order.user.realname|default(_('No name'), true)}}</td></tr>
-    <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
-    <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
-    <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
-    <tr><th>{{_('Status')}}</th><td>{{order_statuses[order.status]}}</td></tr>
-  </table>
-  </div>
-  <div class="col-md-4 col-md-offset-4 col-sm-6">
-  <h4>{{_('Seller Info')}}</h4>
-    <table class="table table-condensed">
-    <tr><th>{{_('Publisher')}}</th><td>Helmgast AB</td></tr>
-    <tr><th>{{_('Email')}}</th><td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td></tr>
-    <tr><th>{{_('Address')}}</th><td>
-    Surbrunnsgatan 33<br>
-    Stockholm 113 48<br>
-    </td></tr>
-  </table>
-  </div>
-</div>
-{% endif %}
 {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
-  {% if order.order_lines %}
-    <div class="row underline-row">
-      <div class="col-xs-2 col-md-2"></div>
-      <div class="col-xs-10 col-md-10">
-        <div class="col-md-offset-6">
-         <ul class="product-details">
-              <li><strong>{{_('Type')}}</strong></li>
-              <li><strong>{{_('Quantity')}}</strong></li>
-              <li><strong>{{_('Price')}}</strong></li>
-              <li><strong>{{_('Total')}}</strong></li>
-        </ul>
-        </div>
-      </div>
-    </div>
-    <div class="product-list"{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
-    {% for line in order.order_lines %}
-    {% if line.product.status != 'hidden' %}
-    <div class="product row underline-row">
-      <div class="col-xs-2 col-md-2">
-        {% if line.product.feature_image %}<a href="{{ url_for('.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}
-      </div>
-      <div class="col-xs-10 col-md-10">
-        <div class="row">
-          <div class="col-md-6 product-intro">
-            <h3><a href="{{ url_for('.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{line.product.publisher}}</small></h3>
-            <p>{{ line.product.description }}</p>
-            {% if order_form %}
-            {{ order_form.order_lines[loop.index0].product(class="hide")}}
-            {% endif %}
-            {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
-            {% if line.product.files %}
-              {% for file in line.product.files %}
-                <h4><a href="{{ url_for('.download_pdf', product=line.product.slug, file=file.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{file.title}}</a>
-                </h4>
-              {% endfor %}
-            {% elif line.product.resources %}
-              {% for resource in line.product.resources %}
-                <h4><a href="{{ url_for('.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
-                </h4>
-              {% endfor %}
-            {% else %}
-              <h4><a href="{{ url_for('.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
-              </h4>
-            {% endif %}
-            {% endif%}
-          </div>
-          <div class="col-md-6">
-            <ul class="product-details">
-              <li class="product-type">{{ prod_types[line.product.type] }}</li>
-              <li>
-              {% if order_form and order.status=='cart' %}
-                {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
-              {% else %}
-                {{ line.quantity }}
-              {% endif %}
-              </li>
-              <li class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</li>
-              <li class="product-price product-total">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</li>
-            </ul>
-            
-            {% if order_form %}
-              {% if line.product.acknowledgement %}
-              <div class="form-group">
-              <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
-              {% if not line.comment %}
-                {{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>              
-              {% else %}
-                {{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
-              {% endif %}
-              {% else %}
-              {{order_form.order_lines[loop.index0].comment(class="hide")}}
-              {% endif %}
-            {% elif line.comment %}
-             {{_('Name')+': '+line.comment }}
-            {% endif %}
-          </div>   
-        </div>
-      </div>
 
-    </div>
-    {% endif %}
-    {% endfor %}
-    </div>
-    <div class="row" style="margin-top: 20px">
-      <div class="col-md-4 col-md-push-8">
-        <table class="table product-subtotals">
-          <tr><td>{{_('Including tax')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</td></tr>
-          <tr><td>{{_('Grand Total')}}</td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td></tr>
-        </table>
-      </div>
-      <div class="col-md-8 col-md-pull-4">
-      <h4>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h4>
+{% include "shop/order_table.html" %}
 
-      {% if order_form and order.status != 'shipping' %}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        <div class="form-group clearfix">
-          <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
-          <div class="col-sm-9">
-            {{order_form.shipping_address.mobile(class="form-control")}}
-            <span class="help-block">För SMS-avisering</span>
-          </div>
-        </div>
-      {% else %}
-        <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('Name')}}</strong></div>
-          <div class="col-sm-9 large-text">{{order.shipping_address.name|default('test')}}</div>
-        </div>
-        <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('Street')}}</strong></div>
-          <div class="col-sm-9 large-text">{{order.shipping_address.street}}</div>
-        </div>
-        <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('ZIP Code')}}</strong></div>
-          <div class="col-sm-3 large-text">{{order.shipping_address.zipcode}}</div>
-          <div class="col-sm-1"><strong>{{_('City')}}</strong></div>
-          <div class="col-sm-5 large-text">{{order.shipping_address.city}}</div>
-        </div>
-        <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('Country')}}</strong></div>
-          <div class="col-sm-9 large-text">{{order.shipping_address.country}}</div>
-        </div>
-         <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('Cellphone Number')}}</strong></div>
-          <div class="col-sm-9 large-text">{{order.shipping_address.mobile}}</div>
-        </div>
-      {% endif %}
-      </div>
-    </div>
+{% if order_form %}
     <div class="row">
       <div class="col-md-offset-8">
-        {% if order_form %}
         <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
-          {% if order.status != 'cart' %}
+  {% if order.status != 'cart' %}
           <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block">{{ _('Contact Us') }}</a>
-          {% endif %}
-        {% else %}
-        <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
-        {% endif %}
-
-      {% if order_form and order.status == 'cart' %}
+  {% else %}
         <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
-      {% endif %}
+  {% endif %}
       </div>
     </div>
-    {{ order_form.csrf_token if order_form }}
-    {% else %}
-    <div class="jumbotron text-center">
-      <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
-    </div>
-    {% endif %}
+  {{ order_form.csrf_token if order_form }}
+
 </form>
+{% else %}
+  <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
+{% endif %}        
 {% endblock %}{% endblock %}
 
 {% block final %}
