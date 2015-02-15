@@ -402,13 +402,6 @@ def register_main_routes(app, auth):
       return r
   ImageAssetHandler.register_urls(app, imageasset_strategy)
 
-  @app.template_filter('hidenone')
-  def filter_supress_none(val, default=''):
-    if not val is None:
-      return val
-    else:
-      return default
-
   @app.template_filter('currentyear')
   def currentyear():
     return datetime.utcnow().strftime('%Y')

@@ -55,11 +55,11 @@
       <tr><td><strong>{{ _('Email') }}</strong></td>
       <td><small>{{ user.email }}</small></td></tr>      
       <tr><td><strong>{{ _('Username') }}</strong></td>
-      <td><small>{{ user.username|hidenone }}</small></td></tr>      
+      <td><small>{{ user.username|default }}</small></td></tr>      
       <tr><td><strong>{{ _('Name') }}</strong></td>
-      <td>{{ user.realname|hidenone }}</td></tr>
+      <td>{{ user.realname|default }}</td></tr>
       <tr><td><strong>{{ _('Location') }}</strong></td>
-      <td>{{ user.location|hidenone }}</td></tr>
+      <td>{{ user.location|default }}</td></tr>
       <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
       
@@ -93,7 +93,7 @@
       <td><span class="badge">N/A</span></td></tr>
       #}
     </table>
-    <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|hidenone(_('Empty...')) }}</div>
+    <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|default(_('Empty...'), true) }}</div>
     {% endif %}
   </div>
 </div> 

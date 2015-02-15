@@ -1,28 +1,31 @@
 @import url(http://fonts.googleapis.com/css?family=Goudy+Bookletter+1911|Gentium+Book+Basic:400,400italic,700,700italic);
 
 html {
-  position: relative;
-  min-height: 100%;
+	position: relative;
+	min-height: 100%;
 	background-color: #fff;
 }
 
 body {
-background-color: #fff;
+	background-color: #fff;
+	min-height: 100%;
+	padding-top: 60px;
+	padding-bottom: 180px;
+}
 
-  min-height: 100%;
-  padding-top: 60px;
-  padding-bottom: 180px;
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 200;
 }
 
 footer {
-position: absolute;
-bottom: 0;
-width: 100%;
-display: flex;
-flex-direction: column;
-background-color: #444;
-padding-top: 5px;
-color: #fff;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	background-color: #444;
+	padding-top: 5px;
+	color: #fff;
 }
 
 footer p {
@@ -89,9 +92,9 @@ div.sidebar li.active {
 	font-weight: bold;
 }
 
-.table tr:first-of-type {
+/*.table tr:first-of-type {
 	border-top: none;
-}
+}*/
 
 thead {
 	font-weight: 700;
@@ -100,10 +103,11 @@ thead {
 .td-bottom {
 	vertical-align: bottom !important;
 }
- 
+
+/* 
 .table tr:first-of-type td {
   border-top: none !important; 
-}
+}*/
 
 table.table-striped td.links .inline {
 	margin: 0;

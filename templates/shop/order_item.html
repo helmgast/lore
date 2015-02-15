@@ -31,7 +31,6 @@
 
 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('view')) %}
 <li class="{{privileged}}"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail_view', mail_type='order', user=user.id, order=order.id)}}"><span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}</a></li>
-
 {% endcall %}
 {% endblock %}
 
@@ -49,7 +48,7 @@
   <div class="col-md-4 col-sm-6">
   <h4>{{_('Order Info')}}</h4>
   <table class="table table-condensed">
-    <tr><th>{{_('Name')}}</th><td>{{order.user.realname|hidenone(_('No name'))}}</td></tr>
+    <tr><th>{{_('Name')}}</th><td>{{order.user.realname|default(_('No name'), true)}}</td></tr>
     <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
     <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
     <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
@@ -196,7 +195,7 @@
           <div class="col-sm-9 large-text">{{order.shipping_address.country}}</div>
         </div>
          <div class="form-group clearfix">
-          <div class="col-sm-3"><strong>{{_('SMS Number')}}</strong></div>
+          <div class="col-sm-3"><strong>{{_('Cellphone Number')}}</strong></div>
           <div class="col-sm-9 large-text">{{order.shipping_address.mobile}}</div>
         </div>
       {% endif %}
