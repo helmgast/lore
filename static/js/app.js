@@ -349,8 +349,8 @@ will be appended to the target.
           <input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*"> \
           <input type="text" class="form-control" name="source_image_url" \
           id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
-          (options.image_list_url ? '<button type="button" data-toggle="modal" data-target="#large-modal" \
-            data-remote="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</button>' : '') + 
+          (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" \
+            href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') + 
         '</div></div>');
     
     self.$element.addClass('hide')
@@ -376,12 +376,12 @@ will be appended to the target.
 
     self.$imageEl.on('click', '.btn-delete', function(e){
       self.$imageEl.find('.image-preview img').remove()
-      $('#large-modal .gallerylist input[type="radio"]:checked').prop('checked', false)
+      $('#themodal .gallerylist input[type="radio"]:checked').prop('checked', false)
       self.$imageEl.find('.image-preview').removeClass('selected')
       self.$element.val('---') // blank choice in Select box...
     })
 
-    $(document).on('hide.bs.modal', '#large-modal', function(e) {
+    $(document).on('hide.bs.modal', '#themodal', function(e) {
       var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
       if ($sel[0])
         self.imageSelected($sel.next('img')[0].src, $sel.val())
@@ -556,14 +556,6 @@ $(window).on('load', function () {
 
 })(window.jQuery || window.Zepto);
 
-$('#themodal').on('show.bs.modal', function(event) {
-  var initiator = event.relatedTarget
-  if (initiator.href) {
-    var dest = $(this).find('.modal-content')
-    dest.load(initiator.href + (initiator.href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
-  }
-})
-
 function post_action($t) {
   var vars, type = $t.data('action-type'), href=$t.attr('href'),
     action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
@@ -626,19 +618,6 @@ function handle_action(e) {
 }
 
 
-  $('#themodal').modal({show:false})
-  $('#themodal').on('submit', 'form', function(e) {
-    if (e.target.action.match(/[?&]inline/)) {
-      var $t = $(e.delegateTarget).data('modal').options.caller
-      post_action($t) // trigger the action directly, as if it came from the button that brought up the modal
-      e.preventDefault(); return false;  
-    } // else, let the submit work as usual, redirecting the whole page
-  }).on('hide.bs.modal', function(e) { // P: options.caller deprecated, Updated to correct event
-//    var $t = $(e.delegateTarget).data('modal').options.caller
-//    $t.button('reset') // reset state
-    $("button").button('reset'); // reset state of all buttons
-    
-  }); 
   $('body').on('click', '.m_action', handle_action)
 
   $('form select[data-role="chosen"]').chosen();
@@ -653,17 +632,30 @@ function handle_action(e) {
 
 
 //////////////// new modal code ///////////
-  var $modal = $('#themodal')
-  $modal.on('click', '.modal-submit', function(e) {
-    var form = $modal.find('form')
-    if (form.length) {
-      var jqxhr = $.post(form[0].action, form.serialize())
-        .done(function(data, textStatus, jqXHR) {
-          console.log(data)
-          $modal.modal('hide')
-        })
-        .fail(function( jqXHR, textStatus, errorThrown) {
-          alert("Error: "+errorThrown)
-        })
-    }
-  });
+
+// Loads content from href into the modal (functionality was removed from bootstrap3)  
+$('#themodal').on('show.bs.modal', function(event) {
+  var href = event.relatedTarget.href
+  if (href) {
+    var dest = $(this).find('.modal-content')
+    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
+  }
+})
+
+// Catches clicks on the modal submit button and submits the form using AJAX
+var $modal = $('#themodal')
+$modal.on('click', '.modal-submit', function(e) {
+  var form = $modal.find('form')
+  if (form.length && form[0].action) {
+    var jqxhr = $.post(form[0].action, form.serialize())
+      .done(function(data, textStatus, jqXHR) {
+        console.log(data)
+        $modal.modal('hide')
+      })
+      .fail(function( jqXHR, textStatus, errorThrown) {
+        alert("Error: "+errorThrown)
+      })
+  } else {
+    $modal.modal('hide')
+  }
+});

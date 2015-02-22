@@ -58,11 +58,12 @@
 <tr>
 	<td>
 {% if order.order_lines %}
-	<table class="table table-condensed{{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}">
-		<tr><th colspan=2><h3>{{_('Product')}}</h3></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th></tr>
+	<h3>{{_('Product')}}</h3>
+	<table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
+		<tr><th colspan=2></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th></tr>
     	{% for line in order.order_lines %}
     	{% if line.product.status != 'hidden' %}
-    	<tr>
+    	<tr class="product">
     		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}</td>
     		<td>
     			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>

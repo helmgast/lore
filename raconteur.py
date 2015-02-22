@@ -269,7 +269,7 @@ def register_main_routes(app, auth):
   from model.shop import Order
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
-  from model.web import ApplicationConfigForm, AdminEmailForm
+  from model.web import ApplicationConfigForm, EmailForm
   from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
   from mailer import render_mail
 
@@ -291,14 +291,16 @@ def register_main_routes(app, auth):
     if order:
       order = Order.objects(id=order).get()
     parent_template = parse_out_arg(request.args.get('out', None))
+    mailform = EmailForm()
     if request.method == 'GET':
       return render_template('mail/%s.html' % mail_type, 
         mail_type=mail_type, 
         parent_template=parent_template, 
         user=user,
-        order=order)
+        order=order,
+        mailform=mailform)
     elif request.method == 'POST' and user:
-      mailform = AdminEmailForm(request.form)
+      mailform = EmailForm(request.form)
       mailform.to_field.data = user.email
       if mailform.validate():
         email = render_mail(
@@ -324,33 +326,24 @@ def register_main_routes(app, auth):
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
       config = ApplicationConfigForm(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
-      mail_form = AdminEmailForm()
-      return render_template('admin.html', config=config, email=mail_form)
+      return render_template('admin.html', config=config)
                             # Requires additional auth, so skipped now
                              #databases=db.connection.database_names())
     elif request.method == 'POST':
-      if request.args['action']=='mail':
-        mailform = AdminEmailForm(request.form)
-        if not mailform.validate():
-          raise Exception("Email fields not filled correctly %s" % mailform.errors)
-        email = render_mail([mailform.to_field.data], mailform.subject.data , template='mail/welcome.html', user=g.user)
-        # raise Exception()
-        email.send_out()
-      else:
-        config = ApplicationConfigForm(request.form)
-        if not config.validate():
-          raise Exception("Bad request data")
-        if config.backup.data:
-          if config.backup_name.data in db.connection.database_names():
-            raise Exception("Name already exists")
-          app.logger.info("Copying current database to '%s'", config.backup_name.data)
-          db.connection.copy_database('raconteurdb', config.backup_name.data)
-        if config.state.data:
-          app_state = config.state.data
-        if not config.features.data is None:
-          for feature in app_features:
-            is_enabled = feature in config.features.data
-            app_features[feature] = is_enabled
+      config = ApplicationConfigForm(request.form)
+      if not config.validate():
+        raise Exception("Bad request data")
+      if config.backup.data:
+        if config.backup_name.data in db.connection.database_names():
+          raise Exception("Name already exists")
+        app.logger.info("Copying current database to '%s'", config.backup_name.data)
+        db.connection.copy_database('raconteurdb', config.backup_name.data)
+      if config.state.data:
+        app_state = config.state.data
+      if not config.features.data is None:
+        for feature in app_features:
+          is_enabled = feature in config.features.data
+          app_features[feature] = is_enabled
       return redirect('/admin/')
 
   @app.route('/asset/<slug>')

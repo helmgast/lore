@@ -27,7 +27,6 @@ import requests
 from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, FlowExchangeError
 from apiclient.discovery import build
 import facebook
-GOOGLE = build('plus', 'v1')
 
 current_dir = os.path.dirname(__file__)
 
@@ -387,6 +386,11 @@ class Auth(object):
     self.app.template_context_processors[None].append(self.get_context_user)
 
   def setup(self):
+    try:
+      GOOGLE = build('plus', 'v1')
+    except httplib2.ServerNotFoundError:
+      self.logger.warning("Could not connect to Google")
+
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
       'email', 'realname', 'location', 'newsletter'], 
       field_args={ 'password':{'password':True} })

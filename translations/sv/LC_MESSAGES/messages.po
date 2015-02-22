@@ -336,6 +336,12 @@ msgstr "dubbelkolla att det är rätt!"
 msgid "Order Info"
 msgstr "Orderinfo"
 
+msgid "Nothing in cart, "
+msgstr "Inget i kundvagnen, "
+
+msgid "go shopping"
+msgstr "börja shoppa!"
+
 msgid "Send order mail"
 msgstr "Skicka ordermail"
 

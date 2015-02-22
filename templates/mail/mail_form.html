@@ -1,0 +1,11 @@
+{% extends "mail/one_column_mail.html" %}
+
+{% block body %}
+
+<form method="post" action="{{request.url}}">
+{{ mailform() }}
+<input type="hidden" name="subject" value="{{ self.subject() }}" />
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+</form>
+
+{% endblock %}

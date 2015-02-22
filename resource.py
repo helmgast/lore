@@ -546,6 +546,7 @@ class ResourceHandler(View):
       r['filter' if op is 'list' else 'prefill'] = vals
     r['op'] = op
     r['out'] = parse_out_arg(request.args.get('out',None)) # defaults to None, meaning _page.html
+    r['parent_template'] = r['out'] # TODO, we only need one of out and parent_template
     if 'next' in request.args:
       r['next'] = request.args['next']
     return r

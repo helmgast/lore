@@ -20,7 +20,8 @@ class ApplicationConfigForm(Form):
   features = SelectMultipleField(_('Application features'), choices=FEATURE_TYPES, option_widget=widgets.CheckboxInput(),
                                  widget=widgets.ListWidget(prefix_label=False))
 
-class AdminEmailForm(Form):
-	to_field = StringField(_('To'), [validators.Email(), validators.Required() ])
-	subject = StringField(_('Subject'), [validators.Length(min=1, max=200), validators.Required()])
-	message = StringField(_('Message'))
+class EmailForm(Form):
+  to_field = StringField(_('To'), [validators.Email(), validators.Required() ])
+  from_field = StringField(_('From'), [validators.Email(), validators.Required() ])  
+  subject = StringField(_('Subject'), [validators.Length(min=1, max=200), validators.Required()])
+  message = StringField(_('Message'))

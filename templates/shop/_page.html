@@ -19,9 +19,6 @@
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list')) %}
     <li class="{{privileged}}"><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('Orders') }}</a></li>
   {% endcall %}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-    <li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New products') }}</a></li>
-  {% endcall %}
 
 </ul>
 {% endblock %}
