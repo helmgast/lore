@@ -1,6 +1,11 @@
 {% extends "mail/_page.html" if not parent_template else parent_template %}
 
+{% block header %}
+<h4 class="modal-title">{{_('Send email')}}</h4>
+{% endblock %}
+
 {% block body %}
+
 <table class="body-wrap">
     <tr>
         <td></td>
@@ -68,15 +73,30 @@
 
 {% endblock %}
 
-{% block header %}
-<address style="margin-bottom: -10px">
-<strong>Subject:</strong> {{ self.subject() }}<br>
-<strong>From:</strong> info@helmgast.se<br>
-<strong>To:</strong> {{user.email if user}}<br>
-</address>
-<form method="post" action="{{request.url}}">
-<input type="hidden" name="subject" value="{{ self.subject() }}" />
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+{% block form %}
+<form method="post" action="{{request.url}}" class="form-horizontal">
+    {% block in_form %}
+    <div class="form-group form-group-sm">
+    <label for="to_field" class="col-xs-2 control-label">To:</label>
+    <div class="col-xs-10">
+        {{mailform.to_field(class="form-control input-sm")}}
+    </div>
+  </div>
+
+  <div class="form-group form-group-sm">
+    <label for="from_field" class="col-xs-2 control-label">From:</label>
+    <div class="col-xs-10">
+        {{mailform.from_field(class="form-control input-sm")}}
+    </div>
+  </div>
+
+  <div class="form-group form-group-sm">
+    <label for="subject" class="col-xs-2 control-label">Subject:</label>
+    <div class="col-xs-10">
+        {{mailform.subject(class="form-control input-sm")}}
+    </div>
+  </div>
+   {% endblock %}
 </form>
 {% endblock %}
 

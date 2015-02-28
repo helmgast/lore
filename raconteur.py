@@ -14,7 +14,6 @@ from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
 from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
 from time import gmtime, strftime
-from werkzeug.utils import secure_filename
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -158,6 +157,7 @@ def configure_blueprints(app):
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
+    from controller.mailer import mail_app as mail
     from resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
@@ -166,6 +166,7 @@ def configure_blueprints(app):
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')
     app.register_blueprint(shop, url_prefix='/shop')
+    app.register_blueprint(mail, url_prefix='/mail')
 
   return auth
 
@@ -269,9 +270,8 @@ def register_main_routes(app, auth):
   from model.shop import Order
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
-  from model.web import ApplicationConfigForm, EmailForm
+  from model.web import ApplicationConfigForm
   from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
-  from mailer import render_mail
 
   @app.route('/')
   def homepage():
@@ -279,43 +279,6 @@ def register_main_routes(app, auth):
     search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
     return render_template('helmgast.html', articles=search_result['articles'], world=world)
     # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
-
-  @app.route('/mail/<mail_type>', methods=['GET', 'POST'])
-  @auth.admin_required
-  def mail_view(mail_type):
-    mail_type = secure_filename(mail_type)
-    user = request.args.get('user', None)
-    if user:
-      user = User.objects(id=user).get()
-    order = request.args.get('order', None)
-    if order:
-      order = Order.objects(id=order).get()
-    parent_template = parse_out_arg(request.args.get('out', None))
-    mailform = EmailForm()
-    if request.method == 'GET':
-      return render_template('mail/%s.html' % mail_type, 
-        mail_type=mail_type, 
-        parent_template=parent_template, 
-        user=user,
-        order=order,
-        mailform=mailform)
-    elif request.method == 'POST' and user:
-      mailform = EmailForm(request.form)
-      mailform.to_field.data = user.email
-      if mailform.validate():
-        email = render_mail(
-          ['ripperdoc@gmail.com'], 
-          mailform.subject.data , 
-          template='mail/%s.html' % mail_type, 
-          user=user,
-          order=order)
-        email.send_out()
-        return "Mail sent!"
-      else:
-        print mailform.errors
-        abort(400)  
-    else:
-      abort(400)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
