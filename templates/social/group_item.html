@@ -7,7 +7,7 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
-<ul class="nav nav-list">
+<ul class="nav nav-pills nav-stacked">
 <li class="nav-header">{{ _('Actions') }}</li>
 <li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
 {% if op!='new' %}

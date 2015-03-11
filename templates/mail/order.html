@@ -1,31 +1,14 @@
-{# 
-Order confirmation email.
-Should be sent when an ordered is created (checkout) and when
-an ordered is changed for any reason. If the order is changed, make sure to 
-highlight what is changing, e.g. status or address.
-
-Should be sent to lekbergs as well, e.g. a copy?
-
-Data:
-
-user
-order (receipt)
-
-Also has a variant for crowdfunding.
-#}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% block subject %}Thank you for your order!{% endblock %}
-
-{% block preview %}Order confirmation on helmgast.se{% endblock %}
+{% block preview %}{% trans %}Order confirmation on helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
 
-<p>Thank you {{user.display_name() if user}} for your order at helmgast.se! Please see your receipt below:</p>
+{% trans user=user.display_name() %}<p>Thank you {{user}} for your order at helmgast.se! Please see your receipt below:</p>{% endtrans %}
 
 {% include "shop/order_table.html" %}
 
-<p><em>You received this email as a confirmation of your purchase order at helmgast.se.
-Please read the terms and conditions of purchase here.</em></p>
+{% trans %}<p><em>You received this email as a confirmation of your purchase order at helmgast.se.
+Please read the terms and conditions of purchase here.</em></p>{% endtrans %}
 {% endblock %}

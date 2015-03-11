@@ -20,7 +20,7 @@
     </div>
   </div>
   <div class="" style="margin-top: 20px" id="email-inputs"> 
-  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True) }}
+  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
   {% if form.email_token.data %}
   <span class="help-block small">{{_("Don't change, only this email is verified")}}
   {% endif %}
@@ -29,7 +29,7 @@
   <div class="clearfix" id="profile"></div>
  
   <div id="password-inputs" class="hide">
-    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
+    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) if form.password }}
     {{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
   </div>
@@ -43,7 +43,7 @@
     {{ MACRO.FORM_FIELD_INLINE(form.location, controlclass="input-lg")}}
     <div class="checkbox">
     <label>
-      {{form.newsletter(checked=True)}}
+      {{form.newsletter(checked=true)}}
       {{_('Receive newsletter')}}
     </label>
     </div>

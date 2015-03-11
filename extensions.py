@@ -91,3 +91,10 @@ class AutolinkedImage(Extension):
   def extendMarkdown(self, md, md_globals):
     # Insert instance of 'mypattern' before 'references' pattern
     md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+
+from jinja2 import Undefined
+
+class SilentUndefined(Undefined):
+  def _fail_with_undefined_error(self, *args, **kwargs):
+    print 'JINJA2: something was undefined!' #TODO, should print correct log error
+    return None

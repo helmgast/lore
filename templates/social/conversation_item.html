@@ -8,7 +8,7 @@
 {% block content_subheader %}<span class="nav-header">{{ _('Members') }}:</span> {{ recipients|join(', ')|truncate(20) }}{%endblock%}
 
 {% if conversation %}
-  {% set fixed_recipients = True %} {# fixed recipients always when having existing conversation #}
+  {% set fixed_recipients = true %} {# fixed recipients always when having existing conversation #}
 {% endif %}
 
 {% block content %}{% block inline %}
@@ -16,7 +16,7 @@
   <div class="col-md-8">
   {% if conversation %}
     <ul class="list-unstyled">
-      {% set is_conversation = True %}
+      {% set is_conversation = true %}
       {% for message in conversation.messages() %}
         <li>{% include "social/message_item.html" %}</li>
       {% endfor %}

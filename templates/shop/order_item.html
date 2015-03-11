@@ -6,7 +6,7 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
-<ul class="nav nav-list">
+<ul class="nav nav-pills nav-stacked">
 <li class="nav-header">{{ _('Actions') }}</li>
 {% if order.status != 'cart' %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('view')) %}
@@ -33,7 +33,9 @@
       <div class="col-md-offset-8">
         <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
   {% if order.status != 'cart' %}
-          <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal">{{ _('Contact Us') }}</a>
+          <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id)}}">
+          {#
+          <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal">#}{{ _('Contact Us') }}</a>
   {% else %}
         <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
   {% endif %}
@@ -51,7 +53,7 @@
 {{super()}}
 {% if order_form %}
 <script>
-{% if False and order.status=='cart' %}
+{% if false and order.status=='cart' %}
   function calcTotal(e) {
     var $prod = $(e.delegateTarget)
     var qty = parseInt((e.target && e.target.value) || "0")

@@ -2,8 +2,17 @@
 
 {% block body %}{% endblock %}
 
-{% block in_form %}
+{% block subject %}Subject{% endblock %}
 
-Hej!
+{% block form %}
+
+{{super()}}
+
+<div class="form-group form-group-sm">
+    <label for="message" class="col-xs-2 control-label">{{_('Message')}}:</label>
+    <div class="col-xs-10">
+        {{mailform.message(class="form-control",rows="7")}}
+    </div>
+</div>
 
 {% endblock %}

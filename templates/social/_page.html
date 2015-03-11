@@ -6,7 +6,7 @@
 {% block social_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <ul class="nav nav-list">
+  <ul class="nav nav-pills nav-stacked">
     {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list')) %}
     <li class="{{privileged}}"><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-home"></span> {{ _('Main') }}</a></li>
     {% endcall %}    

@@ -26,8 +26,8 @@
   <div class="clearfix" id="profile"></div>
   
   <div id="password-inputs">
-    {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True, autofocus=True) }}
-    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) }}
+    {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true, autofocus=true) }}
+    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) }}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
   </div>
   {{ form.external_service }}

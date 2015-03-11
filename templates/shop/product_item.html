@@ -33,14 +33,14 @@
       {{ MACRO.FORM_FIELD(product_form.family) }}
       {{ MACRO.FORM_FIELD(product_form.created) }}
       {{ MACRO.FORM_FIELD(product_form.type) }}
-      {{ MACRO.FORM_FIELD(product_form.price, required=True) }}
-      {{ MACRO.FORM_FIELD(product_form.currency, required=True) }}
+      {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
+      {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
       {{ MACRO.FORM_FIELD(product_form.status) }}
       {{ MACRO.FORM_FIELD(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
-      {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':True})}}
+      {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true})}}
     </div>
   </div>
   <div class="row form-actions">

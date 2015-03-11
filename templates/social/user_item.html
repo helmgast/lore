@@ -7,9 +7,11 @@
 
 {% block sidebar %}{{super()}}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
-  <ul class="nav nav-list" style="float:left">
+  <ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
     <li class="{{privileged}}"><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id)}}">{{_('Request verification')}}</a></li>
+    <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='forgot_account', user=user.id)}}">{{_('Remind login')}}</a></li>  
   </ul>
   {% endcall %}
 {%endblock%}
@@ -34,7 +36,7 @@
         {{ _('Add to group') }}<span class="caret"></span></a>
         {% include "social/group_member_selector.html" %}
       </div>
-      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=True)}}" data-action-type="modal">{{ _('Send message') }}</button>
+      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=true)}}" data-action-type="modal">{{ _('Send message') }}</button>
     {% endif %}
 #}
     </div>
@@ -55,11 +57,11 @@
       <tr><td><strong>{{ _('Email') }}</strong></td>
       <td><small>{{ user.email }}</small></td></tr>      
       <tr><td><strong>{{ _('Username') }}</strong></td>
-      <td><small>{{ user.username|default }}</small></td></tr>      
+      <td><small>{{ user.username|default(_('No data'), true) }}</small></td></tr>      
       <tr><td><strong>{{ _('Name') }}</strong></td>
-      <td>{{ user.realname|default }}</td></tr>
+      <td>{{ user.realname|default(_('No data'), true) }}</td></tr>
       <tr><td><strong>{{ _('Location') }}</strong></td>
-      <td>{{ user.location|default }}</td></tr>
+      <td>{{ user.location|default(_('No data'), true) }}</td></tr>
       <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
       
@@ -71,20 +73,9 @@
         </td></tr>
       <tr><td><strong>{{ _('Join link') }}</strong></td>
         <td style="max-width: 200px; word-wrap: break-word;"><a
-        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname) }}">{{
-          url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname) }}</a></td>
+        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}">{{
+          url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}</a></td>
       </tr>
-      <tr><td><strong>{{ _('Send email') }}</strong></td>
-      <td>
-      <div class="dropdown">
-      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">{{_('Type')}}<span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id)}}">{{_('Verify')}}</a></li>
-        <li role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='forgot_account', user=user.id)}}">{{_('Forgot')}}</a></li>
-      </ul>
-      </div>
-      </td></tr>
       {% endcall %}
       {#
       <tr><td><strong>{{ _('Following') }}</strong></td>

@@ -3,55 +3,52 @@ Should have different instructions depending on signup method. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set reset_link = url_for('social.reset_auth', user_id=user.identifier(), _external=True) %}
+{% set reset_link = url_for('social.reset_auth', user_id=user.identifier(), _external=true) %}
 
-{% block subject %}Instructions on logging in{% endblock %}
-
-{% block preview %}Instructions on logging in to helmgast.se{% endblock %}
+{% block preview %}{% trans %}Instructions on logging in to helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
-{% set auth = user.auth_type() if user else None %}
-<p>You just requested information on how to login to helmgast.se:</p>
+{% set auth = user.auth_type() if user else none %}
+<p>{% trans %}You just requested information on how to login to helmgast.se:{% endtrans %}</p>
 
 {% if not auth %}
-<p>We can't find any record of this email registered to helmgast.se. Is it 
+{% trans %}<p>We can't find any record of this email registered to helmgast.se. Is it 
 possible that you used a different email, or that you used a social login 
 (Facebook, Google) and have a different email registered there? We suggest you
 search your email accounts for the text "Welcome to helmgast.se". If you can't
 find the right email, either contact us directly at <a href="mailto:info@helmgast.se">
 info@helmgast.se</a>for more support, or <a href="mailto:info@helmgast.se">
-create a new account</a>.<p>
+create a new account</a>.<p>{% endtrans %}
 {% else %}
 
-<p>You registered with this email ({{user.email if user}}) on {{user.join_date.strftime("%Y-%m-%d") if user}} and your
-authentication method was: <strong>{{auth}}</strong></p>
+{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d") %}<p>You registered with this email {{email}} on {{join}} and your authentication method was: <strong>{{auth}}</strong></p>{% endtrans %}
 
 	{% if auth != "Password" %}
-		<p>If you have forgotten your password, click below link to reset your password:</p>
+		<p>{% trans %}If you have forgotten your password, click below link to reset your password:{% endtrans %}</p>
 
 		<table>
     	<tr>
         	<td class="padding">
-            	<p><a class="btn btn-primary " title="Reset password" href="{{reset_link}}" target="_blank">Reset password</a></p>
+            	<p><a class="btn btn-primary " title="Reset password" href="{{reset_link}}" target="_blank">{% trans %}Reset password{% endtrans %}</a></p>
         	</td>
     	</tr>
 		</table>
 
 	{% else %}
-		<p>To login again, just click the {{auth}}-button on the login page:</p>
+		<p>{% trans %}To login again, just click the {{auth}}-button on the login page:{% endtrans %}</p>
 		<table>
     	<tr>
         	<td class="padding">
-            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login')}}" target="_blank">Login again</a></p>
+            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login')}}" target="_blank">{% trans %}Login again{% endtrans %}</a></p>
         	</td>
     	</tr>
 		</table>
 	{% endif %}
 {% endif %}
 
-<p><em>You received this email as you had trouble logging in to Helmgast. If you 
+{% trans %}<p><em>You received this email as you had trouble logging in to Helmgast. If you 
 did not initiate this email, please ignore it as it may have been someone typing your 
 mail by mistake. If you believe there is suspicious activity, please contact us 
 directly at <a href="mailto:info@helmgast.se">
-info@helmgast.se</a></em></p>
+info@helmgast.se</a></em></p>{% endtrans %}
 {% endblock %}

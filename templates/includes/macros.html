@@ -21,7 +21,7 @@
 
 {%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
-  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass) if field.label }}
@@ -34,7 +34,7 @@
 
 {%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass, 'placeholder':field.label.text} %}
-  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="sr-only control-label "+labelclass) if field.label }}
@@ -48,7 +48,7 @@
 
 {%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
-  {% do fieldargs.update({'required':True}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}  
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass+" "+labelcol) if field.label }}
@@ -69,7 +69,7 @@
 
 
 
-{%- macro IS_USER(user=None) -%}
+{%- macro IS_USER(user=none) -%}
   {% if g.user and (not user or g.user == user or g.user.admin) %}
      {{ caller() }}
   {% endif %}

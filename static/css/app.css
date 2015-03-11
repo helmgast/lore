@@ -32,6 +32,10 @@ footer p {
   margin-top: 10px;
 }
 
+.longtext {
+	word-break: break-all;
+}
+
 .betaribbon {
   background-color: #a00;
   overflow: hidden;
@@ -998,6 +1002,7 @@ input[type="radio"]:checked + img {
 	margin-bottom: 15px;
 }
 
+/*
 .privileged>a:hover:before {
   display: block;
   position: absolute; 
@@ -1016,16 +1021,22 @@ input[type="radio"]:checked + img {
   z-index: 900;
 }
 
+.privileged>a {
+	background-color: #eee;
+	color: #2a6496;
+}
+*/
 .privileged>a:after {	
-	position: absolute;
   display: inline-block;
   font-family: 'Glyphicons Halflings';
   font-style: normal;
   font-weight: normal;
   line-height: 1.428571429;
-content: "\e106";
-	margin-left: 10px;
-	margin-top: 1px;
+content: "\e033";
+	color: #ccc;
+	/*margin-left: 10px;
+	margin-top: 1px; */
+	float: right;
 }
 
 .popover.popover-external-auth {

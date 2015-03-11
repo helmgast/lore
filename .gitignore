@@ -2,6 +2,7 @@
 *.db
 *.log
 *.mo
+*.pot
 *.sublime*
 config.py
 version.cfg

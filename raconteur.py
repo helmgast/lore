@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
+from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder, SilentUndefined
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -69,6 +69,7 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.jinja_env.add_extension('jinja2.ext.do')
+  the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   # Reads version info for later display
   the_app.config.from_pyfile('version.cfg', silent=True)
@@ -127,7 +128,7 @@ def configure_extensions(app):
   # db.connection[mongocfg['DB']].authenticate(mongocfg['USERNAME'], mongocfg['PASSWORD'], source="admin")
 
   # Internationalization
-  babel.init_app(app)
+  babel.init_app(app) # Automatically adds the extension to Jinja as well
 
   mail.init_app(app)
 
@@ -136,6 +137,7 @@ def configure_extensions(app):
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
+
   # try:
   #   app.celery = make_celery(app)
   # except KeyError as e:
@@ -205,8 +207,6 @@ def init_actions(app, init_mode):
       setup_models(app)
     elif init_mode=="import":
       import_orders(app)
-    elif init_mode=='lang':
-      setup_language()
     elif init_mode=='test':
       run_tests()
 
@@ -254,9 +254,6 @@ def validate_model():
           pass  # Ignore errors from __import__
   logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
   return is_ok
-
-def setup_language():
-  os.system("pybabel compile -d translations/");
 
 def run_tests():
   logger.info("Running unit tests")
