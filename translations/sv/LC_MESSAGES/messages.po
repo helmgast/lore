@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-12 01:20+0900\n"
+"POT-Creation-Date: 2015-03-13 00:06+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -169,18 +169,21 @@ msgid "Internal server error"
 msgstr ""
 
 #: resource.py:371
-#, fuzzy
 msgid "Unknown error"
-msgstr "Okänd"
+msgstr "Okänt fel"
 
-#: controller/mailer.py:21
-#, fuzzy, python-format
-msgid "%%s, welcome to Helmgast!"
-msgstr "%s, välkommen till Helmgast!"
+#: controller/mailer.py:77
+#, python-format
+msgid "%(user)s, welcome to Helmgast!"
+msgstr "%(user)s, välkommen till Helmgast!"
 
-#: controller/mailer.py:22
+#: controller/mailer.py:79
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
+
+#: controller/mailer.py:81
+msgid "Reminder on how to login to Helmgast.se"
+msgstr "Påminnelse hur du loggar in på Helmgast.se"
 
 #: controller/shop.py:160
 msgid "Need to log in to use shopping cart"
@@ -222,13 +225,12 @@ msgid "Description"
 msgstr "Beskrivning"
 
 #: model/shop.py:17
-#, fuzzy
 msgid "File name"
-msgstr "Namn"
+msgstr "Filnamn"
 
 #: model/shop.py:18
 msgid "Attachment file name"
-msgstr ""
+msgstr "Bifogningens filnamn"
 
 #: model/shop.py:19
 msgid "Exclusive"
@@ -240,7 +242,7 @@ msgstr "Bok"
 
 #: model/shop.py:32 templates/shop/order_table.html:5
 msgid "Item"
-msgstr ""
+msgstr "Föremål"
 
 #: model/shop.py:33 templates/shop/order_table.html:6
 msgid "Digital"
@@ -297,9 +299,9 @@ msgstr "Typ"
 msgid "Price"
 msgstr "Pris"
 
-#: model/shop.py:59
-msgid "Valuta"
-msgstr ""
+#: model/shop.py:59 templates/shop/product_item.html:70
+msgid "Currency"
+msgstr "Valuta"
 
 #: model/shop.py:60 model/shop.py:115 model/user.py:53 model/world.py:205
 #: templates/shop/order_list.html:23 templates/shop/order_table.html:36
@@ -308,9 +310,8 @@ msgid "Status"
 msgstr "Status"
 
 #: model/shop.py:63
-#, fuzzy
 msgid "Product Group"
-msgstr "Produkttyp"
+msgstr "Produktgrupp"
 
 #: model/shop.py:65
 msgid "Feature Image"
@@ -465,7 +466,7 @@ msgstr "Följande"
 
 #: model/user.py:72
 msgid "Anonymous"
-msgstr ""
+msgstr "Anonym"
 
 #: model/user.py:128
 msgid "members"
@@ -516,17 +517,14 @@ msgid "Application features"
 msgstr "Det här kan du göra"
 
 #: model/web.py:25 model/world.py:167 templates/mail/one_column_mail.html:77
-#: templates/mail/one_column_mail_sv.html:77
 msgid "To"
 msgstr "Till"
 
 #: model/web.py:26 model/world.py:166 templates/mail/one_column_mail.html:84
-#: templates/mail/one_column_mail_sv.html:84
 msgid "From"
 msgstr "Från"
 
 #: model/web.py:27 templates/mail/one_column_mail.html:91
-#: templates/mail/one_column_mail_sv.html:91
 msgid "Subject"
 msgstr "Ämne"
 
@@ -939,9 +937,8 @@ msgid " Gallery"
 msgstr "Galleri"
 
 #: templates/imageasset_list.html:3
-#, fuzzy
 msgid "Image Gallery"
-msgstr "Galleri"
+msgstr "Bildgalleri"
 
 #: templates/maintenance.html:11
 msgid "is currently in maintenance"
@@ -1047,14 +1044,12 @@ msgstr ""
 "mail till info@helmgast.se"
 
 #: templates/auth/login.html:13
-#, fuzzy
 msgid "Login via Google"
-msgstr "Registrera via Google"
+msgstr "Logga in via Google"
 
 #: templates/auth/login.html:14
-#, fuzzy
 msgid "Login via Facebook"
-msgstr "Registrera via Facebook"
+msgstr "Logga in via Facebook"
 
 #: templates/auth/login.html:17
 msgid "Choose method"
@@ -1182,17 +1177,17 @@ msgstr "Bekräfta"
 
 #: templates/includes/macros.html:91
 msgid "Your access rights allow you to view this resource in this view"
-msgstr ""
+msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
 
-#: templates/mail/forgot_account_en.html:8
+#: templates/mail/forgot_account.html:8
 msgid "Instructions on logging in to helmgast.se"
-msgstr ""
+msgstr "Instruktioner för att logga in på helmgast.se"
 
-#: templates/mail/forgot_account_en.html:12
+#: templates/mail/forgot_account.html:12
 msgid "You just requested information on how to login to helmgast.se:"
-msgstr ""
+msgstr "Du begärde just information om att logga in på helmgast.se"
 
-#: templates/mail/forgot_account_en.html:15
+#: templates/mail/forgot_account.html:15
 msgid ""
 "<p>We can't find any record of this email registered to helmgast.se. Is "
 "it \n"
@@ -1208,45 +1203,40 @@ msgid ""
 "href=\"mailto:info@helmgast.se\">\n"
 "create a new account</a>.<p>"
 msgstr ""
-"<p>Vi kan inte se att denna email-addressen är registrerad på helmgast.se. Är det 
-möjligt att du använde en annan email, eller att du loggade in med ett socialt nätverk 
-(Facebook, Google) och har en annan email där? Vi föreslårs att du söker igenom dina
-email-konton efter frasen "Välkommen till helmgast.se". Om du inte kan hitta rätt email,
-kontakta oss direkt på <a href="mailto:info@helmgast.se">
-info@helmgast.se</a> för mer support, eller <a href="mailto:info@helmgast.se">
-skapa ett nytt konto</a>.<p>"
+"<p>Vi kan inte se att denna email-addressen är registrerad på "
+"helmgast.se. Är de"
 
-#: templates/mail/forgot_account_en.html:24
+#: templates/mail/forgot_account.html:24
 #, python-format
 msgid ""
 "<p>You registered with this email %(email)s on %(join)s and your "
 "authentication method was: <strong>%(auth)s</strong></p>"
 msgstr ""
-"<p>Du registrerade dig med denna mailadressen %(email)s den %(join)s och din autentiseringsmetod var: <strong>{{auth}}</strong></p>"
+"<p>Du registrerade dig med denna mailadressen %(email)s den %(join)s och "
+"din autentiseringsmetod var: <strong>{{auth}}</strong></p>"
 
-#: templates/mail/forgot_account_en.html:27
+#: templates/mail/forgot_account.html:27
 msgid ""
 "If you have forgotten your password, click below link to reset your "
 "password:"
 msgstr ""
-"<p>Om du har glömt ditt lösenord, klicka nedanstående länk för att återställa lösenordet:</p>"
+"<p>Om du har glömt ditt lösenord, klicka nedanstående länk för att "
+"återställa lösenordet:</p>"
 
-#: templates/mail/forgot_account_en.html:32
-#, fuzzy
+#: templates/mail/forgot_account.html:32
 msgid "Reset password"
 msgstr "Återställ lösenord"
 
-#: templates/mail/forgot_account_en.html:38
+#: templates/mail/forgot_account.html:38
 #, python-format
 msgid "To login again, just click the %(auth)s-button on the login page:"
 msgstr "För att logga in igen, klicka bara %(auth)s-knappen på inloggningssidan:"
 
-#: templates/mail/forgot_account_en.html:42
-#, fuzzy
+#: templates/mail/forgot_account.html:42
 msgid "Login again"
 msgstr "Logga in igen"
 
-#: templates/mail/forgot_account_en.html:49
+#: templates/mail/forgot_account.html:49
 msgid ""
 "<p><em>You received this email as you had trouble logging in to Helmgast."
 " If you \n"
@@ -1257,23 +1247,18 @@ msgid ""
 "directly at <a href=\"mailto:info@helmgast.se\">\n"
 "info@helmgast.se</a></em></p>"
 msgstr ""
-"<p><em>Du fick detta email då du hade problem att logga in på Helmgast. Om du inte 
-bad om detta email, var vänlig ignorera det då det kan vara någon som skrivit in din
-adress av misstag. Om du tror att det pågår misstänksam aktivitet, kontakta oss genast på
- <a href="mailto:info@helmgast.se">
-info@helmgast.se</a></em></p>"
+"<p><em>Du fick detta email då du hade problem att logga in på Helmgast. "
+"Om du int"
 
 #: templates/mail/one_column_mail.html:4
-#: templates/mail/one_column_mail_sv.html:4
 msgid "Send email"
 msgstr "Skicka email"
 
 #: templates/mail/one_column_mail.html:20
 msgid "Email from Helmgast..."
-msgstr ""
+msgstr "Email från Helmgast..."
 
 #: templates/mail/one_column_mail.html:50
-#, fuzzy
 msgid "on"
 msgstr "på"
 
@@ -1289,42 +1274,42 @@ msgid ""
 "Sweden</em></p>\n"
 "                            </p>"
 msgstr ""
-"<p>Du får detta mail till {{user.email if user}} eftersom du är en användare på <a href="http://helmgast.se" class="utilityLink">http://helmgast.se</a></p>
-                            <p><em>Copyright © 2015 Helmgast AB.<br>
-                            Surbrunnsgatan 33, Stockholm 113 48, Sweden</em></p>
-                            </p>""
+"<p>Du får detta mail till %(email)s eftersom du är en användare på <a "
+"href=\"http://helmgast.se\" "
+"class=\"utilityLink\">http://helmgast.se</a></p"
 
 #: templates/mail/one_column_mail.html:99
-#: templates/mail/one_column_mail_sv.html:99
 #: templates/social/conversation_item.html:31
 msgid "Send"
 msgstr "Skicka"
 
-#: templates/mail/order_en.html:4
+#: templates/mail/order.html:4
 msgid "Order confirmation on helmgast.se"
 msgstr "Orderbekräftelse från helmgast.se"
 
-#: templates/mail/order_en.html:8
+#: templates/mail/order.html:8
 #, python-format
 msgid ""
 "<p>Thank you %(user)s for your order at helmgast.se! Please see your "
 "receipt below:</p>"
 msgstr ""
-"<p>Tack för din beställning på helmgast.se, %(user)s! Här är ditt kvitto:</p>"
+"<p>Tack för din beställning på helmgast.se, %(user)s! Här är ditt "
+"kvitto:</p>"
 
-#: templates/mail/order_en.html:12
+#: templates/mail/order.html:12
 msgid ""
 "<p><em>You received this email as a confirmation of your purchase order "
 "at helmgast.se.\n"
 "Please read the terms and conditions of purchase here.</em></p>"
 msgstr ""
-"<p><em>Du fick detta mail som en bekräftelse på ett köp på helmgast.se. Var vänlig referera till köpvillkor här.</em></p>"
+"<p><em>Du fick detta mail som en bekräftelse på ett köp på helmgast.se. "
+"Var vänlig referera till köpvillkor här.</em></p>"
 
-#: templates/mail/verify_en.html:8
+#: templates/mail/verify.html:8
 msgid "Verify your email to complete registration on helmgast.se"
-msgstr ""
+msgstr "Bekräfta din email-adress för att slutföra registreringen på helmgast.se"
 
-#: templates/mail/verify_en.html:11
+#: templates/mail/verify.html:11
 #, python-format
 msgid ""
 "\n"
@@ -1334,13 +1319,19 @@ msgid ""
 "<p>We just need to verify that you own this email, and then you can start"
 " using your account:</p>\n"
 msgstr ""
+"\n"
+"<p>Tack, %(user)s, för att du registrerat dig på Helmgast.se! Du "
+"registrerade denna email (%(email)s) och autentiseringsmetoden var: "
+"%(auth)s</p>\n"
+"\n"
+"<p>Vi behöver bara bekräfta att du äger denna email-adressen, därefter kan"
+" du börja använda ditt konto:</p>\n"
 
-#: templates/mail/verify_en.html:19
-#, fuzzy
+#: templates/mail/verify.html:19
 msgid "Verify email"
-msgstr "Skicka email"
+msgstr "Bekräfta email"
 
-#: templates/mail/verify_en.html:24
+#: templates/mail/verify.html:24
 #, python-format
 msgid ""
 "\n"
@@ -1361,6 +1352,24 @@ msgid ""
 "href=\"mailto:info@helmgast.se\">\n"
 "info@helmgast.se</a></em></p>\n"
 msgstr ""
+"\n"
+"<p>Eller, klistra in denna länken till din webbläsare: <br><a "
+"class=\"longtext\" "
+"href=\"%(verification_url)s\">%(verification_url)s</a><p>\n"
+"<p>Som en användare på Helmgast kommer du kunna interagera med de olika "
+"världarna på Helmgast\n"
+"likaväl som at köpa Helmgast-produkter. Plattformen är under konstant "
+"utveckling så\n"
+"vi kommer att maila dig uppdateringar när större förändringar skett.</p>\n"
+"<p><strong>Stort tack för ditt stöd!</strong></p>\n"
+"\n"
+"<p><em>Om du inte registrerade dig för denna tjänsten, var vänlig "
+"ignorera detta email\n"
+"eftersom det kan ha varit någon som skrivit in din email av misstag. Om "
+"du tror att\n"
+"det pågår suspekt aktivitet, var vänlig kontakta os direkt på <a "
+"href=\"mailto:info@helmgast.se\">\n"
+"info@helmgast.se</a></em></p>\n"
 
 #: templates/shop/_page.html:6
 msgid "get your inspiration"
@@ -1409,9 +1418,8 @@ msgid "Order Info"
 msgstr "Orderinfo"
 
 #: templates/shop/order_table.html:31
-#, fuzzy
 msgid "Order ID"
-msgstr "Beställd"
+msgstr "Order-ID"
 
 #: templates/shop/order_table.html:32
 msgid "No name"
@@ -1480,15 +1488,11 @@ msgstr "Ta bort"
 
 #: templates/shop/product_item.html:62
 msgid "Family"
-msgstr ""
-
-#: templates/shop/product_item.html:70
-msgid "Currency"
-msgstr ""
+msgstr "Familj"
 
 #: templates/shop/product_item.html:74
 msgid "Acknowledgement"
-msgstr ""
+msgstr "Signering"
 
 #: templates/shop/product_item.html:85 templates/shop/product_list.html:33
 msgid "Buy"
@@ -1589,13 +1593,12 @@ msgid "Followers"
 msgstr "Följare"
 
 #: templates/social/user_item.html:13
-#, fuzzy
 msgid "Request verification"
-msgstr "Ogiltig verifikationslänk"
+msgstr "Begär verifikationslänk"
 
 #: templates/social/user_item.html:14
 msgid "Remind login"
-msgstr ""
+msgstr "Påminn om login"
 
 #: templates/social/user_item.html:25
 msgid "Pick your avatar at"
@@ -1607,16 +1610,15 @@ msgstr "Registrerad"
 
 #: templates/social/user_item.html:69
 msgid "Authentication"
-msgstr ""
+msgstr "Autentisering"
 
 #: templates/social/user_item.html:72
 msgid "Reset authentication"
-msgstr ""
+msgstr "Återställ autentisering"
 
 #: templates/social/user_item.html:74
-#, fuzzy
 msgid "Join link"
-msgstr "Logga in"
+msgstr "Registreringslänk"
 
 #: templates/social/user_item.html:87
 msgid "Empty..."
@@ -1684,7 +1686,7 @@ msgstr "Lat"
 
 #: templates/world/article_item.html:157
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: templates/world/article_item.html:159
 msgid "Started"
@@ -1853,6 +1855,6 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 #~ msgid "Error connecting to Facebook"
 #~ msgstr "Fel under kommunikationen med Facebook"
 
-#~ msgid "Email from Helmgast..."
-#~ msgstr ""
+#~ msgid "No subject"
+#~ msgstr "Inget ämne"
 

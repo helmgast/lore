@@ -8,7 +8,7 @@ Should also work as invite mail. #}
 {% block preview %}{% trans %}Verify your email to complete registration on helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
-{% trans user=user.display_name(), email=user.email, auth=ser.auth_type() %}
+{% trans user=user.display_name(), email=user.email, auth=user.auth_type() %}
 <p>Thank you, {{user}}, for registering at Helmgast.se! You registered this email ({{email}}) and authentication method was: {{auth}}</p>
 
 <p>We just need to verify that you own this email, and then you can start using your account:</p>

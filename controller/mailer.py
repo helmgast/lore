@@ -3,7 +3,6 @@ from flask import Blueprint, current_app, render_template, request, redirect, ab
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
 from flask.ext.babel import lazy_gettext as _
-from flask.ext.babel import get_locale
 from extensions import MailMessage
 from model.user import User
 from model.shop import Order
@@ -16,11 +15,6 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 
 mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
-
-subjects = {
-  'verify': _('%(user)s, welcome to Helmgast!'),
-  'order': _('Thank you for your order!')
-}
 
 def render_mail(recipients, subject, sender=None, body=None, template=None, **kwargs):
   # recipients should be list of emails (extract from user before sending)
@@ -79,7 +73,12 @@ def mail_view(mail_type):
     writable = {'from_field', 'subject', 'message'}
     overrides = {'to_field': server_mail}
   else:
-    subject = subjects.get(mail_type, 'No subject')
+    if mail_type == 'verify':
+      subject = _('%(user)s, welcome to Helmgast!', user=user.display_name())
+    elif mail_type == 'order':
+      subject = _('Thank you for your order!')
+    elif mail_type == 'forgot_account':
+      subject = _('Reminder on how to login to Helmgast.se')
     writable = {}
     overrides = {'from_field': server_mail, 'to_field':user.email, 'subject':subject}
   if request.method == 'GET':

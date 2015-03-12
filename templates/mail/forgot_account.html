@@ -21,7 +21,7 @@ info@helmgast.se</a>for more support, or <a href="mailto:info@helmgast.se">
 create a new account</a>.<p>{% endtrans %}
 {% else %}
 
-{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d") %}<p>You registered with this email {{email}} on {{join}} and your authentication method was: <strong>{{auth}}</strong></p>{% endtrans %}
+{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d"), auth %}<p>You registered with this email {{email}} on {{join}} and your authentication method was: <strong>{{auth}}</strong></p>{% endtrans %}
 
 	{% if auth != "Password" %}
 		<p>{% trans %}If you have forgotten your password, click below link to reset your password:{% endtrans %}</p>
