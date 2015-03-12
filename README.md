@@ -56,6 +56,11 @@ LANGUAGES = {
 ### Running locally
 1. Start mongodb with `mongod`
 2. If the database has not been used before, or data needs to be reset, run `python start.py reset`
-3. (Optional) Compile translations with `python start.py lang` 
-4. Start the application with `python start.py`
-5. Point your browser to `http://localhost:5000`
+3. Start the application with `python start.py` or just `./start.py`
+4. Point your browser to `http://localhost:5000`
+
+### Translating strings
+1. Run `python setup.py lang_extract` to find all strings needing translations
+2. Run  `python start.py lang_sv_update` to put them into the translation catalog for Swedish at  `translations/sv/LC_MESSAGES/message.po` 
+3. Search the messages.po file for strings without translation into Swedish, and translate them according to the format.
+4. Run `python setup.py lang_sv_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the message.po catalog is part of the repository, but the binary file need to be built in each place the system is running)
