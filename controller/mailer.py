@@ -2,8 +2,7 @@ from wtforms.validators import Email
 from flask import Blueprint, current_app, render_template, request, redirect, abort
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
-from flask.ext.babel import lazy_gettext as _
-from extensions import MailMessage
+from flask.ext.babel import gettext as _
 from model.user import User
 from model.shop import Order
 from model.web import MailForm
@@ -16,26 +15,29 @@ mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 
 mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
 
-def render_mail(recipients, subject, sender=None, body=None, template=None, **kwargs):
+def send_mail(recipients, message_subject, template, sender=None, **kwargs):
   # recipients should be list of emails (extract from user before sending)
   # subject is a fixed string
-  # body can be a formatting string or HTML template
-  # kwargs represents context
+  # template is the template object or path
+  # sender is an email or a tuple (email, name)
+  # kwargs represents context for the template to render correctly
   for r in recipients:
     if not mail_regex.match(r):
       raise TypeError("Email %s is not correctly formed" % r)
-  mailargs = {'recipients':recipients, 'subject':subject}
-  if sender:
-    mailargs['sender']=sender
-  if template:
-    mailargs['html'] = render_template(template, **kwargs)
-  elif body:
-    mailargs['body'] = body
-  else:
-    raise TypeError("We need either a body string or a template to render mail!")
-  mailargs['extra_headers'] = {'X-MC-InlineCSS':'true'} # Inline CSS in template
-  return MailMessage(**mailargs)
+  if not sender:
+    sender = (current_app.config['MAIL_DEFAULT_SENDER'], 'Helmgast')
+  
+  message = {
+    'to': [{'email':email} for email in recipients],
+    'subject': message_subject,
+    'from_email': sender[0] if isinstance(sender, tuple) else sender,
+    'from_name': sender[1] if isinstance(sender, tuple) else None,
+    'inline_css': True,
+    'html': render_template(template, **kwargs)
+  }
 
+  mail_app.mandrill_client.messages.send(message=message)
+  logger.info("Sent email %s to %s" % (message['subject'], message['to']))
 
 # GET
 # 1) Load model to form
@@ -91,20 +93,20 @@ def mail_view(mail_type):
       parent_template=parent_template, 
       user=user,
       order=order,
-      mailform=mailform)
+      mailform=mailform, **mailform.data)
   elif request.method == 'POST' and user:
     mailform = MailForm(request.form, 
       allowed_fields=writable,
       **overrides)
     print request.form, mailform.data
     if mailform.validate():
-      email = render_mail(
+      email = send_mail(
         ['ripperdoc@gmail.com'], 
-        mailform.subject.data , 
-        template=mail_template, 
+        mailform.subject.data, 
+        template=mail_template,
+        sender=mailform.from_field.data,
         user=user,
-        order=order)
-      #email.send_out()
+        order=order, **mailform.data)
       return "Mail sent!"
     else:
       raise ResourceError(400, form=mailform)

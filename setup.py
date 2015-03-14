@@ -12,7 +12,7 @@ setup(
     #  Packages required to run Raconteur.
     install_requires=[
         'Flask', 'flask-mongoengine', 'python-slugify', 'Flask-Markdown', 
-        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'Flask-Mail', 'celery',
+        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'mandrill', 'celery',
         'google-api-python-client', 'facebook-sdk'
     ],
 
@@ -24,7 +24,7 @@ setup(
             ('**.py',                'python', None),
             ('**/templates/**.html',  'jinja2', 
                 {'silent':'false',
-                'extensions':'jinja2.ext.do'})
+                'extensions':['jinja2.ext.do', 'jinja2.ext.autoescape']})
         ],
     },
 )

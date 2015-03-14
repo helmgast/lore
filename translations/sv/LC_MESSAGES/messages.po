@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-13 00:06+0900\n"
+"POT-Creation-Date: 2015-03-14 11:40+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -172,16 +172,16 @@ msgstr ""
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: controller/mailer.py:77
+#: controller/mailer.py:79
 #, python-format
 msgid "%(user)s, welcome to Helmgast!"
 msgstr "%(user)s, välkommen till Helmgast!"
 
-#: controller/mailer.py:79
+#: controller/mailer.py:81
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
-#: controller/mailer.py:81
+#: controller/mailer.py:83
 msgid "Reminder on how to login to Helmgast.se"
 msgstr "Påminnelse hur du loggar in på Helmgast.se"
 
@@ -516,19 +516,19 @@ msgstr "Tillstånd"
 msgid "Application features"
 msgstr "Det här kan du göra"
 
-#: model/web.py:25 model/world.py:167 templates/mail/one_column_mail.html:77
+#: model/web.py:25 model/world.py:167 templates/mail/one_column_mail.html:78
 msgid "To"
 msgstr "Till"
 
-#: model/web.py:26 model/world.py:166 templates/mail/one_column_mail.html:84
+#: model/web.py:26 model/world.py:166 templates/mail/one_column_mail.html:85
 msgid "From"
 msgstr "Från"
 
-#: model/web.py:27 templates/mail/one_column_mail.html:91
+#: model/web.py:27 templates/mail/one_column_mail.html:92
 msgid "Subject"
 msgstr "Ämne"
 
-#: model/web.py:28 templates/mail/compose.html:12
+#: model/web.py:28 templates/mail/compose.html:39
 msgid "Message"
 msgstr "Meddelande"
 
@@ -1179,6 +1179,11 @@ msgstr "Bekräfta"
 msgid "Your access rights allow you to view this resource in this view"
 msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
 
+#: templates/mail/compose.html:15
+#, python-format
+msgid "Email from Helmgast visitor %(from_field)s..."
+msgstr "Email från Helmgast-besökaren %(from_field)s..."
+
 #: templates/mail/forgot_account.html:8
 msgid "Instructions on logging in to helmgast.se"
 msgstr "Instruktioner för att logga in på helmgast.se"
@@ -1213,7 +1218,7 @@ msgid ""
 "authentication method was: <strong>%(auth)s</strong></p>"
 msgstr ""
 "<p>Du registrerade dig med denna mailadressen %(email)s den %(join)s och "
-"din autentiseringsmetod var: <strong>{{auth}}</strong></p>"
+"din autentiseringsmetod var: <strong>%(auth)s</strong></p>"
 
 #: templates/mail/forgot_account.html:27
 msgid ""
@@ -1247,8 +1252,14 @@ msgid ""
 "directly at <a href=\"mailto:info@helmgast.se\">\n"
 "info@helmgast.se</a></em></p>"
 msgstr ""
-"<p><em>Du fick detta email då du hade problem att logga in på Helmgast. "
-"Om du int"
+"<p><em>Du har fått detta email då du rapporterat problem att logga in på "
+"Helmgast. Om du inte \n"
+"bad om detta email, var vänlig ignorera det då det kan ha varit någon som"
+" skrev ditt \n"
+"mail av misstag. Om du tror det pågår suspekt aktivitet, var vänlig "
+"kontakta oss \n"
+"direkt på <a href=\"mailto:info@helmgast.se\">\n"
+"info@helmgast.se</a></em></p>"
 
 #: templates/mail/one_column_mail.html:4
 msgid "Send email"
@@ -1276,9 +1287,14 @@ msgid ""
 msgstr ""
 "<p>Du får detta mail till %(email)s eftersom du är en användare på <a "
 "href=\"http://helmgast.se\" "
-"class=\"utilityLink\">http://helmgast.se</a></p"
+"class=\"utilityLink\">http://helmgast.se</a></p>\n"
+"                            <p><em>Copyright © 2015 Helmgast AB, All "
+"rights reserved.<br>\n"
+"                            Surbrunnsgatan 33, Stockholm 113 48, "
+"Sweden</em></p>\n"
+"                            </p>"
 
-#: templates/mail/one_column_mail.html:99
+#: templates/mail/one_column_mail.html:100
 #: templates/social/conversation_item.html:31
 msgid "Send"
 msgstr "Skicka"
@@ -1324,8 +1340,8 @@ msgstr ""
 "registrerade denna email (%(email)s) och autentiseringsmetoden var: "
 "%(auth)s</p>\n"
 "\n"
-"<p>Vi behöver bara bekräfta att du äger denna email-adressen, därefter kan"
-" du börja använda ditt konto:</p>\n"
+"<p>Vi behöver bara bekräfta att du äger denna email-adressen, därefter "
+"kan du börja använda ditt konto:</p>\n"
 
 #: templates/mail/verify.html:19
 msgid "Verify email"
@@ -1395,15 +1411,15 @@ msgstr "Funktioner"
 msgid "Send order mail"
 msgstr "Skicka ordermail"
 
-#: templates/shop/order_item.html:38
+#: templates/shop/order_item.html:39
 msgid "Contact Us"
 msgstr "Kontakta oss"
 
-#: templates/shop/order_item.html:40
+#: templates/shop/order_item.html:41
 msgid "Checkout"
 msgstr "Lägg beställning"
 
-#: templates/shop/order_item.html:48 templates/shop/product_item.html:18
+#: templates/shop/order_item.html:49 templates/shop/product_item.html:18
 #: templates/social/group_item.html:14 templates/social/user_item.html:12
 #: templates/world/article_action_menu.html:7
 msgid "Edit"
@@ -1767,6 +1783,9 @@ msgstr "Regelsystem"
 #: templates/world/world_list.html:22
 msgid "Aeon is working on some worlds, please check back later!"
 msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
+
+msgid "Regarding order %(order)s"
+msgstr "Gällande order %(order)s"
 
 #~ msgid "Incorrect username or password"
 #~ msgstr "Inkorrekt användarnamn eller lösenord"

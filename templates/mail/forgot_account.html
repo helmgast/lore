@@ -39,7 +39,7 @@ create a new account</a>.<p>{% endtrans %}
 		<table>
     	<tr>
         	<td class="padding">
-            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login')}}" target="_blank">{% trans %}Login again{% endtrans %}</a></p>
+            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login', _external=true)}}" target="_blank">{% trans %}Login again{% endtrans %}</a></p>
         	</td>
     	</tr>
 		</table>

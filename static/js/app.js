@@ -644,10 +644,11 @@ $('#themodal').on('show.bs.modal', function(event) {
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
-$modal.on('click', '.modal-submit', function(e) {
-  var form = $modal.find('form')
-  if (form.length && form[0].action) {
-    var jqxhr = $.post(form[0].action, form.serialize())
+$modal.on('submit', 'form', function(e) {
+  var form = e.currentTarget
+  if (form && form.action) {
+    e.preventDefault()
+    var jqxhr = $.post(form.action, $(form).serialize())
       .done(function(data, textStatus, jqXHR) {
         console.log(data)
         $modal.modal('hide')

@@ -1,8 +1,35 @@
 {% extends "mail/one_column_mail.html" %}
 
-{% block body %}{% endblock %}
+{% block body %}
+<table class="body-wrap">
+    <tr>
+        <td></td>
+        <td class="container" bgcolor="#FFFFFF">
 
-{% block subject %}Subject{% endblock %}
+            <!-- content -->
+            <div class="content">
+
+            <table>
+                <tr>
+                    <td>
+                        <p><em>{% block preview %}{% trans %}Email from Helmgast visitor {{from_field}}...{% endtrans %}{% endblock %}</em></p>
+
+                        <h1>{{ subject }}</h1>
+                        {% block content %}
+                        {{ message }}
+                        {% endblock %}
+                    </td>
+                </tr>
+            </table>
+            </div>
+            <!-- /content -->
+            
+        </td>
+        <td></td>
+    </tr>
+</table>
+{% endblock %}
+{% block modal_body %}{% endblock %}
 
 {% block form %}
 

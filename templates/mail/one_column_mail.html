@@ -4,7 +4,7 @@
 <h4 class="modal-title">{{_('Send email')}}</h4>
 {% endblock %}
 
-{% block body %}
+{% block modal_body %}
 
 <table class="body-wrap">
     <tr>
@@ -47,7 +47,7 @@
                 <table>
                     <tr>
                         <td align="center">
-                        <p><a href="https://www.facebook.com/helmgast"><img style="vertical-align: middle;margin-right: 5px;" width="72" height="30" src="https://gallery.mailchimp.com/4412a3ce4ac556de77513666b/images/adc42642-7da1-49c2-b9af-b7e9a3a41a97.png">Helmgast {{_('on')}} Facebook!</a></p>
+                        <p><a href="https://www.facebook.com/helmgast"><img alt="Facebook logo" style="vertical-align: middle;margin-right: 5px;" width="72" height="30" src="https://gallery.mailchimp.com/4412a3ce4ac556de77513666b/images/adc42642-7da1-49c2-b9af-b7e9a3a41a97.png">Helmgast {{_('on')}} Facebook!</a></p>
                             {% trans email=user.email %}<p>You are receiving this email to {{email}} as a user of <a href="http://helmgast.se" class="utilityLink">http://helmgast.se</a></p>
                             <p><em>Copyright © 2015 Helmgast AB, All rights reserved.<br>
                             Surbrunnsgatan 33, Stockholm 113 48, Sweden</em></p>
@@ -64,6 +64,7 @@
 </table>
 
 {% endblock %}
+{% block body %}{{ self.modal_body() }}{% endblock %}
 
 {% block formtag %}<form method="post" action="{{request.url}}" class="form-horizontal">{% endblock %}
 

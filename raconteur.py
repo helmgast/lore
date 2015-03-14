@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder, SilentUndefined
+from extensions import db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -69,6 +69,7 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.jinja_env.add_extension('jinja2.ext.do')
+  the_app.jinja_env.add_extension('jinja2.ext.autoescape')
   the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   # Reads version info for later display
@@ -130,8 +131,6 @@ def configure_extensions(app):
   # Internationalization
   babel.init_app(app) # Automatically adds the extension to Jinja as well
 
-  mail.init_app(app)
-
   # Secure forms
   csrf.init_app(app)
 
@@ -169,6 +168,8 @@ def configure_blueprints(app):
     app.register_blueprint(campaign, url_prefix='/campaign')
     app.register_blueprint(shop, url_prefix='/shop')
     app.register_blueprint(mail, url_prefix='/mail')
+    import mandrill
+    mail.mandrill_client = mandrill.Mandrill(app.config['MANDRILL_API_KEY'])
 
   return auth
 

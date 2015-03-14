@@ -33,9 +33,9 @@
       <div class="col-md-offset-8">
         <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
   {% if order.status != 'cart' %}
-          <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id)}}">
-          {#
-          <a href="mailto:info@helmgast.se?subject={{ '%s %s (%s)' % (_('About order from'), order.user.email, order.id)}}" class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal">#}{{ _('Contact Us') }}</a>
+          <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id, 
+          from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
+          {{ _('Contact Us') }}</a>
   {% else %}
         <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
   {% endif %}

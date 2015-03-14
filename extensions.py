@@ -50,17 +50,15 @@ class MongoJSONEncoder(JSONEncoder):
 from flask.ext.babel import Babel
 babel = Babel()
 
-from flask.ext.mail import Mail, Message
-mail = Mail()
-
-class MailMessage(Message):
-  def send_out(self):
-    return mail.send(self)
-
 #i18n
 # @babel.localeselector
 # def get_locale():
 #   return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+# Needs below in Config
+# LANGUAGES = {
+#    'en': 'English',
+#    'sv': 'Swedish'
+#}
 
 from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
