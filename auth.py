@@ -17,7 +17,6 @@ from flask import redirect, url_for, g, make_response
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
-from hashlib import sha1, md5
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
@@ -28,40 +27,14 @@ from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, Fl
 from apiclient.discovery import build
 import facebook
 
+from baseuser import BaseUser, check_password
+
 current_dir = os.path.dirname(__file__)
-
-# borrowing these methods, slightly modified, from django.contrib.auth
-def get_hexdigest(salt, raw_password):
-  return sha1((salt + unicode(raw_password)).encode('utf-8')).hexdigest()
-
-def make_password(raw_password):
-  salt = get_hexdigest(str(random.random()), str(random.random()))[:5]
-  hsh = get_hexdigest(salt, raw_password)
-  return '%s$%s' % (salt, hsh)
-
-def check_password(raw_password, enc_password):
-  if enc_password and raw_password:
-    salt, hsh = enc_password.split('$', 1)
-    return hsh == get_hexdigest(salt, raw_password)
-  else:
-    return False
 
 def get_next():
   if not request.query_string:
     return request.path
   return '%s?%s' % (request.path, request.query_string)
-
-
-def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
-  return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
-
-class BaseUser(object):
-    def set_password(self, password):
-      self.password = make_password(password)
-
-    def check_password(self, password):
-      return check_password(password, self.password)
-
 
 class Auth(object):
   def __init__(self, app, db, user_model=None, ext_auth_model=None, prefix='/auth', name='auth',
@@ -81,7 +54,12 @@ class Auth(object):
       self.facebook_client = {'app_id': app.config['FACEBOOK_APP_ID'], 'app_secret':app.config['FACEBOOK_APP_SECRET']}
     self.clear_session = clear_session
     self.logger = app.logger
+    app.login_required = self.login_required
+    app.admin_required = self.admin_required
+    app.access_policy = {} # Set up dict for access policies to be stored in
+
     self.setup()
+
 
   def get_context_user(self):
     return {'user': self.get_logged_in_user()}
@@ -111,6 +89,7 @@ class Auth(object):
       ('/logout/', self.logout),
       ('/login/', self.login),
       ('/join/', self.join),
+      ('/remind/', self.remind)     
     )
 
   def test_user(self, test_fn):
@@ -369,6 +348,30 @@ class Auth(object):
     self.logout_user(self.get_logged_in_user())
     return redirect(self.get_next_url())
 
+  def remind(self):
+    # TODO Don't like importing this here but can't find another way to
+    # avoid import errors
+    from controller.mailer import send_mail
+
+    form = self.RemindForm()
+    if request.method == 'POST':
+      form.process(request.form)
+      if form.validate():
+        try:
+          user = self.User.objects(email=form.email.data.lower()).get()
+          send_mail(
+            [user.email], 
+            _('Reminder on how to login to Helmgast.se'),
+            mail_type = 'remind_login',
+            user=user
+            )
+          flash( _('Reminder email sent to your address'), 'success')
+        except self.User.DoesNotExist:
+          flash( _('No such user exist, are you sure you registered first?'), 'danger')
+      else:
+        flash( _('Errors in form'), 'danger')  
+    return render_template('auth/remind.html', form=form)
+
   def configure_routes(self):
     for url, callback in self.get_urls():
       self.blueprint.route(url, methods=['GET', 'POST'])(callback)
@@ -402,12 +405,14 @@ class Auth(object):
     # We add these manually, because model_form will render them differently
     self.JoinForm.external_service = HiddenField(_('External Service'))
 
-
     self.LoginForm = model_form(self.User, only=['email', 'password'], field_args={'password':{'password':True}})
     self.LoginForm.auth_code = HiddenField(_('Auth Code'))
     self.LoginForm.external_service = HiddenField(_('External Service'))
+
+    self.RemindForm = model_form(self.User, only=['email'])
 
     self.configure_routes()
     self.register_blueprint()
     self.register_handlers()
     self.register_context_processors()
+

@@ -11,7 +11,7 @@
     <li class="nav-header">{{ _('Actions') }}</li>
     <li class="{{privileged}}"><a href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
     <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id)}}">{{_('Request verification')}}</a></li>
-    <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='forgot_account', user=user.id)}}">{{_('Remind login')}}</a></li>  
+    <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='remind_login', user=user.id)}}">{{_('Remind login')}}</a></li>  
   </ul>
   {% endcall %}
 {%endblock%}

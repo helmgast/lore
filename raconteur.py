@@ -69,14 +69,12 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.jinja_env.add_extension('jinja2.ext.do')
-  the_app.jinja_env.add_extension('jinja2.ext.autoescape')
   the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   # Reads version info for later display
   the_app.config.from_pyfile('version.cfg', silent=True)
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
-
 
   if 'BUGSNAG_API_KEY' in the_app.config:
     import bugsnag
@@ -123,6 +121,7 @@ def configure_extensions(app):
   app.json_encoder = MongoJSONEncoder
 
   db.init_app(app)
+
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later
   # mongocfg =   app.config['MONGODB_SETTINGS']
@@ -143,15 +142,11 @@ def configure_extensions(app):
   #   app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
-  from model.user import User, ExternalAuth
-  from auth import Auth
-  auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
-  app.login_required = auth.login_required
-  app.admin_required = auth.admin_required
-
-  app.access_policy = {} # Set up dict for access policies to be stored in
 
   with app.app_context():
+    from model.user import User, ExternalAuth
+    from auth import Auth
+    auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
 
     from controller.world import world_app as world
     from controller.social import social

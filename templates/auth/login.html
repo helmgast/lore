@@ -4,25 +4,32 @@
 {% block title %}{{_('Login')}}{% endblock %}
 
 {% block mainblock %}
-<form id="auth-form" method="post" action="" class="col-sm-4 col-sm-offset-4" role="form">
+<form id="auth-form" method="post" action="" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ _('Please sign in') }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
+  
   <div id="signin-buttons">
+    <div class="popover right popover-external-auth">
+      <div class="arrow"></div>
+      <h3 class="popover-title">{{_('Problem signing in?')}}</h3>
+      <div class="popover-content">
+        <p>
+        {%- trans -%}Pick the method you signed up with. If you forgot
+        your method or password, click below!
+        {%- endtrans -%}
+        <button class="btn btn-success btn-block" type="button">{{_('Remind login')}}</button>
+        </p>
+      </div>
+    </div>
     <span class="help-block">{{_('Join')}} {{_('with external provider (safer!)')}}</span>
     <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Login via Google')}}</button>
     <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Login via Facebook')}}</button>
-    <div class="popover right popover-external-auth">
-      <div class="arrow"></div>
-      <h3 class="popover-title">{{_('Choose method')}}</h3>
-      <div class="popover-content">
-        <p>{{_("Pick the sign-in method you signed up with!")}}</p>
-      </div>
-    </div>
   </div>
 
   <hr>
-  <h4>{{_('Login')}}</h4>
+
+  <span class="help-block">{{_('Use own password')}}</span>
   <div class="clearfix" id="profile"></div>
   
   <div id="password-inputs">

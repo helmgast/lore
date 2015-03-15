@@ -9,7 +9,7 @@
 """
 
 from hashlib import md5
-from auth import BaseUser, make_password, create_token
+from baseuser import BaseUser, make_password, create_token
 from slugify import slugify
 from misc import now, Choices
 from raconteur import db

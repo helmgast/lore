@@ -24,7 +24,7 @@ setup(
             ('**.py',                'python', None),
             ('**/templates/**.html',  'jinja2', 
                 {'silent':'false',
-                'extensions':['jinja2.ext.do', 'jinja2.ext.autoescape']})
+                'extensions':'jinja2.ext.do'})
         ],
     },
 )

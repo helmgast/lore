@@ -15,7 +15,8 @@ mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 
 mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
 
-def send_mail(recipients, message_subject, template, sender=None, **kwargs):
+def send_mail(recipients, message_subject, mail_type, custom_template=None, 
+    sender=None, **kwargs):
   # recipients should be list of emails (extract from user before sending)
   # subject is a fixed string
   # template is the template object or path
@@ -24,9 +25,15 @@ def send_mail(recipients, message_subject, template, sender=None, **kwargs):
   for r in recipients:
     if not mail_regex.match(r):
       raise TypeError("Email %s is not correctly formed" % r)
+  if current_app.debug:
+    recipients = [current_app.config['MAIL_DEFAULT_SENDER']]
+    message_subject = u'DEBUG: %s' % message_subject
+
   if not sender:
     sender = (current_app.config['MAIL_DEFAULT_SENDER'], 'Helmgast')
   
+  template = ('mail/%s.html' % mail_type) if not custom_template else custom_template
+
   message = {
     'to': [{'email':email} for email in recipients],
     'subject': message_subject,
@@ -59,7 +66,7 @@ def mail_view(mail_type):
   mail_type = secure_filename(mail_type)
   mail_template = 'mail/%s.html' % mail_type
   server_mail = current_app.config['MAIL_DEFAULT_SENDER']
-  if mail_type not in ['compose', 'forgot_account', 'order', 'verify']:
+  if mail_type not in ['compose', 'remind_login', 'order', 'verify']:
     raise ResourceError(404)
   user = request.args.get('user', None)
   try:
@@ -79,7 +86,7 @@ def mail_view(mail_type):
       subject = _('%(user)s, welcome to Helmgast!', user=user.display_name())
     elif mail_type == 'order':
       subject = _('Thank you for your order!')
-    elif mail_type == 'forgot_account':
+    elif mail_type == 'remind_login':
       subject = _('Reminder on how to login to Helmgast.se')
     writable = {}
     overrides = {'from_field': server_mail, 'to_field':user.email, 'subject':subject}
@@ -101,9 +108,9 @@ def mail_view(mail_type):
     print request.form, mailform.data
     if mailform.validate():
       email = send_mail(
-        ['ripperdoc@gmail.com'], 
+        [mailform.to_field.data], 
         mailform.subject.data, 
-        template=mail_template,
+        mail_type=mail_type,
         sender=mailform.from_field.data,
         user=user,
         order=order, **mailform.data)

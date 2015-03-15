@@ -2,7 +2,7 @@
 {% import 'includes/macros.html' as MACRO %}
 
 {% block mainblock %}
-<form id="auth-form" method="post" action="{{url_for('auth.join')}}" class="col-sm-4 col-sm-offset-4" role="form">
+<form id="auth-form" method="post" action="{{url_for('auth.join')}}" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ _('Sign up') }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
@@ -10,7 +10,7 @@
     <span class="help-block">{{_('Join')}} {{_('with external provider (safer!)')}}</span>
     <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Join via Google')}}</button>
     <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Join via Facebook')}}</button>
-    <button type="button" id="password-signin" class="btn btn-success btn-block">{{_('Join with own password')}}</button>
+    <button type="button" id="password-signin" class="btn btn-warning btn-block">{{_('Use own password')}}</button>
     <div class="popover right popover-external-auth">
       <div class="arrow"></div>
       <h3 class="popover-title">{{_('Recommended choice')}}</h3>

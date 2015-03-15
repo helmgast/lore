@@ -964,6 +964,12 @@ input[type="radio"]:checked + img {
 	background-color: #dd4b39;
 }
 
+#signin-buttons {
+	position: relative;
+}
+
+
+
 .arrow_box {
 	position: relative;
 	background: #88b7d5;
@@ -1041,10 +1047,25 @@ content: "\e033";
 
 .popover.popover-external-auth {
 	display: block;
-	top: 70px;
-	right: -220px;
+	position: relative;
+	max-width: 100%;
+}
+.popover.popover-external-auth>.arrow {
+	display: none;
+}
+
+/* This makes the position to be on the right incl and arrow if screen is wide */
+@media (min-width: 768px) {
+  .popover.popover-external-auth {
+  	top: 35px;
+	right: -240px;
 	max-width: 220px;
 	left: auto;
+	position: absolute;
+  }
+  .popover.popover-external-auth>.arrow {
+	display: block;
+}
 }
 
 .helmgast-header {
