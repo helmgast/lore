@@ -10,14 +10,13 @@
 
 import functools
 import os
-import random
 
 from flask import Blueprint, render_template, abort, request, session, flash
 from flask import redirect, url_for, g, make_response
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
 
@@ -27,7 +26,7 @@ from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, Fl
 from apiclient.discovery import build
 import facebook
 
-from baseuser import BaseUser, check_password
+from baseuser import BaseUser, check_password, create_token
 
 current_dir = os.path.dirname(__file__)
 
@@ -169,6 +168,20 @@ class Auth(object):
     # Avoid going next to other auth-pages, will just be confusing!
     return n if (n and '/auth/' not in n) else url_for('homepage')
 
+  # if get:
+  # elif post:
+    # if form.validate
+      # manual_verify
+
+      # authenticate(email, email_token, auth_code, external_service)
+
+      # if verify - verifying existing user from email link
+        # Activate user end finish - no need to authenticate form
+
+      # if join - creating new user
+      # elif reset - resetting existing user from email link
+
+
   def join(self):
     # This function does joining in several steps.
     # Join-step: no user (should) exist
@@ -195,8 +208,11 @@ class Auth(object):
         # User is either using external auth or verifying an email, no need for
         # password so remove to make sure nothing can be changed
         del form.password
-        del form.confirm_password
       if form.validate():
+        verified_email = create_token(form.email.data) == form.email_token.data
+        reset = request.args.get('reset','').lower()=='true'
+
+        # Check if using external auth
         if form.auth_code.data:
           if form.external_service.data in ['google','facebook']:
             # User is trying to create data from external auth (can come here both
@@ -204,9 +220,18 @@ class Auth(object):
             try:
               user = self.User.objects(email=form.email.data.lower()).get()
             except self.User.DoesNotExist:            
-              user = self.User()
-            # We could get here if someone puts in another person's email
-            if not (user.status != 'invited' or user.facebook_auth or user.google_auth or user.password):
+              user = self.User() # New user
+            
+            if verified_email and reset and user.status == 'active':
+                # We are resetting an existing user, so delete existing login info
+                # We will only save this change if all works through
+                del user.facebook_auth # Clear any previous authentications
+                del user.google_auth # Clear any previous authentications
+                del user.password
+
+            # If user exists - only continue if user lacks all auth methods
+            # or if the reset flag is on. If user doesn't exist, we are ok to go.
+            if reset or not (user.facebook_auth or user.google_auth or user.password):
               if form.external_service.data == 'google':
                 credentials, profile = self.connect_google(form.auth_code.data)
                 external_id, external_access_token = credentials.id_token['sub'], credentials.access_token
@@ -230,7 +255,7 @@ class Auth(object):
                   emails=emails)
               form.populate_obj(user) # Will not save any data on external service!
 
-              if form.email.data in emails or (create_token(form.email.data) == form.email_token.data):
+              if form.email.data in emails or verified_email:
                 # This user has a verified email
                 user.status = 'active'
                 user.save()
@@ -246,6 +271,7 @@ class Auth(object):
                 #   match the ones in external auth, you have to verify it manually, \
                 #   please check your inbox"), 'success')
             else:
+
               # print user.status, user.facebook_auth, user.google_auth, user.password
               # we can't create on a user which has already been create in some way or another
               flash( _('Someone has already created this user!'), 'warning')
@@ -254,12 +280,21 @@ class Auth(object):
 
         elif form.email_token.data:
           # User is not using external auth but came here with email token, so
-          # account already exists
-          if (create_token(form.email.data) == form.email_token.data):
+          # account already exists and is verified to belong to user
+          if verified_email:
             # Email has been verified, so we set to active and populate the user
             try:
               user = self.User.objects(email=form.email.data.lower()).get()
-              if user.status == 'invited':
+              print user.status
+              if request.args.get('reset','').lower()=='true' and user.status == 'active':
+                del user.facebook_auth # Clear any previous authentications
+                del user.google_auth # Clear any previous authentications
+                user.password = form.password.data # will be hashed when user is autosaved
+                user.save()
+                self.login_user(user)
+                flash( _('Password successfully changed'), 'success')
+                return redirect(self.get_next_url())                
+              elif user.status == 'invited':
                 user.status = 'active'
                 form.populate_obj(user) # any optional data that has been added
                 user.save()
@@ -268,6 +303,7 @@ class Auth(object):
               else:
                 flash( _('This user is already verified!'), 'warning')
             except:
+              raise
               flash( _('No invitation for this email and token exists'), 'warning')
           else:
             # Something wrong with the token
@@ -397,9 +433,10 @@ class Auth(object):
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
       'email', 'realname', 'location', 'newsletter'], 
       field_args={ 'password':{'password':True} })
-    self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'), 
-        validators=[validators.Required(), validators.EqualTo('password', 
-        message=_('Passwords must match'))])
+    # More and more sites skip this one now.
+    # self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'), 
+    #     validators=[validators.Required(), validators.EqualTo('password', 
+    #     message=_('Passwords must match'))])
     self.JoinForm.auth_code = HiddenField(_('Auth Code'))
     self.JoinForm.email_token = HiddenField(_('Email Token'))
     # We add these manually, because model_form will render them differently

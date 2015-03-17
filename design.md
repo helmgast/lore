@@ -3,6 +3,46 @@ Design
 
 _This working document describes the internal design of Raconteur. Note that features described here may not exist yet, and in general, try to add a **(TODO)** marker near those sections!_
 
+Fablr 1.0 notes
+==================================================================
+Below is a list of refactoring planned for the Fablr 1.0 release.
+
+- Use https://github.com/hansonkd/FlaskBootstrapSecurity as basis
+- Implement Flask-Security (but keep our social logins)
+- Doing above will likely need new hashed passwords, which means we need some migration codes to let users with old passwords automatically re-hash at next login.
+- Implement HTTPS
+- Implement Flask-Scripts (convert form setup.py and built-in ones)
+- Implement Flask-Bootstrap (for slightly simplified templates)
+- Change routes to Views as per Flask views
+- Add caching (with memcached)
+- Adds unittesting
+- Using Flask Assets for css
+- Upgrades Flask WTF
+- Move all blueprint related classes (except maybe templates) into each blueprint directory
+- Move python code into subdir of repo (important for file access security)
+- Refined access control using Flask-Principal, and include turning on and off parts of website
+- Move user from social, and de-activate social, campaign and tools (keep as separate branch/blueprint)
+- Deploy in Docker or similar
+
+New join/login flow:
+First ask "who are you? (email)". When email is typed, if joining, optionally find public info tied to the email (gravatar?). Then ask "Prove it's you" (you can prove with either google, fb, password or simply getting a verification email that gives temporary access). It's possible for a user to have multiple authentication methods.
+An email has status of "verified" or not. If not verified, user has to click a link in an email, or the social login has same email, which also verifies the email.
+Optionally, when logging in, typing the email can also show who you are and which methods of logging in was used.
+This method makes it more fluid to go between having just an email address, and having a fully registered, authenticated user.
+
+
+1) "Enter email"
+2) _Depends on user exists_
+    2.1) "Welcome back NN, prove you are you"
+        2.1.1) Select Google, Facebook, Password or Email Token (fine print)
+        2.1.2) Optional: Provide extra details
+        2.1.3) Logged in - redirect
+    2.2) "Welcome to join, prove you are you"
+        2.2.1) Select Google, Facebook, Password or Email Token (fine print)
+        2.2.2) _Check if email verified (would only be if email same in G/FB)_
+            2.2.2.1) "We need to make sure you own this email, check email"
+        2.1.2) Optional: Provide extra details
+
 Domains
 ==================================================================
 

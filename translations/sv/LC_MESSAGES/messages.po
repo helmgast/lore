@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-15 10:46+0900\n"
+"POT-Creation-Date: 2015-03-15 11:23+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -17,53 +17,53 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: auth.py:148
+#: auth.py:121
 msgid "You are logged in as"
 msgstr "Du är nu inloggad som"
 
-#: auth.py:156
+#: auth.py:129
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
-#: auth.py:270
+#: auth.py:243
 msgid "There is a problem with your login, please contact us info@helmgast.se!"
 msgstr ""
 "Det är ett problem med din inloggning, var vänlig kontakta oss på "
 "info@helmgast.se"
 
-#: auth.py:278
+#: auth.py:251
 msgid "Someone has already created this user!"
 msgstr "Någon har redan skapat denna användaren!"
 
-#: auth.py:280
+#: auth.py:253
 msgid "Form data has been manipulated, unsupported external auth service"
 msgstr "Formulärdatat kan ha manipulerats, vi stödjer inte denna inloggningstjänst"
 
-#: auth.py:296
+#: auth.py:269
 msgid "This user is already verified!"
 msgstr "Denna användaren är redan verifierad!"
 
-#: auth.py:298
+#: auth.py:271
 msgid "No invitation for this email and token exists"
 msgstr "Ingen inbjudan existerar för denna email och/eller email-token"
 
-#: auth.py:301
+#: auth.py:274
 msgid "Incorrect email or email token, did you use the right link?"
 msgstr "Felaktig email eller email-token, använde du rätt länk?"
 
-#: auth.py:304
+#: auth.py:277
 msgid "Registration without invite link is not yet open, please come back later!"
 msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
 
-#: auth.py:321
+#: auth.py:294
 msgid "Error in form"
 msgstr "Fel i formuläret"
 
-#: auth.py:351
+#: auth.py:324
 msgid "This user account is not active or verified"
 msgstr "Detta kontot är inte aktivt eller verifierat"
 
-#: auth.py:353
+#: auth.py:326
 msgid ""
 "No matching external authentication, are you sure you signed up with this"
 " method?"
@@ -71,53 +71,53 @@ msgstr ""
 "Inget matchande konto för extern inloggning, är du säker på att du "
 "registrerade med denna metoden?"
 
-#: auth.py:355
+#: auth.py:328
 msgid "Error contacting external service"
 msgstr "Fel under kommunikationen med extern inloggningsservice"
 
-#: auth.py:357
+#: auth.py:330
 msgid "Incorrect external service supplied"
 msgstr "Felaktig extern inloggningsservice angiven"
 
-#: auth.py:366
+#: auth.py:339
 msgid "Incorrect username or password"
 msgstr "Felaktigt användarnamn eller lösenord"
 
-#: auth.py:368 auth.py:393
+#: auth.py:341 auth.py:370
 msgid "No such user exist, are you sure you registered first?"
 msgstr ""
 "Ingen sådan användare existerar, är du säker på att du registrerat dig "
 "först?"
 
-#: auth.py:370 auth.py:395
+#: auth.py:343 auth.py:372
 msgid "Errors in form"
 msgstr "Fel i formuläret"
 
-#: auth.py:387 controller/mailer.py:86
+#: auth.py:364 controller/mailer.py:90
 msgid "Reminder on how to login to Helmgast.se"
 msgstr "Påminnelse hur du loggar in på Helmgast.se"
 
-#: auth.py:391
+#: auth.py:368
 msgid "Reminder email sent to your address"
 msgstr "Påminnelsemail har nu skickats till din adress"
 
-#: auth.py:423
+#: auth.py:400
 msgid "Confirm Password"
 msgstr "Bekräfta lösenord"
 
-#: auth.py:425
+#: auth.py:402
 msgid "Passwords must match"
 msgstr "Lösenorden måste stämma överens"
 
-#: auth.py:426 auth.py:432
+#: auth.py:403 auth.py:409
 msgid "Auth Code"
 msgstr ""
 
-#: auth.py:427
+#: auth.py:404
 msgid "Email Token"
 msgstr "Email-token"
 
-#: auth.py:429 auth.py:433
+#: auth.py:406 auth.py:410
 msgid "External Service"
 msgstr "Extern service"
 
@@ -180,12 +180,12 @@ msgstr ""
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: controller/mailer.py:82
+#: controller/mailer.py:86
 #, python-format
 msgid "%(user)s, welcome to Helmgast!"
 msgstr "%(user)s, välkommen till Helmgast!"
 
-#: controller/mailer.py:84
+#: controller/mailer.py:88
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
@@ -1075,6 +1075,10 @@ msgstr "Logga in via Facebook"
 msgid "Sign in"
 msgstr "Logga in"
 
+#: templates/auth/remind.html:16
+msgid "If you have problems you can also contact us at "
+msgstr "Om du har problem kan du också kontakta oss på "
+
 #: templates/campaign/_page.html:4
 msgid "manage YOUR game"
 msgstr "hantera DITT spel"
@@ -1286,10 +1290,10 @@ msgstr ""
 #: templates/mail/remind_login.html:24
 #, python-format
 msgid ""
-"<p>You registered with this email %(email)s on %(join)s and your "
+"<p>You registered with the email %(email)s on %(join)s and your "
 "authentication method was: <strong>%(auth)s</strong></p>"
 msgstr ""
-"<p>Du registrerade dig med denna mailadressen %(email)s den %(join)s och "
+"<p>Du registrerade dig med mailadressen %(email)s den %(join)s och "
 "din autentiseringsmetod var: <strong>%(auth)s</strong></p>"
 
 #: templates/mail/remind_login.html:27
@@ -1306,8 +1310,13 @@ msgstr "Återställ lösenord"
 
 #: templates/mail/remind_login.html:38
 #, python-format
-msgid "To login again, just click the %(auth)s-button on the login page:"
-msgstr "För att logga in igen, klicka bara %(auth)s-knappen på inloggningssidan:"
+msgid ""
+"To login again, just click the %(auth)s-button on the login page and "
+"follow the procedure - you may have to login to your social network "
+"account:"
+msgstr ""
+"För att logga in igen, klicka bara %(auth)s-knappen på inloggningssidan "
+"och följ instruktionerna - du kan behöva logga in igen till sitt sociala nätverk:"
 
 #: templates/mail/remind_login.html:42
 msgid "Login again"
@@ -1315,23 +1324,21 @@ msgstr "Logga in igen"
 
 #: templates/mail/remind_login.html:49
 msgid ""
-"<p><em>You received this email as you had trouble logging in to Helmgast."
+"You received this email as you had trouble logging in to Helmgast."
 " If you \n"
 "did not initiate this email, please ignore it as it may have been someone"
 " typing your \n"
 "mail by mistake. If you believe there is suspicious activity, please "
 "contact us \n"
-"directly at <a href=\"mailto:info@helmgast.se\">\n"
-"info@helmgast.se</a></em></p>"
+"directly at"
 msgstr ""
-"<p><em>Du har fått detta email då du rapporterat problem att logga in på "
+"Du har fått detta email då du rapporterat problem att logga in på "
 "Helmgast. Om du inte \n"
 "bad om detta email, var vänlig ignorera det då det kan ha varit någon som"
 " skrev ditt \n"
 "mail av misstag. Om du tror det pågår suspekt aktivitet, var vänlig "
 "kontakta oss \n"
-"direkt på <a href=\"mailto:info@helmgast.se\">\n"
-"info@helmgast.se</a></em></p>"
+"direkt på"
 
 #: templates/mail/verify.html:8
 msgid "Verify your email to complete registration on helmgast.se"

@@ -1,4 +1,5 @@
 from hashlib import sha1, md5
+import random
 
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):

@@ -59,7 +59,7 @@ class User(db.Document, BaseUser):
   following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
 
   def clean(self):
-    # Our password hashes contain 46 characters, so we can check if the value
+    # TODO Our password hashes contain 46 characters, so we can check if the value
     # set is less, which means it's a user input that we need to hash before saving
     if self.password and len(self.password) <= 40:
       self.password = make_password(self.password)

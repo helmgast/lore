@@ -21,9 +21,9 @@ info@helmgast.se</a>for more support, or <a href="mailto:info@helmgast.se">
 create a new account</a>.<p>{% endtrans %}
 {% else %}
 
-{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d"), auth %}<p>You registered with this email {{email}} on {{join}} and your authentication method was: <strong>{{auth}}</strong></p>{% endtrans %}
+{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d"), auth %}<p>You registered with the email {{email}} on {{join}} and your authentication method was: <strong>{{auth}}</strong></p>{% endtrans %}
 
-	{% if auth != "Password" %}
+	{% if auth == "Password" %}
 		<p>{% trans %}If you have forgotten your password, click below link to reset your password:{% endtrans %}</p>
 
 		<table>
@@ -35,7 +35,7 @@ create a new account</a>.<p>{% endtrans %}
 		</table>
 
 	{% else %}
-		<p>{% trans %}To login again, just click the {{auth}}-button on the login page:{% endtrans %}</p>
+		<p>{% trans %}To login again, just click the {{auth}}-button on the login page and follow the procedure - you may have to login to your social network account:{% endtrans %}</p>
 		<table>
     	<tr>
         	<td class="padding">
@@ -46,9 +46,9 @@ create a new account</a>.<p>{% endtrans %}
 	{% endif %}
 {% endif %}
 
-{% trans %}<p><em>You received this email as you had trouble logging in to Helmgast. If you 
+<p><em>{% trans %}You received this email as you had trouble logging in to Helmgast. If you 
 did not initiate this email, please ignore it as it may have been someone typing your 
 mail by mistake. If you believe there is suspicious activity, please contact us 
-directly at <a href="mailto:info@helmgast.se">
-info@helmgast.se</a></em></p>{% endtrans %}
+directly at{% endtrans %} <a href="mailto:info@helmgast.se">
+info@helmgast.se</a></em></p>
 {% endblock %}
