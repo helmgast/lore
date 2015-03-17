@@ -68,14 +68,12 @@
       {% call MACRO.IS_ADMIN() %}
       <tr><td><strong>{{ _('Authentication') }}</strong></td>
         <td>{{ user.auth_type() }}
-          <a href="{{url_for('.reset_auth', user_id=user.identifier())}}"
-             class="btn btn-danger pull-right">{{ _('Reset authentication') }}</a>
         </td></tr>
-      <tr><td><strong>{{ _('Join link') }}</strong></td>
+      {#<tr><td><strong>{{ _('Join link') }}</strong></td>
         <td style="max-width: 200px; word-wrap: break-word;"><a
-        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}">{{
+        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.user_view', user=user.id), reset=true) }}">{{
           url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}</a></td>
-      </tr>
+      </tr>#}
       {% endcall %}
       {#
       <tr><td><strong>{{ _('Following') }}</strong></td>

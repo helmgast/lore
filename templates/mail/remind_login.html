@@ -3,7 +3,7 @@ Should have different instructions depending on signup method. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set reset_link = url_for('social.reset_auth', user_id=user.identifier(), _external=true) %}
+{% set reset_link = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.user_view', user=user.id), reset=true) %}
 
 {% block preview %}{% trans %}Instructions on logging in to helmgast.se{% endtrans %}{% endblock %}
 

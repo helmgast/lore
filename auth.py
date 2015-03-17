@@ -253,7 +253,8 @@ class Auth(object):
                   id=external_id,
                   long_token=external_access_token, 
                   emails=emails)
-              form.populate_obj(user) # Will not save any data on external service!
+              if not reset:
+                form.populate_obj(user) # Will not save any data on external service!
 
               if form.email.data in emails or verified_email:
                 # This user has a verified email

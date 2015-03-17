@@ -108,21 +108,22 @@ def is_following(from_user, to_user):
 
 social.add_app_template_filter(is_following)
 
-@social.route('/reset-auth/')
-@current_app.admin_required
-def reset_auth():
-  if g.user and g.user.admin and request.args.has_key('user_id'):
-    user = User.objects(id=request.args.get('user_id')).get()
-    if user:
-      del user.password
-      del user.facebook_auth
-      del user.google_auth
-      user.status = UserStatus.invited
-      user.save()
-      logger.info("Authentication reset for user (%s)" % user.email)
-      return redirect(url_for('.user_view', user=user.identifier()))
+# Not needed?
+# @social.route('/reset-auth/')
+# @current_app.admin_required
+# def reset_auth():
+#   if g.user and g.user.admin and request.args.has_key('user_id'):
+#     user = User.objects(id=request.args.get('user_id')).get()
+#     if user:
+#       del user.password
+#       del user.facebook_auth
+#       del user.google_auth
+#       user.status = UserStatus.invited
+#       user.save()
+#       logger.info("Authentication reset for user (%s)" % user.email)
+#       return redirect(url_for('.user_view', user=user.identifier()))
 
-  raise ResourceError(403)
+#   raise ResourceError(403)
 
 @social.route('/')
 @current_app.login_required
