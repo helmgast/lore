@@ -66,7 +66,7 @@ def mail_view(mail_type):
   mail_type = secure_filename(mail_type)
   mail_template = 'mail/%s.html' % mail_type
   server_mail = current_app.config['MAIL_DEFAULT_SENDER']
-  if mail_type not in ['compose', 'remind_login', 'order', 'verify']:
+  if mail_type not in ['compose', 'remind_login', 'order', 'verify', 'invite']:
     raise ResourceError(404)
   user = request.args.get('user', None)
   try:
@@ -81,6 +81,9 @@ def mail_view(mail_type):
   if mail_type == 'compose':
     writable = {'from_field', 'subject', 'message'}
     overrides = {'to_field': server_mail}
+  elif mail_type == 'invite':
+    writable = {'to_field'}
+    overrides = {'from_field': server_mail, 'subject':_('Invitation to join Helmgast.se')}
   else:
     if mail_type == 'verify':
       subject = _('%(user)s, welcome to Helmgast!', user=user.display_name())
@@ -90,22 +93,22 @@ def mail_view(mail_type):
       subject = _('Reminder on how to login to Helmgast.se')
     writable = {}
     overrides = {'from_field': server_mail, 'to_field':user.email, 'subject':subject}
+  
   if request.method == 'GET':
     mailform = MailForm(request.args, 
       allowed_fields=writable,
       **overrides)
-    print mailform.data
     return render_template(mail_template,
       mail_type=mail_type, 
       parent_template=parent_template, 
       user=user,
       order=order,
       mailform=mailform, **mailform.data)
-  elif request.method == 'POST' and user:
+  
+  elif request.method == 'POST':
     mailform = MailForm(request.form, 
       allowed_fields=writable,
       **overrides)
-    print request.form, mailform.data
     if mailform.validate():
       email = send_mail(
         [mailform.to_field.data], 

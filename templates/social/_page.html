@@ -20,6 +20,12 @@
     <li class="{{privileged}}"><a href="{{ url_for('.conversation_list') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
     {% endcall %}
   </ul>
+{% call(privileged) MACRO.IS_ADMIN() %}
+ <ul class="nav nav-pills nav-stacked">
+     <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='invite')}}">{{_('Invite user')}}</a></li>
+ </ul>
+{% endcall %}
+
 {% endblock %}
 
 {% block content %}
