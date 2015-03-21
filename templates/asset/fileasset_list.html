@@ -1,0 +1,36 @@
+{% extends "asset/_page.html" if not parent_template else parent_template %}
+
+{% block content %}
+{% if files %}
+<table class="table">
+<thead>
+	<tr>
+		<td>{{_('File')}}</td>
+		<td>{{_('Title')}}</td>
+		<td>{{_('Description')}}</td>
+		<td>{{_('File name')}}</td>
+		<td>{{_('Attachment file name')}}</td>
+		<td>{{_('Attachment file name')}}</td>
+		<td>{{_('Access type')}}</td>
+	</tr>
+</thead>
+<tbody>
+	{% for fileasset in files %}
+	<tr>
+		<td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.slug}}</a></td>
+		<td>{{fileasset.title}}</td>
+		<td>{{fileasset.description}}</td>
+		<td>{{fileasset.source_filename}}</td>
+		<td>{{fileasset.attachment_filename}}</td>
+		<td>{{fileasset.file_data}}</td>
+		<td>{{fileasset.access_type_name()}}</td>
+	</tr>
+	{% endfor %}
+</tbody>
+</table>
+{% include "includes/pagination.html" %}
+
+{% else %}
+<h3>{{_('No file assets available!')}}</h3>
+{% endif %}
+{% endblock %}

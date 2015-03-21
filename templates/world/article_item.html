@@ -235,17 +235,22 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
   var imageselect_options = {
     csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('imageasset_list', page='all', out='fragment')}}",
+    image_list_url: "{{url_for('imageasset_list', order_by='-created_date', page='all', out='fragment')}}",
     image_upload_url: "{{url_for('imageasset_new', out='json')}}"
   }
 
   $('#content-editor a.lightbox').imageselect();
 
   $('.bubble-bar .ui-inputs a').click(function(e) {
-    var $a = $('<a class="lightbox"><img src=""></a>')
-    var $block = $(editor.getActiveBlock())
-    $block.before($a)
-    $a.imageselect()
+    var $block = $(editor.getActiveBlock());
+    var $existing_insert = $('#insert_image_asset');
+    if ($existing_insert.length) {
+        $existing_insert.next('.image-selector').remove();
+        $existing_insert.remove();
+    }
+    var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
+    $block.before($a);
+    $a.imageselect();
   })
 
   $('#articleform').one('change', function(e) {

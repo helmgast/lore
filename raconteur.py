@@ -148,6 +148,7 @@ def configure_blueprints(app):
     from auth import Auth
     auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
 
+    from controller.asset import asset_app as asset_app
     from controller.world import world_app as world
     from controller.social import social
     from controller.generator import generator
@@ -162,6 +163,7 @@ def configure_blueprints(app):
     app.register_blueprint(social, url_prefix='/social')
     app.register_blueprint(campaign, url_prefix='/campaign')
     app.register_blueprint(shop, url_prefix='/shop')
+    app.register_blueprint(asset_app, url_prefix='/assets')
     app.register_blueprint(mail, url_prefix='/mail')
     import mandrill
     mail.mandrill_client = mandrill.Mandrill(app.config['MANDRILL_API_KEY'])
