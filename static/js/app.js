@@ -634,13 +634,13 @@ function handle_action(e) {
 //////////////// new modal code ///////////
 
 // Loads content from href into the modal (functionality was removed from bootstrap3)  
-$('#themodal').on('show.bs.modal', function(event) {
-  var href = event.relatedTarget.href
-  if (href) {
-    var dest = $(this).find('.modal-content')
-    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
-  }
-})
+// $('#themodal').on('show.bs.modal', function(event) {
+//   var href = event.relatedTarget.href
+//   if (href) {
+//     var dest = $(this).find('.modal-content')
+//     dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
+//   }
+// })
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')

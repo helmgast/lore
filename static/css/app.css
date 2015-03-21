@@ -42,8 +42,8 @@ footer p {
   white-space: nowrap;
   position: fixed;
   z-index: 1090;
-  left: -45px;
-  top: 5px;
+  right: -60px;
+  bottom: 20px;
   -webkit-transform: rotate(-45deg);
      -moz-transform: rotate(-45deg);
       -ms-transform: rotate(-45deg);
@@ -52,19 +52,25 @@ footer p {
 	-webkit-box-shadow: 0 0 10px #888;
      -moz-box-shadow: 0 0 10px #888;
           box-shadow: 0 0 10px #888;
-}
-.betaribbon a {
-  border: 1px solid #faa;
   color: #fff;
-  display: block;
-  font: bold 81.25% 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  margin: 1px 0;
-  padding: 10px 50px;
+  padding: 2px 50px 2px 50px;
   text-align: center;
-  text-decoration: none;
+  font: bold 81.25% 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.betaribbon:focus {outline:0;} /* Removes blue border around button
 
+@-ms-keyframes wiggle{0%{-ms-transform:rotate(-42deg);}50%{-ms-transform:rotate(-48deg);}100%{-ms-transform:rotate(-42deg);}}
+@-moz-keyframes wiggle{0%{-moz-transform:rotate(-42deg);}50%{-moz-transform:rotate(-48deg);}100%{-moz-transform:rotate(-42deg);}}
+@-webkit-keyframes wiggle{0%{-webkit-transform:rotate(-42deg);}50%{-webkit-transform:rotate(-48deg);}100%{-webkit-transform:rotate(-42deg);}}
+@keyframes wiggle{0%{transform:rotate(-42deg);}50%{transform:rotate(-48deg);}100%{transform:rotate(-42deg);}}
+
+.betaribbon:hover {
+	-ms-animation:wiggle .3s 2;
+	-moz-animation:wiggle .3s 2;
+	-webkit-animation:wiggle .3s 2;
+	animation:wiggle .3s 2;
+}
 
 /* The white background content wrapper */
 .content {
