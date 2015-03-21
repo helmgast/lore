@@ -6,16 +6,12 @@
 """
 import mimetypes
 import re
-from raconteur import db
-from model.misc import list_to_choices
-from flask.ext.babel import lazy_gettext as _
-from mongoengine.errors import ValidationError
-from datetime import datetime
-from user import User
 
 from slugify import slugify
+
+from raconteur import db
+from flask.ext.babel import lazy_gettext as _
 from misc import Choices
-from world import ImageAsset
 
 
 FileAccessType = Choices(

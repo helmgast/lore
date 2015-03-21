@@ -16,7 +16,7 @@
 
 {% block content %}{% block inline %}
 {% if fileasset_form %}
-<form method="post" action="{{fileasset_form.action_url}}">
+<form method="post" action="{{fileasset_form.action_url}}" enctype=multipart/form-data>
     <div class="row">
         <div class="col-md-8">
             {{ MACRO.FORM_FIELD(fileasset_form.title) }}
@@ -24,7 +24,8 @@
             {{ MACRO.FORM_FIELD(fileasset_form.source_filename) }}
             {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
             {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
-            <input type="file" name="file_data" id="fileasset_filedata" accept="image/*,application/pdf,application/zip">
+            <input type="file" name="file_data" id="file_data"
+                   accept="image/*,application/pdf,application/zip"><br/>
             {{ fileasset_form.csrf_token }}
         </div>
     </div>
