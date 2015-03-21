@@ -1,4 +1,4 @@
-{% extends "asset/base.html" if not parent_template else parent_template %}
+{% extends "asset/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{product.title if product else _("New product")}}{% endblock %}
