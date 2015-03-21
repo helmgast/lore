@@ -15,15 +15,15 @@
 	</tr>
 </thead>
 <tbody>
-	{% for file in files %}
+	{% for fileasset in files %}
 	<tr>
-		<td><a href="{{ url_for('.fileasset_form_edit', fileasset=file.id)}}">{{file.slug}}</a></td>
-		<td>{{file.title}}</td>
-		<td>{{file.description}}</td>
-		<td>{{file.source_filename}}</td>
-		<td>{{file.attachment_filename}}</td>
-		<td>{{file.file_data}}</td>
-		<td>{{file.access_type_name()}}</td>
+		<td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.slug}}</a></td>
+		<td>{{fileasset.title}}</td>
+		<td>{{fileasset.description}}</td>
+		<td>{{fileasset.source_filename}}</td>
+		<td>{{fileasset.attachment_filename}}</td>
+		<td>{{fileasset.file_data}}</td>
+		<td>{{fileasset.access_type_name()}}</td>
 	</tr>
 	{% endfor %}
 </tbody>
