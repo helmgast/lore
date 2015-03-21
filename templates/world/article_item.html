@@ -1,7 +1,7 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% set article_type = article.type if article else prefill.get('type',None) %}
+{% set article_type = article.type if article else prefill.get('type',none) %}
 {% if article_form %}
   {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
@@ -36,7 +36,7 @@
   {{ article_form.csrf_token }}
   {{ article_form.title(style="display:none;") }}
   <h1 class="article_header">
-    <span id="header" class="contenteditable" contenteditable="True">{{ title }}</span>
+    <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
         <small>{{ tagline }}</small>
   </h1>
 <ul class="nav nav-tabs content-menu">
@@ -154,7 +154,7 @@
   <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.placedata.location_type }}</li>
 {%- elif article.type=='image' -%}
   <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.imagedata.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article.imagedata.url}}">{{article.imagedata.url|truncate(30, True)}}</a></li>
+  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article.imagedata.url}}">{{article.imagedata.url|truncate(30, true)}}</a></li>
 {%- elif article.type=='event' -%}
   <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.eventdata.from_date}}</li>
   <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.eventdata.to_date}}</li>

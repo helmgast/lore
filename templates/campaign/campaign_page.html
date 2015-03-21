@@ -43,7 +43,7 @@
     <li class="dd-item dd3-item" data-id="{{scene.id}}" id="scene{{scene.id}}">
         <div class="dd-handle dd3-handle">{{ _('Drag') }}</div>
         <div class="dd3-content">
-            {{ m.render_scene(scene, None) }}
+            {{ m.render_scene(scene, none) }}
         </div>
         {% if scene.children.count() >0 %}
             <ol class="dd-list">{{loop(scene.ordered_children())}}</ol>
@@ -54,7 +54,7 @@
     <input type="hidden" name="scene_tree" value="" />
 </div>
 <div>
-{{ m.render_scene(None, sceneform) }}
+{{ m.render_scene(none, sceneform) }}
 </div>
 {% endif %}
 

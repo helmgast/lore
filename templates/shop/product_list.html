@@ -5,6 +5,17 @@
   'sek' : '%s :-'
 }%}
 
+{% block sidebar %}{{super()}}
+  <ul class="nav nav-pills nav-stacked">
+  <li class="nav-header">{{ _('Actions') }}</li>
+
+  {% if not product %}
+  {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
+  <li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+  {% endcall %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 
     <div class="row">

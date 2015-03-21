@@ -12,9 +12,8 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder
+from extensions import db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined
 from time import gmtime, strftime
-from werkzeug.utils import secure_filename
 
 # Private = Everything locked down, no access to database (due to maintenance)
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance). Admin is allowed to log in.
@@ -70,12 +69,12 @@ def create_app(**kwargs):
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.jinja_env.add_extension('jinja2.ext.do')
+  the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   # Reads version info for later display
   the_app.config.from_pyfile('version.cfg', silent=True)
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
-
 
   if 'BUGSNAG_API_KEY' in the_app.config:
     import bugsnag
@@ -122,36 +121,32 @@ def configure_extensions(app):
   app.json_encoder = MongoJSONEncoder
 
   db.init_app(app)
+
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later
   # mongocfg =   app.config['MONGODB_SETTINGS']
   # db.connection[mongocfg['DB']].authenticate(mongocfg['USERNAME'], mongocfg['PASSWORD'], source="admin")
 
   # Internationalization
-  babel.init_app(app)
-
-  mail.init_app(app)
+  babel.init_app(app) # Automatically adds the extension to Jinja as well
 
   # Secure forms
   csrf.init_app(app)
 
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
+
   # try:
   #   app.celery = make_celery(app)
   # except KeyError as e:
   #   app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
-  from model.user import User, ExternalAuth
-  from auth import Auth
-  auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
-  app.login_required = auth.login_required
-  app.admin_required = auth.admin_required
-
-  app.access_policy = {} # Set up dict for access policies to be stored in
 
   with app.app_context():
+    from model.user import User, ExternalAuth
+    from auth import Auth
+    auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
 
     from controller.asset import asset_app as asset_app
     from controller.world import world_app as world
@@ -159,6 +154,7 @@ def configure_blueprints(app):
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
+    from controller.mailer import mail_app as mail
     from resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
@@ -168,6 +164,9 @@ def configure_blueprints(app):
     app.register_blueprint(campaign, url_prefix='/campaign')
     app.register_blueprint(shop, url_prefix='/shop')
     app.register_blueprint(asset_app, url_prefix='/assets')
+    app.register_blueprint(mail, url_prefix='/mail')
+    import mandrill
+    mail.mandrill_client = mandrill.Mandrill(app.config['MANDRILL_API_KEY'])
 
   return auth
 
@@ -206,8 +205,6 @@ def init_actions(app, init_mode):
       setup_models(app)
     elif init_mode=="import":
       import_orders(app)
-    elif init_mode=='lang':
-      setup_language()
     elif init_mode=='test':
       run_tests()
 
@@ -256,9 +253,6 @@ def validate_model():
   logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
   return is_ok
 
-def setup_language():
-  os.system("pybabel compile -d translations/");
-
 def run_tests():
   logger.info("Running unit tests")
   from tests import app_test
@@ -271,9 +265,8 @@ def register_main_routes(app, auth):
   from model.shop import Order
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
-  from model.web import ApplicationConfigForm, AdminEmailForm
+  from model.web import ApplicationConfigForm
   from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
-  from mailer import render_mail
 
   @app.route('/')
   def homepage():
@@ -281,41 +274,6 @@ def register_main_routes(app, auth):
     search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
     return render_template('helmgast.html', articles=search_result['articles'], world=world)
     # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
-
-  @app.route('/mail/<mail_type>', methods=['GET', 'POST'])
-  @auth.admin_required
-  def mail_view(mail_type):
-    mail_type = secure_filename(mail_type)
-    user = request.args.get('user', None)
-    if user:
-      user = User.objects(id=user).get()
-    order = request.args.get('order', None)
-    if order:
-      order = Order.objects(id=order).get()
-    parent_template = parse_out_arg(request.args.get('out', None))
-    if request.method == 'GET':
-      return render_template('mail/%s.html' % mail_type, 
-        mail_type=mail_type, 
-        parent_template=parent_template, 
-        user=user,
-        order=order)
-    elif request.method == 'POST' and user:
-      mailform = AdminEmailForm(request.form)
-      mailform.to_field.data = user.email
-      if mailform.validate():
-        email = render_mail(
-          ['ripperdoc@gmail.com'], 
-          mailform.subject.data , 
-          template='mail/%s.html' % mail_type, 
-          user=user,
-          order=order)
-        email.send_out()
-        return "Mail sent!"
-      else:
-        print mailform.errors
-        abort(400)  
-    else:
-      abort(400)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required
@@ -326,33 +284,24 @@ def register_main_routes(app, auth):
       feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
       config = ApplicationConfigForm(state=app_state, features=feature_list,
                                  backup_name=strftime("backup_%Y_%m_%d", gmtime()))
-      mail_form = AdminEmailForm()
-      return render_template('admin.html', config=config, email=mail_form)
+      return render_template('admin.html', config=config)
                             # Requires additional auth, so skipped now
                              #databases=db.connection.database_names())
     elif request.method == 'POST':
-      if request.args['action']=='mail':
-        mailform = AdminEmailForm(request.form)
-        if not mailform.validate():
-          raise Exception("Email fields not filled correctly %s" % mailform.errors)
-        email = render_mail([mailform.to_field.data], mailform.subject.data , template='mail/welcome.html', user=g.user)
-        # raise Exception()
-        email.send_out()
-      else:
-        config = ApplicationConfigForm(request.form)
-        if not config.validate():
-          raise Exception("Bad request data")
-        if config.backup.data:
-          if config.backup_name.data in db.connection.database_names():
-            raise Exception("Name already exists")
-          app.logger.info("Copying current database to '%s'", config.backup_name.data)
-          db.connection.copy_database('raconteurdb', config.backup_name.data)
-        if config.state.data:
-          app_state = config.state.data
-        if not config.features.data is None:
-          for feature in app_features:
-            is_enabled = feature in config.features.data
-            app_features[feature] = is_enabled
+      config = ApplicationConfigForm(request.form)
+      if not config.validate():
+        raise Exception("Bad request data")
+      if config.backup.data:
+        if config.backup_name.data in db.connection.database_names():
+          raise Exception("Name already exists")
+        app.logger.info("Copying current database to '%s'", config.backup_name.data)
+        db.connection.copy_database('raconteurdb', config.backup_name.data)
+      if config.state.data:
+        app_state = config.state.data
+      if not config.features.data is None:
+        for feature in app_features:
+          is_enabled = feature in config.features.data
+          app_features[feature] = is_enabled
       return redirect('/admin/')
 
   @app.route('/asset/<slug>')
@@ -403,13 +352,6 @@ def register_main_routes(app, auth):
       r['next'] = url_for('asset', slug=item.slug)
       return r
   ImageAssetHandler.register_urls(app, imageasset_strategy)
-
-  @app.template_filter('hidenone')
-  def filter_supress_none(val, default=''):
-    if not val is None:
-      return val
-    else:
-      return default
 
   @app.template_filter('currentyear')
   def currentyear():

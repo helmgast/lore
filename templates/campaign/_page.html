@@ -5,7 +5,7 @@
 {% block campaign_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <ul class="nav nav-list">
+  <ul class="nav nav-pills nav-stacked">
     <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaigns') }}</a></li>
     <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> {{ _('My sessions') }}</a></li>
     <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('Chronicles') }}</a></li>

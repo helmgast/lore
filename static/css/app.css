@@ -1,32 +1,39 @@
 @import url(http://fonts.googleapis.com/css?family=Goudy+Bookletter+1911|Gentium+Book+Basic:400,400italic,700,700italic);
 
 html {
-  position: relative;
-  min-height: 100%;
+	position: relative;
+	min-height: 100%;
 	background-color: #fff;
 }
 
 body {
-background-color: #fff;
+	background-color: #fff;
+	min-height: 100%;
+	padding-top: 60px;
+	padding-bottom: 180px;
+}
 
-  min-height: 100%;
-  padding-top: 60px;
-  padding-bottom: 180px;
+h1, h2, h3, h4, h5, h6 {
+	font-weight: 200;
 }
 
 footer {
-position: absolute;
-bottom: 0;
-width: 100%;
-display: flex;
-flex-direction: column;
-background-color: #444;
-padding-top: 5px;
-color: #fff;
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	background-color: #444;
+	padding-top: 5px;
+	color: #fff;
 }
 
 footer p {
   margin-top: 10px;
+}
+
+.longtext {
+	word-break: break-all;
 }
 
 .betaribbon {
@@ -89,9 +96,9 @@ div.sidebar li.active {
 	font-weight: bold;
 }
 
-.table tr:first-of-type {
+/*.table tr:first-of-type {
 	border-top: none;
-}
+}*/
 
 thead {
 	font-weight: 700;
@@ -100,10 +107,11 @@ thead {
 .td-bottom {
 	vertical-align: bottom !important;
 }
- 
+
+/* 
 .table tr:first-of-type td {
   border-top: none !important; 
-}
+}*/
 
 table.table-striped td.links .inline {
 	margin: 0;
@@ -956,6 +964,12 @@ input[type="radio"]:checked + img {
 	background-color: #dd4b39;
 }
 
+#signin-buttons {
+	position: relative;
+}
+
+
+
 .arrow_box {
 	position: relative;
 	background: #88b7d5;
@@ -994,6 +1008,7 @@ input[type="radio"]:checked + img {
 	margin-bottom: 15px;
 }
 
+/*
 .privileged>a:hover:before {
   display: block;
   position: absolute; 
@@ -1012,24 +1027,45 @@ input[type="radio"]:checked + img {
   z-index: 900;
 }
 
+.privileged>a {
+	background-color: #eee;
+	color: #2a6496;
+}
+*/
 .privileged>a:after {	
-	position: absolute;
   display: inline-block;
   font-family: 'Glyphicons Halflings';
   font-style: normal;
   font-weight: normal;
   line-height: 1.428571429;
-content: "\e106";
-	margin-left: 10px;
-	margin-top: 1px;
+content: "\e033";
+	color: #ccc;
+	/*margin-left: 10px;
+	margin-top: 1px; */
+	float: right;
 }
 
 .popover.popover-external-auth {
 	display: block;
-	top: 70px;
-	right: -220px;
+	position: relative;
+	max-width: 100%;
+}
+.popover.popover-external-auth>.arrow {
+	display: none;
+}
+
+/* This makes the position to be on the right incl and arrow if screen is wide */
+@media (min-width: 768px) {
+  .popover.popover-external-auth {
+  	top: 35px;
+	right: -240px;
 	max-width: 220px;
 	left: auto;
+	position: absolute;
+  }
+  .popover.popover-external-auth>.arrow {
+	display: block;
+}
 }
 
 .helmgast-header {

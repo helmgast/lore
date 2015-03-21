@@ -14,7 +14,7 @@
 
 
 {% block sidebar %}
-<ul class="nav nav-list">
+<ul class="nav nav-pills nav-stacked">
 
   {% call(isvisible) MACRO.AUTHORIZED(access_policy['world'].authorize('list')) %}
   <li class="{{isvisible}}"><a href="{{ url_for('.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>

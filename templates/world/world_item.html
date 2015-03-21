@@ -7,7 +7,7 @@
 {% block sidebar %}
 
 <div class="worldSideBar">
-  <ul class="nav nav-list">
+  <ul class="nav nav-pills nav-stacked">
       <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
       <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
       <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>

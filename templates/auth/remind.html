@@ -1,0 +1,18 @@
+{% extends "_page.html" if not parent_template else parent_template %}
+{# Note, we don't inherit from auth page here, because it contains lots of
+scripts we don't need for this simple page #}
+
+{% import 'includes/macros.html' as MACRO %}
+
+{% block mainblock %}
+<form id="auth-form" method="post" action="{{url_for('auth.remind')}}" class="col-sm-6 col-sm-offset-3" role="form">
+	{% include "includes/flash.html" %}
+	<h2 class="form-signin-heading">{{ _('Remind login') }}</h2>
+	<div class="" style="margin-top: 20px" id="email-inputs"> 
+	{{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
+	</div>
+	{{ form.csrf_token }}
+	<button class="btn btn-signin btn-success btn-block" type="submit">{{_('Remind login')}}</button>
+	<span class="help-block">{% trans %}If you have problems you can also contact us at {% endtrans %}<a href="mailto:info@helmgast.se">info@helmgast.se</a></span>
+</form>
+{% endblock %}

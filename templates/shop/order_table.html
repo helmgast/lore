@@ -1,0 +1,173 @@
+{% import 'includes/macros.html' as MACRO %}
+
+{% set prod_types = {
+  'book':_('Book'),
+  'item':_('Item'),
+  'digital':_('Digital'),
+  'shipping':_('Shipping fee')}
+  %}
+
+{% set currencies = {
+  'eur' : '€ %s',
+  'sek' : '%s :-'
+}%}
+
+{% set order_statuses = {
+  'cart' : _('Cart'),
+  'ordered' : _('Ordered'),
+  'paid' : _('Paid'),
+  'shipped' : _('Shipped'),
+  'error' : _('Error')}
+%}
+
+<table style="width: 100%">
+<!-- Order info-->
+{% if order.status != 'cart' %}
+<tr>
+	<!-- Order/customer info-->
+	<td>
+	<h3>{{_('Order Info')}}</h3>
+  	<table class="table table-condensed">
+	    <tr><th width="30%">{{_('Order ID')}}</th><td><small>{{order.id}}</small></td></tr>
+	    <tr><th width="30%">{{_('Name')}}</th><td>{{order.user.realname|default(_('No name'), true)}}</td></tr>
+	    <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
+	    <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+	    <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
+	    <tr><th>{{_('Status')}}</th><td>{{order_statuses[order.status]}}</td></tr>
+  	</table>
+	</td>
+</tr>
+<tr>
+	<!-- Seller info-->
+	<td>
+	<h3>{{_('Seller Info')}}</h3>
+    <table class="table table-condensed">
+	    <tr><th width="30%">{{_('Publisher')}}</th><td>Helmgast AB</td></tr>
+	    <tr><th>{{_('Email')}}</th><td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td></tr>
+	    <tr><th>{{_('Address')}}</th><td>
+	    Surbrunnsgatan 33<br>
+	    Stockholm 113 48<br>
+	    </td></tr>
+	</table>
+	</td>
+</tr>
+{% endif %}
+
+<!-- Items -->
+
+<tr>
+	<td>
+{% if order.order_lines %}
+	<h3>{{_('Product')}}</h3>
+	<table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
+		<tr><th colspan=2></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th></tr>
+    	{% for line in order.order_lines %}
+    	{% if line.product.status != 'hidden' %}
+    	<tr class="product">
+    		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}</td>
+    		<td>
+    			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
+	            <p>{{ line.product.description }}</p>
+	            {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
+		            {% if line.product.resources %}
+		              {% for resource in line.product.resources %}
+		                <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
+		                </h4>
+		              {% endfor %}
+		            {% else %}
+		              <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
+		              </h4>
+		            {% endif %}
+	            {% endif%}
+	            {% if order_form %}
+	            	{{ order_form.order_lines[loop.index0].product(class="hide")}}
+	                {% if line.product.acknowledgement %}
+		            <div class="form-group">
+		            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
+		            {% if not line.comment %}
+		            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>              
+		            {% else %}
+		            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+		            {% endif %}
+		            {% else %}
+		            {{order_form.order_lines[loop.index0].comment(class="hide")}}
+		            {% endif %}
+            	{% elif line.comment %}
+             		{{_('Name')+': '+line.comment }}
+	            {% endif %}
+
+    		</td>
+    		<td>
+    			{% if order_form and order.status=='cart' %}
+                	{{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
+              	{% else %}
+                	{{ line.quantity }}
+              	{% endif %}
+    		</td>
+    		<td class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</td>
+    		<td class="product-price">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</td>
+    	</tr>
+    	{% endif %}
+    	{% endfor %}
+    	<tr>
+    		<td colspan=3 style="text-align:right"><small>{{_('Including tax')}}</small></td><td></td><td class="product-price"><small>{{ currencies.get(order.currency,'%s') % ((1-1/1.06)*order.total_price)|currency}}</small></td>
+    	</tr>
+    	<tr>
+    		<td colspan=3 style="text-align:right">{{_('Grand Total')}}</td><td></td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td>
+    	</tr>
+	</table>
+{% else %}
+  <div class="jumbotron text-center">
+      <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
+   </div>
+{% endif %}
+	</td>
+</tr>
+
+<!-- Address -->
+<tr>
+	<td>
+	<h3>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h3>
+	{% if order_form and order.status != 'shipping' %}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        <div class="form-group clearfix">
+          <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
+          <div class="col-sm-9">
+            {{order_form.shipping_address.mobile(class="form-control")}}
+            <span class="help-block">För SMS-avisering</span>
+          </div>
+        </div>
+    {% else %}
+	<table class="table">
+		<tr>
+          <th width="30%">{{_('Name')}}</th>
+          <td colspan=3 style="text-align: left">{{order.shipping_address.name|default(_('No data'),true)}}</td>
+        </tr>
+        <tr>
+          <th>{{_('Street')}}</th>
+          <td colspan=3 style="text-align: left">{{order.shipping_address.street|default(_('No data'),true)}}</td>
+        </tr>
+        <tr>
+          <th>{{_('ZIP Code')}}</th>
+          <td>{{order.shipping_address.zipcode|default(_('No data'),true)}}</td>
+          <th>{{_('City')}}</th>
+          <td>{{order.shipping_address.city|default(_('No data'),true)}}</td>
+        </tr>
+        <tr>
+          <th>{{_('Country')}}</th>
+          <td colspan=3 style="text-align: left">{{order.shipping_address.country|default(_('No data'),true)}}</td>
+        </tr>
+         <tr>
+          <th>{{_('Cellphone Number')}}</th>
+          <td colspan=3 style="text-align: left">{{order.shipping_address.mobile|default(_('No data'),true)}}</td>
+        </tr>
+	</table>
+	{% endif %}
+
+	</td>
+</tr>
+</table>

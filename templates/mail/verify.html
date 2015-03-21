@@ -3,28 +3,26 @@ Should also work as invite mail. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=True, username=user.username, location=user.location, realname=user.realname, _external=True) %}
+{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true) %}
 
-{# To be sent from successful verification / invitation #}
-{% block subject %}{{user.display_name() if user}}, welcome to Helmgast!{% endblock %}
-
-{% block preview %}Verify your email to complete registration on helmgast.se{% endblock %}
+{% block preview %}{% trans %}Verify your email to complete registration on helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
-<p>Thank you, {{user.display_name() if user}}, for registering at Helmgast.se! You registered
-this email ({{user.email if user}}) and authentication method was: {{user.auth_type() if user}}</p>
+{% trans user=user.display_name(), email=user.email, auth=user.auth_type() %}
+<p>Thank you, {{user}}, for registering at Helmgast.se! You registered this email ({{email}}) and authentication method was: {{auth}}</p>
 
 <p>We just need to verify that you own this email, and then you can start using your account:</p>
-
+{% endtrans %}
 <table>
     <tr>
         <td class="padding">
-            <p><a class="btn btn-primary " title="Verify email" href="{{verification_url}}" target="_blank">Verify email</a></p>
+            <p><a class="btn btn-primary " title="Verify email" href="{{verification_url}}" target="_blank">{% trans %}Verify email{% endtrans %}</a></p>
         </td>
     </tr>
 </table>
 
-<p>Or, paste this link into your browser: <br><a href="{{verification_url}}">{{verification_url|wordwrap}}</a><p>
+{% trans %}
+<p>Or, paste this link into your browser: <br><a class="longtext" href="{{verification_url}}">{{verification_url}}</a><p>
 <p>As a user of Helmgast you will be able to interact with the worlds of Helmgast
 as well as purchasing Helmgast products. The platform is constantly evolving so
 we will be sending you updates by email whenever major changes have happened.</p>
@@ -34,7 +32,7 @@ we will be sending you updates by email whenever major changes have happened.</p
 as it may have been someone typing your mail by mistake. If you believe there
 is suspicious activity, please contact us directly at <a href="mailto:info@helmgast.se">
 info@helmgast.se</a></em></p>
-
+{% endtrans %}
 {% endblock %}
 
 {% block recipient%}{{user.email if user}}{% endblock %}

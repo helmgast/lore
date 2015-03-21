@@ -50,17 +50,15 @@ class MongoJSONEncoder(JSONEncoder):
 from flask.ext.babel import Babel
 babel = Babel()
 
-from flask.ext.mail import Mail, Message
-mail = Mail()
-
-class MailMessage(Message):
-  def send_out(self):
-    return mail.send(self)
-
 #i18n
 # @babel.localeselector
 # def get_locale():
 #   return "sv"  # request.accept_languages.best_match(LANGUAGES.keys()) # Add 'sv' here instead to force swedish translation.
+# Needs below in Config
+# LANGUAGES = {
+#    'en': 'English',
+#    'sv': 'Swedish'
+#}
 
 from flask_wtf.csrf import CsrfProtect
 csrf = CsrfProtect()
@@ -91,3 +89,10 @@ class AutolinkedImage(Extension):
   def extendMarkdown(self, md, md_globals):
     # Insert instance of 'mypattern' before 'references' pattern
     md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+
+from jinja2 import Undefined
+
+class SilentUndefined(Undefined):
+  def _fail_with_undefined_error(self, *args, **kwargs):
+    print 'JINJA2: something was undefined!' #TODO, should print correct log error
+    return None

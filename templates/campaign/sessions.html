@@ -20,7 +20,7 @@
                           ]
                       }
           };
-         var changeDay = function(event) {$('#sessionform').load('{{ url_for('campaign.session_new', inline=True) }}'+'&play_start='+
+         var changeDay = function(event) {$('#sessionform').load('{{ url_for('campaign.session_new', inline=true) }}'+'&play_start='+
               event.year.valueOf() +'-'+ event.month.valueOf() +'-'+ event.day.valueOf())
            $('.calendar .selected').removeClass('selected');
            $('#day_'+event.day).addClass('selected');
@@ -62,7 +62,7 @@
 {% endblock %}
 {% block final %} {{super()}}
 <script type="text/javascript">
-  $('#sessionform').load('{{ url_for('campaign.session_new', inline=True) }}');
+  $('#sessionform').load('{{ url_for('campaign.session_new', inline=true) }}');
   $('.date-widget').datepicker({format: 'yyyy-mm-dd'});
 </script>
 {% endblock %}

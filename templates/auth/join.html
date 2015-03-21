@@ -1,16 +1,17 @@
 {% extends "auth/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% set reset = request.args.get('reset','').lower()=='true' %}
+
 {% block mainblock %}
-<form id="auth-form" method="post" action="{{url_for('auth.join')}}" class="col-sm-4 col-sm-offset-4" role="form">
+<form id="auth-form" method="post" action="{{url_for('auth.join', reset=reset)}}" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
-  <h2 class="form-signin-heading">{{ _('Sign up') }}</h2>
+  <h2 class="form-signin-heading">{{ _('Sign up') if not reset else _('Reset authentication')}}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
   <div id="signin-buttons">
-    <span class="help-block">{{_('Join')}} {{_('with external provider (safer!)')}}</span>
     <button type="button" id="google-signin" class="btn btn-danger btn-signin">{{_('Join via Google')}}</button>
     <button type="button" id="facebook-signin" class="btn btn-primary btn-signin">{{_('Join via Facebook')}}</button>
-    <button type="button" id="password-signin" class="btn btn-success btn-block">{{_('Join with own password')}}</button>
+    <button type="button" id="password-signin" class="btn btn-warning btn-block">{{_('Use own password')}}</button>
     <div class="popover right popover-external-auth">
       <div class="arrow"></div>
       <h3 class="popover-title">{{_('Recommended choice')}}</h3>
@@ -20,22 +21,21 @@
     </div>
   </div>
   <div class="" style="margin-top: 20px" id="email-inputs"> 
-  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=True) }}
+  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
   {% if form.email_token.data %}
-  <span class="help-block small">{{_("Don't change, only this email is verified")}}
+  <span class="help-block small">{{_("Don't change, only this email is verified")}}</span>
   {% endif %}
   </div> 
   <hr>
   <div class="clearfix" id="profile"></div>
  
   <div id="password-inputs" class="hide">
-    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=True) if form.password }}
-    {{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}
+    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) if form.password }}
+    {#{{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}#}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
   </div>
 
- {#   {{_('Confirm Password')}} #}
-
+  {% if not reset %}
   <div id="optional-inputs" class="hide well">
     <span class="help-block">{{_('Optional details')}}</span>
     {{ MACRO.FORM_FIELD_INLINE(form.username, controlclass="input-lg")}}
@@ -43,18 +43,19 @@
     {{ MACRO.FORM_FIELD_INLINE(form.location, controlclass="input-lg")}}
     <div class="checkbox">
     <label>
-      {{form.newsletter(checked=True)}}
+      {{form.newsletter(checked=true)}}
       {{_('Receive newsletter')}}
     </label>
     </div>
   </div>
+  {% endif %}
 
   {{ form.email_token if form.email_token }}
   {{ form.external_service }}
   {{ form.auth_code }}
   {{ form.csrf_token }}
 
-  <button id="signin-submit" class="btn btn-signin btn-success btn-block" disabled type="submit">{{_('Join')}}</button>
+  <button id="signin-submit" class="btn btn-signin btn-success btn-block" disabled type="submit">{{_('Join') if not reset else _('Save')}}</button>
 </form>
 <span class="help-block">{{_('If you encounter any problems during registration, please send an email to info@helmgast.se')}}</span>
 {% endblock %}

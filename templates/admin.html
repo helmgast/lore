@@ -31,15 +31,5 @@
   </div>
 </form>
 </div>
-<div class="row">
-<div class="col-md-4">
-<form role="form" id='articleform' method="post" action="{{ url_for('admin', action='mail') }}">
-  {{ MACRO.FORM_FIELD(email.to_field) }}
-  {{ MACRO.FORM_FIELD(email.subject) }}
-  {{ MACRO.FORM_FIELD(email.message) }}
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-  <button class="btn btn-lg btn-primary" type="submit">{{ _('Send') }}</button>
-</form>
-</div>
-</div>
+
 {% endblock %}

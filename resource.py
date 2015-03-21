@@ -367,15 +367,17 @@ class ResourceError(Exception):
     500: u"%s" % _("Internal server error")
   }
 
-  def __init__(self, status_code, r=None, message=None):
+  def __init__(self, status_code, r=None, message=None, form=None):
     message = message if message else self.default_messages.get(status_code, _('Unknown error'))
+    if status_code == 400:
+      form = r.get('form', None) if r else form
+      if form:
+        message = u"Bad request, invalid fields: %s" % form.errors
     Exception.__init__(self, "%i: %s" % (status_code, message))
     self.status_code = status_code
     self.message = message
-    if status_code == 400 and r and 'form' in r:
-      self.message += ", invalid fields %s" % r['form'].errors
-      logger.warning("error in request %s with form.errors %s" % (request.form, r['form'].errors))
     self.r = r
+
     logger.warning("%d: %s", self.status_code, self.message)
 
 class ResourceHandler(View):
@@ -546,6 +548,7 @@ class ResourceHandler(View):
       r['filter' if op is 'list' else 'prefill'] = vals
     r['op'] = op
     r['out'] = parse_out_arg(request.args.get('out',None)) # defaults to None, meaning _page.html
+    r['parent_template'] = r['out'] # TODO, we only need one of out and parent_template
     if 'next' in request.args:
       r['next'] = request.args['next']
     return r

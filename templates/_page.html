@@ -27,11 +27,12 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/zenstyle.css') }}">
-    <style>
+{#    <style>
       .privileged>a:hover:before {
         content: "{{_('Not all users can see this')}}";
       }
     </style>
+#}
 {#    <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dynatable.css') }}"> #}
 {% endblock %}
 {% block jsimports %}

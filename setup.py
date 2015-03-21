@@ -1,15 +1,30 @@
+#!/usr/bin/env python
 from setuptools import setup
 
-setup(name='Raconteur', version='0.4',
-    description='Storytelling application',
-    author='Martin Frojd', author_email='ripperdoc@gmail.com',
-    url='http://www.python.org/sigs/distutils-sig/',
+setup(
+    name='Raconteur', 
+    version='0.6-webshop',
+    description='Storytelling platform',
+    author='Helmgast AB',
+    author_email='info@helmgast.se',
+    url='http://helmgast.se',
 
-    #  Uncomment one or more lines below in the install_requires section
-    #  for the specific client drivers/modules your application needs.
+    #  Packages required to run Raconteur.
     install_requires=[
         'Flask', 'flask-mongoengine', 'python-slugify', 'Flask-Markdown', 
-        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'Flask-Mail', 'celery',
+        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'mandrill', 'celery',
         'google-api-python-client', 'facebook-sdk'
-    ]
+    ],
+
+    # Configures babel so we translate direct for setup.py.
+    # "." means local directory - settings need to be specified per directory
+    # Added Jinja extensions need to be reflected below
+    message_extractors = {
+        '.': [
+            ('**.py',                'python', None),
+            ('**/templates/**.html',  'jinja2', 
+                {'silent':'false',
+                'extensions':'jinja2.ext.do'})
+        ],
+    },
 )

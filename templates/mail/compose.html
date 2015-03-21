@@ -1,0 +1,45 @@
+{% extends "mail/one_column_mail.html" %}
+
+{% block body %}
+<table class="body-wrap">
+    <tr>
+        <td></td>
+        <td class="container" bgcolor="#FFFFFF">
+
+            <!-- content -->
+            <div class="content">
+
+            <table>
+                <tr>
+                    <td>
+                        <p><em>{% block preview %}{% trans %}Email from Helmgast visitor {{from_field}}...{% endtrans %}{% endblock %}</em></p>
+
+                        <h1>{{ subject }}</h1>
+                        {% block content %}
+                        {{ message }}
+                        {% endblock %}
+                    </td>
+                </tr>
+            </table>
+            </div>
+            <!-- /content -->
+            
+        </td>
+        <td></td>
+    </tr>
+</table>
+{% endblock %}
+{% block modal_body %}{% endblock %}
+
+{% block form %}
+
+{{super()}}
+
+<div class="form-group form-group-sm">
+    <label for="message" class="col-xs-2 control-label">{{_('Message')}}:</label>
+    <div class="col-xs-10">
+        {{mailform.message(class="form-control",rows="7")}}
+    </div>
+</div>
+
+{% endblock %}
