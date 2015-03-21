@@ -63,8 +63,8 @@ class RacBaseForm(ModelForm):
     else:
       newfields = iteritems(self._fields)
     for name, field in newfields:
-      if ( isinstance(field, f.FormField) 
-        and getattr(obj, name, None) is None 
+      if ( isinstance(field, f.FormField)
+        and getattr(obj, name, None) is None
         and field._obj is None ):
         field._obj = field.model_class()
       field.populate_obj(obj, name)
@@ -158,6 +158,13 @@ class RacModelConverter(ModelConverter):
   def conv_Reference(self, model, field, kwargs):
       kwargs['allow_blank'] = not field.required
       return RacModelSelectField(model=field.document_type, **kwargs)
+
+  @converts('FileField')
+  def conv_File(self, model, field, kwargs):
+    # TODO add validators
+#     FileRequired(),
+ #       FileAllowed(['jpg', 'png'], 'Images only!')
+    return f.FileField(**kwargs)
 
   @converts('StringField')
   def conv_String(self, model, field, kwargs):
