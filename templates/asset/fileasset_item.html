@@ -5,8 +5,12 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
-<ul class="nav nav-list">
+<ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
+    {% if op != 'new' %}
+    <li><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.id) }}"><span
+            class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    {% endif %}
 </ul>
 {%endblock%}
 
@@ -20,7 +24,7 @@
             {{ MACRO.FORM_FIELD(fileasset_form.source_filename) }}
             {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
             {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
-            {{ fileasset_form.file_data }}
+            <input type="file" name="file_data" id="fileasset_filedata" accept="image/*,application/pdf,application/zip">
             {{ fileasset_form.csrf_token }}
         </div>
     </div>
@@ -34,20 +38,46 @@
     <div class="col-md-8">
         <table class="table">
             <tr>
+                <td><strong>{{ _('File') }}</strong></td>
+                <td>
+                    <small>{{ fileasset.slug }}</small>
+                </td>
+            </tr>
+            <tr>
                 <td><strong>{{ _('Title') }}</strong></td>
-                <td><small>{{ fileasset.title }}</small></td>
+                <td>
+                    <small>{{ fileasset.title }}</small>
+                </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Description') }}</strong></td>
-                <td><small>{{ fileasset.description }}</small></td>
+                <td>
+                    <small>{{ fileasset.description }}</small>
+                </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Source filename') }}</strong></td>
-                <td><small>{{ fileasset.source_filename }}</small></td>
+                <td>
+                    <small>{{ fileasset.source_filename }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Attachment file name') }}</strong></td>
+                <td>
+                    <small>{{ fileasset.attachment_filename }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('File data') }}</strong></td>
+                <td>
+                    <small>{{ fileasset.file_data }}</small>
+                </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Access type') }}</strong></td>
-                <td><small>{{ fileasset.access_type }}</small></td>
+                <td>
+                    <small>{{ fileasset.access_type_name() }}</small>
+                </td>
             </tr>
         </table>
     </div>

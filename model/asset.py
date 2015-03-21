@@ -19,8 +19,11 @@ from world import ImageAsset
 
 
 FileAccessType = Choices(
+    # Accessed by anyone
     public=_('Public'),
+    # Access given through some product
     product=_('Product'),
+    # Access given through some product, also user specific
     user=_('User'))
 
 
@@ -28,9 +31,13 @@ class FileAsset(db.Document):
     slug = db.StringField(max_length=62)
     title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = db.StringField(max_length=500, verbose_name=_('Description'))
+    # Internal file name
     source_filename = db.StringField(max_length=60, required=True, verbose_name=_('File name'))
+    # Alternative filename when downloaded
     attachment_filename = db.StringField(max_length=60, verbose_name=_('Attachment file name'))
+    # Actual file
     file_data = db.FileField(verbose_name=_('File data'))
+    # How the file might be accessed
     access_type = db.StringField(choices=FileAccessType.to_tuples(), required=True, verbose_name=_('Access type'))
 
     def clean(self):
@@ -45,6 +52,9 @@ class FileAsset(db.Document):
 
     def get_mimetype(self):
         return mimetypes.guess_type(self.source_filename)[0]
+
+    def access_type_name(self):
+        return FileAccessType[self.access_type]
 
     def __str__(self):
         return unicode(self).encode('utf-8')

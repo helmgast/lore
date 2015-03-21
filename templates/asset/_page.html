@@ -1,22 +1,24 @@
 {% extends "_page.html" %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block content_title %}{{ _('Campaign') }}{% endblock %}
-{% block content_tagline %}{{ _('manage YOUR game') }}{% endblock %}
-{% block campaign_active %} class="active"{% endblock %}
+
+{% block content_title %}{{ _('File assets') }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+{% block file_asset_active %} class="active"{% endblock %}
 
 {% block sidebar %}
-  <ul class="nav nav-list">
-    <li><a href="{{ url_for('campaign.index') }}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaigns') }}</a></li>
-    <li><a href="#"><span class="glyphicon glyphicon-calendar"></span> {{ _('My sessions') }}</a></li>
-    <li><a href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('Chronicles') }}</a></li>
-  </ul>
+<ul class="nav nav-pills nav-stacked">
+    <li class="{{privileged}}"><a href="{{ url_for('.fileasset_form_new') }}"><span
+            class="glyphicon glyphicon-pencil"></span> {{ _('New') }}</a></li>
+    <li class="{{privileged}}"><a href="{{ url_for('.fileasset_list') }}"><span
+            class="glyphicon glyphicon-book"></span> {{ _('List') }}</a></li>
+</ul>
 {% endblock %}
 
 {% block content %}
-  <p>
-  {% if session.logged_in %}
-  {{ _('Welcome') }} <strong>{{ user.realname }}</strong>!
-  {% endif %}
-  {{ _('In this section you can manage the campaigns and scenarios that you play.') }}</p>
+<p>
+    {% if session.logged_in %}
+    {{ _('Welcome') }} <strong>{{ user.realname }}</strong>!
+    {% endif %}
+    {{ _('In this section you can manage the campaigns and scenarios that you play.') }}</p>
 {% endblock %}
