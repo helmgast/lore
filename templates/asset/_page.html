@@ -14,11 +14,3 @@
             class="glyphicon glyphicon-book"></span> {{ _('List') }}</a></li>
 </ul>
 {% endblock %}
-
-{% block content %}
-<p>
-    {% if session.logged_in %}
-    {{ _('Welcome') }} <strong>{{ user.realname }}</strong>!
-    {% endif %}
-    {{ _('In this section you can manage the campaigns and scenarios that you play.') }}</p>
-{% endblock %}
