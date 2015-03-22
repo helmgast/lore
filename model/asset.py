@@ -12,6 +12,7 @@ from slugify import slugify
 from raconteur import db
 from flask.ext.babel import lazy_gettext as _
 from misc import Choices
+from flask import request
 
 
 FileAccessType = Choices(
@@ -28,7 +29,7 @@ class FileAsset(db.Document):
     title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = db.StringField(max_length=500, verbose_name=_('Description'))
     # Internal file name
-    source_filename = db.StringField(max_length=60, required=True, verbose_name=_('File name'))
+    source_filename = db.StringField(max_length=60, verbose_name=_('File name'))
     # Alternative filename when downloaded
     attachment_filename = db.StringField(max_length=60, verbose_name=_('Attachment file name'))
     # Actual file
@@ -38,6 +39,13 @@ class FileAsset(db.Document):
 
     def clean(self):
         self.slug = slugify(self.title)
+        request_file_data = request.files['file_data']
+        if request_file_data is not None:
+            # File is present, save to GridFS
+            self.file_data.replace(request_file_data, content_type = request_file_data.mimetype)
+            self.source_filename = request_file_data.filename
+            if not self.attachment_filename:
+                self.attachment_filename = self.source_filename
 
     def get_filename(self, user):
         return self.source_filename \
@@ -45,6 +53,9 @@ class FileAsset(db.Document):
 
     def get_attachment_filename(self):
         return self.attachment_filename if self.attachment_filename is not None else self.source_filename
+
+    def file_data_exists(self):
+        return self.file_data is not None
 
     def get_mimetype(self):
         return mimetypes.guess_type(self.source_filename)[0]
