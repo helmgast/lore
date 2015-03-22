@@ -37,6 +37,22 @@
 {% endblock %}
 {% block jsimports %}
 <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  //ga('create', 'UA-49513153-1', 'helmgast.se');
+  ga('create', 'UA-49513153-1', 'none')
+  ga('send', 'pageview');
+
+window.onerror = function(err, url, line, col, trace) {
+  //Submit any errors to analytics
+  ga('send', 'event', 'error' , url+':'+line+','+col, err + ' trace: ' + trace);
+}
+</script>
+
+<script>
   var i18n={
     'Drag or click to upload file':"{{_('Drag or click to upload file')}}",
     'URL to image online':"{{_('URL to image online')}}",
@@ -62,16 +78,7 @@
     <script src="{{ url_for('static', filename='js/imagelightbox.js') }}"></script>
 {#    <script src="{{ url_for('static', filename='js/jquery.dynatable.js') }}"></script>
     <script src="{{ url_for('static', filename='js/list.min.js') }}"></script> #}
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-  ga('create', 'UA-49513153-1', 'helmgast.se');
-  ga('send', 'pageview');
-
-</script>
 {% endblock jsimports %}
 
 </head>
@@ -170,45 +177,15 @@
   </p>
 {% endblock %}
 </footer>
+{% include "includes/feedback_modal.html" %}
+{# Standard modal element, don't touch #}
+<div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">Modal loading...</div>
+  </div>
+</div>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% block final %}
-  <div class="modal fade" id="feedback-modal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-sm">
-          <div class="modal-content">
-            <form method="post" action="{{request.url}}" class="form-horizontal">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title">{{ _('Give Beta-feedback')}}</h4>
-            </div>
-            <div class="modal-body">
-            <div class="form-group">
-            <label class="radio-inline">
-              <input type="radio" name="optionsRadios" id="optionsRadios1" value="error" checked>
-              {{ _('Report an error')}}
-            </label>
-            <label class="radio-inline">
-    <input type="radio" name="optionsRadios" id="optionsRadios2" value="feedback">
-    {{ _('Give general feedback')}}
-  </label>
-  </div>
-  <div class="form-group">
-<textarea class="form-control" rows="3"></textarea>
-</div>
-            </div>
-            <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
-            <button type="submit" class="btn btn-primary modal-submit" data-loading-text="Loading...">{{ _('Send') }}</button>
-            </div>
-            </form>
-          </div>
-      </div>
-  </div>
-
-  <div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-          <div class="modal-content">Modal loading...</div>
-      </div>
-  </div>
 {% endblock %}
 </body>
 </html>

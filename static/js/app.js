@@ -11,6 +11,7 @@ function flash_error(message, level, target) {
   }
 };
 
+
 +function ($) {
   'use strict';
 
@@ -141,6 +142,22 @@ function flash_error(message, level, target) {
     $('div, table, ul, ol').filter('[data-editable]').each(function () {
       var $editablelist = $(this)
       $editablelist.editablelist($editablelist.data())
+    })
+  })
+}(jQuery);
+
++function ($) {
+  'use strict';
+
+  $(window).on('load', function () {
+    $('textarea, input').filter('[data-formula]').each(function () {
+      var $t = $(this)
+      var particles = $t.data('formula').split("->")
+      var source = particles[0]
+      var $target = $(particles[1])
+      $t.on("change keyup paste", function() {
+        $target.html(eval(source))
+      })
     })
   })
 }(jQuery);
@@ -659,4 +676,13 @@ $modal.on('submit', 'form', function(e) {
   } else {
     $modal.modal('hide')
   }
+});
+
+$('#feedback-modal').on('submit', 'form', function(e) { 
+  var input = $(this).serializeArray()
+  var type = input[0] || 'error'
+  var desc = input[1] || 'none'
+  ga('send', 'event', type , '(selector)', desc);
+  e.preventDefault()
+  $('#feedback-modal').modal('hide')
 });

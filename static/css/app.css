@@ -12,6 +12,11 @@ body {
 	padding-top: 60px;
 	padding-bottom: 180px;
 }
+/*
+body div:hover,ul:hover,ol:hover,form:hover{
+	border: 1px solid #f00 !important;
+	background-color: #f00 !important;
+}*/
 
 h1, h2, h3, h4, h5, h6 {
 	font-weight: 200;
@@ -58,7 +63,7 @@ footer p {
   font: bold 81.25% 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-.betaribbon:focus {outline:0;} /* Removes blue border around button
+.betaribbon:focus {outline:0;} /* Removes blue border around button */
 
 @-ms-keyframes wiggle{0%{-ms-transform:rotate(-42deg);}50%{-ms-transform:rotate(-48deg);}100%{-ms-transform:rotate(-42deg);}}
 @-moz-keyframes wiggle{0%{-moz-transform:rotate(-42deg);}50%{-moz-transform:rotate(-48deg);}100%{-moz-transform:rotate(-42deg);}}
@@ -78,6 +83,20 @@ footer p {
 	-webkit-border-radius: 0 0 6px 6px;
 	-moz-border-radius: 0 0 6px 6px;
 	border-radius: 0 0 6px 6px;
+}
+
+.modal-content .form-horizontal .form-group {
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.modal-body-dense {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.modal-body-dense .form-group:last-child {
+	margin-bottom: 0px;
 }
 
 div.form-wrapper {
