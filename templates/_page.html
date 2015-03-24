@@ -12,7 +12,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <meta name="viewport" content="width=device-width; initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
 
@@ -46,10 +46,14 @@
   ga('create', 'UA-49513153-1', 'none')
   ga('send', 'pageview');
 
+{% if not 'DEBUG' in config %}
 window.onerror = function(err, url, line, col, trace) {
   //Submit any errors to analytics
   ga('send', 'event', 'error' , url+':'+line+','+col, err + ' trace: ' + trace);
+  console.log(err)
+  return true; //continue error handlers
 }
+{% endif %}
 </script>
 
 <script>

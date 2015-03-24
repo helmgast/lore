@@ -473,7 +473,7 @@ will be appended to the target.
     return this.each(function () {
       var $this   = $(this)
       var data    = $this.data('rac.imageselect')
-      var options = $.extend(imageselect_options, ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
+      var options = $.extend(ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
       // If no data set, create a ImageSelect object and attach to this element
       if (!data) $this.data('rac.imageselect', (data = new ImageSelect(this, options)))
       // if (typeof option == 'string') data[option](_relatedTarget)
@@ -680,9 +680,23 @@ $modal.on('submit', 'form', function(e) {
 
 $('#feedback-modal').on('submit', 'form', function(e) { 
   var input = $(this).serializeArray()
-  var type = input[0] || 'error'
-  var desc = input[1] || 'none'
+  var type = input[0]['value'] || 'error'
+  var desc = input[1]['value'] || 'none'
+  var user = input[2]['value'] || 'Anonymous'
+  var payload = {'attachments':[
+    {
+      "fallback": "Received "+type+": "+desc,
+      "pretext": "Received "+type+" for "+window.location,
+      "text": desc,
+      "author_name": user,
+      "author_link": user.indexOf("@") >0 ? "mailto:"+user : '',
+      "color":type=='error' ? "danger" : "warning"
+    }
+  ]}
   ga('send', 'event', type , '(selector)', desc);
+  $.post(
+    'https://hooks.slack.com/services/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',
+    JSON.stringify(payload))
   e.preventDefault()
   $('#feedback-modal').modal('hide')
 });
