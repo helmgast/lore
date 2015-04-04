@@ -22,6 +22,12 @@
   </div>
 </div>
 <script>
+  $('#themodal').on('click', 'button[type="submit"]', function(e) {
+    var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
+    if ($sel[0])
+      self.imageSelected($sel.next('img')[0].src, $sel.val())
+    
+  })
   // $(document).on('hidden.bs.modal', function(e) {
   //   $('.gallerylist .gallery img').each(saveImgSize);
   //   $(window).resize();    

@@ -171,14 +171,22 @@ class Episode(db.EmbeddedDocument):
   title = db.StringField(max_length=60, verbose_name = _('Title'))
   description = db.StringField(verbose_name = _('Description'))
   content = db.ListField(db.ReferenceField('Article')) # references Article class below
+  children = db.EmbeddedDocumentListField('self') 
 
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row
 # may not have any effect
-Episode.children = db.ListField(db.EmbeddedDocumentField(Episode)) # references Episode class
+print type(Episode)
 
 class CampaignData(db.EmbeddedDocument):
-  children = db.ListField(db.EmbeddedDocumentField(Episode))
+  pass # TODO, the children her and above gives DuplicateIndices errors. Need to be fixed.
+  children = db.EmbeddedDocumentListField(Episode)
+
+# class Tree(db.EmbeddedDocument):
+#   pass
+
+# class Branch(db.EmbeddedDocument):
+#   subbranch = db.EmbeddedDocumentListField('self')
 
 ArticleTypes = Choices(
   default=_('Default'),

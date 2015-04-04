@@ -398,11 +398,14 @@ will be appended to the target.
       self.$element.val('---') // blank choice in Select box...
     })
 
-    $(document).on('hide.bs.modal', '#themodal', function(e) {
-      var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
-      if ($sel[0])
-        self.imageSelected($sel.next('img')[0].src, $sel.val())
+    self.$imageEl.on('click', '.image-library-select', function(e) {
+      $(document).one('hide.bs.modal', '#themodal', function(e) {
+        var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
+        if ($sel[0])
+          self.imageSelected($sel.next('img')[0].src, $sel.val())
+      })
     })
+    
     $('#imagefile').change(self.fileSelected)
     $('.image-upload label').on('drop', self.fileSelected).on('dragover', function(e) {
       e.stopPropagation()
@@ -483,7 +486,7 @@ will be appended to the target.
   $.fn.imageselect.Constructor = ImageSelect
 
   $(window).on('load', function () {
-    $('[data-imageselect]').imageselect()
+    $('[data-imageselect]').imageselect(imageselect_options) // global var if exists
   })
 
  }(jQuery); 
@@ -661,8 +664,8 @@ function handle_action(e) {
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
-$modal.on('submit', 'form', function(e) {
-  var form = e.currentTarget
+$modal.on('click', 'button[type="submit"]', function(e) {
+  var form = $modal.find('form')[0]
   if (form && form.action) {
     e.preventDefault()
     var jqxhr = $.post(form.action, $(form).serialize())

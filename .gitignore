@@ -11,3 +11,4 @@ version.cfg
 /.project
 /.pydevproject
 /Raconteur.egg-info
+/venv

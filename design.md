@@ -3,6 +3,13 @@ Design
 
 _This working document describes the internal design of Raconteur. Note that features described here may not exist yet, and in general, try to add a **(TODO)** marker near those sections!_
 
+Known issues
+==================================================================
+- When using newer mongoengine or pymongo, it will fail to interpret earlier
+indices. Solution is to remove all indices on existing db (they will be recreated). 
+- In new dev, Order does not contain shipping_mobile anymore. This will generate an error. Solution is to remove all shipping mobile fields from db.
+
+
 Fablr 1.0 notes
 ==================================================================
 Below is a list of refactoring planned for the Fablr 1.0 release.

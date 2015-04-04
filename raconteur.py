@@ -203,10 +203,12 @@ def init_actions(app, init_mode):
   if init_mode:
     if init_mode=='reset':
       setup_models(app)
-    elif init_mode=="import":
+    elif init_mode=='import':
       import_orders(app)
     elif init_mode=='test':
       run_tests()
+    elif init_mode=='migrate':
+      migrate(app)
 
 def import_orders(app):
   from tools import customer_data
@@ -232,6 +234,12 @@ def setup_models(app):
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
+
+def migrate(app):
+  from tools import db_migration
+  from mongoengine.connection import get_db
+  db = get_db()
+  db_migration.db_migrate(db)
 
 def validate_model():
   is_ok = True
