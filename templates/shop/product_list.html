@@ -28,14 +28,14 @@
 
   <div class="row">
     {% if 'table' in request.args %}
-      <table class="table table-striped">
+      <table class="table table-hover">
       <thead>
         <tr>
-          <th>{% trans %}Title{% endtrans %}</th>
-          <th>{% trans %}Description{% endtrans %}</th>
-          <th>{% trans %}Type{% endtrans %}</th>
-          <th>{% trans %}Publisher{% endtrans %}</th>
-          <th>{% trans %}Price{% endtrans %}</th>
+          <th><a href="?order_by=title">{% trans %}Title{% endtrans %}</a></th>
+          <th><a href="?order_by=description">{% trans %}Description{% endtrans %}</a></th>
+          <th><a href="?order_by=type">{% trans %}Type{% endtrans %}</a></th>
+          <th><a href="?order_by=publisher">{% trans %}Publisher{% endtrans %}</a></th>
+          <th><a href="?order_by=price">{% trans %}Price{% endtrans %}</a></th>
         </tr>
       </thead>
       {% for product in products %}

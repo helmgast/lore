@@ -99,7 +99,7 @@ window.onerror = function(err, url, line, col, trace) {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{ url_for('homepage') }}">Helmgast.se
+      <a class="navbar-brand" href="{{ url_for('homepage') }}"><img src="{{ url_for('static', filename='img/helmgast_512px.png') }}" style="width: 128px; height: 128px; margin-top: -35px">
         {#<small>{{ _('a story engine') }}</small>#}
       </a>
     </div>
@@ -160,8 +160,9 @@ window.onerror = function(err, url, line, col, trace) {
       {% block hero_box %}{% endblock %}
       <div class="page-header">
         <h1>{% block content_title %}{% endblock %}
-          <small>{% block content_tagline %}{% endblock %}</small>
+          <small>{% block content_tagline %}{% endblock %}</small>          
         </h1>
+
         {% block content_subheader %}{% endblock %}
       </div>
       {% endblock %}

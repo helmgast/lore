@@ -11,16 +11,21 @@
   'error' : _('Error')}
 %}
 
+{% block content_subheader %}
+{{ MACRO.LIST_CONTROLS() }}
+{% endblock %}
+
 {% block content %}
+
 {% if orders %}
-<table class="table">
+<table class="table table-hover">
 <thead>
 	<tr>
-		<td>{{_('Order')}}</td>
-		<td>{{_('User')}}</td>
-		<td>{{_('Created')}}</td>
-		<td>{{_('Updated')}}</td>
-		<td>{{_('Status')}}</td>
+		<th><a href="?order_by=order">{{_('Order')}}</a></th>
+		<th><a href="?order_by=user">{{_('User')}}</a></th>
+		<th><a href="?order_by=created">{{_('Created')}}</a></th>
+		<th><a href="?order_by=updated">{{_('Updated')}}</a></th>
+		<th><a href="?order_by=status">{{_('Status')}}</a></th>
 	</tr>
 </thead>
 <tbody>

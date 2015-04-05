@@ -5,8 +5,6 @@ _This working document describes the internal design of Raconteur. Note that fea
 
 Known issues
 ==================================================================
-- When using newer mongoengine or pymongo, it will fail to interpret earlier
-indices. Solution is to remove all indices on existing db (they will be recreated). 
 - In new dev, Order does not contain shipping_mobile anymore. This will generate an error. Solution is to remove all shipping mobile fields from db.
 
 
@@ -232,6 +230,15 @@ Output:
     403     -> forbidden, return json error dict
     404     -> not found, return json error dict
     500     -> return json error dict
+
+Resource lists
+------------------------------------------------------------------
+Resource lists support a number of common operations as defined by the parameters above. Let's look at them in some more detail.
+- Page: This shows the current page.
+- Order By: This orders the results (ascending) by the field of the given name. In a table view, this is typically linked from the column header.
+- Filter: This filters the results to only include items that match the filter. The filter is defined per field, and the default meaning is that the value has to be equal. If the field name is followed by a suffix such as 
+`__lte` it will be "larger than or equal".
+- Search: Freetext search across all fields.
 
 
 Flow

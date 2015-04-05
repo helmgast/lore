@@ -43,7 +43,7 @@
           from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
           {{ _('Contact Us') }}</a>
         {% else %}
-          <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
+          <button type="submit" id="checkout" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
         {% endif %}
       </div>
     </div>
@@ -59,32 +59,55 @@
 {% block final %}
 {{super()}}
 {% if order_form %}
+<script src="https://checkout.stripe.com/checkout.js"></script>
 <script>
-{% if false and order.status=='cart' %}
-  function calcTotal(e) {
-    var $prod = $(e.delegateTarget)
-    var qty = parseInt((e.target && e.target.value) || "0")
-    var price = parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0])
-    var total = $prod.find('.product-total').text()
-    total = total.replace(/[0-9.,]+/, qty*price)
-    $prod.find('.product-total').text(total)
-    calcGrandtotal()
-  }
-  function calcGrandtotal(e) {
-    var grandtot = $('.product-subtotals .product-price')
-    var sum = 0.0, num=0
-    $('.product').each(function() {
-      sum += parseFloat(/[0-9.,]+/.exec($(this).find('.product-total').text())[0])
-      num += parseInt($(this).find('.product-quantity').val())
-    })
-    grandtot.text(grandtot.text().replace(/[0-9.,]+/, sum))
-    $('#cart-counter').text(num)
-  }
-  $('.product').on('change', '.product-quantity', calcTotal)
-  $('.product-list').on('rac.removed', calcGrandtotal)
-  $('.product').each(function() {
-    calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
-  })
+{% if order.status=='cart' %}
+  var handler = StripeCheckout.configure({
+    key: 'pk_test_5DSgZNvFRv2QzooSPEAP3G7d',
+    image: '{{ url_for('static', filename='img/helmgast_512px.png') }}',
+    token: function(token) {
+      alert(token);
+      // Use the token to create the charge with a server-side script.
+      // You can access the token ID with `token.id`
+    }
+  });
+
+  $('#checkout').on('click', function(e) {
+    e.preventDefault();
+    handler.open({
+      name: 'Helmgast',
+      description: '{{order}}',
+      currency: "sek",
+      amount: 2000,
+      panelLabel: "{{ _('Pay') }}",
+      email: "{{order.user.email}}"
+    });
+  });
+
+  // function calcTotal(e) {
+  //   var $prod = $(e.delegateTarget)
+  //   var qty = parseInt((e.target && e.target.value) || "0")
+  //   var price = parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0])
+  //   var total = $prod.find('.product-total').text()
+  //   total = total.replace(/[0-9.,]+/, qty*price)
+  //   $prod.find('.product-total').text(total)
+  //   calcGrandtotal()
+  // }
+  // function calcGrandtotal(e) {
+  //   var grandtot = $('.product-subtotals .product-price')
+  //   var sum = 0.0, num=0
+  //   $('.product').each(function() {
+  //     sum += parseFloat(/[0-9.,]+/.exec($(this).find('.product-total').text())[0])
+  //     num += parseInt($(this).find('.product-quantity').val())
+  //   })
+  //   grandtot.text(grandtot.text().replace(/[0-9.,]+/, sum))
+  //   $('#cart-counter').text(num)
+  // }
+  // $('.product').on('change', '.product-quantity', calcTotal)
+  // $('.product-list').on('rac.removed', calcGrandtotal)
+  // $('.product').each(function() {
+  //   calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
+  // })
 {% endif %}
 // $('#formsave').click(function(e){
 //   $.post('{{order_form.action_url}}', $('.order-cart').serialize());

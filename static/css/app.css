@@ -120,6 +120,15 @@ thead {
 	font-weight: 700;
 }
 
+th a {
+	color: inherit;
+}
+
+th a:hover {
+	color: inherit;
+	text-decoration: inherit;
+}
+
 .td-bottom {
 	vertical-align: bottom !important;
 }
@@ -460,6 +469,10 @@ important
 
 .calendar .selected {
 	background-color: #ddd;
+}
+
+.label-control {
+	display: inline-block;
 }
 
 .metadata label, .metadata input, .metadata select, .metadata textarea {
