@@ -30,7 +30,6 @@
 
 {#### FORM ####}
 {% if article_form %}
-{% include "includes/flash.html" %}
 
 <form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
   {{ article_form.csrf_token }}
@@ -166,8 +165,6 @@
 {%- endif -%}
 </ul>
 </div>
-
-{% include "includes/flash.html" %}
 
 <div class="row">
   <div class="col-md-9 article_text">

@@ -486,7 +486,7 @@ will be appended to the target.
   $.fn.imageselect.Constructor = ImageSelect
 
   $(window).on('load', function () {
-    $('[data-imageselect]').imageselect(imageselect_options) // global var if exists
+    $('[data-imageselect]').imageselect(typeof imageselect_options !== "undefined" && imageselect_options) // global var if exists
   })
 
  }(jQuery); 
@@ -654,13 +654,13 @@ function handle_action(e) {
 //////////////// new modal code ///////////
 
 // Loads content from href into the modal (functionality was removed from bootstrap3)  
-// $('#themodal').on('show.bs.modal', function(event) {
-//   var href = event.relatedTarget.href
-//   if (href) {
-//     var dest = $(this).find('.modal-content')
-//     dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
-//   }
-// })
+$('#themodal').on('show.bs.modal', function(event) {
+  var href = event.relatedTarget.href
+  if (href) {
+    var dest = $(this).find('.modal-content')
+    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
+  }
+})
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')

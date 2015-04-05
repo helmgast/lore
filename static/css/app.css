@@ -90,15 +90,6 @@ footer p {
 	margin-right: 0px;
 }
 
-.modal-body-dense {
-	padding-top: 2px;
-	padding-bottom: 2px;
-}
-
-.modal-body-dense .form-group:last-child {
-	margin-bottom: 0px;
-}
-
 div.form-wrapper {
 	width: 100%;
 	overflow: auto;
@@ -534,6 +525,13 @@ important
 .world_item h3 {
   margin: 0px;
 }
+
+@media (min-width: 768px) {
+	.navbar-right {
+		margin-right: 0px !important;
+	}
+}
+
 
 .nav-header {
   padding: 3px 0px;
