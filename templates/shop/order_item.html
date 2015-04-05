@@ -24,29 +24,36 @@
 #}
 
 {% block content %}{% block inline %}
-{% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
 
-{% include "shop/order_table.html" %}
+{% if not order.order_lines %}
+  <div class="jumbotron text-center">
+    <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
+  </div>
+{% else %}
+  {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
 
-{% if order_form %}
+  {% include "shop/order_table.html" %}
+
+  {% if order_form %}
     <div class="row">
       <div class="col-md-offset-8">
         <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
-  {% if order.status != 'cart' %}
+        {% if order.status != 'cart' %}
           <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id, 
           from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
           {{ _('Contact Us') }}</a>
-  {% else %}
-        <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
-  {% endif %}
+        {% else %}
+          <button type="submit" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
+        {% endif %}
       </div>
     </div>
   {{ order_form.csrf_token if order_form }}
 
-</form>
-{% else %}
-  <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
-{% endif %}        
+  </form>
+  {% else %}
+    <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
+  {% endif %}
+{% endif %}
 {% endblock %}{% endblock %}
 
 {% block final %}

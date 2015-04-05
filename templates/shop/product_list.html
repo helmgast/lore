@@ -5,6 +5,14 @@
   'sek' : '%s :-'
 }%}
 
+{% set prod_types = {
+  'book':_('Book'),
+  'item':_('Item'),
+  'digital':_('Digital'),
+  'shipping':_('Shipping fee')}
+%}
+
+
 {% block sidebar %}{{super()}}
   <ul class="nav nav-pills nav-stacked">
   <li class="nav-header">{{ _('Actions') }}</li>
@@ -18,25 +26,48 @@
 
 {% block content %}
 
-    <div class="row">
-
-    {% for product in products %}
-    <div class="col-md-4 product">
-        {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
-        <div class="product-intro">
-            <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
-            <p>{{ product.description }}</p>
-        </div>
-        <ul class="product-details">
-            <li class="product-type">{{ product.publisher }}</li>
-            <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
-            <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
-        </ul>
-    </div>
-    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
-    {% endfor %} 
+  <div class="row">
+    {% if 'table' in request.args %}
+      <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>{% trans %}Title{% endtrans %}</th>
+          <th>{% trans %}Description{% endtrans %}</th>
+          <th>{% trans %}Type{% endtrans %}</th>
+          <th>{% trans %}Publisher{% endtrans %}</th>
+          <th>{% trans %}Price{% endtrans %}</th>
+        </tr>
+      </thead>
+      {% for product in products %}
+        <tr>
+          <td><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></td>
+          <td>{{ product.description }}</td>
+          <td>{{prod_types[product.type]}}</td>
+          <td>{{ product.publisher }}</td>
+          <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
+        </tr>
+      {% endfor %}      
+      </table>
+    {% else %}
+      {% for product in products %}
+      <div class="col-md-4 product">
+          {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
+          <div class="product-intro">
+              <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
+              <p>{{ product.description }}</p>
+          </div>
+          <ul class="product-details">
+              <li class="product-type">{{ product.publisher }}</li>
+              <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
+              <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
+          </ul>
+      </div>
+      {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
+      {% endfor %}
+    {% endif %}
   </div>
-  {% include "includes/pagination.html" %}
+{% include "includes/pagination.html" %}
+
 {% endblock %}
 
 {% block final %}

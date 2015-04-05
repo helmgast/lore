@@ -687,6 +687,7 @@ important
 .product-price {
 	font-size: 18px;
 	color: #000;
+	white-space: nowrap;
 }
 
 .product-subtotals {

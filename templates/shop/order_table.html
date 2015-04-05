@@ -5,7 +5,7 @@
   'item':_('Item'),
   'digital':_('Digital'),
   'shipping':_('Shipping fee')}
-  %}
+%}
 
 {% set currencies = {
   'eur' : '€ %s',
@@ -54,13 +54,16 @@
 {% endif %}
 
 <!-- Items -->
-
 <tr>
 	<td>
-{% if order.order_lines %}
+
 	<h3>{{_('Product')}}</h3>
 	<table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if (op=='edit' and order.status == 'cart')}}>
-		<tr><th colspan=2></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th><th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th></tr>
+		<tr>
+      <th colspan=2></th><th style="text-align:left; vertical-align:bottom">{{_('Quantity')}}</th>
+      <th style="text-align:left; vertical-align:bottom">{{_('Price')}}</th>
+      <th style="text-align:left; vertical-align:bottom">{{_('Total')}}</th>
+    </tr>
     	{% for line in order.order_lines %}
     	{% if line.product.status != 'hidden' %}
     	<tr class="product">
@@ -116,11 +119,6 @@
     		<td colspan=3 style="text-align:right">{{_('Grand Total')}}</td><td></td><td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency}}</td>
     	</tr>
 	</table>
-{% else %}
-  <div class="jumbotron text-center">
-      <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
-   </div>
-{% endif %}
 	</td>
 </tr>
 
