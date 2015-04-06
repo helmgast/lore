@@ -145,7 +145,7 @@ def configure_blueprints(app):
 
   with app.app_context():
     from model.user import User, ExternalAuth
-    from auth import Auth
+    from controller.auth import Auth
     auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
 
     from controller.asset import asset_app as asset_app
@@ -155,7 +155,7 @@ def configure_blueprints(app):
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
     from controller.mailer import mail_app as mail
-    from resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
+    from controller.resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
     app.register_blueprint(world)
@@ -274,7 +274,7 @@ def register_main_routes(app, auth):
   from model.world import ImageAsset, Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm
-  from resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
+  from controller.resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
 
   @app.route('/')
   def homepage():

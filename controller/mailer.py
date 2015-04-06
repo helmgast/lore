@@ -6,7 +6,7 @@ from flask.ext.babel import gettext as _
 from model.user import User
 from model.shop import Order
 from model.web import MailForm
-from resource import parse_out_arg, ResourceError
+from controller.resource import parse_out_arg, ResourceError
 import re
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)

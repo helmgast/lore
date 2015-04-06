@@ -3,7 +3,7 @@ import logging
 from flask import Blueprint, current_app, make_response
 
 from model.asset import FileAsset
-from resource import ResourceHandler, ResourceRoutingStrategy
+from controller.resource import ResourceHandler, ResourceRoutingStrategy
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 

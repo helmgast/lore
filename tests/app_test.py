@@ -6,7 +6,7 @@ from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf import model_form
 
 import raconteur
-from resource import ResourceHandler, ResourceRoutingStrategy
+from controller.resource import ResourceHandler, ResourceRoutingStrategy
 from raconteur import db
 
 

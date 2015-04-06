@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-03-17 23:10+0900\n"
+"POT-Creation-Date: 2015-04-07 00:17+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -17,106 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: auth.py:120
-msgid "You are logged in as"
-msgstr "Du är nu inloggad som"
-
-#: auth.py:128
-msgid "You are now logged out"
-msgstr "Du är nu utloggad"
-
-#: auth.py:269
-msgid "There is a problem with your login, please contact us info@helmgast.se!"
-msgstr ""
-"Det är ett problem med din inloggning, var vänlig kontakta oss på "
-"info@helmgast.se"
-
-#: auth.py:278
-msgid "Someone has already created this user!"
-msgstr "Någon har redan skapat denna användaren!"
-
-#: auth.py:280
-msgid "Form data has been manipulated, unsupported external auth service"
-msgstr "Formulärdatat kan ha manipulerats, vi stödjer inte denna inloggningstjänst"
-
-#: auth.py:296
-msgid "Password successfully changed"
-msgstr "Lösenordet har ändrats"
-
-#: auth.py:305
-msgid "This user is already verified!"
-msgstr "Denna användaren är redan verifierad!"
-
-#: auth.py:308
-msgid "No invitation for this email and token exists"
-msgstr "Ingen inbjudan existerar för denna email och/eller email-token"
-
-#: auth.py:311
-msgid "Incorrect email or email token, did you use the right link?"
-msgstr "Felaktig email eller email-token, använde du rätt länk?"
-
-#: auth.py:314
-msgid "Registration without invite link is not yet open, please come back later!"
-msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
-
-#: auth.py:331
-msgid "Error in form"
-msgstr "Fel i formuläret"
-
-#: auth.py:361
-msgid "This user account is not active or verified"
-msgstr "Detta kontot är inte aktivt eller verifierat"
-
-#: auth.py:363
-msgid ""
-"No matching external authentication, are you sure you signed up with this"
-" method?"
-msgstr ""
-"Inget matchande konto för extern inloggning, är du säker på att du "
-"registrerade med denna metoden?"
-
-#: auth.py:365
-msgid "Error contacting external service"
-msgstr "Fel under kommunikationen med extern inloggningsservice"
-
-#: auth.py:367
-msgid "Incorrect external service supplied"
-msgstr "Felaktig extern inloggningsservice angiven"
-
-#: auth.py:376
-msgid "Incorrect username or password"
-msgstr "Felaktigt användarnamn eller lösenord"
-
-#: auth.py:378 auth.py:407
-msgid "No such user exist, are you sure you registered first?"
-msgstr ""
-"Ingen sådan användare existerar, är du säker på att du registrerat dig "
-"först?"
-
-#: auth.py:380 auth.py:409
-msgid "Errors in form"
-msgstr "Fel i formuläret"
-
-#: auth.py:401 controller/mailer.py:93
-msgid "Reminder on how to login to Helmgast.se"
-msgstr "Påminnelse hur du loggar in på Helmgast.se"
-
-#: auth.py:405
-msgid "Reminder email sent to your address"
-msgstr "Påminnelsemail har nu skickats till din adress"
-
-#: auth.py:441 auth.py:447
-msgid "Auth Code"
-msgstr ""
-
-#: auth.py:442
-msgid "Email Token"
-msgstr "Email-token"
-
-#: auth.py:444 auth.py:448
-msgid "External Service"
-msgstr "Extern service"
-
 #: raconteur.py:22
 msgid "Private"
 msgstr "Privat"
@@ -125,7 +25,7 @@ msgstr "Privat"
 msgid "Protected"
 msgstr "Skyddad"
 
-#: raconteur.py:24
+#: raconteur.py:24 model/asset.py:20
 msgid "Public"
 msgstr "Allmän"
 
@@ -133,47 +33,123 @@ msgstr "Allmän"
 msgid "Join"
 msgstr "Registrera"
 
-#: raconteur.py:28 model/world.py:189 templates/_page.html:107
+#: raconteur.py:28 model/world.py:196 templates/_page.html:114
 #: templates/campaign/_page.html:3 templates/campaign/session_page.html:20
 #: templates/campaign/sessions.html:45 templates/world/world_item.html:24
 msgid "Campaign"
 msgstr "Kampanj"
 
-#: raconteur.py:29 templates/_page.html:104 templates/social/_page.html:4
+#: raconteur.py:29 templates/_page.html:111 templates/social/_page.html:4
 msgid "Social"
 msgstr "Social"
 
-#: raconteur.py:30 templates/_page.html:110
+#: raconteur.py:30 templates/_page.html:117
 msgid "Tools"
 msgstr "Verktyg"
 
-#: raconteur.py:31 templates/_page.html:112 templates/shop/_page.html:5
+#: raconteur.py:31 templates/_page.html:119 templates/shop/_page.html:5
 msgid "Shop"
 msgstr "Butik"
 
-#: resource.py:363
-msgid "Bad request or invalid input"
+#: controller/auth.py:120
+msgid "You are logged in as"
+msgstr "Du är nu inloggad som"
+
+#: controller/auth.py:128
+msgid "You are now logged out"
+msgstr "Du är nu utloggad"
+
+#: controller/auth.py:269
+msgid "There is a problem with your login, please contact us info@helmgast.se!"
+msgstr ""
+"Det är ett problem med din inloggning, var vänlig kontakta oss på "
+"info@helmgast.se"
+
+#: controller/auth.py:278
+msgid "Someone has already created this user!"
+msgstr "Någon har redan skapat denna användaren!"
+
+#: controller/auth.py:280
+msgid "Form data has been manipulated, unsupported external auth service"
+msgstr "Formulärdatat kan ha manipulerats, vi stödjer inte denna inloggningstjänst"
+
+#: controller/auth.py:296
+msgid "Password successfully changed"
+msgstr "Lösenordet har ändrats"
+
+#: controller/auth.py:305
+msgid "This user is already verified!"
+msgstr "Denna användaren är redan verifierad!"
+
+#: controller/auth.py:308
+msgid "No invitation for this email and token exists"
+msgstr "Ingen inbjudan existerar för denna email och/eller email-token"
+
+#: controller/auth.py:311
+msgid "Incorrect email or email token, did you use the right link?"
+msgstr "Felaktig email eller email-token, använde du rätt länk?"
+
+#: controller/auth.py:314
+msgid "Registration without invite link is not yet open, please come back later!"
+msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
+
+#: controller/auth.py:331
+msgid "Error in form"
+msgstr "Fel i formuläret"
+
+#: controller/auth.py:361
+msgid "This user account is not active or verified"
+msgstr "Detta kontot är inte aktivt eller verifierat"
+
+#: controller/auth.py:363
+msgid ""
+"No matching external authentication, are you sure you signed up with this"
+" method?"
+msgstr ""
+"Inget matchande konto för extern inloggning, är du säker på att du "
+"registrerade med denna metoden?"
+
+#: controller/auth.py:365
+msgid "Error contacting external service"
+msgstr "Fel under kommunikationen med extern inloggningsservice"
+
+#: controller/auth.py:367
+msgid "Incorrect external service supplied"
+msgstr "Felaktig extern inloggningsservice angiven"
+
+#: controller/auth.py:376
+msgid "Incorrect username or password"
+msgstr "Felaktigt användarnamn eller lösenord"
+
+#: controller/auth.py:378 controller/auth.py:407
+msgid "No such user exist, are you sure you registered first?"
+msgstr ""
+"Ingen sådan användare existerar, är du säker på att du registrerat dig "
+"först?"
+
+#: controller/auth.py:380 controller/auth.py:409
+msgid "Errors in form"
+msgstr "Fel i formuläret"
+
+#: controller/auth.py:401 controller/mailer.py:93
+msgid "Reminder on how to login to Helmgast.se"
+msgstr "Påminnelse hur du loggar in på Helmgast.se"
+
+#: controller/auth.py:405
+msgid "Reminder email sent to your address"
+msgstr "Påminnelsemail har nu skickats till din adress"
+
+#: controller/auth.py:441 controller/auth.py:447
+msgid "Auth Code"
 msgstr ""
 
-#: resource.py:364
-msgid "Unathorized access, please login"
-msgstr ""
+#: controller/auth.py:442
+msgid "Email Token"
+msgstr "Email-token"
 
-#: resource.py:365
-msgid "Forbidden, this is not an allowed operation"
-msgstr ""
-
-#: resource.py:366
-msgid "Resource not found"
-msgstr ""
-
-#: resource.py:367
-msgid "Internal server error"
-msgstr ""
-
-#: resource.py:371
-msgid "Unknown error"
-msgstr "Okänt fel"
+#: controller/auth.py:444 controller/auth.py:448
+msgid "External Service"
+msgstr "Extern service"
 
 #: controller/mailer.py:86
 msgid "Invitation to join Helmgast.se"
@@ -187,6 +163,30 @@ msgstr "%(user)s, välkommen till Helmgast!"
 #: controller/mailer.py:91
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
+
+#: controller/resource.py:370
+msgid "Bad request or invalid input"
+msgstr ""
+
+#: controller/resource.py:371
+msgid "Unathorized access, please login"
+msgstr ""
+
+#: controller/resource.py:372
+msgid "Forbidden, this is not an allowed operation"
+msgstr ""
+
+#: controller/resource.py:373
+msgid "Resource not found"
+msgstr ""
+
+#: controller/resource.py:374
+msgid "Internal server error"
+msgstr ""
+
+#: controller/resource.py:378
+msgid "Unknown error"
+msgstr "Okänt fel"
 
 #: controller/shop.py:160
 msgid "Need to log in to use shopping cart"
@@ -216,42 +216,69 @@ msgstr "Förra året"
 msgid "Older"
 msgstr "Äldre"
 
-#: model/shop.py:15 model/shop.py:50 model/world.py:103 model/world.py:171
-#: model/world.py:202 templates/shop/product_item.html:58
+#: model/asset.py:22 model/shop.py:86 templates/shop/order_table.html:60
+msgid "Product"
+msgstr "Produkt"
+
+#: model/asset.py:24 model/shop.py:106 templates/shop/order_list.html:25
+msgid "User"
+msgstr "Användare"
+
+#: model/asset.py:29 model/shop.py:15 model/shop.py:50 model/world.py:103
+#: model/world.py:171 model/world.py:209 templates/asset/fileasset_item.html:50
+#: templates/asset/fileasset_list.html:9 templates/shop/product_item.html:58
+#: templates/shop/product_list.html:34
 #: templates/social/conversation_item.html:27
 msgid "Title"
 msgstr "Titel"
 
-#: model/shop.py:16 model/shop.py:51 model/world.py:104 model/world.py:172
-#: model/world.py:203 templates/campaign/sessions.html:50
+#: model/asset.py:30 model/shop.py:16 model/shop.py:51 model/world.py:104
+#: model/world.py:172 model/world.py:210 templates/asset/fileasset_item.html:56
+#: templates/asset/fileasset_list.html:10 templates/campaign/sessions.html:50
+#: templates/includes/feedback_modal.html:25
+#: templates/shop/product_list.html:35
 msgid "Description"
 msgstr "Beskrivning"
 
-#: model/shop.py:17
+#: model/asset.py:32 model/shop.py:17 templates/asset/fileasset_list.html:11
 msgid "File name"
 msgstr "Filnamn"
 
-#: model/shop.py:18
+#: model/asset.py:34 model/shop.py:18 templates/asset/fileasset_item.html:74
+#: templates/asset/fileasset_list.html:12
 msgid "Attachment file name"
 msgstr "Bifogningens filnamn"
+
+#: model/asset.py:36
+msgid "File data"
+msgstr "Fildata"
+
+#: model/asset.py:38 templates/asset/fileasset_item.html:62
+#: templates/asset/fileasset_list.html:13
+msgid "Access type"
+msgstr "Accesstyp"
 
 #: model/shop.py:19
 msgid "Exclusive"
 msgstr ""
 
 #: model/shop.py:31 templates/shop/order_table.html:4
+#: templates/shop/product_list.html:9
 msgid "Book"
 msgstr "Bok"
 
 #: model/shop.py:32 templates/shop/order_table.html:5
+#: templates/shop/product_list.html:10
 msgid "Item"
 msgstr "Föremål"
 
 #: model/shop.py:33 templates/shop/order_table.html:6
+#: templates/shop/product_list.html:11
 msgid "Digital"
 msgstr "Digital"
 
 #: model/shop.py:34 templates/shop/order_table.html:7
+#: templates/shop/product_list.html:12
 msgid "Shipping fee"
 msgstr "Fraktkostnad"
 
@@ -276,8 +303,8 @@ msgid "Hidden"
 msgstr "Gömd"
 
 #: model/shop.py:52 templates/shop/order_table.html:45
-#: templates/shop/product_item.html:60 templates/world/_page.html:39
-#: templates/world/world_list.html:11
+#: templates/shop/product_item.html:60 templates/shop/product_list.html:37
+#: templates/world/_page.html:39 templates/world/world_list.html:11
 msgid "Publisher"
 msgstr "Utgivare"
 
@@ -286,19 +313,20 @@ msgid "Product Family"
 msgstr "Produktfamilj"
 
 #: model/shop.py:54 model/shop.py:113 templates/helmgast.html:43
-#: templates/marco.html:65 templates/shop/order_list.html:21
+#: templates/marco.html:65 templates/shop/order_list.html:26
 #: templates/shop/order_table.html:34 templates/shop/product_item.html:64
-#: templates/world/article_blog.html:14 templates/world/article_item.html:134
+#: templates/world/article_blog.html:14 templates/world/article_item.html:133
 msgid "Created"
 msgstr "Skapad"
 
-#: model/shop.py:55 model/world.py:198 templates/shop/product_item.html:66
-#: templates/world/article_item.html:154 templates/world/article_item.html:156
+#: model/shop.py:55 model/world.py:205 templates/shop/product_item.html:66
+#: templates/shop/product_list.html:36 templates/world/article_item.html:153
+#: templates/world/article_item.html:155
 msgid "Type"
 msgstr "Typ"
 
-#: model/shop.py:58 model/shop.py:87 templates/shop/order_table.html:63
-#: templates/shop/product_item.html:68
+#: model/shop.py:58 model/shop.py:87 templates/shop/order_table.html:64
+#: templates/shop/product_item.html:68 templates/shop/product_list.html:38
 msgid "Price"
 msgstr "Pris"
 
@@ -306,8 +334,8 @@ msgstr "Pris"
 msgid "Currency"
 msgstr "Valuta"
 
-#: model/shop.py:60 model/shop.py:115 model/user.py:53 model/world.py:205
-#: templates/shop/order_list.html:23 templates/shop/order_table.html:36
+#: model/shop.py:60 model/shop.py:115 model/user.py:53 model/world.py:212
+#: templates/shop/order_list.html:28 templates/shop/order_table.html:36
 #: templates/shop/product_item.html:72
 msgid "Status"
 msgstr "Status"
@@ -320,7 +348,7 @@ msgstr "Produktgrupp"
 msgid "Feature Image"
 msgstr "Presentationsbild"
 
-#: model/shop.py:66 templates/shop/order_table.html:86
+#: model/shop.py:66 templates/shop/order_table.html:89
 msgid "Name in book"
 msgstr "Namn i boken"
 
@@ -333,33 +361,29 @@ msgstr "av"
 msgid "Comment"
 msgstr "Kommentar"
 
-#: model/shop.py:86 templates/shop/order_table.html:61
-msgid "Product"
-msgstr "Produkt"
-
 #: model/shop.py:91 templates/campaign/campaign_page.html:22
-#: templates/shop/order_table.html:32 templates/shop/order_table.html:96
-#: templates/shop/order_table.html:147 templates/social/user_item.html:66
+#: templates/shop/order_table.html:32 templates/shop/order_table.html:99
+#: templates/shop/order_table.html:145 templates/social/user_item.html:66
 msgid "Name"
 msgstr "Namn"
 
-#: model/shop.py:92 templates/shop/order_table.html:151
+#: model/shop.py:92 templates/shop/order_table.html:149
 msgid "Street"
 msgstr "Gatuaddress"
 
-#: model/shop.py:93 templates/shop/order_table.html:155
+#: model/shop.py:93 templates/shop/order_table.html:153
 msgid "ZIP Code"
 msgstr "Postnummer"
 
-#: model/shop.py:94 templates/shop/order_table.html:157
+#: model/shop.py:94 templates/shop/order_table.html:155
 msgid "City"
 msgstr "Stad"
 
-#: model/shop.py:95 templates/shop/order_table.html:161
+#: model/shop.py:95 templates/shop/order_table.html:159
 msgid "Country"
 msgstr "Land"
 
-#: model/shop.py:96 templates/shop/order_table.html:165
+#: model/shop.py:96 templates/shop/order_table.html:163
 msgid "Cellphone Number"
 msgstr "Mobilnummer"
 
@@ -389,10 +413,6 @@ msgstr "Fraktad"
 msgid "Error"
 msgstr "Fel"
 
-#: model/shop.py:106 templates/shop/order_list.html:20
-msgid "User"
-msgstr "Användare"
-
 #: model/shop.py:107
 msgid "Session ID"
 msgstr "Sessions ID"
@@ -402,7 +422,7 @@ msgstr "Sessions ID"
 msgid "Email"
 msgstr "Email"
 
-#: model/shop.py:114 templates/shop/order_list.html:22
+#: model/shop.py:114 templates/shop/order_list.html:27
 #: templates/shop/order_table.html:35
 msgid "Updated"
 msgstr "Uppdaterad"
@@ -567,9 +587,9 @@ msgstr " av "
 msgid "Slug"
 msgstr "Slug"
 
-#: model/world.py:101 model/world.py:200 templates/helmgast.html:46
+#: model/world.py:101 model/world.py:207 templates/helmgast.html:46
 #: templates/marco.html:68 templates/world/article_blog.html:15
-#: templates/world/article_item.html:133
+#: templates/world/article_item.html:132
 msgid "Creator"
 msgstr "skapare"
 
@@ -609,52 +629,54 @@ msgstr "Koordinat Y"
 msgid "Location type"
 msgstr "Typ av plats"
 
-#: model/world.py:184
+#: model/world.py:191
 msgid "Default"
 msgstr "Default"
 
-#: model/world.py:185 templates/world/world_item.html:20
+#: model/world.py:192 templates/world/world_item.html:20
 msgid "Person"
 msgstr "Person"
 
-#: model/world.py:186 templates/world/world_item.html:21
+#: model/world.py:193 templates/world/world_item.html:21
 msgid "Fraction"
 msgstr "Organisation"
 
-#: model/world.py:187 templates/world/world_item.html:22
+#: model/world.py:194 templates/world/world_item.html:22
 msgid "Place"
 msgstr "Plats"
 
-#: model/world.py:188 templates/world/world_item.html:23
+#: model/world.py:195 templates/world/world_item.html:23
 msgid "Event"
 msgstr "Händelse"
 
-#: model/world.py:190 templates/world/world_item.html:25
+#: model/world.py:197 templates/world/world_item.html:25
 msgid "Chronicle"
 msgstr "Krönika"
 
-#: model/world.py:191
+#: model/world.py:198
 msgid "Blog Post"
 msgstr "bloggpost"
 
-#: model/world.py:199 templates/campaign/campaign_page.html:27
+#: model/world.py:206 templates/campaign/campaign_page.html:27
 #: templates/campaign/campaigninstance_list.html:22
 #: templates/world/_page.html:4
 msgid "World"
 msgstr "Världar"
 
-#: model/world.py:201
+#: model/world.py:208
 msgid "Created on"
 msgstr "Skapad"
 
-#: model/world.py:234
+#: model/world.py:241
 msgid "from"
 msgstr "från"
 
-#: templates/_modal.html:17 templates/campaign/campaign_page.html:63
+#: templates/_modal.html:17 templates/asset/fileasset_item.html:32
+#: templates/campaign/campaign_page.html:63
 #: templates/campaign/session_page.html:34 templates/includes/confirm.html:15
+#: templates/includes/feedback_modal.html:35
 #: templates/shop/product_item.html:48 templates/social/group_item.html:60
-#: templates/social/user_item.html:99 templates/world/article_item.html:212
+#: templates/social/user_item.html:99 templates/world/article_item.html:209
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -662,49 +684,49 @@ msgstr "Avbryt"
 msgid "Insert"
 msgstr "Lägg till"
 
-#: templates/_page.html:41 templates/imageasset_item.html:20
+#: templates/_page.html:61 templates/imageasset_item.html:20
 msgid "Drag or click to upload file"
 msgstr "Dra en bild hit eller klicka för att ladda upp"
 
-#: templates/_page.html:42
+#: templates/_page.html:62
 msgid "URL to image online"
 msgstr "länk till bild online"
 
-#: templates/_page.html:43
+#: templates/_page.html:63
 msgid "Caption"
 msgstr "Rubrik"
 
-#: templates/_page.html:44
+#: templates/_page.html:64
 msgid "Select from library"
 msgstr "Välj från bibliotek"
 
-#: templates/_page.html:101 templates/world/world_item.html:13
+#: templates/_page.html:108 templates/world/world_item.html:13
 msgid "Blog"
 msgstr "Blogg"
 
-#: templates/_page.html:114 templates/shop/order_item.html:5
-#: templates/shop/order_list.html:19
+#: templates/_page.html:121 templates/shop/order_item.html:5
+#: templates/shop/order_list.html:24
 msgid "Order"
 msgstr "Order"
 
-#: templates/_page.html:117
+#: templates/_page.html:124
 msgid "Worlds"
 msgstr "Världar"
 
-#: templates/_page.html:119 templates/social/_page.html:20
+#: templates/_page.html:126 templates/social/_page.html:20
 #: templates/social/conversation_list.html:3
 msgid "Forum"
 msgstr "Forum"
 
-#: templates/_page.html:123
+#: templates/_page.html:130
 msgid "log in"
 msgstr "Logga in"
 
-#: templates/_page.html:125
+#: templates/_page.html:132
 msgid "join"
 msgstr "Registrera"
 
-#: templates/_page.html:129
+#: templates/_page.html:136
 msgid "log out"
 msgstr "Logga ut"
 
@@ -717,7 +739,7 @@ msgid "Databases"
 msgstr "Databaser"
 
 #: templates/admin.html:30 templates/auth/join.html:58
-#: templates/shop/order_item.html:34
+#: templates/shop/order_item.html:40
 msgid "Save"
 msgstr "Spara"
 
@@ -964,6 +986,64 @@ msgstr "emailadress"
 msgid "Subscribe"
 msgstr "Prenumerera"
 
+#: templates/asset/_page.html:5
+msgid "File assets"
+msgstr ""
+
+#: templates/asset/_page.html:12 templates/shop/product_list.html:22
+#: templates/social/group_item.html:12 templates/social/group_list.html:8
+msgid "New"
+msgstr "Ny"
+
+#: templates/asset/_page.html:14
+msgid "List"
+msgstr "Lista"
+
+#: templates/asset/fileasset_item.html:4 templates/shop/product_item.html:11
+msgid "New product"
+msgstr "Ny produkt"
+
+#: templates/asset/fileasset_item.html:9 templates/shop/order_item.html:10
+#: templates/shop/product_list.html:18 templates/social/group_item.html:11
+#: templates/social/group_list.html:7 templates/social/user_item.html:11
+#: templates/social/user_list_component.html:7
+#: templates/world/article_action_menu.html:3
+msgid "Actions"
+msgstr "Funktioner"
+
+#: templates/asset/fileasset_item.html:12 templates/shop/order_item.html:54
+#: templates/shop/product_item.html:18 templates/social/group_item.html:14
+#: templates/social/user_item.html:12
+#: templates/world/article_action_menu.html:7
+msgid "Edit"
+msgstr "Redigera"
+
+#: templates/asset/fileasset_item.html:31
+#: templates/campaign/campaign_page.html:62
+#: templates/campaign/session_page.html:33 templates/shop/product_item.html:47
+#: templates/social/group_item.html:59 templates/social/user_item.html:98
+#: templates/world/article_item.html:50
+msgid "Save changes"
+msgstr "Spara ändringar"
+
+#: templates/asset/fileasset_item.html:35 templates/shop/product_item.html:50
+#: templates/social/group_item.html:62
+#: templates/world/article_action_menu.html:9
+msgid "Delete"
+msgstr "Ta bort"
+
+#: templates/asset/fileasset_item.html:44 templates/asset/fileasset_list.html:8
+msgid "File"
+msgstr "Fil"
+
+#: templates/asset/fileasset_item.html:68
+msgid "Source filename"
+msgstr "Källfilnamn"
+
+#: templates/asset/fileasset_list.html:32
+msgid "No file assets available!"
+msgstr "Inga filer tillgängliga!"
+
 #: templates/auth/_page.html:7 templates/auth/login.html:9
 msgid "Please sign in"
 msgstr "Logga in här"
@@ -1138,13 +1218,6 @@ msgstr "(ändra om scen-trädet som du vill!)"
 msgid "Drag"
 msgstr "Dra"
 
-#: templates/campaign/campaign_page.html:62
-#: templates/campaign/session_page.html:33 templates/shop/product_item.html:47
-#: templates/social/group_item.html:59 templates/social/user_item.html:98
-#: templates/world/article_item.html:51
-msgid "Save changes"
-msgstr "Spara ändringar"
-
 #: templates/campaign/campaigninstance_list.html:4
 msgid "where the magic happens"
 msgstr "där magin händer"
@@ -1195,6 +1268,32 @@ msgstr "Är du säker att du vill"
 msgid "Confirm"
 msgstr "Bekräfta"
 
+#: templates/includes/feedback_modal.html:7
+msgid "Help us improve!"
+msgstr "Hjälp oss bli bättre"
+
+#: templates/includes/feedback_modal.html:14
+msgid "Report an error"
+msgstr "Rapportera ett fel"
+
+#: templates/includes/feedback_modal.html:20
+msgid "Give feedback"
+msgstr "Ge feedback"
+
+#: templates/includes/feedback_modal.html:27
+msgid "characters left"
+msgstr "bokstäver kvar"
+
+#: templates/includes/feedback_modal.html:30
+msgid "Email address"
+msgstr "Emailadress"
+
+#: templates/includes/feedback_modal.html:36
+#: templates/mail/one_column_mail.html:100
+#: templates/social/conversation_item.html:31
+msgid "Send"
+msgstr "Skicka"
+
 #: templates/includes/macros.html:91
 msgid "Your access rights allow you to view this resource in this view"
 msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
@@ -1212,9 +1311,10 @@ msgid ""
 "you want to \n"
 "join, just click below and register!"
 msgstr ""
-"Vi vore väldigt glada om du skulle vilja gå med som användare i Helmgast.se! Det är"
-" en webbplattform för rollspelare - spelledare, spelare och författare. Om "
-"du vill delta, klicka bara på länken nedan för att registrera!"
+"Vi vore väldigt glada om du skulle vilja gå med som användare i "
+"Helmgast.se! Det är en webbplattform för rollspelare - spelledare, "
+"spelare och författare. Om du vill delta, klicka bara på länken nedan för"
+" att registrera!"
 
 #: templates/mail/invite.html:16 templates/mail/verify.html:19
 msgid "Verify email"
@@ -1256,11 +1356,6 @@ msgstr ""
 "                            Surbrunnsgatan 33, Stockholm 113 48, "
 "Sweden</em></p>\n"
 "                            </p>"
-
-#: templates/mail/one_column_mail.html:100
-#: templates/social/conversation_item.html:31
-msgid "Send"
-msgstr "Skicka"
 
 #: templates/mail/order.html:4
 msgid "Order confirmation on helmgast.se"
@@ -1439,38 +1534,36 @@ msgstr "Alla produkter"
 msgid "Orders"
 msgstr "Orderhistorik"
 
-#: templates/shop/order_item.html:10 templates/shop/product_list.html:10
-#: templates/social/group_item.html:11 templates/social/group_list.html:7
-#: templates/social/user_item.html:11
-#: templates/social/user_list_component.html:7
-#: templates/world/article_action_menu.html:3
-msgid "Actions"
-msgstr "Funktioner"
-
 #: templates/shop/order_item.html:13
 msgid "Send order mail"
 msgstr "Skicka ordermail"
 
-#: templates/shop/order_item.html:37
+#: templates/shop/order_item.html:30
+msgid "Nothing in cart, "
+msgstr "Inget i kundvagnen, "
+
+#: templates/shop/order_item.html:30
+msgid "go shopping"
+msgstr "börja shoppa!"
+
+#: templates/shop/order_item.html:43
 #, python-format
 msgid "Regarding order %(order)s"
 msgstr "Gällande order %(order)s"
 
-#: templates/shop/order_item.html:38
+#: templates/shop/order_item.html:44
 msgid "Contact Us"
 msgstr "Kontakta oss"
 
-#: templates/shop/order_item.html:40
+#: templates/shop/order_item.html:46
 msgid "Checkout"
 msgstr "Lägg beställning"
 
-#: templates/shop/order_item.html:48 templates/shop/product_item.html:18
-#: templates/social/group_item.html:14 templates/social/user_item.html:12
-#: templates/world/article_action_menu.html:7
-msgid "Edit"
-msgstr "Redigera"
+#: templates/shop/order_item.html:82
+msgid "Pay"
+msgstr "Betala"
 
-#: templates/shop/order_list.html:41
+#: templates/shop/order_list.html:46
 msgid "You have not made any orders yet!"
 msgstr "Du har inte gjort några beställningar ännu!"
 
@@ -1498,54 +1591,37 @@ msgstr "Adress"
 msgid "Quantity"
 msgstr "Antal"
 
-#: templates/shop/order_table.html:63
+#: templates/shop/order_table.html:65
 msgid "Total"
 msgstr "Total"
 
-#: templates/shop/order_table.html:74 templates/shop/order_table.html:78
+#: templates/shop/order_table.html:77 templates/shop/order_table.html:81
 msgid "Download"
 msgstr "Ladda ner"
 
-#: templates/shop/order_table.html:113
+#: templates/shop/order_table.html:116
 msgid "Including tax"
 msgstr "Varav moms"
 
-#: templates/shop/order_table.html:116
+#: templates/shop/order_table.html:119
 msgid "Grand Total"
 msgstr "Totalsumma"
 
-#: templates/shop/order_table.html:121
-msgid "Nothing in cart, "
-msgstr "Inget i kundvagnen, "
-
-#: templates/shop/order_table.html:121
-msgid "go shopping"
-msgstr "börja shoppa!"
-
-#: templates/shop/order_table.html:130
+#: templates/shop/order_table.html:128
 msgid "Shipping Address"
 msgstr "Leveransadress"
 
-#: templates/shop/order_table.html:130
+#: templates/shop/order_table.html:128
 msgid "make sure it's correct!"
 msgstr "dubbelkolla att det är rätt!"
 
-#: templates/shop/order_table.html:148 templates/shop/order_table.html:152
-#: templates/shop/order_table.html:156 templates/shop/order_table.html:158
-#: templates/shop/order_table.html:162 templates/shop/order_table.html:166
+#: templates/shop/order_table.html:146 templates/shop/order_table.html:150
+#: templates/shop/order_table.html:154 templates/shop/order_table.html:156
+#: templates/shop/order_table.html:160 templates/shop/order_table.html:164
 #: templates/social/user_item.html:65 templates/social/user_item.html:67
 #: templates/social/user_item.html:69
 msgid "No data"
 msgstr "Ingen data"
-
-#: templates/shop/product_item.html:11
-msgid "New product"
-msgstr "Ny produkt"
-
-#: templates/shop/product_item.html:50 templates/social/group_item.html:62
-#: templates/world/article_action_menu.html:9
-msgid "Delete"
-msgstr "Ta bort"
 
 #: templates/shop/product_item.html:62
 msgid "Family"
@@ -1555,14 +1631,9 @@ msgstr "Familj"
 msgid "Acknowledgement"
 msgstr "Signering"
 
-#: templates/shop/product_item.html:85 templates/shop/product_list.html:33
+#: templates/shop/product_item.html:85 templates/shop/product_list.html:62
 msgid "Buy"
 msgstr "Köp"
-
-#: templates/shop/product_list.html:14 templates/social/group_item.html:12
-#: templates/social/group_list.html:8
-msgid "New"
-msgstr "Ny"
 
 #: templates/social/_page.html:5
 msgid "bringing you closer to other gamers"
@@ -1629,7 +1700,7 @@ msgstr "Namn"
 msgid "Role"
 msgstr "Roll"
 
-#: templates/social/group_item.html:42 templates/world/article_item.html:46
+#: templates/social/group_item.html:42 templates/world/article_item.html:45
 msgid "Details"
 msgstr "Detaljer"
 
@@ -1697,87 +1768,87 @@ msgstr "Redigera som Markdown"
 msgid "View"
 msgstr "Visa"
 
-#: templates/world/article_item.html:44
+#: templates/world/article_item.html:43
 msgid "Metadata"
 msgstr "Metadata"
 
-#: templates/world/article_item.html:45
+#: templates/world/article_item.html:44
 msgid "Relations"
 msgstr "Relationer"
 
-#: templates/world/article_item.html:49
+#: templates/world/article_item.html:48
 msgid "Save and publish"
 msgstr "Spara och publicera"
 
-#: templates/world/article_item.html:105
+#: templates/world/article_item.html:104
 msgid "Type or Paste URL here"
 msgstr "Skriv eller klistra in en länk här"
 
-#: templates/world/article_item.html:136
+#: templates/world/article_item.html:135
 msgid "Visibility"
 msgstr "Synlighet"
 
-#: templates/world/article_item.html:139
+#: templates/world/article_item.html:138
 msgid "Relations to other articles"
 msgstr "Relationer till andra artiklar"
 
-#: templates/world/article_item.html:140
+#: templates/world/article_item.html:139
 msgid "Other articles relation to this article"
 msgstr "Artiklar med relationer till denna"
 
-#: templates/world/article_item.html:146
+#: templates/world/article_item.html:145
 msgid "Unpublished"
 msgstr "Ej publicerad"
 
-#: templates/world/article_item.html:152
+#: templates/world/article_item.html:151
 msgid "Lon"
 msgstr "Lon"
 
-#: templates/world/article_item.html:153
+#: templates/world/article_item.html:152
 msgid "Lat"
 msgstr "Lat"
 
-#: templates/world/article_item.html:157
+#: templates/world/article_item.html:156
 msgid "URL"
 msgstr "URL"
 
-#: templates/world/article_item.html:159
+#: templates/world/article_item.html:158
 msgid "Started"
 msgstr "Startad"
 
-#: templates/world/article_item.html:160
+#: templates/world/article_item.html:159
 msgid "Ended"
 msgstr "Avslutad"
 
-#: templates/world/article_item.html:162
+#: templates/world/article_item.html:161
 msgid "Born"
 msgstr "Född"
 
-#: templates/world/article_item.html:163
+#: templates/world/article_item.html:162
 msgid "Died"
 msgstr "Avliden"
 
-#: templates/world/article_item.html:164
+#: templates/world/article_item.html:163
 msgid "Gender"
 msgstr "Kön"
 
-#: templates/world/article_item.html:165
+#: templates/world/article_item.html:164
 msgid "Occupation"
 msgstr "Yrke"
 
-#: templates/world/article_item.html:174
+#: templates/world/article_item.html:171
 msgid "Content"
 msgstr "Innehåll"
 
-#: templates/world/article_item.html:207
+#: templates/world/article_item.html:204
 msgid "Are you sure you want to delete"
 msgstr "Är du säker på att du vill ta bort"
 
-#: templates/world/article_item.html:213
+#: templates/world/article_item.html:210
 msgid "Yes"
 msgstr "Ja"
 
-#: templates/world/article_item.html:254
+#: templates/world/article_item.html:256
 msgid "You have unsaved changes"
 msgstr "Du har osparade ändringar"
 

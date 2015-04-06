@@ -20,7 +20,7 @@ from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 from gridfs.errors import FileExists
-from resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, ArticleBaseForm
+from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, ArticleBaseForm
 from extensions import db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta

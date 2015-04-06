@@ -10,17 +10,14 @@ setup(
     url='http://helmgast.se',
 
     #  Packages required to run Raconteur.
-    install_requires=[
-        'Flask', 'flask-mongoengine', 'python-slugify', 'Flask-Markdown', 
-        'requests', 'Pillow', 'flask-babel', 'bugsnag', 'mandrill', 'celery',
-        'google-api-python-client', 'facebook-sdk'
-    ],
+    install_requires=[], # Use requirements.txt instead
 
     # Configures babel so we translate direct for setup.py.
     # "." means local directory - settings need to be specified per directory
     # Added Jinja extensions need to be reflected below
     message_extractors = {
         '.': [
+            ('venv/**', 'ignore', None),
             ('**.py',                'python', None),
             ('**/templates/**.html',  'jinja2', 
                 {'silent':'false',

@@ -176,7 +176,6 @@ class Episode(db.EmbeddedDocument):
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row
 # may not have any effect
-print type(Episode)
 
 class CampaignData(db.EmbeddedDocument):
   pass # TODO, the children her and above gives DuplicateIndices errors. Need to be fixed.
