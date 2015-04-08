@@ -47,6 +47,7 @@ Currencies = Choices(
 
 class Product(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+  product_no = db.StringField(unique=True, max_length=10, sparse=True)
   title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   publisher = db.StringField(max_length=60, required=True, verbose_name=_('Publisher'))
@@ -56,6 +57,7 @@ class Product(db.Document):
   # should be required=True, but that currently maps to Required, not InputRequired validator
   # Required will check the value and 0 is determined as false, which blocks prices for 0
   price = db.FloatField(min_value=0, default=0, verbose_name=_('Price'))
+  tax = db.FloatField(min_value=0, default=0, verbose_name=_('Tax'))
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Currency'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   # Names of resources (downloadable files)

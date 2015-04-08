@@ -6,6 +6,7 @@ _This working document describes the internal design of Raconteur. Note that fea
 Known issues
 ==================================================================
 - In new dev, Order does not contain shipping_mobile anymore. This will generate an error. Solution is to remove all shipping mobile fields from db.
+- Getting ```(E11000 duplicate key error index: rac-mirror.product.$product_id_1 dup key: { : null })``` errors when doing normal DB operations and mongoengine tries to do "ensure_index" or when inserting new. This is when a field is set as unique, but it contains several null values, for example when a new unique field is created and there is no existing data in the old db. The solution is to set the key to sparse, and remove it if we know that the index always has data.
 
 
 Fablr 1.0 notes
