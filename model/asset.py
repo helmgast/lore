@@ -34,6 +34,7 @@ allowed_mimetypes = [
     'text/html',
     'text/plain']
 
+
 class FileAsset(db.Document):
     slug = db.StringField(max_length=62)
     title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
@@ -52,19 +53,23 @@ class FileAsset(db.Document):
         request_file_data = request.files['file_data']
         if request_file_data is not None:
             if request_file_data.mimetype not in allowed_mimetypes:
-                raise ValidationError(gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
+                raise ValidationError(
+                    gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
             # File is present, save to GridFS
-            self.file_data.replace(request_file_data, content_type = request_file_data.mimetype)
+            self.file_data.replace(request_file_data, content_type=request_file_data.mimetype)
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
 
-    def get_filename(self, user):
-        return self.source_filename \
-               % re.sub(r'@|\.', '_', user.email).lower() if self.user_exclusive else self.source_filename
+    def get_user_attachment_filename(self, user):
+        filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename
+        return filename if user is None else filename % re.sub(r'@|\.', '_', user.email).lower()
 
-    def get_attachment_filename(self):
-        return self.attachment_filename if self.attachment_filename is not None else self.source_filename
+    def is_public(self):
+        return self.access_type == FileAccessType.public
+
+    def is_allowed_for(self, user):
+        return self.is_public() or False
 
     def file_data_exists(self):
         return self.file_data is not None

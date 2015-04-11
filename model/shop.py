@@ -1,5 +1,6 @@
 import mimetypes
 import re
+from model.asset import FileAsset
 from raconteur import db
 from model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
@@ -66,6 +67,7 @@ class Product(db.Document):
   files = db.ListField(db.EmbeddedDocumentField(DownloadFile))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
   acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
+  file_assets = db.ListField(db.ReferenceField(FileAsset))
 
   # Executes before saving
   def clean(self):
