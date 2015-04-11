@@ -11,7 +11,7 @@ from mongoengine import ValidationError
 from slugify import slugify
 
 from raconteur import db
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import gettext, lazy_gettext as _
 from misc import Choices
 from flask import request
 
@@ -51,7 +51,7 @@ class FileAsset(db.Document):
         request_file_data = request.files['file_data']
         if request_file_data is not None:
             if request_file_data.mimetype not in allowed_mimetypes:
-                raise ValidationError(_('Files of type %s is not allowed.') % request_file_data.mimetype)
+                raise ValidationError(gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
             # File is present, save to GridFS
             self.file_data.replace(request_file_data, content_type = request_file_data.mimetype)
             self.source_filename = request_file_data.filename

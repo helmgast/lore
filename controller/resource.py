@@ -505,8 +505,7 @@ class ResourceHandler(View):
       abort(404)
     except ValidationError as err:
       logger.exception("Validation error")
-      merged_message = reduce(lambda x, y: x + y, map(lambda err : err.message, err.errors.itervalues()), '')
-      resErr = ResourceError(400, message=merged_message)
+      resErr = ResourceError(400, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
       if r['out'] == 'json':
         return self._return_json(r, resErr) 
       else:
