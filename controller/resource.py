@@ -58,15 +58,16 @@ class RacBaseForm(ModelForm):
     if fields_to_populate:
       # FormFields in form args will have '-' do denote it's subfields. We 
       # only want the first part, or it won't match the field names
-      fields_to_populate = set([fld.split('-',1)[0] for fld in fields_to_populate])
-      newfields = [ (name,fld) for (name,fld) in iteritems(self._fields) if name in fields_to_populate]
+      fields_to_populate = set([fld.split('-', 1)[0] for fld in fields_to_populate])
+      newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in fields_to_populate]
     else:
       newfields = iteritems(self._fields)
     for name, field in newfields:
-      if ( isinstance(field, f.FormField)
-        and getattr(obj, name, None) is None
-        and field._obj is None ):
+      if isinstance(field, f.FormField) and getattr(obj, name, None) is None and field._obj is None:
         field._obj = field.model_class()
+      if isinstance(field, f.FileField) and field.data == '':
+        # Don't try to write empty FileField
+        continue
       field.populate_obj(obj, name)
 
 # class PartialEditForm(OrigForm):
