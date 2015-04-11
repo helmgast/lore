@@ -51,7 +51,7 @@ class FileAsset(db.Document):
     def clean(self):
         self.slug = slugify(self.title)
         request_file_data = request.files['file_data']
-        if request_file_data is not None:
+        if request_file_data is not None and request_file_data.content_length > 0:
             if request_file_data.mimetype not in allowed_mimetypes:
                 raise ValidationError(
                     gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
@@ -75,7 +75,7 @@ class FileAsset(db.Document):
         return self.is_public() or False
 
     def file_data_exists(self):
-        return self.file_data is not None
+        return self.file_data.grid_id is not None
 
     def get_mimetype(self):
         return mimetypes.guess_type(self.source_filename)[0]
