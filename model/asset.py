@@ -63,7 +63,10 @@ class FileAsset(db.Document):
 
     def get_user_attachment_filename(self, user):
         filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename
-        return filename if user is None else filename % re.sub(r'@|\.', '_', user.email).lower()
+        if user is not None and self.access_type == FileAccessType.user:
+            return filename % re.sub(r'@|\.', '_', user.email).lower()
+        else:
+            return filename
 
     def is_public(self):
         return self.access_type == FileAccessType.public
