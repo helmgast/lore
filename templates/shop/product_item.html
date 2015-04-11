@@ -41,6 +41,7 @@
     </div>
     <div class="col-md-4">
       {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true})}}
+      {{ MACRO.FORM_FIELD(product_form.file_assets) }}
     </div>
   </div>
   <div class="row form-actions">
@@ -56,9 +57,9 @@
     <div class="col-md-8">
       <table class="table">
         <tr><td><strong>{{ _('Title') }}</strong></td>
-        <td><small>{{ product.title }}</small></td></tr>      
+        <td><small>{{ product.title }}</small></td></tr>
         <tr><td><strong>{{ _('Publisher') }}</strong></td>
-        <td><small>{{ product.publisher }}</small></td></tr>      
+        <td><small>{{ product.publisher }}</small></td></tr>
         <tr><td><strong>{{ _('Family') }}</strong></td>
         <td>{{ product.family }}</td></tr>
         <tr><td><strong>{{ _('Created') }}</strong></td>
@@ -66,15 +67,14 @@
         <tr><td><strong>{{ _('Type') }}</strong></td>
         <td><small>{{ product.get_type_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>    
+        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>
         <tr><td><strong>{{ _('Currency') }}</strong></td>
         <td><small>{{ product.get_currency_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ product.get_status_display() }}</small></td></tr>
-        <!--<tr><td><strong>{{ _('Acknowledgement') }}</strong></td>-->
-        <!--<td><small>{{ product.acknowledgement }}</small></td></tr>-->
 
       </table>
+
       <div class="well">{{ product.description }}</div>
     </div>
     <div class="col-md-4">
@@ -83,6 +83,12 @@
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
       <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
+      <div class="well"><strong>{{ _('Downloadable files') }}</strong>
+          {% for file_asset in product.file_assets %}
+          <div><strong>{{ file_asset.title }}</strong>{% if file_asset.description
+              %}: {{ file_asset.description }}{% endif %}</div>
+          {% endfor %}
+      </div>
     </div>
 </div>
 {% endif %}

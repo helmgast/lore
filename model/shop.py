@@ -67,7 +67,7 @@ class Product(db.Document):
   files = db.ListField(db.EmbeddedDocumentField(DownloadFile))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
   acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
-  file_assets = db.ListField(db.ReferenceField(FileAsset))
+  file_assets = db.ListField(db.ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
 
   # Executes before saving
   def clean(self):

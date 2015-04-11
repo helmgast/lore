@@ -23,7 +23,7 @@ from flask.ext.mongoengine.wtf.fields import ModelSelectField
 from flask.views import View
 from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
-from wtforms import fields as f
+from wtforms import fields as f, SelectMultipleField, widgets
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
@@ -117,6 +117,10 @@ class ArticleBaseForm(RacBaseForm):
       # Tell the Article we have changed type
       obj.change_type(new_type)
     super(ArticleBaseForm, self).populate_obj(obj)
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 class RacModelSelectField(ModelSelectField):
   # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
