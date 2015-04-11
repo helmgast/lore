@@ -1,5 +1,6 @@
 import mimetypes
 import re
+from flask import g
 from model.asset import FileAsset
 from raconteur import db
 from model.misc import list_to_choices
@@ -76,6 +77,9 @@ class Product(db.Document):
   def __unicode__(self):
     return u'%s %s %s' % (self.title, _('by'), self.publisher)
 
+  def is_owned_by_current_user(self):
+    return g.user and (g.user.admin or self in products_owned_by_user(g.user))
+
   def find_matching_download_file(self, name):
     for file in self.files:
       if file.slug == name:
@@ -133,6 +137,9 @@ class Order(db.Document):
       s = u'%s' % _('Empty order')
     return s
 
+  def is_paid_or_shipped(self):
+    return self.status in [OrderStatus.paid, OrderStatus.shipped]
+
   # Executes before saving
   def clean(self):
     self.updated = datetime.utcnow
@@ -147,3 +154,7 @@ class Order(db.Document):
       sum += ol.quantity * ol.price
     self.total_items = num
     self.total_price = sum
+
+def products_owned_by_user(user):
+    orders = Order.objects(user=user, status__in=[OrderStatus.paid, OrderStatus.shipped])
+    return map(lambda order_line: order_line.product, [order_line for order in orders for order_line in order.order_lines])

@@ -6,7 +6,7 @@ from werkzeug.exceptions import abort
 
 from model.asset import FileAsset
 from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy
-from model.shop import Order, OrderStatus
+from model.shop import Order, OrderStatus, products_owned_by_user
 from model.user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -56,10 +56,8 @@ def _validate_user_asset(fileasset, user):
 def _is_user_allowed_access_to_asset(user, asset):
     if asset.is_public or g.user.admin:
         return True
-    orders = Order.objects(user=user, status__in=[OrderStatus.paid, OrderStatus.shipped])
-    all_order_lines = [(order, order_line) for order in orders for order_line in order.order_lines]
-    for order_line in all_order_lines:
-        if asset in order_line.product.file_assets:
+    for product in products_owned_by_user(user):
+        if asset in product.file_assets:
             return True
     return False
 

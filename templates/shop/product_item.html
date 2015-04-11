@@ -18,7 +18,6 @@
   <li class="{{privileged}}"><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 {% endcall %}
 {% endif %}
-</ul>
 {%endblock%}
 
 {% block content %}{% block inline %}
@@ -76,6 +75,17 @@
       </table>
 
       <div class="well">{{ product.description }}</div>
+      {% if product.file_assets %}
+      <div class="well"><strong>{{ _('Downloadable files') }}</strong>
+          {% for file_asset in product.file_assets %}
+          <div>{% if product.is_owned_by_current_user() %}<a
+                  href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
+                  class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
+              <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description
+              %}: {{ file_asset.description }}{% endif %}</div>
+          {% endfor %}
+      </div>
+      {% endif %}
     </div>
     <div class="col-md-4">
       {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>
@@ -83,12 +93,6 @@
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
       <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
-      <div class="well"><strong>{{ _('Downloadable files') }}</strong>
-          {% for file_asset in product.file_assets %}
-          <div><strong>{{ file_asset.title }}</strong>{% if file_asset.description
-              %}: {{ file_asset.description }}{% endif %}</div>
-          {% endfor %}
-      </div>
     </div>
 </div>
 {% endif %}

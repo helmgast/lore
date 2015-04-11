@@ -71,7 +71,18 @@
     		<td>
     			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
 	            <p>{{ line.product.description }}</p>
-	            {% if line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
+				{% if order and order.is_paid_or_shipped() %}
+				{% if line.product.file_assets %}
+				<div><strong>{{ _('Downloadable files') }}</strong>
+				  {% for file_asset in line.product.file_assets %}
+					<div>
+						<a href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
+								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
+						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
+					</div>
+				  {% endfor %}
+				</div>
+				{% elif line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
 		            {% if line.product.resources %}
 		              {% for resource in line.product.resources %}
 		                <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
@@ -81,7 +92,8 @@
 		              <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
 		              </h4>
 		            {% endif %}
-	            {% endif%}
+	            {% endif %}
+	            {% endif %}
 	            {% if order_form %}
 	            	{{ order_form.order_lines[loop.index0].product(class="hide")}}
 	                {% if line.product.acknowledgement %}
