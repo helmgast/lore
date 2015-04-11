@@ -18,11 +18,11 @@ from flask import request
 
 FileAccessType = Choices(
     # Accessed by anyone
-    public=_('Public'),
+    public=_('Public use'),
     # Access given through some product
-    product=_('Product'),
+    product=_('Product required'),
     # Access given through some product, also user specific
-    user=_('User'))
+    user=_('User unique and product required'))
 
 allowed_mimetypes = [
     'application/pdf',

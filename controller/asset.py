@@ -41,8 +41,8 @@ def _validate_public_asset(fileasset):
     return asset
 
 
-def _validate_user_asset(fileasset, user_id):
-    user = User.objects(id=user_id).first_or_404()
+def _validate_user_asset(fileasset, user):
+    user = User.objects(id=user).first_or_404()
     if user is None or not (user == g.user or g.user.admin):
         abort(401)
     asset = FileAsset.objects(slug=fileasset).first_or_404()
@@ -79,15 +79,15 @@ def download(fileasset):
     return _return_file(_validate_public_asset(fileasset), None)
 
 
-@asset_app.route('/link/<user_id>/<fileasset>')
-def user_link(user_id, fileasset):
-    asset, user = _validate_user_asset(fileasset, user_id)
+@asset_app.route('/link/<user>/<fileasset>')
+def user_link(user, fileasset):
+    asset, file_user = _validate_user_asset(fileasset, user)
     return _return_link(asset)
 
 
-@asset_app.route('/download/<user_id>/<fileasset>')
-def user_download(user_id, fileasset):
-    asset, user = _validate_user_asset(fileasset, user_id)
-    return _return_file(asset, user)
+@asset_app.route('/download/<user>/<fileasset>')
+def user_download(user, fileasset):
+    asset, file_user = _validate_user_asset(fileasset, user)
+    return _return_file(asset, file_user)
 
 
