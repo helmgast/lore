@@ -71,9 +71,6 @@ class FileAsset(db.Document):
     def is_public(self):
         return self.access_type == FileAccessType.public
 
-    def is_allowed_for(self, user):
-        return self.is_public() or False
-
     def file_data_exists(self):
         return self.file_data.grid_id is not None
 

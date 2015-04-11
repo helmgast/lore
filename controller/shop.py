@@ -54,7 +54,7 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
   Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
   'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
-  # TODO: Remove once downloadable_files has been migrated
+# TODO: Remove once downloadable_files has been migrated
 @shop_app.route('/download-pdf/')
 def download_pdf():
   product = request.args.get('product')
