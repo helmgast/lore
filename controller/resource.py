@@ -261,7 +261,7 @@ class ResourceAccessPolicy(object):
 class ResourceRoutingStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
     parent_strategy=None, parent_reference_field=None, short_url=False, 
-    list_filters=None, use_subdomain=False, access_policy=None):
+    list_filters=None, use_subdomain=False, access_policy=None, post_edit_action='view'):
     if use_subdomain and parent_strategy:
       raise ValueError("A subdomain-identified resource cannot have parents")
     self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm, converter=RacModelConverter())
@@ -281,6 +281,7 @@ class ResourceRoutingStrategy:
       if p:
         self.subdomain_part = p.subdomain_part
     self.short_url = short_url
+    self.post_edit_action = post_edit_action
     self.fieldnames = [n for n in self.form_class.__dict__.keys() if (not n.startswith('_') and n is not 'model_class')]
     self.default_list_filters = list_filters
     # The field name pointing to a parent resource for this resource, e.g. article.world
@@ -360,6 +361,9 @@ class ResourceRoutingStrategy:
 
   def endpoint_name(self, suffix):
     return self.resource_name + '_' + suffix
+
+  def endpoint_post_edit(self):
+    return self.endpoint_name(self.post_edit_action)
 
   def authorize(self, op, instance=None):
     return self.access.authorize(op, instance)
@@ -647,7 +651,7 @@ class ResourceHandler(View):
     item.save()
     r['item'] = item
     if not 'next' in r:
-      r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+      r['next'] = url_for('.' + self.strategy.endpoint_post_edit(), **self.strategy.all_view_args(item))
     return r
 
   def edit(self, r):
@@ -668,7 +672,7 @@ class ResourceHandler(View):
     item.save()
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
-      r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+      r['next'] = url_for('.' + self.strategy.endpoint_post_edit(), **self.strategy.all_view_args(item))
     logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
@@ -687,7 +691,7 @@ class ResourceHandler(View):
     item.save()
     if not 'next' in r:
       # In case slug has changed, query the new value before redirecting!
-      r['next'] = url_for('.' + self.strategy.endpoint_name('view'), **self.strategy.all_view_args(item))
+      r['next'] = url_for('.' + self.strategy.endpoint_post_edit(), **self.strategy.all_view_args(item))
     return r
 
   def delete(self, r):
