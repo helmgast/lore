@@ -40,7 +40,7 @@
     </div>
     <div class="col-md-4">
       {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true})}}
-      {{ MACRO.FORM_FIELD(product_form.file_assets) }}
+      {{ MACRO.FORM_FIELD(product_form.downloadable_files) }}
     </div>
   </div>
   <div class="row form-actions">
@@ -75,9 +75,9 @@
       </table>
 
       <div class="well">{{ product.description }}</div>
-      {% if product.file_assets %}
+      {% if product.downloadable_files %}
       <div class="well"><strong>{{ _('Downloadable files') }}</strong>
-          {% for file_asset in product.file_assets %}
+          {% for file_asset in product.downloadable_files %}
           <div>{% if product.is_owned_by_current_user() %}<a
                   href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
                   class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}

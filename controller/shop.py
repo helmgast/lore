@@ -54,24 +54,12 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
   Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
   'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
+  # TODO: Remove once downloadable_files has been migrated
 @shop_app.route('/download-pdf/')
 def download_pdf():
   product = request.args.get('product')
   if g.user and product:
-    if request.args.has_key('file'):
-      _product = Product.objects(slug=product).first()
-      _download_file = _product.find_matching_download_file(request.args.get('file').encode("utf-8"))
-      if _download_file is not None:
-        _directory = os.path.join(current_app.root_path, "resources", *_product.get_download_directory())
-        _filename = _download_file.get_filename(g.user)
-        _filepath = os.path.join(_directory, _filename)
-        logger.info("Download request for %s" % _filepath)
-        if os.path.exists(_filepath):
-          return send_file(_filepath, as_attachment=True,
-                           attachment_filename=_download_file.get_attachment_filename(),
-                           mimetype=_download_file.get_mimetype())
-
-    elif product == 'eon-iv-grundbok-pdf':
+    if product == 'eon-iv-grundbok-pdf':
       file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
       directory = os.path.join(current_app.root_path, "resources", "pdf")
       file_path = os.path.join(directory, file_name)

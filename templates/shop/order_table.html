@@ -72,9 +72,9 @@
     			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
 	            <p>{{ line.product.description }}</p>
 				{% if order and order.is_paid_or_shipped() %}
-				{% if line.product.file_assets %}
+				{% if line.product.downloadable_files %}
 				<div><strong>{{ _('Downloadable files') }}</strong>
-				  {% for file_asset in line.product.file_assets %}
+				  {% for file_asset in line.product.downloadable_files %}
 					<div>
 						<a href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
 								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
@@ -82,6 +82,7 @@
 					</div>
 				  {% endfor %}
 				</div>
+				{# TODO: Remove once downloadable_files has been migrated #}
 				{% elif line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
 		            {% if line.product.resources %}
 		              {% for resource in line.product.resources %}

@@ -12,23 +12,6 @@ from slugify import slugify
 from misc import Choices
 from world import ImageAsset
 
-class DownloadFile(db.EmbeddedDocument):
-  slug = db.StringField(max_length=62)
-  title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
-  description = db.StringField(max_length=500, verbose_name=_('Description'))
-  filename = db.StringField(max_length=60, required=True, verbose_name=_('File name'))
-  attachment_filename = db.StringField(max_length=60, verbose_name=_('Attachment file name'))
-  user_exclusive = db.BooleanField(default=False, verbose_name=_('Exclusive'))
-
-  def get_filename(self, user):
-    return self.filename % re.sub(r'@|\.', '_', user.email).lower() if self.user_exclusive else self.filename
-
-  def get_attachment_filename(self):
-    return self.attachment_filename if self.attachment_filename is not None else self.filename
-
-  def get_mimetype(self):
-    return mimetypes.guess_type(self.filename)[0]
-
 ProductTypes = Choices(
   book=_('Book'),
   item=_('Item'),
@@ -63,12 +46,12 @@ class Product(db.Document):
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Currency'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
   # Names of resources (downloadable files)
+  # TODO: Remove once downloadable_files has been migrated
   resources = db.ListField(db.StringField())
   group = db.StringField(max_length=60, verbose_name=_('Product Group'))
-  files = db.ListField(db.EmbeddedDocumentField(DownloadFile))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
   acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))
-  file_assets = db.ListField(db.ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
+  downloadable_files = db.ListField(db.ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
 
   # Executes before saving
   def clean(self):
@@ -79,15 +62,6 @@ class Product(db.Document):
 
   def is_owned_by_current_user(self):
     return g.user and (g.user.admin or self in products_owned_by_user(g.user))
-
-  def find_matching_download_file(self, name):
-    for file in self.files:
-      if file.slug == name:
-        return file
-    return None
-
-  def get_download_directory(self):
-    return [self.family.lower(), self.group.lower()]
 
 class OrderLine(db.EmbeddedDocument):
   quantity = db.IntField(min_value=1, default=1, verbose_name=_('Comment'))

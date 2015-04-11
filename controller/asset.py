@@ -57,7 +57,7 @@ def _is_user_allowed_access_to_asset(user, asset):
     if asset.is_public or g.user.admin:
         return True
     for product in products_owned_by_user(user):
-        if asset in product.file_assets:
+        if asset in product.downloadable_files:
             return True
     return False
 
