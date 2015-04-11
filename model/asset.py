@@ -28,10 +28,10 @@ class FileAsset(db.Document):
     slug = db.StringField(max_length=62)
     title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = db.StringField(max_length=500, verbose_name=_('Description'))
-    # Internal file name
-    source_filename = db.StringField(max_length=60, verbose_name=_('File name'))
+    # Internal filename
+    source_filename = db.StringField(max_length=60, verbose_name=_('Filename'))
     # Alternative filename when downloaded
-    attachment_filename = db.StringField(max_length=60, verbose_name=_('Attachment file name'))
+    attachment_filename = db.StringField(max_length=60, verbose_name=_('Filename when downloading'))
     # Actual file
     file_data = db.FileField(verbose_name=_('File data'))
     # How the file might be accessed
@@ -46,6 +46,10 @@ class FileAsset(db.Document):
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
+        elif request.files['clear_file_data'] is not None:
+            # TODO: Delete file
+            pass
+
 
     def get_filename(self, user):
         return self.source_filename \
