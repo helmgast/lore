@@ -6,6 +6,7 @@
 """
 import mimetypes
 import re
+from mongoengine import ValidationError
 
 from slugify import slugify
 
@@ -23,6 +24,14 @@ FileAccessType = Choices(
     # Access given through some product, also user specific
     user=_('User'))
 
+allowed_mimetypes = [
+    'application/pdf',
+    'application/rtf',
+    'application/zip',
+    'application/x-compressed-zip',
+    'image/png',
+    'text/html',
+    'text/plain']
 
 class FileAsset(db.Document):
     slug = db.StringField(max_length=62)
@@ -41,15 +50,13 @@ class FileAsset(db.Document):
         self.slug = slugify(self.title)
         request_file_data = request.files['file_data']
         if request_file_data is not None:
+            if request_file_data.mimetype not in allowed_mimetypes:
+                raise ValidationError(_('Files of type %s is not allowed.') % request_file_data.mimetype)
             # File is present, save to GridFS
             self.file_data.replace(request_file_data, content_type = request_file_data.mimetype)
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
-        elif request.files['clear_file_data'] is not None:
-            # TODO: Delete file
-            pass
-
 
     def get_filename(self, user):
         return self.source_filename \
