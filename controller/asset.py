@@ -19,8 +19,8 @@ def index():
     return redirect(url_for('.fileasset_list'))
 
 
-@asset_app.route('/fetch/<fileasset>')
-def display(fileasset):
+@asset_app.route('/link/<fileasset>')
+def link(fileasset):
     asset = FileAsset.objects(slug=fileasset).first_or_404()
     if not asset.file_data_exists:
         abort(404)

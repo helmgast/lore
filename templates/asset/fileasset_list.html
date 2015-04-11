@@ -8,8 +8,8 @@
         <td>{{_('File')}}</td>
         <td>{{_('Title')}}</td>
         <td>{{_('Description')}}</td>
-        <td>{{_('File name')}}</td>
-        <td>{{_('Attachment file name')}}</td>
+        <td>{{_('Filename')}}</td>
+        <td>{{_('Filename when downloading')}}</td>
         <td>{{_('Access type')}}</td>
     </tr>
     </thead>
@@ -19,7 +19,10 @@
         <td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.slug}}</a></td>
         <td>{{fileasset.title}}</td>
         <td>{{fileasset.description}}</td>
-        <td><a href="{{ url_for('.download', fileasset=fileasset.slug) }}">
+        <td>
+            <a href="{{ url_for('.link', fileasset=fileasset.slug) }}">
+                <span class="glyphicon glyphicon-play-circle"></span>
+            </a><a href="{{ url_for('.download', fileasset=fileasset.slug) }}">
                 <span class="glyphicon glyphicon-download"></span>
             </a> {{fileasset.source_filename}}
         </td>

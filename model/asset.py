@@ -29,6 +29,7 @@ allowed_mimetypes = [
     'application/rtf',
     'application/zip',
     'application/x-compressed-zip',
+    'image/jpeg',
     'image/png',
     'text/html',
     'text/plain']
