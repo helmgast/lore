@@ -22,7 +22,11 @@
             {{ MACRO.FORM_FIELD(fileasset_form.title) }}
             {{ MACRO.FORM_FIELD(fileasset_form.description) }}
             {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
-            {{ fileasset_form.file_data }}
+            <div class="form-group">
+                <strong>{{ _('Current file') }}</strong>: {{ fileasset.source_filename if fileasset and fileasset.file_data_exists()
+                else _('No file') }}
+                {{ fileasset_form.file_data }}
+            </div>
             {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
             {{ fileasset_form.csrf_token }}
         </div>

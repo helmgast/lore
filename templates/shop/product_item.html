@@ -18,7 +18,6 @@
   <li class="{{privileged}}"><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 {% endcall %}
 {% endif %}
-</ul>
 {%endblock%}
 
 {% block content %}{% block inline %}
@@ -41,6 +40,7 @@
     </div>
     <div class="col-md-4">
       {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true})}}
+      {{ MACRO.FORM_FIELD(product_form.downloadable_files) }}
     </div>
   </div>
   <div class="row form-actions">
@@ -56,9 +56,9 @@
     <div class="col-md-8">
       <table class="table">
         <tr><td><strong>{{ _('Title') }}</strong></td>
-        <td><small>{{ product.title }}</small></td></tr>      
+        <td><small>{{ product.title }}</small></td></tr>
         <tr><td><strong>{{ _('Publisher') }}</strong></td>
-        <td><small>{{ product.publisher }}</small></td></tr>      
+        <td><small>{{ product.publisher }}</small></td></tr>
         <tr><td><strong>{{ _('Family') }}</strong></td>
         <td>{{ product.family }}</td></tr>
         <tr><td><strong>{{ _('Created') }}</strong></td>
@@ -66,16 +66,26 @@
         <tr><td><strong>{{ _('Type') }}</strong></td>
         <td><small>{{ product.get_type_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>    
+        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>
         <tr><td><strong>{{ _('Currency') }}</strong></td>
         <td><small>{{ product.get_currency_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ product.get_status_display() }}</small></td></tr>
-        <!--<tr><td><strong>{{ _('Acknowledgement') }}</strong></td>-->
-        <!--<td><small>{{ product.acknowledgement }}</small></td></tr>-->
 
       </table>
+
       <div class="well">{{ product.description }}</div>
+      {% if product.downloadable_files %}
+      <div class="well"><strong>{{ _('Downloadable files') }}</strong>
+          {% for file_asset in product.downloadable_files %}
+          <div>{% if product.is_owned_by_current_user() %}<a
+                  href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
+                  class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
+              <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description
+              %}: {{ file_asset.description }}{% endif %}</div>
+          {% endfor %}
+      </div>
+      {% endif %}
     </div>
     <div class="col-md-4">
       {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>
