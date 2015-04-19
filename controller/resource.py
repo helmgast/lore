@@ -632,7 +632,8 @@ class ResourceHandler(View):
       r['list'] = listquery
       r[self.strategy.plural_name] = listquery
     else:
-      r['pagination'] = listquery.paginate(page=int(page), per_page=10)
+      per_page = request.args.get('per_page', 20)
+      r['pagination'] = listquery.paginate(page=int(page), per_page=int(per_page))
       r['list'] = r['pagination'].items
       r[self.strategy.plural_name] = r['list']
     r['url_for_args'] = request.view_args
