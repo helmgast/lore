@@ -19,5 +19,9 @@ GOOGLE_CLIENT_SECRET = 'yada-yada'
 FACEBOOK_APP_ID = 'yada-yada'
 FACEBOOK_APP_SECRET = 'yada-yada'
 
+# Used for payments
+STRIPE_SECRET_KEY = 'yada-yada'
+STRIPE_PUBLIC_KEY = 'yada-yada'
+
 CELERY_BROKER_URL = 'amqp://'
 CELERY_RESULT_BACKEND = 'amqp'

@@ -49,6 +49,31 @@ This method makes it more fluid to go between having just an email address, and 
             2.2.2.1) "We need to make sure you own this email, check email"
         2.1.2) Optional: Provide extra details
 
+A complete view object
+==================================================================
+All data required to represent a view of a resource
+```
+resource # which resource
+plural_name
+supported_operations # edit, view, etc
+
+args # all arguments received from url
+-> filter
+-> order_by
+-> q # search query
+-> ids/slugs
+-> output
+
+default_args # default values for args, if not provided
+accepted_args # arguments that are accepted
+
+formclass # form based on the resource
+extra_formfields # formfields used only by this view
+field_permissions # which fields can be accessed by whom
+
+# Alias: a url that uses another route's view but with some possible other arguments. E.g. /cart -> order/edit?order_by=title
+```
+
 Domains
 ==================================================================
 

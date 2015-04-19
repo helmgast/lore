@@ -10,18 +10,21 @@
 """
 import os
 import re
+import stripe
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
 from slugify import slugify
 from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus, Address
 from flask.ext.mongoengine.wtf import model_form
-from wtforms.fields import FormField, FieldList
+from wtforms.fields import FormField, FieldList, HiddenField
 from flask.ext.babel import lazy_gettext as _
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
+
+stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
 
 product_access = ResourceAccessPolicy({
   'view':'user',
@@ -98,12 +101,14 @@ def inject_cart():
     return dict(cart_items=cart_order.total_items if cart_order else 0)
 
 CartOrderLineForm = model_form(OrderLine, base_class=RacBaseForm, converter=RacModelConverter())
+# Orderlines that only include comments, to allow for editing comments but not the order lines as such
 LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
 ShippingForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
 
 class CartForm(RacBaseForm):
   order_lines = FieldList(FormField(CartOrderLineForm))
   shipping_address = FormField(ShippingForm)
+  stripe_token = HiddenField()
 
 class PostCartForm(RacBaseForm):
   order_lines = FieldList(FormField(LimitedOrderLineForm))
@@ -132,6 +137,14 @@ class OrderHandler(ResourceHandler):
       raise ResourceError(400, r)
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+    if form.stripe_token.data: # We have token data, so this is a purchase
+      charge = stripe.Charge.create(
+        source=form.stripe_token.data,
+        amount=amount,
+        currency='sek',
+        description='Flask Charge'
+      )
+
     form.populate_obj(item, request.form.keys())
     item.save()
     # In case slug has changed, query the new value before redirecting!
@@ -156,10 +169,13 @@ class OrderHandler(ResourceHandler):
       r['item'] = cart_order
       r['order'] = cart_order
       r['url_args'] = {'order':cart_order.id}
+      r['stripe_key'] = current_app.config['STRIPE_PUBLIC_KEY']
     else:
       raise ResourceError(401, _('Need to log in to use shopping cart'))
     if request.method == 'GET':
+      self.form_class = CartForm
       r = self.form_edit(r)
+
     elif request.method == 'POST':
       if request.form.has_key('product'):
         slug = request.form.get('product')

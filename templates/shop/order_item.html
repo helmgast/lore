@@ -30,7 +30,9 @@
     <h1>{{_('Nothing in cart, ')}}<br><a href="{{url_for('.product_list')}}">{{_('go shopping')}}</a></h1>
   </div>
 {% else %}
-  {% if order_form %}<form class="order-cart" method="post" action="{{order_form.action_url}}"> {% endif %}
+  {% if order_form %}
+  <form class="order-cart" method="post" action="{{order_form.action_url}}">
+  {% endif %}
 
   {% include "shop/order_table.html" %}
 
@@ -47,8 +49,8 @@
         {% endif %}
       </div>
     </div>
-  {{ order_form.csrf_token if order_form }}
-
+  {{ order_form.csrf_token }}
+  {{ order_form.stripe_token }}
   </form>
   {% else %}
     <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
@@ -63,10 +65,11 @@
 <script>
 {% if order.status=='cart' %}
   var handler = StripeCheckout.configure({
-    key: 'pk_test_5DSgZNvFRv2QzooSPEAP3G7d',
-    image: '{{ url_for('static', filename='img/helmgast_512px.png') }}',
+    key: '{{stripe_key}}',
+    image: '{{ url_for('static', filename='img/helmgast_512px.png',) }}',
     token: function(token) {
-      alert(token);
+      $('#stripe_token').val(token.id)
+      $('.order-cart').submit()
       // Use the token to create the charge with a server-side script.
       // You can access the token ID with `token.id`
     }
