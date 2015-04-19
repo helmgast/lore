@@ -44,7 +44,7 @@
           <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id, 
           from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
           {{ _('Contact Us') }}</a>
-        {% else %}
+        {% elif stripe_key %}
           <button type="submit" id="checkout" class="btn btn-primary btn-block btn-lg">{{ _('Checkout') }}</button>
         {% endif %}
       </div>

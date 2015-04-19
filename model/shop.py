@@ -95,6 +95,7 @@ class Order(db.Document):
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
+  charge_id = db.StringField() # Stores the Stripe charge id
   shipping_address = db.EmbeddedDocumentField(Address)
 
   def __unicode__(self):

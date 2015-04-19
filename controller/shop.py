@@ -125,16 +125,28 @@ class OrderHandler(ResourceHandler):
       raise ResourceError(400, r)
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
-    if form.stripe_token.data: # We have token data, so this is a purchase
-      charge = stripe.Charge.create(
-        source=form.stripe_token.data,
-        amount=amount,
-        currency='sek',
-        description='Flask Charge'
-      )
-
+    # We now have a validated form. Let's save the order first, then attempt to purchase it.
+    # This is very important, as the save() will re-calculate key values for this order
     form.populate_obj(item, request.form.keys())
     item.save()
+
+    if form.stripe_token.data: # We have token data, so this is a purchase
+      try:
+        charge = stripe.Charge.create(
+          source=form.stripe_token.data,
+          amount=int(item.total_price*100), # Stripe takes input in "cents" or similar
+          currency=item.currency,
+          description=unicode(item),
+          metadata={'order_id': item.id}
+        )
+        if charge['status'] == 'succeeded':
+          item.status = OrderStatus.paid
+          item.charge_id = charge['id']
+          item.save()
+      except stripe.error.CardError, e:
+        pass
+
+
     # In case slug has changed, query the new value before redirecting!
     r['next'] = url_for('.order_form_edit', order=r['item'].id)
 
@@ -148,6 +160,7 @@ class OrderHandler(ResourceHandler):
       r['filter'] = filter
     return super(OrderHandler, self).list(r)
 
+  # Endpoint will be 'order_cart' as it's attached to OrderHandler
   @ResourceHandler.methods(['GET','POST'])
   def cart(self, r):
     if g.user:
