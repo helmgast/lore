@@ -177,7 +177,7 @@ class Episode(db.EmbeddedDocument):
 # may not have any effect
 
 class CampaignData(db.EmbeddedDocument):
-#  pass # TODO, the children her and above gives DuplicateIndices errors. Need to be fixed.
+  pass # TODO, the children her and above gives DuplicateIndices errors. Need to be fixed.
 #  children = db.EmbeddedDocumentListField(Episode)
 
 # class Tree(db.EmbeddedDocument):
