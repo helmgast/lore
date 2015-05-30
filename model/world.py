@@ -235,6 +235,9 @@ class Article(db.Document):
     return PublishStatus[self.status] + ( (' %s %s' % (_('from'), str(self.created_date)) 
         if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else '') )
 
+  def type_name(self):
+    return self.type if self.type != ArticleTypes.default else ''
+
   @staticmethod
   def type_data_name(asked_type):
     return asked_type + 'data'
