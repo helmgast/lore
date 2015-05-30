@@ -209,7 +209,8 @@ class Article(db.Document):
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField()
-  status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.draft, verbose_name=_('Status'))
+  status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+  featured = db.BooleanField(default=False)
   feature_image = db.ReferenceField(ImageAsset)
 
   # modified_date = DateTimeField()
