@@ -1,6 +1,5 @@
 {% if pagination and pagination.pages > 1 %}
-  {% set urlargs = url_for_args.pop('page', none) %} {# need to remove page if there already #}
-  {% set urlargs = url_for_args %}
+  {% set urlargs = request.view_args|without('page') %}
   <div>
     <ul class="pagination">
       {%- for page in pagination.iter_pages(right_current=3) %}

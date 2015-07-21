@@ -365,6 +365,11 @@ def register_main_routes(app, auth):
   def currentyear():
     return datetime.utcnow().strftime('%Y')
 
+  @app.template_filter('without')
+  def without(value, *args):
+    return {k:value[k] for k in value.keys() if k not in args}
+
+
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):
 #   if d and len(d) > 0:

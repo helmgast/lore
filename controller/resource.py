@@ -628,11 +628,11 @@ class ResourceHandler(View):
       # it will not work
       listquery = listquery.filter(**r['parents'])
     page = request.args.get('page', 1)
-    if page=='all':
+    per_page = request.args.get('per_page', 20)
+    if per_page=='all':
       r['list'] = listquery
       r[self.strategy.plural_name] = listquery
     else:
-      per_page = request.args.get('per_page', 20)
       r['pagination'] = listquery.paginate(page=int(page), per_page=int(per_page))
       r['list'] = r['pagination'].items
       r[self.strategy.plural_name] = r['list']

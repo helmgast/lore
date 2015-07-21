@@ -102,7 +102,7 @@
 
 <div class="btn-group">
   {% if 'order_by' in request.args %}
-  <button type="button" class="btn btn-info btn-sm">Order By: {{request.args.get('order_by')}} &times;</button>  
+  <a href="{{ url_for(request.endpoint, **request.view_args|without('order_by')) }}" class="btn btn-info btn-sm">Order By: {{request.args.get('order_by')}} &times;</a>  
   {% else %}
   <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Order By <span class="caret"></span></button>
   <ul class="dropdown-menu" role="menu">
@@ -116,14 +116,15 @@
 
 <div class="btn-group">
   {% if 'per_page' in request.args %}
-  <button type="button" class="btn btn-info btn-sm">Per Page: {{request.args.get('per_page')}} &times;</button>  
+  <a href="{{ url_for(request.endpoint, **request.view_args|without('per_page')) }}" class="btn btn-info btn-sm">Per Page: {{request.args.get('per_page')}} &times;</a>  
   {% else %}
   <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Per Page: 10 <span class="caret"></span></button>
+  {% set args_without_page = request.view_args|without('per_page', 'page') %}
   <ul class="dropdown-menu" role="menu">
-      <li><a href="#">20</a></li>
-      <li><a href="#">50</a></li>
-      <li><a href="#">100</a></li>
-      <li><a href="#">All</a></li>
+      <li><a href="{{ url_for(request.endpoint, per_page=20, **args_without_page) }}">20</a></li>
+      <li><a href="{{ url_for(request.endpoint, per_page=50, **args_without_page) }}">50</a></li>
+      <li><a href="{{ url_for(request.endpoint, per_page=100, **args_without_page) }}">100</a></li>
+      <li><a href="{{ url_for(request.endpoint, per_page='all', **args_without_page) }}">All</a></li>
   </ul>
   {% endif %}
 </div>
