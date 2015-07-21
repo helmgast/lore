@@ -171,7 +171,6 @@ class Episode(db.EmbeddedDocument):
   title = db.StringField(max_length=60, verbose_name = _('Title'))
   description = db.StringField(verbose_name = _('Description'))
   content = db.ListField(db.ReferenceField('Article')) # references Article class below
-  children = db.EmbeddedDocumentListField('self') 
 
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row
@@ -179,14 +178,13 @@ class Episode(db.EmbeddedDocument):
 
 class CampaignData(db.EmbeddedDocument):
   pass # TODO, the children her and above gives DuplicateIndices errors. Need to be fixed.
-  children = db.EmbeddedDocumentListField(Episode)
+#  children = db.EmbeddedDocumentListField(Episode)
 
 # class Tree(db.EmbeddedDocument):
 #   pass
 
 # class Branch(db.EmbeddedDocument):
 #   subbranch = db.EmbeddedDocumentListField('self')
-
 ArticleTypes = Choices(
   default=_('Default'),
   person=_('Person'),
@@ -241,6 +239,9 @@ class Article(db.Document):
   def status_name(self):
     return PublishStatus[self.status] + ( (' %s %s' % (_('from'), str(self.created_date)) 
         if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else '') )
+
+  def type_name(self):
+    return self.type if self.type != ArticleTypes.default else ''
 
   @staticmethod
   def type_data_name(asked_type):

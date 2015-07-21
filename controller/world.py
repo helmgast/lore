@@ -68,9 +68,9 @@ class ArticleHandler(ResourceHandler):
     r = self.list(r)
     r['template'] = 'world/article_blog.html'
     if r['pagination']:
-      r['list'] = r['pagination'].iterable.filter(type='blogpost').order_by('-created_date')
+      r['list'] = r['pagination'].iterable.filter(type='blogpost').order_by('-featured', '-created_date')
     else:
-      r['list'] = r['list'].filter(type='blogpost').order_by('-created_date')
+      r['list'] = r['list'].filter(type='blogpost').order_by('-featured', '-created_date')
 
     r['articles'] = r['list']
     return r
