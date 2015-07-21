@@ -13,7 +13,7 @@ import re
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
 from slugify import slugify
-from resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
+from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
 from model.shop import Product, Order, OrderLine, OrderStatus, Address
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import FormField, FieldList

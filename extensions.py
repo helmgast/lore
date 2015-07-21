@@ -12,7 +12,9 @@ from flask.json import JSONEncoder
 from bson.objectid import ObjectId
 from mongoengine import Document, QuerySet
 from flask.ext.mongoengine import Pagination, MongoEngine
+from flask_debugtoolbar import DebugToolbarExtension
 
+toolbar = DebugToolbarExtension()
 # class MyMongoEngine(MongoEngine):
   # def
 

@@ -9,6 +9,7 @@ import logging
 
 if __name__ == '__main__':
   # This is run when executed from terminal
+  os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
   mode = sys.argv[1] if len(sys.argv)>1 else None
   if mode=='nodebug':
     app = create_app(DEBUG=False)

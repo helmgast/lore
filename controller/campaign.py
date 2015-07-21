@@ -13,7 +13,7 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash
-from resource import ResourceHandler, ResourceRoutingStrategy
+from controller.resource import ResourceHandler, ResourceRoutingStrategy
 from model.campaign import *
  
 campaign_app = Blueprint('campaign', __name__, template_folder='../templates/campaign')
