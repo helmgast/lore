@@ -17,12 +17,14 @@ if __name__ == '__main__':
     app = create_app()
     init_actions(app, mode)
     exit()
-  else:
-    app = create_app(DEBUG=True)
-    
+  elif mode=='profile':
     from werkzeug.contrib.profiler import ProfilerMiddleware
+    app = create_app(DEBUG=True)
     app.config['PROFILE'] = True
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
+    app.run()  # Debug will reload code automatically, so no need to restart server
+  else:
+    app = create_app(DEBUG=True)
     app.run()  # Debug will reload code automatically, so no need to restart server
 else:
   # This is run by UWSGI on the server
