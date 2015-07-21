@@ -9,7 +9,7 @@
 {% if op=='new' or op=='form_new' %}
   {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
 {% else %}
-  {% set tagline = article.type %} {% set title = article.title %}
+  {% set tagline = article.type_name() %} {% set title = article.title %}
 {% endif %}
 
 {% if request.args.has_key('markdown') %}
@@ -74,6 +74,7 @@
   <div class="tab-pane panel panel-default fade row" id="details">
     <div class="col-xs-6">
       {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
+      {{ MACRO.FORM_FIELD(article_form.featured) }}
     </div>
     <div class="col-xs-6">
       {{ MACRO.FORM_FIELD(article_form.status) }}

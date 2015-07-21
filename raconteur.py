@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined
+from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -61,11 +61,9 @@ def is_allowed_access(user):
 
 def create_app(**kwargs):
   the_app = Flask('raconteur')  # Creates new flask instance
-  if 'RACONTEUR_CONFIG_FILE' in os.environ:
-    the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code
-  else:
-    print >> sys.stderr, 'Using DEFAULT CONFIG FILE'
-    the_app.config.from_pyfile('config.py')
+  import default_config
+  the_app.config.from_object(default_config) # Default config that applies to all deployments
+  the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code  
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
   the_app.jinja_env.add_extension('jinja2.ext.do')
@@ -136,6 +134,9 @@ def configure_extensions(app):
   app.md = Markdown(app, extensions=['attr_list'])
   app.md.register_extension(AutolinkedImage)
 
+  # Debug toolbar
+  toolbar.init_app(app)
+
   # try:
   #   app.celery = make_celery(app)
   # except KeyError as e:
@@ -154,7 +155,6 @@ def configure_blueprints(app):
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
-    from controller.mailer import mail_app as mail
     from controller.resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
