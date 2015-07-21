@@ -2,6 +2,7 @@
 *.db
 *.log
 *.mo
+*.pot
 *.sublime*
 config.py
 version.cfg
@@ -10,3 +11,4 @@ version.cfg
 /.project
 /.pydevproject
 /Raconteur.egg-info
+/venv
