@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, mail, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
+from extensions import db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -155,6 +155,7 @@ def configure_blueprints(app):
     from controller.generator import generator
     from controller.campaign import campaign_app as campaign
     from controller.shop import shop_app as shop
+    from controller.mailer import mail_app as mail
     from controller.resource import ResourceError, ResourceHandler, ResourceRoutingStrategy, RacModelConverter
     from model.world import ImageAsset
 
