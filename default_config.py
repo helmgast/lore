@@ -1,14 +1,17 @@
 # CANNOT CONTAIN SECRETS
 # Automatically imported, do not edit for local configuration
 # For local configuration, edit local_config.py
+# Local config needs to be pointed to by environment variable RACONTEUR_CONFIG_FILE
+
+# format mongodb://user:pass@localhost/dbname replace in local config
+MONGODB_HOST = ''
 
 LOG_FOLDER = ''
-MONGODB_SETTINGS = {}
+
 SECRET_KEY = 'SECRET'
 
 DEBUG = True
-DEBUG_TB_PROFILER_ENABLED = True
-DEBUG_TB_HOSTS = ['127.0.0.1'] # Only allow localhost to access debug
+DEBUG_TB_HOSTS = ['127.0.0.1'] # Only allow localhost to access debug toolbar
 #LOG_FOLDER = '.'
 
 # Used by i18n translation using Babel
