@@ -57,8 +57,6 @@ def publish_filter(qr):
   elif g.user.admin:
     return qr
   else:
-    logger.debug("Filtering to %s" % qr.filter(Q(status=PublishStatus.published, 
-      created_date__lte=datetime.utcnow()) | Q(creator=g.user)))
     return qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
 
 
