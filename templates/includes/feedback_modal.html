@@ -29,7 +29,8 @@
           <div class="form-group">
             <label for="email">{% trans %}Email address{% endtrans %}</label>
             <input type="email" class="form-control" name="email" id="email" placeholder="Enter email" value="{{user.email}}">
-          </div>         
+          </div>
+          <p class="text-center small">Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>

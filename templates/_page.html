@@ -175,9 +175,6 @@ window.onerror = function(err, url, line, col, trace) {
 </div>
 <footer>
 {% block footer %}
-  <p class="text-center small">
-  Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})  
-  </p>
 {% endblock %}
 </footer>
 {% include "includes/feedback_modal.html" %}
