@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
+from extensions import db, start_db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -43,10 +43,8 @@ app_features = {
 def is_private():
   return app_state == STATE_PRIVATE
 
-
 def is_protected():
   return app_state == STATE_PROTECTED
-
 
 def is_public():
   return app_state == STATE_PUBLIC
@@ -111,7 +109,7 @@ def create_app(**kwargs):
 def configure_extensions(app):
   app.json_encoder = MongoJSONEncoder
 
-  db.init_app(app)
+  start_db(app)
 
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later
@@ -164,7 +162,6 @@ def configure_blueprints(app):
 
   return auth
 
-
 def configure_hooks(app):
   
   @app.before_request
@@ -181,74 +178,6 @@ def configure_logging(app):
   # Basic app logger will only log when debug is True, otherwise ignore all errors
   # This is to keep stderr clean in server application scenarios
   # app.logger.setLevel(logging.INFO)
-
-
-def init_actions(app, init_mode):
-  if init_mode:
-    if init_mode=='reset':
-      setup_models(app)
-    elif init_mode=='import':
-      import_orders(app)
-    elif init_mode=='test':
-      run_tests()
-    elif init_mode=='migrate':
-      migrate(app)
-
-def import_orders(app):
-  from tools import customer_data
-
-  app.logger.info("Importing customer data")
-  print app.config['MONGODB_SETTINGS']
-  from mongoengine.connection import get_db
-  get_db()
-  customer_data.setup_customer()
-
-def setup_models(app):
-  app.logger.info("Resetting data models")
-  print app.config['MONGODB_SETTINGS']
-  from mongoengine.connection import get_db
-  db = get_db()
-  # Drop all collections but not the full db as we'll lose user table then
-  for c in db.collection_names(False):
-    app.logger.info("Dropping collection %s" % c)
-    db.drop_collection(c)
-  from test_data import model_setup
-  model_setup.setup_models()
-  # This hack sets a unique index on the md5 of image files to prevent us from 
-  # uploading duplicate images
-  # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
- #        'md5', unique=True, background=True)
-
-def migrate(app):
-  from tools import db_migration
-  from mongoengine.connection import get_db
-  db = get_db()
-  db_migration.db_migrate(db)
-
-def validate_model():
-  is_ok = True
-  pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
-  for doc in db.Document._subclasses:  # Ugly way of finding all document type
-    if doc != 'Document':  # Ignore base type (since we don't own it)
-      for pkg in pkgs:
-        try:
-          cls = getattr(__import__(pkg, fromlist=[doc]), doc)  # Do add-hoc import/lookup of type, simillar to from 'pkg' import 'doc'
-          try:
-            cls.objects()  # Check all objects of type
-          except TypeError:
-            logger.error("Failed to instantiate %s", cls)
-            is_ok = False
-        except AttributeError:
-          pass  # Ignore errors from getattr
-        except ImportError:
-          pass  # Ignore errors from __import__
-  logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
-  return is_ok
-
-def run_tests():
-  logger.info("Running unit tests")
-  from tests import app_test
-  app_test.run_tests()
 
 def register_main_routes(app, auth):
   from flask.ext.mongoengine.wtf import model_form

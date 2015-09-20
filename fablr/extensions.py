@@ -10,9 +10,11 @@
 
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
-from mongoengine import Document, QuerySet
+from mongoengine import Document, QuerySet, ConnectionError
 from flask.ext.mongoengine import Pagination, MongoEngine
 from flask_debugtoolbar import DebugToolbarExtension
+import sys
+import re
 
 toolbar = DebugToolbarExtension()
 # class MyMongoEngine(MongoEngine):
@@ -35,8 +37,15 @@ toolbar = DebugToolbarExtension()
   #   print "Using get_db"
   #   return _dbs[alias]
 
-
 db = MongoEngine()
+def start_db(app):
+  try:
+    db.init_app(app)
+  except ConnectionError:
+    # Clean to remove password
+    dbstring = re.sub(r':([^/]+?)@',':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])
+    print >> sys.stderr, "Cannot connect to database: %s" % dbstring
+    exit(1)
 
 class MongoJSONEncoder(JSONEncoder):
   def default(self, o):

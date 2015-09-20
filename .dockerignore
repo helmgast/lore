@@ -1,6 +1,7 @@
-/.idea
-/.settings
-/.project
-/.pydevproject
-/Raconteur.egg-info
-/venv
+.idea/
+.settings/
+.project/
+.pydevproject/
+Raconteur.egg-info/
+venv/
+.git/

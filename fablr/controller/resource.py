@@ -425,7 +425,8 @@ class ResourceHandler(View):
           view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
     cls.allowed_ops.extend(custom_ops)
-    logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
+    # Uncomment to see all resources created
+    # logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
 
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))

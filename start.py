@@ -4,7 +4,7 @@ import sys
 
 # This is just a startup script for launching the server locally.
 
-from fablr.app import create_app, init_actions
+from fablr.app import create_app
 import logging
 
 if __name__ == '__main__':
@@ -14,10 +14,6 @@ if __name__ == '__main__':
   if mode=='nodebug':
     app = create_app(DEBUG=False)
     app.run()
-  elif mode:
-    app = create_app()
-    init_actions(app, mode)
-    exit()
   elif mode=='profile':
     from werkzeug.contrib.profiler import ProfilerMiddleware
     app = create_app(DEBUG=True)
