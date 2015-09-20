@@ -74,13 +74,6 @@ def create_app(**kwargs):
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
-  if 'BUGSNAG_API_KEY' in the_app.config:
-    import bugsnag
-    from bugsnag.flask import handle_exceptions
-    the_app.logger.info("Bugsnag %s %s" % (the_app.config['BUGSNAG_API_KEY'], os.getcwd()))
-    bugsnag.configure(api_key=the_app.config['BUGSNAG_API_KEY'], project_root=os.getcwd())
-    handle_exceptions(the_app)
-
   # Configure all extensions
   configure_extensions(the_app)
 
@@ -184,20 +177,10 @@ def configure_hooks(app):
 
 def configure_logging(app):
   import logging
-  from logging.handlers import RotatingFileHandler
   app.debug_log_format = '[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s'
   # Basic app logger will only log when debug is True, otherwise ignore all errors
   # This is to keep stderr clean in server application scenarios
   # app.logger.setLevel(logging.INFO)
-
-  if 'LOG_FOLDER' in app.config:
-    file_log = os.path.join(app.config['LOG_FOLDER'], app.name+'.log')
-    file_handler = RotatingFileHandler(file_log, maxBytes=100000, backupCount=10)
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(logging.Formatter(app.debug_log_format))
-    app.logger.addHandler(file_handler)
-  elif not app.debug:
-    print >> sys.stderr,'WARNING: No LOG_FOLDER configured and not running DEBUG'
 
 
 def init_actions(app, init_mode):

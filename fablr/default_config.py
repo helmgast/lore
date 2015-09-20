@@ -6,8 +6,6 @@
 # format mongodb://user:pass@localhost/dbname replace in local config
 MONGODB_HOST = ''
 
-LOG_FOLDER = ''
-
 SECRET_KEY = 'SECRET'
 
 DEBUG = True
