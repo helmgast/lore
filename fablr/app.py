@@ -1,11 +1,11 @@
 """
-  raconteur.raconteur
+  fablr.app
   ~~~~~~~~~~~~~~~~
 
-  Main raconteur application class, that initializes the Flask application,
+  Main Fablr application class, that initializes the Flask application,
   it's blueprints, plugins and template filters.
 
-  :copyright: (c) 2014 by Raconteur
+  :copyright: (c) 2014 by Helmgast AB
 """
 
 import os, sys
@@ -81,27 +81,6 @@ def create_app(**kwargs):
   configure_hooks(the_app)
 
   register_main_routes(the_app, auth)
-
-  from model.user import User, UserStatus
-  if len(User.objects(admin=True))==0:
-    admin_password = the_app.config['SECRET_KEY']
-    admin_email = the_app.config['MAIL_DEFAULT_SENDER']
-    print dict(username='admin',
-      password=the_app.config['SECRET_KEY'],
-      email=the_app.config['MAIL_DEFAULT_SENDER'],
-      admin=True,
-      status=UserStatus.active)
-
-    u = User(username='admin',
-      password=the_app.config['SECRET_KEY'],
-      email=the_app.config['MAIL_DEFAULT_SENDER'],
-      admin=True,
-      status=UserStatus.active)
-    u.save()
-    # except KeyError as e:
-    #   the_app.logger.error("Trying to create first admin user, need to have SECRET"+\
-    #     " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
-    #   raise
 
   # print the_app.url_map
   return the_app

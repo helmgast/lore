@@ -70,7 +70,7 @@ function flash_error(message, level, target) {
 /* ========================================================================
  * Editable list
  * ========================================================================
- * (c) Raconteur
+ * (c) Helmgast AB
  */
 +function ($) {
   'use strict';
@@ -328,7 +328,7 @@ $(document).ready(function() {
 /* ========================================================================
  * Image Selector
  * ========================================================================
- * Copyright Raconteur 2014
+ * Copyright Helmgast AB 2014
 
  * Activate on a button or input control, which will launch a modal to upload an 
  * image and place a preview in it. The modal will take care of all user 

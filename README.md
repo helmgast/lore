@@ -25,8 +25,8 @@ The Raconteur app contains 4 main components that interact to create the full ap
 * **Tools/Generator**: This is a minor component that will hold different tools that can be of use for gamers and writers.
 
 ## ARCHITECTURE
-The Flask app `raconteur` runs behind a WSGI webserver. It's URL hiearchy maps both to a REST interface support GET, POST, PUT, PATCH and DELETE as well as to a traditional rendered HTML GET and POST interface. Almost all HTML is pre-rendered on server and served to client, with minor Javascript added for usability. The general principle is that of "progressive enhancement" - the website should be readable by all types of browsers including search engines and screen readers.
-* `raconteur.py` - main app code to initialize the application and run it
+The Flask app `Fablr` runs behind a WSGI webserver. It's URL hiearchy maps both to a REST interface support GET, POST, PUT, PATCH and DELETE as well as to a traditional rendered HTML GET and POST interface. Almost all HTML is pre-rendered on server and served to client, with minor Javascript added for usability. The general principle is that of "progressive enhancement" - the website should be readable by all types of browsers including search engines and screen readers.
+* `app.py` - main app code to initialize the application and run it
 * `resource.py` - our own library for simplyfing the creation of the API and request flow for typical model objects with REST like operations supported
 * `model/` - contains model definitions, e.g. Article, World, User, etc.
 * `controller/` - each controller is a Blueprint in Flask, and initializes the URL routes, forms and request handlers. Relies heavily on resource.py.

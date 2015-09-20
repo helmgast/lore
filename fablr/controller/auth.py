@@ -1,11 +1,11 @@
 """
-    raconteur.auth
+    fablr.auth
     ~~~~~~~~~~~~~~~~
 
    Authentication module that provides login and logout features on top of
    User model. Adapted from flask-peewee.
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 import functools

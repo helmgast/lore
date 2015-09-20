@@ -6,7 +6,7 @@
   setup the URL routes based on Resource and provide a checkout flow. It
   also hosts important return URLs for the payment processor.
 
-  :copyright: (c) 2014 by Raconteur
+  :copyright: (c) 2014 by Helmgast AB
 """
 import os
 import re

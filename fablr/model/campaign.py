@@ -4,7 +4,7 @@
 
     Provides Mongoengine model classes for all game campaign related features.
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 from fablr.app import db

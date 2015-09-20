@@ -24,7 +24,6 @@ def lang_extract():
 	runshell('pybabel update -i temp.pot -d fablr/translations -l sv --no-fuzzy-matching')
 	runshell('rm temp.pot')
 
-
 @manager.command
 def lang_compile():
 	print """
@@ -49,6 +48,27 @@ def db_setup():
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
+
+  # from model.user import User, UserStatus
+  # if len(User.objects(admin=True))==0:
+  #   admin_password = the_app.config['SECRET_KEY']
+  #   admin_email = the_app.config['MAIL_DEFAULT_SENDER']
+  #   print dict(username='admin',
+  #     password=the_app.config['SECRET_KEY'],
+  #     email=the_app.config['MAIL_DEFAULT_SENDER'],
+  #     admin=True,
+  #     status=UserStatus.active)
+
+  #   u = User(username='admin',
+  #     password=the_app.config['SECRET_KEY'],
+  #     email=the_app.config['MAIL_DEFAULT_SENDER'],
+  #     admin=True,
+  #     status=UserStatus.active)
+  #   u.save()
+  #   # except KeyError as e:
+  #   #   the_app.logger.error("Trying to create first admin user, need to have SECRET"+\
+  #   #     " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
+  #   #   raise
 
 def validate_model():
   is_ok = True

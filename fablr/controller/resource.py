@@ -1,12 +1,12 @@
 """
-  raconteur.resource
+  fablr.resource
   ~~~~~~~~~~~~~~~~
 
   An internal library for generating REST-like URL routes and request
-  handling functionality for most of Raconteur's models. This provides
+  handling functionality for most of Fablr's models. This provides
   DRYness of code and simplified addition of new models.
 
-  :copyright: (c) 2014 by Raconteur
+  :copyright: (c) 2014 by Helmgast AB
 """
 
 import inspect

@@ -4,7 +4,7 @@
 
     Classes that aren't meant to be saved to db.
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 from flask.ext.wtf import Form # secure form

@@ -5,7 +5,7 @@
     Includes all game world related Mongoengine model classes, such as
     World, Article and so forth
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 from fablr.app import db

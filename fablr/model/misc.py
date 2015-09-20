@@ -5,7 +5,7 @@
     Includes helper functions for model classes and other lesser used
     model classes.
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 from fablr.app import db

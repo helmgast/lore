@@ -5,9 +5,9 @@ import tempfile
 from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf import model_form
 
-import raconteur
-from controller.resource import ResourceHandler, ResourceRoutingStrategy
-from raconteur import db
+import fablr.app
+from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy
+from fablr.app import db
 
 
 class TestObject(db.Document):
@@ -19,7 +19,7 @@ class CSRFDisabledModelForm(ModelForm):
     super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
 
 
-class RaconteurTestCase(unittest.TestCase):
+class FablrTestCase(unittest.TestCase):
   def test_strategy_simple(self):
     strategy = ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
     self.assertEqual('/test_objects', strategy.url_list())
@@ -50,8 +50,8 @@ class RaconteurTestCase(unittest.TestCase):
     strategy = ResourceRoutingStrategy(TestObject, 'test_objects',
                                       form_class=model_form(TestObject, base_class=CSRFDisabledModelForm))
     handler = ResourceHandler(strategy)
-    handler.register_urls(raconteur.the_app, strategy)
-    with raconteur.the_app.test_request_context(path='/test_objects/new', method="POST",
+    handler.register_urls(app.the_app, strategy)
+    with app.the_app.test_request_context(path='/test_objects/new', method="POST",
                                                 data={"name": "test_name_handler"}):
       result = handler.new({'op': 'new'})
       self.assertEqual('new', result['op'])
@@ -67,14 +67,14 @@ class RaconteurTestCase(unittest.TestCase):
     return self.app.get('/accounts/logout', follow_redirects=True)
 
   def setUp(self):
-    self.db_fd, raconteur.the_app.config['DATABASE'] = tempfile.mkstemp()
-    raconteur.the_app.config['TESTING'] = True
-    self.app = raconteur.the_app.test_client()
+    self.db_fd, app.the_app.config['DATABASE'] = tempfile.mkstemp()
+    app.the_app.config['TESTING'] = True
+    self.app = app.the_app.test_client()
 
   def tearDown(self):
     TestObject.drop_collection()
     os.close(self.db_fd)
-    os.unlink(raconteur.the_app.config['DATABASE'])
+    os.unlink(app.the_app.config['DATABASE'])
 
 
 def run_tests():

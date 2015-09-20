@@ -9,7 +9,7 @@
     perform operations on the Model classes and then return responses via 
     associated template files.
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app

@@ -2,7 +2,7 @@
     model.asset
     ~~~~~~~~~~~~~~~~
 
-    :copyright: (c) 2014 by Raconteur
+    :copyright: (c) 2014 by Helmgast AB
 """
 import mimetypes
 import re

@@ -5,7 +5,7 @@
   Includes all Mongoengine model classes relating to social features,
   including the central User model, but also Conversation and Group.
 
-  :copyright: (c) 2014 by Raconteur
+  :copyright: (c) 2014 by Helmgast AB
 """
 
 from hashlib import md5
