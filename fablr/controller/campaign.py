@@ -13,8 +13,8 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash
-from controller.resource import ResourceHandler, ResourceRoutingStrategy
-from model.campaign import *
+from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy
+from fablr.model.campaign import *
  
 campaign_app = Blueprint('campaign', __name__, template_folder='../templates/campaign')
 

@@ -8,7 +8,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from raconteur import db
+from fablr.app import db
 import re
 import datetime
 from flask.ext.babel import lazy_gettext as _

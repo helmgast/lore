@@ -7,7 +7,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from raconteur import db
+from fablr.app import db
 from world import Article, Episode, User, Group
 
 # A game session that was or will be held, e.g. the instance between a scenario

@@ -12,7 +12,7 @@ from wtforms import RadioField, BooleanField, SelectMultipleField, StringField, 
 from wtforms.compat import iteritems
 from wtforms.widgets import TextArea
 from flask.ext.babel import lazy_gettext as _
-from raconteur import STATE_TYPES, FEATURE_TYPES
+from fablr.app import STATE_TYPES, FEATURE_TYPES
 
 class ApplicationConfigForm(Form):
   backup = BooleanField(_('Do backup'))

@@ -4,10 +4,10 @@ from flask import Blueprint, current_app, make_response, redirect, url_for, send
 from mongoengine import Q
 from werkzeug.exceptions import abort
 
-from model.asset import FileAsset
-from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy
-from model.shop import Order, OrderStatus, products_owned_by_user
-from model.user import User
+from fablr.model.asset import FileAsset
+from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy
+from fablr.model.shop import Order, OrderStatus, products_owned_by_user
+from fablr.model.user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 

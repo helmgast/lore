@@ -14,9 +14,9 @@
 
 from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
 import auth
-from controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
+from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
   ResourceAccessPolicy, Authorization, logger
-from model.user import User, Group, Member, Conversation, Message, UserStatus
+from fablr.model.user import User, Group, Member, Conversation, Message, UserStatus
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
 from flask.ext.babel import lazy_gettext as _

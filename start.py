@@ -4,7 +4,7 @@ import sys
 
 # This is just a startup script for launching the server locally.
 
-from raconteur import create_app, init_actions
+from fablr.app import create_app, init_actions
 import logging
 
 if __name__ == '__main__':

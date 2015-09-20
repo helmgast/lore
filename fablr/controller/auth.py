@@ -26,7 +26,7 @@ from oauth2client.client import AccessTokenRefreshError, OAuth2WebServerFlow, Fl
 from apiclient.discovery import build
 import facebook
 
-from model.baseuser import BaseUser, check_password, create_token
+from fablr.model.baseuser import BaseUser, check_password, create_token
 
 current_dir = os.path.dirname(__file__)
 

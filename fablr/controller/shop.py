@@ -14,8 +14,8 @@ import stripe
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
 from slugify import slugify
-from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
-from model.shop import Product, Order, OrderLine, OrderStatus, Address
+from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
+from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import FormField, FieldList, HiddenField
 from flask.ext.babel import lazy_gettext as _

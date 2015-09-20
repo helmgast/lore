@@ -13,15 +13,15 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
-from model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
+from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
   EventData, FractionData, PublishStatus)
-from model.user import Group
+from fablr.model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
 from collections import OrderedDict
 from gridfs.errors import FileExists
-from controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, ArticleBaseForm
-from extensions import db, csrf
+from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, ArticleBaseForm
+from fablr.extensions import db, csrf
 from itertools import groupby
 from datetime import datetime, timedelta
 from wtforms.fields import FieldList, HiddenField

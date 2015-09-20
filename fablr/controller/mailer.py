@@ -3,10 +3,10 @@ from flask import Blueprint, current_app, render_template, request, redirect, ab
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
 from flask.ext.babel import gettext as _
-from model.user import User
-from model.shop import Order
-from model.web import MailForm
-from controller.resource import parse_out_arg, ResourceError
+from fablr.model.user import User
+from fablr.model.shop import Order
+from fablr.model.web import MailForm
+from fablr.controller.resource import parse_out_arg, ResourceError
 import re
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)

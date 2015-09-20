@@ -8,7 +8,7 @@
     :copyright: (c) 2014 by Raconteur
 """
 
-from raconteur import db
+from fablr.app import db
 from slugify import slugify
 from user import User, Group
 import requests

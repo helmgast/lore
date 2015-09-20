@@ -27,8 +27,8 @@ from wtforms import fields as f, SelectMultipleField, widgets
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
-from raconteur import is_allowed_access
-from model.world import EMBEDDED_TYPES, Article
+from fablr.app import is_allowed_access
+from fablr.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 

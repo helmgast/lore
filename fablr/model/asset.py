@@ -10,7 +10,7 @@ from mongoengine import ValidationError
 
 from slugify import slugify
 
-from raconteur import db
+from fablr.app import db
 from flask.ext.babel import gettext, lazy_gettext as _
 from misc import Choices
 from flask import request

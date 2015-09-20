@@ -12,7 +12,7 @@ from hashlib import md5
 from baseuser import BaseUser, make_password, create_token
 from slugify import slugify
 from misc import now, Choices
-from raconteur import db
+from fablr.app import db
 from mongoengine import ValidationError
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import HiddenField
