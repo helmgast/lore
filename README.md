@@ -1,14 +1,14 @@
-# RACONTEUR
-Raconteur is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends.
+# FABLR
+Fablr is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends.
 
 ## LICENSE
 This is a prototype project and does not yet have a license, please contact us for further info.
 
 ## PLATFORMS
-Raconteur is a responsive web based platform that should work equally well on desktop, tablet and mobiles (assuming modern browsers!). However, it is built with an API to supporting non-web frontends such as a mobile app.
+Fablr is a responsive web based platform that should work equally well on desktop, tablet and mobiles (assuming modern browsers!). However, it is built with an API to supporting non-web frontends such as a mobile app.
 
 ## FRAMEWORKS
-Raconteur is built in Python, and we use the following frameworks:
+Fablr is built in Python, and we use the following frameworks (plus more):
 * [Flask](http://flask.pocoo.org/): Mini-framework that provides the core HTTP functionality of taking requests, reading parameters, rendering an HTML template and responding to user.
 * [MongoDB](http://www.mongodb.org/): For database we use the NoSQL MongoDB that gives us a JSON like flexible document structure rather than fixed columns à la SQL.
 * [Flask-Mongoengine](http://mongoengine.org/) (package `flask.ext.mongoengine.wtf`): Comes with the automatic translation of Mongoengine Document objects (Model objects) into Forms by calling model_form() function, and also makes it easy to enhance an app with the Mongoengine layer.
@@ -18,10 +18,10 @@ Raconteur is built in Python, and we use the following frameworks:
 * [jQuery](http://jquery.com/): For Javascript components.
 
 ## COMPONENTS
-The Raconteur app contains 4 main components that interact to create the full application, but are otherwise relatively isolated. They are implemented as Flask Blueprints. They are:
+The Fablr app contains 4 main components that interact to create the full application, but are otherwise relatively isolated. They are implemented as Flask Blueprints. They are:
 * **Social**: Contains logic for users, game groups and conversations. Here users can follow other users, set up discussions or form themselves into gaming groups.
 * **Campaign**: This section allows players, mostly game masters, to manage their own campaigns, including scheduling game sessions, managing story lines and scenes, and so on.
-* **World**: The biggest component for Raconteur, and involves Worlds and all Articles. It can be seen as a wiki or content management system optimized for fictional worlds, and with a semantical structure such as relations between places, persons, events, and so on.
+* **World**: The biggest component for Fablr, and involves Worlds and all Articles. It can be seen as a wiki or content management system optimized for fictional worlds, and with a semantical structure such as relations between places, persons, events, and so on.
 * **Tools/Generator**: This is a minor component that will hold different tools that can be of use for gamers and writers.
 
 ## ARCHITECTURE
@@ -32,26 +32,24 @@ The Flask app `Fablr` runs behind a WSGI webserver. It's URL hiearchy maps both 
 * `controller/` - each controller is a Blueprint in Flask, and initializes the URL routes, forms and request handlers. Relies heavily on resource.py.
 * `static/` - contains static assets such as js, css, etc
 * `templates/` - sub-organized by blueprint, this contains all Jinja2 type HTML templates.
-* `test_data/` - test input data to prefill the database with when calling python app.py reset
 * `translations/` - localization files.
 
-## SETUP
-**Prerequisites**: you need to have a terminal with installed git, python 2.7.5, mongodb and virtualenv.
+## SETUP FOR DEVELOPMENT
+**Prerequisites**: you need to have a terminal with installed git, python 2.7.5, mongodb 3.0 and virtualenv [http://docs.python-guide.org/en/latest/dev/virtualenvs]
 
-1. `git clone https://github.com/ripperdoc/raconteur.git`
-2. Create a new virtualenv, activate it and then cd into the new raconteur directory
-3. `pip install -r requirements.txt` (will install all dependencies)
-4. Create a file named `config.py` in the raconteur root, and write the following into it. Make sure to change NAMEOFYOURDB and SECRETPHRASE into something that you only use locally!
+First do `git clone https://github.com/ripperdoc/raconteur.git` and cd into that directory.
 
-```
-# -*- coding: utf-8 -*-
-MONGODB_SETTINGS = {'DB':'NAMEOFYOURDB'}
-SECRET_KEY = 'SECRETPHRASE'
-LANGUAGES = {
-    'en': 'English',
-    'sv': 'Swedish'
-}
-```
+Then, decide if you want to run locally using virtualenv for python or if you want to use Docker to run a containerized application.
+
+### Virtualenv
+1. Inside the directory, execute:  `virtualenv venv`. Activate it by running `source venv/bin/activate` (needs to be done every time you want to develop)
+2. `pip install -r requirements.txt` (will install all dependencies)
+3. Default config will create a `defaultdb` on your MongoDB localhost. If that is ok, you are done, otherwise create a local `config.py` in the fablr/ directory, and override any settings needed from `default_config.py`.
+
+### Docker
+1. Install Docker if not already [https://docs.docker.com/installation/]
+2. Build the image by running `docker build -t fablr .`
+3. Start the image by running `docker run -it --rm fablr` (--rm will remove the containers after exiting, skip that option if you want).
 
 ### Running locally
 1. Start mongodb with `mongod`
@@ -60,7 +58,6 @@ LANGUAGES = {
 4. Point your browser to `http://localhost:5000`
 
 ### Translating strings
-1. Run `python setup.py lang_extract` to find all strings needing translations
-2. Run  `python start.py lang_sv_update` to put them into the translation catalog for Swedish at  `translations/sv/LC_MESSAGES/message.po` 
-3. Search the messages.po file for strings without translation into Swedish, and translate them according to the format.
-4. Run `python setup.py lang_sv_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the message.po catalog is part of the repository, but the binary file need to be built in each place the system is running)
+1. Run `python manage.py lang_extract` to find all strings needing translations and update the translation file.
+2. Search the translations/[locale]/messages.po file for strings without translations, and translate in that file according to the format.
+3. Run `python manage.py lang_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the message.po catalog is part of the repository, but the binary file need to be built in each place the system is running)

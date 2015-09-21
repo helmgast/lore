@@ -64,11 +64,10 @@ def create_app(**kwargs):
   the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code  
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
-  the_app.jinja_env.add_extension('jinja2.ext.do')
+  the_app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
   the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
-  # Reads version info for later display
-  the_app.config.from_pyfile('version.cfg', silent=True)
+  the_app.config.from_pyfile('version.cfg', silent=True) # Reads version info for later display
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 

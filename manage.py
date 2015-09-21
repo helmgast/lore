@@ -15,10 +15,9 @@ def runshell(cmd):
 
 @manager.command
 def lang_extract():
-	print """
-	Extract translatable strings and updates all .PO files.
-	After running this, go to the .PO files and manually translate all empty MsgId
-	then run python setup.py lang_compile
+	"""Extract translatable strings and .PO files for predefined locales (SV).
+	After running this, go to the .PO files in fablr/translations/ and manually 
+	translate all empty MsgId. Then run python manage.py lang_compile
 	"""
 	runshell('pybabel extract --no-wrap -F fablr/translations/babel.cfg -o temp.pot fablr/')
 	runshell('pybabel update -i temp.pot -d fablr/translations -l sv --no-fuzzy-matching')
@@ -26,49 +25,51 @@ def lang_extract():
 
 @manager.command
 def lang_compile():
-	print """
-	Compiles all .PO files to .MO so that they will show up at runtime.
-	"""
+	"""Compiles all .PO files to .MO so that they will show up at runtime."""
+
 	runshell('pybabel compile -d fablr/translations -l sv')
 
-@manager.command
-def db_setup():
+@manager.option('--reset',  dest='reset', action='store_true', default=False, help='Reset database, WILL DESTROY DATA')
+def db_setup(reset=False):
+  """Setup a new database with starting data"""
   from mongoengine.connection import get_db
-
-  app.logger.info("Resetting data models")
-  print app.config['MONGODB_SETTINGS']
+  from fablr.extensions import db_config_string
+  print db_config_string
   db = get_db()
-  # Drop all collections but not the full db as we'll lose user table then
-  for c in db.collection_names(False):
-    app.logger.info("Dropping collection %s" % c)
-    db.drop_collection(c)
-  from test_data import model_setup
-  model_setup.setup_models()
+  
+  # Check if DB is empty
+    # If empty, insert an admin user and a default world
+  from model.user import User, UserStatus
+  if len(User.objects(admin=True))==0: # consider the database empty
+    admin_password = app.config['SECRET_KEY']
+    admin_email = app.config['MAIL_DEFAULT_SENDER']
+    print dict(username='admin',
+      password="<SECRET KEY FROM CONFIG>",
+      email=app.config['MAIL_DEFAULT_SENDER'],
+      admin=True,
+      status=UserStatus.active)
+
+    u = User(username='admin',
+      password=the_app.config['SECRET_KEY'],
+      email=the_app.config['MAIL_DEFAULT_SENDER'],
+      admin=True,
+      status=UserStatus.active)
+    u.save()
+    World.create(title="Helmgast") # Create the default world
+    
+  # Else, if reset, drop all collections
+  elif reset:
+    # Drop all collections but not the full db as we'll lose user table then
+    for c in db.collection_names(False):
+      app.logger.info("Dropping collection %s" % c)
+      db.drop_collection(c)
+    from tools.test_data import model_setup
+    model_setup.setup_models()
+
   # This hack sets a unique index on the md5 of image files to prevent us from 
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
-
-  # from model.user import User, UserStatus
-  # if len(User.objects(admin=True))==0:
-  #   admin_password = the_app.config['SECRET_KEY']
-  #   admin_email = the_app.config['MAIL_DEFAULT_SENDER']
-  #   print dict(username='admin',
-  #     password=the_app.config['SECRET_KEY'],
-  #     email=the_app.config['MAIL_DEFAULT_SENDER'],
-  #     admin=True,
-  #     status=UserStatus.active)
-
-  #   u = User(username='admin',
-  #     password=the_app.config['SECRET_KEY'],
-  #     email=the_app.config['MAIL_DEFAULT_SENDER'],
-  #     admin=True,
-  #     status=UserStatus.active)
-  #   u.save()
-  #   # except KeyError as e:
-  #   #   the_app.logger.error("Trying to create first admin user, need to have SECRET"+\
-  #   #     " and MAIL_DEFAULT_SENDER defined in config, alternatively create an admin user directly in DB", e)
-  #   #   raise
 
 def validate_model():
   is_ok = True
@@ -110,10 +111,11 @@ def db_migrate():
 
 @manager.command
 def test():
+  """Run all unit tests on Fablr"""
   from tests import app_test
-
-  logger.info("Running unit tests")
-  app_test.run_tests()
+  import unittest
+  suite = unittest.TestLoader().loadTestsFromTestCase(app_test.FablrTestCase)
+  unittest.TextTestRunner(verbosity=2).run(suite)
 
 if __name__ == "__main__":
     manager.run()

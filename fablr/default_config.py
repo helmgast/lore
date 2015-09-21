@@ -3,8 +3,8 @@
 # For local configuration, edit local_config.py
 # Local config needs to be pointed to by environment variable RACONTEUR_CONFIG_FILE
 
-# format mongodb://user:pass@localhost/dbname replace in local config
-MONGODB_HOST = ''
+# Replace with mongodb://user:pass@host/dbname in local config.py file
+MONGODB_HOST = 'mongodb://localhost@defaultdb'
 
 SECRET_KEY = 'SECRET'
 

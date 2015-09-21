@@ -1,0 +1,1 @@
+from fablr import app

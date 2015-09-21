@@ -37,14 +37,24 @@ toolbar = DebugToolbarExtension()
   #   print "Using get_db"
   #   return _dbs[alias]
 
+def db_config_string(app):
+   # Clean to remove password
+  return re.sub(r':([^/]+?)@',':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])
+
+def is_db_empty(db):
+  print db.collection_names(False)
+
 db = MongoEngine()
 def start_db(app):
   try:
     db.init_app(app)
   except ConnectionError:
-    # Clean to remove password
-    dbstring = re.sub(r':([^/]+?)@',':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])
+    dbstring = db_config_string(app)
     print >> sys.stderr, "Cannot connect to database: %s" % dbstring
+    raise
+    exit(1)
+  if len(db.connection.get_default_database().collection_names(False)) == 0:
+    print >> sys.stderr, "Database is empty, run python manage.py db_setup"
     exit(1)
 
 class MongoJSONEncoder(JSONEncoder):

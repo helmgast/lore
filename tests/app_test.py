@@ -5,10 +5,14 @@ import tempfile
 from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf import model_form
 
-import fablr.app
+# Below 3 lines needed to be able to access fablr module
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from fablr import app
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy
 from fablr.app import db
-
 
 class TestObject(db.Document):
   name = db.StringField(max_length=60)
@@ -82,4 +86,4 @@ def run_tests():
 
 
 if __name__ == '__main__':
-  run_tests()
+  unittest.main()
