@@ -31,7 +31,7 @@
   </div>
 {% else %}
   {% if order_form %}
-  <form class="order-cart" method="post" action="{{order_form.action_url}}">
+  <form class="order-cart" method="post" action="{{order_form.action_url}}" autocomplete="on">
   {% endif %}
 
   {% include "shop/order_table.html" %}

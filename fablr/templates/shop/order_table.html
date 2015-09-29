@@ -140,15 +140,15 @@
 	<td>
 	<h3>{{_('Shipping Address')}}<small style="margin-left: 20px">{{_("make sure it's correct!")}}</small></h3>
 	{% if order_form and order.status != 'shipping' %}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix") }}
-        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3", autocomplete="postal-code") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix", autocomplete="address-level2") }}
+        {{MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="country") }}
         <div class="form-group clearfix">
           <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
           <div class="col-sm-9">
-            {{order_form.shipping_address.mobile(class="form-control")}}
+            {{order_form.shipping_address.mobile(class="form-control", placeholder="07XXXXXXXX", type="tel", autocomplete="tel", pattern="(\+?\d[- .]*){7,13}")}}
             <span class="help-block">För SMS-avisering</span>
           </div>
         </div>

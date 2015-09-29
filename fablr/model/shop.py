@@ -75,7 +75,7 @@ class Address(db.EmbeddedDocument):
   zipcode = db.StringField(max_length=8, verbose_name=_('ZIP Code'))
   city = db.StringField(max_length=60, verbose_name=_('City'))
   country = db.StringField(max_length=60, verbose_name=_('Country'))
-  mobile = db.StringField(min_length=8, max_length=14, default="07XXXXXXXX", verbose_name=_('Cellphone Number'))
+  mobile = db.StringField(min_length=8, max_length=14, verbose_name=_('Cellphone Number'))
 
 OrderStatus = Choices(
   cart = _('Cart'),
