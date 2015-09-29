@@ -20,9 +20,9 @@
         <td>{{fileasset.title}}</td>
         <td>{{fileasset.description}}</td>
         <td>
-            <a href="{{ url_for('.user_link', user=g.user.id, fileasset=fileasset.slug) }}">
+            <a href="{{ url_for('.link', fileasset=fileasset.slug) }}">
                 <span class="glyphicon glyphicon-play-circle"></span>
-            </a><a href="{{ url_for('.user_download', user=g.user.id, fileasset=fileasset.slug) }}">
+            </a><a href="{{ url_for('.download', fileasset=fileasset.slug) }}">
                 <span class="glyphicon glyphicon-download"></span>
             </a> {{fileasset.source_filename}}
         </td>

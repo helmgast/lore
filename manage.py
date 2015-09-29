@@ -1,8 +1,9 @@
 import subprocess as sp
 import shlex
 import os
-from flask.ext.script import Manager
+from flask.ext.script import Manager, prompt_pass
 from fablr.app import create_app
+from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
 
 os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
 app = create_app()
@@ -56,7 +57,7 @@ def db_setup(reset=False):
       status=UserStatus.active)
     u.save()
     World.create(title="Helmgast") # Create the default world
-    
+
   # Else, if reset, drop all collections
   elif reset:
     # Drop all collections but not the full db as we'll lose user table then
@@ -116,6 +117,71 @@ def test():
   import unittest
   suite = unittest.TestLoader().loadTestsFromTestCase(app_test.FablrTestCase)
   unittest.TextTestRunner(verbosity=2).run(suite)
+
+@manager.option('email', help='Set a new password)')
+def set_password(email):
+  if not app.debug:
+    print "We don't allow changing passwords if not in debug mode"
+    exit(1)
+  from fablr.model.user import User
+  user = User.objects(email=email).first()
+  if user:
+    passw = prompt_pass("Enter the new password")
+    if passw and len(passw) > 4:
+      user.password = passw
+      user.save()
+    else:
+      print "Too short or no password provided"
+  else:
+    print "No such user"
+
+@manager.option('file', help='The file to upload to the database')
+@manager.option('--title', dest="title", action='store', help='Title of the file')
+@manager.option('--desc', dest="desc", action='store', help='Description of the file')
+@manager.option('--access', dest="access", action='store', help='Access type, either public, product or user')
+def file_upload(file, title, desc, access):
+  """Adds a file asset from command line to the GridFS database"""
+  from fablr.model.asset import FileAsset, FileAccessType
+  if not file or not os.access(file, os.R_OK): # check read access
+    raise ValueError("File %s not readable" % file)
+
+  access = FileAccessType.get(access, 'public') 
+  fname = os.path.basename(file)
+  if not title:
+    title = fname
+  fa = FileAsset(title=title, description=desc, source_filename=fname)
+  fa.file_data.put(open(file))
+  fa.access_type = access
+  fa.save()
+  print file, title, desc
+  # print file, title, description
+
+
+@manager.option('input', help='PDF file to fingerprint (will not change input)')
+@manager.option('output', help='File path to write new PDF to')
+@manager.option('--user', dest="user_id", help='User ID to fingerprint with')
+def pdf_fingerprint(input, output, user_id):
+  """Will manually fingerprint a PDF file."""
+  with open(output, 'wb') as f:
+    with open(input, 'rb') as f2:
+      for buf in fingerprint_pdf(f2, user_id):
+        f.write(buf)
+
+@manager.option('input', help='PDF file to check for fingerprints')
+def pdf_check(input):
+  """Will scan a PDF for matching fingerprints"""
+  fps = get_fingerprints(input)
+  from fablr.model.user import User
+  users = list(User.objects().only('id'))
+  users.append('ripperdoc@gmail.com')
+  print users
+  for user in users:
+    uid = fingerprint_from_user(user)
+    for fp in fps:
+      if uid == fp:
+        print "User %s matches fingerprint %s in document %s" % (user, fp, input)
+        exit(1)
+  print "No match for any user in document %s" % (input)
 
 if __name__ == "__main__":
     manager.run()

@@ -48,9 +48,11 @@ class FileAsset(db.Document):
     # How the file might be accessed
     access_type = db.StringField(choices=FileAccessType.to_tuples(), required=True, verbose_name=_('Access type'))
 
+
     def clean(self):
         self.slug = slugify(self.title)
-        request_file_data = request.files['file_data']
+        request_file_data = request.files.get('file_data', None)
+        # This assumes there is a file upload
         if request_file_data is not None and request_file_data.content_length > 0:
             if request_file_data.mimetype not in allowed_mimetypes:
                 raise ValidationError(
@@ -61,12 +63,9 @@ class FileAsset(db.Document):
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
 
-    def get_user_attachment_filename(self, user):
+    def get_attachment_filename(self):
         filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename
-        if user is not None and self.access_type == FileAccessType.user:
-            return filename % re.sub(r'@|\.', '_', user.email).lower()
-        else:
-            return filename
+        return filename
 
     def is_public(self):
         return self.access_type == FileAccessType.public

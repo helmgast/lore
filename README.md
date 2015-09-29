@@ -53,8 +53,8 @@ Then, decide if you want to run locally using virtualenv for python or if you wa
 
 ### Running locally
 1. Start mongodb with `mongod`
-2. If the database has not been used before, or data needs to be reset, run `python start.py reset`
-3. Start the application with `python start.py` or just `./start.py`
+2. If the database has not been used before, or data needs to be reset, run `python run.py reset`
+3. Start the application with `python run.py` or just `./run.py`
 4. Point your browser to `http://localhost:5000`
 
 ### Translating strings

@@ -12,10 +12,12 @@ import os
 import re
 import stripe
 
-from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for
+from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for, Response
+from werkzeug import secure_filename
 from slugify import slugify
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
 from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
+from tools.pdf import fingerprint_pdf
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import FormField, FieldList, HiddenField
 from flask.ext.babel import lazy_gettext as _
@@ -62,22 +64,35 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
 def download_pdf():
   product = request.args.get('product')
   if g.user and product:
-    if product == 'eon-iv-grundbok-pdf':
-      file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
-      directory = os.path.join(current_app.root_path, "resources", "pdf")
-      file_path = os.path.join(directory, file_name)
-      logger.info("Download request for %s" % file_path)
-      if os.path.exists(file_path):
-        return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
+    filepath = product # already a slug from args
+    if 'resource' in request.args:
+      filepath += "-%s" % slugify(request.args['resource'])
+    filepath = secure_filename(filepath+".pdf") # Important, so we don't get path components
+    filepath = os.path.join(current_app.root_path, "../","resources", "pdf", filepath) # TODO hack for current location of resources
+    print filepath
 
-    elif product == 'eon-iv-spelpaketet-pdf' and request.args.has_key('resource'):
-      resource = request.args.get('resource').encode("utf-8")
-      file_name = "%s.pdf" % slugify(resource)
-      directory = os.path.join(current_app.root_path, "resources", "eon", "spelpaketet")
-      file_path = os.path.join(directory, file_name)
-      logger.info("Download request for %s" % file_path)
-      if os.path.exists(file_path):
-        return send_file(file_path, attachment_filename="%s.pdf" % resource, as_attachment=True, mimetype="application/pdf")
+    resp = Response(
+      fingerprint_pdf(filepath, g.user.id), 
+      mimetype='application/pdf',
+      direct_passthrough=True)
+    return resp
+
+    # if product == 'eon-iv-grundbok-pdf':
+    #   file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
+    #   directory = os.path.join(current_app.root_path, "resources", "pdf")
+    #   file_path = os.path.join(directory, file_name)
+    #   logger.info("Download request for %s" % file_path)
+    #   if os.path.exists(file_path):
+    #     return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
+
+    # elif product == 'eon-iv-spelpaketet-pdf' and request.args.has_key('resource'):
+    #   resource = request.args.get('resource').encode("utf-8")
+    #   file_name = "%s.pdf" % slugify(resource)
+    #   directory = os.path.join(current_app.root_path, "resources", "eon", "spelpaketet")
+    #   file_path = os.path.join(directory, file_name)
+    #   logger.info("Download request for %s" % file_path)
+    #   if os.path.exists(file_path):
+    #     return send_file(file_path, attachment_filename="%s.pdf" % resource, as_attachment=True, mimetype="application/pdf")
 
   abort(404)
 

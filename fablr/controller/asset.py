@@ -1,13 +1,14 @@
 import logging
 
-from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g
+from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g, Response
 from mongoengine import Q
 from werkzeug.exceptions import abort
 
-from fablr.model.asset import FileAsset
+from fablr.model.asset import FileAsset, FileAccessType
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy
 from fablr.model.shop import Order, OrderStatus, products_owned_by_user
 from fablr.model.user import User
+from fablr.controller.pdf import fingerprint_pdf
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -18,48 +19,50 @@ file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug', short_
                                               post_edit_action='list')
 ResourceHandler.register_urls(asset_app, file_asset_strategy)
 
+def _return_file(asset, as_attachment=False):
+    mime = asset.get_mimetype()
+    if as_attachment:
+        attachment_filename=asset.get_attachment_filename()
+    else:
+        attachment_filename=None
+    if mime == 'application/pdf' and asset.access_type == FileAccessType.user:
+        if not g.user:
+            abort(403)
+        # A pdf that should be unique per user - we need to fingerprint it
+        response = Response(
+            fingerprint_pdf(asset.file_data.get(), g.user.id),
+            mimetype=mime,
+            direct_passthrough=True)
+        # TODO Unicode filenames may break this
+        response.headers['Content-Disposition'] = 'attachment; filename=%s' % attachment_filename
+        return response
+    else:
+        return send_file(asset.file_data,
+                     as_attachment=as_attachment,
+                     attachment_filename=attachment_filename,
+                     mimetype=mime)
 
-def _return_link(asset):
-    response = make_response(asset.file_data.read())
-    response.mimetype = asset.get_mimetype()
-    return response
-
-
-def _return_file(asset, user):
-    return send_file(asset.file_data,
-                     as_attachment=True,
-                     attachment_filename=asset.get_user_attachment_filename(user),
-                     mimetype=asset.get_mimetype())
-
-
-def _validate_public_asset(fileasset):
-    asset = FileAsset.objects(slug=fileasset).first_or_404()
-    if not (asset.is_public() or (g.user and g.user.admin)):
-        abort(403)
+def authorize_file_data(fileasset_slug):
+    asset = FileAsset.objects(slug=fileasset_slug).first_or_404()
     if not asset.file_data_exists():
         abort(404)
-    return asset
+    if asset.is_public:
+        return asset
+    
+    # If we come this far the file is private to a user and should not be cached
+    # by any proxies
+    @after_this_request
+    def no_cache(response):
+        response.headers['Cache-Control'] = 'private'
+        return response
+    
+    if g.user.admin:
+        return asset
 
-
-def _validate_user_asset(fileasset, user):
-    user = User.objects(id=user).first_or_404()
-    if user is None or not (user == g.user or g.user.admin):
-        abort(401)
-    asset = FileAsset.objects(slug=fileasset).first_or_404()
-    if not _is_user_allowed_access_to_asset(user, asset):
-        abort(403)
-    if not asset.file_data_exists():
-        abort(404)
-    return asset, user
-
-
-def _is_user_allowed_access_to_asset(user, asset):
-    if asset.is_public or g.user.admin:
-        return True
     for product in products_owned_by_user(user):
         if asset in product.downloadable_files:
-            return True
-    return False
+            return asset
+    abort(403)
 
 
 @asset_app.route('/')
@@ -69,23 +72,12 @@ def index():
 
 @asset_app.route('/link/<fileasset>')
 def link(fileasset):
-    return _return_link(_validate_public_asset(fileasset))
+    asset = authorize_file_data(fileasset)
+    return _return_file(asset)
 
 
 @asset_app.route('/download/<fileasset>')
 def download(fileasset):
-    return _return_file(_validate_public_asset(fileasset), None)
-
-
-@asset_app.route('/link/<user>/<fileasset>')
-def user_link(user, fileasset):
-    asset, file_user = _validate_user_asset(fileasset, user)
-    return _return_link(asset)
-
-
-@asset_app.route('/download/<user>/<fileasset>')
-def user_download(user, fileasset):
-    asset, file_user = _validate_user_asset(fileasset, user)
-    return _return_file(asset, file_user)
-
+    asset = authorize_file_data(fileasset)
+    return _return_file(asset, True)
 
