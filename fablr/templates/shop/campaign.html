@@ -1,0 +1,71 @@
+{% extends "shop/_page.html" if not parent_template else parent_template %}
+
+{% import 'includes/macros.html' as MACRO %}
+
+{% block content_title %}Eon Crowdfunding{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}
+<ul class="nav nav-pills nav-stacked">
+<li class="nav-header">{{ _('Perks') }}</li>
+</ul>
+<ul class="media-list">
+{% for product in products %}
+  <li class="media">
+      <a href="#">
+        <img class="media-object" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}" alt="...">
+      </a>
+    <div class="media-body">
+      <h4 class="media-heading">{{product.title}}</h4>
+      {{product.description}}
+    </div>
+  </li>
+{% endfor %}
+</ul>
+{% endblock %}
+
+{% block content %}{% block inline %}
+<div class="row">
+  <div class="col-md-9 article_text">
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/OYcUpSSA3Ck" frameborder="0" allowfullscreen></iframe>
+<h2>Vad är Eon?</h2>
+<p>Eon är ett fantasyrollspel fyllt av smutsig realism med fantastiska inslag. Det är en värld som trots drakar, häxmästare, vandöda fasor och gudar känns trovärdig. Det är en värld av gråskalor. Det finns ingen absolut ondska och det finns ingen absolut godhet. Det finns individer, deras handlingar och dess konsekvenser.
+
+Hade Eon varit en TV-serie hade den varit Game of Thrones (fast med fler fantastiska folkslag och monster).
+
+Detta är den fjärde utgåvan av rollspelet Eon. Helt nyskriven och reviderad med nya illustrationer och en uppdaterad regelmotor. Spelet är kompatibelt med tidigare utgivet material knutet till spelvärlden Mundana - den största och mest genomarbetade spelvärlden i svensk rollspelshistoria. </p>
+
+<h3>Mål €4500: Spelarintroduktion till Jargien</h3>
+<div class="progress" style="width: 80%">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+    <span class="sr-only">45% Complete</span>
+  </div>
+  <div style="float: right"><strong></strong></div>
+</div>
+
+<h3>Mål €5000: Grundboken trycks i färg</h3>
+<div class="progress" style="width: 80%">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+    <span class="sr-only">45% Complete</span>
+  </div>
+  <div style="float: right"><strong>€5000</strong></div>
+</div>
+
+<h3>Mål €5500: Äventyrspaket 1</h3>
+<div class="progress" style="width: 80%">
+  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 90%">
+    <span class="sr-only">45% Complete</span>
+  </div>
+  <div style="float: right"><strong>€5500</strong></div>
+</div>
+  </div>
+  <div class="col-md-3 article_comment">
+  <h2>€68,724 <small>insamlat</small></h2>
+  <h2>440 <small>supporters</small></h2>
+  <h2>7 <small>dagar kvar</small></h2>
+  </div>
+</div>
+
+
+
+{% endblock %}{% endblock %}
