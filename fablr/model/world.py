@@ -38,11 +38,19 @@ GenderTypes = Choices(
   female=_('Female'),
   unknown=_('Unknown'))
 
+class Publisher(db.Document):
+  slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+  title = db.StringField(max_length=60, required=True)
+  description = db.StringField(max_length=500)
+  custom_domain = db.StringField(max_length=60)
+  admin = db.ReferenceField(User)
+  individual = db.BooleanField(default=False)
+
 class World(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(max_length=60)
   description = db.StringField(max_length=500)
-  publisher = db.StringField(max_length=60)
+  publisher = db.ReferenceField(Publisher)
   rule_system = db.StringField(max_length=60)
   created_date = db.DateTimeField(default=datetime.utcnow)
 

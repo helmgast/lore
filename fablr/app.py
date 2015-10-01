@@ -58,7 +58,7 @@ def is_allowed_access(user):
     return True
 
 def create_app(**kwargs):
-  the_app = Flask('fablr')  # Creates new flask instance
+  the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
   import default_config
   the_app.config.from_object(default_config) # Default config that applies to all deployments
   the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code  

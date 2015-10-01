@@ -14,7 +14,7 @@
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
 from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
-  EventData, FractionData, PublishStatus)
+  EventData, FractionData, PublishStatus, Publisher)
 from fablr.model.user import Group
 from flask.views import View
 from flask.ext.mongoengine.wtf import model_form, model_fields
@@ -34,7 +34,9 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-world_strategy = ResourceRoutingStrategy(World, 'worlds', 'slug', short_url=True)
+publisher_strategy = ResourceRoutingStrategy(Publisher, 'publishers', 'slug', short_url=True)
+
+world_strategy = ResourceRoutingStrategy(World, 'worlds', 'slug', parent_strategy=publisher_strategy, short_url=True)
 
 class WorldHandler(ResourceHandler):
   def myworlds(self, r):
@@ -95,9 +97,9 @@ article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug',
   short_url=True,
   list_filters=publish_filter,
   form_class=model_form(Article, 
-  base_class=ArticleBaseForm, 
-  exclude=['slug'], 
-  converter=RacModelConverter()))
+    base_class=ArticleBaseForm, 
+    exclude=['slug'], 
+    converter=RacModelConverter()))
 
 ArticleHandler.register_urls(world_app, article_strategy)
 
