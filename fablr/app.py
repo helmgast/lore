@@ -60,14 +60,32 @@ def is_allowed_access(user):
 def create_app(**kwargs):
   the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
   import default_config
-  the_app.config.from_object(default_config) # Default config that applies to all deployments
-  the_app.config.from_envvar('RACONTEUR_CONFIG_FILE')  # db-settings and secrets, should not be shown in code  
+  the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
+  the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
+  # the_app.config.from_pyfile('config.py', silent=True) # Now override with custom settings if exist
+
+  # Override defaults with any environment variables.
+  # TODO there could be name collision with env variables, and this may be unsafe
+  for k in the_app.config.iterkeys():
+    env_k = 'FABLR_%s' % k
+    if env_k in os.environ:
+      the_app.config[k] = os.environ[env_k]
+
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
+  the_app.config.from_pyfile('version.cfg', silent=True) # Reads version info for later display
+
+  # If in production, make sure we don't have any dummy secrets
+  if not the_app.debug:
+    for key in dir(default_config.SecretConfig):
+      if key.isupper():
+        if the_app.config[key] == 'SECRET':
+          raise ValueError("Secret key %s given dummy value in production - ensure"+
+            " it's overriden" % key)
+
   the_app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
   the_app.jinja_env.undefined = SilentUndefined
   # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
-  the_app.config.from_pyfile('version.cfg', silent=True) # Reads version info for later display
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
 
@@ -83,6 +101,13 @@ def create_app(**kwargs):
 
   # print the_app.url_map
   return the_app
+
+def configure_logging(app):
+  import logging
+  app.debug_log_format = '[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s'
+  # Basic app logger will only log when debug is True, otherwise ignore all errors
+  # This is to keep stderr clean in server application scenarios
+  # app.logger.setLevel(logging.INFO)
 
 def configure_extensions(app):
   app.json_encoder = MongoJSONEncoder
@@ -149,13 +174,6 @@ def configure_hooks(app):
   @app.context_processor
   def inject_access():
     return dict(access_policy=app.access_policy)
-
-def configure_logging(app):
-  import logging
-  app.debug_log_format = '[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s'
-  # Basic app logger will only log when debug is True, otherwise ignore all errors
-  # This is to keep stderr clean in server application scenarios
-  # app.logger.setLevel(logging.INFO)
 
 def register_main_routes(app, auth):
   from flask.ext.mongoengine.wtf import model_form
