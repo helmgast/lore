@@ -35,21 +35,25 @@ The Flask app `Fablr` runs behind a WSGI webserver. It's URL hiearchy maps both 
 * `translations/` - localization files.
 
 ## SETUP FOR DEVELOPMENT
-**Prerequisites**: you need to have a terminal with installed git, python 2.7.5, mongodb 3.0 and virtualenv [http://docs.python-guide.org/en/latest/dev/virtualenvs]
+**Prerequisites**: you need to have a terminal with installed git. 
 
-First do `git clone https://github.com/ripperdoc/raconteur.git` and cd into that directory.
+First do `git clone git@github.com:per-frojdh/raconteur.git` and cd into that directory.
 
 Then, decide if you want to run locally using virtualenv for python or if you want to use Docker to run a containerized application.
 
 ### Virtualenv
-1. Inside the directory, execute:  `virtualenv venv`. Activate it by running `source venv/bin/activate` (needs to be done every time you want to develop)
-2. `pip install -r requirements.txt` (will install all dependencies)
-3. Default config will create a `defaultdb` on your MongoDB localhost. If that is ok, you are done, otherwise create a local `config.py` in the fablr/ directory, and override any settings needed from `default_config.py`.
+*Running virtualenv manages your python dependencies separate from your development machine, but you still need to manage the database yourself*
+1. You need to have python 2.7.5, pip and virtualenv installed. Google for instructions. Additionally, to run the database locally, you need to install mongodb 3.0 or higher.
+2. Inside the directory, execute:  `virtualenv venv`. Activate it by running `source venv/bin/activate` (needs to be done every time you want to develop)
+3. `pip install -r requirements.txt` (will install all dependencies)
+4. Default config will use a `defaultdb` on your MongoDB localhost. If that is ok, you are done, otherwise create a local `config.py` in the fablr/ directory, and override any settings needed from `default_config.py`.
 
 ### Docker
+*Running Docker means having a Virtual Machine and/or separate user space where you can run the full application, including database, with guaranteed separation from your local machine, as well as (almost) identical to the server environment*
 1. Install Docker if not already [https://docs.docker.com/installation/]
-2. Build the image by running `docker build -t fablr .`
-3. Start the image by running `docker run -it --rm fablr` (--rm will remove the containers after exiting, skip that option if you want).
+2. Run a temporary database image: `docker run --name mongo -d mongo`
+3. Build the image by running `docker build -t fablr .`
+4. Start the image by running `docker run -it --rm --link mongo:mongo fablr` (--rm will remove the containers after exiting, skip that option if you want).
 
 ### Running locally
 1. Start mongodb with `mongod`
