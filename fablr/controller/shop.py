@@ -17,7 +17,7 @@ from werkzeug import secure_filename
 from slugify import slugify
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
 from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
-from tools.pdf import fingerprint_pdf
+from pdf import fingerprint_pdf
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import FormField, FieldList, HiddenField
 from flask.ext.babel import lazy_gettext as _

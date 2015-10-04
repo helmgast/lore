@@ -64,8 +64,6 @@ def create_app(**kwargs):
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
   the_app.config.from_pyfile('config.py', silent=True) # Now override with custom settings if exist
 
-  print os.environ
-
   # Override defaults with any environment variables, as long as they are defined in default.
   # TODO there could be name collision with env variables, and this may be unsafe
   for k in the_app.config.iterkeys():
