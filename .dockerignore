@@ -4,4 +4,4 @@
 .pydevproject/
 Raconteur.egg-info/
 venv/
-.git/
+.git*
