@@ -35,7 +35,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 
 def generate_flash(action, name, model_identifiers, dest=''):
-  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1 
+  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
     else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
   flash(s, 'success')
   return s
@@ -56,7 +56,7 @@ def error_response(msg, level='error'):
 class RacBaseForm(ModelForm):
   def populate_obj(self, obj, fields_to_populate=None):
     if fields_to_populate:
-      # FormFields in form args will have '-' do denote it's subfields. We 
+      # FormFields in form args will have '-' do denote it's subfields. We
       # only want the first part, or it won't match the field names
       fields_to_populate = set([fld.split('-', 1)[0] for fld in fields_to_populate])
       newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in fields_to_populate]
@@ -73,7 +73,7 @@ class RacBaseForm(ModelForm):
 # class PartialEditForm(OrigForm):
 #   def populate_obj(self, obj, fields_to_populate=None):
 #     if fields_to_populate:
-#       # FormFields in form args will have '-' do denote it's subfields. We 
+#       # FormFields in form args will have '-' do denote it's subfields. We
 #       # only want the first part, or it won't match the field names
 #       fielddict = {}
 #       for fld in fields_to_populate:
@@ -93,9 +93,9 @@ class RacBaseForm(ModelForm):
 #             field._obj = field.model_class()
 #           if len(fielddict[name])>0:
 #             subfields_to_populate = fielddict[name]
-#         field.populate_obj(obj, name, subfields_to_populate)  
+#         field.populate_obj(obj, name, subfields_to_populate)
 #       else:
-#         field.populate_obj(obj, name) 
+#         field.populate_obj(obj, name)
 
 # class RacBaseForm(ModelForm, PartialEditForm):
 #   pass # double inheritance from ModelForm and our special populate_obj
@@ -155,7 +155,7 @@ class RacModelConverter(ModelConverter):
     # flask-wtf. This is because we are in a FormField, and it doesn't require
     # additional CSRFs.
 
-    form_class = model_form(field.document_type_obj, converter=RacModelConverter(), 
+    form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
       base_class=OrigForm, field_args={})
     return f.FormField(form_class, **kwargs)
 
@@ -190,7 +190,7 @@ class Authorization:
     self.is_authorized = is_authorized
     self.message = message
     self.error_code = error_code
-    # Privleged means that this authorization would not apply to the public
+    # Privileged means that this authorization would not apply to the public
     # or a normal user. E.g. a user can only edit their own profile (privilege),
     # or an admin can see other people's orders
     self.only_fields = only_fields
@@ -209,7 +209,7 @@ class Authorization:
 class ResourceAccessPolicy(object):
   model_class = None
   levels = ['public', 'user', 'private', 'admin']
-  
+
   def __init__(self, ops_levels=None, get_owner_func=None):
     if not ops_levels:
       self.ops_levels = {
@@ -241,12 +241,12 @@ class ResourceAccessPolicy(object):
       if not instance:
         return Authorization(False, 'Error: Cannot apply private access without an instance')
       instance_owner = self.get_owner_func(instance)
-      
+
       if g.user and g.user.admin:
         return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance))
 
       if not instance_owner:
-        return Authorization(False, 'Error: Cannot identify user (field %s) which instance %s belongs to' % (unicode(self.user_field), instance))
+        return Authorization(False, 'Error: Cannot identify user which instance %s belongs to' % instance)
       elif not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
       elif not g.user == instance_owner:
@@ -263,8 +263,8 @@ class ResourceAccessPolicy(object):
     return Authorization(False, 'error', 'This is catch all denied authorization, should not be here')
 
 class ResourceRoutingStrategy:
-  def __init__(self, model_class, plural_name, id_field='id', form_class=None, 
-    parent_strategy=None, parent_reference_field=None, short_url=False, 
+  def __init__(self, model_class, plural_name, id_field='id', form_class=None,
+    parent_strategy=None, parent_reference_field=None, short_url=False,
     list_filters=None, use_subdomain=False, access_policy=None, post_edit_action='view'):
     if use_subdomain and parent_strategy:
       raise ValueError("A subdomain-identified resource cannot have parents")
@@ -419,9 +419,9 @@ class ResourceHandler(View):
     custom_ops = []
     for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
       if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.allowed_ops):
-        app.add_url_rule(st.get_url_path(name), 
-          subdomain=st.parent.subdomain_part if st.parent else None, 
-          methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'], 
+        app.add_url_rule(st.get_url_path(name),
+          subdomain=st.parent.subdomain_part if st.parent else None,
+          methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'],
           view_func=cls.as_view(st.endpoint_name(name), st))
         custom_ops.append(name)
     cls.allowed_ops.extend(custom_ops)
@@ -436,7 +436,7 @@ class ResourceHandler(View):
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
-    
+
     if current_app:
       current_app.access_policy[st.resource_name] = st.access
 
@@ -512,7 +512,7 @@ class ResourceHandler(View):
       logger.exception("Validation error")
       resErr = ResourceError(400, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
       if r['out'] == 'json':
-        return self._return_json(r, resErr) 
+        return self._return_json(r, resErr)
       else:
         # Send the error onward, will be picked up by debugger if in debug mode
         # 3rd args is the current traceback, as we have created a new exception
@@ -585,13 +585,13 @@ class ResourceHandler(View):
     r['auth'] = auth
     if not auth:
       raise ResourceError(auth.error_code, r, message=auth.message)
-    
+
     r['template'] = self.strategy.item_template()
     return r
 
   def form_edit(self, r):
     item = r['item']
-    
+
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
@@ -609,7 +609,7 @@ class ResourceHandler(View):
     r['auth'] = auth
     if not auth:
       raise ResourceError(auth.error_code, r, message=auth.message)
-    
+
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
@@ -622,10 +622,10 @@ class ResourceHandler(View):
     r['auth'] = auth
     if not auth:
       raise ResourceError(auth.error_code, r, message=auth.message)
-    
+
     listquery = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
     if r.get('parents'):
-      # TODO if the name of the parent resource is different than the reference field name 
+      # TODO if the name of the parent resource is different than the reference field name
       # it will not work
       listquery = listquery.filter(**r['parents'])
     page = request.args.get('page', 1)
@@ -716,4 +716,3 @@ class ResourceHandler(View):
     logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r
-

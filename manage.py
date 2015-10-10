@@ -12,12 +12,12 @@ manager = Manager(app)
 def runshell(cmd):
 	retcode = sp.call(shlex.split(cmd))
 	if retcode > 0:
-		sys.exit(retcode) 
+		sys.exit(retcode)
 
 @manager.command
 def lang_extract():
 	"""Extract translatable strings and .PO files for predefined locales (SV).
-	After running this, go to the .PO files in fablr/translations/ and manually 
+	After running this, go to the .PO files in fablr/translations/ and manually
 	translate all empty MsgId. Then run python manage.py lang_compile
 	"""
 	runshell('pybabel extract --no-wrap -F fablr/translations/babel.cfg -o temp.pot fablr/')
@@ -37,7 +37,7 @@ def db_setup(reset=False):
   from fablr.extensions import db_config_string
   print db_config_string
   db = get_db()
-  
+
   # Check if DB is empty
     # If empty, insert an admin user and a default world
   from model.user import User, UserStatus
@@ -67,7 +67,7 @@ def db_setup(reset=False):
     from tools.test_data import model_setup
     model_setup.setup_models()
 
-  # This hack sets a unique index on the md5 of image files to prevent us from 
+  # This hack sets a unique index on the md5 of image files to prevent us from
   # uploading duplicate images
   # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
  #        'md5', unique=True, background=True)
@@ -145,13 +145,18 @@ def file_upload(file, title, desc, access):
   if not file or not os.access(file, os.R_OK): # check read access
     raise ValueError("File %s not readable" % file)
 
-  access = FileAccessType.get(access, 'public') 
+  access = access if access in FileAccessType else 'public'
+  print access
   fname = os.path.basename(file)
   if not title:
     title = fname
-  fa = FileAsset(title=title, description=desc, source_filename=fname)
+  fa = FileAsset(
+  	title=title,
+  	description=desc,
+	source_filename=fname,
+	attachment_filename=fname,
+	access_type=access)
   fa.file_data.put(open(file))
-  fa.access_type = access
   fa.save()
   print file, title, desc
   # print file, title, description

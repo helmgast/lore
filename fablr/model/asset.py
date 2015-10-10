@@ -52,8 +52,10 @@ class FileAsset(db.Document):
     def clean(self):
         self.slug = slugify(self.title)
         request_file_data = request.files.get('file_data', None)
+        # print request.files, "request_file_data is not None %s and request_file_data.total_content_length > 0 %s:" % (request_file_data is not None, request_file_data.total_content_length)
         # This assumes there is a file upload
-        if request_file_data is not None and request_file_data.content_length > 0:
+        if request_file_data is not None:
+            print "We have file data"
             if request_file_data.mimetype not in allowed_mimetypes:
                 raise ValidationError(
                     gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))

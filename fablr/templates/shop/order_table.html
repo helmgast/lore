@@ -76,7 +76,7 @@
 				<div><strong>{{ _('Downloadable files') }}</strong>
 				  {% for file_asset in line.product.downloadable_files %}
 					<div>
-						<a href="{{ url_for('assets.user_download', user=g.user.id, fileasset=file_asset.slug) }}"><span
+						<a href="{{ url_for('assets.download', fileasset=file_asset.slug) }}"><span
 								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
 						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
 					</div>
@@ -101,7 +101,7 @@
 		            <div class="form-group">
 		            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
 		            {% if not line.comment %}
-		            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>              
+		            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
 		            {% else %}
 		            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
 		            {% endif %}

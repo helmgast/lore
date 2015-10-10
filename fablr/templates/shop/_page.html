@@ -6,12 +6,15 @@
 {% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
 {% block shop_active %} class="active"{% endblock %}
 
+{% block navbar_cart %}
+{% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
+<li class="active"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span class="badge">{{ cart_items if cart_items else 0}}</span>
+</a></li>
+{% endcall %}
+{% endblock %}
+
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
-  <li class="active {{privileged}}"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span id="cart-counter" class="badge alert-danger">{{ cart_items if cart_items else 0}}</span>
-  </a></li>
-  {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
   <li class="{{privileged}}"><a href="{{ url_for('.product_list') }}"><span class="glyphicon glyphicon-list"></span> {{ _('All products') }}</a></li>
   {% endcall %}

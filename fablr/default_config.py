@@ -12,7 +12,7 @@ class Config(object):
 	# Used by i18n translation using Babel
 	BABEL_DEFAULT_LOCALE = 'sv'
 	MAIL_DEFAULT_SENDER = 'info@helmgast.se'
-
+	MAX_CONTENT_LENGTH = 64 * 1024 * 1024 # 64 MB
 
 class SecretConfig(object):
 	# Replace with mongodb://user:pass@host/dbname in local config.py file

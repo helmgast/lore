@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g, Response
+from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g, Response, after_this_request
 from mongoengine import Q
 from werkzeug.exceptions import abort
 
@@ -15,7 +15,14 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
 
 file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug', short_url=True,
-                                              access_policy=ResourceAccessPolicy({'_default': 'admin'}),
+                                              access_policy=ResourceAccessPolicy({
+                                                #   'view': 'private', # Add these later to allow personal files
+                                                #   'edit': 'private',
+                                                #   'form_edit': 'private',
+                                                #   'replace': 'private',
+                                                #   'delete': 'private',
+                                                  '_default': 'admin'
+                                                }),
                                               post_edit_action='list')
 ResourceHandler.register_urls(asset_app, file_asset_strategy)
 
@@ -44,22 +51,23 @@ def _return_file(asset, as_attachment=False):
 
 def authorize_file_data(fileasset_slug):
     asset = FileAsset.objects(slug=fileasset_slug).first_or_404()
+
     if not asset.file_data_exists():
         abort(404)
-    if asset.is_public:
+    if asset.is_public():
         return asset
-    
+
     # If we come this far the file is private to a user and should not be cached
     # by any proxies
     @after_this_request
     def no_cache(response):
         response.headers['Cache-Control'] = 'private'
         return response
-    
+
     if g.user.admin:
         return asset
 
-    for product in products_owned_by_user(user):
+    for product in products_owned_by_user(g.user):
         if asset in product.downloadable_files:
             return asset
     abort(403)
@@ -80,4 +88,3 @@ def link(fileasset):
 def download(fileasset):
     asset = authorize_file_data(fileasset)
     return _return_file(asset, True)
-

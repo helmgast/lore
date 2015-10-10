@@ -6,11 +6,15 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
-<ul class="nav nav-pills nav-stacked">
-<li class="nav-header">{{ _('Actions') }}</li>
 {% if order.status != 'cart' %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('view')) %}
-<li class="{{privileged}}"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='order', user=user.id, order=order.id)}}"><span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}</a></li>
+<ul class="nav nav-pills nav-stacked">
+<li class="nav-header">{{ _('Actions') }}</li>
+<li class="{{privileged}}">
+  <a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='order', user=user.id, order=order.id)}}">
+    <span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}
+  </a>
+</li>
 {% endcall %}
 {% endif %}
 {% endblock %}
@@ -41,7 +45,7 @@
       <div class="col-md-offset-8">
         <button type="submit" class="btn btn-success btn-block">{{ _('Save') }}</button>
         {% if order.status != 'cart' %}
-          <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id, 
+          <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id,
           from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
           {{ _('Contact Us') }}</a>
         {% elif stripe_key %}
