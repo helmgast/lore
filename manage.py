@@ -146,7 +146,6 @@ def file_upload(file, title, desc, access):
     raise ValueError("File %s not readable" % file)
 
   access = access if access in FileAccessType else 'public'
-  print access
   fname = os.path.basename(file)
   if not title:
     title = fname
@@ -162,11 +161,12 @@ def file_upload(file, title, desc, access):
   # print file, title, description
 
 
-@manager.option('input', help='PDF file to fingerprint (will not change input)')
 @manager.option('output', help='File path to write new PDF to')
-@manager.option('--user', dest="user_id", help='User ID to fingerprint with')
+@manager.option('input', help='PDF file to fingerprint (will not change input)')
+@manager.option('--user', dest="user_id", help='User ID to fingerprint with', required=True)
 def pdf_fingerprint(input, output, user_id):
   """Will manually fingerprint a PDF file."""
+  print "Fingerprinting user %s from file %s into file %s" % (user_id, input, output)
   with open(output, 'wb') as f:
     with open(input, 'rb') as f2:
       for buf in fingerprint_pdf(f2, user_id):
@@ -177,11 +177,12 @@ def pdf_check(input):
   """Will scan a PDF for matching fingerprints"""
   fps = get_fingerprints(input)
   from fablr.model.user import User
-  users = list(User.objects().only('id'))
-  users.append('ripperdoc@gmail.com')
-  print users
+  users = list(User.objects().only('id', 'username'))
+  # users.append('ripperdoc@gmail.com')
+  # print users
   for user in users:
-    uid = fingerprint_from_user(user)
+    uid = fingerprint_from_user(user.id)
+    print "User %s with id %s got fp %s" % (user, user.id, uid)
     for fp in fps:
       if uid == fp:
         print "User %s matches fingerprint %s in document %s" % (user, fp, input)

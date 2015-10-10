@@ -8,7 +8,7 @@
 
 {% block navbar_cart %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
-<li class="active"><a href="{{ url_for('.order_cart') }}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Cart') }} <span class="badge">{{ cart_items if cart_items else 0}}</span>
+<li><a href="{{ url_for('.order_cart') }}" style="font-size: 11px">{{ _('Cart') }} <span style="font-size: 20px" class="glyphicon glyphicon-shopping-cart"></span><span class="badge">{{ cart_items if cart_items else 0}}</span>
 </a></li>
 {% endcall %}
 {% endblock %}

@@ -77,7 +77,7 @@ def fingerprint_pdf(file_object, user_id):
 				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
 				font_id_num += 1
 				print window[m.start(0) : window.find('\n', m.start(1))]
-		
+
 		# We use a sliding window which means we can't yield every loop,
 		# it would duplicate half window in the output
 		if do_yield:
@@ -92,6 +92,8 @@ def get_fingerprints(file):
 		window = f.read(window_size*2)
 		buf = window # just to start with a buffer that equals true
 		while buf:
+			# Todo - if we find something, it's often found twice as the window
+			# overlaps, so fix this
 			m = pdf_id.search(window)
 			if m:
 				print "Found %s in %s" % (m.group(1),window[m.start(0) : window.find('\n', m.start(1))])
@@ -163,20 +165,20 @@ def get_fingerprints(file):
 # 			raw_input()
 
 
-# PDF format 
+# PDF format
 
 # PDFs are updated by prepending a new XREF table above the document, and readers
 # are supposed to read from bottom and up.
 # If saved with "Fast Web View", the PDF starts with first page:
 # http://labs.appligent.com/pdfblog/linearization/
 
-# /Linearized 1 # 
+# /Linearized 1 #
 # /O 193 # object number of first page
 # /H [ 1203 800 ] # location of hint stream
 # /L 621019 # length of file in bytes, should be updated
 # /E 260336 # byte offset to end of first page
 # /N 15 # number of pages in doc
-# /T 617080 # the offset of the white-space character preceding the first entry 
+# /T 617080 # the offset of the white-space character preceding the first entry
 # 			of the main cross-reference table (the entry for object number 0)
 # 			should be updated
 # After the linearized comes a trailer with a Prev value. That points to the
