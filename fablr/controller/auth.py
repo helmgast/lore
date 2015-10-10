@@ -88,7 +88,7 @@ class Auth(object):
       ('/logout/', self.logout),
       ('/login/', self.login),
       ('/join/', self.join),
-      ('/remind/', self.remind)     
+      ('/remind/', self.remind)
     )
 
   def test_user(self, test_fn):
@@ -108,7 +108,7 @@ class Auth(object):
 
   def login_required(self, func):
     return self.test_user(lambda u: True)(func)
-  
+
   def admin_required(self, func):
     return self.test_user(lambda u: u.admin)(func)
 
@@ -130,16 +130,26 @@ class Auth(object):
   def get_logged_in_user(self):
     # if request.endpoint and request.endpoint[0:4]=='auth':
     #   print session
+    u = None
     if session.get('logged_in'):
       if getattr(g, 'user', None):
-        return g.user
+        u = g.user
       try:
-        return self.User.objects(
+        u = self.User.objects(
           status='active', id=session.get('user_pk')
         ).get()
       except self.User.DoesNotExist:
         session.pop('logged_in', None)
         pass
+    if "as_user" in request.args and u.admin:
+        as_user = request.args['as_user']
+        try:
+            u2 = self.User.objects(username=as_user).get()
+            self.logger.debug("User %s masquerading as %s" % (u,u2))
+            return u2
+        except self.User.DoesNotExist:
+            pass
+    return u
 
   def connect_google(self, one_time_code):
     if not self.google_client:
@@ -219,9 +229,9 @@ class Auth(object):
             # with an email_token as well or without)
             try:
               user = self.User.objects(email=form.email.data.lower()).get()
-            except self.User.DoesNotExist:            
+            except self.User.DoesNotExist:
               user = self.User() # New user
-            
+
             if verified_email and reset and user.status == 'active':
                 # We are resetting an existing user, so delete existing login info
                 # We will only save this change if all works through
@@ -241,7 +251,7 @@ class Auth(object):
                   raise ValueError('Error connecting to Google')
                 user.google_auth = self.ExternalAuth(
                   id=external_id,
-                  long_token=external_access_token, 
+                  long_token=external_access_token,
                   emails=emails)
               elif form.external_service.data == 'facebook':
                 external_access_token, external_id, email = self.connect_facebook(form.auth_code.data)
@@ -251,7 +261,7 @@ class Auth(object):
                   raise ValueError('Error connecting to Facebook')
                 user.facebook_auth = self.ExternalAuth(
                   id=external_id,
-                  long_token=external_access_token, 
+                  long_token=external_access_token,
                   emails=emails)
               if not reset:
                 form.populate_obj(user) # Will not save any data on external service!
@@ -261,13 +271,13 @@ class Auth(object):
                 user.status = 'active'
                 user.save()
                 self.login_user(user)
-                return redirect(self.get_next_url())               
+                return redirect(self.get_next_url())
               else:
                 user.save()
                 #send_verification_email()
                 print "Sending verification email" #TODO
                 flash( _('There is a problem with your login, please contact us info@helmgast.se!'), 'warning')
-                
+
                 # flash( _("You have registered, but as your preferred email didn't \
                 #   match the ones in external auth, you have to verify it manually, \
                 #   please check your inbox"), 'success')
@@ -294,13 +304,13 @@ class Auth(object):
                 user.save()
                 self.login_user(user)
                 flash( _('Password successfully changed'), 'success')
-                return redirect(self.get_next_url())                
+                return redirect(self.get_next_url())
               elif user.status == 'invited':
                 user.status = 'active'
                 form.populate_obj(user) # any optional data that has been added
                 user.save()
                 self.login_user(user)
-                return redirect(self.get_next_url())                
+                return redirect(self.get_next_url())
               else:
                 flash( _('This user is already verified!'), 'warning')
             except:
@@ -309,7 +319,7 @@ class Auth(object):
           else:
             # Something wrong with the token
             flash( _('Incorrect email or email token, did you use the right link?'), 'danger')
-        
+
         else:
           flash( _('Registration without invite link is not yet open, please come back later!'), 'danger')
 
@@ -344,7 +354,7 @@ class Auth(object):
             if form.external_service.data=='google':
               credentials, profile = self.connect_google(form.auth_code.data)
               provided_external_id = credentials.id_token['sub']
-              external_access_token = credentials.access_token  
+              external_access_token = credentials.access_token
               # Update the token, as it may have expired and been renewed
               user = self.User.objects(google_auth__id=provided_external_id).get()
               user.google_auth.long_token = external_access_token
@@ -360,12 +370,12 @@ class Auth(object):
             else:
               flash( _('This user account is not active or verified'), 'danger')
           except self.User.DoesNotExist:
-            flash( _('No matching external authentication, are you sure you signed up with this method?'), 'danger')          
+            flash( _('No matching external authentication, are you sure you signed up with this method?'), 'danger')
           except Exception as e:
             flash( u"%s %s" % (_('Error contacting external service'),e), 'danger')
         else:
           flash( _('Incorrect external service supplied'), 'danger')
-        
+
       elif form.validate():
         try:
           user = self.User.objects(email=form.email.data.lower()).get()
@@ -397,7 +407,7 @@ class Auth(object):
         try:
           user = self.User.objects(email=form.email.data.lower()).get()
           send_mail(
-            [user.email], 
+            [user.email],
             _('Reminder on how to login to Helmgast.se'),
             mail_type = 'remind_login',
             user=user
@@ -406,7 +416,7 @@ class Auth(object):
         except self.User.DoesNotExist:
           flash( _('No such user exist, are you sure you registered first?'), 'danger')
       else:
-        flash( _('Errors in form'), 'danger')  
+        flash( _('Errors in form'), 'danger')
     return render_template('auth/remind.html', form=form)
 
   def configure_routes(self):
@@ -431,12 +441,12 @@ class Auth(object):
     except httplib2.ServerNotFoundError:
       self.logger.warning("Could not connect to Google")
 
-    self.JoinForm = model_form(self.User, only=['password', 'email', 'username', 
-      'email', 'realname', 'location', 'newsletter'], 
+    self.JoinForm = model_form(self.User, only=['password', 'email', 'username',
+      'email', 'realname', 'location', 'newsletter'],
       field_args={ 'password':{'password':True} })
     # More and more sites skip this one now.
-    # self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'), 
-    #     validators=[validators.Required(), validators.EqualTo('password', 
+    # self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'),
+    #     validators=[validators.Required(), validators.EqualTo('password',
     #     message=_('Passwords must match'))])
     self.JoinForm.auth_code = HiddenField(_('Auth Code'))
     self.JoinForm.email_token = HiddenField(_('Email Token'))
@@ -453,4 +463,3 @@ class Auth(object):
     self.register_blueprint()
     self.register_handlers()
     self.register_context_processors()
-
