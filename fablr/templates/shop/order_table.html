@@ -67,7 +67,7 @@
     	{% for line in order.order_lines %}
     	{% if line.product.status != 'hidden' %}
     	<tr class="product">
-    		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}</td>
+    		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}</td>
     		<td>
     			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
 	            <p>{{ line.product.description }}</p>
@@ -76,7 +76,7 @@
 				<div><strong>{{ _('Downloadable files') }}</strong>
 				  {% for file_asset in line.product.downloadable_files %}
 					<div>
-						<a href="{{ url_for('assets.download', fileasset=file_asset.slug) }}"><span
+						<a href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
 								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
 						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
 					</div>

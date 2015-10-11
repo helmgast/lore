@@ -50,7 +50,7 @@
     {% else %}
       {% for product in products %}
       <div class="col-md-4 product">
-          {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
+          {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
           <div class="product-intro">
               <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
               <p>{{ product.description }}</p>

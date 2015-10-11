@@ -7,10 +7,11 @@
 import mimetypes
 import re
 from mongoengine import ValidationError
-
+from datetime import datetime
 from slugify import slugify
 
 from fablr.app import db
+from user import User
 from flask.ext.babel import gettext, lazy_gettext as _
 from misc import Choices
 from flask import request
@@ -31,7 +32,6 @@ allowed_mimetypes = [
     'application/x-compressed-zip',
     'image/jpeg',
     'image/png',
-    'text/html',
     'text/plain']
 
 
@@ -85,3 +85,61 @@ class FileAsset(db.Document):
 
     def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.access_type)
+
+MimeTypes = Choices({
+  'image/jpeg': 'JPEG',
+  'image/png':'PNG',
+  'image/gif':'GIF'
+  })
+IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
+class ImageAsset(db.Document):
+  slug = db.StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
+  meta = {'indexes': ['slug']}
+  image = db.ImageField(thumbnail_size=(300,300,False), required=True)
+  source_image_url = db.URLField()
+  source_page_url = db.URLField()
+  tags = db.ListField(db.StringField(max_length=30))
+  mime_type = db.StringField(choices=MimeTypes.to_tuples(), required=True)
+  creator = db.ReferenceField(User, verbose_name=_('Creator'))
+  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created date'))
+  title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+  description = db.StringField(max_length=500, verbose_name=_('Description'))
+
+  def __unicode__(self):
+    return u'%s' % self.slug
+
+  # Executes before saving
+  def clean(self):
+    if self.title:
+      slug, end = secure_filename(self.title).rsplit('.', 1)
+      if len(end)>4:
+        slug = slug+end # end is probably not a file ending
+    else:
+      slug = self.id
+    if not slug:
+      raise ValueError('Cannot make slug from either title %s or id %s' % (self.title, self.id))
+    new_end = IMAGE_FILE_ENDING[self.mime_type]
+    new_slug = slug+'.'+new_end
+    existing = len(ImageAsset.objects(Q(slug__endswith='__'+new_slug) or Q(slug=new_slug)))
+    if existing:
+      new_slug = "%i__%s.%s" % (existing+1, slug, new_end)
+    self.slug = new_slug
+
+  def make_from_url(self, image_url, source_url=None):
+    # TODO use md5 to check if file already downloaded
+    file = StringIO(requests.get(image_url).content)
+    self.make_from_file(file)
+    self.source_image_url = image_url
+    self.source_page_url = source_url
+    self.title = self.title or image_url.rsplit('/',1)[-1]
+    logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
+
+  def make_from_file(self, file):
+    # block_size=256*128
+    # md5 = hashlib.md5()
+    # for chunk in iter(lambda: file.read(block_size), b''):
+    #      md5.update(chunk)
+    # print md5.hexdigest()
+    # file.seek(0) # reset
+    self.image.put(file)
+    self.mime_type = 'image/%s' % self.image.format.lower()

@@ -81,7 +81,7 @@
       <div class="well"><strong>{{ _('Downloadable files') }}</strong>
           {% for file_asset in product.downloadable_files %}
           <div>{% if product.is_owned_by_current_user() %}<a
-                  href="{{ url_for('assets.download', fileasset=file_asset.slug) }}"><span
+                  href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
                   class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
               <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description
               %}: {{ file_asset.description }}{% endif %}</div>
@@ -90,7 +90,7 @@
       {% endif %}
     </div>
     <div class="col-md-4">
-      {% if product.feature_image %}<a class="lightbox" href="{{url_for('asset', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('asset', slug = product.feature_image.slug)}}"></a>
+      {% if product.feature_image %}<a class="lightbox" href="{{url_for('image', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = product.feature_image.slug)}}"></a>
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
@@ -105,8 +105,8 @@
 <script>
 var imageselect_options = {
     csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('imageasset_list', page='all', out='modal')}}",
-    image_upload_url: "{{url_for('imageasset_new', out='json')}}"
+    image_list_url: "{{url_for('assets.imageasset_list', page='all', out='modal')}}",
+    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
   }
 
 $('.buy-link').click(function(e) {

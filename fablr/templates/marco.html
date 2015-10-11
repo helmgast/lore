@@ -53,7 +53,7 @@
       <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{ VISIBILITY(visibility.is_private(article)) }}{{ article.title }}</h3></a>
     {% if article.feature_image %}
       <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
-      <img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+      <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
       </a>
     {% endif %}
       <p class="lead">{% if article.description %}{{article.description}}{% else

@@ -20,7 +20,7 @@
 	<div class="media">
 	{% if article.feature_image %}
   	<a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
-  	<img class="media-object" src="{{url_for('asset_thumb', slug=article.feature_image.slug)}}">
+  	<img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
 		</a>
 	{% endif %}
 		<div class="media-body">

@@ -13,7 +13,7 @@
 {% for product in products %}
   <li class="media">
       <a href="#">
-        <img class="media-object" src="{{url_for('asset_thumb', slug=product.feature_image.slug)}}" alt="...">
+        <img class="media-object" src="{{url_for('image_thumb', slug=product.feature_image.slug)}}" alt="...">
       </a>
     <div class="media-body">
       <h4 class="media-heading">{{product.title}}</h4>

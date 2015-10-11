@@ -3,7 +3,7 @@
 
 # def new_get_connection(alias='default', reconnect=False):
 #   conn = mongoengine.connection.old_get_connection(alias, reconnect)
-#   conn = 
+#   conn =
 #   return False
 
 # mongoengine.connection.get_connection = new_get_connection
@@ -88,6 +88,7 @@ from flaskext.markdown import Markdown
 from markdown.extensions import Extension
 from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
 from markdown.util import etree
+import re
 
 class NewImagePattern(ImagePattern):
   def handleMatch(self, m):
@@ -96,10 +97,12 @@ class NewImagePattern(ImagePattern):
     src = el.get('src')
     parts = alt.rsplit('|',1)
     el.set('alt',parts[0])
-    if len(parts)==2:
-      el.set('class', parts[1])
-      if parts[1] in ['gallery', 'thumb']:
-        el.set('src', src.replace('/asset/','/asset/thumbs/'))
+    cl = parts[1] if len(parts)==2 else None
+    if not re.match(r'http(s)?://|data',src):
+        src = ('/asset/image/thumbs/' if cl in ['gallery', 'thumb'] else '/asset/image/')+src
+        el.set('src', src)
+    if cl:
+        el.set('class', cl)
     a_el = etree.Element('a')
     a_el.set('class', 'lightbox')
     a_el.append(el)

@@ -9,16 +9,16 @@
   {% for imageasset in images %}
     <figure class="gallery">
       <label>
-        <input type="radio" name="images" value="{{imageasset.slug}}">    
-        <img data-aspect="{{imageasset.image.width/imageasset.image.height}}" src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+        <input type="radio" name="images" value="{{imageasset.slug}}">
+        <img data-aspect="{{imageasset.image.width/imageasset.image.height}}" src="{{url_for('image', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
         {#
-        <img src="{{ url_for('static', filename='img/graypixel.gif') }}" data-src="{{url_for('asset', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
+        <img src="{{ url_for('static', filename='img/graypixel.gif') }}" data-src="{{url_for('image', slug = imageasset.slug)}}" width="{{imageasset.image.width}}" height="{{imageasset.image.height}}">
       	#}
       </label>
   	<figcaption>{{imageasset.title}}</figcaption>
     </figure>
   {% if loop.index is divisibleby 3 %}</div><div class="gallery-row">{% endif %}
-  {% endfor %} 
+  {% endfor %}
   </div>
 </div>
 <script>
@@ -26,11 +26,11 @@
     var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
     if ($sel[0])
       self.imageSelected($sel.next('img')[0].src, $sel.val())
-    
+
   })
   // $(document).on('hidden.bs.modal', function(e) {
   //   $('.gallerylist .gallery img').each(saveImgSize);
-  //   $(window).resize();    
+  //   $(window).resize();
   // }
 </script>
 

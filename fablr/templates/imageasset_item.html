@@ -11,7 +11,7 @@
 </ul>
 <div class="tab-content">
   <div class="tab-pane active" id="modalupload">
-    <form role="form" class="image-form" enctype="multipart/form-data" method="post" action="{{url_for('imageasset_new', out='json')}}">
+    <form role="form" class="image-form" enctype="multipart/form-data" method="post" action="{{url_for('assets.imageasset_new', out='json')}}">
       <div class="image-preview image-selected">
         <button type="button" class="close" aria-hidden="true"><span>&times;</span></button>
         <div class="image-container"></div>
@@ -30,7 +30,7 @@
       </fieldset>
     </form>
   </div>
-  <div class="tab-pane" id="modalgallery" data-remote="{{url_for('imageasset_list', out='fragment')}}">...</div>
+  <div class="tab-pane" id="modalgallery" data-remote="{{url_for('assets.imageasset_list', out='fragment')}}">...</div>
 </div>
 <div class="form-inline image-selected">
   <input type="text" class="form-control" id="imgcaption" style="width: 60%">

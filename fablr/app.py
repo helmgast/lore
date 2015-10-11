@@ -166,7 +166,7 @@ def configure_blueprints(app):
   return auth
 
 def configure_hooks(app):
-  
+
   @app.before_request
   def load_user():
     g.feature = app_features
@@ -180,10 +180,9 @@ def register_main_routes(app, auth):
   from flask.ext.babel import lazy_gettext as _
   from model.user import User
   from model.shop import Order
-  from model.world import ImageAsset, Article
+  from model.world import Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from model.web import ApplicationConfigForm
-  from controller.resource import ResourceRoutingStrategy, RacModelConverter, ResourceHandler, parse_out_arg
 
   @app.route('/')
   def homepage():
@@ -220,55 +219,6 @@ def register_main_routes(app, auth):
           is_enabled = feature in config.features.data
           app_features[feature] = is_enabled
       return redirect('/admin/')
-
-  @app.route('/asset/<slug>')
-  def asset(slug):
-    # TODO This should be a lower memory way of doing this
-    # try:
-    #     file = FS.get(ObjectId(oid))
-    #     return Response(file, mimetype=file.content_type, direct_passthrough=True)
-    # except NoFile:
-    #     abort(404)
-    # or this
-    # https://github.com/RedBeard0531/python-gridfs-server/blob/master/gridfs_server.py
-    asset = ImageAsset.objects(slug=slug).first_or_404()
-    response = make_response(asset.image.read())
-    response.mimetype = asset.mime_type
-    return response
-
-  @app.route('/asset/thumbs/<slug>')
-  def asset_thumb(slug):
-    asset = ImageAsset.objects(slug=slug).first_or_404()
-    response = make_response(asset.image.thumbnail.read())
-    response.mimetype = asset.mime_type
-    return response
-
-  imageasset_strategy = ResourceRoutingStrategy(ImageAsset, 'images', form_class=
-    model_form(ImageAsset, exclude=['image','mime_type', 'slug'], converter=RacModelConverter()))
-  class ImageAssetHandler(ResourceHandler):
-    def new(self, r):
-      '''Override new() to do some custom file pre-handling'''
-      self.strategy.authorize(r['op'])
-      form = self.form_class(request.form, obj=None)
-      print request.form
-      # del form.slug # remove slug so it wont throw errors here
-      if not form.validate():
-        r['form'] = form
-        raise ResourceError(400, r)
-      file = request.files.get('imagefile', None)
-      item = ImageAsset(creator=g.user)
-      if file:
-        item.make_from_file(file)
-      elif request.form.has_key('source_image_url'):
-        item.make_from_url(request.form['source_image_url'])
-      else:
-        abort(403)
-      form.populate_obj(item)
-      item.save()
-      r['item'] = item
-      r['next'] = url_for('asset', slug=item.slug)
-      return r
-  ImageAssetHandler.register_urls(app, imageasset_strategy)
 
   @app.template_filter('currentyear')
   def currentyear():
