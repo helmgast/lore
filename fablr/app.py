@@ -62,14 +62,19 @@ def create_app(**kwargs):
   import default_config
   the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
-  the_app.config.from_pyfile('config.py', silent=True) # Now override with custom settings if exist
+  try:
+      the_app.config.from_pyfile('config.py', silent=False) # Now override with custom settings if exist
+      print "Fablr: Using custom config from config.py"
+  except IOError as err:
+      pass
 
   # Override defaults with any environment variables, as long as they are defined in default.
   # TODO there could be name collision with env variables, and this may be unsafe
   for k in the_app.config.iterkeys():
     env_k = 'FABLR_%s' % k
-    if env_k in os.environ:
+    if env_k in os.environ and os.environ[env_k]:
       the_app.config[k] = os.environ[env_k]
+      print "Fablr: Using custom config from env %s" % env_k
 
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug

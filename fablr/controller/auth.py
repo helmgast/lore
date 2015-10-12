@@ -178,20 +178,6 @@ class Auth(object):
     # Avoid going next to other auth-pages, will just be confusing!
     return n if (n and '/auth/' not in n) else url_for('homepage')
 
-  # if get:
-  # elif post:
-    # if form.validate
-      # manual_verify
-
-      # authenticate(email, email_token, auth_code, external_service)
-
-      # if verify - verifying existing user from email link
-        # Activate user end finish - no need to authenticate form
-
-      # if join - creating new user
-      # elif reset - resetting existing user from email link
-
-
   def join(self):
     # This function does joining in several steps.
     # Join-step: no user (should) exist

@@ -53,7 +53,7 @@ def fingerprint_from_user(user_id):
 def fingerprint_pdf(file_object, user_id):
 	"""Generator that will fingerprint a PDF"""
 	uid = fingerprint_from_user(user_id)
-	print uid
+	print "Fingerprinting uid %s as hash %s" % (user_id, uid)
 	pdf_id_num, doc_id_num, font_id_num = 0,0,0
 	window = file_object.read(window_size*2)
 	buf = window # just to start with a buffer that equals true
@@ -64,19 +64,19 @@ def fingerprint_pdf(file_object, user_id):
 			if m:
 				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
 				pdf_id_num += 1
-				print window[m.start(0) : window.find('\n', m.start(1))]
+				# print window[m.start(0) : window.find('\n', m.start(1))]
 		if not doc_id_num:
 			m = doc_id.search(window)
 			if m:
 				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
 				doc_id_num += 1
-				print window[m.start(0) : window.find('\n', m.start(1))]
+				# print window[m.start(0) : window.find('\n', m.start(1))]
 		if not font_id_num:
 			m = font_id.search(window)
 			if m:
 				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
 				font_id_num += 1
-				print window[m.start(0) : window.find('\n', m.start(1))]
+				# print window[m.start(0) : window.find('\n', m.start(1))]
 
 		# We use a sliding window which means we can't yield every loop,
 		# it would duplicate half window in the output

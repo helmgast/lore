@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g, Response, after_this_request
+from flask import Blueprint, current_app, make_response, redirect, url_for, send_file, g, request, Response
 from mongoengine import Q
 from werkzeug.exceptions import abort
 from flask.ext.mongoengine.wtf import model_form
@@ -10,7 +10,9 @@ from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, 
 from fablr.model.shop import Order, OrderStatus, products_owned_by_user
 from fablr.model.user import User
 from fablr.controller.pdf import fingerprint_pdf
-
+from itertools import chain
+from wsgiref.handlers import format_date_time
+from time import time
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -28,50 +30,76 @@ file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug', short_
                                               post_edit_action='list')
 ResourceHandler.register_urls(asset_app, file_asset_strategy)
 
-def _return_file(asset, as_attachment=False):
-    mime = asset.get_mimetype()
+#        mimetype = mimetypes.guess_type(filename or attachment_filename)[0]
+
+
+def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
+              attachment_filename=None, add_etags=True,
+              cache_timeout=2628000, conditional=True, fingerprint_user_id=None):
+    # Default cache timeout is 1 month in seconds
+    if not mimetype:
+        if not gridfile.content_type:
+            raise ValueError("No Mimetype given and none in the gridfile")
+        mimetype = gridfile.content_type
+
+    headers = {'Content-Length':gridfile.length, 'Last-Modified':gridfile.upload_date.strftime("%a, %d %b %Y %H:%M:%S GMT")} #
     if as_attachment:
-        attachment_filename=asset.get_attachment_filename()
-    else:
-        attachment_filename=None
-    if mime == 'application/pdf' and asset.access_type == FileAccessType.user:
-        if not g.user:
-            abort(403)
-        # A pdf that should be unique per user - we need to fingerprint it
-        response = Response(
-            fingerprint_pdf(asset.file_data.get(), g.user.id),
-            mimetype=mime,
-            direct_passthrough=True)
-        # TODO Unicode filenames may break this
-        response.headers['Content-Disposition'] = 'attachment; filename=%s' % attachment_filename
-        return response
-    else:
-        return send_file(asset.file_data,
-                     as_attachment=as_attachment,
-                     attachment_filename=attachment_filename,
-                     mimetype=mime)
+        if not attachment_filename:
+            if not gridfile.name:
+                raise ValueError("No attachment file name given and none in the gridfile")
+            attachment_filename = gridfile.name
+        headers['Content-Disposition'] = 'attachment; filename=%s' % attachment_filename
+    md5 = gridfile.md5 # as we may overwrite gridfile with own iterator, save this
+    if fingerprint_user_id:
+        gridfile = fingerprint_pdf(gridfile, fingerprint_user_id)
+    rv = Response(
+        gridfile, # is an iterator
+        headers=headers,
+        content_type=mimetype,
+        direct_passthrough=True)
+    if cache_timeout is not None:
+        rv.cache_control.public = True
+        rv.cache_control.max_age = cache_timeout
+        rv.expires = int(time() + cache_timeout)
+    if add_etags:
+        rv.set_etag(md5)
+    if conditional:
+        rv.make_conditional(request)
+    return rv
 
-def authorize_file_data(fileasset_slug):
+def authorize_and_return(fileasset_slug, as_attachment=False):
     asset = FileAsset.objects(slug=fileasset_slug).first_or_404()
-
     if not asset.file_data_exists():
         abort(404)
+
+    attachment_filename = asset.get_attachment_filename() if as_attachment else None
+    mime = asset.get_mimetype()
+
     if asset.is_public():
-        return asset
+        rv = send_gridfs_file(asset.file_data.get(), mimetype=mime,
+            as_attachment=as_attachment, attachment_filename=attachment_filename)
+        return rv
 
     # If we come this far the file is private to a user and should not be cached
     # by any proxies
-    @after_this_request
-    def no_cache(response):
-        response.headers['Cache-Control'] = 'private'
-        return response
+    if not g.user:
+        abort(403)
 
-    if g.user.admin:
-        return asset
-
-    for product in products_owned_by_user(g.user):
-        if asset in product.downloadable_files:
-            return asset
+    # List comprehensions are hard - here is the foor loop below would be
+    # assets = []
+    # for p in products_owned_by_user(g.user):
+    #     for a in p.downloadable_files:
+    #         assets.append(a)
+    if g.user.admin or asset in [a for p in products_owned_by_user(g.user) for a in p.downloadable_files]:
+        # A pdf that should be unique per user - we need to fingerprint it
+        if mime == 'application/pdf' and asset.access_type == FileAccessType.user:
+            fpid = g.user.id
+        else:
+            fpid = None
+        rv = send_gridfs_file(asset.file_data.get(), mimetype=mime, as_attachment=as_attachment,
+                attachment_filename=attachment_filename, fingerprint_user_id=fpid)
+        rv.headers['Cache-Control'] = 'private' # Override the public cache
+        return rv
     abort(403)
 
 imageasset_strategy = ResourceRoutingStrategy(ImageAsset, 'images', form_class=
@@ -107,22 +135,19 @@ def index():
 
 @current_app.route('/asset/link/<fileasset>')
 def link(fileasset):
-    asset = authorize_file_data(fileasset)
-    return _return_file(asset)
+    return authorize_and_return(fileasset)
 
 @current_app.route('/asset/download/<fileasset>')
 def download(fileasset):
-    asset = authorize_file_data(fileasset)
-    return _return_file(asset, True)
+    return authorize_and_return(fileasset, as_attachment=True)
 
 @current_app.route('/asset/image/<slug>')
 def image(slug):
     asset = ImageAsset.objects(slug=slug).first_or_404()
-    return send_file(asset.image, mimetype=asset.mime_type)
+    r = send_gridfs_file(asset.image.get(), mimetype=asset.mime_type)
+    return r
 
 @current_app.route('/asset/image/thumbs/<slug>')
 def image_thumb(slug):
     asset = ImageAsset.objects(slug=slug).first_or_404()
-    response = make_response(asset.image.thumbnail.read())
-    response.mimetype = asset.mime_type
-    return response
+    return send_gridfs_file(asset.image.thumbnail, mimetype=asset.mime_type)
