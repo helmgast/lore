@@ -6,7 +6,7 @@ from fablr.app import create_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
 
 os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
-app = create_app()
+app = create_app(no_init=True) # delay initializaiton to avoid database etc
 manager = Manager(app)
 
 def runshell(cmd):

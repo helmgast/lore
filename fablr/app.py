@@ -50,8 +50,9 @@ def is_public():
   return app_state == STATE_PUBLIC
 
 
-def create_app(**kwargs):
+def create_app(no_init=False, **kwargs):
   the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
+
   import default_config
   the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
@@ -81,24 +82,24 @@ def create_app(**kwargs):
           raise ValueError("Secret key %s given dummy value in production - ensure"+
             " it's overriden" % key)
 
-  the_app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
-  the_app.jinja_env.undefined = SilentUndefined
-  # the_app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
   configure_logging(the_app)
   the_app.logger.info("App created: %s", the_app)
-
-  # Configure all extensions
-  configure_extensions(the_app)
-
-  # Configure all blueprints
-  auth = configure_blueprints(the_app)
-
-  configure_hooks(the_app)
-
-  register_main_routes(the_app, auth)
-
-  # print the_app.url_map
+  if not no_init:
+      init_app(the_app)
   return the_app
+
+def init_app(app):
+  if not 'initiated' in app.config:
+    # Configure all extensions
+    configure_extensions(app)
+
+    # Configure all blueprints
+    auth = configure_blueprints(app)
+
+    configure_hooks(app)
+
+    register_main_routes(app, auth)
+    app.config['initiated'] = True
 
 def configure_logging(app):
   import logging
@@ -108,6 +109,10 @@ def configure_logging(app):
   # app.logger.setLevel(logging.INFO)
 
 def configure_extensions(app):
+  app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
+  app.jinja_env.undefined = SilentUndefined
+  # app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
+
   app.json_encoder = MongoJSONEncoder
 
   start_db(app)
@@ -128,11 +133,6 @@ def configure_extensions(app):
 
   # Debug toolbar
   toolbar.init_app(app)
-
-  # try:
-  #   app.celery = make_celery(app)
-  # except KeyError as e:
-  #   app.logger.warning("Missing config %s" % e)
 
 def configure_blueprints(app):
 
