@@ -9,6 +9,11 @@ import re
 from mongoengine import ValidationError
 from datetime import datetime
 from slugify import slugify
+from werkzeug.utils import secure_filename
+from mongoengine.queryset import Q
+import requests
+from StringIO import StringIO
+import imghdr
 
 from fablr.app import db
 from user import User
@@ -52,14 +57,13 @@ class FileAsset(db.Document):
     def clean(self):
         self.slug = slugify(self.title)
         request_file_data = request.files.get('file_data', None)
-        print request.files, request_file_data.filename
         # This assumes there is a file upload
         if request_file_data is not None and request_file_data.filename:
             if request_file_data.mimetype not in allowed_mimetypes:
                 raise ValidationError(
                     gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
             # File is present, save to GridFS
-            self.file_data.replace(request_file_data, content_type=request_file_data.mimetype)
+            self.file_data.replace(request_file_data, content_type=request_file_data.mimetype, filename=request_file_data.filename)
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
@@ -126,12 +130,15 @@ class ImageAsset(db.Document):
     self.slug = new_slug
 
   def make_from_url(self, image_url, source_url=None):
-    # TODO use md5 to check if file already downloaded
-    file = StringIO(requests.get(image_url).content)
-    self.make_from_file(file)
+    # TODO use md5 to check if file already downloaded/uploaded
+    r = requests.get(image_url)
+    file = StringIO(r.content)
+    self.mime_type = r.headers['Content-Type']
     self.source_image_url = image_url
     self.source_page_url = source_url
-    self.title = self.title or image_url.rsplit('/',1)[-1]
+    fname = image_url.rsplit('/',1)[-1]
+    self.title = self.title or fname
+    self.image.put(file, content_type=self.mime_type, filename=fname)
     logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
 
   def make_from_file(self, file):
@@ -141,5 +148,5 @@ class ImageAsset(db.Document):
     #      md5.update(chunk)
     # print md5.hexdigest()
     # file.seek(0) # reset
-    self.image.put(file)
-    self.mime_type = 'image/%s' % self.image.format.lower()
+    self.mime_type = file.mimetype if file.mimetype else mimetypes.guess_type(file.filename)[0]
+    self.image.put(file, content_type=self.mime_type, filename=file.filename)

@@ -237,7 +237,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
   }
 
-  $('#content-editor a.lightbox').imageselect();
+  $('#content-editor a.lightbox').imageselect(imageselect_options);
 
   $('.bubble-bar .ui-inputs a').click(function(e) {
     var $block = $(editor.getActiveBlock());
@@ -248,7 +248,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     }
     var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
     $block.before($a);
-    $a.imageselect();
+    $a.imageselect(imageselect_options);
   })
 
   $('#articleform').one('change', function(e) {

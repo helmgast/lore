@@ -7,7 +7,9 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+COPY tools/ tools/
 COPY fablr/ fablr/
+COPY manage.py manage.py
 COPY run.py run.py
 
 ENV BRANCH="master"

@@ -49,13 +49,6 @@ def is_protected():
 def is_public():
   return app_state == STATE_PUBLIC
 
-def is_allowed_access(user):
-  if is_private():
-    return False
-  elif is_protected():
-    return user.admin if user else False
-  else:
-    return True
 
 def create_app(**kwargs):
   the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance

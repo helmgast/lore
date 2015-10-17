@@ -30,9 +30,6 @@ file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug', short_
                                               post_edit_action='list')
 ResourceHandler.register_urls(asset_app, file_asset_strategy)
 
-#        mimetype = mimetypes.guess_type(filename or attachment_filename)[0]
-
-
 def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
               attachment_filename=None, add_etags=True,
               cache_timeout=2628000, conditional=True, fingerprint_user_id=None):

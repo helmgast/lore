@@ -12,16 +12,11 @@ from fablr.app import db
 from slugify import slugify
 from user import User, Group
 from asset import ImageAsset
-import requests
-from StringIO import StringIO
 import re
 import logging
-import imghdr
 from misc import list_to_choices, Choices
 from flask.ext.babel import lazy_gettext as _
 import hashlib
-from werkzeug.utils import secure_filename
-from mongoengine.queryset import Q
 from datetime import datetime
 from time import strftime
 

@@ -99,7 +99,7 @@ class Order(db.Document):
   shipping_address = db.EmbeddedDocumentField(Address)
 
   def __unicode__(self):
-    max_prod, max_price = None, 0
+    max_prod, max_price = None, -1
     for ol in self.order_lines:
       if ol.price > max_price:
         max_prod, max_price = ol.product, ol.price

@@ -56,7 +56,7 @@ var editor = (function() {
 				checkTextAndImageHighlighting( event );
 			}, 1);
 		};
-		
+
 		// Window bindings
 		window.addEventListener( 'resize', function( event ) {
 			updateBubblePosition();
@@ -67,15 +67,15 @@ var editor = (function() {
 		// http://ejohn.org/blog/learning-from-twitter
 		var scrollEnabled = true;
 		document.body.addEventListener( 'scroll', function() {
-			
+
 			if ( !scrollEnabled ) {
 				return;
 			}
-			
+
 			scrollEnabled = true;
-			
+
 			updateBubblePosition();
-			
+
 			return setTimeout((function() {
 				scrollEnabled = true;
 			}), 250);
@@ -122,7 +122,7 @@ var editor = (function() {
 	function checkTextAndImageHighlighting( event ) {
 
 		var selection = window.getSelection();
-		
+
 		if (event.target.className === "thumb") {
 			var frameDoc = parent.document;
 			if (frameDoc.createRange) {
@@ -135,10 +135,10 @@ var editor = (function() {
 					}
 				};
 			}
-			
+
 			return;
 		}
-		
+
 		if ( (event.target.className === "url-input" ||
 		     event.target.classList.contains( "url" ) ||
 		     event.target.parentNode.classList.contains( "ui-inputs")) ) {
@@ -161,7 +161,7 @@ var editor = (function() {
 				var boundary = currentNodeList.activeBlock.getBoundingClientRect()
 				var offset = contentField.getBoundingClientRect() // editor's position in viewport
 				marginOptions.style.top = boundary.top - offset.top + "px";
-				marginOptions.style.left = boundary.right - offset.right + boundary.width + "px";		
+				marginOptions.style.left = boundary.right - offset.right + boundary.width + "px";
 				marginOptions.className = "bubble-bar active";
 				activeBlock = currentNodeList.activeBlock
 			}
@@ -182,13 +182,13 @@ var editor = (function() {
 
 		lastType = selection.isCollapsed;
 	}
-	
+
 	function updateBubblePosition() {
 		var selection = window.getSelection();
 		var range = selection.getRangeAt(0);
 		var boundary = range.getBoundingClientRect();
 		var offset = contentField.getBoundingClientRect() // editor's position in viewport
-		
+
 		textOptions.style.top = boundary.top - offset.top - 5 /*- window.pageYOffset*/ + "px";
 		textOptions.style.left = (boundary.left + boundary.right)/2 - offset.left + "px";
 	}
@@ -266,7 +266,7 @@ var editor = (function() {
 	}
 
 	function saveState( event ) {
-		
+
 		localStorage[ 'header' ] = headerField.innerHTML;
 		localStorage[ 'content' ] = contentField.innerHTML;
 	}
@@ -362,12 +362,12 @@ var editor = (function() {
 		document.execCommand( 'unlink', false );
 
 		if (url !== "") {
-		
+
 			// Insert HTTP if it doesn't exist.
 			if ( !url.match("^(http|https)://") ) {
 
-				url = "http://" + url;	
-			} 
+				url = "http://" + url;
+			}
 
 			document.execCommand( 'createLink', false, url );
 		}
@@ -379,7 +379,7 @@ var editor = (function() {
 	}
 
 	function getWordCount() {
-		
+
 		var text = get_text( contentField );
 
 		if ( text === "" ) {
@@ -404,18 +404,18 @@ var editor = (function() {
 	function jqueryClean() {
 		// Attempt at making new HTML cleaner that uses jQuery
 		$c = $(contentField)
-		$c.find('div').replaceWith(function() { 
-			return '<p>'+this.innerHTML+'</p>' 
+		$c.find('div').replaceWith(function() {
+			return '<p>'+this.innerHTML+'</p>'
 		})
-		$c.find('em').replaceWith(function() { 
-			return '<i>'+this.innerHTML+'</i>' 
+		$c.find('em').replaceWith(function() {
+			return '<i>'+this.innerHTML+'</i>'
 		})
-		$c.find('strong').replaceWith(function() { 
-			return '<b>'+this.innerHTML+'</b>' 
+		$c.find('strong').replaceWith(function() {
+			return '<b>'+this.innerHTML+'</b>'
 		})
-		$c.find('h1').replaceWith(function() { 
-			return '<h2>'+this.innerHTML+'</h2>' 
-		})		
+		$c.find('h1').replaceWith(function() {
+			return '<h2>'+this.innerHTML+'</h2>'
+		})
 
 		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
 		// Doing this twice seems to fix some bugs that some elements not removed. TODO can it be fixed?
@@ -473,7 +473,7 @@ var editor = (function() {
 		html = html.replace(/<blockquote>/g,'<blockquote>> ') // > can't be added into innerHTML without being encoded
 		html = html.replace(/<\/?.+?>/g,'') // remove all remaining tags
 		html = html.replace(/([^\S\n])[^\S\n]+/g,'$1') // weird regex but reduces all whitespace except newline to only one
-		html = html.replace(/\n\n\n+/g,'\n\n') // Removes more than 2 newlines in a row, not needed			
+		html = html.replace(/\n\n\n+/g,'\n\n') // Removes more than 2 newlines in a row, not needed
 		return html
 	}
 

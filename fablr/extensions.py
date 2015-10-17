@@ -98,9 +98,9 @@ class NewImagePattern(ImagePattern):
     parts = alt.rsplit('|',1)
     el.set('alt',parts[0])
     cl = parts[1] if len(parts)==2 else None
-    if not re.match(r'http(s)?://|data',src):
-        src = ('/asset/image/thumbs/' if cl in ['gallery', 'thumb'] else '/asset/image/')+src
-        el.set('src', src)
+    # if not re.match(r'http(s)?://|data',src):
+    #     src = ('/asset/image/thumbs/' if cl in ['gallery', 'thumb'] else '/asset/image/')+src
+    #     el.set('src', src)
     if cl:
         el.set('class', cl)
     a_el = etree.Element('a')

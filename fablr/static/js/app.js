@@ -18,7 +18,7 @@ function flash_error(message, level, target) {
   $.fn.autosave = function (options) {
     return this.each(function () {
       var $this   = $(this)
-    
+
       var action = this.action || document.location.href
       var csrf = $this.find('#csrf_token').val()
       action = action + (/\?/.test(action) ? '&' : '?') + 'out=json'
@@ -190,12 +190,12 @@ var debounce = function (func, threshold, execAsap) {
     timeout = setTimeout(delayed, threshold || 100);
   };
 }
-  // smartresize 
+  // smartresize
   jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
 
 })(jQuery,'smartresize');
 
-/* 
+/*
 Wait for DOM to be ready
  */
 $(function() {
@@ -217,7 +217,7 @@ $(function() {
       for (var i = 0; i < $pi.length; i++) {
         sumRatios += ratios[i]/minRatio;
       };
-      
+
       $pi.each(function (){
         sumMargins += parseInt($(this).css('margin-left')) + parseInt($(this).css('margin-right'));
       });
@@ -282,8 +282,8 @@ $(document).ready(function() {
 //       return p.join('')
 //     }
 //     return s
-//   } 
-// });  
+//   }
+// });
 
 // li class="total"
 // "/text=|#order_lines-0-quantityval/val| * |.product_price/text|"
@@ -323,17 +323,17 @@ $(document).ready(function() {
 //     $('[data-calcquery]').calcquery()
 //   })
 
-//  }(jQuery); 
+//  }(jQuery);
 
 /* ========================================================================
  * Image Selector
  * ========================================================================
  * Copyright Helmgast AB 2014
 
- * Activate on a button or input control, which will launch a modal to upload an 
- * image and place a preview in it. The modal will take care of all user 
- * interfacing and remove itself when done. The selected image can be represented 
- * as an image tag into a text field (e.g. an article text) or it can be added to 
+ * Activate on a button or input control, which will launch a modal to upload an
+ * image and place a preview in it. The modal will take care of all user
+ * interfacing and remove itself when done. The selected image can be represented
+ * as an image tag into a text field (e.g. an article text) or it can be added to
  * a input control as the reference to the ImageAsset.
 
 data-imageselector: activates the button or control as an image selector
@@ -353,7 +353,7 @@ will be appended to the target.
     self.options   = options
     self.$element  = $(element)
 
-    self.$imageEl = 
+    self.$imageEl =
     $('<div class="image-selector" contenteditable="false"> \
         <div class="image-preview"> \
           <input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'"> \
@@ -367,9 +367,9 @@ will be appended to the target.
           <input type="text" class="form-control" name="source_image_url" \
           id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
           (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" \
-            href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') + 
+            href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
         '</div></div>');
-    
+
     self.$element.addClass('hide')
     self.$element.after(self.$imageEl)
     if (self.$element.is('select, input')) {
@@ -405,12 +405,12 @@ will be appended to the target.
           self.imageSelected($sel.next('img')[0].src, $sel.val())
       })
     })
-    
+
     $('#imagefile').change(self.fileSelected)
     $('.image-upload label').on('drop', self.fileSelected).on('dragover', function(e) {
       e.stopPropagation()
       e.preventDefault()
-      e.originalEvent.dataTransfer.dropEffect = 'copy'  
+      e.originalEvent.dataTransfer.dropEffect = 'copy'
     })
 
     tempImage = tempImage || new Image()
@@ -449,7 +449,7 @@ will be appended to the target.
       }(file));
       formData.append('imagefile', file)
       formData.append('title', file.name)
-      reader.readAsDataURL(file);  
+      reader.readAsDataURL(file);
     } else if (e.target.src) {
       formData.append('source_image_url', e.target.src)
       formData.append('title', /[^/]+$/.exec(e.target.src)[0])
@@ -489,27 +489,27 @@ will be appended to the target.
     $('[data-imageselect]').imageselect(typeof imageselect_options !== "undefined" && imageselect_options) // global var if exists
   })
 
- }(jQuery); 
+ }(jQuery);
 
 $(window).on('load', function () {
   var lb = $( '.lightbox' ).imageLightbox({
-  onStart:    function() { 
+  onStart:    function() {
     $( '<div id="imagelightbox-overlay"></div>' ).appendTo( 'body' );
     $( '<a href="#" id="imagelightbox-close">Close</a>' ).appendTo( 'body' )
-      .on( 'click touchend', function(){ $( this ).remove(); lb.quitImageLightbox(); return false; }); 
+      .on( 'click touchend', function(){ $( this ).remove(); lb.quitImageLightbox(); return false; });
   },
-  onEnd:      function() { 
+  onEnd:      function() {
     $( '#imagelightbox-overlay' ).remove();
     $( '#imagelightbox-caption' ).remove();
     $( '#imagelightbox-close' ).remove();
     $( '#imagelightbox-loading' ).remove();
   },
-  onLoadStart:  function() { 
+  onLoadStart:  function() {
     $( '#imagelightbox-caption' ).remove();
     $( '<div id="imagelightbox-loading"><div></div></div>' ).appendTo( 'body' );
 
   },
-  onLoadEnd:    function() { 
+  onLoadEnd:    function() {
     var description = $( 'a[href="' + $( '#imagelightbox' ).attr( 'src' ) + '"] img' ).attr( 'alt' );
     if( description && description.length > 0 )
       $( '<div id="imagelightbox-caption">' + description + '</div>' ).appendTo( 'body' );
@@ -613,7 +613,7 @@ function post_action($t) {
 
   }).error(function(xhr, errorType, exception) {
     if(type==='modal') { $('#themodal').modal('hide') }
-    var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
+    var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText
     alert( "There was an error: " + errorMessage );
   });
 }
@@ -632,7 +632,7 @@ function handle_action(e) {
       default: // post directly
         post_action($t);
     }
-    
+
   }
   e.preventDefault()
 }
@@ -653,7 +653,7 @@ function handle_action(e) {
 
 //////////////// new modal code ///////////
 
-// Loads content from href into the modal (functionality was removed from bootstrap3)  
+// Loads content from href into the modal (functionality was removed from bootstrap3)
 $('#themodal').on('show.bs.modal', function(event) {
   var href = event.relatedTarget.href
   if (href) {
@@ -681,7 +681,7 @@ $modal.on('click', 'button[type="submit"]', function(e) {
   }
 });
 
-$('#feedback-modal').on('submit', 'form', function(e) { 
+$('#feedback-modal').on('submit', 'form', function(e) {
   var input = $(this).serializeArray()
   var type = input[0]['value'] || 'error'
   var desc = input[1]['value'] || 'none'

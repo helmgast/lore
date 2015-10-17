@@ -142,6 +142,8 @@ def set_password(email):
 def file_upload(file, title, desc, access):
   """Adds a file asset from command line to the GridFS database"""
   from fablr.model.asset import FileAsset, FileAccessType
+  import mimetypes
+
   if not file or not os.access(file, os.R_OK): # check read access
     raise ValueError("File %s not readable" % file)
 
@@ -155,7 +157,8 @@ def file_upload(file, title, desc, access):
 	source_filename=fname,
 	attachment_filename=fname,
 	access_type=access)
-  fa.file_data.put(open(file))
+  mime = mimetypes.guess_type(fname)[0]
+  fa.file_data.put(open(file), filename=fname, content_type=mime)
   fa.save()
   print file, title, desc
   # print file, title, description
