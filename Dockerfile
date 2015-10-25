@@ -13,7 +13,4 @@ COPY manage.py manage.py
 COPY run.py run.py
 RUN python manage.py lang_compile
 
-ENV BRANCH="master"
-ENV DOMAIN="helmgast.se"
-
 ENTRYPOINT python run.py

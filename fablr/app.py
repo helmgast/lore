@@ -61,6 +61,7 @@ def create_app(no_init=False, **kwargs):
       config_string += ", file config.py"
   except IOError as err:
       pass
+  the_app.config.from_pyfile('version.cfg', silent=True)
 
   # Override defaults with any environment variables, as long as they are defined in default.
   # TODO there could be name collision with env variables, and this may be unsafe
