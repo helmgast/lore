@@ -5,7 +5,6 @@
 *.pot
 *.sublime*
 config.py
-version.cfg
 /.idea
 /.settings
 /.project

@@ -52,27 +52,29 @@ def is_public():
 
 def create_app(no_init=False, **kwargs):
   the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
-
+  config_string = "default config"
   import default_config
   the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
   try:
       the_app.config.from_pyfile('config.py', silent=False) # Now override with custom settings if exist
-      print "Fablr: Using custom config from config.py"
+      config_string += ", file config.py"
   except IOError as err:
       pass
 
   # Override defaults with any environment variables, as long as they are defined in default.
   # TODO there could be name collision with env variables, and this may be unsafe
+  env_config = []
   for k in the_app.config.iterkeys():
     env_k = 'FABLR_%s' % k
     if env_k in os.environ and os.environ[env_k]:
       the_app.config[k] = os.environ[env_k]
-      print "Fablr: Using custom config from env %s" % env_k
+      env_config.append(k)
+  if env_config:
+    config_string += ", env: %s" % ','.join(env_config)
 
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
-  the_app.config.from_pyfile('version.cfg', silent=True) # Reads version info for later display
 
   # If in production, make sure we don't have any dummy secrets
   if not the_app.debug:
@@ -80,10 +82,11 @@ def create_app(no_init=False, **kwargs):
       if key.isupper():
         if the_app.config[key] == 'SECRET':
           raise ValueError("Secret key %s given dummy value in production - ensure"+
-            " it's overriden" % key)
+            " it's overriden. Config method: %s" % (key,config_string))
 
   configure_logging(the_app)
-  the_app.logger.info("App created: %s", the_app)
+  the_app.logger.info("Flask '%s' (%s) started, %s" \
+    % (the_app.name, the_app.config.get('VERSION',None), config_string))
   if not no_init:
       init_app(the_app)
   return the_app

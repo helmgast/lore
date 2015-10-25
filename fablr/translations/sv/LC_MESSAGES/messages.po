@@ -132,10 +132,6 @@ msgstr ""
 "Ingen sådan användare existerar, är du säker på att du registrerat dig "
 "först?"
 
-#: fablr/controller/auth.py:376 fablr/controller/auth.py:405
-msgid "Errors in form"
-msgstr "Fel i formuläret"
-
 #: fablr/controller/auth.py:397 fablr/controller/mailer.py:93
 msgid "Reminder on how to login to Helmgast.se"
 msgstr "Påminnelse hur du loggar in på Helmgast.se"

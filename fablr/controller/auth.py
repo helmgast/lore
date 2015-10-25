@@ -329,7 +329,6 @@ class Auth(object):
     return render_template('auth/join.html', form=form, op=op)
 
   def login(self):
-    print request.form
     form = self.LoginForm()
     if request.method == 'POST':
       form.process(request.form)
@@ -373,7 +372,8 @@ class Auth(object):
         except self.User.DoesNotExist:
           flash( _('No such user exist, are you sure you registered first?'), 'danger')
       else:
-        flash( _('Errors in form'), 'danger')
+        self.logger.error(form.errors)
+        flash( _('Error in form'), 'danger')
     return render_template('auth/login.html', form=form, op='login')
 
   def logout(self):

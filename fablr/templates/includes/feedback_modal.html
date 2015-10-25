@@ -14,7 +14,7 @@
               {% trans %}Report an error{% endtrans %}
             </label>
           </div>
-          <div class="radio">          
+          <div class="radio">
             <label class="radio-inline">
               <input type="radio" name="feedbacktype" id="feedbacktype_feedback" value="feedback">
               {% trans %}Give feedback{% endtrans %}
@@ -30,7 +30,7 @@
             <label for="email">{% trans %}Email address{% endtrans %}</label>
             <input type="email" class="form-control" name="email" id="email" placeholder="Enter email" value="{{user.email}}">
           </div>
-          <p class="text-center small">Version: {{config['VERSION_DATE']}} ({{config['VERSION_HASH']}})</p>
+          <p class="text-center small">Version: {{config['VERSION']}}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
