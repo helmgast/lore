@@ -90,7 +90,7 @@ class Order(db.Document):
   email = db.EmailField(max_length=60, required=True, verbose_name=_('Email'))
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
   total_items = db.IntField(min_value=0, default=0) # Total number of items
-  total_price = db.FloatField(min_value=0, default=0.0) # Total price of order
+  total_price = db.FloatField(min_value=0, default=0.0, verbose_name=_('Total price')) # Total price of order
   currency = db.StringField(choices=Currencies.to_tuples())
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
@@ -104,10 +104,9 @@ class Order(db.Document):
       if ol.price > max_price:
         max_prod, max_price = ol.product, ol.price
     if max_prod:
-      s = u'%s %s%s' % (
-        _('Order for'),
+      s = u'%s%s' % (
         max_prod.title,
-        ' '+_('and more') if len(self.order_lines)>1 else '')
+        ' '+_('and %(total_items)s more', total_items=self.total_items) if len(self.order_lines)>1 else '')
     else:
       s = u'%s' % _('Empty order')
     return s

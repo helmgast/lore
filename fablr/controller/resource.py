@@ -332,6 +332,8 @@ class ResourceRoutingStrategy:
     for key in args.keys():
       if key == 'order_by':
         qr = qr.order_by(*args.getlist('order_by'))
+      elif key == 'q':
+        qr = qr # TODO search
       else:
         fieldname = key.split('__')[0]
         # print fieldname, (fieldname in self.model_class.__dict__)

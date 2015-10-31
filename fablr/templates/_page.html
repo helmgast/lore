@@ -147,13 +147,13 @@ window.onerror = function(err, url, line, col, trace) {
     </div>
 </div>
 <button class="betaribbon" data-toggle="modal" data-target="#feedback-modal">
-  <span class="glyphicon glyphicon-exclamation-sign"></span> Give feedback!<br><span style="font-variant: small-caps">Beta</span>
+  <span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Give feedback{% endtrans %}!<br><span style="font-variant: small-caps">Beta</span>
 </button>
 {% endblock %}
 
 <div class="{% block container_class %}container{% endblock %}">
   {% block mainblock %}
-  <div class="col-md-3">
+  <div class="col-md-3 sidebar">
   {% block sidebar %}
     &nbsp;
   {% endblock %}

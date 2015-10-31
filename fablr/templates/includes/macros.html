@@ -21,7 +21,7 @@
 
 {%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
-  {% do fieldargs.update({'required':true}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass) if field.label }}
@@ -34,7 +34,7 @@
 
 {%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass, 'placeholder':field.label.text} %}
-  {% do fieldargs.update({'required':true}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="sr-only control-label "+labelclass) if field.label }}
@@ -48,7 +48,7 @@
 
 {%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="", groupclass="") -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
-  {% do fieldargs.update({'required':true}) if field.flags.required %}  
+  {% do fieldargs.update({'required':true}) if field.flags.required %}
   {% do fieldargs.update(kwargs) if kwargs %}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass+" "+labelcol) if field.label }}
@@ -91,45 +91,54 @@
   {%- if condition -%}<small title="{{_('Your access rights allow you to view this resource in this view')}}"><span class="glyphicon glyphicon-eye-close"></span>&nbsp;</small>{%- endif %}
 {%- endmacro -%}
 
-{%- macro LIST_CONTROLS() -%}
+{%- macro LIST_CONTROLS(model_class, fields, show=['view','order','page']) -%}
 <form class="form-inline">
 <div class="btn-toolbar">
+
+{% if 'view' in show %}
+{% set view = request.args.get('view','table') %}
 <div class="btn-group">
-<button type="button" class="btn btn-default btn-sm"><span class="glyphicon glyphicon-th-large"></span></button>  
-<button type="button" class="btn btn-default btn-sm active"><span class="glyphicon glyphicon-list-alt"></span></button>  
-
+<a href="{{ url_for(request.endpoint, view='card', **request.view_args|without('view')) }}" class="btn btn-default btn-sm{{ ' active' if view=='card'}}"><span class="glyphicon glyphicon-th-large"></span></a>
+<a href="{{ url_for(request.endpoint, view='table', **request.view_args|without('view')) }}"  class="btn btn-default btn-sm{{ ' active' if view=='table'}}"><span class="glyphicon glyphicon-list-alt"></span></a>
 </div>
+{% endif %}
 
+{% if 'order' in show %}
 <div class="btn-group">
   {% if 'order_by' in request.args %}
-  <a href="{{ url_for(request.endpoint, **request.view_args|without('order_by')) }}" class="btn btn-info btn-sm">Order By: {{request.args.get('order_by')}} &times;</a>  
+  <a href="{{ url_for(request.endpoint, **request.view_args|without('order_by')) }}" class="btn btn-info btn-sm">{% trans %}Order by{% endtrans %}: {{request.args.get('order_by')}} &times;</a>
   {% else %}
-  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Order By <span class="caret"></span></button>
+  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span></button>
   <ul class="dropdown-menu" role="menu">
-      <li><a href="#">Order</a></li>
-      <li><a href="#">User</a></li>
-      <li><a href="#">Skapad</a></li>
-      <li><a href="#">Uppdaterad</a></li>
+      {% for f in fields %}
+      {% set name = model_class._fields[f].verbose_name %}
+
+      <li><a href="?order_by=-{{f}}">{{name}} <span class="caret"></span></a></li>
+      <li><a href="?order_by={{f}}">{{name}} <span class="caret caret-up"></span></a></li>
+      {% endfor %}
   </ul>
   {% endif %}
 </div>
+{% endif %}
 
+{% if 'page' in show %}
 <div class="btn-group">
   {% if 'per_page' in request.args %}
-  <a href="{{ url_for(request.endpoint, **request.view_args|without('per_page')) }}" class="btn btn-info btn-sm">Per Page: {{request.args.get('per_page')}} &times;</a>  
+  <a href="{{ url_for(request.endpoint, **request.view_args|without('per_page')) }}" class="btn btn-info btn-sm">{% trans %}Per page{% endtrans %}: {{request.args.get('per_page')}} &times;</a>
   {% else %}
-  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Per Page: 10 <span class="caret"></span></button>
+  <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{% trans %}Per page{% endtrans %}: 10 <span class="caret"></span></button>
   {% set args_without_page = request.view_args|without('per_page', 'page') %}
   <ul class="dropdown-menu" role="menu">
       <li><a href="{{ url_for(request.endpoint, per_page=20, **args_without_page) }}">20</a></li>
       <li><a href="{{ url_for(request.endpoint, per_page=50, **args_without_page) }}">50</a></li>
       <li><a href="{{ url_for(request.endpoint, per_page=100, **args_without_page) }}">100</a></li>
-      <li><a href="{{ url_for(request.endpoint, per_page='all', **args_without_page) }}">All</a></li>
+      <li><a href="{{ url_for(request.endpoint, per_page='all', **args_without_page) }}">{% trans %}All{% endtrans %}</a></li>
   </ul>
   {% endif %}
 </div>
+{% endif %}
 
-<div class="btn-group">
+<!-- <div class="btn-group">
 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Filter <span class="caret"></span></button>
   <ul class="dropdown-menu" role="menu">
       <li><a href="#">Equals</a></li>
@@ -137,12 +146,35 @@
       <li><a href="#">Greater than</a></li>
       <li><a href="#">Not equal</a></li>
   </ul>
-</div>
+</div> -->
 
+{% if 'search' in show %}
 <div class="input-group input-group-sm">
   <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
   <input type="text" class="form-control" placeholder="Search">
 </div>
+{% endif %}
+
 </div>
 </form>
+{%- endmacro -%}
+
+{%- macro TABLE_HEADER(model_class, fields) -%}
+{% set order_by = request.args.get('order_by', None) %}
+<thead>
+	<tr>
+    {% for f in fields %}
+    {% set name = model_class._fields[f].verbose_name %}
+		<th>
+      {% if order_by== f %}
+      <a href="?order_by=-{{f}}">{{name}} <span class="caret caret-up"></span></a>
+      {% elif order_by=='-'+f %}
+      <a href="?order_by={{f}}">{{name}} <span class="caret"></span></a>
+      {% else %}
+      <a href="?order_by={{f}}">{{name}} </a>
+      {% endif %}
+    </th>
+    {% endfor %}
+	</tr>
+</thead>
 {%- endmacro -%}

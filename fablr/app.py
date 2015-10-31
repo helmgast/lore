@@ -49,7 +49,6 @@ def is_protected():
 def is_public():
   return app_state == STATE_PUBLIC
 
-
 def create_app(no_init=False, **kwargs):
   the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
   config_string = "default config"

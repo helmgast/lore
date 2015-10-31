@@ -12,34 +12,47 @@
 %}
 
 {% block content_subheader %}
-{{ MACRO.LIST_CONTROLS() }}
+{{ MACRO.LIST_CONTROLS(orders[0].__class__, ['id','user', 'created', 'updated','status', 'total_price']) }}
 {% endblock %}
 
 {% block content %}
 
 {% if orders %}
+{% if request.args.get('view', 'table') == 'table' %}
 <table class="table table-hover">
-<thead>
-	<tr>
-		<th><a href="?order_by=order">{{_('Order')}}</a></th>
-		<th><a href="?order_by=user">{{_('User')}}</a></th>
-		<th><a href="?order_by=created">{{_('Created')}}</a></th>
-		<th><a href="?order_by=updated">{{_('Updated')}}</a></th>
-		<th><a href="?order_by=status">{{_('Status')}}</a></th>
-	</tr>
-</thead>
+{{ MACRO.TABLE_HEADER(orders[0].__class__, ['id','user', 'created', 'updated','status', 'total_price']) }}
 <tbody>
 	{% for order in orders %}
 	<tr>
 		<td><a href="{{ url_for('.order_form_edit', order=order.id)}}">{{order}}</a></td>
-		<td>{{order.user}}</td>
-		<td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
+		<td>{{order.user.username}}</td>
+		<td class="small">{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
+		<td class="small">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
 		<td>{{order_statuses[order.status]}}</td>
+    <td>{{order.total_price}}</td>
 	</tr>
 	{% endfor %}
 </tbody>
 </table>
+{% else %}
+<div class="cards">
+<div class="row">
+{% for order in orders %}
+<div class="col-md-4 product">
+    {% if order.order_lines[0].product.feature_image %}<img class="product-image" src="{{url_for('image_thumb', slug=order.order_lines[0].product.feature_image.slug)}}"></a>{% endif %}
+    <div class="product-intro">
+        <h3><a href="{{ url_for('.order_form_edit', order=order.id)}}">{{order}}</a></h3>
+    </div>
+    <ul class="product-details">
+        <li class="product-type">{{order.user.username}}</li>
+        <li class="product-type">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</li>
+        <li class="product-price">{{ order.total_price }}</li>
+    </ul>
+</div>
+{% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
+{% endfor %}
+</div></div>
+{% endif %}
 {% include "includes/pagination.html" %}
 
 {% else %}

@@ -110,16 +110,18 @@ var imageselect_options = {
   }
 
 $('.buy-link').click(function(e) {
-    var csrftoken = "{{ csrf_token() }}";
     $.ajax({
         url: "{{ url_for('.order_cart', out='json')}}",
         type: 'post',
         data: {product: this.id},
-        headers: { 'X-CSRFToken': csrftoken },
+        headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
         dataType: 'json',
         success: function (data) {
             $c = $('#cart-counter')
-            $c.html(data.item)
+            $c.addClass("bounce").one('animationend webkitAnimationEnd oAnimationEnd', function() {
+              $c.removeClass("bounce");
+              $c.find('.badge').html(data.item)
+            });
         },
         error: function (jqXHR, textStatus, errorThrown) {
             flash_error(errorThrown)

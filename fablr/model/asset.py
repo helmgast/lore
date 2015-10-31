@@ -39,6 +39,20 @@ allowed_mimetypes = [
     'image/png',
     'text/plain']
 
+# New unified Asset
+# filename (unique)
+# original_name (filename or URL)
+# source (URL)
+# title
+# description
+# owner
+# gridfile (includes filename, upload date, mime, etc)
+# access_type (public, personal, personal & fingerprinted)
+# variation (different sized image, if supported). Use Pillow to generate
+# variation on the fly, but ensure it's cached.
+
+# On clean, if filedata in request, replace. If URL, and it has changed, fetch as file.
+# Show icons as thumbnails or as icons
 
 class FileAsset(db.Document):
     slug = db.StringField(max_length=62)
