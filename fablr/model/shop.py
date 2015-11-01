@@ -91,7 +91,7 @@ class Order(db.Document):
   order_lines = db.ListField(db.EmbeddedDocumentField(OrderLine))
   total_items = db.IntField(min_value=0, default=0) # Total number of items
   total_price = db.FloatField(min_value=0, default=0.0, verbose_name=_('Total price')) # Total price of order
-  currency = db.StringField(choices=Currencies.to_tuples())
+  currency = db.StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
   created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
   updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))

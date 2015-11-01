@@ -49,6 +49,7 @@ class Auth(object):
     self.url_prefix = prefix
     if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
       self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
+      self.google_api = build('plus', 'v1')
     if 'FACEBOOK_APP_ID' in app.config and 'FACEBOOK_APP_SECRET' in app.config:
       self.facebook_client = {'app_id': app.config['FACEBOOK_APP_ID'], 'app_secret':app.config['FACEBOOK_APP_SECRET']}
     self.clear_session = clear_session
@@ -161,7 +162,7 @@ class Auth(object):
     credentials = oauth_flow.step2_exchange(one_time_code)
     http = httplib2.Http()
     http = credentials.authorize(http)
-    google_request = GOOGLE.people().get(userId='me')
+    google_request = self.google_api.people().get(userId='me')
     profile = google_request.execute(http=http)
     return credentials, profile
 
@@ -177,6 +178,26 @@ class Auth(object):
     n = request.args.get('next', None)
     # Avoid going next to other auth-pages, will just be confusing!
     return n if (n and '/auth/' not in n) else url_for('homepage')
+
+# Join
+# Enter email (or pre-filled from url-arg)
+# If email already exists and is active, send to login with a message
+# If join link came with email token:
+#   "we know you own this email, and everytime you login we can send you a mail to check"
+#   "if you want to login faster, add google, fb or password below"
+# If no email token, show options to "prove you have this mail": google, fb, send verification
+#   IF a social service is selected, and it doesn't match the email, give Error
+#
+# Login
+# Enter email, or prefill based on Google / FB cookie
+# If prefilled, also show the basic user info. If no password registered, don't ask for it.
+
+# 4 methods to authenticate
+# an email token
+# a password
+# an auth_code from Google
+# an auth code from FB
+
 
   def join(self):
     # This function does joining in several steps.
@@ -422,11 +443,6 @@ class Auth(object):
     self.app.template_context_processors[None].append(self.get_context_user)
 
   def setup(self):
-    try:
-      GOOGLE = build('plus', 'v1')
-    except httplib2.ServerNotFoundError:
-      self.logger.warning("Could not connect to Google")
-
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username',
       'email', 'realname', 'location', 'newsletter'],
       field_args={ 'password':{'password':True} })

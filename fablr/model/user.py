@@ -24,11 +24,11 @@ from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 UserStatus = Choices(
-  invited=_('Invited'), 
+  invited=_('Invited'),
   active=_('Active'),
   deleted=_('Deleted'))
 ExternalAuth = Choices(
-  google='Google', 
+  google='Google',
   facebook='Facebook')
 
 class ExternalAuth(db.EmbeddedDocument):
@@ -38,11 +38,11 @@ class ExternalAuth(db.EmbeddedDocument):
 
 # A user in the system
 class User(db.Document, BaseUser):
-  # We want to set username unique, but then it cannot be empty, 
+  # We want to set username unique, but then it cannot be empty,
   # but in case where username is created, we want to allow empty values
   # Currently it's only a display name, not used for URLs!
   username = db.StringField(max_length=60, verbose_name=_('username'))
-  password = db.StringField(max_length=60, min_length=8, verbose_name = _('password'))
+  password = db.StringField(max_length=60, verbose_name = _('password'))
   email = db.EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
   realname = db.StringField(max_length=60, verbose_name = _('real name'))
   location = db.StringField(max_length=60, verbose_name = _('location'))
@@ -144,7 +144,7 @@ class Conversation(db.Document):
     return u'conversation'
 
 MemberRoles = Choices(
-  master=_('Master'), 
+  master=_('Master'),
   member=_('Member'),
   invited=_('Invited'))
 class Member(db.EmbeddedDocument):
@@ -156,8 +156,8 @@ class Member(db.EmbeddedDocument):
 
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
-GroupTypes = Choices(   gamegroup=_('Game Group'), 
-            worldgroup=_('World Group'), 
+GroupTypes = Choices(   gamegroup=_('Game Group'),
+            worldgroup=_('World Group'),
             articlegroup=_('Article Group'))
 class Group(db.Document):
   name = db.StringField(max_length=60, required=True)
