@@ -1180,6 +1180,7 @@ content: "\e033";
 	float: right;
 }
 
+
 .popover.popover-external-auth {
 	display: block;
 	position: relative;
@@ -1192,7 +1193,6 @@ content: "\e033";
 /* This makes the position to be on the right incl and arrow if screen is wide */
 @media (min-width: 768px) {
   .popover.popover-external-auth {
-  	top: 35px;
 	right: -240px;
 	max-width: 220px;
 	left: auto;
