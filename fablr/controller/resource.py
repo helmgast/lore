@@ -384,7 +384,7 @@ class ResourceError(Exception):
     500: u"%s" % _("Internal server error")
   }
 
-  def __init__(self, status_code, r=None, message=None, form=None):
+  def __init__(self, status_code, r=None, message=None, form=None, template=None, template_vars=None):
     message = message if message else self.default_messages.get(status_code, _('Unknown error'))
     if status_code == 400:
       form = r.get('form', None) if r else form
@@ -394,6 +394,8 @@ class ResourceError(Exception):
     self.status_code = status_code
     self.message = message
     self.r = r
+    self.template = template
+    self.template_vars = template_vars if template_vars else {}
 
     logger.warning("%d: %s", self.status_code, self.message)
 
@@ -474,7 +476,7 @@ class ResourceHandler(View):
 
         # if json, return json instead of render
         if r['out'] == 'json':
-          return self._return_json(r, err)
+          return self.return_json(r, err)
         elif 'template' in r:
           flash(err.message,'warning')
           return render_template(r['template'], **r), 400
@@ -483,7 +485,7 @@ class ResourceHandler(View):
 
       elif err.status_code == 401: # unauthorized
         if r['out'] == 'json':
-          return self._return_json(r, err)
+          return self.return_json(r, err)
         else:
           flash(err.message,'warning')
           # if fragment/json, just return 401
@@ -493,7 +495,7 @@ class ResourceHandler(View):
         # r['op'] = self.get_post_pairs[r['op']] if r['op'] in self.get_post_pairs else r['op']  # change the effective op
         # r['template'] = self.strategy.item_template()
         if r['out'] == 'json':
-          return self._return_json(r, err)
+          return self.return_json(r, err)
         # elif 'template' in r:
         #   flash(err.message,'warning')
         #   return render_template(r['template'], **r), 403
@@ -504,7 +506,7 @@ class ResourceHandler(View):
         abort(404) # TODO, nicer 404 page?
 
       elif r['out'] == 'json':
-        return self._return_json(r, err)
+        return self.return_json(r, err)
       else:
         raise  # Send the error onward, will be picked up by debugger if in debug mode
     except DoesNotExist:
@@ -513,7 +515,7 @@ class ResourceHandler(View):
       logger.exception("Validation error")
       resErr = ResourceError(400, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
       if r['out'] == 'json':
-        return self._return_json(r, resErr)
+        return self.return_json(r, resErr)
       else:
         # Send the error onward, will be picked up by debugger if in debug mode
         # 3rd args is the current traceback, as we have created a new exception
@@ -521,21 +523,21 @@ class ResourceHandler(View):
     except NotUniqueError as err:
       resErr = ResourceError(400, message=err.message)
       if r['out'] == 'json':
-        return self._return_json(r, resErr)
+        return self.return_json(r, resErr)
       else:
         # Send the error onward, will be picked up by debugger if in debug mode
         # 3rd args is the current traceback, as we have created a new exception
         raise resErr, None, sys.exc_info()[2]
     except Exception as err:
       if r['out'] == 'json':
-        return self._return_json(r, err, 500)
+        return self.return_json(r, err, 500)
       else:
         logger.exception(err)
         raise  # Send the error onward, will be picked up by debugger if in debug mode
 
     # no error, render output
     if r['out'] == 'json':
-      return self._return_json(r)
+      return self.return_json(r)
     elif 'next' in r:
       return redirect(r['next'])
     elif 'response' in r:
@@ -544,7 +546,7 @@ class ResourceHandler(View):
       # if json, return json instead of render
       return render_template(r['template'], **r)
 
-  def _return_json(self, r, err=None, status_code=0):
+  def return_json(self, r, err=None, status_code=0):
     if err:
       logger.exception(err)
       return jsonify({'error':err.__class__.__name__,'message':err.message, 'status_code':status_code}), status_code or err.status_code

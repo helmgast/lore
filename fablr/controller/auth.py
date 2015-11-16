@@ -205,6 +205,10 @@ class Auth(object):
     # Verify-step: a user exists, and we are amending details
     # bb@bb.com, 9db26ad4ea2469e547f45b873c19ff99
 
+    # TODO Don't like importing this here but can't find another way to
+    # avoid import errors
+    from mailer import send_mail
+
     print request.form
     # if g.feature and not g.feature['join']:
     #   raise ResourceError(403)
@@ -281,13 +285,15 @@ class Auth(object):
                 return redirect(self.get_next_url())
               else:
                 user.save()
-                #send_verification_email()
-                print "Sending verification email" #TODO
-                flash( _('There is a problem with your login, please contact us info@helmgast.se!'), 'warning')
-
-                # flash( _("You have registered, but as your preferred email didn't \
-                #   match the ones in external auth, you have to verify it manually, \
-                #   please check your inbox"), 'success')
+                send_mail(
+                    [user.email],
+                    _('Verify your email to complete registration on helmgast.se'),
+                    mail_type = 'verify',
+                    user=user
+                    )
+                flash( _("You have registered, but as your preferred email didn't \
+                  match the ones in external auth, you have to verify it manually, \
+                  please check your inbox"), 'success')
             else:
 
               # print user.status, user.facebook_auth, user.google_auth, user.password
@@ -378,6 +384,7 @@ class Auth(object):
           except self.User.DoesNotExist:
             flash( _('No matching external authentication, are you sure you signed up with this method?'), 'danger')
           except Exception as e:
+            self.logger.exception('Error contacting external service')
             flash( u"%s %s" % (_('Error contacting external service'),e), 'danger')
         else:
           flash( _('Incorrect external service supplied'), 'danger')
@@ -405,7 +412,7 @@ class Auth(object):
   def remind(self):
     # TODO Don't like importing this here but can't find another way to
     # avoid import errors
-    from controller.mailer import send_mail
+    from mailer import send_mail
 
     form = self.RemindForm()
     if request.method == 'POST':

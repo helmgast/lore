@@ -18,6 +18,8 @@ def check_password(raw_password, enc_password):
     return False
 
 def create_token(input_string, salt=u'e3af71457ddb83c51c43c7cdf6d6ddb3'):
+  if not input_string:
+      return ''
   return md5(input_string.strip().lower().encode('utf-8') + salt).hexdigest()
 
 class BaseUser(object):

@@ -1,11 +1,13 @@
 from wtforms.validators import Email
-from flask import Blueprint, current_app, render_template, request, redirect, abort
+from flask import Blueprint, current_app, render_template, request, redirect, abort, flash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
 from flask.ext.babel import gettext as _
+from fablr.model.baseuser import create_token
 from fablr.model.user import User
 from fablr.model.shop import Order
 from fablr.model.web import MailForm
+from mongoengine.errors import NotUniqueError
 from fablr.controller.resource import parse_out_arg, ResourceError
 import re
 
@@ -15,7 +17,7 @@ mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 
 mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
 
-def send_mail(recipients, message_subject, mail_type, custom_template=None, 
+def send_mail(recipients, message_subject, mail_type, custom_template=None,
     sender=None, **kwargs):
   # recipients should be list of emails (extract from user before sending)
   # subject is a fixed string
@@ -31,7 +33,7 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
 
   if not sender:
     sender = (current_app.config['MAIL_DEFAULT_SENDER'], 'Helmgast')
-  
+
   template = ('mail/%s.html' % mail_type) if not custom_template else custom_template
 
   message = {
@@ -93,32 +95,36 @@ def mail_view(mail_type):
       subject = _('Reminder on how to login to Helmgast.se')
     writable = {}
     overrides = {'from_field': server_mail, 'to_field':user.email, 'subject':subject}
-  
-  if request.method == 'GET':
-    mailform = MailForm(request.args, 
-      allowed_fields=writable,
-      **overrides)
-    return render_template(mail_template,
-      mail_type=mail_type, 
-      parent_template=parent_template, 
-      user=user,
-      order=order,
-      mailform=mailform, **mailform.data)
-  
-  elif request.method == 'POST':
-    mailform = MailForm(request.form, 
-      allowed_fields=writable,
-      **overrides)
-    if mailform.validate():
-      email = send_mail(
-        [mailform.to_field.data], 
-        mailform.subject.data, 
-        mail_type=mail_type,
-        sender=mailform.from_field.data,
-        user=user,
-        order=order, **mailform.data)
-      return "Mail sent!"
-    else:
-      raise ResourceError(400, form=mailform)
-  else:
-    raise ResourceError(403)
+
+  template_vars = {'mail_type':mail_type, 'parent_template':parent_template,
+    'user':user,'order':order}
+  mailform = MailForm(request.form,
+    allowed_fields=writable, **overrides)
+  template_vars.update(mailform.data)
+  template_vars['mailform'] = mailform
+  if mail_type == 'invite':
+    template_vars['token'] = create_token(mailform.data.get('to_field',None))
+
+  if request.method == 'POST':
+      if mailform.validate():
+        if mail_type == 'invite':
+            # We should create an invited user to match when link is clicked
+            user = User(email=mailform.to_field.data)
+            try:
+                user.save()
+            except NotUniqueError as e:
+                raise ResourceError(400, message="User already exists",
+                  template=mail_template, template_vars=template_vars)
+        email = send_mail(
+          [mailform.to_field.data],
+          mailform.subject.data,
+          mail_type=mail_type,
+          sender=mailform.from_field.data,
+          user=user,
+          order=order, **mailform.data)
+        return "Mail sent!"
+      else:
+        raise ResourceError(400,
+          template=mail_template, template_vars=template_vars)
+  # No need to do anything special for GET
+  return render_template(mail_template, **template_vars)

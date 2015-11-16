@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-10-31 23:50+0900\n"
+"POT-Creation-Date: 2015-11-15 14:49+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -30,7 +30,8 @@ msgid "Public"
 msgstr "Allmän"
 
 #: fablr/app.py:27 fablr/templates/auth/join.html:58
-#: fablr/templates/auth/login.html:25
+#: fablr/templates/auth/join0.html:59 fablr/templates/auth/login.html:25
+#: fablr/templates/auth/login0.html:25
 msgid "Join"
 msgstr "Registrera"
 
@@ -56,57 +57,57 @@ msgstr "Verktyg"
 msgid "Shop"
 msgstr "Butik"
 
-#: fablr/controller/auth.py:120
+#: fablr/controller/auth.py:121
 msgid "You are logged in as"
 msgstr "Du är nu inloggad som"
 
-#: fablr/controller/auth.py:128
+#: fablr/controller/auth.py:129
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
-#: fablr/controller/auth.py:265
+#: fablr/controller/auth.py:286
 msgid "There is a problem with your login, please contact us info@helmgast.se!"
 msgstr ""
 "Det är ett problem med din inloggning, var vänlig kontakta oss på "
 "info@helmgast.se"
 
-#: fablr/controller/auth.py:274
+#: fablr/controller/auth.py:295
 msgid "Someone has already created this user!"
 msgstr "Någon har redan skapat denna användaren!"
 
-#: fablr/controller/auth.py:276
+#: fablr/controller/auth.py:297
 msgid "Form data has been manipulated, unsupported external auth service"
 msgstr "Formulärdatat kan ha manipulerats, vi stödjer inte denna inloggningstjänst"
 
-#: fablr/controller/auth.py:292
+#: fablr/controller/auth.py:313
 msgid "Password successfully changed"
 msgstr "Lösenordet har ändrats"
 
-#: fablr/controller/auth.py:301
+#: fablr/controller/auth.py:322
 msgid "This user is already verified!"
 msgstr "Denna användaren är redan verifierad!"
 
-#: fablr/controller/auth.py:304
+#: fablr/controller/auth.py:325
 msgid "No invitation for this email and token exists"
 msgstr "Ingen inbjudan existerar för denna email och/eller email-token"
 
-#: fablr/controller/auth.py:307
+#: fablr/controller/auth.py:328
 msgid "Incorrect email or email token, did you use the right link?"
 msgstr "Felaktig email eller email-token, använde du rätt länk?"
 
-#: fablr/controller/auth.py:310
+#: fablr/controller/auth.py:331
 msgid "Registration without invite link is not yet open, please come back later!"
 msgstr "Registrering utan inbjudningslänk är inte öppen ännu!"
 
-#: fablr/controller/auth.py:327 fablr/controller/auth.py:376
+#: fablr/controller/auth.py:348 fablr/controller/auth.py:397
 msgid "Error in form"
 msgstr "Fel i formuläret"
 
-#: fablr/controller/auth.py:356
+#: fablr/controller/auth.py:377
 msgid "This user account is not active or verified"
 msgstr "Detta kontot är inte aktivt eller verifierat"
 
-#: fablr/controller/auth.py:358
+#: fablr/controller/auth.py:379
 msgid ""
 "No matching external authentication, are you sure you signed up with this"
 " method?"
@@ -114,58 +115,58 @@ msgstr ""
 "Inget matchande konto för extern inloggning, är du säker på att du "
 "registrerade med denna metoden?"
 
-#: fablr/controller/auth.py:360
+#: fablr/controller/auth.py:381
 msgid "Error contacting external service"
 msgstr "Fel under kommunikationen med extern inloggningsservice"
 
-#: fablr/controller/auth.py:362
+#: fablr/controller/auth.py:383
 msgid "Incorrect external service supplied"
 msgstr "Felaktig extern inloggningsservice angiven"
 
-#: fablr/controller/auth.py:371
+#: fablr/controller/auth.py:392
 msgid "Incorrect username or password"
 msgstr "Felaktigt användarnamn eller lösenord"
 
-#: fablr/controller/auth.py:373 fablr/controller/auth.py:403
+#: fablr/controller/auth.py:394 fablr/controller/auth.py:424
 msgid "No such user exist, are you sure you registered first?"
 msgstr ""
 "Ingen sådan användare existerar, är du säker på att du registrerat dig "
 "först?"
 
-#: fablr/controller/auth.py:397 fablr/controller/mailer.py:93
+#: fablr/controller/auth.py:418 fablr/controller/mailer.py:94
 msgid "Reminder on how to login to Helmgast.se"
 msgstr "Påminnelse hur du loggar in på Helmgast.se"
 
-#: fablr/controller/auth.py:401
+#: fablr/controller/auth.py:422
 msgid "Reminder email sent to your address"
 msgstr "Påminnelsemail har nu skickats till din adress"
 
-#: fablr/controller/auth.py:405
+#: fablr/controller/auth.py:426
 msgid "Errors in form"
 msgstr "Fel i formuläret"
 
-#: fablr/controller/auth.py:437 fablr/controller/auth.py:443
+#: fablr/controller/auth.py:453 fablr/controller/auth.py:459
 msgid "Auth Code"
 msgstr ""
 
-#: fablr/controller/auth.py:438
+#: fablr/controller/auth.py:454
 msgid "Email Token"
 msgstr "Email-token"
 
-#: fablr/controller/auth.py:440 fablr/controller/auth.py:444
+#: fablr/controller/auth.py:456 fablr/controller/auth.py:460
 msgid "External Service"
 msgstr "Extern service"
 
-#: fablr/controller/mailer.py:86
+#: fablr/controller/mailer.py:87
 msgid "Invitation to join Helmgast.se"
 msgstr "Inbjudan att gå med i Helmgast.se"
 
-#: fablr/controller/mailer.py:89
+#: fablr/controller/mailer.py:90
 #, python-format
 msgid "%(user)s, welcome to Helmgast!"
 msgstr "%(user)s, välkommen till Helmgast!"
 
-#: fablr/controller/mailer.py:91
+#: fablr/controller/mailer.py:92
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
@@ -367,7 +368,8 @@ msgstr "Pris"
 msgid "Tax"
 msgstr "Moms"
 
-#: fablr/model/shop.py:46 fablr/templates/shop/product_item.html:72
+#: fablr/model/shop.py:46 fablr/model/shop.py:94
+#: fablr/templates/shop/product_item.html:72
 msgid "Currency"
 msgstr "Valuta"
 
@@ -594,16 +596,16 @@ msgid "Application features"
 msgstr "Det här kan du göra"
 
 #: fablr/model/web.py:25 fablr/model/world.py:105
-#: fablr/templates/mail/one_column_mail.html:78
+#: fablr/templates/mail/one_column_mail.html:80
 msgid "To"
 msgstr "Till"
 
 #: fablr/model/web.py:26 fablr/model/world.py:104
-#: fablr/templates/mail/one_column_mail.html:85
+#: fablr/templates/mail/one_column_mail.html:87
 msgid "From"
 msgstr "Från"
 
-#: fablr/model/web.py:27 fablr/templates/mail/one_column_mail.html:92
+#: fablr/model/web.py:27 fablr/templates/mail/one_column_mail.html:94
 msgid "Subject"
 msgstr "Ämne"
 
@@ -792,7 +794,7 @@ msgid "Databases"
 msgstr "Databaser"
 
 #: fablr/templates/admin.html:30 fablr/templates/auth/join.html:58
-#: fablr/templates/shop/order_item.html:46
+#: fablr/templates/auth/join0.html:63 fablr/templates/shop/order_item.html:46
 msgid "Save"
 msgstr "Spara"
 
@@ -1123,6 +1125,7 @@ msgid "No file assets available!"
 msgstr "Inga filer tillgängliga!"
 
 #: fablr/templates/auth/_page.html:7 fablr/templates/auth/login.html:9
+#: fablr/templates/auth/login0.html:9
 msgid "Please sign in"
 msgstr "Logga in här"
 
@@ -1130,7 +1133,9 @@ msgstr "Logga in här"
 msgid "Complete your account"
 msgstr "Färdigställ ditt konto"
 
-#: fablr/templates/auth/_page.html:11 fablr/templates/auth/login.html:4
+#: fablr/templates/auth/_page.html:11 fablr/templates/auth/join0.html:14
+#: fablr/templates/auth/join0.html:61 fablr/templates/auth/login.html:4
+#: fablr/templates/auth/login0.html:4
 msgid "Login"
 msgstr "Logga in"
 
@@ -1146,31 +1151,32 @@ msgstr "associerad email"
 msgid "Authorized with Facebook as"
 msgstr "Identifierad av Facebook som"
 
-#: fablr/templates/auth/join.html:9
+#: fablr/templates/auth/join.html:9 fablr/templates/auth/join0.html:12
 msgid "Sign up"
 msgstr "Registrera"
 
-#: fablr/templates/auth/join.html:9
+#: fablr/templates/auth/join.html:9 fablr/templates/auth/join0.html:16
 msgid "Reset authentication"
 msgstr "Återställ autentisering"
 
-#: fablr/templates/auth/join.html:12
+#: fablr/templates/auth/join.html:12 fablr/templates/auth/join0.html:32
 msgid "Join via Google"
 msgstr "Registrera via Google"
 
-#: fablr/templates/auth/join.html:13
+#: fablr/templates/auth/join.html:13 fablr/templates/auth/join0.html:33
 msgid "Join via Facebook"
 msgstr "Registrera via Facebook"
 
-#: fablr/templates/auth/join.html:14 fablr/templates/auth/login.html:32
+#: fablr/templates/auth/join.html:14 fablr/templates/auth/join0.html:44
+#: fablr/templates/auth/login.html:32 fablr/templates/auth/login0.html:32
 msgid "Use own password"
 msgstr "Använd eget lösenord"
 
-#: fablr/templates/auth/join.html:17
+#: fablr/templates/auth/join.html:17 fablr/templates/auth/join0.html:37
 msgid "Recommended choice"
 msgstr "Rekommenderat val!"
 
-#: fablr/templates/auth/join.html:19
+#: fablr/templates/auth/join.html:19 fablr/templates/auth/join0.html:39
 msgid ""
 "Logging in with an external service is both <strong>safer</strong> and "
 "<strong>quicker</strong>. We will NOT post anything to your profile "
@@ -1180,11 +1186,12 @@ msgstr ""
 "<strong>snabbare</strong>. Vi kommer ALDRIG posta något till din profil "
 "utan att fråga, detta är bara för login!"
 
-#: fablr/templates/auth/join.html:26
+#: fablr/templates/auth/join.html:26 fablr/templates/auth/join0.html:22
 msgid "Don't change, only this email is verified"
 msgstr "Ändra ej, den måste matcha din inbjudan"
 
 #: fablr/templates/auth/join.html:35 fablr/templates/auth/login.html:38
+#: fablr/templates/auth/login0.html:38
 msgid "Minimum 8 characters!"
 msgstr "Minst 8 tecken långt!"
 
@@ -1196,7 +1203,7 @@ msgstr "Frivilliga uppgifter"
 msgid "Receive newsletter"
 msgstr "Prenumerera på nyhetsbrev"
 
-#: fablr/templates/auth/join.html:60
+#: fablr/templates/auth/join.html:60 fablr/templates/auth/join0.html:68
 msgid ""
 "If you encounter any problems during registration, please send an email "
 "to info@helmgast.se"
@@ -1204,11 +1211,23 @@ msgstr ""
 "Om du stöter på några problem under registreringen, vänligen skicka ett "
 "mail till info@helmgast.se"
 
-#: fablr/templates/auth/login.html:15
+#: fablr/templates/auth/join0.html:28
+msgid "Choose a way of authenticating yourself"
+msgstr ""
+
+#: fablr/templates/auth/join0.html:43
+msgid "Password"
+msgstr ""
+
+#: fablr/templates/auth/join0.html:48
+msgid "Or continue without, each time we will verify through your email"
+msgstr ""
+
+#: fablr/templates/auth/login.html:15 fablr/templates/auth/login0.html:15
 msgid "Problem signing in?"
 msgstr "Problem att logga in?"
 
-#: fablr/templates/auth/login.html:18
+#: fablr/templates/auth/login.html:18 fablr/templates/auth/login0.html:18
 msgid ""
 "Pick the method you signed up with. If you forgot\n"
 "        your method or password, click below!"
@@ -1216,24 +1235,25 @@ msgstr ""
 "Välj den metod du registrerade med. Om du glömt\n"
 "        din metod eller lösenord, klicka nedan!"
 
-#: fablr/templates/auth/login.html:21 fablr/templates/auth/remind.html:10
-#: fablr/templates/auth/remind.html:15 fablr/templates/social/user_item.html:18
+#: fablr/templates/auth/login.html:21 fablr/templates/auth/login0.html:21
+#: fablr/templates/auth/remind.html:10 fablr/templates/auth/remind.html:15
+#: fablr/templates/social/user_item.html:18
 msgid "Remind login"
 msgstr "Påminn om login"
 
-#: fablr/templates/auth/login.html:25
+#: fablr/templates/auth/login.html:25 fablr/templates/auth/login0.html:25
 msgid "with external provider (safer!)"
 msgstr "med extern tjänst (säkrare!)"
 
-#: fablr/templates/auth/login.html:26
+#: fablr/templates/auth/login.html:26 fablr/templates/auth/login0.html:26
 msgid "Login via Google"
 msgstr "Logga in via Google"
 
-#: fablr/templates/auth/login.html:27
+#: fablr/templates/auth/login.html:27 fablr/templates/auth/login0.html:27
 msgid "Login via Facebook"
 msgstr "Logga in via Facebook"
 
-#: fablr/templates/auth/login.html:44
+#: fablr/templates/auth/login.html:44 fablr/templates/auth/login0.html:44
 msgid "Sign in"
 msgstr "Logga in"
 
@@ -1365,7 +1385,7 @@ msgid "Email address"
 msgstr "Emailadress"
 
 #: fablr/templates/includes/feedback_modal.html:37
-#: fablr/templates/mail/one_column_mail.html:100
+#: fablr/templates/mail/one_column_mail.html:102
 #: fablr/templates/social/conversation_item.html:31
 msgid "Send"
 msgstr "Skicka"
@@ -1397,12 +1417,12 @@ msgstr "Email från Helmgast-besökaren %(from_field)s..."
 msgid ""
 "We would be very happy if you would join us as user of Helmgast.se! It's "
 "a web platform\n"
-"for roleplaying gamers - game masters, players and publishers alike. If "
-"you want to \n"
+"for roleplaying gamers; game masters, players and publishers alike. If "
+"you want to\n"
 "join, just click below and register!"
 msgstr ""
 "Vi vore väldigt glada om du skulle vilja gå med som användare i "
-"Helmgast.se! Det är en webbplattform för rollspelare - spelledare, "
+"Helmgast.se! Det är en webbplattform för rollspelare; spelledare, "
 "spelare och författare. Om du vill delta, klicka bara på länken nedan för"
 " att registrera!"
 
@@ -1414,6 +1434,11 @@ msgstr "Bekräfta email"
 msgid "Join Helmgast"
 msgstr "Gå med i Helmgast"
 
+#: fablr/templates/mail/invite.html:23
+#: fablr/templates/mail/one_column_mail.html:51
+msgid "on"
+msgstr "på"
+
 #: fablr/templates/mail/one_column_mail.html:4
 msgid "Send email"
 msgstr "Skicka email"
@@ -1422,30 +1447,16 @@ msgstr "Skicka email"
 msgid "Email from Helmgast..."
 msgstr "Email från Helmgast..."
 
-#: fablr/templates/mail/one_column_mail.html:50
-msgid "on"
-msgstr "på"
-
-#: fablr/templates/mail/one_column_mail.html:51
+#: fablr/templates/mail/one_column_mail.html:52
 #, python-format
 msgid ""
 "<p>You are receiving this email to %(email)s as a user of <a "
 "href=\"http://helmgast.se\" "
-"class=\"utilityLink\">http://helmgast.se</a></p>\n"
-"                            <p><em>Copyright © 2015 Helmgast AB, All "
-"rights reserved.<br>\n"
-"                            Surbrunnsgatan 33, Stockholm 113 48, "
-"Sweden</em></p>\n"
-"                            </p>"
+"class=\"utilityLink\">http://helmgast.se</a></p>"
 msgstr ""
-"<p>Du får detta mail till %(email)s eftersom du är en användare på <a "
+""<p>Du får detta mail till %(email)s eftersom du är en användare på <a "
 "href=\"http://helmgast.se\" "
-"class=\"utilityLink\">http://helmgast.se</a></p>\n"
-"                            <p><em>Copyright © 2015 Helmgast AB, All "
-"rights reserved.<br>\n"
-"                            Surbrunnsgatan 33, Stockholm 113 48, "
-"Sweden</em></p>\n"
-"                            </p>"
+"class=\"utilityLink\">http://helmgast.se</a></p>""
 
 #: fablr/templates/mail/order.html:4
 msgid "Order confirmation on helmgast.se"
@@ -2109,3 +2120,20 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 
 #~ msgid "Value"
 #~ msgstr "Värde"
+
+#~ msgid ""
+#~ "We would be very happy if you "
+#~ "would join us as user of "
+#~ "Helmgast.se! It's a web platform\n"
+#~ "for roleplaying gamers; game masters, "
+#~ "players and publishers alike. If you "
+#~ "want to \n"
+#~ "join, just click below and register!"
+#~ msgstr ""
+#~ "Vi vore väldigt glada om du skulle"
+#~ " vilja gå med som användare i "
+#~ "Helmgast.se! Det är en webbplattform för"
+#~ " rollspelare; spelledare, spelare och "
+#~ "författare. Om du vill delta, klicka "
+#~ "bara på länken nedan för att "
+#~ "registrera!"

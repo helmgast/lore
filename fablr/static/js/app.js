@@ -1,9 +1,9 @@
 function flash_error(message, level, target) {
   var $error = $('<div class="alert alert-'+(level || 'warning')+
-            ' alert-dismissable"> <button type="button" class="close" \
-            data-dismiss="alert" aria-hidden="true">&times;</button> \
-            <p>'+message+'</p> \
-            </div>');
+            ' alert-dismissable"> <button type="button" class="close"'+
+            'data-dismiss="alert" aria-hidden="true">&times;</button>'+
+            '<p>'+message+'</p>'+
+            '</div>');
   if ( target ) {
     $(target).append($error)
   } else {
@@ -354,20 +354,20 @@ will be appended to the target.
     self.$element  = $(element)
 
     self.$imageEl =
-    $('<div class="image-selector" contenteditable="false"> \
-        <div class="image-preview"> \
-          <input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'"> \
-          <button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button> \
-        </div> \
-        <div class="image-upload form-group"> \
-          <label for="imagefile" title="'+i18n['Drag or click to upload file']+'"> \
-            <span class="glyphicon glyphicon-picture"></span> \
-          </label> \
-          <input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*"> \
-          <input type="text" class="form-control" name="source_image_url" \
-          id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
-          (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" \
-            href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
+    $('<div class="image-selector" contenteditable="false">' +
+        '<div class="image-preview">' +
+          '<input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'">' +
+          '<button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button>' +
+        '</div>' +
+        '<div class="image-upload form-group">' +
+          '<label for="imagefile" title="'+i18n['Drag or click to upload file']+'">' +
+            '<span class="glyphicon glyphicon-picture"></span>' +
+          '</label>' +
+          '<input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*">' +
+        '  <input type="text" class="form-control" name="source_image_url"' +
+          'id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
+          (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" '+
+            'href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
         '</div></div>');
 
     self.$element.addClass('hide')
@@ -674,7 +674,8 @@ $modal.on('click', 'button[type="submit"]', function(e) {
         $modal.modal('hide')
       })
       .fail(function( jqXHR, textStatus, errorThrown) {
-        alert("Error: "+errorThrown)
+        $modal.find('.modal-content').html(jqXHR.responseText);
+        console.log("Error: "+errorThrown);
       })
   } else {
     $modal.modal('hide')
@@ -703,3 +704,4 @@ $('#feedback-modal').on('submit', 'form', function(e) {
   e.preventDefault()
   $('#feedback-modal').modal('hide')
 });
+// hej

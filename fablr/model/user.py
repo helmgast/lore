@@ -62,7 +62,7 @@ class User(db.Document, BaseUser):
     # TODO Our password hashes contain 46 characters, so we can check if the value
     # set is less, which means it's a user input that we need to hash before saving
     if self.password and len(self.password) <= 40:
-      self.password = make_password(self.password)
+      self.set_password(self.password)
 
   def display_name(self):
     return self.__unicode__()

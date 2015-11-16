@@ -50,14 +50,14 @@ def is_public():
   return app_state == STATE_PUBLIC
 
 def create_app(no_init=False, **kwargs):
-  the_app = Flask('fablr', static_url_path='/fablr/static')  # Creates new flask instance
-  config_string = "default config"
+  the_app = Flask('fablr')  # Creates new flask instance
+  config_string = "config from:"
   import default_config
   the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
   try:
       the_app.config.from_pyfile('config.py', silent=False) # Now override with custom settings if exist
-      config_string += ", file config.py"
+      config_string += " file config.py, "
   except IOError as err:
       pass
   the_app.config.from_pyfile('version.cfg', silent=True)
@@ -71,7 +71,7 @@ def create_app(no_init=False, **kwargs):
       the_app.config[k] = os.environ[env_k]
       env_config.append(k)
   if env_config:
-    config_string += ", env: %s" % ','.join(env_config)
+    config_string += " env (%s), " % ','.join(env_config)
 
   the_app.config.update(kwargs)  # add any overrides from startup command
   the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
@@ -135,7 +135,8 @@ def configure_extensions(app):
   app.md.register_extension(AutolinkedImage)
 
   # Debug toolbar
-  toolbar.init_app(app)
+  if app.config.get('DEBUG_TB_ENABLED', False):
+      toolbar.init_app(app)
 
 def configure_blueprints(app):
 
@@ -183,6 +184,7 @@ def register_main_routes(app, auth):
   from model.shop import Order
   from model.world import Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
+  from controller.resource import ResourceError
   from model.web import ApplicationConfigForm
 
   @app.route('/')
@@ -221,13 +223,32 @@ def register_main_routes(app, auth):
           app_features[feature] = is_enabled
       return redirect('/admin/')
 
+  @app.errorhandler(ResourceError)
+  def resource_error(err):
+    # if request.args.has_key('debug') and current_app.debug:
+    #     raise # send onward if we are debugging
+
+    if err.status_code == 400: # bad request
+      if err.template:
+        flash(err.message,'warning')
+        return render_template(err.template, **err.template_vars), err.status_code
+    return err.message, err.status_code
+
+
   @app.template_filter('currentyear')
   def currentyear():
     return datetime.utcnow().strftime('%Y')
 
-  @app.template_filter('without')
-  def without(value, *args):
+  @app.template_filter('dict_without')
+  def dict_without(value, *args):
     return {k:value[k] for k in value.keys() if k not in args}
+
+  @app.template_filter('dict_with')
+  def dict_with(value, **kwargs):
+    z = value.copy()
+    z.update(kwargs)
+    return z
+
 
 
 # @current_app.template_filter('dictreplace')

@@ -1,5 +1,5 @@
 {% if pagination and pagination.pages > 1 %}
-  {% set urlargs = request.view_args|without('page') %}
+  {% set urlargs = request.view_args|dict_without('page') %}
   <div>
     <ul class="pagination">
       {%- for page in pagination.iter_pages() %}

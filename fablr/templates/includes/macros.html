@@ -98,15 +98,15 @@
 {% if 'view' in show %}
 {% set view = request.args.get('view','table') %}
 <div class="btn-group">
-<a href="{{ url_for(request.endpoint, view='card', **request.view_args|without('view')) }}" class="btn btn-default btn-sm{{ ' active' if view=='card'}}"><span class="glyphicon glyphicon-th-large"></span></a>
-<a href="{{ url_for(request.endpoint, view='table', **request.view_args|without('view')) }}"  class="btn btn-default btn-sm{{ ' active' if view=='table'}}"><span class="glyphicon glyphicon-list-alt"></span></a>
+<a href="{{ url_for(request.endpoint, view='card', **request.view_args|dict_without('view')) }}" class="btn btn-default btn-sm{{ ' active' if view=='card'}}"><span class="glyphicon glyphicon-th-large"></span></a>
+<a href="{{ url_for(request.endpoint, view='table', **request.view_args|dict_without('view')) }}"  class="btn btn-default btn-sm{{ ' active' if view=='table'}}"><span class="glyphicon glyphicon-list-alt"></span></a>
 </div>
 {% endif %}
 
 {% if 'order' in show %}
 <div class="btn-group">
   {% if 'order_by' in request.args %}
-  <a href="{{ url_for(request.endpoint, **request.view_args|without('order_by')) }}" class="btn btn-info btn-sm">{% trans %}Order by{% endtrans %}: {{request.args.get('order_by')}} &times;</a>
+  <a href="{{ url_for(request.endpoint, **request.view_args|dict_without('order_by')) }}" class="btn btn-info btn-sm">{% trans %}Order by{% endtrans %}: {{request.args.get('order_by')}} &times;</a>
   {% else %}
   <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span></button>
   <ul class="dropdown-menu" role="menu">
@@ -124,10 +124,10 @@
 {% if 'page' in show %}
 <div class="btn-group">
   {% if 'per_page' in request.args %}
-  <a href="{{ url_for(request.endpoint, **request.view_args|without('per_page')) }}" class="btn btn-info btn-sm">{% trans %}Per page{% endtrans %}: {{request.args.get('per_page')}} &times;</a>
+  <a href="{{ url_for(request.endpoint, **request.view_args|dict_without('per_page')) }}" class="btn btn-info btn-sm">{% trans %}Per page{% endtrans %}: {{request.args.get('per_page')}} &times;</a>
   {% else %}
   <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{% trans %}Per page{% endtrans %}: 10 <span class="caret"></span></button>
-  {% set args_without_page = request.view_args|without('per_page', 'page') %}
+  {% set args_without_page = request.view_args|dict_without('per_page', 'page') %}
   <ul class="dropdown-menu" role="menu">
       <li><a href="{{ url_for(request.endpoint, per_page=20, **args_without_page) }}">20</a></li>
       <li><a href="{{ url_for(request.endpoint, per_page=50, **args_without_page) }}">50</a></li>
