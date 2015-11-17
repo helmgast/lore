@@ -23,7 +23,7 @@
     <li class="{{privileged}}"><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('All orders') }}</a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list')) %}
-    <li class="{{privileged}}"><a href="{{ url_for('.order_my_orders') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('Orders') }}</a></li>
+    <li class="{{privileged}}"><a href="{{ url_for('.order_my_orders') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('My orders') }}</a></li>
   {% endcall %}
 
 </ul>

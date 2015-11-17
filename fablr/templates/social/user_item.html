@@ -14,7 +14,7 @@
   {% endcall %}
 {% call MACRO.IS_ADMIN() %}
   <ul class="nav nav-pills nav-stacked">
-      <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id)}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Request verification')}}</a></li>
+      <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id)}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Send verification link')}}</a></li>
     <li class="{{privileged}}" role="presentation"><a data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='remind_login', user=user.id)}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Remind login')}}</a></li>
     </ul>
   {% endcall %}
