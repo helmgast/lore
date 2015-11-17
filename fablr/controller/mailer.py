@@ -103,11 +103,13 @@ def mail_view(mail_type):
   template_vars.update(mailform.data)
   template_vars['mailform'] = mailform
   if mail_type == 'invite':
-    template_vars['token'] = create_token(mailform.data.get('to_field',None))
+    template_vars['token'] = create_token(mailform.to_field.data)
 
   if request.method == 'POST':
       if mailform.validate():
         if mail_type == 'invite':
+            if not template_vars.get('token', None):
+                raise ResourceError(500, "No token could be generated from %s" % mailform.data)
             # We should create an invited user to match when link is clicked
             user = User(email=mailform.to_field.data)
             try:
@@ -115,13 +117,12 @@ def mail_view(mail_type):
             except NotUniqueError as e:
                 raise ResourceError(400, message="User already exists",
                   template=mail_template, template_vars=template_vars)
+        del template_vars['parent_template'] # not used for mail send
         email = send_mail(
           [mailform.to_field.data],
           mailform.subject.data,
-          mail_type=mail_type,
           sender=mailform.from_field.data,
-          user=user,
-          order=order, **mailform.data)
+          **template_vars)
         return "Mail sent!"
       else:
         raise ResourceError(400,

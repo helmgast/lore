@@ -4,6 +4,9 @@
 {% set reset = request.args.get('reset','').lower()=='true' %}
 
 {% block mainblock %}
+{% if g.user %}
+<h3>{{_('Cannot join, you are already logged in!')}}</h3>
+{% else %}
 <form id="auth-form" method="post" action="{{url_for('auth.join', reset=reset)}}" class="col-sm-6 col-sm-offset-3" role="form">
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ _('Sign up') if not reset else _('Reset authentication')}}</h2>
@@ -20,15 +23,15 @@
       </div>
     </div>
   </div>
-  <div class="" style="margin-top: 20px" id="email-inputs"> 
+  <div class="" style="margin-top: 20px" id="email-inputs">
   {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
   {% if form.email_token.data %}
   <span class="help-block small">{{_("Don't change, only this email is verified")}}</span>
   {% endif %}
-  </div> 
+  </div>
   <hr>
   <div class="clearfix" id="profile"></div>
- 
+
   <div id="password-inputs" class="hide">
     {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) if form.password }}
     {#{{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}#}
@@ -58,4 +61,5 @@
   <button id="signin-submit" class="btn btn-signin btn-success btn-block" disabled type="submit">{{_('Join') if not reset else _('Save')}}</button>
 </form>
 <span class="help-block">{{_('If you encounter any problems during registration, please send an email to info@helmgast.se')}}</span>
+{% endif %}
 {% endblock %}
