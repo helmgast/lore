@@ -105,7 +105,7 @@
 <script>
 var imageselect_options = {
     csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', page='all', out='modal')}}",
+    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
     image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
   }
 

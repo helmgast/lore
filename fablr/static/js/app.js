@@ -392,10 +392,15 @@ will be appended to the target.
     }
 
     self.$imageEl.on('click', '.btn-delete', function(e){
-      self.$imageEl.find('.image-preview img').remove()
-      $('#themodal .gallerylist input[type="radio"]:checked').prop('checked', false)
-      self.$imageEl.find('.image-preview').removeClass('selected')
-      self.$element.val('---') // blank choice in Select box...
+      if (self.$element.is('a.lightbox')) {
+        self.$imageEl.remove()
+        self.$element.remove()
+      } else {
+        self.$imageEl.find('.image-preview img').remove()
+        $('#themodal .gallerylist input[type="radio"]:checked').prop('checked', false)
+        self.$imageEl.find('.image-preview').removeClass('selected')
+        self.$element.val('---') // blank choice in Select box...
+      }
     })
 
     self.$imageEl.on('click', '.image-library-select', function(e) {

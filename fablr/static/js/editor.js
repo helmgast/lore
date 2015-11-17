@@ -474,7 +474,8 @@ var editor = (function() {
 		html = html.replace(/<\/?.+?>/g,'') // remove all remaining tags
 		html = html.replace(/([^\S\n])[^\S\n]+/g,'$1') // weird regex but reduces all whitespace except newline to only one
 		html = html.replace(/\n\n\n+/g,'\n\n') // Removes more than 2 newlines in a row, not needed
-		return html
+    html = html.trim()
+    return html
 	}
 
 	return {

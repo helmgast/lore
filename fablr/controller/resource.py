@@ -568,6 +568,7 @@ class ResourceHandler(View):
       r['filter' if op is 'list' else 'prefill'] = vals
     r['op'] = op
     r['out'] = parse_out_arg(request.args.get('out',None)) # defaults to None, meaning _page.html
+    r['model'] = self.strategy.model_class
     r['parent_template'] = r['out'] # TODO, we only need one of out and parent_template
     if 'next' in request.args:
       r['next'] = request.args['next']
@@ -633,6 +634,7 @@ class ResourceHandler(View):
       listquery = listquery.filter(**r['parents'])
     page = request.args.get('page', 1)
     per_page = request.args.get('per_page', 20)
+    logger.warning("%s, %s, %s" % (page, per_page, request.url))
     if per_page=='all':
       r['list'] = listquery
       r[self.strategy.plural_name] = listquery

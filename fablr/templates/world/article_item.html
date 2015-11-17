@@ -233,7 +233,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
   var imageselect_options = {
     csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', page='all', out='fragment')}}",
+    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', per_page='all', out='fragment')}}",
     image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
   }
 
@@ -251,6 +251,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     $a.imageselect(imageselect_options);
   })
 
+  {% if not markdown %}
   $('#articleform').one('change', function(e) {
     console.log('Form has changed')
     $(window).on('beforeunload', function() {
@@ -268,9 +269,9 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
               })
               var text = editor.exportText()
               $ta.val(text);
-              var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)[2]
-              if (image_match) {
-                $('#feature_image').val(image_match)
+              var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)
+              if (image_match.length > 2 && image_match[2]) {
+                $('#feature_image').val(image_match[2])
               }
             }
         );
@@ -321,6 +322,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         map.on('click', onMapClick);
         */
 			});
+      {% endif %}
 {% endif %}
 </script>
 {% endblock %}

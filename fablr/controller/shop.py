@@ -72,7 +72,7 @@ def download_pdf():
     print filepath
 
     resp = Response(
-      fingerprint_pdf(filepath, g.user.id), 
+      fingerprint_pdf(filepath, g.user.id),
       mimetype='application/pdf',
       direct_passthrough=True)
     return resp
@@ -168,11 +168,10 @@ class OrderHandler(ResourceHandler):
     logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
     return r
 
-  def list(self, r):
-    if not (g.user and g.user.admin):
-      filter = r.get('filter',{})
-      filter.update({'user':g.user})
-      r['filter'] = filter
+  def my_orders(self, r):
+    filter = r.get('filter',{})
+    filter.update({'user':g.user})
+    r['filter'] = filter
     return super(OrderHandler, self).list(r)
 
   # Endpoint will be 'order_cart' as it's attached to OrderHandler

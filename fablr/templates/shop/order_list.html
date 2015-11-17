@@ -12,8 +12,11 @@
 %}
 
 {% block content_subheader %}
-{{ MACRO.LIST_CONTROLS(orders[0].__class__, ['id','user', 'created', 'updated','status', 'total_price']) }}
+{% if orders %}
+{{ MACRO.LIST_CONTROLS(model, ['id','user', 'created', 'updated','status', 'total_price']) }}
+{% endif %}
 {% endblock %}
+
 
 {% block content %}
 

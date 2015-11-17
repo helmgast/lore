@@ -925,6 +925,11 @@ li:hover .btn-delete,
   max-width: 100%;
 }
 
+#content-editor {
+  border: 1px solid #eee;
+  padding: 4px;
+}
+
 #content-editor p:hover {
 	background-color: #eee;
 }
