@@ -68,7 +68,10 @@ def create_app(no_init=False, **kwargs):
   for k in the_app.config.iterkeys():
     env_k = 'FABLR_%s' % k
     if env_k in os.environ and os.environ[env_k]:
-      the_app.config[k] = os.environ[env_k]
+      env_v = os.environ[env_k]
+      if str(env_v).lower() in ['true','false']:
+          env_v = str(env_v).lower() == 'true'
+      the_app.config[k] = env_v
       env_config.append(k)
   if env_config:
     config_string += " env (%s), " % ','.join(env_config)
@@ -81,12 +84,14 @@ def create_app(no_init=False, **kwargs):
     for key in dir(default_config.SecretConfig):
       if key.isupper():
         if the_app.config[key] == 'SECRET':
-          raise ValueError("Secret key %s given dummy value in production - ensure"+
-            " it's overriden. Config method: %s" % (key,config_string))
+          raise ValueError("Secret key %s given dummy value in production - ensure it's overriden. Config method was: %s" % (key,config_string))
 
   configure_logging(the_app)
-  the_app.logger.info("Flask '%s' (%s) started, %s" \
-    % (the_app.name, the_app.config.get('VERSION',None), config_string))
+
+  the_app.logger.info("%sFlask '%s' (%s) started, %s" \
+    % ("DEBUG! " if the_app.debug else "", the_app.name,
+    the_app.config.get('VERSION',None), config_string))
+
   if not no_init:
       init_app(the_app)
   return the_app
@@ -106,10 +111,19 @@ def init_app(app):
 
 def configure_logging(app):
   import logging
-  app.debug_log_format = '[%(asctime)s] %(levelname)s in %(filename)s:%(lineno)d: %(message)s'
-  # Basic app logger will only log when debug is True, otherwise ignore all errors
-  # This is to keep stderr clean in server application scenarios
-  # app.logger.setLevel(logging.INFO)
+  # Custom logging that always goes to stderr
+  log = logging.getLogger(app.logger_name)
+  log.setLevel(logging.DEBUG)
+  del log.handlers[:]
+  sh = logging.StreamHandler()
+  if app.debug:
+    log.setLevel(logging.DEBUG)
+    sh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s:%(lineno)d: %(message)s'))
+  else:
+    log.setLevel(logging.INFO)
+    sh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s:%(lineno)d: %(message)s'))
+  log.addHandler(sh)
+  app._logger = log
 
 def configure_extensions(app):
   app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
