@@ -1,6 +1,7 @@
 import subprocess as sp
 import shlex
 import os
+import re
 from flask.ext.script import Manager, prompt_pass
 from fablr.app import create_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
@@ -23,6 +24,13 @@ def lang_extract():
 	runshell('pybabel extract --no-wrap -F fablr/translations/babel.cfg -o temp.pot fablr/')
 	runshell('pybabel update -i temp.pot -d fablr/translations -l sv --no-fuzzy-matching')
 	runshell('rm temp.pot')
+	print
+	print "New strings needing translation:"
+	print "------------------------"
+	with open('fablr/translations/sv/LC_MESSAGES/messages.po') as f:
+		s = f.read()
+		for m in re.findall(r'msgid "(.*)"\s+msgstr ""\s\s',s):
+			print m.split('/n')[0] # avoid too long ones
 
 @manager.command
 def lang_compile():

@@ -121,8 +121,9 @@ def mail_view(mail_type):
         email = send_mail(
           [mailform.to_field.data],
           mailform.subject.data,
-          sender=mailform.from_field.data,
+          sender=[mailform.from_field.data, 'Helmgast'],
           **template_vars)
+        flash(_('Sent email "%(subject)s" to %(recipients)s', subject=mailform.subject.data, recipients=mailform.to_field.data),'success')
         return "Mail sent!"
       else:
         raise ResourceError(400,

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-11-17 23:17+0900\n"
+"POT-Creation-Date: 2015-11-18 23:09+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -29,7 +29,7 @@ msgstr "Skyddad"
 msgid "Public"
 msgstr "Allmän"
 
-#: fablr/app.py:27 fablr/templates/auth/join.html:58
+#: fablr/app.py:27 fablr/templates/auth/join.html:61
 #: fablr/templates/auth/join0.html:59 fablr/templates/auth/login.html:25
 #: fablr/templates/auth/login0.html:25
 msgid "Join"
@@ -177,6 +177,11 @@ msgstr "%(user)s, välkommen till Helmgast!"
 #: fablr/controller/mailer.py:93
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
+
+#: fablr/controller/mailer.py:126
+#, python-format
+msgid "Sent email \"%(subject)s\" to %(recipients)s"
+msgstr "Skickade mail \"%(subject)s\" till %(recipients)s"
 
 #: fablr/controller/resource.py:380
 msgid "Bad request or invalid input"
@@ -801,7 +806,7 @@ msgstr "Admin"
 msgid "Databases"
 msgstr "Databaser"
 
-#: fablr/templates/admin.html:30 fablr/templates/auth/join.html:58
+#: fablr/templates/admin.html:30 fablr/templates/auth/join.html:61
 #: fablr/templates/auth/join0.html:63 fablr/templates/shop/order_item.html:46
 msgid "Save"
 msgstr "Spara"
@@ -1159,32 +1164,36 @@ msgstr "associerad email"
 msgid "Authorized with Facebook as"
 msgstr "Identifierad av Facebook som"
 
-#: fablr/templates/auth/join.html:9 fablr/templates/auth/join0.html:12
+#: fablr/templates/auth/join.html:8
+msgid "Cannot join, you are already logged in!"
+msgstr "Det går inte att registrera en ny användare, du är redan inloggad!"
+
+#: fablr/templates/auth/join.html:12 fablr/templates/auth/join0.html:12
 msgid "Sign up"
 msgstr "Registrera"
 
-#: fablr/templates/auth/join.html:9 fablr/templates/auth/join0.html:16
+#: fablr/templates/auth/join.html:12 fablr/templates/auth/join0.html:16
 msgid "Reset authentication"
 msgstr "Återställ autentisering"
 
-#: fablr/templates/auth/join.html:12 fablr/templates/auth/join0.html:32
+#: fablr/templates/auth/join.html:15 fablr/templates/auth/join0.html:32
 msgid "Join via Google"
 msgstr "Registrera via Google"
 
-#: fablr/templates/auth/join.html:13 fablr/templates/auth/join0.html:33
+#: fablr/templates/auth/join.html:16 fablr/templates/auth/join0.html:33
 msgid "Join via Facebook"
 msgstr "Registrera via Facebook"
 
-#: fablr/templates/auth/join.html:14 fablr/templates/auth/join0.html:44
+#: fablr/templates/auth/join.html:17 fablr/templates/auth/join0.html:44
 #: fablr/templates/auth/login.html:32 fablr/templates/auth/login0.html:32
 msgid "Use own password"
 msgstr "Använd eget lösenord"
 
-#: fablr/templates/auth/join.html:17 fablr/templates/auth/join0.html:37
+#: fablr/templates/auth/join.html:20 fablr/templates/auth/join0.html:37
 msgid "Recommended choice"
 msgstr "Rekommenderat val!"
 
-#: fablr/templates/auth/join.html:19 fablr/templates/auth/join0.html:39
+#: fablr/templates/auth/join.html:22 fablr/templates/auth/join0.html:39
 msgid ""
 "Logging in with an external service is both <strong>safer</strong> and "
 "<strong>quicker</strong>. We will NOT post anything to your profile "
@@ -1194,24 +1203,24 @@ msgstr ""
 "<strong>snabbare</strong>. Vi kommer ALDRIG posta något till din profil "
 "utan att fråga, detta är bara för login!"
 
-#: fablr/templates/auth/join.html:26 fablr/templates/auth/join0.html:22
+#: fablr/templates/auth/join.html:29 fablr/templates/auth/join0.html:22
 msgid "Don't change, only this email is verified"
 msgstr "Ändra ej, den måste matcha din inbjudan"
 
-#: fablr/templates/auth/join.html:35 fablr/templates/auth/login.html:38
+#: fablr/templates/auth/join.html:38 fablr/templates/auth/login.html:38
 #: fablr/templates/auth/login0.html:38
 msgid "Minimum 8 characters!"
 msgstr "Minst 8 tecken långt!"
 
-#: fablr/templates/auth/join.html:40
+#: fablr/templates/auth/join.html:43
 msgid "Optional details"
 msgstr "Frivilliga uppgifter"
 
-#: fablr/templates/auth/join.html:47
+#: fablr/templates/auth/join.html:50
 msgid "Receive newsletter"
 msgstr "Prenumerera på nyhetsbrev"
 
-#: fablr/templates/auth/join.html:60 fablr/templates/auth/join0.html:68
+#: fablr/templates/auth/join.html:63 fablr/templates/auth/join0.html:68
 msgid ""
 "If you encounter any problems during registration, please send an email "
 "to info@helmgast.se"
