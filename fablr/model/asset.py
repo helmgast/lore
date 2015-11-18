@@ -69,18 +69,20 @@ class FileAsset(db.Document):
 
 
     def clean(self):
-        self.slug = slugify(self.title)
         request_file_data = request.files.get('file_data', None)
         # This assumes there is a file upload
         if request_file_data is not None and request_file_data.filename:
             if request_file_data.mimetype not in allowed_mimetypes:
                 raise ValidationError(
-                    gettext('Files of type %(mimetype)s is not allowed.', mimetype=request_file_data.mimetype))
+                    gettext('Files of type %(mimetype)s are not allowed.', mimetype=request_file_data.mimetype))
             # File is present, save to GridFS
             self.file_data.replace(request_file_data, content_type=request_file_data.mimetype, filename=request_file_data.filename)
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
+        name, ext = secure_filename(self.source_filename).lower().rsplit('.',1)
+        self.slug = slugify(name)+'.'+ext
+
 
     def get_attachment_filename(self):
         filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename

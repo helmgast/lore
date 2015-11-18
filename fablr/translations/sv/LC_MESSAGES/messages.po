@@ -284,7 +284,7 @@ msgstr "Accesstyp"
 
 #: fablr/model/asset.py:78
 #, python-format
-msgid "Files of type %(mimetype)s is not allowed."
+msgid "Files of type %(mimetype)s are not allowed."
 msgstr "Filer av typ %(mimetype)s är inte tillåtna"
 
 #: fablr/model/asset.py:114

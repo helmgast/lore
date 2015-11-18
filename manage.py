@@ -3,7 +3,7 @@ import shlex
 import os
 import re
 from flask.ext.script import Manager, prompt_pass
-from fablr.app import create_app
+from fablr.app import create_app, init_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
 
 os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
@@ -43,6 +43,7 @@ def db_setup(reset=False):
   """Setup a new database with starting data"""
   from mongoengine.connection import get_db
   from fablr.extensions import db_config_string
+  init_app(app)
   print db_config_string
   db = get_db()
 
@@ -81,6 +82,7 @@ def db_setup(reset=False):
  #        'md5', unique=True, background=True)
 
 def validate_model():
+  init_app(app)
   is_ok = True
   pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
   for doc in db.Document._subclasses:  # Ugly way of finding all document type
@@ -104,7 +106,7 @@ def validate_model():
 def import_csv():
   from tools import customer_data
   from mongoengine.connection import get_db
-
+  init_app(app)
   app.logger.info("Importing customer data")
   print app.config['MONGODB_SETTINGS']
   get_db()
@@ -114,7 +116,7 @@ def import_csv():
 def db_migrate():
   from tools import db_migration
   from mongoengine.connection import get_db
-
+  init_app(app)
   db = get_db()
   db_migration.db_migrate(db)
 
@@ -123,11 +125,13 @@ def test():
   """Run all unit tests on Fablr"""
   from tests import app_test
   import unittest
+  init_app(app)
   suite = unittest.TestLoader().loadTestsFromTestCase(app_test.FablrTestCase)
   unittest.TextTestRunner(verbosity=2).run(suite)
 
 @manager.option('email', help='Set a new password)')
 def set_password(email):
+  init_app(app)
   if not app.debug:
     print "We don't allow changing passwords if not in debug mode"
     exit(1)
@@ -152,6 +156,7 @@ def file_upload(file, title, desc, access):
   from fablr.model.asset import FileAsset, FileAccessType
   import mimetypes
 
+  init_app(app)
   if not file or not os.access(file, os.R_OK): # check read access
     raise ValueError("File %s not readable" % file)
 
@@ -186,6 +191,7 @@ def pdf_fingerprint(input, output, user_id):
 @manager.option('input', help='PDF file to check for fingerprints')
 def pdf_check(input):
   """Will scan a PDF for matching fingerprints"""
+  init_app(app)
   fps = get_fingerprints(input)
   from fablr.model.user import User
   users = list(User.objects().only('id', 'username'))
