@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-11-18 23:09+0900\n"
+"POT-Creation-Date: 2015-11-19 11:50+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -247,7 +247,7 @@ msgstr "Kräver en produkt"
 msgid "User unique and product required"
 msgstr "Användarunik och kräver produkt"
 
-#: fablr/model/asset.py:59 fablr/model/asset.py:123 fablr/model/shop.py:36
+#: fablr/model/asset.py:59 fablr/model/asset.py:125 fablr/model/shop.py:36
 #: fablr/model/world.py:109 fablr/model/world.py:146
 #: fablr/templates/asset/fileasset_item.html:54
 #: fablr/templates/shop/product_item.html:60
@@ -256,7 +256,7 @@ msgstr "Användarunik och kräver produkt"
 msgid "Title"
 msgstr "Titel"
 
-#: fablr/model/asset.py:60 fablr/model/asset.py:124 fablr/model/shop.py:37
+#: fablr/model/asset.py:60 fablr/model/asset.py:126 fablr/model/shop.py:37
 #: fablr/model/world.py:110 fablr/model/world.py:147
 #: fablr/templates/asset/fileasset_item.html:60
 #: fablr/templates/campaign/sessions.html:50
@@ -282,23 +282,23 @@ msgstr "Fildata"
 msgid "Access type"
 msgstr "Accesstyp"
 
-#: fablr/model/asset.py:78
+#: fablr/model/asset.py:77
 #, python-format
 msgid "Files of type %(mimetype)s are not allowed."
 msgstr "Filer av typ %(mimetype)s är inte tillåtna"
 
-#: fablr/model/asset.py:114
+#: fablr/model/asset.py:116
 msgid "Slug"
 msgstr "Slug"
 
-#: fablr/model/asset.py:121 fablr/model/world.py:144
+#: fablr/model/asset.py:123 fablr/model/world.py:144
 #: fablr/templates/helmgast.html:46 fablr/templates/marco.html:68
 #: fablr/templates/world/article_blog.html:15
 #: fablr/templates/world/article_item.html:133
 msgid "Creator"
 msgstr "skapare"
 
-#: fablr/model/asset.py:122 fablr/templates/world/world_list.html:15
+#: fablr/model/asset.py:124 fablr/templates/world/world_list.html:15
 msgid "Created date"
 msgstr "Created date"
 
@@ -1071,10 +1071,8 @@ msgid "List"
 msgstr "Lista"
 
 #: fablr/templates/asset/fileasset_item.html:4
-#: fablr/templates/shop/product_item.html:11
-#: fablr/templates/shop/product_list.html:20
-msgid "New product"
-msgstr "Ny produkt"
+msgid "New file"
+msgstr ""
 
 #: fablr/templates/asset/fileasset_item.html:9
 #: fablr/templates/shop/order_item.html:12
@@ -1133,7 +1131,7 @@ msgstr "Källfilnamn"
 msgid "Attachment file name"
 msgstr "Bifogningens filnamn"
 
-#: fablr/templates/asset/fileasset_list.html:34
+#: fablr/templates/asset/fileasset_list.html:31
 msgid "No file assets available!"
 msgstr "Inga filer tillgängliga!"
 
@@ -1760,6 +1758,11 @@ msgstr "dubbelkolla att det är rätt!"
 #: fablr/templates/social/user_item.html:69
 msgid "No data"
 msgstr "Ingen data"
+
+#: fablr/templates/shop/product_item.html:11
+#: fablr/templates/shop/product_list.html:20
+msgid "New product"
+msgstr "Ny produkt"
 
 #: fablr/templates/shop/product_item.html:64
 msgid "Family"

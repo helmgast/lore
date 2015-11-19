@@ -8,6 +8,8 @@ class Config(object):
 	DEBUG_TB_PROFILER_ENABLED = True # profile time to run, will slow down things
 	DEBUG_TB_INTERCEPT_REDIRECTS = False
 	DEBUG_TB_HOSTS = ['127.0.0.1'] # Only allow localhost to access debug toolbar
+	# Only set new cookie when old expire. This reduce data sent and simplifies caching.
+	SESSION_REFRESH_EACH_REQUEST = False
 	# Used by i18n translation using Babel
 	BABEL_DEFAULT_LOCALE = 'sv'
 	MAIL_DEFAULT_SENDER = 'info@helmgast.se'

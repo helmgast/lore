@@ -88,9 +88,8 @@ def create_app(no_init=False, **kwargs):
 
   configure_logging(the_app)
 
-  the_app.logger.info("%sFlask '%s' (%s) started, %s" \
-    % ("DEBUG! " if the_app.debug else "", the_app.name,
-    the_app.config.get('VERSION',None), config_string))
+  the_app.logger.info("Flask '%s' (%s) created in %s-mode, %s" \
+    % (the_app.name, the_app.config.get('VERSION',None), "Debug" if the_app.debug else "Prod", config_string))
 
   if not no_init:
       init_app(the_app)
@@ -110,20 +109,22 @@ def init_app(app):
     app.config['initiated'] = True
 
 def configure_logging(app):
-  import logging
   # Custom logging that always goes to stderr
-  log = logging.getLogger(app.logger_name)
-  log.setLevel(logging.DEBUG)
-  del log.handlers[:]
-  sh = logging.StreamHandler()
+  import logging
+  for h in app.logger.handlers:
+      if h.__class__.__name__ == 'ProductionHandler':
+          # Override default to error only
+          h.setLevel(logging.INFO)
   if app.debug:
-    log.setLevel(logging.DEBUG)
-    sh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s:%(lineno)d: %(message)s'))
+    app.logger.setLevel(logging.DEBUG)
   else:
-    log.setLevel(logging.INFO)
-    sh.setFormatter(logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s:%(lineno)d: %(message)s'))
-  log.addHandler(sh)
-  app._logger = log
+    app.logger.setLevel(logging.INFO)
+
+  # app.logger.debug("Debug")
+  # app.logger.info("Info")
+  # app.logger.warn("Warn")
+  # app.logger.error("Error")
+  # app.logger.info("Info")
 
 def configure_extensions(app):
   app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code

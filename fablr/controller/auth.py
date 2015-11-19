@@ -130,7 +130,7 @@ class Auth(object):
 
   def get_logged_in_user(self):
     # if request.endpoint and request.endpoint[0:4]=='auth':
-    #   print session
+    # self.logger.warning(session)
     u = None
     if session.get('logged_in'):
       if getattr(g, 'user', None):
