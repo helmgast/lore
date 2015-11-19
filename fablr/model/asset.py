@@ -55,7 +55,7 @@ allowed_mimetypes = [
 # Show icons as thumbnails or as icons
 
 class FileAsset(db.Document):
-    slug = db.StringField(max_length=62)
+    slug = db.StringField(max_length=62, unique=True)
     title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = db.StringField(max_length=500, verbose_name=_('Description'))
     # Internal filename

@@ -1,7 +1,7 @@
 {% extends "asset/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block content_title %}{{product.title if product else _("New product")}}{% endblock %}
+{% block content_title %}{{fileasset.title if fileasset else _("New file")}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}

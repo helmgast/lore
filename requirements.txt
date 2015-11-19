@@ -1,7 +1,9 @@
 
 Babel==2.0
 facebook-sdk==0.4.0
-Flask==0.10.1
+#Flask==0.10.1
+# Install specific dev version that supports turning off Set Cookie
+https://github.com/mitsuhiko/flask/archive/751fe451df7d0e03754a02a52e4b59152b37891a.zip
 Flask-Babel==0.9
 Flask-DebugToolbar==0.10.0
 Flask-Markdown==0.3
