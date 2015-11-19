@@ -117,6 +117,8 @@ class Auth(object):
     session['logged_in'] = True
     session['user_pk'] = str(user.id)
     session.permanent = True
+    if user.admin:
+        session['clean'] = True
     g.user = user
     flash( u"%s %s" % (_('You are logged in as'), user), 'success')
 
@@ -142,6 +144,10 @@ class Auth(object):
       except self.User.DoesNotExist:
         session.pop('logged_in', None)
         pass
+    if u and u.admin and 'clean' not in session:
+        session.pop('logged_in', None)
+        self.logger.warn("Forced admin out")
+        return None
     if "as_user" in request.args and u.admin:
         as_user = request.args['as_user']
         try:
