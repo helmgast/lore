@@ -915,6 +915,33 @@ li:hover .btn-delete,
 	max-height: 300px;
 }
 
+.social {
+  padding-left: 25px;
+  padding-top: 10px;
+}
+
+.social a:hover {
+  text-decoration: none;
+}
+
+.social-icon {
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+}
+
+.socialtw svg:hover #twitter{
+  fill: #55acee;
+}
+
+.socialfb svg:hover #facebook {
+  fill: #44609d;
+}
+
+.socialgoogle svg:hover #google {
+  fill: #dd4b39;
+}
+
 .article_text .thumb {
 	display: block;
 	float: right;
