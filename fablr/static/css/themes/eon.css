@@ -22,7 +22,6 @@ Generic classes for all world children
 body {
   font-family: Goudy;
   font-size: 18px;
-  background: #f6f5ee url("../../../static/img/noise-light.png") !important;
 }
 
 body a {
@@ -65,7 +64,7 @@ h4 small {
 
 .worldSideBar li a:hover {
   background: #bda362;
-  
+
 }
 
 /* World Title */

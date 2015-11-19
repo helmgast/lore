@@ -25,29 +25,43 @@ from flask import current_app
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 PublishStatus = Choices(
-  draft=_('Draft'),
-  revision=_('Revision'),
-  published=_('Published'))
+  draft = _('Draft'),
+  revision = _('Revision'),
+  published = _('Published'),
+  archived = _('Archived'))
 
 GenderTypes = Choices(
-  male=_('Male'),
-  female=_('Female'),
-  unknown=_('Unknown'))
+  male = _('Male'),
+  female = _('Female'),
+  unknown = _('Unknown'))
+
+class Publisher(db.Document):
+  slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+  title = db.StringField(min_length=3, max_length=60, verbose_name=_('Title'))
+  description = db.StringField(max_length=500, verbose_name=_('Description'))
+  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
+  owner = db.ReferenceField(User, verbose_name=_('Owner'))
+  status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+  feature_image = db.ReferenceField(ImageAsset)
+
+  def __unicode__(self):
+    return self.title
 
 class World(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
-  title = db.StringField(max_length=60)
-  description = db.StringField(max_length=500)
-  publisher = db.StringField(max_length=60)
-  rule_system = db.StringField(max_length=60)
-  created_date = db.DateTimeField(default=datetime.utcnow)
+  title = db.StringField(min_length=3, max_length=60, verbose_name=_('Title'))
+  description = db.StringField(max_length=500, verbose_name=_('Description'))
+  publisher = db.ReferenceField(Publisher, verbose_name=_('Publisher')) # TODO set to required
+  rule_system = db.StringField(max_length=60, verbose_name=_('Rule System'))
+  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
+  status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+  feature_image = db.ReferenceField(ImageAsset)
 
-  def save(self, *args, **kwargs):
+  def clean(self):
     self.slug = slugify(self.title)
-    return super(World, self).save(*args, **kwargs)
 
   def __unicode__(self):
-    return self.title+(_(' by ')+self.publisher) if self.publisher else ''
+    return self.title
 
   def articles(self):
     return Article.objects(world=self)
@@ -125,14 +139,14 @@ class CampaignData(db.EmbeddedDocument):
 # class Branch(db.EmbeddedDocument):
 #   subbranch = db.EmbeddedDocumentListField('self')
 ArticleTypes = Choices(
-  default=_('Default'),
-  person=_('Person'),
-  fraction=_('Fraction'),
-  place=_('Place'),
-  event=_('Event'),
-  campaign=_('Campaign'),
-  chronicles=_('Chronicle'),
-  blogpost=_('Blog Post'))
+  default = _('Default'),
+  person = _('Person'),
+  fraction = _('Fraction'),
+  place = _('Place'),
+  event = _('Event'),
+  campaign = _('Campaign'),
+  chronicles = _('Chronicle'),
+  blogpost = _('Blog Post'))
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']
@@ -140,7 +154,8 @@ class Article(db.Document):
   meta = {'indexes': ['slug']}
   slug = db.StringField(unique=True, required=False, max_length=62)
   type = db.StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))
-  world = db.ReferenceField(World, required=True, verbose_name=_('World'))
+  world = db.ReferenceField(World, verbose_name=_('World'))
+  publisher = db.ReferenceField(Publisher, verbose_name=_('Publisher'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))

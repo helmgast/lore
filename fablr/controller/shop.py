@@ -59,44 +59,6 @@ order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
   Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
   'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
-# TODO: Remove once downloadable_files has been migrated
-@shop_app.route('/download-pdf/')
-def download_pdf():
-  product = request.args.get('product')
-  if g.user and product:
-    filepath = product # already a slug from args
-    if 'resource' in request.args:
-      filepath += "-%s" % slugify(request.args['resource'])
-    filepath = secure_filename(filepath+".pdf") # Important, so we don't get path components
-    filepath = os.path.join(current_app.root_path, "../","resources", "pdf", filepath) # TODO hack for current location of resources
-    print filepath
-
-    resp = Response(
-      fingerprint_pdf(filepath, g.user.id),
-      mimetype='application/pdf',
-      direct_passthrough=True)
-    return resp
-
-    # if product == 'eon-iv-grundbok-pdf':
-    #   file_name = "eon_iv_%s.pdf" % re.sub(r'@|\.', '_', g.user.email).lower()
-    #   directory = os.path.join(current_app.root_path, "resources", "pdf")
-    #   file_path = os.path.join(directory, file_name)
-    #   logger.info("Download request for %s" % file_path)
-    #   if os.path.exists(file_path):
-    #     return send_file(file_path, attachment_filename="Eon IV Crowdfunderversion.pdf", as_attachment=True, mimetype="application/pdf")
-
-    # elif product == 'eon-iv-spelpaketet-pdf' and request.args.has_key('resource'):
-    #   resource = request.args.get('resource').encode("utf-8")
-    #   file_name = "%s.pdf" % slugify(resource)
-    #   directory = os.path.join(current_app.root_path, "resources", "eon", "spelpaketet")
-    #   file_path = os.path.join(directory, file_name)
-    #   logger.info("Download request for %s" % file_path)
-    #   if os.path.exists(file_path):
-    #     return send_file(file_path, attachment_filename="%s.pdf" % resource, as_attachment=True, mimetype="application/pdf")
-
-  abort(404)
-
-
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor
 def inject_cart():

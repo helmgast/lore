@@ -45,9 +45,6 @@ class Product(db.Document):
   tax = db.FloatField(min_value=0, default=0, verbose_name=_('Tax'))
   currency = db.StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Currency'))
   status = db.StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
-  # Names of resources (downloadable files)
-  # TODO: Remove once downloadable_files has been migrated
-  resources = db.ListField(db.StringField())
   group = db.StringField(max_length=60, verbose_name=_('Product Group'))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
   acknowledgement = db.BooleanField(default=False, verbose_name=_('Name in book'))

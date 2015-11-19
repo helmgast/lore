@@ -2,16 +2,16 @@
 
 {% block content %}
     <div class="row">
-    {% for world in blubb %}
+    {% for world in worlds %}
     <div class="col-md-5 col-xs-6 world_item">
         <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a>
         <br><small>{{ world.description }}</small></h3>
         <hr>
         <dl class="dl-horizontal">
             <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ world.publisher }}</dd>
+            <dd>{{ world.publisher|default(_('No data')) }}</dd>
             <dt>{{ _('Rule System') }}</dt>
-            <dd>{{ world.rule_system }}</dd>
+            <dd>{{ world.rule_system|default(_('No data')) }}</dd>
             <dt>{{ _('Created date') }}</dt>
             <dd>{{ world.created_date.strftime('%Y-%m-%d') }}</dd>
         </dl>
@@ -21,7 +21,7 @@
     <div class="jumbotron text-center">
     <h2>{{_('Aeon is working on some worlds, please check back later!')}}</h2>
     </div>
-    {% endfor %} 
+    {% endfor %}
   </div>
   {% include "includes/pagination.html" %}
 {% endblock %}

@@ -82,35 +82,25 @@
 					</div>
 				  {% endfor %}
 				</div>
-				{# TODO: Remove once downloadable_files has been migrated #}
-				{% elif line.product.status == 'ready_for_download' and line.product.type == 'digital' %}
-		            {% if line.product.resources %}
-		              {% for resource in line.product.resources %}
-		                <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug, resource=resource)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}} {{resource}}</a>
-		                </h4>
-		              {% endfor %}
-		            {% else %}
-		              <h4><a href="{{ url_for('shop.download_pdf', product=line.product.slug)}}"><span class="glyphicon glyphicon-download"></span> {{_('Download')}}</a>
-		              </h4>
-		            {% endif %}
-	            {% endif %}
-	            {% endif %}
-	            {% if order_form %}
-	            	{{ order_form.order_lines[loop.index0].product(class="hide")}}
-	                {% if line.product.acknowledgement %}
-		            <div class="form-group">
-		            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
-		            {% if not line.comment %}
-		            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
-		            {% else %}
-		            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
-		            {% endif %}
-		            {% else %}
-		            {{order_form.order_lines[loop.index0].comment(class="hide")}}
-		            {% endif %}
-            	{% elif line.comment %}
-             		{{_('Name')+': '+line.comment }}
-	            {% endif %}
+	      {% endif %}
+        {% if order_form %}
+        	{{ order_form.order_lines[loop.index0].product(class="hide")}}
+          {% if line.product.acknowledgement %}
+          <div class="form-group">
+          <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
+            {% if not line.comment %}
+            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
+            {% else %}
+            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+            {% endif %}
+          {% else %}
+          {{order_form.order_lines[loop.index0].comment(class="hide")}}
+          {% endif %}
+      	{% elif line.comment %}
+       		{{_('Name')+': '+line.comment }}
+        {% endif %}
+        {% endif %}
+
 
     		</td>
     		<td>

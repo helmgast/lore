@@ -1,0 +1,69 @@
+{% extends "world/publisher_list.html" if not parent_template else parent_template %}
+
+{% block content_title %}{{publisher.title if publisher else _("New publisher")}}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block sidebar %}{{super()}}
+<ul class="nav nav-pills nav-stacked">
+    <li class="nav-header">{{ _('Actions') }}</li>
+    {% if op != 'new' %}
+    <li><a href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
+            class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    {% endif %}
+</ul>
+{%endblock%}
+
+{% block content %}{% block inline %}
+{% if publisher_form %}
+<form method="post" action="{{publisher_form.action_url}}" enctype=multipart/form-data>
+    <div class="row">
+        <div class="col-md-8">
+          {{ MACRO.FORM_FIELD(publisher_form.slug) }}
+            {{ MACRO.FORM_FIELD(publisher_form.title) }}
+            {{ MACRO.FORM_FIELD(publisher_form.description) }}
+            {{ publisher_form.csrf_token }}
+        </div>
+    </div>
+    <div class="row form-actions">
+        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+        <a href="{{url_for('.publisher_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+        {% if op != 'new' %}
+        <a href="{{url_for('.publisher_delete', publisher=publisher.slug)}}"
+           class="btn btn-danger pull-right">{{ _('Delete')}}</a>
+        {% endif %}
+    </div>
+</form>
+{% else %}
+<div class="row">
+    <div class="col-md-8">
+        <table class="table">
+            <tr>
+                <td><strong>{{ _('Domain') }}</strong></td>
+                <td>
+                    <small>{{ publisher.slug|default(_('No data')) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Title') }}</strong></td>
+                <td>
+                    <small>{{ publisher.title|default(_('No data')) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Description') }}</strong></td>
+                <td>
+                    <small>{{ publisher.description|default(_('No data')) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Owner') }}</strong></td>
+                <td>
+                    <small>{{ publisher.owner|default(_('No data')) }}</small>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% endblock %}
