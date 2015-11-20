@@ -49,7 +49,8 @@ class ProductHandler(ResourceHandler):
 ProductHandler.register_urls(shop_app, product_strategy)
 
 order_access = ResourceAccessPolicy({
-  'list':'user',
+  'my_orders':'user',
+  'list':'admin',
   'edit':'private',
   'form_edit':'private',
   '_default':'admin'
@@ -180,7 +181,7 @@ OrderHandler.register_urls(shop_app, order_strategy)
 
 @shop_app.route('/')
 def index():
-    return redirect(url_for('.order_list'))
+    return redirect(url_for('.order_my_orders'))
 
 ### POST cart - add products, create order if needed
 ### GET cart - current order, displayed differently depending on current state
