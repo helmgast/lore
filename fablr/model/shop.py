@@ -11,6 +11,7 @@ from user import User
 from slugify import slugify
 from misc import Choices
 from world import ImageAsset
+from flask import request
 
 ProductTypes = Choices(
   book=_('Book'),
@@ -55,6 +56,8 @@ class Product(db.Document):
 
   # Executes before saving
   def clean(self):
+    if request.values.get('downloadable_files', None) is None:
+      self.downloadable_files = []
     self.slug = slugify(self.title)
 
   def __unicode__(self):
