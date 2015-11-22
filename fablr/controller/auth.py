@@ -49,7 +49,6 @@ class Auth(object):
     self.url_prefix = prefix
     if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
       self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
-      self.google_api = build('plus', 'v1')
     if 'FACEBOOK_APP_ID' in app.config and 'FACEBOOK_APP_SECRET' in app.config:
       self.facebook_client = {'app_id': app.config['FACEBOOK_APP_ID'], 'app_secret':app.config['FACEBOOK_APP_SECRET']}
     self.clear_session = clear_session
@@ -161,6 +160,9 @@ class Auth(object):
   def connect_google(self, one_time_code):
     if not self.google_client:
       raise Exception('No Google client configured')
+    if not self.google_api: # load if not already
+      self.google_api = build('plus', 'v1')
+
     # Upgrade the authorization code into a credentials object
     # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
     oauth_flow = OAuth2WebServerFlow(*self.google_client)
