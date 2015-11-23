@@ -1,7 +1,7 @@
-# CANNOT CONTAIN SECRETS
-# Automatically imported, do not edit for local configuration
-# For local configuration, edit local_config.py
-# Local config needs to be pointed to by environment variable RACONTEUR_CONFIG_FILE
+# CANNOT CONTAIN ACTUAL SECRETS
+# Automatically imported, do not edit for local configuration!
+# For local configuration, create a config.py that overrides only the values
+# needed. 
 
 class Config(object):
 	DEBUG = True
