@@ -461,7 +461,7 @@ class ResourceHandler(View):
     r = self._parse_url(**kwargs)
     try:
       if r['op'] not in self.__class__.allowed_ops:
-        raise ResourceError(400, r=r, "Attempted op %s is not allowed for this handler" % r['op'])
+        raise ResourceError(400, r=r, message="Attempted op %s is not allowed for this handler" % r['op'])
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
