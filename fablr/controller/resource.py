@@ -397,7 +397,7 @@ class ResourceError(Exception):
     self.template = template
     self.template_vars = template_vars if template_vars else {}
 
-    logger.warning("%d: %s", self.status_code, self.message)
+    logger.warning("%d: %s%s", self.status_code, self.message, "in resource: %s" % self.r if r else "")
 
 class ResourceHandler(View):
   allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
@@ -461,7 +461,7 @@ class ResourceHandler(View):
     r = self._parse_url(**kwargs)
     try:
       if r['op'] not in self.__class__.allowed_ops:
-        raise ResourceError(400, "Attempted op %s is not allowed for this handler" % r['op'])
+        raise ResourceError(400, r=r, "Attempted op %s is not allowed for this handler" % r['op'])
       r = self._query_url_components(r, **kwargs)
       r = getattr(self, r['op'])(r)  # picks the right method from the class and calls it!
     except ResourceError as err:
@@ -513,7 +513,7 @@ class ResourceHandler(View):
       abort(404)
     except ValidationError as err:
       logger.exception("Validation error")
-      resErr = ResourceError(400, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
+      resErr = ResourceError(400, r=r, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
       if r['out'] == 'json':
         return self.return_json(r, resErr)
       else:
@@ -521,7 +521,7 @@ class ResourceHandler(View):
         # 3rd args is the current traceback, as we have created a new exception
         raise resErr, None, sys.exc_info()[2]
     except NotUniqueError as err:
-      resErr = ResourceError(400, message=err.message)
+      resErr = ResourceError(400, r=r, message=err.message)
       if r['out'] == 'json':
         return self.return_json(r, resErr)
       else:
@@ -532,7 +532,7 @@ class ResourceHandler(View):
       if r['out'] == 'json':
         return self.return_json(r, err, 500)
       else:
-        logger.exception(err)
+        logger.exception("%s: resource: %a" % (err, r))
         raise  # Send the error onward, will be picked up by debugger if in debug mode
 
     # no error, render output
@@ -588,7 +588,7 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     r['template'] = self.strategy.item_template()
     return r
@@ -599,7 +599,7 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(obj=item, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
@@ -612,7 +612,7 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'])
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
     form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
@@ -625,7 +625,7 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'])
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     listquery = self.strategy.query_list(request.args).filter(**r.get('filter',{}))
     if r.get('parents'):
@@ -650,12 +650,12 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'])
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(request.form, obj=None)
     if not form.validate():
       r['form'] = form
-      raise ResourceError(400, r)
+      raise ResourceError(400, r=r)
     item = self.strategy.create_item()
     form.populate_obj(item)
     item.save()
@@ -669,13 +669,13 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(request.form, obj=item)
     logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
       r['form'] = form
-      raise ResourceError(400, r)
+      raise ResourceError(400, r=r)
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     form.populate_obj(item, request.form.keys())
@@ -691,12 +691,12 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(request.form, obj=item)
     if not form.validate():
       r['form'] = form
-      raise ResourceError(400, r)
+      raise ResourceError(400, r=r)
     form.populate_obj(item)
     item.save()
     if not 'next' in r:
@@ -709,7 +709,7 @@ class ResourceHandler(View):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     if not 'next' in r:
       if 'parents' in r:
