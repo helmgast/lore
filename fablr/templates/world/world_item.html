@@ -1,6 +1,11 @@
 {% extends "world/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block cssimports %}
+{{ super() }}
+<link rel="home" type="application/rss+xml" href="{{url_for('.article_feed', world=world.slug, _external=true)}}" />
+{% endblock %}
+
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 

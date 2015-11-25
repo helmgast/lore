@@ -47,6 +47,7 @@ class Auth(object):
     self.ExternalAuth = ext_auth_model
     self.blueprint = self.get_blueprint(name)
     self.url_prefix = prefix
+    self.google_api = None
     if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
       self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
     if 'FACEBOOK_APP_ID' in app.config and 'FACEBOOK_APP_SECRET' in app.config:

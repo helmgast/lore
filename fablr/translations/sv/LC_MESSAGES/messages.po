@@ -213,7 +213,7 @@ msgstr "Du måste logga in för att fylla din kundvagn"
 
 #: fablr/controller/world.py:82
 msgid "Recent Articles in "
-msgstr "Nya artiklar i"
+msgstr "Nya artiklar på "
 
 #: fablr/controller/world.py:160
 msgid "Today"

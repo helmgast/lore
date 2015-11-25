@@ -8,7 +8,6 @@
 
 {% block cssimports %}
 {{ super() }}
-
 {% include 'themes/' + (world.slug if world else 'default') + '-theme.html' ignore missing %}
 {% endblock %}
 
