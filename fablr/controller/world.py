@@ -84,7 +84,7 @@ class ArticleHandler(ResourceHandler):
         feed.add(article.title, current_app.md._instance.convert(article.content),
            content_type='html',
            author=str(article.creator) if article.creator else 'System',
-           url=url_for('world.article_view', world=world.slug, article=article.slug, _external=true),
+           url=url_for('world.article_view', world=world.slug, article=article.slug, _external=True),
            updated=article.created_date,
            published=article.created_date)
     r['response'] = feed.get_response()
