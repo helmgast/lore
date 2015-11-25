@@ -928,6 +928,7 @@ li:hover .btn-delete,
 	display: inline-block;
 	width: 30px;
 	height: 30px;
+  margin-right: 5px;
 }
 
 .socialtw svg:hover #twitter{
@@ -940,6 +941,10 @@ li:hover .btn-delete,
 
 .socialgoogle svg:hover #google {
   fill: #dd4b39;
+}
+
+.socialfeed svg:hover #feed {
+  fill: #FF6600;
 }
 
 .article_text .thumb {

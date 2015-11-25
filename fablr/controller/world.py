@@ -6,14 +6,14 @@
     it initializes URL routes based on the Resource module and specific
     ResourceRoutingStrategy for each world related model class. This module is then
     responsible for taking incoming URL requests, parse their parameters,
-    perform operations on the Model classes and then return responses via 
+    perform operations on the Model classes and then return responses via
     associated template files.
 
     :copyright: (c) 2014 by Helmgast AB
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
-from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData, 
+from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData,
   EventData, FractionData, PublishStatus)
 from fablr.model.user import Group
 from flask.views import View
@@ -77,26 +77,26 @@ class ArticleHandler(ResourceHandler):
     world = r['parents']['world']
     feed = AtomFeed(_('Recent Articles in ')+world.title,
       feed_url=request.url, url=request.url_root)
-    articles = Article.objects(status=PublishStatus.published, 
+    articles = Article.objects(status=PublishStatus.published,
       created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
     for article in articles:
         # print current_app.md._instance.convert(article.content), type(current_app.md._instance.convert(article.content))
         feed.add(article.title, current_app.md._instance.convert(article.content),
            content_type='html',
            author=str(article.creator) if article.creator else 'System',
-           url=url_for('world.article_view', world=world.slug, article=article.slug, _external=True),
+           url=url_for('world.article_view', world=world.slug, article=article.slug, _external=true),
            updated=article.created_date,
            published=article.created_date)
     r['response'] = feed.get_response()
     return r
 
-article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug', 
-  parent_strategy=world_strategy, 
+article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug',
+  parent_strategy=world_strategy,
   short_url=True,
   list_filters=publish_filter,
-  form_class=model_form(Article, 
-  base_class=ArticleBaseForm, 
-  exclude=['slug'], 
+  form_class=model_form(Article,
+  base_class=ArticleBaseForm,
+  exclude=['slug'],
   converter=RacModelConverter()))
 
 ArticleHandler.register_urls(world_app, article_strategy)
@@ -106,7 +106,7 @@ ArticleHandler.register_urls(world_app, article_strategy)
 #     print _app_ctx_stack.top
 #     return dict(article_access=article_strategy.access)
 
-article_relation_strategy = ResourceRoutingStrategy(ArticleRelation, 'relations', 
+article_relation_strategy = ResourceRoutingStrategy(ArticleRelation, 'relations',
   None, parent_strategy=article_strategy)
 
 ResourceHandler.register_urls(world_app, article_relation_strategy)
