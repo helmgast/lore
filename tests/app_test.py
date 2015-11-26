@@ -14,6 +14,27 @@ from fablr import app
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy
 from fablr.app import db
 
+
+# Find good set of dummy / dangerous data to populate with, e.g. special chars,
+# html, scripts, etc
+
+# What to test
+# Password login
+# Google login
+# Facebook login
+# Remind password (email received?)
+# Logout
+# Access (is an admin, gets admin)
+# Access (is a user, dont get admin)
+# Register user, user exist
+# Register user, email sent
+# Password length
+# Username length and contents
+# 404 - generate and test all URLs?
+# User can change password
+# User cannot change other user password
+#
+
 class TestObject(db.Document):
   name = db.StringField(max_length=60)
 

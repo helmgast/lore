@@ -9,13 +9,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
     <title>{% block title %}{{ self.content_title() }}{% endblock %}</title>
-    <meta name="description" content="">
-    <meta name="author" content="">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
-
+    {% block opengraph %}
+    <meta property="og:title" content="{{ self.content_title() }}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}" />
+    <meta property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" />
+    {% endblock %}
 
 {% block cssimports %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
@@ -24,7 +25,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.calendar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nestable.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/imagelightbox.css') }}">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/zenstyle.css') }}">
 {#    <style>

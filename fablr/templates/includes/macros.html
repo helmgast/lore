@@ -1,4 +1,21 @@
- {%- macro action_buttons(submit_title, cancel_title="Cancel", submit_class="primary") -%}
+{%- macro OG_ARTICLE(article) -%}
+{% if article %}
+<meta property="og:title" content="{{article.title}}" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}" />
+{% if article.feature_image %}
+<meta property="og:image" content="{{url_for('image_thumb', slug=article.feature_image.slug, _external=true)}}" />
+{% else %}
+<meta property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" />
+{% endif %}
+<meta property="article:published_time" content="{{article.created_date.isoformat()}}" /> {# yyyy-mm-dd #}
+<meta property="article:author" content="{{article.user}}" />
+<meta property="article:section" content="{{article.world}}" />
+<meta property="og:site_name" content="Helmgast" />
+{% endif %}
+{%- endmacro -%}
+
+{%- macro action_buttons(submit_title, cancel_title="Cancel", submit_class="primary") -%}
 <div class="actions">
   <input type="submit" class="btn {{submit_class}}" value="{{submit_title}}">
   &nbsp;
