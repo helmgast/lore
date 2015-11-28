@@ -1,7 +1,7 @@
 # CANNOT CONTAIN ACTUAL SECRETS
 # Automatically imported, do not edit for local configuration!
 # For local configuration, create a config.py that overrides only the values
-# needed. 
+# needed. The config.py should not use classes, just global variables.
 
 class Config(object):
 	DEBUG = True
@@ -16,7 +16,7 @@ class Config(object):
 	MAX_CONTENT_LENGTH = 64 * 1024 * 1024 # 64 MB
 
 class SecretConfig(object):
-	# Replace with mongodb://user:pass@host/dbname in local config.py file
+	# Replace with mongodb://user:pass@host/dbname in config.py file
 	MONGODB_HOST = 'mongodb://localhost@defaultdb'
 
 	SECRET_KEY = 'SECRET'
