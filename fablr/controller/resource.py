@@ -28,6 +28,7 @@ from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError, FieldDoesNotExist
 from fablr.model.world import EMBEDDED_TYPES, Article
+from werkzeug.exceptions import HTTPException
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -529,11 +530,15 @@ class ResourceHandler(View):
         # 3rd args is the current traceback, as we have created a new exception
         raise resErr, None, sys.exc_info()[2]
     except Exception as err:
-      if r['out'] == 'json':
-        return self.return_json(r, err, 500)
+      if not isinstance(err, HTTPException):
+        # Only log error if not HTTP, as HTTP is expected for any HTTP error
+        logger.exception("%s: resource: %s" % (err, r))
+        if r['out'] == 'json':
+          return self.return_json(r, err, 500)
+        else:
+          raise
       else:
-        logger.exception("%s: resource: %a" % (err, r))
-        raise  # Send the error onward, will be picked up by debugger if in debug mode
+        raise  # Let it be handled as usual
 
     # no error, render output
     if r['out'] == 'json':
