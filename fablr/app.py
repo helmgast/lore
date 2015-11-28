@@ -201,6 +201,7 @@ def register_main_routes(app, auth):
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from controller.resource import ResourceError
   from model.web import ApplicationConfigForm
+  import time
 
   @app.route('/')
   def homepage():
@@ -263,6 +264,16 @@ def register_main_routes(app, auth):
     z = value.copy()
     z.update(kwargs)
     return z
+
+  @app.before_request
+  def before_request():
+    g.start = time.time()
+
+  @app.teardown_request
+  def teardown_request(exception=None):
+    diff = time.time() - g.start
+    if diff > 500:
+        app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):
