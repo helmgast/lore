@@ -1,7 +1,7 @@
 Design
 ==================================================================
 
-_This working document describes the internal design of Raconteur. Note that features described here may not exist yet, and in general, try to add a **(TODO)** marker near those sections!_
+_This working document describes the internal design of Raconteur. It is not fully up to date with the code, and features described here may also not exist yet. Try to add a **(TODO)** marker near those sections!_
 
 Known issues
 ==================================================================
@@ -155,33 +155,33 @@ Special note on ?out . ?out=fragment means that we return HTML, but only the con
                                                 ?order_by=-<field>
                                     filtering   ?<field>=<val>
                                                 ?<field__gt>=<val>
-    
+
     GET     /<resources>/new        form_new    get form for new resource
                                     return_type ?out=full (default)
                                                 ?out=fragment
                                                 ?out=json
                                     prefilling  ?<field>=<val>
-    
+
     POST    /<resources>            new         
                                     next url    ?next=<url>
-    
+
     GET     /<resource>/<slug>      view        get resource
                                     return_type ?out=full (default)
                                                 ?out=fragment
                                                 ?out=json
-    
+
     GET     /<resource>/<slug>/edit form_edit   get resource as form
                                     return_type ?out=full (default)
                                                 ?out=fragment
                                                 ?out=json
                                     prefilling  ?<field>=<val>
-    
+
     PUT;POST    /<resource>/<slug>  replace     replace resource
                                     next url    ?next=<url>
-    
+
     PATCH;POST  /<resource>/<slug>  edit        resource
                                     next url    ?next=<url>
-    
+
     DELETE;POST /<resource>/<slug>  delete      delete resource
                                     next url    ?next=<url>
 
@@ -262,7 +262,7 @@ Resource lists
 Resource lists support a number of common operations as defined by the parameters above. Let's look at them in some more detail.
 - Page: This shows the current page.
 - Order By: This orders the results (ascending) by the field of the given name. In a table view, this is typically linked from the column header.
-- Filter: This filters the results to only include items that match the filter. The filter is defined per field, and the default meaning is that the value has to be equal. If the field name is followed by a suffix such as 
+- Filter: This filters the results to only include items that match the filter. The filter is defined per field, and the default meaning is that the value has to be equal. If the field name is followed by a suffix such as
 `__lte` it will be "larger than or equal".
 - Search: Freetext search across all fields.
 
@@ -327,12 +327,12 @@ The key to this is the function `ResourceStrategy.allowed(op, instance)` op is t
 For templates, there is the macro called IS_ALLOWED() which works in a very similar way but doesn't throw exceptions and instead just outputs what's inside the macro if allowed, otherwise not.
 
 Access to resources are normally given to groups. A group is a list of users, where there are "members" and "masters". By default, members will have read access, masters have write access, and non-members no access. Each resource has a special "group" which is the creator group, which normally means
-the user who created the resource, if this is a field existing in the resource. 
+the user who created the resource, if this is a field existing in the resource.
 
     Login: Create/refresh logged in session for an existing user.
     If user is not completed or if google auth works but no user, send on to verify. If user exist and auth correct, redirect to next. Otherwise throw error.
-    
-    GET: 
+
+    GET:
          IF: not logged in, just show message with logout link
          ELSE: show FORM
     POST:
@@ -352,12 +352,12 @@ the user who created the resource, if this is a field existing in the resource.
                 IF valid and user exists
                 ELSE
                     return error
-            
+
          ELSE: 400
-    
+
     Join: Create a new user.
     Create a new user from scratch or from external auth. Create in unverified stage before email has been confirmed.
-    
+
     Verify: Complete registration of a previously created but incomplete user.
     Same as join more or less, but assumes user exists but needs additional info. If email and token are given, verify user.
 
@@ -391,7 +391,7 @@ The form library is seemingly simple but infinitly complex when you scratch the 
 - WTForms (package `wtforms`) - a generic library for building Form objects that can parse and validate data before filling up the real model object with it.
 - Flask-WTF (package `flask.ext.wtf`) - a mini library that joins the WTForms with Flask, such as automatically adding CSRF tokens (security)
 - Flask-Mongoengine (package `flask.ext.mongoengine.wtf`) - Comes with the automatic translation of Mongoengine Document objects (Model objects) into Forms by calling model_form() function, and also makes it easy to enhance an app with the Mongoengine layer.
-- Mongoengine (package `mongoengine`) - Used by Flask-Mongoengine but does the real work. 
+- Mongoengine (package `mongoengine`) - Used by Flask-Mongoengine but does the real work.
 
 This is the lifecycle steps:
 
@@ -518,7 +518,7 @@ Model Article consists of following fields:
 - article relations (->*models) (collection of relations)
 
 In /view?form=fill it will render as:
-    
+
     Name: {{name}}
     World: {{world}}
     Content: {{contet}}
@@ -527,7 +527,7 @@ In /view?form=fill it will render as:
     Subform:Relations
 
 In /edit?form=full, it will render as (simplified):
-    
+
     <input name=char/>
     <select name=world/>
     <textarea name=content/>
