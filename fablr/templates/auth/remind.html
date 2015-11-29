@@ -8,8 +8,8 @@ scripts we don't need for this simple page #}
 <form id="auth-form" method="post" action="{{url_for('auth.remind')}}" class="col-sm-6 col-sm-offset-3" role="form">
 	{% include "includes/flash.html" %}
 	<h2 class="form-signin-heading">{{ _('Remind login') }}</h2>
-	<div class="" style="margin-top: 20px" id="email-inputs"> 
-	{{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
+	<div class="" style="margin-top: 20px" id="email-inputs">
+	{{ MACRO.FORM_FIELD(form.email, controlclass="input-lg", required=true, inline=true) }}
 	</div>
 	{{ form.csrf_token }}
 	<button class="btn btn-signin btn-success btn-block" type="submit">{{_('Remind login')}}</button>

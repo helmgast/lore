@@ -142,6 +142,7 @@ window.onerror = function(err, url, line, col, trace) {
                 <li role="separator" class="divider"></li>
                 <li><a href="{{ url_for('assets.fileasset_list') }}">{{ _('Files') }}</a></li>
                 <li><a href="{{ url_for('assets.imageasset_list') }}">{{ _('Image Gallery') }}</a></li>
+                <li><a href="{{ url_for('admin') }}">{{ _('Admin') }}</a></li>
                 {% endcall %}
                 <li role="separator" class="divider"></li>
                 <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('log out') }}</a></li>

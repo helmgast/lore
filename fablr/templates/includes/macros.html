@@ -23,7 +23,7 @@
 </div>
 {%- endmacro -%}
 
-{%- macro FORM_FIELD2(field) -%}
+{%- macro FORM_FIELD_LIST(field) -%}
   <dt>{{ field.label }}
   <dd>{{ field(**kwargs)|safe }}
   {% if field.errors %}
@@ -33,28 +33,20 @@
     {% endfor %}
     </ul>
   {% endif %}
-  </dd>
+</dd>
 {%- endmacro -%}
 
-{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="") -%}
+{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", inline=false) -%}
   {% set fieldargs = {'class':'form-control '+controlclass} %}
   {% do fieldargs.update({'required':true}) if field.flags.required %}
   {% do fieldargs.update(kwargs) if kwargs %}
+  {% if inline %}
+    {% set labelclass = "sr-only "+labelclass %}
+    {% do fieldargs.update({'placeholder':field.label.text}) if field.label %}
+  {% endif %}
+  {{ field._name }}
   <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
     {{ field.label(class="control-label "+labelclass) if field.label }}
-    {{ field(**fieldargs) }}
-    {%- if field.errors -%}
-    <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
-    {%- endif -%}
-  </div>
-{%- endmacro -%}
-
-{%- macro FORM_FIELD_INLINE(field, controlclass="", labelclass="", groupclass="") -%}
-  {% set fieldargs = {'class':'form-control '+controlclass, 'placeholder':field.label.text} %}
-  {% do fieldargs.update({'required':true}) if field.flags.required %}
-  {% do fieldargs.update(kwargs) if kwargs %}
-  <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{' '+groupclass if groupclass}}">
-    {{ field.label(class="sr-only control-label "+labelclass) if field.label }}
     {{ field(**fieldargs) }}
     {%- if field.errors -%}
     <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>

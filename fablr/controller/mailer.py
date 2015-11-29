@@ -6,7 +6,7 @@ from flask.ext.babel import gettext as _
 from fablr.model.baseuser import create_token
 from fablr.model.user import User
 from fablr.model.shop import Order
-from fablr.model.web import MailForm
+from fablr.model.misc import MailForm
 from mongoengine.errors import NotUniqueError
 from fablr.controller.resource import parse_out_arg, ResourceError
 import re

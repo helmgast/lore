@@ -2,7 +2,7 @@
 Fablr is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.
 
 ## LICENSE
-This is not open source, it is proprietary. All rights reserved.
+This is proprietary software. All rights reserved.
 
 ## FRAMEWORKS
 Fablr backend is built in Python, and we use the following frameworks (plus more):
@@ -72,4 +72,4 @@ added. If you add or change new messages to translate, see below:
 3. Run `python manage.py lang_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
 
 ### Deployment in production
-For deployment on a production server, it's recommended to use a Docker setup with `gunicon` as WSGI server and potentially `nginx` as reverse proxy and cache. This repository contain no deployment details or settings for security, see separate repository.
+For deployment on a production server, it's recommended to use a Docker setup with `gunicorn` as WSGI server and potentially `nginx` as reverse proxy and cache. This repository contain no deployment details or settings for security, see separate repository.

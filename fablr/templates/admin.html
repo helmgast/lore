@@ -10,10 +10,11 @@
 
 {% block content %}
 <div class="row">
+<p class="bg-danger">This page is old and controls may not work as expected</p>
 <form method="post" action="{{ url_for('admin') }}" role="form">
   <div class="col-md-4">
-    {{ MACRO.FORM_FIELD2(config.state) }}
-    {{ MACRO.FORM_FIELD2(config.features) }}
+    {{ MACRO.FORM_FIELD_LIST(config.state) }}
+    {{ MACRO.FORM_FIELD_LIST(config.features) }}
   </div>
   <div class="col-md-4">
       <dl>
@@ -22,8 +23,8 @@
         <dd>{{ db }}</dd>
         {% endfor %}
       </dl>
-    {{ MACRO.FORM_FIELD2(config.backup) }}
-    {{ MACRO.FORM_FIELD2(config.backup_name) }}
+    {{ MACRO.FORM_FIELD_LIST(config.backup) }}
+    {{ MACRO.FORM_FIELD_LIST(config.backup_name) }}
   </div>
   <div class="col-md-4">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>

@@ -200,7 +200,7 @@ def register_main_routes(app, auth):
   from model.world import Article
   from controller.world import ArticleHandler, article_strategy, world_strategy
   from controller.resource import ResourceError
-  from model.web import ApplicationConfigForm
+  from model.misc import ApplicationConfigForm
   import time
 
   @app.route('/')

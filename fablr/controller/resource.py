@@ -197,7 +197,7 @@ class Authorization:
     if is_authorized:
       logger.debug("Authorized: %s" % message)
     else:
-      logger.info("UNAUTHORIZED: %s" % message)
+      logger.debug("UNAUTHORIZED: %s" % message)
 
   def is_privileged(self):
     return (self.error_code == 403 and self.is_authorized)

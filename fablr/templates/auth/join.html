@@ -24,7 +24,7 @@
     </div>
   </div>
   <div class="" style="margin-top: 20px" id="email-inputs">
-  {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true) }}
+  {{ MACRO.FORM_FIELD(form.email, controlclass="input-lg", required=true, inline=true) }}
   {% if form.email_token.data %}
   <span class="help-block small">{{_("Don't change, only this email is verified")}}</span>
   {% endif %}
@@ -33,17 +33,17 @@
   <div class="clearfix" id="profile"></div>
 
   <div id="password-inputs" class="hide">
-    {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) if form.password }}
-    {#{{ MACRO.FORM_FIELD_INLINE(form.confirm_password, controlclass="input-lg") if form.confirm_password }}#}
+    {{ MACRO.FORM_FIELD(form.password, controlclass="input-lg", required=true, inline=true) if form.password }}
+    {#{{ MACRO.FORM_FIELD(form.confirm_password, controlclass="input-lg", inline=true) if form.confirm_password }}#}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
   </div>
 
   {% if not reset %}
   <div id="optional-inputs" class="hide well">
     <span class="help-block">{{_('Optional details')}}</span>
-    {{ MACRO.FORM_FIELD_INLINE(form.username, controlclass="input-lg")}}
-    {{ MACRO.FORM_FIELD_INLINE(form.realname, controlclass="input-lg")}}
-    {{ MACRO.FORM_FIELD_INLINE(form.location, controlclass="input-lg")}}
+    {{ MACRO.FORM_FIELD(form.username, controlclass="input-lg", inline=true)}}
+    {{ MACRO.FORM_FIELD(form.realname, controlclass="input-lg", inline=true)}}
+    {{ MACRO.FORM_FIELD(form.location, controlclass="input-lg", inline=true)}}
     <div class="checkbox">
     <label>
       {{form.newsletter(checked=true)}}
