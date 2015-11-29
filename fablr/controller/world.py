@@ -13,11 +13,7 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
-<<<<<<< HEAD
 from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData,
-=======
-from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData,
->>>>>>> publisher_domain
   EventData, FractionData, PublishStatus, Publisher)
 from fablr.model.user import Group
 from flask.views import View
@@ -107,17 +103,10 @@ article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug',
   parent_strategy=world_strategy,
   short_url=True,
   list_filters=publish_filter,
-<<<<<<< HEAD
   form_class=model_form(Article,
   base_class=ArticleBaseForm,
   exclude=['slug'],
   converter=RacModelConverter()))
-=======
-  form_class=model_form(Article,
-    base_class=ArticleBaseForm,
-    exclude=['slug'],
-    converter=RacModelConverter()))
->>>>>>> publisher_domain
 
 ArticleHandler.register_urls(world_app, article_strategy)
 
