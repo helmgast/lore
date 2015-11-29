@@ -140,13 +140,15 @@ class CampaignData(db.EmbeddedDocument):
 #   subbranch = db.EmbeddedDocumentListField('self')
 ArticleTypes = Choices(
   default = _('Default'),
+  blogpost = _('Blog Post'),
+  material = _('Material'),
   person = _('Person'),
   fraction = _('Fraction'),
   place = _('Place'),
   event = _('Event'),
   campaign = _('Campaign'),
-  chronicles = _('Chronicle'),
-  blogpost = _('Blog Post'))
+  chronicles = _('Chronicle')
+  )
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']

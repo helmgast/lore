@@ -9,9 +9,9 @@
         <hr>
         <dl class="dl-horizontal">
             <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ world.publisher|default(_('No data')) }}</dd>
+            <dd>{{ world.publisher|default(_('No data'), true) }}</dd>
             <dt>{{ _('Rule System') }}</dt>
-            <dd>{{ world.rule_system|default(_('No data')) }}</dd>
+            <dd>{{ world.rule_system|default(_('No data'), true) }}</dd>
             <dt>{{ _('Created date') }}</dt>
             <dd>{{ world.created_date.strftime('%Y-%m-%d') }}</dd>
         </dl>

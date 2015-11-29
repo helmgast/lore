@@ -17,7 +17,7 @@
         <td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.title}}</a></td>
         <td>
             <a href="{{ url_for('link', fileasset=fileasset.slug) }}"><span class="glyphicon glyphicon-play-circle"></span></a>
-            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"><span class="glyphicon glyphicon-download"></span></a> {{fileasset.source_filename}}
+            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"><span class="glyphicon glyphicon-save"></span></a> {{fileasset.source_filename}}
         </td>
         <td>{{fileasset.attachment_filename}}</td>
         <td>{{fileasset.access_type_name()}}</td>

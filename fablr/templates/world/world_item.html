@@ -21,14 +21,15 @@
         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Default') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
+          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='material')}}"><span class="glyphicon glyphicon-briefcase"></span> {{ _('Material') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
           <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
         </ul>
       </li>
     {% endcall %}

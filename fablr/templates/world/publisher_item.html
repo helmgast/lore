@@ -4,13 +4,15 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}{{super()}}
+{% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit')) %}
 <ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
     {% if op != 'new' %}
-    <li><a href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
+    <li class="{{privileged}}"><a href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
             class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
     {% endif %}
 </ul>
+{% endcall %}
 {%endblock%}
 
 {% block content %}{% block inline %}
@@ -40,25 +42,25 @@
             <tr>
                 <td><strong>{{ _('Domain') }}</strong></td>
                 <td>
-                    <small>{{ publisher.slug|default(_('No data')) }}</small>
+                    <small>{{ publisher.slug|default(_('No data'), true) }}</small>
                 </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Title') }}</strong></td>
                 <td>
-                    <small>{{ publisher.title|default(_('No data')) }}</small>
+                    <small>{{ publisher.title|default(_('No data'), true) }}</small>
                 </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Description') }}</strong></td>
                 <td>
-                    <small>{{ publisher.description|default(_('No data')) }}</small>
+                    <small>{{ publisher.description|default(_('No data'), true) }}</small>
                 </td>
             </tr>
             <tr>
                 <td><strong>{{ _('Owner') }}</strong></td>
                 <td>
-                    <small>{{ publisher.owner|default(_('No data')) }}</small>
+                    <small>{{ publisher.owner|default(_('No data'), true) }}</small>
                 </td>
             </tr>
         </table>

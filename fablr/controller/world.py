@@ -34,7 +34,12 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
-publisher_strategy = ResourceRoutingStrategy(Publisher, 'publishers', 'slug')
+publisher_access = ResourceAccessPolicy({
+  'view':'user',
+  '_default':'admin'
+})
+publisher_strategy = ResourceRoutingStrategy(Publisher, 'publishers', 'slug',
+    access_policy=publisher_access)
 ResourceHandler.register_urls(world_app, publisher_strategy)
 
 

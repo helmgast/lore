@@ -250,7 +250,6 @@ def register_main_routes(app, auth):
         return render_template(err.template, **err.template_vars), err.status_code
     return err.message, err.status_code
 
-
   @app.template_filter('currentyear')
   def currentyear():
     return datetime.utcnow().strftime('%Y')
