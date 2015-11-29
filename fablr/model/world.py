@@ -47,6 +47,14 @@ class Publisher(db.Document):
   def __unicode__(self):
     return self.title
 
+class Publisher(db.Document):
+  slug = db.StringField(unique=True, max_length=62) # URL-friendly name
+  title = db.StringField(max_length=60, required=True)
+  description = db.StringField(max_length=500)
+  custom_domain = db.StringField(max_length=60)
+  admin = db.ReferenceField(User)
+  individual = db.BooleanField(default=False)
+
 class World(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(min_length=3, max_length=60, verbose_name=_('Title'))

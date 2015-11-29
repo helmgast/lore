@@ -6,6 +6,7 @@ import pymongo
 def db_migrate(db, version=''):
 
 	# This moves the field shipping_mobile to the right location
+	changed = 0
 	for doc in db.order.find({'shipping_mobile':{'$exists':True}}):
 		update = {'$unset':{'shipping_mobile':''}}
 		# Remove old 07XXXXXXXX placeholders
@@ -44,3 +45,4 @@ def db_migrate(db, version=''):
 	# 	db.image_asset.update({'_id':doc['_id']}, {'$set':{'image':newid}})
 	# 	tmp.close()
 	#results = db.images.files.update({'_id':image['_id']},{'$set':update})
+

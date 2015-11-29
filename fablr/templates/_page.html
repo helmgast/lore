@@ -104,8 +104,13 @@ window.onerror = function(err, url, line, col, trace) {
       </a>
     </div>
     <div class="collapse navbar-collapse">
+<<<<<<< HEAD
       <ul class="nav navbar-nav navbar-nav-top">
         <li{% block blog_active %}{% endblock %}><a href="{{ url_for('world.article_blog', world='helmgast') }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+=======
+      <ul class="nav navbar-nav">
+        <li{% block blog_active %}{% endblock %}><a href="{{ url_for('world.article_blog', world='helmgast', publisher='helmgast') }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+>>>>>>> publisher_domain
 
         {% call MACRO.IS_ADMIN() %}
         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
