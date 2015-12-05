@@ -42,18 +42,10 @@ class Publisher(db.Document):
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   owner = db.ReferenceField(User, verbose_name=_('Owner'))
   status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset)
+  feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
 
   def __unicode__(self):
     return self.title
-
-class Publisher(db.Document):
-  slug = db.StringField(unique=True, max_length=62) # URL-friendly name
-  title = db.StringField(max_length=60, required=True)
-  description = db.StringField(max_length=500)
-  custom_domain = db.StringField(max_length=60)
-  admin = db.ReferenceField(User)
-  individual = db.BooleanField(default=False)
 
 class World(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
@@ -63,7 +55,7 @@ class World(db.Document):
   rule_system = db.StringField(max_length=60, verbose_name=_('Rule System'))
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-  feature_image = db.ReferenceField(ImageAsset)
+  feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
 
   def clean(self):
     self.slug = slugify(self.title)

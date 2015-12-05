@@ -3,7 +3,9 @@
 
 {% block cssimports %}
 {{ super() }}
+{% if world %}
 <link rel="home" type="application/rss+xml" href="{{url_for('.article_feed', world=world.slug, _external=true)}}" />
+{% endif %}
 {% endblock %}
 
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
@@ -14,6 +16,7 @@
 <div class="worldSideBar">
   <ul class="nav nav-pills nav-stacked">
       <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+      {% if world %}
       <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
       <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
     {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new')) %}
@@ -33,15 +36,45 @@
         </ul>
       </li>
     {% endcall %}
+    {% endif %}
 </ul>
 </div>
 {% endblock %}
 
 {% block content %}
-
+{% if world_form %}
+<form method="post" action="{{world_form.action_url}}">
+  <div class="row">
+    <div class="col-md-8">
+      {{ MACRO.FORM_FIELD(world_form.title) }}
+      {{ MACRO.FORM_FIELD(world_form.description) }}
+      {{ MACRO.FORM_FIELD(world_form.publisher) }}
+      {{ MACRO.FORM_FIELD(world_form.rule_system) }}
+      {{ MACRO.FORM_FIELD(world_form.status) }}
+      {{ world_form.csrf_token }}
+    </div>
+    <div class="col-md-4">
+      {{ MACRO.FORM_FIELD(world_form.feature_image, **{'data-imageselect':true})}}
+    </div>
+  </div>
+  <div class="row form-actions">
+    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+    <a href="{{url_for('.world_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+    {% if world %}
+      <a href="{{url_for('.world_delete', world=world.slug)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+    {% endif %}
+  </div>
+</form>
+{% else %}
   <div class="row">
     <div class="col-md-6">
       <p class="well worldDesc">{{ world.description }}</p>
+    </div>
+    <div class="col-md-4">
+      {% if world.feature_image %}<a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
+      {% else %}
+        <span class="glyphicon glyphicon-globe gianticon"></span>
+      {% endif %}
     </div>
     <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
     <!--</div>-->
@@ -56,10 +89,16 @@
   {#{% include "includes/pagination.html" %}
   {% endif %}#}
   </div>
+{% endif %}
 {% endblock %}
 
-{% block in_table %}
-{% endblock %}
-
-{% block in_box %}
+{% block final %}
+{{super()}}
+<script>
+var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
+    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+  }
+</script>
 {% endblock %}
