@@ -364,8 +364,8 @@ will be appended to the target.
             '<span class="glyphicon glyphicon-picture"></span>' +
           '</label>' +
           '<input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*">' +
-        '  <input type="text" class="form-control" name="source_image_url"' +
-          'id="source_image_url" placeholder="http:// '+i18n['URL to image online']+'"> '+
+        '  <input type="text" class="form-control" ' +
+          'id="source_image_url" placeholder="http:// '+i18n['Image URL']+'"> '+
           (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" '+
             'href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
         '</div></div>');
@@ -374,11 +374,16 @@ will be appended to the target.
     self.$element.after(self.$imageEl)
     if (self.$element.is('select, input')) {
       self.setVal = function(src, slug) {
-        self.$element.val(slug ? slug : '---')
+        // We cant set option that doesnt exist, so add if needed
+        if (!self.$element.find('option[value="'+slug+'"]').length)
+          self.$element.append($('<option>', {value:slug}))
+        self.$element.val(slug)
+        if (!self.$element.val())
+          self.$element.val('__None')
       }
       var val = self.$element.val()
-      if ( val && val!="__None")
-        self.imageSelected('/asset/'+val, val)
+      if ( val && val != "__None")
+        self.imageSelected('/asset/image/'+val, val)
     } else if (self.$element.is('a.lightbox')) {
       self.setVal = function(src, slug) {
         self.$element.attr('href', src)
@@ -397,17 +402,17 @@ will be appended to the target.
         self.$element.remove()
       } else {
         self.$imageEl.find('.image-preview img').remove()
-        $('#themodal .gallerylist input[type="radio"]:checked').prop('checked', false)
+        $('#themodal .gallery input[type="radio"]:checked').prop('checked', false)
         self.$imageEl.find('.image-preview').removeClass('selected')
-        self.$element.val('---') // blank choice in Select box...
+        self.$element.val('__None') // Empty choice in Select box...
       }
     })
 
     self.$imageEl.on('click', '.image-library-select', function(e) {
       $(document).one('hide.bs.modal', '#themodal', function(e) {
-        var $sel = $(this).find('.gallerylist input[type="radio"]:checked')
+        var $sel = $(this).find('.gallery input[type="radio"]:checked')
         if ($sel[0])
-          self.imageSelected($sel.next('img')[0].src, $sel.val())
+          self.imageSelected($sel.parent().find('img')[0].src, $sel.val())
       })
     })
 

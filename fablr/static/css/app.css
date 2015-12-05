@@ -966,12 +966,21 @@ li:hover .btn-delete,
 	background-color: #eee;
 }
 
-.gallerylist {
+.gallery {
 	list-style: none;
 	overflow: hidden;
 	width: 100%;
+  padding: .5vw;
+  font-size: 0;
+  display: -ms-flexbox;
+  -ms-flex-wrap: wrap;
+  -ms-flex-direction: column;
+  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
+  display: -webkit-box;
+  display: flex;
 }
-
+/*
 .gallerylist .gallery-row {
 	margin-bottom: .5rem;
 	overflow: hidden;
@@ -986,25 +995,36 @@ li:hover .btn-delete,
 	display: block;
 	float: left;
 	margin: 0 .25rem;
-}
+}*/
 
-.gallerylist figure {
+.gallery figure {
 	margin: 0;
+  display: block;
 	overflow: hidden;
 	position: relative;
 	-webkit-backface-visibility: hidden; /* To fix webkit 1px rendering bug */
+  -webkit-box-flex: auto;
+  -ms-flex: auto;
+  flex: auto;
+  width: 200px;
+  margin: .5vw;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.gallery input:checked + figure:after {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%; background: rgba(255,255,255,0.7);
+  background-image: url("../img/lnr-checkmark-circle.svg");
+background-position: center;
+background-repeat: no-repeat;
+background-size: 70% 70%;
 }
 
 .gallery input[type="radio"] {
 	display: none;
 }
 
-.gallery label {
-	margin-bottom: 0px;
-	display: inline;
-}
-
-.gallerylist figcaption {
+.gallery figcaption {
 	background-color: rgba(255, 255, 255, .75);
 	box-sizing: border-box;
 	font-size: .75rem;
@@ -1017,28 +1037,24 @@ li:hover .btn-delete,
 	transform: translateY(100%);
 	transition: all .5s ease-in-out;
 }
-
+/*
 .gallery a {
   border: 0;
   display: block;
   position: relative;
   width: 100%;
   height: 100%;
-}
+}*/
 
-.gallerylist .gallery:hover figcaption {
+.gallery figure:hover figcaption {
 	-webkit-transform: translateY(0);
 	transform: translateY(0);
 }
 
-.gallery img {
-	display: block;
+.gallery figure img {
 	max-width: 100%;
-	transition: all .25s ease-in-out;
-}
-
-input[type="radio"]:checked + img {
- 	border: 6px solid rgba(102,175,233,1)
+  height: auto;
+	/*transition: all .25s ease-in-out;*/
 }
 
 #modalgallery {

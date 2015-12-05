@@ -769,8 +769,8 @@ msgid "Drag or click to upload file"
 msgstr "Dra en bild hit eller klicka för att ladda upp"
 
 #: fablr/templates/_page.html:62
-msgid "URL to image online"
-msgstr "länk till bild online"
+msgid "Image URL"
+msgstr "Bild-URL"
 
 #: fablr/templates/_page.html:63
 msgid "Caption"
