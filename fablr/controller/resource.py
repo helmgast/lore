@@ -13,6 +13,7 @@ import inspect
 import logging
 import sys
 import re
+import pprint
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -398,7 +399,7 @@ class ResourceError(Exception):
     self.template = template
     self.template_vars = template_vars if template_vars else {}
 
-    logger.warning("%d: %s%s", self.status_code, self.message, "in resource: %s" % self.r if r else "")
+    logger.warning(u"%d: %s%s", self.status_code, self.message, u"in resource: %s" % pprint.pformat(self.r).decode('utf-8'))
 
 class ResourceHandler(View):
   allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']

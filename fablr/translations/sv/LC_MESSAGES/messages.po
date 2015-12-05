@@ -2154,3 +2154,5 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 #~ msgid "There is a problem with your login, please contact us info@helmgast.se!"
 #~ msgstr ""
 
+#~ msgid " by "
+#~ msgstr " av "

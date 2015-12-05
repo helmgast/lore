@@ -818,7 +818,7 @@ transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 	box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 }
 
-tr:hover .btn-delete,
+tr:hover>td>.btn-delete,
 li:hover .btn-delete,
 .image-preview:hover .btn-delete,
 .row:hover .btn-delete {
