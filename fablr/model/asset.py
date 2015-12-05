@@ -19,8 +19,9 @@ from fablr.app import db
 from user import User
 from flask.ext.babel import gettext, lazy_gettext as _
 from misc import Choices
-from flask import request
+from flask import request, current_app
 
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 FileAccessType = Choices(
     # Accessed by anyone
@@ -131,9 +132,8 @@ class ImageAsset(db.Document):
   # Executes before saving
   def clean(self):
     if self.title:
-      slug, end = secure_filename(self.title).rsplit('.', 1)
-      if len(end)>4:
-        slug = slug+end # end is probably not a file ending
+      parts = secure_filename(self.title).rsplit('.', 1)
+      slug = parts[0]
     else:
       slug = self.id
     if not slug:
