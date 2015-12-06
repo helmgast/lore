@@ -13,6 +13,7 @@ import inspect
 import logging
 import sys
 import re
+import pprint
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
@@ -35,8 +36,9 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 
 def generate_flash(action, name, model_identifiers, dest=''):
-  s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
-    else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
+  # s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
+  #   else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
+  s = u'Successfully %s %s' % (action, name)
   flash(s, 'success')
   return s
 
@@ -385,20 +387,30 @@ class ResourceError(Exception):
     500: u"%s" % _("Internal server error")
   }
 
-  def __init__(self, status_code, r=None, message=None, form=None, template=None, template_vars=None):
+  def __init__(self, status_code, r=None, message=None, field_errors=None, template=None, template_vars=None):
     message = message if message else self.default_messages.get(status_code, _('Unknown error'))
-    if status_code == 400:
-      form = r.get('form', None) if r else form
-      if form:
-        message = u"Bad request, invalid fields: %s" % form.errors
-    Exception.__init__(self, "%i: %s" % (status_code, message))
-    self.status_code = status_code
-    self.message = message
     self.r = r
-    self.template = template
-    self.template_vars = template_vars if template_vars else {}
+    if r:
+        form = r.get('form', None)
+        self.field_errors = errors if form else None
+        self.template = r.get('template', None)
+        self.template_vars = r
+    if status_code == 400:
+      message = u"Bad request, invalid fields: \n%s" % pprint.pformat(field_errors)
+    self.message = message
+    self.status_code = status_code
 
-    logger.warning("%d: %s%s", self.status_code, self.message, "in resource: %s" % self.r if r else "")
+    if field_errors:
+        self.field_errors = field_errors
+    if template:
+        self.template = template
+    if template_vars:
+        self.template_vars = template_vars
+
+    logger.warning(u"%d: %s%s", self.status_code, self.message,
+      u"\nin resource: \n%s\nwith formdata:\n%s" %
+      (pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
+    Exception.__init__(self, "%i: %s" % (status_code, message))
 
 class ResourceHandler(View):
   allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
@@ -512,9 +524,9 @@ class ResourceHandler(View):
         raise  # Send the error onward, will be picked up by debugger if in debug mode
     except DoesNotExist:
       abort(404)
-    except ValidationError as err:
-      logger.exception("Validation error")
-      resErr = ResourceError(400, r=r, message=(','.join(map(lambda err: err.message, err.errors.itervalues()))))
+    except ValidationError as valErr:
+    #   logger.exception("Validation error")
+      resErr = ResourceError(400, r=r, field_errors=valErr.errors)
       if r['out'] == 'json':
         return self.return_json(r, resErr)
       else:
@@ -531,8 +543,8 @@ class ResourceHandler(View):
         raise resErr, None, sys.exc_info()[2]
     except Exception as err:
       if not isinstance(err, HTTPException):
-        # Only log error if not HTTP, as HTTP is expected for any HTTP error
-        logger.exception("%s: resource: %s" % (err, r))
+        # Ignore HTTP errors, as they happen for any normal abort(404) etc call
+        logger.exception(u"%s: resource: %s" % (err, pprint.pformat(r).decode('utf-8')))
         if r['out'] == 'json':
           return self.return_json(r, err, 500)
         else:
@@ -657,6 +669,7 @@ class ResourceHandler(View):
     if not auth:
       raise ResourceError(auth.error_code, r=r, message=auth.message)
 
+    r['template'] = self.strategy.item_template()
     form = self.form_class(request.form, obj=None)
     if not form.validate():
       r['form'] = form
@@ -676,6 +689,7 @@ class ResourceHandler(View):
     if not auth:
       raise ResourceError(auth.error_code, r=r, message=auth.message)
 
+    r['template'] = self.strategy.item_template()
     form = self.form_class(request.form, obj=item)
     logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
@@ -684,11 +698,13 @@ class ResourceHandler(View):
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     form.populate_obj(item, request.form.keys())
+    print r
     item.save()
     # In case slug has changed, query the new value before redirecting!
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_post_edit(), **self.strategy.all_view_args(item))
     logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    generate_flash("Edited",self.strategy.resource_name,item)
     return r
 
   def replace(self, r):

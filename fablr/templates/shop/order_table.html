@@ -100,15 +100,13 @@
        		{{_('Name')+': '+line.comment }}
         {% endif %}
         {% endif %}
-
-
     		</td>
     		<td>
-    			{% if order_form and order.status=='cart' %}
-                	{{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
-              	{% else %}
-                	{{ line.quantity }}
-              	{% endif %}
+    			{% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
+            {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
+          {% else %}
+            {{ line.quantity }}
+          {% endif %}
     		</td>
     		<td class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</td>
     		<td class="product-price">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</td>

@@ -8,9 +8,9 @@
 
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
-    <li class="{{privileged}}"><a href="{{ url_for('.fileasset_form_new') }}"><span
+    <li><a class="{{privileged}}" href="{{ url_for('.fileasset_form_new') }}"><span
             class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-    <li class="{{privileged}}"><a href="{{ url_for('.fileasset_list') }}"><span
+    <li><a class="{{privileged}}" href="{{ url_for('.fileasset_list') }}"><span
             class="glyphicon glyphicon-book"></span> {{ _('List') }}</a></li>
 </ul>
 {% endblock %}

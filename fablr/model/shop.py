@@ -68,6 +68,8 @@ class OrderLine(db.EmbeddedDocument):
   product = db.ReferenceField(Product, required=True, verbose_name=_('Product'))
   price = db.FloatField(min_value=0, required=True, verbose_name=_('Price'))
   comment = db.StringField(max_length=99, verbose_name=_('Comment'))
+  def __unicode__(self):
+    return u'%ix %s @ %s (%s)' % (self.quantity, self.product, self.price, self.comment)
 
 class Address(db.EmbeddedDocument):
   name = db.StringField(max_length=60, verbose_name=_('Name'))
@@ -75,7 +77,7 @@ class Address(db.EmbeddedDocument):
   zipcode = db.StringField(max_length=8, verbose_name=_('ZIP Code'))
   city = db.StringField(max_length=60, verbose_name=_('City'))
   country = db.StringField(max_length=60, verbose_name=_('Country'))
-  mobile = db.StringField(min_length=8, max_length=14, verbose_name=_('Cellphone Number'))
+  mobile = db.StringField(max_length=14, verbose_name=_('Cellphone Number'))
 
 OrderStatus = Choices(
   cart = _('Cart'),

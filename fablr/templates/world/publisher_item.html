@@ -8,7 +8,7 @@
 <ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
     {% if op != 'new' %}
-    <li class="{{privileged}}"><a href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
+    <li><a class="{{privileged}}" href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
             class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
     {% endif %}
 </ul>

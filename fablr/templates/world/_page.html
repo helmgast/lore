@@ -15,7 +15,7 @@
 <ul class="nav nav-pills nav-stacked">
 
   {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('list')) %}
-  <li class="{{privileged}}"><a href="{{ url_for('.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
   {% endcall %}
   {#
   {% call MACRO.IS_USER() %}

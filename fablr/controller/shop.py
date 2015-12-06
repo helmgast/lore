@@ -15,7 +15,8 @@ import stripe
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for, Response
 from werkzeug import secure_filename
 from slugify import slugify
-from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ResourceError
+from fablr.controller.resource import (ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy,
+    RacModelConverter, RacBaseForm, ResourceError, generate_flash)
 from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
 from pdf import fingerprint_pdf
 from flask.ext.mongoengine.wtf import model_form
@@ -66,7 +67,22 @@ def inject_cart():
     cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('total_items').first()
     return dict(cart_items=cart_order.total_items if cart_order else 0)
 
-CartOrderLineForm = model_form(OrderLine, base_class=RacBaseForm, converter=RacModelConverter())
+# Order states and form
+# cart.
+# Only one order per user can be in this state at the same time.
+# Product quantities and comments can be changed, new orderlines can be added or removed.
+# Address will not be editable
+# ordered
+# Order has been confirmed and sent for payment. Quantities can no longer be changed.
+# paid
+# Order has been confirmed paid. Address and comments can be changed, but with warning (as it may be too late for shipment)
+# shipped
+# Order has been shipped and is impossible to edit.
+# error
+# an error needing manual review. includes requests for refund, etc.
+
+
+CartOrderLineForm = model_form(OrderLine, only=['quantity','comment'], base_class=RacBaseForm, converter=RacModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such
 LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
 ShippingForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
@@ -89,22 +105,22 @@ class OrderHandler(ResourceHandler):
     auth = self.strategy.authorize(r['op'], item)
     r['auth'] = auth
     if not auth:
-      raise ResourceError(auth.error_code, r, message=auth.message)
-
+      raise ResourceError(auth.error_code, r=r, message=auth.message)
+    r['template'] = self.strategy.item_template()
     if item.status=='cart':
       Formclass = CartForm
     else:
       Formclass = PostCartForm
     form = Formclass(request.form, obj=item)
-
-    logger.warning('Form %s validates to %s' % (request.form, form.validate()))
+    raise Exception()
+    # logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
       r['form'] = form
-      raise ResourceError(400, r)
+      raise ResourceError(400, r=r)
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     # We now have a validated form. Let's save the order first, then attempt to purchase it.
-    # This is very important, as the save() will re-calculate key values for this order
+# This is very important, as the save() will re-calculate key values for this order
     form.populate_obj(item, request.form.keys())
     item.save()
 
@@ -129,6 +145,7 @@ class OrderHandler(ResourceHandler):
     r['next'] = url_for('.order_form_edit', order=r['item'].id)
 
     logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
+    generate_flash("Edited",self.strategy.resource_name,item)
     return r
 
   def my_orders(self, r):
@@ -140,6 +157,8 @@ class OrderHandler(ResourceHandler):
   # Endpoint will be 'order_cart' as it's attached to OrderHandler
   @ResourceHandler.methods(['GET','POST'])
   def cart(self, r):
+    r['template'] = 'shop/order_item.html'
+
     if g.user:
       cart_order = Order.objects(user=g.user, status=OrderStatus.cart).first()
       if not cart_order:
@@ -174,7 +193,6 @@ class OrderHandler(ResourceHandler):
       else:
         raise ResourceError(400, r, 'Not supported')
 
-    r['template'] = 'shop/order_item.html'
     return r
 
 OrderHandler.register_urls(shop_app, order_strategy)

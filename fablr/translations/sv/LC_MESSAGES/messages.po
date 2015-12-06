@@ -2199,8 +2199,3 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 #~ msgid " by "
 #~ msgstr " av "
 
-
-
-#~ msgid "make sure it's correct!"
-#~ msgstr "dubbelkolla att det är rätt!"
-

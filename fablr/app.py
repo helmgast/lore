@@ -248,7 +248,7 @@ def register_main_routes(app, auth):
       if err.template:
         flash(err.message,'warning')
         return render_template(err.template, **err.template_vars), err.status_code
-    return err.message, err.status_code
+    raise err # reraise if we dont have a template
 
   @app.template_filter('currentyear')
   def currentyear():
@@ -274,6 +274,7 @@ def register_main_routes(app, auth):
     if diff > 500:
         app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
+  print app.url_map
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):
 #   if d and len(d) > 0:

@@ -140,9 +140,9 @@ window.onerror = function(err, url, line, col, trace) {
                 <li><a {% call MACRO.IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a></li>
                 {% call MACRO.IS_ADMIN() %}
                 <li role="separator" class="divider"></li>
-                <li class="privileged"><a href="{{ url_for('assets.fileasset_list') }}">{{ _('Files') }}</a></li>
-                <li class="privileged"><a href="{{ url_for('assets.imageasset_list') }}">{{ _('Image Gallery') }}</a></li>
-                <li class="privileged"><a href="{{ url_for('admin') }}">{{ _('Admin') }}</a></li>
+                <li><a class="privileged" href="{{ url_for('assets.fileasset_list') }}">{{ _('Files') }}</a></li>
+                <li><a class="privileged"href="{{ url_for('assets.imageasset_list') }}">{{ _('Image Gallery') }}</a></li>
+                <li><a class="privileged" href="{{ url_for('admin') }}">{{ _('Admin') }}</a></li>
                 {% endcall %}
                 <li role="separator" class="divider"></li>
                 <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('log out') }}</a></li>

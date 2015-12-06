@@ -16,7 +16,7 @@
 {% if product %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
 <ul class="nav nav-pills nav-stacked">
-  <li class="{{privileged}}"><a href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 </ul>
 {% endcall %}
 {% endif %}

@@ -17,13 +17,13 @@
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
-  <li class="{{privileged}}"><a href="{{ url_for('.product_list') }}"><span class="glyphicon glyphicon-certificate"></span> {{ _('All products') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('.product_list') }}"><span class="glyphicon glyphicon-certificate"></span> {{ _('All products') }}</a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
-    <li class="{{privileged}}"><a href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-list-alt"></span> {{ _('All orders') }}</a></li>
+    <li><a class="{{privileged}}" href="{{ url_for('.order_list') }}"><span class="glyphicon glyphicon-list-alt"></span> {{ _('All orders') }}</a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
-    <li class="{{privileged}}"><a href="{{ url_for('.order_my_orders') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('My orders') }}</a></li>
+    <li><a class="{{privileged}}" href="{{ url_for('.order_my_orders') }}"><span class="glyphicon glyphicon-gift"></span> {{ _('My orders') }}</a></li>
   {% endcall %}
 
 </ul>
