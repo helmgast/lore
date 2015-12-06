@@ -52,7 +52,9 @@
     {% endif %}
   </div>
 </form>
+{% if product %}
 {{ MACRO.DELETE_MODAL(product.title, url_for('.product_delete', product=product.slug, op="DELETE") ) }}
+{% endif %}
 {% else %}
 <div class="row">
     <div class="col-md-8">

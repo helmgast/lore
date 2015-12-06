@@ -109,6 +109,10 @@ class Order(db.Document):
   charge_id = db.StringField() # Stores the Stripe charge id
   shipping_address = db.EmbeddedDocumentField(Address)
 
+  def __repr__(self):
+    s = unicode(self).encode('utf-8')
+    return s
+
   def __unicode__(self):
     max_prod, max_price = None, -1
     for ol in self.order_lines:

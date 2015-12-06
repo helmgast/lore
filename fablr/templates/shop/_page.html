@@ -16,6 +16,7 @@
 
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
+  <li><a href="{{ url_for('.index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('Home') }}</a></li>
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
   <li><a class="{{privileged}}" href="{{ url_for('.product_list') }}"><span class="glyphicon glyphicon-certificate"></span> {{ _('All products') }}</a></li>
   {% endcall %}
@@ -27,4 +28,19 @@
   {% endcall %}
 
 </ul>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+{% for f in product_families %}
+<div class="col-md-5 col-xs-12 world_item">
+    <h3><a href="{{ url_for('.product_list', family=f)}}">{{ f }}</a>
+</div>
+{% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
+{% else %}
+<div class="jumbotron text-center">
+<h2>{{_('No products available')}}</h2>
+</div>
+{% endfor %}
+</div>
 {% endblock %}

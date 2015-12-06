@@ -199,7 +199,8 @@ OrderHandler.register_urls(shop_app, order_strategy)
 
 @shop_app.route('/')
 def index():
-    return redirect(url_for('.order_my_orders'))
+    product_families = Product.objects().distinct('family')
+    return render_template('shop/_page.html', product_families=product_families)
 
 ### POST cart - add products, create order if needed
 ### GET cart - current order, displayed differently depending on current state
