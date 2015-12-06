@@ -25,6 +25,9 @@
             {{ MACRO.FORM_FIELD(publisher_form.description) }}
             {{ publisher_form.csrf_token }}
         </div>
+        <div class="col-md-4">
+          {{ MACRO.FORM_FIELD(publisher_form.feature_image, **{'data-imageselect':true})}}
+        </div>
     </div>
     <div class="row form-actions">
         <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
@@ -68,4 +71,15 @@
 </div>
 {% endif %}
 {% endblock %}
+{% endblock %}
+
+{% block final %}
+{{super()}}
+<script>
+var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
+    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+  }
+</script>
 {% endblock %}

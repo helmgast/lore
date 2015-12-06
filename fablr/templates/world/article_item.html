@@ -104,7 +104,6 @@
     <div id="content-editor" class="content{{' '}}" contenteditable="true"><p class="hide" contenteditable="false"></p>
     {{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
     </div>
-    {% endif %}
     <span id="hinter"></span>
     <div class="bubble-bar" id="text-options">
       <div class="options">
@@ -121,11 +120,12 @@
     </div>
     <div class="bubble-bar" id="margin-options">
       <div class="options ui-inputs">
-            <a href="#" data-target=""><span class="glyphicon glyphicon-picture"></span></a>
+        <a href="#" data-target=""><span class="glyphicon glyphicon-picture"></span></a>
       </div>
     </div>
+    {% endif %}
 
-   </div>
+  </div>
   <div class="col-md-3 article_comment">
     <!--Example comment-->
   </div>
@@ -206,23 +206,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
 
 {% block final %}
 {% if article %}
-<div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{ article.title }}?</h4>
-      </div>
-      <div class="modal-body">
-        <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+{{ MACRO.DELETE_MODAL(article.title, url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE") ) }}
 {% endif %}
 {{super()}}
 
@@ -233,10 +217,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
   head.js(
     "{{ url_for('static', filename='js/utils.js') }}",
     "{{ url_for('static', filename='js/editor.js') }}",
-        function(){
-          // Initiate ZenPen
-          editor.init();
-        }
+        function(){ editor.init(); }
       );
   {% endif %}
 
@@ -279,7 +260,7 @@ dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
               var text = editor.exportText()
               $ta.val(text);
               var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)
-              if (image_match.length > 2 && image_match[2]) {
+              if (image_match && image_match.length > 2 && image_match[2]) {
                 $('#feature_image').val(image_match[2])
               }
             }

@@ -64,7 +64,7 @@ class World(db.Document):
     return self.title
 
   def articles(self):
-    return Article.objects(world=self)
+    return Article.objects(world=self).order_by('-created_date')
 
   # startyear = 0
   # daysperyear = 360
@@ -162,10 +162,10 @@ class Article(db.Document):
   created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
-  content = db.StringField()
+  content = db.StringField(verbose_name=_('Content'))
   status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-  featured = db.BooleanField(default=False)
-  feature_image = db.ReferenceField(ImageAsset)
+  featured = db.BooleanField(default=False, verbose_name=_('Featured article'))
+  feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
 
   # modified_date = DateTimeField()
 

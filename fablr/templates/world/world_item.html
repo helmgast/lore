@@ -11,7 +11,13 @@
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+
+
 {% block sidebar %}
+{% if world.feature_image %}<a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
+{% else %}
+  <span class="glyphicon glyphicon-globe gianticon"></span>
+{% endif %}
 
 <div class="">
   <ul class="nav nav-pills nav-stacked">
@@ -71,26 +77,77 @@
 {% else %}
   <div class="row">
     <div class="col-md-6">
-      <p class="well worldDesc">{{ world.description }}</p>
+      <p class="worldDesc">{{ world.description }}</p>
     </div>
     <div class="col-md-4">
-      {% if world.feature_image %}<a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
-      {% else %}
-        <span class="glyphicon glyphicon-globe gianticon"></span>
-      {% endif %}
+      <table class="table">
+        <tr><td><strong>{{ _('Publisher') }}</strong></td>
+        <td><small>{{ world.publisher|default(_('No data'), true) }}</small></td></tr>
+        <tr><td><strong>{{ _('Rule System') }}</strong></td>
+        <td><small>{{ world.rule_system|default(_('No data'), true) }}</small></td></tr>
+        <tr><td><strong>{{ _('Status') }}</strong></td>
+        <td>{{ world.status|default(_('No data'), true) }}</td></tr>
+
+      </table>
     </div>
     <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
     <!--</div>-->
   </div>
+  <div class="row">
+    <div class="col-md-4">
+      <h4>{% trans %}Recent updates{% endtrans %}</h4>
+    </div>
+    <div class="col-md-4">
+      <h4>{% trans %}Featured articles{% endtrans %}</h4>
+    </div>
+    <div class="col-md-4">
+      <h4>{% trans %}Top material{% endtrans %}</h4>
+    </div>
+  </div>
   <div class="row worldArticles">
-  {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
-  <ul>
-    {% for article in world.articles() %}
-      <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{ article.title }}</a>  <span>[{{ article.type }}]</span></li>
+    <hr>
+    <h3>{% trans %}All articles{% endtrans %}</h3>
+    {% set articles = world.articles() %}
+    {% if articles %}
+    {{ MACRO.LIST_CONTROLS(articles[0].__class__, ['title', 'creator', 'type', 'created']) }}
+
+    {% if request.args.get('view', 'table') == 'table' %}
+
+    <table class="table table-hover">
+    {{ MACRO.TABLE_HEADER(articles[0].__class__, ['title', 'creator', 'type', 'created']) }}
+    <tbody>
+    	{% for article in articles %}
+    	<tr>
+    		<td><a href="{{ url_for('.article_form_edit',  world=world.slug, article=article.slug)}}">{{article.title}}</a></td>
+    		<td>{{article.creator}}</td>
+    		<td>{{article.type}}</td>
+        <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>
+    	</tr>
+    	{% endfor %}
+    </tbody>
+    </table>
+    {% else %}
+    <div class="cards">
+    <div class="row">
+    {% for article in articles %}
+    <div class="col-md-4 product"
+    {%- if article.feature_image %}style="background: rgba(255,255,255,0.7); background-position: center;
+  background-repeat: no-repeat; background-image: url({{url_for('image_thumb', slug=article.feature_image.slug)}})"
+    {%- endif -%}>
+        <div class="product-intro">
+            <h3><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug)}}">{{article}}</a></h3>
+        </div>
+        <ul class="product-details">
+            <li class="product-type">{{article.creator}}</li>
+            <li class="product-type">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</li>
+        </ul>
+    </div>
+    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
     {% endfor %}
-  </ul>
-  {#{% include "includes/pagination.html" %}
-  {% endif %}#}
+    </div></div>
+    {% endif %}
+    {% include "includes/pagination.html" %}
+    {% endif %}
   </div>
 {% endif %}
 {% endblock %}

@@ -35,11 +35,13 @@
         <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
         <a href="{{url_for('.fileasset_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
         {% if op != 'new' %}
-        <a href="{{url_for('.fileasset_delete', fileasset=fileasset.slug)}}"
-           class="btn btn-danger pull-right">{{ _('Delete')}}</a>
+        <a class="btn btn-danger pull-right" href="#deletemodal" data-toggle="modal">{{ _('Delete') }}</a>
         {% endif %}
     </div>
 </form>
+{% if  op != 'new' %}
+{{ MACRO.DELETE_MODAL(fileasset.title, url_for('.fileasset_delete', fileasset=fileasset.id, op="DELETE") ) }}
+{% endif %}
 {% else %}
 <div class="row">
     <div class="col-md-8">

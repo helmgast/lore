@@ -76,8 +76,6 @@
   {% endif %}
 {%- endmacro -%}
 
-
-
 {%- macro IS_USER(user=none) -%}
   {% if g.user and (not user or g.user == user or g.user.admin) %}
      {{ caller() }}
@@ -186,4 +184,24 @@
     {% endfor %}
 	</tr>
 </thead>
+{%- endmacro -%}
+
+{%- macro DELETE_MODAL(title, action_url) -%}
+<div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} "{{ title }}"?</h4>
+      </div>
+      <div class="modal-body">
+        <form id='deleteform' method="post" action="{{ action_url }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+          <button type="submit" class="btn btn-danger">{{ _('Yes') }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {%- endmacro -%}

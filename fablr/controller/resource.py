@@ -38,7 +38,7 @@ objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 def generate_flash(action, name, model_identifiers, dest=''):
   # s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
   #   else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
-  s = u'Successfully %s %s' % (action, name)
+  s = u'%s %s %s' % (_(u'Successfully'), action, name)
   flash(s, 'success')
   return s
 
@@ -395,8 +395,8 @@ class ResourceError(Exception):
         self.field_errors = errors if form else None
         self.template = r.get('template', None)
         self.template_vars = r
-    if status_code == 400:
-      message = u"Bad request, invalid fields: \n%s" % pprint.pformat(field_errors)
+    if status_code == 400 and field_errors:
+      message = message + u", invalid fields: \n%s" % pprint.pformat(field_errors)
     self.message = message
     self.status_code = status_code
 
@@ -526,7 +526,7 @@ class ResourceHandler(View):
       abort(404)
     except ValidationError as valErr:
     #   logger.exception("Validation error")
-      resErr = ResourceError(400, r=r, field_errors=valErr.errors)
+      resErr = ResourceError(400, message=valErr.message, r=r, field_errors=valErr.errors)
       if r['out'] == 'json':
         return self.return_json(r, resErr)
       else:
@@ -704,7 +704,7 @@ class ResourceHandler(View):
     if not 'next' in r:
       r['next'] = url_for('.' + self.strategy.endpoint_post_edit(), **self.strategy.all_view_args(item))
     logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
-    generate_flash("Edited",self.strategy.resource_name,item)
+    generate_flash(_("edited"),self.strategy.resource_name,item)
     return r
 
   def replace(self, r):
@@ -733,11 +733,7 @@ class ResourceHandler(View):
       raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     if not 'next' in r:
-      if 'parents' in r:
-        r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.parent.all_view_args(getattr(item, self.strategy.parent_reference_field)))
-      else:
-        r['next'] = url_for('.' + self.strategy.endpoint_name('list'))
-    self.strategy.authorize(r['op'], item)
+        r['next'] = url_for('.' + self.strategy.endpoint_name('list'), **self.strategy.all_view_args(item))
     logger.info("Delete on %s with id %s", self.strategy.resource_name, item.id)
     item.delete()
     return r

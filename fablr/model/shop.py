@@ -57,6 +57,15 @@ class Product(db.Document):
       self.downloadable_files = []
     self.slug = slugify(self.title)
 
+  def in_orders(self):
+    q = Order.objects(__raw__={'order_lines': {'$elemMatch': {'product': self.id}}})
+    return q
+
+  def delete(self):
+    if self.in_orders().count() > 0:
+      raise ValidationError("Cannot delete product %r as it's referenced by Orders" % self)
+    super(Product, self).delete()
+
   def __unicode__(self):
     return u'%s %s %s' % (self.title, _('by'), self.publisher)
 

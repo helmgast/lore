@@ -68,6 +68,11 @@ class FileAsset(db.Document):
     # How the file might be accessed
     access_type = db.StringField(choices=FileAccessType.to_tuples(), required=True, verbose_name=_('Access type'))
 
+    def delete(self):
+        if self.file_data:
+            self.file_data.delete()
+            self.file_data = None
+        super(FileAsset, self).delete()
 
     def clean(self):
         request_file_data = request.files.get('file_data', None)
@@ -83,7 +88,6 @@ class FileAsset(db.Document):
                 self.attachment_filename = self.source_filename
         name, ext = secure_filename(self.source_filename).lower().rsplit('.',1)
         self.slug = slugify(name)+'.'+ext
-
 
     def get_attachment_filename(self):
         filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename
