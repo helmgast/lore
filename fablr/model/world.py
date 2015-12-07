@@ -39,7 +39,7 @@ class Publisher(db.Document):
   slug = db.StringField(unique=True, max_length=62) # URL-friendly name
   title = db.StringField(min_length=3, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
-  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
+  created_date = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   owner = db.ReferenceField(User, verbose_name=_('Owner'))
   status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
@@ -53,7 +53,7 @@ class World(db.Document):
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   publisher = db.ReferenceField(Publisher, verbose_name=_('Publisher')) # TODO set to required
   rule_system = db.StringField(max_length=60, verbose_name=_('Rule System'))
-  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
+  created_date = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   status = db.StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   feature_image = db.ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
 
@@ -159,7 +159,7 @@ class Article(db.Document):
   world = db.ReferenceField(World, verbose_name=_('World'))
   publisher = db.ReferenceField(Publisher, verbose_name=_('Publisher'))
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
+  created_date = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   content = db.StringField(verbose_name=_('Content'))

@@ -17,6 +17,7 @@ from werkzeug import secure_filename
 from slugify import slugify
 from fablr.controller.resource import (ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy,
     RacModelConverter, RacBaseForm, ResourceError, generate_flash)
+from fablr.controller.mailer import send_mail
 from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
 from pdf import fingerprint_pdf
 from flask.ext.mongoengine.wtf import model_form
@@ -101,18 +102,17 @@ class OrderHandler(ResourceHandler):
   # We have to tailor our own edit because the form needs to be conditionally
   # modified
   def edit(self, r):
-    item = r['item']
-    auth = self.strategy.authorize(r['op'], item)
+    order = r['item']
+    auth = self.strategy.authorize(r['op'], order)
     r['auth'] = auth
     if not auth:
       raise ResourceError(auth.error_code, r=r, message=auth.message)
     r['template'] = self.strategy.item_template()
-    if item.status=='cart':
+    if order.status=='cart':
       Formclass = CartForm
     else:
       Formclass = PostCartForm
-    form = Formclass(request.form, obj=item)
-    raise Exception()
+    form = Formclass(request.form, obj=order)
     # logger.warning('Form %s validates to %s' % (request.form, form.validate()))
     if not form.validate():
       r['form'] = form
@@ -120,32 +120,35 @@ class OrderHandler(ResourceHandler):
     if not isinstance(form, RacBaseForm):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     # We now have a validated form. Let's save the order first, then attempt to purchase it.
-# This is very important, as the save() will re-calculate key values for this order
-    form.populate_obj(item, request.form.keys())
-    item.save()
+    # This is very important, as the save() will re-calculate key values for this order
+    form.populate_obj(order, request.form.keys())
+    order.save()
+
+    # In case slug has changed, query the new value before redirecting!
+    r['next'] = url_for('.order_form_edit', order=order.id)
 
     if form.stripe_token.data: # We have token data, so this is a purchase
       try:
         charge = stripe.Charge.create(
           source=form.stripe_token.data,
-          amount=int(item.total_price*100), # Stripe takes input in "cents" or similar
-          currency=item.currency,
-          description=unicode(item),
-          metadata={'order_id': item.id}
+          amount=int(order.total_price*100), # Stripe takes input in "cents" or similar
+          currency=order.currency,
+          description=unicode(order),
+          metadata={'order_id': order.id}
         )
         if charge['status'] == 'succeeded':
-          item.status = OrderStatus.paid
-          item.charge_id = charge['id']
-          item.save()
-      except stripe.error.CardError, e:
-        pass
+          order.status = OrderStatus.paid
+          order.charge_id = charge['id']
+          order.save()
+          send_mail([g.user.email], _('Thank you for your order!'), 'order', user=g.user,order=order)
+          logger.info("User %s purchased %s", g.user, order)
+          generate_flash("Purchased","order",order)
+          return r
+      except stripe.error.CardError as e:
+        raise ResourceError(500, message="Could not complete purchase: %s" % e.message, r=r)
 
-
-    # In case slug has changed, query the new value before redirecting!
-    r['next'] = url_for('.order_form_edit', order=r['item'].id)
-
-    logger.info("Edit on %s/%s", self.strategy.resource_name, item[self.strategy.id_field])
-    generate_flash("Edited",self.strategy.resource_name,item)
+    logger.info("Edit on %s/%s", self.strategy.resource_name, order.id)
+    generate_flash("Edited",self.strategy.resource_name, order)
     return r
 
   def my_orders(self, r):

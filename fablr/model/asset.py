@@ -126,7 +126,7 @@ class ImageAsset(db.Document):
   tags = db.ListField(db.StringField(max_length=30))
   mime_type = db.StringField(choices=MimeTypes.to_tuples(), required=True)
   creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created date'))
+  created_date = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
   title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
   description = db.StringField(max_length=500, verbose_name=_('Description'))
 

@@ -74,6 +74,8 @@
         <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>
         <tr><td><strong>{{ _('Currency') }}</strong></td>
         <td><small>{{ product.get_currency_display() }}</small></td></tr>
+        <tr><td><strong>{{ _('Tax') }}</strong></td>
+        <td><small>{{ product.tax*100 }}%</small></td></tr>
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ product.get_status_display() }}</small></td></tr>
         <tr><td><strong>{{ _('Times purchased') }}</strong></td>

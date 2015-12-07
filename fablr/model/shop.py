@@ -38,7 +38,7 @@ class Product(db.Document):
   description = db.StringField(max_length=500, verbose_name=_('Description'))
   publisher = db.StringField(max_length=60, required=True, verbose_name=_('Publisher'))
   family = db.StringField(max_length=60, verbose_name=_('Product Family'))
-  created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+  created = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
   type = db.StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
   # should be required=True, but that currently maps to Required, not InputRequired validator
   # Required will check the value and 0 is determined as false, which blocks prices for 0
@@ -57,6 +57,7 @@ class Product(db.Document):
     self.slug = slugify(self.title)
 
   def in_orders(self):
+    # This raw query finds orders where at least on order_line includes this product
     q = Order.objects(__raw__={'order_lines': {'$elemMatch': {'product': self.id}}})
     return q
 
@@ -102,8 +103,8 @@ class Order(db.Document):
   total_items = db.IntField(min_value=0, default=0) # Total number of items
   total_price = db.FloatField(min_value=0, default=0.0, verbose_name=_('Total price')) # Total price of order
   currency = db.StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
-  created = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
-  updated = db.DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
+  created = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
+  updated = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
   status = db.StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
   charge_id = db.StringField() # Stores the Stripe charge id
   shipping_address = db.EmbeddedDocumentField(Address)
@@ -130,7 +131,7 @@ class Order(db.Document):
 
   # Executes before saving
   def clean(self):
-    self.updated = datetime.utcnow
+    self.updated = datetime.utcnow()
     num, sum =0, 0.0
     for ol in self.order_lines:
       if self.currency:
