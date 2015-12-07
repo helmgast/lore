@@ -388,7 +388,7 @@ class ResourceError(Exception):
     500: u"%s" % _("Internal server error")
   }
 
-  def __init__(self, status_code, r=None, message=None, field_errors=None, template=None, template_vars=None):
+  def __init__(self, status_code, message=None, r=None, field_errors=None, template=None, template_vars=None):
     message = message if message else self.default_messages.get(status_code, _('Unknown error'))
     self.r = r
     if r:
