@@ -197,7 +197,8 @@ class Authorization:
     # or an admin can see other people's orders
     self.only_fields = only_fields
     if is_authorized:
-      logger.debug("Authorized: %s" % message)
+      pass
+    #   logger.debug("Authorized: %s" % message)
     else:
       logger.debug("UNAUTHORIZED: %s" % message)
 
@@ -392,7 +393,7 @@ class ResourceError(Exception):
     self.r = r
     if r:
         form = r.get('form', None)
-        self.field_errors = errors if form else None
+        self.field_errors = form.errors if form else None
         self.template = r.get('template', None)
         self.template_vars = r
     if status_code == 400 and field_errors:

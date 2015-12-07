@@ -35,6 +35,7 @@
       {{ MACRO.FORM_FIELD(product_form.type) }}
       {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
       {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
+      {{ MACRO.FORM_FIELD(product_form.tax, required=true) }}
       {{ MACRO.FORM_FIELD(product_form.status) }}
       {{ MACRO.FORM_FIELD_LIST(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
