@@ -96,6 +96,8 @@
       {% endif %}
     </div>
     <div class="col-md-4">
+      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>
+      <br>
       {% if product.feature_image %}<a class="lightbox" href="{{url_for('image', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = product.feature_image.slug)}}"></a>
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
@@ -103,6 +105,10 @@
       <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
     </div>
 </div>
+{% if product.status != 'hidden' %}
+{% include 'includes/disqus.html' %}
+{% endif %}
+
 {% endif %}
 {% endblock %}{% endblock %}
 
@@ -114,26 +120,5 @@ var imageselect_options = {
     image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
     image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
   }
-
-$('.buy-link').click(function(e) {
-    $.ajax({
-        url: "{{ url_for('.order_cart', out='json')}}",
-        type: 'post',
-        data: {product: this.id},
-        headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
-        dataType: 'json',
-        success: function (data) {
-            $c = $('#cart-counter')
-            $c.addClass("bounce").one('animationend webkitAnimationEnd oAnimationEnd', function() {
-              $c.removeClass("bounce");
-              $c.find('.badge').html(data.item)
-            });
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            flash_error(errorThrown)
-        }
-    });
-    e.preventDefault();
-});
 </script>
 {% endblock %}

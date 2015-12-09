@@ -196,11 +196,14 @@ class Authorization:
     # or a normal user. E.g. a user can only edit their own profile (privilege),
     # or an admin can see other people's orders
     self.only_fields = only_fields
-    if is_authorized:
-      pass
-    #   logger.debug("Authorized: %s" % message)
-    else:
-      logger.debug("UNAUTHORIZED: %s" % message)
+    # if is_authorized:
+    #   pass
+    # #   logger.debug("Authorized: %s" % message)
+    # else:
+    #   logger.debug("UNAUTHORIZED: %s" % message)
+
+  def __repr__(self):
+    return "%s%s" % ("Authorized" if self.is_authorized else "UNAUTHORIZED", ": %s" % message if message else "")
 
   def is_privileged(self):
     return (self.error_code == 403 and self.is_authorized)
@@ -409,8 +412,8 @@ class ResourceError(Exception):
         self.template_vars = template_vars
 
     logger.warning(u"%d: %s%s", self.status_code, self.message,
-      u"\nin resource: \n%s\nwith formdata:\n%s" %
-      (pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
+      u"\n%s\nin resource: \n%s\nwith formdata:\n%s" %
+      (request.url, pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
     Exception.__init__(self, "%i: %s" % (status_code, message))
 
 class ResourceHandler(View):
