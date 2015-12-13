@@ -50,9 +50,10 @@ ProductHandler.register_urls(shop_app, product_strategy)
 
 order_access = ResourceAccessPolicy({
   'my_orders':'user',
+  'view':'private',
   'list':'admin',
-  'edit':'private',
-  'form_edit':'private',
+  'edit':'admin',
+  'form_edit':'admin',
   '_default':'admin'
 })
 

@@ -27,7 +27,7 @@
 <tbody>
 	{% for order in orders %}
 	<tr>
-		<td><a href="{{ url_for('.order_form_edit', order=order.id)}}">{{order}}</a></td>
+		<td><a href="{{ url_for('.order_view', order=order.id)}}">{{order}}</a></td>
 		<td>{{order.user.username}}</td>
 		<td class="small">{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
 		<td class="small">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
@@ -44,7 +44,7 @@
 <div class="col-md-4 product">
     {% if order.order_lines[0].product.feature_image %}<img class="product-image" src="{{url_for('image_thumb', slug=order.order_lines[0].product.feature_image.slug)}}"></a>{% endif %}
     <div class="product-intro">
-        <h3><a href="{{ url_for('.order_form_edit', order=order.id)}}">{{order}}</a></h3>
+        <h3><a href="{{ url_for('.order_view', order=order.id)}}">{{order}}</a></h3>
     </div>
     <ul class="product-details">
         <li class="product-type">{{order.user.username}}</li>
