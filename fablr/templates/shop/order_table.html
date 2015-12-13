@@ -67,16 +67,16 @@
     	{% for line in order.order_lines %}
     	{% if line.product.status != 'hidden' %}
     	<tr class="product">
-    		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=line.product.feature_image.slug)}}"></a>{% endif %}</td>
+    		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}"><img class="product-image" src="{{url_for('image_thumb', slug=line.product.feature_image.slug, _external=true)}}"></a>{% endif %}</td>
     		<td>
-    			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
+    			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
 	            <p>{{ line.product.description }}</p>
 				{% if order and order.is_paid_or_shipped() %}
   				{% if line.product.downloadable_files %}
   				<div><strong>{{ _('Downloadable files') }}</strong>
   				  {% for file_asset in line.product.downloadable_files %}
   					<div>
-  						<a href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
+  						<a href="{{ url_for('download', fileasset=file_asset.slug, _external=true) }}"><span
   								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
   						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
   					</div>
@@ -100,14 +100,13 @@
         {% elif line.comment %}
           {{_('Name')+': '+line.comment }}
 	      {% endif %}
-
     		</td>
     		<td>
-    			{% if order_form and order.status=='cart' %}
-                	{{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
-              	{% else %}
-                	{{ line.quantity }}
-              	{% endif %}
+    			{% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
+            {{order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity")}}
+          {% else %}
+            {{ line.quantity }}
+          {% endif %}
     		</td>
     		<td class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</td>
     		<td class="product-price">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency}}</td>
@@ -138,7 +137,7 @@
           <label class="control-label  col-sm-3" for="shipping_address-mobile">{{order_form.shipping_address.mobile.label}}</label>
           <div class="col-sm-9">
             {{order_form.shipping_address.mobile(class="form-control", placeholder="07XXXXXXXX", type="tel", autocomplete="tel", pattern="(\+?\d[- .]*){7,13}")}}
-            <span class="help-block">För SMS-avisering</span>
+            <span class="help-block">{{_('For SMS notification')}}</span>
           </div>
         </div>
     {% else %}
