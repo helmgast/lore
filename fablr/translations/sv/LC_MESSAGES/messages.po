@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-12-08 01:24+0900\n"
+"POT-Creation-Date: 2015-12-13 14:54+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: sv <LL@li.org>\n"
@@ -174,7 +174,7 @@ msgstr "Inbjudan att gå med i Helmgast.se"
 msgid "%(user)s, welcome to Helmgast!"
 msgstr "%(user)s, välkommen till Helmgast!"
 
-#: fablr/controller/mailer.py:93 fablr/controller/shop.py:143
+#: fablr/controller/mailer.py:93 fablr/controller/shop.py:144
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
@@ -187,35 +187,35 @@ msgstr "Skickade mail \"%(subject)s\" till %(recipients)s"
 msgid "Successfully"
 msgstr "Framgångsrikt"
 
-#: fablr/controller/resource.py:384
+#: fablr/controller/resource.py:387
 msgid "Bad request or invalid input"
 msgstr ""
 
-#: fablr/controller/resource.py:385
+#: fablr/controller/resource.py:388
 msgid "Unathorized access, please login"
 msgstr ""
 
-#: fablr/controller/resource.py:386
+#: fablr/controller/resource.py:389
 msgid "Forbidden, this is not an allowed operation"
 msgstr ""
 
-#: fablr/controller/resource.py:387
+#: fablr/controller/resource.py:390
 msgid "Resource not found"
 msgstr ""
 
-#: fablr/controller/resource.py:388
+#: fablr/controller/resource.py:391
 msgid "Internal server error"
 msgstr ""
 
-#: fablr/controller/resource.py:392
+#: fablr/controller/resource.py:395
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: fablr/controller/resource.py:708
+#: fablr/controller/resource.py:711
 msgid "edited"
 msgstr "redigerat"
 
-#: fablr/controller/shop.py:174
+#: fablr/controller/shop.py:175
 msgid "Need to log in to use shopping cart"
 msgstr "Du måste logga in för att fylla din kundvagn"
 
@@ -448,7 +448,7 @@ msgstr "Status"
 msgid "Feature Image"
 msgstr "Presentationsbild"
 
-#: fablr/model/shop.py:50 fablr/templates/shop/order_table.html:90
+#: fablr/model/shop.py:50 fablr/templates/shop/order_table.html:91
 msgid "Name in book"
 msgstr "Namn i boken"
 
@@ -472,7 +472,7 @@ msgstr "Produkt"
 
 #: fablr/model/shop.py:84 fablr/templates/campaign/campaign_page.html:22
 #: fablr/templates/shop/order_table.html:32
-#: fablr/templates/shop/order_table.html:100
+#: fablr/templates/shop/order_table.html:101
 #: fablr/templates/shop/order_table.html:146
 #: fablr/templates/social/user_item.html:66
 msgid "Name"
@@ -1129,7 +1129,7 @@ msgid "Actions"
 msgstr "Funktioner"
 
 #: fablr/templates/asset/fileasset_item.html:12
-#: fablr/templates/shop/order_item.html:60
+#: fablr/templates/shop/order_item.html:65
 #: fablr/templates/shop/product_item.html:19
 #: fablr/templates/social/group_item.html:14
 #: fablr/templates/social/user_item.html:12
@@ -1736,11 +1736,13 @@ msgid "go shopping"
 msgstr "börja shoppa!"
 
 #: fablr/templates/shop/order_item.html:49
+#: fablr/templates/shop/order_item.html:63
 #, python-format
 msgid "Regarding order %(order)s"
 msgstr "Gällande order %(order)s"
 
 #: fablr/templates/shop/order_item.html:50
+#: fablr/templates/shop/order_item.html:64
 msgid "Contact Us"
 msgstr "Kontakta oss"
 
@@ -1748,7 +1750,7 @@ msgstr "Kontakta oss"
 msgid "Checkout"
 msgstr "Lägg beställning"
 
-#: fablr/templates/shop/order_item.html:89
+#: fablr/templates/shop/order_item.html:96
 msgid "Pay"
 msgstr "Betala"
 
@@ -1804,6 +1806,10 @@ msgstr "Leveransadress"
 msgid "make sure it's correct!"
 msgstr "dubbelkolla att det är rätt!"
 
+#: fablr/templates/shop/order_table.html:140
+msgid "For SMS notification"
+msgstr "För SMS-avisering"
+
 #: fablr/templates/shop/order_table.html:147
 #: fablr/templates/shop/order_table.html:151
 #: fablr/templates/shop/order_table.html:155
@@ -1838,7 +1844,8 @@ msgstr "Familj"
 msgid "Times purchased"
 msgstr "Antal köp"
 
-#: fablr/templates/shop/product_item.html:103
+#: fablr/templates/shop/product_item.html:99
+#: fablr/templates/shop/product_item.html:105
 #: fablr/templates/shop/product_list.html:61
 msgid "Buy"
 msgstr "Köp"
@@ -2047,7 +2054,7 @@ msgstr "Kön"
 msgid "Occupation"
 msgstr "Yrke"
 
-#: fablr/templates/world/article_item.html:248
+#: fablr/templates/world/article_item.html:235
 msgid "You have unsaved changes"
 msgstr "Du har osparade ändringar"
 
