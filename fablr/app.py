@@ -88,8 +88,9 @@ def create_app(no_init=False, **kwargs):
 
   configure_logging(the_app)
 
-  the_app.logger.info("Flask '%s' (%s) created in %s-mode, %s" \
-    % (the_app.name, the_app.config.get('VERSION',None), "Debug" if the_app.debug else "Prod", config_string))
+  if not the_app.testing:
+    the_app.logger.info("Flask '%s' (%s) created in %s-mode, %s" \
+      % (the_app.name, the_app.config.get('VERSION',None), "Debug" if the_app.debug else "Prod", config_string))
 
   if not no_init:
       init_app(the_app)
@@ -270,9 +271,10 @@ def register_main_routes(app, auth):
 
   @app.teardown_request
   def teardown_request(exception=None):
-    diff = time.time() - g.start
-    if diff > 500:
-        app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
+    if 'start' in g:
+        diff = time.time() - g.start
+        if diff > 500:
+            app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
   # print app.url_map
 # @current_app.template_filter('dictreplace')

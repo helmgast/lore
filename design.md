@@ -395,7 +395,7 @@ The form library is seemingly simple but infinitly complex when you scratch the 
 
 This is the lifecycle steps:
 
-1) Create Model class (db.Documents)
+1) Create Model class (Document)
 2) Create Form class by telling model_form to parse all fields in Model class, and pick suitable HTML form fields that match each variable.
 3) When you have a request for a form, instantiate the Form class for that model, and by calling each field of the form, render the HTML. If the Form was instantiated with a model object, the form will be pre-filled with real model data.
 4) When you get a form post response back, let the form self-parse the request data, and then if it validates, tell the form to populate a Model object with the new data (overwriting any old data).

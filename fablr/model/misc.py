@@ -13,13 +13,17 @@ import datetime
 from flask.ext.babel import lazy_gettext as _
 from slugify import slugify
 from flask.ext.wtf import Form # secure form
-from wtforms import RadioField, BooleanField, SelectMultipleField, StringField, validators, widgets
+import wtforms as wtf
+#import RadioField, BooleanField, SelectMultipleField, StringField, wtf.validators, widgets
 from wtforms.compat import iteritems
 from wtforms.widgets import TextArea
 from flask.ext.babel import lazy_gettext as _
 from fablr.app import db, STATE_TYPES, FEATURE_TYPES
 import logging
 from flask import current_app
+from flask.ext.mongoengine import Document # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
+    ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -47,36 +51,36 @@ def list_to_choices(list):
 def now():
     return datetime.datetime.now;
 
-class GeneratorInputList(db.Document):
-    name = db.StringField()
+class GeneratorInputList(Document):
+    name = StringField()
 
     def items(self):
         return GeneratorInputItem.select().where(GeneratorInputItem.input_list == self)
 
-class GeneratorInputItem(db.Document):
-    input_list = db.ReferenceField(GeneratorInputList)
-    content = db.StringField()
+class GeneratorInputItem(Document):
+    input_list = ReferenceField(GeneratorInputList)
+    content = StringField()
 
-class StringGenerator(db.Document):
-    name = db.StringField()
-    description = db.StringField()
+class StringGenerator(Document):
+    name = StringField()
+    description = StringField()
     generator = None
 
     def __unicode__(self):
         return self.name
 
 class ApplicationConfigForm(Form):
-  backup = BooleanField(_('Do backup'))
-  backup_name = StringField(_('Backup name'), [ validators.Length(min=6) ])
-  state = RadioField(_('Application state'), choices=STATE_TYPES)
-  features = SelectMultipleField(_('Application features'), choices=FEATURE_TYPES, option_widget=widgets.CheckboxInput(),
-                                 widget=widgets.ListWidget(prefix_label=False))
+  backup = wtf.BooleanField(_('Do backup'))
+  backup_name = wtf.StringField(_('Backup name'), [ wtf.validators.Length(min=6) ])
+  state = wtf.RadioField(_('Application state'), choices=STATE_TYPES)
+  features = wtf.SelectMultipleField(_('Application features'), choices=FEATURE_TYPES, option_widget=wtf.widgets.CheckboxInput(),
+                                 widget=wtf.widgets.ListWidget(prefix_label=False))
 
 class MailForm(Form):
-  to_field = StringField(_('To'), [validators.Email(), validators.Required() ])
-  from_field = StringField(_('From'), [validators.Email(), validators.Required() ])
-  subject = StringField(_('Subject'), [validators.Length(min=1, max=200), validators.Required()])
-  message = StringField(_('Message'), widget=TextArea())
+  to_field = wtf.StringField(_('To'), [wtf.validators.Email(), wtf.validators.Required() ])
+  from_field = wtf.StringField(_('From'), [wtf.validators.Email(), wtf.validators.Required() ])
+  subject = wtf.StringField(_('Subject'), [wtf.validators.Length(min=1, max=200), wtf.validators.Required()])
+  message = wtf.StringField(_('Message'), widget=TextArea())
 
   def process(self, formdata=None, obj=None, allowed_fields=None, **kwargs):
     # Formdata overrides obj, which overrides kwargs.

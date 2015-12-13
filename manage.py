@@ -5,6 +5,7 @@ import re
 from flask.ext.script import Manager, prompt_pass
 from fablr.app import create_app, init_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
+from flask.ext.mongoengine import Document
 
 os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
 app = create_app(no_init=True) # delay initializaiton to avoid database etc
@@ -85,7 +86,7 @@ def validate_model():
   init_app(app)
   is_ok = True
   pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
-  for doc in db.Document._subclasses:  # Ugly way of finding all document type
+  for doc in Document._subclasses:  # Ugly way of finding all document type
     if doc != 'Document':  # Ignore base type (since we don't own it)
       for pkg in pkgs:
         try:

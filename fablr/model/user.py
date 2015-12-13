@@ -18,6 +18,9 @@ from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import HiddenField
 # i18n (Babel)
 from flask.ext.babel import lazy_gettext as _
+from flask.ext.mongoengine import Document # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
+    ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 
 import logging
 from flask import current_app
@@ -31,32 +34,32 @@ ExternalAuth = Choices(
   google='Google',
   facebook='Facebook')
 
-class ExternalAuth(db.EmbeddedDocument):
-  id = db.StringField(required=True)
-  long_token = db.StringField()
-  emails = db.ListField(db.EmailField())
+class ExternalAuth(EmbeddedDocument):
+  id = StringField(required=True)
+  long_token = StringField()
+  emails = ListField(EmailField())
 
 # A user in the system
-class User(db.Document, BaseUser):
+class User(Document, BaseUser):
   # We want to set username unique, but then it cannot be empty,
   # but in case where username is created, we want to allow empty values
   # Currently it's only a display name, not used for URLs!
-  username = db.StringField(max_length=60, verbose_name=_('username'))
-  password = db.StringField(max_length=60, verbose_name = _('password'))
-  email = db.EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
-  realname = db.StringField(max_length=60, verbose_name = _('real name'))
-  location = db.StringField(max_length=60, verbose_name = _('location'))
-  description = db.StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
-  xp = db.IntField(default=0, verbose_name = _('xp'))
-  join_date = db.DateTimeField(default=now(), verbose_name = _('join date'))
-  # msglog = db.ReferenceField(Conversation)
-  status = db.StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
-  admin = db.BooleanField(default=False)
-  newsletter = db.BooleanField(default=True)
-  google_auth = db.EmbeddedDocumentField(ExternalAuth)
-  facebook_auth = db.EmbeddedDocumentField(ExternalAuth)
+  username = StringField(max_length=60, verbose_name=_('username'))
+  password = StringField(max_length=60, verbose_name = _('password'))
+  email = EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
+  realname = StringField(max_length=60, verbose_name = _('real name'))
+  location = StringField(max_length=60, verbose_name = _('location'))
+  description = StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
+  xp = IntField(default=0, verbose_name = _('xp'))
+  join_date = DateTimeField(default=now(), verbose_name = _('join date'))
+  # msglog = ReferenceField(Conversation)
+  status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
+  admin = BooleanField(default=False)
+  newsletter = BooleanField(default=True)
+  google_auth = EmbeddedDocumentField(ExternalAuth)
+  facebook_auth = EmbeddedDocumentField(ExternalAuth)
 
-  following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
+  following = ListField(ReferenceField('self'), verbose_name = _('Following'))
 
   def clean(self):
     # TODO Our password hashes contain 46 characters, so we can check if the value
@@ -119,11 +122,11 @@ class User(db.Document, BaseUser):
   #     return False
 
 
-class Conversation(db.Document):
-  modified_date = db.DateTimeField(default=now())
-  members = db.ListField(db.ReferenceField(User))
-  title = db.StringField(max_length=60)
-  topic = db.StringField(max_length=60)
+class Conversation(Document):
+  modified_date = DateTimeField(default=now())
+  members = ListField(ReferenceField(User))
+  title = StringField(max_length=60)
+  topic = StringField(max_length=60)
 
   members.verbose_name  = _('members')
   title.verbose_name  = _('title')
@@ -147,9 +150,9 @@ MemberRoles = Choices(
   master=_('Master'),
   member=_('Member'),
   invited=_('Invited'))
-class Member(db.EmbeddedDocument):
-  user = db.ReferenceField(User)
-  role = db.StringField(choices=MemberRoles.to_tuples(), default=MemberRoles.member)
+class Member(EmbeddedDocument):
+  user = ReferenceField(User)
+  role = StringField(choices=MemberRoles.to_tuples(), default=MemberRoles.member)
 
   def get_role(self):
     return MemberRoles[self.role]
@@ -159,13 +162,13 @@ class Member(db.EmbeddedDocument):
 GroupTypes = Choices(   gamegroup=_('Game Group'),
             worldgroup=_('World Group'),
             articlegroup=_('Article Group'))
-class Group(db.Document):
-  name = db.StringField(max_length=60, required=True)
-  location = db.StringField(max_length=60)
-  slug = db.StringField()
-  description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
-  type = db.StringField(choices=GroupTypes.to_tuples(),default=GroupTypes.gamegroup)
-  members = db.ListField(db.EmbeddedDocumentField(Member))
+class Group(Document):
+  name = StringField(max_length=60, required=True)
+  location = StringField(max_length=60)
+  slug = StringField()
+  description = StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
+  type = StringField(choices=GroupTypes.to_tuples(),default=GroupTypes.gamegroup)
+  members = ListField(EmbeddedDocumentField(Member))
 
   def __unicode__(self):
     return self.name
@@ -184,11 +187,11 @@ class Group(db.Document):
     return [m for m.user in members]
 
 # A message from a user (to everyone)
-class Message(db.Document):
-  user = db.ReferenceField(User)
-  content = db.StringField()
-  pub_date = db.DateTimeField(default=now())
-  conversation = db.ReferenceField(Conversation)
+class Message(Document):
+  user = ReferenceField(User)
+  content = StringField()
+  pub_date = DateTimeField(default=now())
+  conversation = ReferenceField(Conversation)
   #readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
 
   def __unicode__(self):

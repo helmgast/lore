@@ -9,31 +9,34 @@
 
 from fablr.app import db
 from world import Article, Episode, User, Group
+from flask.ext.mongoengine import Document # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
+    ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 
 # A game session that was or will be held, e.g. the instance between a scenario
 # and a group  at a certain date
-class Session(db.EmbeddedDocument):
-    play_start = db.DateTimeField()
-    play_end = db.DateTimeField()
-    location = db.StringField() # Location of the session
-    description = db.StringField() # Details on the event if any.
-    # episodes = db.ListField(db.ReferenceField(Episode))
-    episodes = db.ListField(db.StringField())
-    present_members = db.ListField(db.ReferenceField(User));
+class Session(EmbeddedDocument):
+    play_start = DateTimeField()
+    play_end = DateTimeField()
+    location = StringField() # Location of the session
+    description = StringField() # Details on the event if any.
+    # episodes = ListField(ReferenceField(Episode))
+    episodes = ListField(StringField())
+    present_members = ListField(ReferenceField(User));
 
     def __unicode__(self):
         return u'Session of %s at %s' % ('self.campaign', self.play_start.strftime('%Y-%m-%d'))
 
 
 # All material related to a certain story by a certain group.
-class CampaignInstance(db.Document):
-    campaign = db.ReferenceField(Article) # CampaignData
-    group = db.ReferenceField(Group)
-    rule_system = db.StringField()
-    description = db.StringField()
-    archived = db.BooleanField(default=False) # If the campaign is archived
-    sessions = db.ListField(db.EmbeddedDocumentField(Session))
-    chronicles = db.ListField(db.ReferenceField(Article)) # ChronicleArticles
+class CampaignInstance(Document):
+    campaign = ReferenceField(Article) # CampaignData
+    group = ReferenceField(Group)
+    rule_system = StringField()
+    description = StringField()
+    archived = BooleanField(default=False) # If the campaign is archived
+    sessions = ListField(EmbeddedDocumentField(Session))
+    chronicles = ListField(ReferenceField(Article)) # ChronicleArticles
 
     def __unicode__(self):
         return u'%s by %s' % (self.campaign.title, self.group)
@@ -47,24 +50,24 @@ class CampaignInstance(db.Document):
 #             print q.execute()
 #             o += 1
 #             if 'children' in s:
-#                 self.load_scene_tree(s['children'], parent=Scene.get(Scene.id == s['id'])) 
+#                 self.load_scene_tree(s['children'], parent=Scene.get(Scene.id == s['id']))
 
 # A part of a Scenario, that can be in current focus of a game
-# class Scene(db.Document):
-#     campaign = db.ReferenceField(CampaignInstance)
-#     parent = db.ReferenceField('self', related_name='children', )
-#     name = db.StringField()
-#     description = db.StringField()
-#     order = db.IntField() # The integer order between scenes
-# 
+# class Scene(Document):
+#     campaign = ReferenceField(CampaignInstance)
+#     parent = ReferenceField('self', related_name='children', )
+#     name = StringField()
+#     description = StringField()
+#     order = IntField() # The integer order between scenes
+#
 #     def ordered_children(self):
 #         return self.children.order_by(Scene.order.asc())
-# 
+#
 #     def __unicode__(self):
 #         return u'Scene: %s of %s' % (self.name, self.campaign)
-                
+
 # Lists users present at a particular session
-# class SessionPresentUser(db.Document):
-#     present_user = db.ReferenceField(User)
-#     session = db.ReferenceField(Session)
-#             
+# class SessionPresentUser(Document):
+#     present_user = ReferenceField(User)
+#     session = ReferenceField(Session)
+#

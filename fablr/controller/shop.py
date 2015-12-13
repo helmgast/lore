@@ -22,7 +22,10 @@ from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
 from pdf import fingerprint_pdf
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import FormField, FieldList, HiddenField
+from wtforms.form import Form
 from flask.ext.babel import lazy_gettext as _
+from wtforms.utils import unset_value
+from itertools import izip
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -83,19 +86,75 @@ def inject_cart():
 # error
 # an error needing manual review. includes requests for refund, etc.
 
-
 CartOrderLineForm = model_form(OrderLine, only=['quantity','comment'], base_class=RacBaseForm, converter=RacModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such
 LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
 ShippingForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
 
+class FixedFieldList(FieldList):
+    # TODO
+    # Below is a very hacky approach to handle updating the order_list. When we send in a form
+    # with a deleted row, it never appears in formdata. For example, we have a order_list of 2 items,
+    # when the first is deleted only the second is submitted. Below code uses the indices of the
+    # field ids, e.g. order_lines-0 and order_lines-1 to identify what was removed, and then
+    # process and populate the right item from the OrderList field of the model.
+    # This should be fixed by wtforms!
+
+    def process(self, formdata, data=unset_value):
+        print 'FieldList process formdata %s, data %s' % (formdata, data)
+        self.entries = []
+        if data is unset_value or not data:
+            try:
+                data = self.default()
+            except TypeError:
+                data = self.default
+
+        self.object_data = data
+
+        if formdata:
+            indices = sorted(set(self._extract_indices(self.name, formdata)))
+            if self.max_entries:
+                indices = indices[:self.max_entries]
+
+            for index in indices:
+                try:
+                    obj_data = data[index]
+                    print "Got obj_data %s" % obj_data
+                except LookupError:
+                    obj_data = unset_value
+                self._add_entry(formdata, obj_data, index=index)
+        else:
+            for obj_data in data:
+                self._add_entry(formdata, obj_data)
+
+        while len(self.entries) < self.min_entries:
+            self._add_entry(formdata)
+
+    def populate_obj(self, obj, name):
+        old_values = getattr(obj, name, [])
+
+        candidates = []
+        indices = [e.id.rsplit('-',1)[1] for e in self.entries]
+        for i in indices:
+            candidates.append(old_values[int(i)])
+
+        _fake = type(str('_fake'), (object, ), {})
+        output = []
+        for field, data in izip(self.entries, candidates):
+            fake_obj = _fake()
+            fake_obj.data = data
+            field.populate_obj(fake_obj, 'data')
+            output.append(fake_obj.data)
+
+        setattr(obj, name, output)
+
 class CartForm(RacBaseForm):
-  order_lines = FieldList(FormField(CartOrderLineForm))
+  order_lines = FixedFieldList(FormField(CartOrderLineForm))
   shipping_address = FormField(ShippingForm)
   stripe_token = HiddenField()
 
 class PostCartForm(RacBaseForm):
-  order_lines = FieldList(FormField(LimitedOrderLineForm))
+  order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
   shipping_address = FormField(ShippingForm)
 
 class OrderHandler(ResourceHandler):
@@ -122,7 +181,10 @@ class OrderHandler(ResourceHandler):
       raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
     # We now have a validated form. Let's save the order first, then attempt to purchase it.
     # This is very important, as the save() will re-calculate key values for this order
-    form.populate_obj(order, request.form.keys())
+    # print "Populating object %s with form keys %s, data %s" % (order, request.form.keys(), form.data)
+    print "Got order_lines %s extracted as indices %s" % (request.form.keys(), list(form.order_lines._extract_indices(form.order_lines.name, request.form)))
+    # raise Exception()
+    form.populate_obj(order)
     order.save()
 
     # In case slug has changed, query the new value before redirecting!

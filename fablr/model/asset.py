@@ -15,7 +15,10 @@ import requests
 from StringIO import StringIO
 import imghdr
 
-from fablr.app import db
+from flask.ext.mongoengine import Document # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ImageField, URLField,
+    ReferenceField, BooleanField, ListField, IntField, EmailField, FileField, EmbeddedDocumentField)
+
 from user import User
 from flask.ext.babel import gettext, lazy_gettext as _
 from misc import Choices
@@ -55,18 +58,18 @@ allowed_mimetypes = [
 # On clean, if filedata in request, replace. If URL, and it has changed, fetch as file.
 # Show icons as thumbnails or as icons
 
-class FileAsset(db.Document):
-    slug = db.StringField(max_length=62, unique=True)
-    title = db.StringField(max_length=60, required=True, verbose_name=_('Title'))
-    description = db.StringField(max_length=500, verbose_name=_('Description'))
+class FileAsset(Document):
+    slug = StringField(max_length=62, unique=True)
+    title = StringField(max_length=60, required=True, verbose_name=_('Title'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
     # Internal filename
-    source_filename = db.StringField(max_length=60, verbose_name=_('Filename'))
+    source_filename = StringField(max_length=60, verbose_name=_('Filename'))
     # Alternative filename when downloaded
-    attachment_filename = db.StringField(max_length=60, verbose_name=_('Filename when downloading'))
+    attachment_filename = StringField(max_length=60, verbose_name=_('Filename when downloading'))
     # Actual file
-    file_data = db.FileField(verbose_name=_('File data'))
+    file_data = FileField(verbose_name=_('File data'))
     # How the file might be accessed
-    access_type = db.StringField(choices=FileAccessType.to_tuples(), required=True, verbose_name=_('Access type'))
+    access_type = StringField(choices=FileAccessType.to_tuples(), required=True, verbose_name=_('Access type'))
 
     def delete(self):
         if self.file_data:
@@ -117,18 +120,18 @@ MimeTypes = Choices({
   'image/gif':'GIF'
   })
 IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
-class ImageAsset(db.Document):
-  slug = db.StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
+class ImageAsset(Document):
+  slug = StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
   meta = {'indexes': ['slug']}
-  image = db.ImageField(thumbnail_size=(300,300,False), required=True)
-  source_image_url = db.URLField()
-  source_page_url = db.URLField()
-  tags = db.ListField(db.StringField(max_length=30))
-  mime_type = db.StringField(choices=MimeTypes.to_tuples(), required=True)
-  creator = db.ReferenceField(User, verbose_name=_('Creator'))
-  created_date = db.DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
-  title = db.StringField(min_length=1, max_length=60, verbose_name=_('Title'))
-  description = db.StringField(max_length=500, verbose_name=_('Description'))
+  image = ImageField(thumbnail_size=(300,300,False), required=True)
+  source_image_url = URLField()
+  source_page_url = URLField()
+  tags = ListField(StringField(max_length=30))
+  mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
+  creator = ReferenceField(User, verbose_name=_('Creator'))
+  created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
+  title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+  description = StringField(max_length=500, verbose_name=_('Description'))
 
   def __unicode__(self):
     return u'%s' % self.slug
