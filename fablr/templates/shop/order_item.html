@@ -57,7 +57,14 @@
   {{ order_form.stripe_token }}
   </form>
   {% else %}
+  <div class="row">
+    <div class="col-md-offset-8">
+        <a class="btn btn-warning" data-toggle="modal" data-target="#themodal" href="{{url_for('mail.mail_view', mail_type='compose', user=user.id,
+        from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id))}}">
+        {{ _('Contact Us') }}</a>
     <a href="{{url_for('.order_form_edit', order=order.id)}}" class="btn btn-primary">{{ _('Edit') }}</a>
+  </div>
+</div>
   {% endif %}
 {% endif %}
 {% endblock %}{% endblock %}

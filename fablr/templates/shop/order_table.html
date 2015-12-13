@@ -72,34 +72,34 @@
     			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
 	            <p>{{ line.product.description }}</p>
 				{% if order and order.is_paid_or_shipped() %}
-				{% if line.product.downloadable_files %}
-				<div><strong>{{ _('Downloadable files') }}</strong>
-				  {% for file_asset in line.product.downloadable_files %}
-					<div>
-						<a href="{{ url_for('download', fileasset=file_asset.slug, _external=true) }}"><span
-								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
-						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
-					</div>
-				  {% endfor %}
-				</div>
+  				{% if line.product.downloadable_files %}
+  				<div><strong>{{ _('Downloadable files') }}</strong>
+  				  {% for file_asset in line.product.downloadable_files %}
+  					<div>
+  						<a href="{{ url_for('download', fileasset=file_asset.slug, _external=true) }}"><span
+  								class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong>
+  						</a>{% if file_asset.description %}: {{ file_asset.description }}{% endif %}
+  					</div>
+  				  {% endfor %}
+  				</div>
+  	      {% endif %}
 	      {% endif %}
-        {% if order_form %}
-        	{{ order_form.order_lines[loop.index0].product(class="hide")}}
+	      {% if order_form %}
+	        {{ order_form.order_lines[loop.index0].product(class="hide")}}
           {% if line.product.acknowledgement %}
-          <div class="form-group">
-          <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
-            {% if not line.comment %}
-            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
-            {% else %}
-            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
-            {% endif %}
-          {% else %}
-          {{order_form.order_lines[loop.index0].comment(class="hide")}}
-          {% endif %}
-      	{% elif line.comment %}
-       		{{_('Name')+': '+line.comment }}
-        {% endif %}
-        {% endif %}
+	            <div class="form-group">
+	            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>
+	            {% if not line.comment %}
+	            	{{order_form.order_lines[loop.index0].comment(class="form-control", value=g.user.realname)}}</div>
+	            {% else %}
+	            	{{order_form.order_lines[loop.index0].comment(class="form-control")}}</div>
+	            {% endif %}
+	        {% else %}
+	            {{order_form.order_lines[loop.index0].comment(class="hide")}}
+	        {% endif %}
+        {% elif line.comment %}
+          {{_('Name')+': '+line.comment }}
+	      {% endif %}
     		</td>
     		<td>
     			{% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
