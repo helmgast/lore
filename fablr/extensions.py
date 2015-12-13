@@ -11,7 +11,7 @@
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
 from mongoengine import Document, QuerySet, ConnectionError
-from flask.ext.mongoengine import Pagination, MongoEngine
+from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask_debugtoolbar import DebugToolbarExtension
 import sys
 import re
@@ -43,8 +43,11 @@ def db_config_string(app):
 
 def is_db_empty(db):
   print db.collection_names(False)
-
 db = MongoEngine()
+# TODO this is a hack to turn of schema validation, as it reacts when database contains fields
+# not in model, which can happen if we have a database that is used for branches with both new and old schema
+db.Document = DynamicDocument
+
 def start_db(app):
   try:
     db.init_app(app)
