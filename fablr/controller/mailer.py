@@ -109,7 +109,7 @@ def mail_view(mail_type):
       if mailform.validate():
         if mail_type == 'invite':
             if not template_vars.get('token', None):
-                raise ResourceError(500, "No token could be generated from %s" % mailform.data)
+                raise ResourceError(500, message="No token could be generated from %s" % mailform.data)
             # We should create an invited user to match when link is clicked
             user = User(email=mailform.to_field.data)
             try:
