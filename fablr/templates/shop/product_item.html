@@ -19,6 +19,8 @@
   <li><a class="{{privileged}}" href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 </ul>
 {% endcall %}
+{% include 'includes/social_icons.html' %}
+
 {% endif %}
 {%endblock%}
 

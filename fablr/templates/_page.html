@@ -12,10 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
     {% block opengraph %}
-    <meta property="og:title" content="{{ self.content_title() }}" />
+    <meta name="twitter:card" content="summary">
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}" />
-    <meta property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" />
+    <meta name="twitter:site" content="@helmgast">
+    <meta name="twitter:url" property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}">
+    <meta name="twitter:title" property="og:title" content="{{ self.content_title() }}">
+    <meta name="twitter:description" property="og:description" content="">
+    <meta name="twitter:image" property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}">
     {% endblock %}
 
 {% block cssimports %}

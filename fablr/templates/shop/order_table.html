@@ -85,7 +85,7 @@
   	      {% endif %}
 	      {% endif %}
 	      {% if order_form %}
-	        {{ order_form.order_lines[loop.index0].product(class="hide")}}
+{#	        {{ order_form.order_lines[loop.index0].product(class="hide")}} #}
           {% if line.product.acknowledgement %}
 	            <div class="form-group">
 	            <label class="control-label " for="order_lines-{{loop.index0}}-comment">{{_('Name in book')}}</label>

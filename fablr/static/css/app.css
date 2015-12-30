@@ -820,8 +820,7 @@ transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 
 tr:hover>td>.btn-delete,
 li:hover .btn-delete,
-.image-preview:hover .btn-delete,
-.row:hover .btn-delete {
+.image-preview:hover .btn-delete {
   color: #fff;
   background-color: #d9534f;
   border-color: #d43f3a;
@@ -981,17 +980,17 @@ li:hover .btn-delete,
   display: flex;
 }
 /*
-.gallerylist .gallery-row {
+.gallery .gallery-row {
 	margin-bottom: .5rem;
 	overflow: hidden;
  	width: 150%;
 }
 
-.gallerylist .gallery-row:last-child { margin: 0; }
-.gallerylist .gallery:first-child { margin-left: 0; }
-.gallerylist .gallery:last-child  { margin-right: 0; }
+.gallery .gallery-row:last-child { margin: 0; }
+.gallery .gallery:first-child { margin-left: 0; }
+.gallery .gallery:last-child  { margin-right: 0; }
 
-.gallerylist .gallery {
+.gallery .gallery {
 	display: block;
 	float: left;
 	margin: 0 .25rem;

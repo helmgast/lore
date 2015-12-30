@@ -35,6 +35,13 @@ from werkzeug.datastructures import ImmutableMultiDict
 # User cannot change other user password
 # That PDF fingerprinting works, test some different PDFs
 
+# FileTests
+# - find list of files to test
+# - upload files with wrong file end
+# - upload files with right file, wrong mine
+# - upload with weird (Unicode) file name
+# - upload with same name as previous
+
 class CSRFDisabledModelForm(ModelForm):
   def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
     super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
@@ -44,45 +51,41 @@ class TestObject(Document):
 
 class FablrTestCase(unittest.TestCase):
 
-  def test_forms(self):
-      from wtforms.fields import HiddenField, FieldList, FormField
-      class TestItemForm(self.RacBaseForm):
-          prod = HiddenField()
-          price = HiddenField()
+  def test_forms2(self):
+      from fablr.model.shop import Order, OrderLine
+      from fablr.controller.resource import RacBaseForm, RacModelConverter
+      from flask.ext.mongoengine.wtf import model_form
+      from wtforms.fields import FormField, FieldList, HiddenField
+      from flask.json import jsonify
+      from fablr.controller.shop import FixedFieldList, CartForm
+      CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=RacBaseForm, converter=RacModelConverter())
 
-      class TestListForm(self.RacBaseForm):
-          thelist = FieldList(FormField(TestItemForm))
+      class CartForm(RacBaseForm):
+        order_lines = FixedFieldList(FormField(CartOrderLineForm))
 
-      class TestListObj(object):
-          def __init__(self, alist):
-              self.thelist = alist
-
-      class OL(object):
-          def __init__(self, prod, price):
-              self.prod = prod
-              self.price = price
-          def __repr__(self):
-              return "%s:%s" % (self.prod, self.price)
-          def __eq__(self, other):
-            return (isinstance(other, self.__class__) and self.__dict__ == other.__dict__)
-
+      obj = Order(email='test@test.com', order_lines=[
+        OrderLine(product='a'*12, price=1, quantity=1, comment=''),
+        OrderLine(product='b'*12, price=1, quantity=2, comment=''),
+        OrderLine(product='c'*12, price=1, quantity=3, comment='')
+      ])
       formdata = ImmutableMultiDict({
-          'thelist-1-prod':'a',
-          'thelist-1-price':'3',
-          'thelist-2-prod':'b',
-          'thelist-2-price':'3'
+          'email':'test@test.com', # Removed first order line item, index -0-
+          'order_lines-1-quantity':'2',
+          'order_lines-1-comment':'',
+          'order_lines-2-quantity':'3',
+          'order_lines-2-comment':''
           })
-
-      # TODO cannot handle Int conversion yet so we use strings for numbers too, or they wont count as equal
-      obj = TestListObj([OL('a','1'),OL('b','2'),OL('c','3')])
-      form = TestListForm(formdata, obj=obj)
-      self.assertEqual(OL('a','1'), OL('a','1'))
-      self.assertEqual(obj.thelist, [OL('a','1'),OL('b','2'),OL('c','3')])
-      print "Obj before %s" % obj.thelist
-      print "Form was %s" % form.data
+      # Object which has the 2nd and 3rd OrderLine from above object
+      expected_obj = Order(email='test@test.com', order_lines=[
+        OrderLine(product='b'*12, price=1, quantity=2, comment=''),
+        OrderLine(product='c'*12, price=1, quantity=3, comment='')
+      ])
+      form = CartForm(formdata, obj=obj)
       form.populate_obj(obj)
-      print "Obj after %s" % obj.thelist
-      self.assertEqual(obj.thelist, [OL('a','3'),OL('b','3')])
+      print "Obj1 \n%s\n" % obj.to_mongo()
+    #   print "Obj2 \n%s\n" % obj2.to_mongo()
+      self.assertEqual(expected_obj.to_mongo(),obj.to_mongo())
+
 
   def test_strategy_simple(self):
     strategy = self.ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)

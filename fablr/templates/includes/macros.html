@@ -1,12 +1,15 @@
 {%- macro OG_ARTICLE(article) -%}
 {% if article %}
-<meta property="og:title" content="{{article.title}}" />
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@helmgast">
+<meta name="twitter:url" property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}">
+<meta name="twitter:title" property="og:title" content="{{article.title}}">
+<meta name="twitter:description" property="og:description" content="{{article.description}}">
 <meta property="og:type" content="article" />
-<meta property="og:url" content="{{ url_for(request.endpoint, _external=true, **request.view_args) }}" />
 {% if article.feature_image %}
-<meta property="og:image" content="{{url_for('image_thumb', slug=article.feature_image.slug, _external=true)}}" />
+<meta name="twitter:image" property="og:image" content="{{url_for('image_thumb', slug=article.feature_image.slug, _external=true)}}" />
 {% else %}
-<meta property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" />
+<meta name="twitter:image" property="og:image" content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" />
 {% endif %}
 <meta property="article:published_time" content="{{article.created_date.isoformat()}}" /> {# yyyy-mm-dd #}
 <meta property="article:author" content="{{article.user}}" />
@@ -202,6 +205,16 @@
         </form>
       </div>
     </div>
+  </div>
+</div>
+{%- endmacro -%}
+
+{%- macro CARD(title, text, image) -%}
+<div class="card">
+  <div class="bgimg" style="background-image: url('{{image}}');"></div>
+  <div class="card-block">
+    <h4 class="card-title">{{title}}</h4>
+    <p class="card-text">{{text}}</p>
   </div>
 </div>
 {%- endmacro -%}

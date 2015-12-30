@@ -429,7 +429,7 @@ var editor = (function() {
 		jqueryClean()
 		$t.detach()
 		$t.find('p').each(function () {
-			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallerylist' ? '{: .gallerylist }\n\n' : '\n')
+			this.innerHTML = this.innerHTML+'\n' + (this.className == 'gallery' ? '{: .gallery }\n\n' : '\n')
 		})
 		$t.find('blockquote').each(function () {
 			this.innerHTML = this.innerHTML+'\n\n'
@@ -449,7 +449,7 @@ var editor = (function() {
 				this.innerHTML = '- '+this.innerHTML + '\n'
 			})
 			if ($(this).find('img.gallery').length > 0) {
-				this.innerHTML = this.innerHTML + '{: .gallerylist }'
+				this.innerHTML = this.innerHTML + '{: .gallery }'
 			}
 			this.innerHTML = this.innerHTML+'\n'
 		})

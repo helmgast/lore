@@ -204,7 +204,7 @@ $(function() {
     // Set photoset image size
     $('.gallery-row').each(function () {
       var $pi    = $(this).find('.gallery'),
-          cWidth = $(this).parent('.gallerylist').width();
+          cWidth = $(this).parent('.gallery').width();
 
       // Generate array containing all image aspect ratios
       var ratios = $pi.map(function () {
