@@ -8,7 +8,7 @@
   {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ _('Please sign in') }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
-  
+
   <div id="signin-buttons">
     <div class="popover right popover-external-auth">
       <div class="arrow"></div>
@@ -18,7 +18,7 @@
         {%- trans -%}Pick the method you signed up with. If you forgot
         your method or password, click below!
         {%- endtrans -%}
-        <button class="btn btn-success btn-block" type="button">{{_('Remind login')}}</button>
+        <a href="{{url_for('auth.remind')}}" class="btn btn-success btn-block">{{_('Remind login')}}</a>
         </p>
       </div>
     </div>
@@ -28,11 +28,10 @@
   </div>
 
   <hr>
-
-  <span class="help-block">{{_('Use own password')}}</span>
   <div class="clearfix" id="profile"></div>
-  
+
   <div id="password-inputs">
+  <span class="help-block">{{_('Use own password')}}</span>
     {{ MACRO.FORM_FIELD_INLINE(form.email, controlclass="input-lg", required=true, autofocus=true) }}
     {{ MACRO.FORM_FIELD_INLINE(form.password, controlclass="input-lg", required=true) }}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
