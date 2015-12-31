@@ -348,12 +348,11 @@ will be appended to the target.
 
   var tempImage;
 
-  var self, ImageSelect = function (element, options) {
-    self = this
-    self.options   = options
-    self.$element  = $(element)
+  var ImageSelect = function (element, options) {
+    this.options   = options
+    this.$element  = $(element)
 
-    self.$imageEl =
+    this.$imageEl =
     $('<div class="image-selector" contenteditable="false">' +
         '<div class="image-preview">' +
           '<input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'">' +
@@ -370,54 +369,54 @@ will be appended to the target.
             'href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
         '</div></div>');
 
-    self.$element.addClass('hide')
-    self.$element.after(self.$imageEl)
-    if (self.$element.is('select, input')) {
-      self.setVal = function(src, slug) {
+    this.$element.addClass('hide')
+    this.$element.after(this.$imageEl)
+    if (this.$element.is('select, input')) {
+      this.setVal = function(src, slug) {
         // We cant set option that doesnt exist, so add if needed
-        if (!self.$element.find('option[value="'+slug+'"]').length)
-          self.$element.append($('<option>', {value:slug}))
-        self.$element.val(slug)
-        if (!self.$element.val())
-          self.$element.val('__None')
+        if (!this.$element.find('option[value="'+slug+'"]').length)
+          this.$element.append($('<option>', {value:slug}))
+        this.$element.val(slug)
+        if (!this.$element.val())
+          this.$element.val('__None')
       }
-      var val = self.$element.val()
+      var val = this.$element.val()
       if ( val && val != "__None")
-        self.imageSelected('/asset/image/'+val, val)
-    } else if (self.$element.is('a.lightbox')) {
-      self.setVal = function(src, slug) {
-        self.$element.attr('href', src)
-        self.$element.find('img').attr('src', src)
+        this.imageSelected('/asset/image/'+val, val)
+    } else if (this.$element.is('a.lightbox')) {
+      this.setVal = function(src, slug) {
+        this.$element.attr('href', src)
+        this.$element.find('img').attr('src', src)
       }
-      if ( self.$element.attr('href'))
-        self.imageSelected(self.$element.attr('href'))
+      if ( this.$element.attr('href'))
+        this.imageSelected(this.$element.attr('href'))
     } else {
       console.log("ImageSelect doesn't work on this element")
       return
     }
-
-    self.$imageEl.on('click', '.btn-delete', function(e){
-      if (self.$element.is('a.lightbox')) {
-        self.$imageEl.remove()
-        self.$element.remove()
+    var that = this // inside nested functions, this changes, so we keep it in 'that'
+    this.$imageEl.on('click', '.btn-delete', function(e){
+      if (that.$element.is('a.lightbox')) {
+        that.$imageEl.remove()
+        that.$element.remove()
       } else {
-        self.$imageEl.find('.image-preview img').remove()
+        that.$imageEl.find('.image-preview img').remove()
         $('#themodal .gallery input[type="radio"]:checked').prop('checked', false)
-        self.$imageEl.find('.image-preview').removeClass('selected')
-        self.$element.val('__None') // Empty choice in Select box...
+        that.$imageEl.find('.image-preview').removeClass('selected')
+        that.$element.val('__None') // Empty choice in Select box...
       }
     })
 
-    self.$imageEl.on('click', '.image-library-select', function(e) {
+    this.$imageEl.on('click', '.image-library-select', function(e) {
       $(document).one('hide.bs.modal', '#themodal', function(e) {
         var $sel = $(this).find('.gallery input[type="radio"]:checked')
         if ($sel[0])
-          self.imageSelected($sel.parent().find('img')[0].src, $sel.val())
+          that.imageSelected($sel.parent().find('img')[0].src, $sel.val())
       })
     })
 
-    $('#imagefile').change(self.fileSelected)
-    $('.image-upload label').on('drop', self.fileSelected).on('dragover', function(e) {
+    $('#imagefile').change(this.fileSelected.bind(this))
+    $('.image-upload label').on('drop', this.fileSelected.bind(this)).on('dragover', function(e) {
       e.stopPropagation()
       e.preventDefault()
       e.originalEvent.dataTransfer.dropEffect = 'copy'
@@ -426,7 +425,7 @@ will be appended to the target.
     tempImage = tempImage || new Image()
     $('#source_image_url').on('input', function(e) {
       if ( /^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
-        tempImage.onload = self.fileSelected
+        tempImage.onload = that.fileSelected.bind(that) // bind to set this to that when called
         tempImage.src = e.target.value
         e.target.style.color = ''
       } else {
@@ -438,23 +437,23 @@ will be appended to the target.
   }
 
   ImageSelect.prototype.imageSelected = function(src, slug, no_set) {
-    var div = self.$imageEl.find('.image-preview')
+    var div = this.$imageEl.find('.image-preview')
     div.children('img').remove()
     div.append('<img src="'+src+'">')
-    self.$imageEl.find('.image-preview').addClass('selected')
+    this.$imageEl.find('.image-preview').addClass('selected')
     if(!no_set)
-      self.setVal(src, slug)
+      this.setVal(src, slug)
   }
 
   ImageSelect.prototype.fileSelected = function (e) {
     var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files)
-      , formData = new FormData();
+      , formData = new FormData(), that = this; // save this reference as it will be changed inside nested functions
     if (files && files.length) {
       var file = files[0]
       var reader = new FileReader()
       reader.onload = (function(tfile) {
         return function(e) {
-          self.imageSelected(e.target.result)
+          that.imageSelected(e.target.result)
         };
       }(file));
       formData.append('imagefile', file)
@@ -467,17 +466,17 @@ will be appended to the target.
       formData = null; return
     }
 
-    formData.append('csrf_token', self.options.csrf_token)
+    formData.append('csrf_token', this.options.csrf_token)
     var xhr = new XMLHttpRequest();
     xhr.addEventListener("load", function() {
       var res = JSON.parse(this.responseText)
       if (this.status==200 && res.next) {
-        self.imageSelected(res.next, res.item._id);
+        that.imageSelected(res.next, res.item._id);
       } else {
         flash_error(res.message || 'unknown error', 'warning')
       }
     }, false);
-    xhr.open('POST', self.options.image_upload_url)
+    xhr.open('POST', that.options.image_upload_url)
     xhr.send(formData) // does not work in IE9 and below
     e.preventDefault()
   }
