@@ -39,8 +39,8 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
   message = {
     'to': [{'email':email} for email in recipients],
     'subject': message_subject,
-    'from_email': sender[0] if isinstance(sender, tuple) else sender,
-    'from_name': sender[1] if isinstance(sender, tuple) else None,
+    'from_email': sender[0] if type(sender) in [list,tuple] else sender,
+    'from_name': sender[1] if type(sender) in [list,tuple] else None,
     'inline_css': True,
     'html': render_template(template, **kwargs)
   }
