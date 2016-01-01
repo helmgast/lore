@@ -683,8 +683,14 @@ $modal.on('click', 'button[type="submit"]', function(e) {
         $modal.modal('hide')
       })
       .fail(function( jqXHR, textStatus, errorThrown) {
-        $modal.find('.modal-content').html(jqXHR.responseText);
-        console.log("Error: "+errorThrown);
+        if (jqXHR.responseText.indexOf('__debugger__') > 0) {
+          // Response is a Flask Debugger response, overwrite whole page
+          document.open();
+          document.write(jqXHR.responseText);
+          document.close();
+        } else {
+          $modal.find('.modal-content').html(jqXHR.responseText);
+          console.log("Error: "+errorThrown);        }
       })
   } else {
     $modal.modal('hide')

@@ -18,7 +18,7 @@
         {%- trans -%}Pick the method you signed up with. If you forgot
         your method or password, click below!
         {%- endtrans -%}
-        <button class="btn btn-success btn-block" type="button">{{_('Remind login')}}</button>
+        <a href="{{url_for('auth.remind')}}" class="btn btn-success btn-block">{{_('Remind login')}}</a>
         </p>
       </div>
     </div>
@@ -28,11 +28,10 @@
   </div>
 
   <hr>
-
-  <span class="help-block">{{_('Use own password')}}</span>
   <div class="clearfix" id="profile"></div>
 
   <div id="password-inputs">
+    <span class="help-block">{{_('Use own password')}}</span>
     {{ MACRO.FORM_FIELD(form.email, controlclass="input-lg", inline=true, required=true, autofocus=true) }}
     {{ MACRO.FORM_FIELD(form.password, controlclass="input-lg", inline=true, required=true) }}
     <span class="help-block">{{_('Minimum 8 characters!')}}</span>
