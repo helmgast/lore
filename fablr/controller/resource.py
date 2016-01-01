@@ -20,12 +20,13 @@ from flask import current_app as the_app
 from flask.json import jsonify
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
-from flask.ext.mongoengine.wtf.fields import ModelSelectField
+from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField
 from flask.views import View
 from flask.ext.babel import gettext as _
 # from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
-from wtforms import fields as f, SelectMultipleField, widgets
+from wtforms import fields as f, SelectMultipleField, validators, widgets
+from wtforms.widgets import html5
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError, FieldDoesNotExist
@@ -137,8 +138,34 @@ class RacModelConverter(ModelConverter):
 
   @converts('ReferenceField')
   def conv_Reference(self, model, field, kwargs):
-      kwargs['allow_blank'] = not field.required
-      return RacModelSelectField(model=field.document_type, **kwargs)
+    kwargs['allow_blank'] = not field.required
+    return RacModelSelectField(model=field.document_type, **kwargs)
+
+  @converts('URLField')
+  def conv_URL(self, model, field, kwargs):
+    kwargs['validators'].append(validators.URL())
+    self._string_common(model, field, kwargs)
+    kwargs.setdefault('widget', html5.URLInput()) # Set if not set from before
+    return NoneStringField(**kwargs)
+
+  @converts('EmailField')
+  def conv_Email(self, model, field, kwargs):
+    kwargs['validators'].append(validators.Email())
+    self._string_common(model, field, kwargs)
+    kwargs.setdefault('widget', html5.EmailInput()) # Set if not set from before
+    return NoneStringField(**kwargs)
+
+  @converts('IntField')
+  def conv_Int(self, model, field, kwargs):
+    self._number_common(model, field, kwargs)
+    kwargs.setdefault('widget', html5.NumberInput(step='1')) # Set if not set from before
+    return f.IntegerField(**kwargs)
+
+  # Temporarily not used. datetime HTML5 inputs are in unclear support and cant handle seconds
+  # @converts('DateTimeField')
+  # def conv_DateTime(self, model, field, kwargs):
+  #   kwargs.setdefault('widget', html5.DateTimeInput()) # Set if not set from before
+  #   return f.DateTimeField(**kwargs)
 
   @converts('FileField')
   def conv_File(self, model, field, kwargs):
@@ -155,7 +182,7 @@ class RacModelConverter(ModelConverter):
     if 'password' in kwargs:
       if kwargs.pop('password'):
         return f.PasswordField(**kwargs)
-    if field.max_length and field.max_length < 100:
+    if field.max_length and field.max_length < 100: # changed from original code
       return f.StringField(**kwargs)
     return f.TextAreaField(**kwargs)
 

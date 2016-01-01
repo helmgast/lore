@@ -459,9 +459,10 @@ class Auth(object):
     self.app.template_context_processors[None].append(self.get_context_user)
 
   def setup(self):
+    from fablr.controller.resource import RacModelConverter
     self.JoinForm = model_form(self.User, only=['password', 'email', 'username',
       'email', 'realname', 'location', 'newsletter'],
-      field_args={ 'password':{'password':True} })
+      field_args={ 'password':{'password':True} }, converter=RacModelConverter())
     # More and more sites skip this one now.
     # self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'),
     #     validators=[validators.Required(), validators.EqualTo('password',
@@ -471,7 +472,7 @@ class Auth(object):
     # We add these manually, because model_form will render them differently
     self.JoinForm.external_service = HiddenField(_('External Service'))
 
-    self.LoginForm = model_form(self.User, only=['email', 'password'], field_args={'password':{'password':True}})
+    self.LoginForm = model_form(self.User, only=['email', 'password'], field_args={'password':{'password':True}}, converter=RacModelConverter())
     self.LoginForm.auth_code = HiddenField(_('Auth Code'))
     self.LoginForm.external_service = HiddenField(_('External Service'))
 
