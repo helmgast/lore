@@ -80,7 +80,6 @@ class Auth(object):
     return Blueprint(
       blueprint_name,
       __name__,
-      static_folder=os.path.join(current_dir, 'static'),
       template_folder=os.path.join(current_dir, 'templates'),
     )
 

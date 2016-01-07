@@ -276,7 +276,9 @@ def register_main_routes(app, auth):
         if diff > 500:
             app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
-  # print app.url_map
+  # Print rules in alphabetic order
+  for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
+    print rule.__repr__()
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):
 #   if d and len(d) > 0:

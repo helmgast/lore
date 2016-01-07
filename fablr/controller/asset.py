@@ -18,7 +18,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
 
-file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug', short_url=True,
+file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug',
                                               access_policy=ResourceAccessPolicy({
                                                 #   'view': 'private', # Add these later to allow personal files
                                                 #   'edit': 'private',

@@ -34,6 +34,15 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
+# All articles have a publisher, some have world. If no world, it has the meta world, "meta". There is a default 1st publisher, called "system". So "system/meta/about"
+# could be the about article in the meta-world (or namespace) of the system publisher. To reach a specific article, we need the full path.
+#
+# :publisher.tld/:world/:article --> ArticleHandler.get(pub, world, article). For uniqueness, an article full id is  :article_slug = 'helmgast/mundana/drunok'
+# :publisher.tld/list -> ArticleHandler.list(pub, world=None) --> all articles in a publisher, regardless of world
+# :publisher.tld/:world/:list --> ArticleHandler.list(pub, world) --> all articles given publisher and world
+# :publisher.tld/worlds/list -> WorldHandler.list(pub) --> all articles in a publisher, regardless of world
+# :publisher.tld/ --> PublisherHandler.index(pub)
+
 publisher_access = ResourceAccessPolicy({
   'view':'user',
   '_default':'admin'
@@ -42,7 +51,6 @@ publisher_strategy = ResourceRoutingStrategy(Publisher, 'publishers', 'slug',
     access_policy=publisher_access)
 ResourceHandler.register_urls(world_app, publisher_strategy)
 
-
 world_strategy = ResourceRoutingStrategy(World, 'worlds', 'slug', short_url=True)
 
 class WorldHandler(ResourceHandler):
@@ -50,7 +58,7 @@ class WorldHandler(ResourceHandler):
     if g.user:
       # Worlds which this user has created articles for
       # TODO probably not efficient if many articles!
-      arts = Article.objects(creator=g.user).only("world").select_related()
+      arts = Article.objects(creator=g.user).only('world').select_related()
       worlds = [a.world for a in arts]
       r['template'] = self.strategy.list_template()
       r[self.strategy.plural_name] = worlds
@@ -72,7 +80,7 @@ def publish_filter(qr):
 class ArticleHandler(ResourceHandler):
   def blog(self, r):
     r['op'] = 'list'
-    r = self.list(r)
+    r = self.list(r) # Run the output of a normal Article-list operation
     r['template'] = 'world/article_blog.html'
     if r['pagination']:
       r['list'] = r['pagination'].iterable.filter(type='blogpost').order_by('-featured', '-created_date')
@@ -89,7 +97,6 @@ class ArticleHandler(ResourceHandler):
     articles = Article.objects(status=PublishStatus.published,
       created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
     for article in articles:
-        # print current_app.md._instance.convert(article.content), type(current_app.md._instance.convert(article.content))
         feed.add(article.title, current_app.md._instance.convert(article.content),
            content_type='html',
            author=str(article.creator) if article.creator else 'System',
@@ -104,9 +111,9 @@ article_strategy = ResourceRoutingStrategy(Article, 'articles', 'slug',
   short_url=True,
   list_filters=publish_filter,
   form_class=model_form(Article,
-  base_class=ArticleBaseForm,
-  exclude=['slug'],
-  converter=RacModelConverter()))
+    base_class=ArticleBaseForm,
+    exclude=['slug'],
+    converter=RacModelConverter()))
 
 ArticleHandler.register_urls(world_app, article_strategy)
 

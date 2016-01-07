@@ -419,7 +419,7 @@ class ResourceError(Exception):
 
 class ResourceHandler(View):
   allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
-  ignored_methods = ['as_view', 'dispatch_request', 'register_urls']
+  ignored_methods = ['as_view', 'dispatch_request', 'register_urls', 'return_json', 'methods']
   get_post_pairs = {'edit':'form_edit', 'new':'form_new','replace':'form_edit', 'delete':'edit'}
 
   def __init__(self, strategy):
@@ -436,18 +436,22 @@ class ResourceHandler(View):
 
   @classmethod
   def register_urls(cls, app, st, sub=False):
-    # We try to parse out any methods added to this handler class, which we will use as separate endpoints
+    # We try to parse out any custom methods added to this handler class, which we will use as separate endpoints
     custom_ops = []
-    for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
-      if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.allowed_ops):
-        app.add_url_rule(st.get_url_path(name),
-          subdomain=st.parent.subdomain_part if st.parent else None,
-          methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'],
-          view_func=cls.as_view(st.endpoint_name(name), st))
-        custom_ops.append(name)
-    cls.allowed_ops.extend(custom_ops)
+    if cls != ResourceHandler: # If it is vanilla ResourceHandler, we know there won't be any new methods
+        for name, m in inspect.getmembers(cls, predicate=inspect.ismethod):
+        #   print "%s: Looking at method %s, not_private %s not_ignored %s not_in_allowed %s" % (app.name, name,
+        #     (not name.startswith("_")), (not name in cls.ignored_methods), (not name in cls.allowed_ops))
+
+          if (not name.startswith("_")) and (not name in cls.ignored_methods) and (not name in cls.allowed_ops):
+            app.add_url_rule(st.get_url_path(name),
+              subdomain=st.parent.subdomain_part if st.parent else None,
+              methods=m.resource_methods if hasattr(m,'resource_methods') else ['GET'],
+              view_func=cls.as_view(st.endpoint_name(name), st))
+            custom_ops.append(name)
+        cls.allowed_ops.extend(custom_ops)
     # Uncomment to see all resources created
-    # logger.debug("Creating resource with url pattern %s and custom ops %s", st.url_item(), [st.get_url_path(o) for o in custom_ops])
+    # logger.debug("Creating resource %s with url pattern %s and custom ops %s, ignoring %s", cls, st.url_item(), [st.get_url_path(o) for o in custom_ops], cls.ignored_methods)
 
     app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('view'), st))
     app.add_url_rule(st.url_list('new'), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_new'), st))
