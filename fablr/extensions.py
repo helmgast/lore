@@ -37,6 +37,24 @@ toolbar = DebugToolbarExtension()
   #   print "Using get_db"
   #   return _dbs[alias]
 
+
+from werkzeug import url_decode
+
+class MethodRewriteMiddleware(object):
+    """Rewrites post arguments with arg for PUT, PATCH, DELETE into using those methods"""
+
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        if 'METHOD' in environ.get('QUERY_STRING', ''):
+            args = url_decode(environ['QUERY_STRING'])
+            method = args.get('METHOD')
+            if method and method in ['PUT', 'PATCH', 'DELETE']:
+                method = method.encode('ascii', 'replace')
+                environ['REQUEST_METHOD'] = method
+        return self.app(environ, start_response)
+
 def db_config_string(app):
    # Clean to remove password
   return re.sub(r':([^/]+?)@',':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])

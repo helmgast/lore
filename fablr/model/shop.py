@@ -2,7 +2,6 @@ import mimetypes
 import re
 from flask import g
 from fablr.model.asset import FileAsset
-# from fablr.app import db
 from fablr.model.misc import list_to_choices
 from flask.ext.babel import lazy_gettext as _
 from mongoengine.errors import ValidationError

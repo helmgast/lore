@@ -24,15 +24,10 @@
 {% block cssimports %}
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
 {% endblock %}
 
 {% block opengraph %}
 {{ MACRO.OG_ARTICLE(article) }}
-{% endblock %}
-
-{% block jsimports %}{{super()}}
-<script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
 {% endblock %}
 
 {% block middle %}
@@ -193,7 +188,7 @@
 
 {% block final %}
 {% if article %}
-{{ MACRO.DELETE_MODAL(article.title, url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(article.title, url_for('.article_delete', world=world.slug, article=article.slug, METHOD="DELETE") ) }}
 {% endif %}
 {{super()}}
 

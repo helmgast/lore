@@ -12,7 +12,7 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
-from extensions import db, start_db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
+
 from time import gmtime, strftime
 
 # Private = Everything locked down, no access to database (due to maintenance)
@@ -128,13 +128,16 @@ def configure_logging(app):
   # app.logger.info("Info")
 
 def configure_extensions(app):
+  import extensions
   app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
-  app.jinja_env.undefined = SilentUndefined
+  app.jinja_env.undefined = extensions.SilentUndefined
   # app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
 
-  app.json_encoder = MongoJSONEncoder
+  app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
 
-  start_db(app)
+  app.json_encoder = extensions.MongoJSONEncoder
+
+  extensions.start_db(app)
 
   # TODO this is a hack to allow authentication via source db admin,
   # will likely break if connection is recreated later
@@ -142,23 +145,24 @@ def configure_extensions(app):
   # db.connection[mongocfg['DB']].authenticate(mongocfg['USERNAME'], mongocfg['PASSWORD'], source="admin")
 
   # Internationalization
-  babel.init_app(app) # Automatically adds the extension to Jinja as well
+  extensions.babel.init_app(app) # Automatically adds the extension to Jinja as well
 
   # Secure forms
-  csrf.init_app(app)
+  extensions.csrf.init_app(app)
 
   app.md = Markdown(app, extensions=['attr_list'])
-  app.md.register_extension(AutolinkedImage)
+  app.md.register_extension(extensions.AutolinkedImage)
 
   # Debug toolbar
   if app.config.get('DEBUG_TB_ENABLED', False):
-      toolbar.init_app(app)
+      extensions.toolbar.init_app(app)
 
 def configure_blueprints(app):
 
   with app.app_context():
     from model.user import User, ExternalAuth
     from controller.auth import Auth
+    from extensions import db
     auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
 
     from controller.asset import asset_app as asset_app

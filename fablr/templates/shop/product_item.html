@@ -56,7 +56,7 @@
   </div>
 </form>
 {% if product %}
-{{ MACRO.DELETE_MODAL(product.title, url_for('.product_delete', product=product.slug, op="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(product.title, url_for('.product_delete', product=product.slug, METHOD="DELETE") ) }}
 {% endif %}
 {% else %}
 <div class="row">

@@ -8,7 +8,6 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from fablr.app import db
 from slugify import slugify
 from user import User, Group
 from asset import ImageAsset

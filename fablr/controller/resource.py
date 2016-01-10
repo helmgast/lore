@@ -104,6 +104,7 @@ class RacModelSelectField(ModelSelectField):
   # This is required to accept custom primary keys
   # https://github.com/MongoEngine/flask-mongoengine/issues/82
   def process_formdata(self, valuelist):
+    print valuelist
     if valuelist:
       if valuelist[0] == '__None':
         self.data = None
@@ -114,7 +115,7 @@ class RacModelSelectField(ModelSelectField):
 
         try:
           # clone() because of https://github.com/MongoEngine/mongoengine/issues/56
-          obj = self.queryset.clone().get(pk=valuelist[0])
+          obj = self.queryset.get(pk=valuelist[0])
           self.data = obj
         except DoesNotExist:
           self.data = None
@@ -458,9 +459,9 @@ class ResourceHandler(View):
     app.add_url_rule(st.url_item('edit'), subdomain=st.subdomain_part, methods=['GET'], view_func=cls.as_view(st.endpoint_name('form_edit'), st))
     app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['GET'], view_func=cls.as_view(st.endpoint_name('list'), st))
     app.add_url_rule(st.url_list(), subdomain=st.parent.subdomain_part if st.parent else None, methods=['POST'], view_func=cls.as_view(st.endpoint_name('new'), st))
-    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT', 'POST'], view_func=cls.as_view(st.endpoint_name('replace'), st))
-    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH', 'POST'], view_func=cls.as_view(st.endpoint_name('edit'), st))
-    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE', 'POST'], view_func=cls.as_view(st.endpoint_name('delete'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PUT'], view_func=cls.as_view(st.endpoint_name('replace'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['PATCH'], view_func=cls.as_view(st.endpoint_name('edit'), st))
+    app.add_url_rule(st.url_item(), subdomain=st.subdomain_part, methods=['DELETE'], view_func=cls.as_view(st.endpoint_name('delete'), st))
 
     if current_app:
       current_app.access_policy[st.resource_name] = st.access
@@ -481,6 +482,7 @@ class ResourceHandler(View):
     # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
     # TODO unsafe to let us call a custom methods based on request args!
     r = self._parse_url(**kwargs)
+    print "Dispatch: got request.url = %s and endpoint %s and method %s, now r=%s" % (request.url, request.endpoint, request.method, r)
     try:
       if r['op'] not in self.__class__.allowed_ops:
         raise ResourceError(400, r=r, message="Attempted op %s is not allowed for this handler" % r['op'])
@@ -628,7 +630,7 @@ class ResourceHandler(View):
       raise ResourceError(auth.error_code, r=r, message=auth.message)
 
     form = self.form_class(obj=item, **r.get('prefill',{}))
-    form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), op='edit', **r['url_args'])
+    form.action_url = url_for('.' + self.strategy.endpoint_name('edit'), METHOD='PATCH', **r['url_args'])
     r[self.strategy.resource_name + '_form'] = form
     r['op'] = 'edit' # form_edit is not used in templates...
     r['template'] = self.strategy.item_template()
@@ -639,9 +641,13 @@ class ResourceHandler(View):
     r['auth'] = auth
     if not auth:
       raise ResourceError(auth.error_code, r=r, message=auth.message)
-
+    if 'parents' in r:
+        r.setdefault('prefill',{}).update(
+            {k: v for k,v in r['parents'].iteritems()})
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
-    form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args'])
+    print form.world.__class__
+    print form.type.__class__
+    form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args']) # Method will be POST by default
     r[self.strategy.resource_name + '_form'] = form
     r['op'] = 'new' # form_new is not used in templates...
     r['template'] = self.strategy.item_template()

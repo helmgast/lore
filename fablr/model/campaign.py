@@ -7,7 +7,6 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from fablr.app import db
 from world import Article, Episode, User, Group
 from flask.ext.mongoengine import Document # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
