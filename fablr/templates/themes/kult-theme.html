@@ -1,0 +1,214 @@
+{% extends "_page.html" %}
+{% import 'includes/macros.html' as MACRO %}
+
+{% block cssimports %}
+{{super()}}
+<link href='http://fonts.googleapis.com/css?family=Enriqueta' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<style type="text/css">
+
+html {
+  background-color: #000;
+}
+
+.mybody  {
+	background: #000 url("{{ url_for('static', filename='img/themes/kultbakgrund-min.jpg') }}") no-repeat fixed center top;
+	font-family: 'Enriqueta', serif;
+  color: #fff;
+
+	}
+
+.breakingline  {
+	max-width: 100%;
+	margin-left: auto;
+  margin-right: auto;
+	margin-top:10px;
+	margin-bottom:10px;	}
+
+
+.container {
+  max-width: 1024px;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.content {
+  background-color: inherit;
+}
+.header {
+	max-width: 95%;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.mainbody {
+	max-width: 100%;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+textarea {
+  color: #000;
+}
+
+h1 {color:#d00;
+	font-size:50px;
+	font-family: 'Enriqueta', serif;
+	text-align:center;
+	margin:0px;
+	padding:0px;
+	}
+
+h3 {color:#fff;
+	font-size:25px;
+	font-family: 'Enriqueta', serif;
+	text-align:center;
+	margin:0px;
+	padding:0px;
+	}
+
+a {
+	color:#fff;
+	text-decoration:none;
+	font-weight:600;
+	}
+p {
+	color:#fff;
+	font-size:16px;
+	font-family: 'Enriqueta', serif;
+	text-align:justify;
+	line-height:22	px;
+	}
+
+span.red {
+	color:#d00;
+	font-weight:600;
+	}
+
+span.bold {
+	font-weight:600;
+	}
+
+.center p {
+	text-align:center;}
+
+span.italic {
+	font-style:italic;
+		}
+
+.blockquote {
+	max-width: 80%;
+	margin-left: auto;
+  margin-right: auto;
+	}
+
+.blockquote p {
+	color:#eee;
+	/*font-style:italic;*/
+	}
+
+blockquote {
+    background-image: url({{ url_for('static', filename='img/themes/quote_left.png') }});
+    background-position: top left;
+    background-repeat: no-repeat;
+    }
+/*blockquote:last-child {
+    background-image: url({{ url_for('static', filename='img/themes/quote_right.png') }});
+    background-repeat: no-repeat;
+    background-position: bottom right;
+}*/
+
+strong {
+  color:#d00;
+	font-weight:600;
+}
+
+.blocky-left {
+	float:left;
+	margin-right:10px;
+	overflow:hidden;
+	/*font-style:italic;*/
+	}
+
+.blocky-right {
+	margin-top:-80px;
+	float:right;
+	padding-left:20px;
+	overflow:hidden;
+	/*font-style:italic;*/
+	}
+
+
+</style>
+<link href="http://cdn-images.mailchimp.com/embedcode/slim-081711.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+#mc_embed_signup{
+	clear:left;
+	width: 600px;
+	margin-left: auto;
+    margin-right: auto;
+}
+</style>
+{% endblock %}
+
+{% block content_title %}KULT: DIVINITY LOST{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body_class %}mybody{% endblock %}
+
+
+{% block middle %}
+  <img src="{{ url_for('static', filename='img/themes/kultlogo2-min.png') }}" width="100%" alt="the game logotype"/>
+{% block content %}
+<br><br>
+<div class="mainbody"><h1>KULT: DIVINITY LOST ANNOUNCED</h1>
+  <h2><em> Arrives in 2016 – kickstarter launches in February! </em></h2>
+</div>
+<div class="mainbody"><img src="{{ url_for('static', filename='img/themes/angel-min.png') }}" width="100%" alt="flavour image of angel"/> </div>
+
+
+<!-- Begin MailChimp Signup Form -->
+<h2><label for="mce-EMAIL">Sign-up for Kult updates / newsletter</label></h2>
+<div id="mc_embed_signup">
+<form action="http://kultdivinitylost.us11.list-manage.com/subscribe/post?u=c2fb63161be612fbc2330d1d1&amp;id=ad4ba1c7a5" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" style="padding-right: 3%;" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+
+	<input type="submit" value="Signup" name="subscribe" id="mc-embedded-subscribe" class="button" style="background-color: #d00; float: right;">
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+    <div style="position: absolute; left: -5000px;"><input type="text" name="b_c2fb63161be612fbc2330d1d1_ad4ba1c7a5" tabindex="-1" value=""></div>
+    <div class="clear"></div>
+    </div>
+</form>
+</div>
+<!--End mc_embed_signup-->
+
+<h2>For further information</h2>
+<div class="center"><p><a target="_blank" href="https://www.facebook.com/kultdivinitylost"><i class="fa fa-facebook-official">&nbsp;&nbsp;facebook.com/kultdivinitylost</i>
+</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="mailto:info@helmgast.se"><i class="fa fa-envelope-o">&nbsp;&nbsp;</i>info@helmgast.se</a></p><br></div>
+
+<div class="mainbody"><p><span class="red">UPDATE (October 2, 2015)</span> – The Kickstarter launch for <span class="red">KULT: DIVINITY LOST</span> is expected to launch in <span class="red">February 2016</span>. Latest updates will always be found on the official Facebook page (link below).</p>
+</div>
+
+<div class="mainbody"><p><span class="red">STOCKHOLM, SWEDEN (June 11, 2015)</span> – Acclaimed RPG Publisher Helmgast AB today announces the development of the latest iteration of the infamous horror pen-and-paper roleplaying game KULT. Celebrating the 25 year mark since the original inception, the game is set for release in 2016. A kickstarter campaign filled with exclusive options for gamers and serious collectors alike, will launch prior to release.</p>
+<p>The new game, <span class="red">KULT: DIVINITY LOST</span>, features a completely new rule-set, and setting updated to present day. Escape your nightmares, strike bargains with demons, and try to stay alive in a world full of pain, torture, and death.</p>
+<p>In <span class="red">KULT: DIVINITY LOST</span> the world around us is a lie. Mankind is trapped in an illusion. We do not see the great citadels of Metropolis towering over our highest skyscrapers. We do not hear the screams coming from the cellar where hidden stairs lead us to Inferno. We do not smell the blood and burnt flesh from those sacrificed to gods long since forgotten. But, some of us see glimpses beyond the veil. We have this strange feeling that something is not right - the ramblings of a madman in the subway seems to carry a hidden message, and our  reclusive neighbor does not appear to be completely human. By slowly discovering the truth about our prison, our captors and our hidden pasts, we can finally awaken from our induced sleep and take control of our destiny.</p>
+<br><br></div>
+
+<div class="blocky-left"><img src="{{ url_for('static', filename='img/themes/quote-left.png') }}" width="75px" alt=""/></div>
+<div class="blockquote">
+<p><span class="red">Robin Liljenberg</span>, Head Writer and Designer of <span class="red">KULT: DIVINITY LOST</span>, explains <span class="italic">“KULT has always been a hugely fascinating game with a deep, gruesome, and complex universe that is insane and frightening and at the same time lures us to explore its hidden depths and terrifying wonders. My main focus in the new version is on us –  the humans – our souls, personal stories and horrors, and the redemption we can experience. We give the players tools to create strong and emotional horror stories that lingers long after they have actually ended”.</span></p>
+<p><span class="italic">“The new version of KULT is a re-imagining of the original mythos, set in modern times, with modern themes. The way we tell stories has evolved. The world has changed a lot in a quarter century. For instance, now the Internet is an intricate part of the illusion - keeping humanity passive, misdirected and dazed”</span> says <span class="red">Marco Behrmann</span>, Project Lead.</p>
+<p>Creative Director <span class="red">Petter Nallo</span> elaborates<span class="italic"> “This iteration of KULT is as beautiful as it is dark and macabre. This is more than a game. The target is to create a haunting and majestic piece of art that will inspire readers to tell grim personal tales of death, sex, tragedy, horror and mystery. You will open the book and be engulfed by the sublime secrets and revolting truths hidden within”</span>.</p>
+<p><span class="italic">“Kult was a controversial and critically acclaimed RPG when it was released 25 years ago. We're certain Helmgast will do a great job at making the hair at the back of your neck stand, and you starting to doubt reality”</span>, says <span class="red">Jay Zetterberg</span>, EVP of Paradox Entertainment/Cabinet Licensing.</p></div>
+<div class="blocky-right"><img src="{{ url_for('static', filename='img/themes/quote-right.png') }}" width="75px" alt=""/></div>
+<div class="mainbody">
+<div class="breakingline">
+<br><br><br><br>
+<img src="{{ url_for('static', filename='img/themes/streck2.png') }}" width="100%" alt="line that breaks the text"/><br><br><br><br></div>
+<p><span class="bold">Helmgast AB</span> is a renowned Swedish publisher and developer of award-winning roleplaying games, such as <span class="italic">Eon, Järn, Neotech</span>, and <span class="italic">Noir</span>. The company uses crowdfunding for launching titles, and has had great success with two top record-breaking Swedish campaigns (for <span class="italic">“Eon”</span> and <span class="italic">“Järn”</span>).</p>
+<p><span class="bold">Paradox Entertainment Inc</span>, which will be known as Cabinet Licensing after the recent change in ownership, manages and develops its rights library in all forms of entertainment, including the motion picture, television, gaming, publishing and toy industries. The Company’s library consists of such well-known brands as <span class="italic">Conan the Barbarian, Kull of Atlantis, Solomon Kane, Kult, Mutant Chronicles and Mutant: Year Zero</span>.</p><br><br>
+</div>
+{% endblock %}
+{% endblock %}
