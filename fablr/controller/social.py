@@ -6,7 +6,7 @@
     it initializes URL routes based on the Resource module and specific
     ResourceRoutingStrategy for each related model class. This module is then
     responsible for taking incoming URL requests, parse their parameters,
-    perform operations on the Model classes and then return responses via 
+    perform operations on the Model classes and then return responses via
     associated template files.
 
     :copyright: (c) 2014 by Helmgast AB
@@ -20,13 +20,13 @@ from fablr.model.user import User, Group, Member, Conversation, Message, UserSta
 from flask.ext.mongoengine.wtf import model_form
 from wtforms import PasswordField, validators
 from flask.ext.babel import lazy_gettext as _
-
+from flask.ext.classy import FlaskView, route
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
-user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
+user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(),
   only=['username', 'realname', 'location', 'description'])
-# user_form.confirm = PasswordField(_('Repeat Password'), 
+# user_form.confirm = PasswordField(_('Repeat Password'),
 #   [validators.Required(), validators.Length(max=40)])
 # user_form.password = PasswordField(_('New Password'), [
 #   validators.Required(),
@@ -57,6 +57,64 @@ admin_only_access = ResourceAccessPolicy({'_default':'admin'})
 
 user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form, access_policy=user_access)
 ResourceHandler.register_urls(social, user_strategy)
+
+class UsersView(FlaskView):
+
+    def index(self):
+        abort(501) # Not implemented
+
+    def get(self, id):
+        abort(501) # Not implemented
+
+    def patch(self, id):
+        abort(501) # Not implemented
+
+    def delete(self, id):
+        abort(501) # Not implemented
+
+class GroupsView(FlaskView):
+    def index(self):
+        abort(501) # Not implemented
+
+    def get(self, id):
+        abort(501) # Not implemented
+
+    def patch(self, id):
+        abort(501) # Not implemented
+
+    def delete(self, id):
+        abort(501) # Not implemented
+
+
+class MembersView(FlaskView):
+    route_base = '/groups/<group>'
+
+    def index(self):
+        abort(501) # Not implemented
+
+    def get(self, id):
+        abort(501) # Not implemented
+
+    def patch(self, id):
+        abort(501) # Not implemented
+
+    def delete(self, id):
+        abort(501) # Not implemented
+
+
+class ConversationsView(FlaskView):
+    def index(self):
+        abort(501) # Not implemented
+
+    def get(self, id):
+        abort(501) # Not implemented
+
+    def patch(self, id):
+        abort(501) # Not implemented
+
+    def delete(self, id):
+        abort(501) # Not implemented
+
 
 group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug', access_policy=admin_only_access)
 ResourceHandler.register_urls(social, group_strategy)
@@ -108,22 +166,6 @@ def is_following(from_user, to_user):
 
 social.add_app_template_filter(is_following)
 
-# Not needed?
-# @social.route('/reset-auth/')
-# @current_app.admin_required
-# def reset_auth():
-#   if g.user and g.user.admin and request.args.has_key('user_id'):
-#     user = User.objects(id=request.args.get('user_id')).get()
-#     if user:
-#       del user.password
-#       del user.facebook_auth
-#       del user.google_auth
-#       user.status = UserStatus.invited
-#       user.save()
-#       logger.info("Authentication reset for user (%s)" % user.email)
-#       return redirect(url_for('.user_view', user=user.identifier()))
-
-#   raise ResourceError(403)
 
 @social.route('/')
 @current_app.login_required

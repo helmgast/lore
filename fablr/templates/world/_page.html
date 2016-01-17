@@ -1,27 +1,23 @@
-{% extends "_page.html" %}
+{% extends "_page.html" if not theme else theme %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ _('World') }}{% endblock %}
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
 {% block world_active %} class="active"{% endblock %}
 
-
+{# TODO not enough to do just CSS in a theme
 {% block cssimports %}
 {{ super() }}
 {% include 'themes/' + (world.slug if world else 'default') + '-theme.html' ignore missing %}
 {% endblock %}
+#}
 
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
 
   {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('list')) %}
-  <li><a class="{{privileged}}" href="{{ url_for('.world_list') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('.WorldsView:index') }}"><span class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
   {% endcall %}
-  {#
-  {% call MACRO.IS_USER() %}
-  <li><a href="{{ url_for('.world_myworlds') }}"><span class="glyphicon glyphicon-book"></span> {{ _('My worlds') }}</a></li>
-  {% endcall %}
-  #}
 </ul>
 
 {% endblock %}
@@ -31,7 +27,7 @@
     {% for world in worlds %}
 
     <div class="col-md-6">
-        <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a></h3>
+        <h3><a href="{{ url_for('.WorldsView:get', id=world.slug)}}">{{ world.title }}</a></h3>
         <div class="well">{{ world.description }}</div>
         <dl class="dl-horizontal">
             <dt>{{ _('Publisher') }}</dt>

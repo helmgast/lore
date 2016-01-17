@@ -1,12 +1,12 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% set article_type = article.type if article else prefill.get('type',none) %}
+{% set article_type = article.type if article else args['keys'].get('type','default') %}
 {% if article_form %}
   {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
 
-{% if op=='new' or op=='form_new' %}
+{% if not article %}
   {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
 {% else %}
   {% set tagline = article.type_name() %} {% set title = article.title %}
@@ -18,6 +18,9 @@
 
 {% block sidebar %}
 {{super()}}
+{% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
+{% include 'world/article_action_menu.html' %}
+{% endcall %}
 {% include 'includes/social_icons.html' %}
 {% endblock %}
 
@@ -25,6 +28,12 @@
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
 {% endblock %}
+
+{% block jsimports %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/autosize.min.js') }}"></script>
+{% endblock %}
+
 
 {% block opengraph %}
 {{ MACRO.OG_ARTICLE(article) }}
@@ -35,7 +44,7 @@
 {#### FORM ####}
 {% if article_form %}
 
-<form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
+<form role="form" id='articleform' method="post" action="{{ action_url }}">
   {{ article_form.csrf_token }}
   {{ article_form.title(style="display:none;") }}
   <h1 class="article_header">
@@ -43,17 +52,17 @@
         <small>{{ tagline }}</small>
   </h1>
 <ul class="nav nav-tabs content-menu">
-  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
+{#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
   <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
   <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
   <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
-  {% include 'world/article_action_menu.html' %}
+#}
   {% if not article or not article.is_published() %}
   <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
   {% endif %}
   <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
 </ul>
-
+{#
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
 
@@ -66,7 +75,7 @@
   <div class="tab-pane panel panel-default fade row" id="relations">
   {% if article %}
     <div class="col-xs-7">
-    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.articlerelation_form_new', world=world.slug, article=article.slug)}}">
+    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.ArticleRelationsView:index', world=world.slug, article=article.slug, intent='post')}}">
       {% for articlerelation_form in article_form.relations %}
         {% include "world/articlerelation_item.html" %}
       {% endfor %}
@@ -77,21 +86,11 @@
 
   <div class="tab-pane panel panel-default fade row" id="details">
     <div class="col-xs-6">
-      {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
-      {{ MACRO.FORM_FIELD(article_form.featured) }}
     </div>
     <div class="col-xs-6">
-      {{ MACRO.FORM_FIELD(article_form.status) }}
-      {{ MACRO.FORM_FIELD(article_form.created_date) }}
-      {{ MACRO.FORM_FIELD(article_form.type) }}
-      {{ MACRO.FORM_FIELD(article_form.world) }}
-      <input type="hidden" name="feature_image" id="feature_image" value="" />
-      {% if g.user.id %}
-        <input type="hidden" name="creator" value="{{g.user.id}}" />
-      {% endif %}
     </div>
   </div>
-</div>
+</div>#}
 <div class="row">
   <div class="col-md-9 article_text">
     {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide' if not markdown else '' }) }}
@@ -122,7 +121,17 @@
 
   </div>
   <div class="col-md-3 article_comment">
-    <!--Example comment-->
+    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
+    {{ MACRO.FORM_FIELD(article_form.featured) }}
+    {{ MACRO.FORM_FIELD(article_form.status) }}
+    {{ MACRO.FORM_FIELD(article_form.created_date) }}
+    {{ MACRO.FORM_FIELD(article_form.type) }}
+    {{ MACRO.FORM_FIELD(article_form.world) }}
+    <input type="hidden" name="feature_image" id="feature_image" value="" />
+    {% if g.user.id %}
+      <input type="hidden" name="creator" value="{{g.user.id}}" />
+    {% endif %}
+
   </div>
 </div>
 </form>
@@ -143,9 +152,6 @@
   <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
   <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
   {% endif %}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-  {% include 'world/article_action_menu.html' %}
-  {% endcall %}
   {% if not article.is_published() %}
   <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Unpublished') }}</li>
   {% endif %}
@@ -188,12 +194,15 @@
 
 {% block final %}
 {% if article %}
-{{ MACRO.DELETE_MODAL(article.title, url_for('.article_delete', world=world.slug, article=article.slug, METHOD="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(article.title, url_for('.ArticlesView:delete', world=world.slug, id=article.slug, method="DELETE") ) }}
 {% endif %}
 {{super()}}
 
 <script>
 {% if article_form %}
+
+  autosize($('textarea'))
+
   // Load required scripts.
   {% if not markdown %}
   head.js(

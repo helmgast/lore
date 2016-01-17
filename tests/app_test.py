@@ -35,6 +35,14 @@ from werkzeug.datastructures import ImmutableMultiDict
 # User cannot change other user password
 # That PDF fingerprinting works, test some different PDFs
 
+# requests
+# test adding new args
+# test adding evil args
+# test defaults of args, e.g. per_page
+# test intent and method
+# test naming articles put, post, patch, etc
+# test naming articles the same
+
 # FileTests
 # - find list of files to test
 # - upload files with wrong file end

@@ -10,6 +10,7 @@ Flask-Markdown==0.3
 flask-mongoengine==0.7.1
 Flask-WTF==0.12
 Flask-Script
+Flask-Classy
 google-api-python-client==1.4.0
 gunicorn==19.3.0
 mandrill==1.0.57

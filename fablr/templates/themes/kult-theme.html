@@ -47,6 +47,18 @@ html {
     margin-right: auto;
 }
 
+.table-hover>tbody>tr:hover {
+  background-color: #333;
+}
+
+a:hover {
+  color: #d00;
+}
+
+#content-editor p:hover {
+  background-color: #333;
+}
+
 textarea {
   color: #000;
 }
@@ -54,7 +66,6 @@ textarea {
 h1 {color:#d00;
 	font-size:50px;
 	font-family: 'Enriqueta', serif;
-	text-align:center;
 	margin:0px;
 	padding:0px;
 	}
@@ -62,7 +73,6 @@ h1 {color:#d00;
 h3 {color:#fff;
 	font-size:25px;
 	font-family: 'Enriqueta', serif;
-	text-align:center;
 	margin:0px;
 	padding:0px;
 	}
@@ -159,10 +169,11 @@ strong {
 
 
 {% block middle %}
-  <img src="{{ url_for('static', filename='img/themes/kultlogo2-min.png') }}" width="100%" alt="the game logotype"/>
-{% block content %}
+<img src="{{ url_for('static', filename='img/themes/kultlogo2-min.png') }}" width="100%" alt="the game logotype"/>
+{% block pre_content %}
+{% block hero_box %}
 <br><br>
-<div class="mainbody"><h1>KULT: DIVINITY LOST ANNOUNCED</h1>
+<div class="mainbody"><h1 style="text-align:center;">KULT: DIVINITY LOST ANNOUNCED</h1>
   <h2><em> Arrives in 2016 – kickstarter launches in February! </em></h2>
 </div>
 <div class="mainbody"><img src="{{ url_for('static', filename='img/themes/angel-min.png') }}" width="100%" alt="flavour image of angel"/> </div>
@@ -187,22 +198,10 @@ strong {
 <h2>For further information</h2>
 <div class="center"><p><a target="_blank" href="https://www.facebook.com/kultdivinitylost"><i class="fa fa-facebook-official">&nbsp;&nbsp;facebook.com/kultdivinitylost</i>
 </a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="mailto:info@helmgast.se"><i class="fa fa-envelope-o">&nbsp;&nbsp;</i>info@helmgast.se</a></p><br></div>
+{% endblock hero_box %}
+{% endblock pre_content %}
+{% block content %}
 
-<div class="mainbody"><p><span class="red">UPDATE (October 2, 2015)</span> – The Kickstarter launch for <span class="red">KULT: DIVINITY LOST</span> is expected to launch in <span class="red">February 2016</span>. Latest updates will always be found on the official Facebook page (link below).</p>
-</div>
-
-<div class="mainbody"><p><span class="red">STOCKHOLM, SWEDEN (June 11, 2015)</span> – Acclaimed RPG Publisher Helmgast AB today announces the development of the latest iteration of the infamous horror pen-and-paper roleplaying game KULT. Celebrating the 25 year mark since the original inception, the game is set for release in 2016. A kickstarter campaign filled with exclusive options for gamers and serious collectors alike, will launch prior to release.</p>
-<p>The new game, <span class="red">KULT: DIVINITY LOST</span>, features a completely new rule-set, and setting updated to present day. Escape your nightmares, strike bargains with demons, and try to stay alive in a world full of pain, torture, and death.</p>
-<p>In <span class="red">KULT: DIVINITY LOST</span> the world around us is a lie. Mankind is trapped in an illusion. We do not see the great citadels of Metropolis towering over our highest skyscrapers. We do not hear the screams coming from the cellar where hidden stairs lead us to Inferno. We do not smell the blood and burnt flesh from those sacrificed to gods long since forgotten. But, some of us see glimpses beyond the veil. We have this strange feeling that something is not right - the ramblings of a madman in the subway seems to carry a hidden message, and our  reclusive neighbor does not appear to be completely human. By slowly discovering the truth about our prison, our captors and our hidden pasts, we can finally awaken from our induced sleep and take control of our destiny.</p>
-<br><br></div>
-
-<div class="blocky-left"><img src="{{ url_for('static', filename='img/themes/quote-left.png') }}" width="75px" alt=""/></div>
-<div class="blockquote">
-<p><span class="red">Robin Liljenberg</span>, Head Writer and Designer of <span class="red">KULT: DIVINITY LOST</span>, explains <span class="italic">“KULT has always been a hugely fascinating game with a deep, gruesome, and complex universe that is insane and frightening and at the same time lures us to explore its hidden depths and terrifying wonders. My main focus in the new version is on us –  the humans – our souls, personal stories and horrors, and the redemption we can experience. We give the players tools to create strong and emotional horror stories that lingers long after they have actually ended”.</span></p>
-<p><span class="italic">“The new version of KULT is a re-imagining of the original mythos, set in modern times, with modern themes. The way we tell stories has evolved. The world has changed a lot in a quarter century. For instance, now the Internet is an intricate part of the illusion - keeping humanity passive, misdirected and dazed”</span> says <span class="red">Marco Behrmann</span>, Project Lead.</p>
-<p>Creative Director <span class="red">Petter Nallo</span> elaborates<span class="italic"> “This iteration of KULT is as beautiful as it is dark and macabre. This is more than a game. The target is to create a haunting and majestic piece of art that will inspire readers to tell grim personal tales of death, sex, tragedy, horror and mystery. You will open the book and be engulfed by the sublime secrets and revolting truths hidden within”</span>.</p>
-<p><span class="italic">“Kult was a controversial and critically acclaimed RPG when it was released 25 years ago. We're certain Helmgast will do a great job at making the hair at the back of your neck stand, and you starting to doubt reality”</span>, says <span class="red">Jay Zetterberg</span>, EVP of Paradox Entertainment/Cabinet Licensing.</p></div>
-<div class="blocky-right"><img src="{{ url_for('static', filename='img/themes/quote-right.png') }}" width="75px" alt=""/></div>
 <div class="mainbody">
 <div class="breakingline">
 <br><br><br><br>
@@ -210,5 +209,5 @@ strong {
 <p><span class="bold">Helmgast AB</span> is a renowned Swedish publisher and developer of award-winning roleplaying games, such as <span class="italic">Eon, Järn, Neotech</span>, and <span class="italic">Noir</span>. The company uses crowdfunding for launching titles, and has had great success with two top record-breaking Swedish campaigns (for <span class="italic">“Eon”</span> and <span class="italic">“Järn”</span>).</p>
 <p><span class="bold">Paradox Entertainment Inc</span>, which will be known as Cabinet Licensing after the recent change in ownership, manages and develops its rights library in all forms of entertainment, including the motion picture, television, gaming, publishing and toy industries. The Company’s library consists of such well-known brands as <span class="italic">Conan the Barbarian, Kull of Atlantis, Solomon Kane, Kult, Mutant Chronicles and Mutant: Year Zero</span>.</p><br><br>
 </div>
-{% endblock %}
-{% endblock %}
+{% endblock content %}
+{% endblock middle %}

@@ -1,13 +1,15 @@
-<li class="dropdown">
-  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-    {{_('Actions')}} <span class="caret"></span>
+<ul class="nav nav-pills nav-stacked">
+<li class="dropdown" >
+  <a class="dropdown-toggle {{privileged}}" data-toggle="dropdown" href="#">
+    <span class="glyphicon glyphicon-edit"></span> {{_('Article actions')}} <span class="caret"></span>
   </a>
   <ul class="dropdown-menu">
-  {% if op!= 'new'%}
-    <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-    <li><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug, markdown=true) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit as Markdown') }}</a></li>
+  {% if article %}
+    <li><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug, intent='patch') }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug, intent='patch', markdown=true) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit as Markdown') }}</a></li>
     <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-    <li><a href="{{ url_for('.article_view', world=world.slug, article=article.slug) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+    <li><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug, ) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
   {% endif %}
   </ul>
 </li>
+</ul>

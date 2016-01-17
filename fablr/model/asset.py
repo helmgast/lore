@@ -8,7 +8,7 @@ import mimetypes
 import re
 from mongoengine import ValidationError
 from datetime import datetime
-from slugify import slugify
+from misc import slugify
 from werkzeug.utils import secure_filename
 from mongoengine.queryset import Q
 import requests

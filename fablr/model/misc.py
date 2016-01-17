@@ -11,7 +11,7 @@
 import re
 import datetime
 from flask.ext.babel import lazy_gettext as _
-from slugify import slugify
+from slugify import slugify as ext_slugify
 from flask.ext.wtf import Form # secure form
 import wtforms as wtf
 #import RadioField, BooleanField, SelectMultipleField, StringField, wtf.validators, widgets
@@ -26,6 +26,15 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
     ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+METHODS = frozenset(['POST', 'PUT', 'PATCH', 'DELETE'])
+
+def slugify(title):
+    slug = ext_slugify(title)
+    if slug.upper() in METHODS:
+        return "%s_" % slug
+    else:
+        return slug
 
 class Choices(dict):
     # def __init__(self, *args, **kwargs):

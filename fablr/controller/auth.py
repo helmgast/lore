@@ -16,7 +16,7 @@ from flask import redirect, url_for, g, make_response
 from flask_wtf import Form
 from wtforms import TextField, PasswordField, HiddenField, validators
 from wtforms.widgets import HiddenInput
-from flask.ext.babel import gettext as _
+from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import ValidationError
 
@@ -130,8 +130,6 @@ class Auth(object):
     flash( u"%s" % _('You are now logged out'), 'success')
 
   def get_logged_in_user(self):
-    # if request.endpoint and request.endpoint[0:4]=='auth':
-    # self.logger.warning(session)
     u = None
     if session.get('logged_in'):
       if getattr(g, 'user', None):
@@ -149,6 +147,8 @@ class Auth(object):
         return None
     if "as_user" in request.args and u.admin:
         as_user = request.args['as_user']
+        if as_user=='none':
+            return None
         try:
             u2 = self.User.objects(username=as_user).get()
             self.logger.debug("User %s masquerading as %s" % (u,u2))

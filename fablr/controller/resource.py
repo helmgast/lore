@@ -14,24 +14,30 @@ import logging
 import sys
 import re
 import pprint
+from collections import OrderedDict
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask import current_app as the_app
 from flask.json import jsonify
-from flask.ext.mongoengine.wtf import model_form
+from flask.ext.mongoengine.wtf import model_form, model_fields
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField
+
 from flask.views import View
-from flask.ext.babel import gettext as _
-# from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
-from wtforms import fields as f, SelectMultipleField, validators, widgets
+from wtforms import fields as f, validators as v, widgets
 from wtforms.widgets import html5
 from wtforms import Form as OrigForm
 from flask.ext.mongoengine.wtf.models import ModelForm
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError, FieldDoesNotExist
 from fablr.model.world import EMBEDDED_TYPES, Article
+from fablr.model.misc import METHODS
 from werkzeug.exceptions import HTTPException
+from werkzeug import BaseResponse, MultiDict
+from functools import wraps, partial
+from flask.ext.classy import FlaskView
+from itertools import product
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -44,18 +50,259 @@ def generate_flash(action, name, model_identifiers, dest=''):
   flash(s, 'success')
   return s
 
+def render_html_factory(template):
+    """A factory for html rendering based on given template"""
+    return partial(render_template, template)
+
+def render_json_factory(ignore):
+    # TBD needs to be cleaned up, take arguments for what to limit in json output
+    # d = {k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']}
+    return jsonify
+
+def render_csv_factory(ignore):
+    abort(501) # Not implemented
+
+mime_types = {
+    'html': 'text/html',
+    'json': 'application/json',
+    'csv': 'text/csv'
+}
+render_factories = {
+    'html': render_html_factory,
+    'json': render_json_factory,
+    'csv': render_csv_factory
+}
+def render(**kwargs):
+    """Creates a decorator that renders the given mime_types with respective rendering function"""
+    supported_mime_types = { mime_types[k]: render_factories[k](v) for k,v in kwargs.iteritems()}
+    def deco(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            norender = kwargs.get('norender', False)
+            if norender:
+                kwargs.pop('norender')
+            response = f(*args, **kwargs)
+            if not norender and isinstance(response, dict):
+                best = request.accept_mimetypes.best_match(supported_mime_types.keys())
+                response = supported_mime_types[best](**response) # render
+            return response
+        return decorated_function
+    return deco
+
+# import collections
+#
+# def flatten(d, parent_key='', sep='__'):
+#     items = []
+#     for k, v in d.items():
+#         if v: # we ignore empty values, we don't want to use them
+#             new_key = parent_key + sep + k if parent_key else k
+#             if isinstance(v, collections.MutableMapping):
+#                 items.extend(flatten(v, new_key, sep=sep).items())
+#             else:
+#                 items.append((new_key, v))
+#     return dict(items)
+
+
+# class BaseArgs(OrigForm):
+#     debug = f.BooleanField() # if debug config is on, use this to show extra debug output
+#     as_user = f.StringField() # if user is admin, show page as viewed by given username
+#     # out = {modal, fragment, html}
+#
+# # Parse args
+# class EditArgs(BaseArgs):
+#     # method={PUT, PATCH, DELETE} to use instead of POST from a browser
+#     method = f.StringField(validators=[v.AnyOf(['PUT', 'PATCH', 'DELETE'])])
+#
+#     # next={url} next URL to redirect to after completed POST, PUT, PATCH, DELETE, must be an URL within this website
+#     next = f.StringField(validators=v.Regexp(r'^[/?].+')) # match relative urls only for time being
+#
+# # For GET item
+# class GetArgs(BaseArgs):
+#     # action={PUT, PATCH, DELETE} intended next action, e.g. to serve a form
+#     action = f.StringField(validators=[v.AnyOf(['PUT', 'patch', 'DELETE'])])
+#
+#     # view={card, table}, type of view of a list, also view={markdown} on articles
+#     view = f.StringField(validators=[v.AnyOf(['markdown'])])
+#
+#     # set prefill fields based on model form
+#
+#
+# # For GET list
+# class ListArgs(BaseArgs):
+#     # page={1+, default 1}, which page we want to load in a list
+#     page = f.IntegerField(validators=[v.NumberRange(1)], default=1)
+#
+#     # per_page={1+, default 20}, how many items per page of a list
+#     per_page = f.IntegerField(validators=[v.NumberRange(-1)], default=20) # -1 means no limit
+#
+#     # order_by={key}, order a list by given key. If prefixed with - or +, interpret as descending and ascending. Ascending default.
+#     # order_by = StringField() # improve to support multiple order_by fields
+#
+#     # {key}={value}, interpret as a filter for LIST/INDEX views. Only existing, and allowed, fields.
+#     # {key} can in turn have the form key__operator or key__subkey, key__subkey__operator
+#     # e.g. title__lte or author__name__exists
+#     # valid suffixes:
+#     # ne, lt, lte, gt, in, nin, mod, all, size, exists, exact, iexact, contains, icontains, istartswith, endswith, iendswith, match
+#     # not__ before all above
+#
+#     # view={card, table}, type of view of a list, also view={markdown} on articles
+#     view = f.StringField(v.AnyOf(['card', 'table']), default='table')
+#
+#     # q=, free text search this list
+#     q = f.StringField()
+
+# def model_args(baseform, model_class, field_names=None):
+#     """Builds a form to parse args for a specific model class"""
+#     arg_fields = OrderedDict()
+#     if field_names:
+#         ordering_choices = [u''] # allow empty choice, reduces validation errors
+#         for name in field_names:
+#             ordering_choices.extend(['+'+name,'-'+name, name])
+#         arg_fields['order_by'] = f.StringField(validators=[v.AnyOf(ordering_choices)])
+#         key_form = model_form(
+#             model_class,
+#             base_class=OrigForm,
+#             only=field_names,
+#             converter=RacModelConverter()
+#             )
+#         for name in field_names:
+#             # Remove all defaults from the model, as they wont be useful for
+#             # filtering or prefilling
+#             getattr(key_form, name).kwargs.pop('default')
+#         arg_fields['queryargs'] = f.FormField(key_form, separator='__')
+#     return type(model_class.__name__ + 'Args', (baseform,), arg_fields)
+
+re_operators = re.compile(
+    r'__(ne|lt|lte|gt|in|nin|mod|all|size|exists|exact|iexact|contains|'
+    'icontains|istartswith|endswith|iendswith|match|not__ne|not__lt|not__lte|'
+    'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
+    'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
+    'not__endswith|not__iendswith)$')
+common_args = frozenset(['page', 'per_page', 'debug', 'as_user', 'view','q', 'action', 'method', 'next', 'order_by'])
+
+base_args = {
+    # none should remain for subsequent requests
+    'debug': lambda x: x.lower() == 'true',
+    'as_user': lambda x: x,
+}
+re_next = re.compile(r'^[/?].+')
+
+def make_edit_args() :
+    args = dict(base_args)  # Make a copy
+    args.update({
+    # none should remain for subsequent requests
+    '_method': lambda x: x if x.upper() in METHODS else None,
+    'next': lambda x: x if re_next.match(x) else None,
+    })
+    return args
+
+def make_get_args(fields=None):
+    fields = frozenset(fields or [])
+    args = dict(base_args) # Make a copy
+    args.update({
+    'view': lambda x: x.lower() if x.lower() in 'markdown' else None,
+    'keys': fields
+    })
+    return args
+
+re_orderby = re.compile(r'^[+-]')
+
+def make_list_args(fields=None):
+    fields = frozenset(fields or [])
+    args = dict(base_args)  # Make a copy
+    args.update({
+    'page': lambda x: int('0'+x) if int('0'+x)>1 else 1,
+    'per_page': lambda x: int('0'+x) if int('0'+x)>=-1 else 20,
+    'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
+    'order_by': lambda x: x.lower() if re_orderby.sub('', x.lower()) in fields else None,
+    'keys': fields
+    })
+    return args
+
 def parse_out_arg(out_param):
   if out_param == 'json':
     return out_param
   elif out_param in ['page', 'modal', 'fragment']:
-    return '_%s.html' % out_param  # to use as template path
-                          # used in Jinja
+    return '_%s.html' % out_param  # to use as template path in jinja
   else:
     return None # Same as page, but set as None in order to not override template given inheritance
 
-def error_response(msg, level='error'):
-  flash(msg, level)
-  return render_template('includes/inline.html')
+action_strings = {
+  'post': 'posted',
+  'put': 'put',
+  'patch': 'patched',
+  'delete': 'deleted'
+}
+action_strings_translated = {
+  'post': _('posted'),
+  'put': _('put'),
+  'patch': _('patched'),
+  'delete': _('deleted')
+}
+
+def parse_args(response, argparser):
+    """Parses request args through a form that sets defaults or removes invalid entries"""
+    action = response['action']
+    args = {k: '' for k,v in argparser.iteritems()}
+    for k in argparser:
+        if k!='keys':
+            args[k] = argparser[k](request.args.get(k, ''))
+        else:
+            args['keys'] = {}
+            for k,v in request.args.iteritems():
+                if k not in argparser:
+                    new_k = re_operators.sub('', k) # remove operator
+                    if new_k in argparser['keys']:
+                        args['keys'][k] = v
+    # print args, arg_parser
+    response['args'] = args
+    return response
+
+def tune_query(response, query_key, *custom_filters):
+    """Processes a starting query based on request args provided, such as
+    ordering, filtering, pagination etc """
+    query = response[query_key]
+    args = response.get('args', {})
+    if 'order_by' in args and args['order_by']:
+        query = query.order_by(args['order_by'])
+    if 'keys' in args and args['keys']:
+        query = query.filter(**args['keys'])
+
+    if 'q' in args:
+        # TODO implement search, use textindex and do ".search_text()"
+        pass
+
+    pagination = None
+    if args['per_page'] > 0: # -1 or 0 means all pages
+        pagination = query.paginate(page=args['page'], per_page=args['per_page'])
+        query = pagination.items
+    response['pagination'] = pagination
+    response[query_key] = query
+    return response
+
+def log_event(action, instance=None, message='', user=None):
+    # <datetime> <user> <action> <object> <message>
+    # martin patch article(helmgast)
+    user = user or g.user
+    if user:
+        user.log(action, instance, message)
+    else:
+        user = "System"
+    logger.info("%s %s %s", user, action_strings[action], " (%s)" % message if message else "")
+    generate_flash(action_strings_translated[action], 'item' ,instance)
+
+class ResourceView(FlaskView):
+    # Default args
+    list_args = make_list_args()
+    get_args = make_get_args()
+    edit_args = make_edit_args()
+
+    @classmethod
+    def register_with_access(cls, app, domain):
+        current_app.access_policy[domain] = cls.access
+        return cls.register(app)
+
+    #def register(): # overload register method to register access policies automatically
 
 class RacBaseForm(ModelForm):
   # TODO if fields_to_populate are set to use form keys, a deleted field may mean
@@ -95,7 +342,7 @@ class ArticleBaseForm(RacBaseForm):
       obj.change_type(new_type)
     super(ArticleBaseForm, self).populate_obj(obj)
 
-class MultiCheckboxField(SelectMultipleField):
+class MultiCheckboxField(f.SelectMultipleField):
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 
@@ -112,7 +359,6 @@ class RacModelSelectField(ModelSelectField):
         if self.queryset is None:
           self.data = None
           return
-
         try:
           # clone() because of https://github.com/MongoEngine/mongoengine/issues/56
           obj = self.queryset.get(pk=valuelist[0])
@@ -127,6 +373,9 @@ class RacModelConverter(ModelConverter):
       'validators': [],
       'filters': [],
       'default': field.default or field.document_type_obj,
+      # Important. This separator makes the form also able to double as parser
+      # for filter args to mongoengine, of type 'author__name'.
+      'separator': '__'
     }
     # The only difference to normal ModelConverter is that we use the original,
     # insecure WTForms form base class instead of the CSRF enabled one from
@@ -144,14 +393,14 @@ class RacModelConverter(ModelConverter):
 
   @converts('URLField')
   def conv_URL(self, model, field, kwargs):
-    kwargs['validators'].append(validators.URL())
+    kwargs['validators'].append(v.URL())
     self._string_common(model, field, kwargs)
     kwargs.setdefault('widget', html5.URLInput()) # Set if not set from before
     return NoneStringField(**kwargs)
 
   @converts('EmailField')
   def conv_Email(self, model, field, kwargs):
-    kwargs['validators'].append(validators.Email())
+    kwargs['validators'].append(v.Email())
     self._string_common(model, field, kwargs)
     kwargs.setdefault('widget', html5.EmailInput()) # Set if not set from before
     return NoneStringField(**kwargs)
@@ -178,7 +427,7 @@ class RacModelConverter(ModelConverter):
   @converts('StringField')
   def conv_String(self, model, field, kwargs):
     if field.regex:
-      kwargs['validators'].append(validators.Regexp(regex=field.regex))
+      kwargs['validators'].append(v.Regexp(regex=field.regex))
     self._string_common(model, field, kwargs)
     if 'password' in kwargs:
       if kwargs.pop('password'):
@@ -186,7 +435,6 @@ class RacModelConverter(ModelConverter):
     if field.max_length and field.max_length < 100: # changed from original code
       return f.StringField(**kwargs)
     return f.TextAreaField(**kwargs)
-
 
 class Authorization:
 
@@ -198,11 +446,6 @@ class Authorization:
     # or a normal user. E.g. a user can only edit their own profile (privilege),
     # or an admin can see other people's orders
     self.only_fields = only_fields
-    # if is_authorized:
-    #   pass
-    # #   logger.debug("Authorized: %s" % message)
-    # else:
-    #   logger.debug("UNAUTHORIZED: %s" % message)
 
   def __repr__(self):
     return "%s%s" % ("Authorized" if self.is_authorized else "UNAUTHORIZED", ": %s" % self.message if self.message else "")
@@ -217,6 +460,7 @@ class Authorization:
 class ResourceAccessPolicy(object):
   model_class = None
   levels = ['public', 'user', 'private', 'admin']
+  translate = {'post':'new','patch':'edit', 'put':'edit', 'index':'list', 'delete':'edit'}
 
   def __init__(self, ops_levels=None, get_owner_func=None):
     if not ops_levels:
@@ -233,6 +477,8 @@ class ResourceAccessPolicy(object):
       self.get_owner_func = get_owner_func
 
   def authorize(self, op, instance=None):
+    if op in self.translate: # TODO temporary translation between old and new op words, e.g. patch vs edit
+        op = self.translate[op]
     if op not in self.ops_levels:
       level = self.ops_levels['_default']
     else:
@@ -269,6 +515,19 @@ class ResourceAccessPolicy(object):
       elif g.user:
         return Authorization(True, '%s is an admin' % unicode(g.user))
     return Authorization(False, 'error', 'This is catch all denied authorization, should not be here')
+
+  def auth_or_abort(self, response, instance=None):
+    # if 'args' not in response or 'intent' not in response['args']:
+    #     raise KeyError('Expects an intent arg, even if empty. Make sure to parse_args before auth')
+    action = response['action'] # choose intent before action
+    # print "Auth for %s, intent %s action %s" % (action, response['args']['intent'], response['action'])
+    auth = self.authorize(action, instance)
+    if not auth:
+        raise ResourceError(auth.error_code, r={'TBD':'TBD'}, message=auth.message)
+    else:
+        response['auth'] = auth
+        return response
+
 
 class ResourceRoutingStrategy:
   def __init__(self, model_class, plural_name, id_field='id', form_class=None,
@@ -645,8 +904,6 @@ class ResourceHandler(View):
         r.setdefault('prefill',{}).update(
             {k: v for k,v in r['parents'].iteritems()})
     form = self.form_class(request.args, obj=None, **r.get('prefill',{}))
-    print form.world.__class__
-    print form.type.__class__
     form.action_url = url_for('.' + self.strategy.endpoint_name('new'), **r['url_args']) # Method will be POST by default
     r[self.strategy.resource_name + '_form'] = form
     r['op'] = 'new' # form_new is not used in templates...

@@ -14,7 +14,7 @@ import stripe
 
 from flask import render_template, Blueprint, current_app, g, request, abort, send_file, redirect, url_for, Response
 from werkzeug import secure_filename
-from slugify import slugify
+from fablr.model.misc import slugify
 from fablr.controller.resource import (ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy,
     RacModelConverter, RacBaseForm, ResourceError, generate_flash)
 from fablr.controller.mailer import send_mail

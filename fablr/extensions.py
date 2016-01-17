@@ -47,9 +47,9 @@ class MethodRewriteMiddleware(object):
         self.app = app
 
     def __call__(self, environ, start_response):
-        if 'METHOD' in environ.get('QUERY_STRING', ''):
+        if 'method' in environ.get('QUERY_STRING', ''):
             args = url_decode(environ['QUERY_STRING'])
-            method = args.get('METHOD')
+            method = args.get('method')
             if method and method in ['PUT', 'PATCH', 'DELETE']:
                 method = method.encode('ascii', 'replace')
                 environ['REQUEST_METHOD'] = method
@@ -91,6 +91,19 @@ class MongoJSONEncoder(JSONEncoder):
 
 from flask.ext.babel import Babel
 babel = Babel()
+
+from flask import g
+def get_locale():
+  # if a user is logged in, use the locale from the user settings
+  # user = getattr(g, 'user', None)
+  # if user is not None:
+  #   return user.locale
+  # otherwise try to guess the language from the user accept
+  # header the browser transmits.  We support de/fr/en in this
+  # example.  The best match wins.
+  # return request.accept_languages.best_match(['de', 'fr', 'en'])
+  # print "Returning get_locate %s" % 'en'
+  return getattr(g, 'lang', 'sv')
 
 #i18n
 # @babel.localeselector

@@ -2,7 +2,7 @@ from wtforms.validators import Email
 from flask import Blueprint, current_app, render_template, request, redirect, abort, flash
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import ImmutableMultiDict
-from flask.ext.babel import gettext as _
+from flask.ext.babel import lazy_gettext as _
 from fablr.model.baseuser import create_token
 from fablr.model.user import User
 from fablr.model.shop import Order

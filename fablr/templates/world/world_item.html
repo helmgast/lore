@@ -1,58 +1,52 @@
 {% extends "world/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% set recent_articles=world.articles().order_by('-created_date')[:5] if world %}
+{% set focus_articles=world.articles().order_by('-created_date').filter(featured=true)[:5] %}
+{% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
+
 {% block cssimports %}
 {{ super() }}
 {% if world %}
-<link rel="home" type="application/rss+xml" href="{{url_for('.article_feed', world=world.slug, _external=true)}}" />
+<link rel="home" type="application/rss+xml" href="{{url_for('world.ArticlesView:feed', world=world.slug, _external=true)}}" />
 {% endif %}
 {% endblock %}
 
 {% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-
-
 {% block sidebar %}
-{% if world.feature_image %}<a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
+{% if world.feature_image %}
+  <a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
 {% else %}
   <span class="glyphicon glyphicon-globe gianticon"></span>
 {% endif %}
 
 <div class="">
   <ul class="nav nav-pills nav-stacked">
-      <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+      <li><a href="{{ url_for('world.WorldsView:get', id=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
       {% if world %}
-      <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-      <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new')) %}
-      <li class="dropdown">
-        <a class="dropdown-toggle {{privileged}}" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Default') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='material')}}"><span class="glyphicon glyphicon-briefcase"></span> {{ _('Material') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
-        </ul>
-      </li>
-    {% endcall %}
+      <li><a href="{{ url_for('world.ArticlesView:index', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+      <li><a href="{{ url_for('world.ArticlesView:blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+    {% include "world/new_article_menu.html" %}
+    {% if not article %} {# only show if we have only a world #}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
-    <li><a class="{{privileged}}" href="{{ url_for('world.world_form_edit', world=world.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li><a class="{{privileged}}" href="{{ url_for('world.WorldsView:get', intent='patch', id=world.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit')}} {{_('world')}}</a></li>
     {% endcall %}
+    {% endif %}
+
     {% endif %}
 </ul>
 </div>
 {% endblock %}
 
+{% block hero_box %}{# Hide the hero if we are editing, it's destracting #}
+{% if not world_form %}{{super()}}{% endif %}
+{% endblock hero_box %}
+
 {% block content %}
 {% if world_form %}
-<form method="post" action="{{world_form.action_url}}">
+<form method="post" action="{{action_url}}">
   <div class="row">
     <div class="col-md-8">
       {{ MACRO.FORM_FIELD(world_form.title) }}
@@ -68,9 +62,9 @@
   </div>
   <div class="row form-actions">
     <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-    <a href="{{url_for('.world_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+    <a href="{{url_for('.WorldsView:index')}}" class="btn btn-default">{{ _('Cancel') }}</a>
     {% if world %}
-      <a href="{{url_for('.world_delete', world=world.slug)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+      <a href="{{url_for('world.WorldsView:delete', id=world.slug, method='DELETE')}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
     {% endif %}
   </div>
 </form>
@@ -95,62 +89,34 @@
   </div>
   <div class="row">
     <div class="col-md-4">
-      <h4>{% trans %}Recent updates{% endtrans %}</h4>
+      <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}</h4>
+      <ul>
+      {% for a in recent_articles %}
+      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
+      {% else %}
+      {% trans %}No data{% endtrans %}
+      {% endfor %}
+      </ul>
     </div>
     <div class="col-md-4">
-      <h4>{% trans %}Featured articles{% endtrans %}</h4>
+      <h4><span class="glyphicon glyphicon-star"></span> {% trans %}Featured articles{% endtrans %}</h4>
+      {% for a in focus_articles %}
+      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
+      {% else %}
+      {% trans %}No data{% endtrans %}
+      {% endfor %}
     </div>
     <div class="col-md-4">
-      <h4>{% trans %}Top material{% endtrans %}</h4>
+      <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
+      {% for a in top_material %}
+      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
+      {% else %}
+      {% trans %}No data{% endtrans %}
+      {% endfor %}
     </div>
-  </div>
-  <div class="row worldArticles">
-    <hr>
-    <h3>{% trans %}All articles{% endtrans %}</h3>
-    {% set articles = world.articles() %}
-    {% if articles %}
-    {{ MACRO.LIST_CONTROLS(articles[0].__class__, ['title', 'creator', 'type', 'created']) }}
-
-    {% if request.args.get('view', 'table') == 'table' %}
-
-    <table class="table table-hover">
-    {{ MACRO.TABLE_HEADER(articles[0].__class__, ['title', 'creator', 'type', 'created']) }}
-    <tbody>
-    	{% for article in articles %}
-    	<tr>
-    		<td><a href="{{ url_for('.article_form_edit',  world=world.slug, article=article.slug)}}">{{article.title}}</a></td>
-    		<td>{{article.creator}}</td>
-    		<td>{{article.type}}</td>
-        <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>
-    	</tr>
-    	{% endfor %}
-    </tbody>
-    </table>
-    {% else %}
-    <div class="cards">
-    <div class="row">
-    {% for article in articles %}
-    <div class="col-md-4 product"
-    {%- if article.feature_image %}style="background: rgba(255,255,255,0.7); background-position: center;
-  background-repeat: no-repeat; background-image: url({{url_for('image_thumb', slug=article.feature_image.slug)}})"
-    {%- endif -%}>
-        <div class="product-intro">
-            <h3><a href="{{ url_for('.article_form_edit', world=world.slug, article=article.slug)}}">{{article}}</a></h3>
-        </div>
-        <ul class="product-details">
-            <li class="product-type">{{article.creator}}</li>
-            <li class="product-type">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</li>
-        </ul>
-    </div>
-    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
-    {% endfor %}
-    </div></div>
-    {% endif %}
-    {% include "includes/pagination.html" %}
-    {% endif %}
   </div>
 {% endif %}
-{% endblock %}
+{% endblock content %}
 
 {% block final %}
 {{super()}}

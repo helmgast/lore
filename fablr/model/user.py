@@ -10,8 +10,7 @@
 
 from hashlib import md5
 from baseuser import BaseUser, make_password, create_token
-from slugify import slugify
-from misc import now, Choices
+from misc import now, Choices, slugify
 from mongoengine import ValidationError
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import HiddenField
@@ -19,7 +18,7 @@ from wtforms.fields import HiddenField
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine import Document # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
-    ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
+    ReferenceField, GenericReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 
 import logging
 from flask import current_app
@@ -38,26 +37,33 @@ class ExternalAuth(EmbeddedDocument):
   long_token = StringField()
   emails = ListField(EmailField())
 
+class UserEvent(EmbeddedDocument):
+    created = DateTimeField(default=now())
+    action = StringField()
+    instance = GenericReferenceField()
+    message = StringField()
+    xp = IntField()
+
 # A user in the system
 class User(Document, BaseUser):
   # We want to set username unique, but then it cannot be empty,
   # but in case where username is created, we want to allow empty values
   # Currently it's only a display name, not used for URLs!
-  username = StringField(max_length=60, verbose_name=_('username'))
-  password = StringField(max_length=60, verbose_name = _('password'))
-  email = EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
-  realname = StringField(max_length=60, verbose_name = _('real name'))
-  location = StringField(max_length=60, verbose_name = _('location'))
-  description = StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
-  xp = IntField(default=0, verbose_name = _('xp'))
-  join_date = DateTimeField(default=now(), verbose_name = _('join date'))
+  username = StringField(max_length=60, verbose_name=_('Username'))
+  password = StringField(max_length=60, verbose_name = _('Password'))
+  email = EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('Email'))
+  realname = StringField(max_length=60, verbose_name = _('Real name'))
+  location = StringField(max_length=60, verbose_name = _('Location'))
+  description = StringField(verbose_name = _('Description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
+  xp = IntField(default=0, verbose_name = _('XP'))
+  join_date = DateTimeField(default=now(), verbose_name = _('Join Date'))
   # msglog = ReferenceField(Conversation)
   status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
   admin = BooleanField(default=False)
   newsletter = BooleanField(default=True)
   google_auth = EmbeddedDocumentField(ExternalAuth)
   facebook_auth = EmbeddedDocumentField(ExternalAuth)
-
+  log = ListField(EmbeddedDocumentField(UserEvent))
   following = ListField(ReferenceField('self'), verbose_name = _('Following'))
 
   def clean(self):
@@ -76,7 +82,7 @@ class User(Document, BaseUser):
   def full_string(self):
     return "%s (%s)" % (self.username, self.realname)
 
-  def log(self, msg):
+  def log(self, action, instance, message='', metric=0):
     pass # TODO
 
   def create_token(self):

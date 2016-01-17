@@ -13,10 +13,10 @@
 {% block sidebar %}
 <ul class="nav nav-pills nav-stacked">
   {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list')) %}
-  <li><a class="{{privileged}}" href="{{ url_for('.publisher_list') }}"><span class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('.PublishersView:index') }}"><span class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
   {% endcall %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
-  <li><a class="{{privileged}}" href="{{ url_for('.publisher_form_new') }}"><span
+  <li><a class="{{privileged}}" href="{{ url_for('.PublishersView:index', intent='post') }}"><span
           class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
   {% endcall %}
 
@@ -28,7 +28,7 @@
     <div class="row">
     {% for publisher in publishers %}
     <div class="col-md-5 col-xs-6 publisher_item">
-        <h3><a href="{{ url_for('.publisher_view', publisher=publisher.slug)}}">{{ publisher.title }}</a>
+        <h3><a href="{{ url_for('.PublishersView:get', id=publisher.slug)}}">{{ publisher.title }}</a>
         <br><small>{{ publisher.description }}</small></h3>
         <hr>
         <dl class="dl-horizontal">

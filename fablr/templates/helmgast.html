@@ -28,15 +28,15 @@
 <div class="row">
 {% for article in articles %}
     <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
-      <a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h3>{{ article.title }}</h3></a>
+      <a class="blog_header" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><h3>{{ article.title }}</h3></a>
     {% if article.feature_image %}
-      <a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
+      <a class="pull-left" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}">
       <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
       </a>
     {% endif %}
 	  <p class="lead">{% if article.description %}{{article.description}}{% else
 	    %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-	    <a href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><em
+	    <a href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><em
 	    style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
 	  <hr-d>
 	    <ul class="list-inline article-meta" style="margin-bottom: 0;">

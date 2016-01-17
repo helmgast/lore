@@ -1,6 +1,6 @@
 # coding=utf-8
 # import csv
-from slugify import slugify
+from fablr.model.misc import slugify
 from auth import create_token, make_password
 
 

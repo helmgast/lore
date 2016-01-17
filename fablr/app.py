@@ -130,7 +130,9 @@ def configure_logging(app):
 def configure_extensions(app):
   import extensions
   app.jinja_env.add_extension('jinja2.ext.do') # "do" command in jina to run code
-  app.jinja_env.undefined = extensions.SilentUndefined
+  if not app.debug:
+      # Silence undefined errors in templates if not debug
+      app.jinja_env.undefined = extensions.SilentUndefined
   # app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
 
   app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
@@ -146,6 +148,8 @@ def configure_extensions(app):
 
   # Internationalization
   extensions.babel.init_app(app) # Automatically adds the extension to Jinja as well
+  # Register callback that tells which language to serve
+  extensions.babel.localeselector(extensions.get_locale)
 
   # Secure forms
   extensions.csrf.init_app(app)
@@ -203,17 +207,9 @@ def register_main_routes(app, auth):
   from model.user import User
   from model.shop import Order
   from model.world import Article
-  from controller.world import ArticleHandler, article_strategy, world_strategy
   from controller.resource import ResourceError
   from model.misc import ApplicationConfigForm
   import time
-
-  @app.route('/')
-  def homepage():
-    world = world_strategy.query_item(world='helmgast')
-    search_result = ArticleHandler(article_strategy).blog({'parents':{'world':world}})
-    return render_template('helmgast.html', articles=search_result['articles'], world=world)
-    # return render_template('world/article_blog.html', parent_template='helmgast.html', articles=search_result['articles'], world=world)
 
   @app.route('/admin/', methods=['GET', 'POST'])
   @auth.admin_required

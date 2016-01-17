@@ -8,7 +8,7 @@
 <ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
     {% if op != 'new' %}
-    <li><a class="{{privileged}}" href="{{ url_for('.publisher_form_edit', publisher=publisher.slug) }}"><span
+    <li><a class="{{privileged}}" href="{{ url_for('.PublishersView:get', id=publisher.slug, intent='patch') }}"><span
             class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
     {% endif %}
 </ul>
@@ -31,7 +31,7 @@
     </div>
     <div class="row form-actions">
         <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-        <a href="{{url_for('.publisher_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+        <a href="{{url_for('.PublishersView:index')}}" class="btn btn-default">{{ _('Cancel') }}</a>
         {% if op != 'new' %}
         <a href="{{url_for('.publisher_delete', publisher=publisher.slug)}}"
            class="btn btn-danger pull-right">{{ _('Delete')}}</a>

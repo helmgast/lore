@@ -4,7 +4,7 @@
   {% if not product %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new')) %}
   <ul class="nav nav-pills nav-stacked">
-    <li><a class="{{privileged}}" href="{{ url_for('.world_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New world') }}</a></li>
+    <li><a class="{{privileged}}" href="{{ url_for('.WorldsView:index', intent='post') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New world') }}</a></li>
   </ul>
   {% endcall %}
   {% endif %}
@@ -14,7 +14,7 @@
     <div class="row">
     {% for world in worlds %}
     <div class="col-md-5 col-xs-6 world_item">
-        <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a>
+        <h3><a href="{{ url_for('.WorldsView:get', id=world.slug)}}">{{ world.title }}</a>
         <br><small>{{ world.description }}</small></h3>
         <hr>
         <dl class="dl-horizontal">

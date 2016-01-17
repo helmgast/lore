@@ -1,11 +1,8 @@
-<!--
-http://www.jonathantneal.com/blog/understand-the-favicon/
-Most basic version of favicon implemented, should support IE6-10 (with additional features), Safari, Firefox and Chrome.
-While IE8-10 will display the favicon on first load of the page.
+{% extends "_page.html" %}
+{% import 'includes/macros.html' as MACRO %}
 
-Theme-template for every particular world
-Todo: Add favicon support
--->
-
+{% block cssimports %}
+{{super()}}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/eon.css') }}">
 <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
+{% endblock %}

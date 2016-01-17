@@ -40,7 +40,7 @@
     </div>
 </form>
 {% if  op != 'new' %}
-{{ MACRO.DELETE_MODAL(fileasset.title, url_for('.fileasset_delete', fileasset=fileasset.id, METHOD="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(fileasset.title, url_for('.fileasset_delete', fileasset=fileasset.id, method="DELETE") ) }}
 {% endif %}
 {% else %}
 <div class="row">

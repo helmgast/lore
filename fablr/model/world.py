@@ -8,12 +8,11 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from slugify import slugify
 from user import User, Group
 from asset import ImageAsset
 import re
 import logging
-from misc import list_to_choices, Choices
+from misc import list_to_choices, Choices, slugify
 from flask.ext.babel import lazy_gettext as _
 import hashlib
 from datetime import datetime
@@ -54,6 +53,7 @@ class World(Document):
   title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
   description = StringField(max_length=500, verbose_name=_('Description'))
   publisher = ReferenceField(Publisher, verbose_name=_('Publisher')) # TODO set to required
+  creator = ReferenceField(User, verbose_name=_('Creator'))
   rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
   created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))

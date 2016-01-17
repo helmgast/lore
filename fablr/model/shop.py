@@ -1,14 +1,12 @@
 import mimetypes
 import re
 from flask import g
-from fablr.model.asset import FileAsset
-from fablr.model.misc import list_to_choices
+from asset import FileAsset
+from misc import list_to_choices, slugify, Choices
 from flask.ext.babel import lazy_gettext as _
 from mongoengine.errors import ValidationError
 from datetime import datetime
 from user import User
-from slugify import slugify
-from misc import Choices
 from world import ImageAsset
 from flask import request
 from flask.ext.mongoengine import Document # Enhanced document
