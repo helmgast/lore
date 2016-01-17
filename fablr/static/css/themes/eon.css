@@ -19,12 +19,12 @@ Generic classes for all world children
 }
 
 /* needs !important to overwrite other css classes */
-body {
+.container {
   font-family: Goudy;
   font-size: 18px;
 }
 
-body a {
+.container a {
   text-decoration: none;
   color: #8f0011;
   font-weight: bold;
