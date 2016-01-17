@@ -18,9 +18,11 @@
 
 {% block sidebar %}
 {{super()}}
+{% if intent!='post' %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
 {% include 'world/article_action_menu.html' %}
 {% endcall %}
+{% endif %}
 {% include 'includes/social_icons.html' %}
 {% endblock %}
 
@@ -203,6 +205,12 @@
 
   autosize($('textarea'))
 
+  var imageselect_options = {
+    csrf_token: "{{ csrf_token() }}",
+    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', per_page='all', out='fragment')}}",
+    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+  }
+
   // Load required scripts.
   {% if not markdown %}
   head.js(
@@ -210,29 +218,22 @@
     "{{ url_for('static', filename='js/editor.js') }}",
         function(){ editor.init(); }
       );
+      $('#content-editor a.lightbox').imageselect(imageselect_options);
+
+      $('.bubble-bar .ui-inputs a').click(function(e) {
+        var $block = $(editor.getActiveBlock());
+        var $existing_insert = $('#insert_image_asset');
+        if ($existing_insert.length) {
+            $existing_insert.next('.image-selector').remove();
+            $existing_insert.remove();
+        }
+        var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
+        $block.before($a);
+        $a.imageselect(imageselect_options);
+      })
   {% endif %}
 
-  var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', per_page='all', out='fragment')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
 
-  $('#content-editor a.lightbox').imageselect(imageselect_options);
-
-  $('.bubble-bar .ui-inputs a').click(function(e) {
-    var $block = $(editor.getActiveBlock());
-    var $existing_insert = $('#insert_image_asset');
-    if ($existing_insert.length) {
-        $existing_insert.next('.image-selector').remove();
-        $existing_insert.remove();
-    }
-    var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
-    $block.before($a);
-    $a.imageselect(imageselect_options);
-  })
-
-  {% if not markdown %}
   $('#articleform').one('change', function(e) {
     console.log('Form has changed')
     $(window).on('beforeunload', function() {
@@ -242,6 +243,7 @@
 
 	$(document).ready(
 			function() {
+        {% if not markdown %}
         $ta = $('#content')
         $ta.parents('form').on('submit', function(e) {
               $(window).off('beforeunload') // remove warning
@@ -256,6 +258,7 @@
               }
             }
         );
+        {% endif %}
         //----------------------------------
         $('#header')
           .blur(function(e) {
@@ -303,7 +306,6 @@
         map.on('click', onMapClick);
         */
 			});
-      {% endif %}
 {% endif %}
 </script>
 {% endblock %}
