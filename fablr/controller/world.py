@@ -96,7 +96,7 @@ class WorldsView(ResourceView):
     form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
     access = ResourceAccessPolicy()
 
-    @route('/worlds')
+    @route('/worlds/')
     @render(html=list_template, json=None)
     def index(self):
         response = parse_args(dict(worlds = World.objects(), action='list'), self.list_args) # sets response['args']
@@ -160,7 +160,7 @@ class ArticlesView(ResourceView):
     get_args = make_get_args(['title', 'type', 'creator', 'created_date'])
     edit_args = make_edit_args()
 
-    @route('/articles')
+    @route('/articles/')
     @render(html=list_template, json=None)
     def index(self, world):
         world = World.objects(slug=world).first_or_404()
@@ -227,7 +227,7 @@ class ArticlesView(ResourceView):
         response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
         return response
 
-    @route('/articles', methods=['POST'])
+    @route('/articles/', methods=['POST'])
     @render(html=item_template, json=None)
     def post(self, world):
         world = World.objects(slug=world).first_or_404()
@@ -281,7 +281,7 @@ class ArticleRelationsView(ResourceView):
     form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
     access = ResourceAccessPolicy()
 
-    @route('/relations')
+    @route('/relations/')
     def index(self, world):
         abort(501) # Not implemented
 
