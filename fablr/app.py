@@ -139,6 +139,15 @@ def configure_extensions(app):
 
   app.json_encoder = extensions.MongoJSONEncoder
 
+  # app.url_map.host_matching = True
+  # app.url_map.default_subdomain = 'fablr.local'
+
+  def host_in_url(endpoint, values):
+      print "setting host from %s to %s" % (values.get('host', ''), 'sub')
+      values.setdefault('host','sub')
+
+  # app.url_defaults(host_in_url)
+
   extensions.start_db(app)
 
   # TODO this is a hack to allow authentication via source db admin,
@@ -196,6 +205,16 @@ def configure_hooks(app):
   @app.before_request
   def load_user():
     g.feature = app_features
+
+  @app.add_template_global
+  def current_url(**kwargs):
+      """Returns the current request URL with selected modifications. Set an argument to
+      None when calling this to remove it from the current URL"""
+      copy_args = request.view_args.copy()
+      copy_args.update(request.args) # View args are not including query parameters
+      copy_args.update(kwargs)
+      copy_args = {k: v for k,v in copy_args.iteritems() if v is not None}
+      return url_for(request.endpoint, **copy_args)
 
   @app.context_processor
   def inject_access():
@@ -278,7 +297,7 @@ def register_main_routes(app, auth):
 
   # Print rules in alphabetic order
   # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
-  #   print rule.__repr__()
+  #   print rule.__repr__(), rule.subdomain
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

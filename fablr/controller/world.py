@@ -105,7 +105,6 @@ class WorldsView(ResourceView):
         response = tune_query(response, 'worlds')  # sets filtering rules for list, response['pagination']
         return response
 
-
     @route('/<id>', defaults={'intent':''}, endpoint="WorldsView:get")
     @route('/<id>/<any(put,patch):intent>', endpoint="WorldsView:get")
     @route('/worlds/<any(post):intent>', defaults={'id':None}, endpoint="WorldsView:get")
@@ -119,9 +118,11 @@ class WorldsView(ResourceView):
         response = parse_args(response, self.get_args) # sets response['args']
         if intent in ['post', 'put', 'patch', 'delete']: # a form is intended
             response['world_form'] = self.form_class(obj=world, **response['args']['keys'])
-            response['action_url'] = url_for('world.WorldsView:%s' % intent,  method=intent.upper(), **{k:v for k,v in request.view_args.iteritems() if k!='intent'} )
+            response['action_url'] = '' #url_for('world.WorldsView:get', **request.view_args)
+            print response['action_url']
         theme_template = 'themes/%s-theme.html' % world.slug
         response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
+
         return response
 
     def post(self):
@@ -137,7 +138,9 @@ class WorldsView(ResourceView):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not form.validate():
             # return same page but with form errors?
-            abort(400, response) # BadRequest
+            response['world_form'] = form
+            return response
+            # abort(400, response) # BadRequest
         form.populate_obj(world, request.form.keys()) # only populate selected keys
         world.save()
         log_event('patch', world)
@@ -169,21 +172,26 @@ class ArticlesView(ResourceView):
         articles = Article.objects(world=world)
         response = parse_args(dict(world=world, articles=articles, action='list'), self.list_args) # sets response['args']
         response = self.access.auth_or_abort(response) # sets response['auth']
+
         response['articles'] = publish_filter(response['articles']).order_by('-created_date') # set filter
         # print list(response['articles'])
+
         response = tune_query(response, 'articles')  # sets filtering rules for list, response['pagination']
+
+        print type(response['articles'])
         theme_template = 'themes/%s-theme.html' % world.slug
         response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
         return response
 
     # @route('/<world>/blog')
-    @render(html=list_template, json=None)
+    @render(html='world/article_blog.html', json=None)
     def blog(self, world):
         # If decorated by @render, 'norender' means to skip rendering
         response = self.index(world, norender=True)
         # response['articles']._ordering # get ordering
         response['args']['view'] = 'list'
-        response['articles'] = response['articles'].filter(type='blogpost').order_by('-featured', '-created_date')
+        response['articles'] = response['pagination'].iterable.filter(type='blogpost').order_by('-featured', '-created_date')
+        response = tune_query(response, 'articles')  # sets filtering rules for list, response['pagination']
         return response
 
     # @route('/<world>/feed')
@@ -222,7 +230,7 @@ class ArticlesView(ResourceView):
         response = parse_args(response, self.get_args) # sets response['args']
         if intent in ['post', 'put', 'patch', 'delete']: # a form is intended
             response['article_form'] = self.form_class(obj=article, world=world, **response['args']['keys'])
-            response['action_url'] = url_for('world.ArticlesView:%s' % intent,  method=intent.upper(), **{k:v for k,v in request.view_args.iteritems() if k!='intent'} )
+            response['action_url'] = ''#url_for('world.ArticlesView:%s' % intent,  method=intent.upper(), **{k:v for k,v in request.view_args.iteritems() if k!='intent'} )
         theme_template = 'themes/%s-theme.html' % world.slug if world.slug=='kult' else ''
         response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
         return response
@@ -317,6 +325,10 @@ def rows(objects, char_per_row=40, min_rows=10):
 
 
 # Template filter, will group a list by their initial title letter
+def dummygrouper(objects):
+  return [{'grouper': None, 'list':objects}]
+
+# Template filter, will group a list by their initial title letter
 def by_initials(objects):
   groups = []
   for s, t in groupby(sorted(objects, key=lambda x: x.title.upper()), lambda y: y.title[0:1].upper()):
@@ -353,6 +365,7 @@ def by_time(objects):
     groups.append({'grouper': s, 'list': sorted(list(t), key=lambda x: x.title)})
   return sorted(groups, key=lambda x: x['list'][0].created_date, reverse=True)
 
+world_app.add_app_template_filter(dummygrouper)
 world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
 world_app.add_app_template_filter(by_time)

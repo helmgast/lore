@@ -41,18 +41,22 @@ toolbar = DebugToolbarExtension()
 from werkzeug import url_decode
 
 class MethodRewriteMiddleware(object):
-    """Rewrites post arguments with arg for PUT, PATCH, DELETE into using those methods"""
+    """Rewrites POST with ending url /patch /put /delete into a proper PUT, PATCH, DELETE.
+    Also removes the ending part of the url within flask, while user will see same URL"""
 
     def __init__(self, app):
         self.app = app
 
     def __call__(self, environ, start_response):
-        if 'method' in environ.get('QUERY_STRING', ''):
-            args = url_decode(environ['QUERY_STRING'])
-            method = args.get('method')
-            if method and method in ['PUT', 'PATCH', 'DELETE']:
-                method = method.encode('ascii', 'replace')
-                environ['REQUEST_METHOD'] = method
+        if environ['REQUEST_METHOD'] == 'POST':
+            path = environ['PATH_INFO'].rsplit('/',1)
+            if len(path)>1:
+                intent = path[1].upper()
+                print "Path %s in list = %s" % (intent, intent in ['PUT', 'PATCH', 'DELETE'])
+                if intent in ['PUT', 'PATCH', 'DELETE']:
+                    intent = intent.encode('ascii', 'replace')
+                    environ['REQUEST_METHOD'] = intent
+                    environ['PATH_INFO'] = path[0]
         return self.app(environ, start_response)
 
 def db_config_string(app):

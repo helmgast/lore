@@ -43,6 +43,11 @@ from werkzeug.datastructures import ImmutableMultiDict
 # test naming articles put, post, patch, etc
 # test naming articles the same
 
+# World
+# test title less than or larger than allowed length
+# test difficult slug
+# test incorrect status choice
+
 # FileTests
 # - find list of files to test
 # - upload files with wrong file end

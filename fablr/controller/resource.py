@@ -211,8 +211,8 @@ def make_list_args(fields=None):
     fields = frozenset(fields or [])
     args = dict(base_args)  # Make a copy
     args.update({
-    'page': lambda x: int('0'+x) if int('0'+x)>1 else 1,
-    'per_page': lambda x: int('0'+x) if int('0'+x)>=-1 else 20,
+    'page': lambda x: int(x) if x.isdigit() and int(x)>1 else 1,
+    'per_page': lambda x: int(x) if x.isdigit() and int(x)>=-1 else 20,
     'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
     'order_by': lambda x: x.lower() if re_orderby.sub('', x.lower()) in fields else None,
     'keys': fields

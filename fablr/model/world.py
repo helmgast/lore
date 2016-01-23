@@ -65,6 +65,9 @@ class World(Document):
   def __unicode__(self):
     return self.title
 
+  def get_status(self):
+      return PublishStatus[self.status]
+
   def articles(self):
     return Article.objects(world=self).order_by('-created_date')
 
@@ -199,7 +202,7 @@ class Article(Document):
         if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else '') )
 
   def type_name(self):
-    return self.type if self.type != ArticleTypes.default else ''
+    return ArticleTypes.get(self.type, '')
 
   @staticmethod
   def type_data_name(asked_type):

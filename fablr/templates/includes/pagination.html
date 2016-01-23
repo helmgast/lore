@@ -1,14 +1,9 @@
 {% if pagination and pagination.pages > 1 %}
-  {% set urlargs = request.view_args|dict_without('page') %}
   <div>
     <ul class="pagination">
       {%- for page in pagination.iter_pages() %}
         {% if page %}
-          {% if page != pagination.page %}
-            <li><a href="{{ url_for(request.endpoint, page=page, **urlargs) }}">{{ page }}</a></li>
-          {% else %}
-            <li class="active"><a href="{{url_for(request.endpoint, page=page, **urlargs)}}">{{ page }}</a></li>
-          {% endif %}
+            <li class="{{'active' if page == pagination.page else '' }}"><a href="{{ current_url(page=page) }}">{{ page }}</a></li>
         {% else %}
           <li><span>...</span></li>
         {% endif %}
