@@ -233,6 +233,7 @@ class ArticlesView(ResourceView):
             response['action_url'] = ''#url_for('world.ArticlesView:%s' % intent,  method=intent.upper(), **{k:v for k,v in request.view_args.iteritems() if k!='intent'} )
         theme_template = 'themes/%s-theme.html' % world.slug if world.slug=='kult' else ''
         response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
+        print "--Reading------------------\n%s\n----------------------------" % article.content
         return response
 
     @route('/articles/', methods=['POST'])
@@ -246,6 +247,7 @@ class ArticlesView(ResourceView):
             # return same page but with form errors?
             abort(400, form.errors) # BadRequest
         form.populate_obj(article)
+        print "-Post-new----------------------\n%s\n----------------------------" % article.content
         article.save()
         log_event('post', article)
         next = response['args']['next'] or url_for('world.ArticlesView:get', id=article.slug, world=world.slug)
@@ -265,6 +267,7 @@ class ArticlesView(ResourceView):
             # return same page but with form errors?
             abort(400, response) # BadRequest
         form.populate_obj(article, request.form.keys()) # only populate selected keys
+        print "--Post-edit---------------\n%s\n----------------------------" % article.content
         article.save()
         log_event('patch', article)
         next = response['args']['next'] or url_for('world.ArticlesView:get', id=article.slug, world=world.slug)

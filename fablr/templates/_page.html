@@ -109,7 +109,7 @@ window.onerror = function(err, url, line, col, trace) {
       <ul class="nav navbar-nav navbar-nav-top">
         <li{% block blog_active %}{% endblock %}><a href="{{ url_for('world.ArticlesView:blog', world='helmgast') }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
 
-        {% call MACRO.IS_ADMIN() %}
+        {% call(privileged) MACRO.IS_ADMIN() %}
         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
         {% endcall %}
         {% call MACRO.IS_ENABLED("campaign") %}
@@ -140,7 +140,7 @@ window.onerror = function(err, url, line, col, trace) {
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-user"></span> {{ g.user }} <span class="caret"></span></a>
               <ul class="dropdown-menu">
                 <li><a {% call MACRO.IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a></li>
-                {% call MACRO.IS_ADMIN() %}
+                {% call(privileged) MACRO.IS_ADMIN() %}
                 <li role="separator" class="divider"></li>
                 <li><a class="privileged" href="{{ url_for('assets.fileasset_list') }}">{{ _('Files') }}</a></li>
                 <li><a class="privileged"href="{{ url_for('assets.imageasset_list') }}">{{ _('Image Gallery') }}</a></li>

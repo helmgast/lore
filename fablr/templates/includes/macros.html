@@ -85,9 +85,9 @@
   {% endif %}
 {%- endmacro -%}
 
-{%- macro IS_ADMIN() -%}
+{%- macro IS_ADMIN(auth) -%}
   {% if g.user and g.user.admin %}
-     {{ caller() }}
+     {{ caller('privileged') }}
   {% endif %}
 {%- endmacro -%}
 

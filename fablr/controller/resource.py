@@ -438,10 +438,11 @@ class RacModelConverter(ModelConverter):
 
 class Authorization:
 
-  def __init__(self, is_authorized, message='', only_fields=None, error_code=403):
+  def __init__(self, is_authorized, message='', privileged=False, only_fields=None, error_code=403):
     self.is_authorized = is_authorized
     self.message = message
     self.error_code = error_code
+    self.privileged = privileged
     # Privileged means that this authorization would not apply to the public
     # or a normal user. E.g. a user can only edit their own profile (privilege),
     # or an admin can see other people's orders
@@ -451,7 +452,7 @@ class Authorization:
     return "%s%s" % ("Authorized" if self.is_authorized else "UNAUTHORIZED", ": %s" % self.message if self.message else "")
 
   def is_privileged(self):
-    return (self.error_code == 403 and self.is_authorized)
+    return self.privileged
 
   def __nonzero__(self):
     return self.is_authorized
@@ -497,7 +498,7 @@ class ResourceAccessPolicy(object):
       instance_owner = self.get_owner_func(instance)
 
       if g.user and g.user.admin:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance), privileged=True)
 
       if not instance_owner:
         return Authorization(False, 'Error: Cannot identify user which instance %s belongs to' % instance)
@@ -506,14 +507,14 @@ class ResourceAccessPolicy(object):
       elif not g.user == instance_owner:
         return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
       else:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance))
+        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(instance_owner), op, instance), privileged=True)
     elif level=='admin':
       if not g.user:
         return Authorization(False, msg, error_code=401) # Denotes that the user should log in first
       elif not g.user.admin:
         return Authorization(False, 'Need to be logged in with admin access')
       elif g.user:
-        return Authorization(True, '%s is an admin' % unicode(g.user))
+        return Authorization(True, '%s is an admin' % unicode(g.user), privileged=True)
     return Authorization(False, 'error', 'This is catch all denied authorization, should not be here')
 
   def auth_or_abort(self, response, instance=None):

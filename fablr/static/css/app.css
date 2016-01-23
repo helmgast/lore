@@ -161,6 +161,7 @@ footer p {
 
 .sidebar {
   margin-top: 40px;
+  max-width: 250px;
 }
 
 /* The white background content wrapper */
@@ -1215,12 +1216,14 @@ background-size: 70% 70%;
   font-size: .7em;
   z-index: 900;
 }
-
-.privileged>a {
-	background-color: #eee;
-	color: #2a6496;
-}
 */
+.privileged {
+  background-color: rgba(255, 242, 242, 0.27);
+  color: #2a6496;
+  box-shadow: aqua;
+  border: 1px solid #ddd;
+}
+
 .privileged:after {
   display: inline-block;
   font-family: 'Glyphicons Halflings';
