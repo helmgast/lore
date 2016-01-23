@@ -12,7 +12,7 @@ from user import User, Group
 from asset import ImageAsset
 import re
 import logging
-from misc import list_to_choices, Choices, slugify
+from misc import list_to_choices, Choices, slugify, Address
 from flask.ext.babel import lazy_gettext as _
 import hashlib
 from datetime import datetime
@@ -42,6 +42,8 @@ class Publisher(Document):
   description = StringField(max_length=500, verbose_name=_('Description'))
   created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   owner = ReferenceField(User, verbose_name=_('Owner'))
+  address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
+  email = EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('Email'))
   status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
 
@@ -64,9 +66,6 @@ class World(Document):
 
   def __unicode__(self):
     return self.title
-
-  def get_status(self):
-      return PublishStatus[self.status]
 
   def articles(self):
     return Article.objects(world=self).order_by('-created_date')
@@ -200,9 +199,6 @@ class Article(Document):
   def status_name(self):
     return PublishStatus[self.status] + ( (' %s %s' % (_('from'), str(self.created_date))
         if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else '') )
-
-  def type_name(self):
-    return ArticleTypes.get(self.type, '')
 
   @staticmethod
   def type_data_name(asked_type):

@@ -7,20 +7,22 @@
     <tr>
         <td>{{_('File')}}</td>
         <td>{{_('Filename')}}</td>
-        <td>{{_('Filename when downloading')}}</td>
         <td>{{_('Access type')}}</td>
+        <td>{{_('File size')}}</td>
+        <td>{{_('Actions')}}</td>
     </tr>
     </thead>
     <tbody>
     {% for fileasset in files %}
     <tr>
         <td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.title}}</a></td>
+        <td>{{fileasset.source_filename}}</td>
+        <td>{{fileasset.get_access_type_display()}}</td>
+        <td>{{fileasset.file_data.length|filesizeformat}}</td>
         <td>
-            <a href="{{ url_for('link', fileasset=fileasset.slug) }}"><span class="glyphicon glyphicon-play-circle"></span></a>
-            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"><span class="glyphicon glyphicon-save"></span></a> {{fileasset.source_filename}}
+          <a href="{{ url_for('link', fileasset=fileasset.slug) }}" title="{% trans %}Open file{% endtrans %}"><span class="glyphicon glyphicon-play-circle"></span></a>
+          <a href="{{ url_for('download', fileasset=fileasset.slug) }}" title="{% trans %}Download file{% endtrans %}"><span class="glyphicon glyphicon-save"></span></a>
         </td>
-        <td>{{fileasset.attachment_filename}}</td>
-        <td>{{fileasset.access_type_name()}}</td>
     </tr>
     {% endfor %}
     </tbody>

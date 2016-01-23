@@ -1,24 +1,9 @@
 {% import 'includes/macros.html' as MACRO %}
 
-{% set prod_types = {
-  'book':_('Book'),
-  'item':_('Item'),
-  'digital':_('Digital'),
-  'shipping':_('Shipping fee')}
-%}
-
 {% set currencies = {
   'eur' : '€ %s',
   'sek' : '%s :-'
 }%}
-
-{% set order_statuses = {
-  'cart' : _('Cart'),
-  'ordered' : _('Ordered'),
-  'paid' : _('Paid'),
-  'shipped' : _('Shipped'),
-  'error' : _('Error')}
-%}
 
 <table style="width: 100%">
 <!-- Order info-->
@@ -33,7 +18,7 @@
 	    <tr><th>{{_('Email')}}</th><td>{{order.user.email}}</td></tr>
 	    <tr><th>{{_('Created')}}</th><td>{{order.created.strftime('%Y-%m-%d %H:%M')}}</td></tr>
 	    <tr><th>{{_('Updated')}}</th><td>{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td></tr>
-	    <tr><th>{{_('Status')}}</th><td>{{order_statuses[order.status]}}</td></tr>
+	    <tr><th>{{_('Status')}}</th><td>{{order.get_status_display()}}</td></tr>
   	</table>
 	</td>
 </tr>
@@ -69,7 +54,7 @@
     	<tr class="product">
     		<td>{% if line.product.feature_image %}<a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}"><img class="product-image" src="{{url_for('image_thumb', slug=line.product.feature_image.slug, _external=true)}}"></a>{% endif %}</td>
     		<td>
-    			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}">{{ line.product.title }}</a> <small>{{prod_types[line.product.type]}}</small></h3>
+    			<h3><a href="{{ url_for('shop.product_view', product=line.product.slug, _external=true)}}">{{ line.product.title }}</a> <small>{{line.product.get_type_display()}}</small></h3>
 	            <p>{{ line.product.description }}</p>
 				{% if order and order.is_paid_or_shipped() %}
   				{% if line.product.downloadable_files %}

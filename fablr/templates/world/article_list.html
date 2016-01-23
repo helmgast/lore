@@ -51,7 +51,7 @@
       <div class="col-md-4 product">
           {% if article.feature_image %}<a href="{{url_for('.ArticlesView:get', world=world.slug, id=article.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}"></a>{% endif %}
           <ul class="product-details">
-              <li class="product-type">{{article.type_name()}} {{article.created_date.strftime('%Y-%m-%d')}}</li>
+              <li class="product-type">{{article.get_type_display()}} {{article.created_date.strftime('%Y-%m-%d')}}</li>
           </ul>
           <div class="product-intro">
               <h3><a href="{{url_for('.ArticlesView:get', world=world.slug, id=article.slug)}}">{{ article.title }}</a></h3>
@@ -69,7 +69,7 @@
         <tr>
           <td><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug, intent='patch')}}">{{article.title}}</a></td>
           <td>{{article.creator}}</td>
-          <td>{{article.type_name()}}</td>
+          <td>{{article.get_type_display()}}</td>
           <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>
         </tr>
         {% endfor %}

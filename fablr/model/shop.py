@@ -2,7 +2,7 @@ import mimetypes
 import re
 from flask import g
 from asset import FileAsset
-from misc import list_to_choices, slugify, Choices
+from misc import list_to_choices, slugify, Choices, Address
 from flask.ext.babel import lazy_gettext as _
 from mongoengine.errors import ValidationError
 from datetime import datetime
@@ -80,14 +80,6 @@ class OrderLine(EmbeddedDocument):
   def __unicode__(self):
     return u'%ix %s @ %s (%s)' % (self.quantity, self.product, self.price, self.comment)
 
-class Address(EmbeddedDocument):
-  name = StringField(max_length=60, verbose_name=_('Name'))
-  street = StringField(max_length=60, verbose_name=_('Street'))
-  zipcode = StringField(max_length=8, verbose_name=_('ZIP Code'))
-  city = StringField(max_length=60, verbose_name=_('City'))
-  country = StringField(max_length=60, verbose_name=_('Country'))
-  mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
-
 OrderStatus = Choices(
   cart = _('Cart'),
   ordered = _('Ordered'),
@@ -143,6 +135,7 @@ class Order(Document):
       sum += ol.quantity * ol.price
     self.total_items = num
     self.total_price = sum
+
 
 def products_owned_by_user(user):
     orders = Order.objects(user=user, status__in=[OrderStatus.paid, OrderStatus.shipped])

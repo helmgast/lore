@@ -105,9 +105,6 @@ class FileAsset(Document):
     def get_mimetype(self):
         return mimetypes.guess_type(self.source_filename)[0]
 
-    def access_type_name(self):
-        return FileAccessType[self.access_type]
-
     def __str__(self):
         return unicode(self).encode('utf-8')
 

@@ -3,14 +3,6 @@
 {% block content_title %}{{ _('Orders') }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% set order_statuses = {
-  'cart' : _('Cart'),
-  'ordered' : _('Ordered'),
-  'paid' : _('Paid'),
-  'shipped' : _('Shipped'),
-  'error' : _('Error')}
-%}
-
 {% block content_subheader %}
 {% if orders %}
 {{ MACRO.LIST_CONTROLS(model, ['id','user', 'created', 'updated','status', 'total_price']) }}
@@ -31,7 +23,7 @@
 		<td>{{order.user.username}}</td>
 		<td class="small">{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
 		<td class="small">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{order_statuses[order.status]}}</td>
+		<td>{{order.get_status_display()}}</td>
     <td>{{order.total_price}}</td>
 	</tr>
 	{% endfor %}

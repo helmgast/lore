@@ -123,9 +123,10 @@
   <ul class="dropdown-menu" role="menu">
       {% for f in fields %}
       {% set name = model_class._fields[f].verbose_name %}
-
+      {% if name %}
       <li><a href="{{current_url(order_by='-'+f)}}">{{name}} <span class="caret"></span></a></li>
       <li><a href="{{current_url(order_by=f)}}">{{name}} <span class="caret caret-up"></span></a></li>
+      {% endif %}
       {% endfor %}
   </ul>
   {% endif %}
@@ -176,12 +177,14 @@
     {% for f in fields %}
     {% set name = model_class._fields[f].verbose_name %}
 		<th>
+      {% if name %}
       {% if order_by== f %}
       <a href="?order_by=-{{f}}">{{name}} <span class="caret caret-up"></span></a>
       {% elif order_by=='-'+f %}
       <a href="?order_by={{f}}">{{name}} <span class="caret"></span></a>
       {% else %}
       <a href="?order_by={{f}}">{{name}} </a>
+      {% endif %}
       {% endif %}
     </th>
     {% endfor %}

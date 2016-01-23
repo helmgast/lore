@@ -60,6 +60,14 @@ def list_to_choices(list):
 def now():
     return datetime.datetime.now;
 
+class Address(EmbeddedDocument):
+  name = StringField(max_length=60, verbose_name=_('Name'))
+  street = StringField(max_length=60, verbose_name=_('Street'))
+  zipcode = StringField(max_length=8, verbose_name=_('ZIP Code'))
+  city = StringField(max_length=60, verbose_name=_('City'))
+  country = StringField(max_length=60, verbose_name=_('Country'))
+  mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
+
 class GeneratorInputList(Document):
     name = StringField()
 

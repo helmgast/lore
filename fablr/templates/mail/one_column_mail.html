@@ -96,7 +96,7 @@
         {{mailform.subject(**(disabled_form_args if mailform.subject.flags.disabled else form_args))}}
     </div>
 </div>
-{% set mail_url = current_url(**{k: None for k,v in request.args.iteritems()}) %} {# explicitly ignores url arguments, as they would include modal arg #}
+{% set mail_url = current_url(**request.args|dict_without(request.args.keys())) %} {# explicitly ignores url arguments, as they would include modal arg #}
 <small>{% trans mail_url=mail_url %}Below is a preview of the email, but may differ in design. Click <a target="_blank" href="{{mail_url}}">here</a> for full preview.{% endtrans %}</small>
 <hr>
 {% endblock %}

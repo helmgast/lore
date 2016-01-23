@@ -5,14 +5,6 @@
   'sek' : '%s :-'
 }%}
 
-{% set prod_types = {
-  'book':_('Book'),
-  'item':_('Item'),
-  'digital':_('Digital'),
-  'shipping':_('Shipping fee')}
-%}
-
-
 {% block sidebar %}{{super()}}
   {% if not product %}
   {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
@@ -41,7 +33,7 @@
         <tr>
           <td><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></td>
           <td>{{ product.description }}</td>
-          <td>{{prod_types[product.type]}}</td>
+          <td>{{ product.get_type_display() }}</td>
           <td>{{ product.publisher }}</td>
           <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
         </tr>

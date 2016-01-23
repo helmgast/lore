@@ -80,7 +80,7 @@
         <tr><td><strong>{{ _('Rule System') }}</strong></td>
         <td><small>{{ world.rule_system|default(_('No data'), true) }}</small></td></tr>
         <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ world.get_status()|default(_('No data'), true) }}</small></td></tr>
+        <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
 
       </table>
     </div>
