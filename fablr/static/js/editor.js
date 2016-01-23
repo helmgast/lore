@@ -417,9 +417,9 @@ var editor = (function() {
 			return '<h2>'+this.innerHTML+'</h2>'
 		})
 
-		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
+		$c.find('*').not('p, a, i, b, blockquote, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
 		// Doing this twice seems to fix some bugs that some elements not removed. TODO can it be fixed?
-		$c.find('*').not('p, a, i, b, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
+		$c.find('*').not('p, a, i, b, blockquote, ul, ul>li, h2, h3, h4, img').replaceWith(function() { return this.innerHTML })
 		$c.find(':empty').not('img').remove()
 		$c.find('*').removeAttr('style id')
 	}

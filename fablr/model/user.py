@@ -89,7 +89,7 @@ class User(Document, BaseUser):
     return create_token(self.email)
 
   def auth_type(self):
-    return "Google" if self.google_auth else "Facebook" if self.facebook_auth else "Password" if self.password else "None"
+    return "Google" if self.google_auth else "Facebook" if self.facebook_auth else _("Password") if self.password else _("No data")
 
   def groups(self):
     return Group.objects(members__user=self)

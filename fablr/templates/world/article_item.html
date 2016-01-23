@@ -53,17 +53,6 @@
     <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
         <small>{{ tagline }}</small>
   </h1>
-<ul class="nav nav-tabs content-menu">
-{#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
-  <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
-  <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
-  <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
-#}
-  {% if not article or not article.is_published() %}
-  <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
-  {% endif %}
-  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
-</ul>
 {#
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
@@ -123,6 +112,18 @@
 
   </div>
   <div class="col-md-3 article_comment">
+    <ul class="nav nav-tabs content-menu">
+    {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
+      <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
+      <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
+      <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
+    #}
+      {% if not article or not article.is_published() %}
+      <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
+      {% endif %}
+      <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
+    </ul>
+
     {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
     {{ MACRO.FORM_FIELD(article_form.featured) }}
     {{ MACRO.FORM_FIELD(article_form.status) }}
