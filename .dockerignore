@@ -5,3 +5,7 @@
 Raconteur.egg-info/
 venv/
 .git*
+*.pyc
+*/*.pyc
+*/*/*.pyc
+*/*/*/*.pyc

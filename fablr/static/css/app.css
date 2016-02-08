@@ -1222,6 +1222,7 @@ background-size: 70% 70%;
   color: #2a6496;
   box-shadow: aqua;
   border: 1px solid #ddd;
+  margin-bottom: 5px;
 }
 
 .privileged:after {

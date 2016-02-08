@@ -31,6 +31,12 @@ PublishStatus = Choices(
   published = _('Published'),
   archived = _('Archived'))
 
+Licenses = Choices(
+  public_domain = _('Public Domain'),
+  all_rights_reserved = _('All Rights Reserved'),
+  ccby4 = _('Creative Commons Attribution 4.0'),
+  ccbync4 = _('Creative Commons Attribution + Non-commercial 4.0'))
+
 GenderTypes = Choices(
   male = _('Male'),
   female = _('Female'),
@@ -43,9 +49,10 @@ class Publisher(Document):
   created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   owner = ReferenceField(User, verbose_name=_('Owner'))
   address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
-  email = EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('Email'))
+  email = EmailField(max_length=60, min_length=6, verbose_name = _('Email'))
   status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+  preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('Preferred License'))
 
   def __unicode__(self):
     return self.title
@@ -60,6 +67,7 @@ class World(Document):
   created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
   status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+  preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('Preferred License'))
 
   def clean(self):
     self.slug = slugify(self.title)
@@ -170,6 +178,7 @@ class Article(Document):
   status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
   featured = BooleanField(default=False, verbose_name=_('Featured article'))
   feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+  license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
 
   # modified_date = DateTimeField()
 

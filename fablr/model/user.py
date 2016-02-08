@@ -10,7 +10,7 @@
 
 from hashlib import md5
 from baseuser import BaseUser, make_password, create_token
-from misc import now, Choices, slugify
+from misc import now, Choices, slugify, translate_action
 from mongoengine import ValidationError
 from flask.ext.mongoengine.wtf import model_form
 from wtforms.fields import HiddenField
@@ -44,6 +44,9 @@ class UserEvent(EmbeddedDocument):
     message = StringField()
     xp = IntField()
 
+    def action_string(self):
+        return translate_action(self.action, self.instance)
+
 # A user in the system
 class User(Document, BaseUser):
   # We want to set username unique, but then it cannot be empty,
@@ -63,7 +66,7 @@ class User(Document, BaseUser):
   newsletter = BooleanField(default=True)
   google_auth = EmbeddedDocumentField(ExternalAuth)
   facebook_auth = EmbeddedDocumentField(ExternalAuth)
-  log = ListField(EmbeddedDocumentField(UserEvent))
+  event_log = ListField(EmbeddedDocumentField(UserEvent))
   following = ListField(ReferenceField('self'), verbose_name = _('Following'))
 
   def clean(self):
@@ -83,7 +86,9 @@ class User(Document, BaseUser):
     return "%s (%s)" % (self.username, self.realname)
 
   def log(self, action, instance, message='', metric=0):
-    pass # TODO
+    ue = UserEvent(action=action, instance=instance, message=message, xp=metric)
+    self.event_log.insert(0, ue) # insert at beginning to always have latest actions first
+    self.save()
 
   def create_token(self):
     return create_token(self.email)

@@ -60,6 +60,18 @@ def list_to_choices(list):
 def now():
     return datetime.datetime.now;
 
+def translate_action(action, item):
+  if action=='patch':
+    return _('"%(item)s" edited', item=item)
+  elif action=='post':
+    return _('"%(item)s" created', item=item)
+  elif action=='put':
+    return _('"%(item)s" replaced', item=item)
+  elif action=='delete':
+    return _('"%(item)s" deleted', item=item)
+  else:
+    return ''
+
 class Address(EmbeddedDocument):
   name = StringField(max_length=60, verbose_name=_('Name'))
   street = StringField(max_length=60, verbose_name=_('Street'))

@@ -84,6 +84,25 @@
       #}
     </table>
     <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|default(_('Empty...'), true) }}</div>
+    {% call(privileged) MACRO.IS_ADMIN() %}
+    {% if user.event_log %}
+    <h3>{{_('History')}}</h3>
+    <table class="table">
+      <tr>
+        <th>{{_('Time')}}</th>
+        <th>{{_('Activity')}}</th>
+        <th>{{_('XP')}}</th>
+      </tr>
+      {% for event in user.event_log %}
+      <tr>
+        <td><small>{{event.created.strftime('%Y-%m-%d %H:%M') }}</small></td>
+        <td>{{event.action_string()}}</td>
+        <td>{{event.xp}}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% endif %}
+    {% endcall %}
     {% endif %}
   </div>
 </div>

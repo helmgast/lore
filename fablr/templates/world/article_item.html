@@ -23,7 +23,6 @@
 {% include 'world/article_action_menu.html' %}
 {% endcall %}
 {% endif %}
-{% include 'includes/social_icons.html' %}
 {% endblock %}
 
 {% block cssimports %}
@@ -146,7 +145,10 @@
 </h1>
 <ul class="nav nav-tabs content-menu">
   {% set articlegroups = article.articlegroups|list %}
-  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
+  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
+    {%- if article.creator %}
+    {% if MACRO.AUTHORIZED(access_policy['user'].authorize('view')) %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}
+    {%- else -%}System{%- endif -%}</li>
   <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   {% if articlegroups or g.user %}
   <li class="content-menu-info" title="{{ _('Visibility') }}"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>

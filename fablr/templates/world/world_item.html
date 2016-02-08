@@ -40,6 +40,10 @@
 </div>
 {% endblock %}
 
+{% block sidebar_end %}
+{% include 'includes/social_icons.html' %}
+{% endblock %}
+
 {% block hero_box %}{# Hide the hero if we are editing, it's destracting #}
 {% if not world_form %}{{super()}}{% endif %}
 {% endblock hero_box %}
@@ -79,8 +83,10 @@
         <td><small>{{ world.publisher|default(_('No data'), true) }}</small></td></tr>
         <tr><td><strong>{{ _('Rule System') }}</strong></td>
         <td><small>{{ world.rule_system|default(_('No data'), true) }}</small></td></tr>
+{#
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
+#}
 
       </table>
     </div>
@@ -99,20 +105,20 @@
       </ul>
     </div>
     <div class="col-md-4">
+      {% if focus_articles %}
       <h4><span class="glyphicon glyphicon-star"></span> {% trans %}Featured articles{% endtrans %}</h4>
       {% for a in focus_articles %}
       <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
-      {% else %}
-      {% trans %}No data{% endtrans %}
       {% endfor %}
+      {% endif %}
     </div>
     <div class="col-md-4">
+      {% if top_material %}
       <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
       {% for a in top_material %}
       <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
-      {% else %}
-      {% trans %}No data{% endtrans %}
       {% endfor %}
+      {% endif %}
     </div>
   </div>
 {% endif %}
