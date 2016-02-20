@@ -3,7 +3,7 @@ Should have different instructions depending on signup method. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set reset_link = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.user_view', user=user.id), reset=true, external=true) %}
+{% set reset_link = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.user_view', user=user.id), reset=true, _external=true) %}
 
 {% block preview %}{% trans %}Instructions on logging in to helmgast.se{% endtrans %}{% endblock %}
 
@@ -12,7 +12,7 @@ Should have different instructions depending on signup method. #}
 <p>{% trans %}You just requested information on how to login to helmgast.se:{% endtrans %}</p>
 
 {% if not auth %}
-{% trans %}<p>We can't find any record of this email registered to helmgast.se. Is it
+{% trans %}<p>We can't find any record of this email registered to helmgast.se. Is it.em
 possible that you used a different email, or that you used a social login
 (Facebook, Google) and have a different email registered there? We suggest you
 search your email accounts for the text "Welcome to helmgast.se". If you can't
