@@ -1,4 +1,4 @@
-{# To be sent from sign up procedure if we need to verify email. 
+{# To be sent from sign up procedure if we need to verify email.
 Should also work as invite mail. #}
 
 {% extends "mail/one_column_mail.html" %}
@@ -16,7 +16,7 @@ Should also work as invite mail. #}
 <table>
     <tr>
         <td class="padding">
-            <p><a class="btn btn-primary " title="Verify email" href="{{verification_url}}" target="_blank">{% trans %}Verify email{% endtrans %}</a></p>
+            <p><a class="btn btn-primary " title="Verify email" href="{{verification_url}}" target="_blank" mc:disable-tracking>{% trans %}Verify email{% endtrans %}</a></p>
         </td>
     </tr>
 </table>

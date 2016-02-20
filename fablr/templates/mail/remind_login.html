@@ -29,7 +29,7 @@ create a new account</a>.<p>{% endtrans %}
 		<table>
     	<tr>
         	<td class="padding">
-            	<p><a class="btn btn-primary " title="Reset password" href="{{reset_link}}" target="_blank">{% trans %}Reset password{% endtrans %}</a></p>
+            	<p><a class="btn btn-primary " title="Reset password" href="{{reset_link}}" target="_blank" mc:disable-tracking>{% trans %}Reset password{% endtrans %}</a></p>
         	</td>
     	</tr>
 		</table>
@@ -39,7 +39,7 @@ create a new account</a>.<p>{% endtrans %}
 		<table>
     	<tr>
         	<td class="padding">
-            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login', _external=true)}}" target="_blank">{% trans %}Login again{% endtrans %}</a></p>
+            	<p><a class="btn btn-primary " title="Login again" href="{{url_for('auth.login', _external=true)}}" target="_blank" mc:disable-tracking>{% trans %}Login again{% endtrans %}</a></p>
         	</td>
     	</tr>
 		</table>
