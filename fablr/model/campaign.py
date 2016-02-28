@@ -7,18 +7,21 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from world import Article, Episode, User, Group
-from flask.ext.mongoengine import Document # Enhanced document
-from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, URLField, ImageField,
-    ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
+from flask.ext.mongoengine import Document  # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, BooleanField, ListField,
+                         EmbeddedDocumentField)
+
+from user import User, Group
+from world import Article
+
 
 # A game session that was or will be held, e.g. the instance between a scenario
 # and a group  at a certain date
 class Session(EmbeddedDocument):
     play_start = DateTimeField()
     play_end = DateTimeField()
-    location = StringField() # Location of the session
-    description = StringField() # Details on the event if any.
+    location = StringField()  # Location of the session
+    description = StringField()  # Details on the event if any.
     # episodes = ListField(ReferenceField(Episode))
     episodes = ListField(StringField())
     present_members = ListField(ReferenceField(User));
@@ -29,18 +32,18 @@ class Session(EmbeddedDocument):
 
 # All material related to a certain story by a certain group.
 class CampaignInstance(Document):
-    campaign = ReferenceField(Article) # CampaignData
+    campaign = ReferenceField(Article)  # CampaignData
     group = ReferenceField(Group)
     rule_system = StringField()
     description = StringField()
-    archived = BooleanField(default=False) # If the campaign is archived
+    archived = BooleanField(default=False)  # If the campaign is archived
     sessions = ListField(EmbeddedDocumentField(Session))
-    chronicles = ListField(ReferenceField(Article)) # ChronicleArticles
+    chronicles = ListField(ReferenceField(Article))  # ChronicleArticles
 
     def __unicode__(self):
         return u'%s by %s' % (self.campaign.title, self.group)
 
-#     def load_scene_tree(self, scene_tree, parent=None):
+# def load_scene_tree(self, scene_tree, parent=None):
 #         # TODO very inefficient implementation
 #         o = 1
 #         for s in scene_tree:

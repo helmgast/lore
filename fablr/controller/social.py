@@ -12,20 +12,21 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
-import auth
-from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
-  ResourceAccessPolicy, Authorization, logger
-from fablr.model.user import User, Group, Member, Conversation, Message, UserStatus
+from flask import abort, request, render_template, Blueprint, g, current_app
+from flask.ext.classy import FlaskView
 from flask.ext.mongoengine.wtf import model_form
-from wtforms import PasswordField, validators
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.classy import FlaskView, route
+
+from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, \
+    RacModelConverter, \
+    ResourceAccessPolicy, Authorization
+from fablr.model.user import User, Group, Member, Conversation, Message
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
 user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(),
-  only=['username', 'realname', 'location', 'description'])
+                       only=['username', 'realname', 'location', 'description'])
+
+
 # user_form.confirm = PasswordField(_('Repeat Password'),
 #   [validators.Required(), validators.Length(max=40)])
 # user_form.password = PasswordField(_('New Password'), [
@@ -34,86 +35,87 @@ user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter
 #   validators.Length(max=40)])
 
 class UserAccessPolicy(ResourceAccessPolicy):
-
-  def authorize(self, op, instance=None):
-    if op not in self.ops_levels:
-      level = self.ops_levels['_default']
-    else:
-      level = self.ops_levels[op]
-    if level=='private':
-      if g.user and instance==g.user:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(g.user), op, instance), privileged=True)
-    return super(UserAccessPolicy, self).authorize(op, instance)
+    def authorize(self, op, instance=None):
+        if op not in self.ops_levels:
+            level = self.ops_levels['_default']
+        else:
+            level = self.ops_levels[op]
+        if level == 'private':
+            if g.user and instance == g.user:
+                return Authorization(True, '%s have access to do private operation %s on instance %s' % (
+                unicode(g.user), op, instance), privileged=True)
+        return super(UserAccessPolicy, self).authorize(op, instance)
 
 
 user_access = UserAccessPolicy({
-  'view':'private',
-  'edit':'private',
-  'form_edit':'private',
-  '_default':'admin'
-  }, get_owner_func=lambda user: user) # return user itself to check for owner of a user object
+    'view': 'private',
+    'edit': 'private',
+    'form_edit': 'private',
+    '_default': 'admin'
+}, get_owner_func=lambda user: user)  # return user itself to check for owner of a user object
 
-admin_only_access = ResourceAccessPolicy({'_default':'admin'})
+admin_only_access = ResourceAccessPolicy({'_default': 'admin'})
 
 user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form, access_policy=user_access)
 ResourceHandler.register_urls(social, user_strategy)
 
-class UsersView(FlaskView):
 
+class UsersView(FlaskView):
     def index(self):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def get(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def patch(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def delete(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
+
 
 class GroupsView(FlaskView):
     def index(self):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def get(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def patch(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def delete(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
 
 class MembersView(FlaskView):
     route_base = '/groups/<group>'
 
     def index(self):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def get(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def patch(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def delete(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
 
 class ConversationsView(FlaskView):
     def index(self):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def get(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def patch(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
     def delete(self, id):
-        abort(501) # Not implemented
+        abort(501)  # Not implemented
 
 
 group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug', access_policy=admin_only_access)
@@ -121,48 +123,54 @@ ResourceHandler.register_urls(social, group_strategy)
 
 member_strategy = ResourceRoutingStrategy(Member, 'members', None, parent_strategy=group_strategy)
 
-class MemberHandler(ResourceHandler):
-  def form_new(self, r):
-    r = super(MemberHandler, self).form_new(r)
-    # Remove existing member from the choice of new user in Member form
-    current_member_ids = [m.user.id for m in r['group'].members]
-    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-    return r
 
-  def form_edit(self, r):
-    r = super(MemberHandler, self).form_edit(r)
-    current_member_ids = [m.user.id for m in r['group'].members]
-    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-    return r
+class MemberHandler(ResourceHandler):
+    def form_new(self, r):
+        r = super(MemberHandler, self).form_new(r)
+        # Remove existing member from the choice of new user in Member form
+        current_member_ids = [m.user.id for m in r['group'].members]
+        r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+        return r
+
+    def form_edit(self, r):
+        r = super(MemberHandler, self).form_edit(r)
+        current_member_ids = [m.user.id for m in r['group'].members]
+        r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
+        return r
+
 
 MemberHandler.register_urls(social, member_strategy)
 
 conversation_strategy = ResourceRoutingStrategy(Conversation, 'conversations', access_policy=admin_only_access)
 
-class ConversationHandler(ResourceHandler):
-  def new(self, r):
-    if not request.form.has_key('content') or len(request.form.get('content'))==0:
-      raise ResourceError(400, 'Need to attach first message with conversation')
-    r = super(ConversationHandler, self).new(r)
-    Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-    return r
 
-  def edit(self, r):
-    r = super(ConversationHandler, self).edit(r)
-    if request.form.has_key('content') and len(request.form.get('content'))>0:
-      Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-    return r
+class ConversationHandler(ResourceHandler):
+    def new(self, r):
+        if not request.form.has_key('content') or len(request.form.get('content')) == 0:
+            raise ResourceError(400, 'Need to attach first message with conversation')
+        r = super(ConversationHandler, self).new(r)
+        Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
+        return r
+
+    def edit(self, r):
+        r = super(ConversationHandler, self).edit(r)
+        if request.form.has_key('content') and len(request.form.get('content')) > 0:
+            Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
+        return r
+
 
 ConversationHandler.register_urls(social, conversation_strategy)
 
 message_strategy = ResourceRoutingStrategy(Message, 'messages', parent_strategy=conversation_strategy)
 ResourceHandler.register_urls(social, message_strategy)
 
+
 ###
 ### Template filters
 ###
 def is_following(from_user, to_user):
-  return from_user.is_following(to_user)
+    return from_user.is_following(to_user)
+
 
 social.add_app_template_filter(is_following)
 

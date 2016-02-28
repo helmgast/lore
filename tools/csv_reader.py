@@ -1,9 +1,6 @@
 # coding=utf-8
 # import csv
-from fablr.model.misc import slugify
-from auth import create_token, make_password
-
-
+from auth import create_token
 
 # print create_token("niklas@helmgast.se")
 # print create_token("martin@helmgast.se")
@@ -30,10 +27,15 @@ from auth import create_token, make_password
 
 
 def show_token(tokens):
-  for token in tokens:
-    print "%s\t%s\t%s" % (token, create_token(token, salt='Jag är bara en störig gubbjävel i hörnet'), create_token(token))
+    for token in tokens:
+        print "%s\t%s\t%s" % (
+            token, create_token(token, salt='Jag är bara en störig gubbjävel i hörnet'), create_token(token))
 
-show_token(["carljohanstrom@gmail.com", "kim.neogames@gmail.com", "dan.storafiler@gmail.com", "ola.jentzsch@gmail.com", "holgersson.f@gmail.com", "raecer@gmail.com", "dark_storm84@hotmail.com", "dr45tr@gmail.com", "niklas@helmgast.se", "martin@helmgast.se", "marco@helmgast.se", "petter@helmgast.se", "anton@helmgast.se", "paul@helmgast.se"])
+
+show_token(["carljohanstrom@gmail.com", "kim.neogames@gmail.com", "dan.storafiler@gmail.com", "ola.jentzsch@gmail.com",
+            "holgersson.f@gmail.com", "raecer@gmail.com", "dark_storm84@hotmail.com", "dr45tr@gmail.com",
+            "niklas@helmgast.se", "martin@helmgast.se", "marco@helmgast.se", "petter@helmgast.se", "anton@helmgast.se",
+            "paul@helmgast.se"])
 
 # with open('C:/Users/Niklas/Downloads/all_emails.txt', 'rb') as csvfile:
 #   spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')

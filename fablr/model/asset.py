@@ -4,25 +4,24 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+import logging
 import mimetypes
-import re
-from mongoengine import ValidationError
-from datetime import datetime
-from misc import slugify
-from werkzeug.utils import secure_filename
-from mongoengine.queryset import Q
-import requests
 from StringIO import StringIO
-import imghdr
+from datetime import datetime
 
-from flask.ext.mongoengine import Document # Enhanced document
-from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ImageField, URLField,
-    ReferenceField, BooleanField, ListField, IntField, EmailField, FileField, EmbeddedDocumentField)
-
-from user import User
-from flask.ext.babel import gettext, lazy_gettext as _
-from misc import Choices
+import requests
 from flask import request, current_app
+from flask.ext.babel import gettext, lazy_gettext as _
+from flask.ext.mongoengine import Document  # Enhanced document
+from mongoengine import (StringField, DateTimeField, ImageField, URLField,
+                         ReferenceField, ListField, FileField)
+from mongoengine import ValidationError
+from mongoengine.queryset import Q
+from werkzeug.utils import secure_filename
+
+from misc import Choices
+from misc import slugify
+from user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -42,6 +41,7 @@ allowed_mimetypes = [
     'image/jpeg',
     'image/png',
     'text/plain']
+
 
 # New unified Asset
 # filename (unique)
@@ -85,12 +85,13 @@ class FileAsset(Document):
                 raise ValidationError(
                     gettext('Files of type %(mimetype)s are not allowed.', mimetype=request_file_data.mimetype))
             # File is present, save to GridFS
-            self.file_data.replace(request_file_data, content_type=request_file_data.mimetype, filename=request_file_data.filename)
+            self.file_data.replace(request_file_data, content_type=request_file_data.mimetype,
+                                   filename=request_file_data.filename)
             self.source_filename = request_file_data.filename
             if not self.attachment_filename:
                 self.attachment_filename = self.source_filename
-        name, ext = secure_filename(self.source_filename).lower().rsplit('.',1)
-        self.slug = slugify(name)+'.'+ext
+        name, ext = secure_filename(self.source_filename).lower().rsplit('.', 1)
+        self.slug = slugify(name) + '.' + ext
 
     def get_attachment_filename(self):
         filename = self.attachment_filename if self.attachment_filename is not None else self.source_filename
@@ -111,62 +112,65 @@ class FileAsset(Document):
     def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.access_type)
 
+
 MimeTypes = Choices({
-  'image/jpeg': 'JPEG',
-  'image/png':'PNG',
-  'image/gif':'GIF'
-  })
-IMAGE_FILE_ENDING = {'image/jpeg':'jpg','image/png':'png','image/gif':'gif'}
+    'image/jpeg': 'JPEG',
+    'image/png': 'PNG',
+    'image/gif': 'GIF'
+})
+IMAGE_FILE_ENDING = {'image/jpeg': 'jpg', 'image/png': 'png', 'image/gif': 'gif'}
+
+
 class ImageAsset(Document):
-  slug = StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
-  meta = {'indexes': ['slug']}
-  image = ImageField(thumbnail_size=(300,300,False), required=True)
-  source_image_url = URLField()
-  source_page_url = URLField()
-  tags = ListField(StringField(max_length=30))
-  mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
-  creator = ReferenceField(User, verbose_name=_('Creator'))
-  created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
-  title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
-  description = StringField(max_length=500, verbose_name=_('Description'))
+    slug = StringField(primary_key=True, min_length=5, max_length=60, verbose_name=_('Slug'))
+    meta = {'indexes': ['slug']}
+    image = ImageField(thumbnail_size=(300, 300, False), required=True)
+    source_image_url = URLField()
+    source_page_url = URLField()
+    tags = ListField(StringField(max_length=30))
+    mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
+    creator = ReferenceField(User, verbose_name=_('Creator'))
+    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
+    title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
 
-  def __unicode__(self):
-    return u'%s' % self.slug
+    def __unicode__(self):
+        return u'%s' % self.slug
 
-  # Executes before saving
-  def clean(self):
-    if self.title:
-      parts = secure_filename(self.title).rsplit('.', 1)
-      slug = parts[0]
-    else:
-      slug = self.id
-    if not slug:
-      raise ValueError('Cannot make slug from either title %s or id %s' % (self.title, self.id))
-    new_end = IMAGE_FILE_ENDING[self.mime_type]
-    new_slug = slug+'.'+new_end
-    existing = len(ImageAsset.objects(Q(slug__endswith='__'+new_slug) or Q(slug=new_slug)))
-    if existing:
-      new_slug = "%i__%s.%s" % (existing+1, slug, new_end)
-    self.slug = new_slug
+    # Executes before saving
+    def clean(self):
+        if self.title:
+            parts = secure_filename(self.title).rsplit('.', 1)
+            slug = parts[0]
+        else:
+            slug = self.id
+        if not slug:
+            raise ValueError('Cannot make slug from either title %s or id %s' % (self.title, self.id))
+        new_end = IMAGE_FILE_ENDING[self.mime_type]
+        new_slug = slug + '.' + new_end
+        existing = len(ImageAsset.objects(Q(slug__endswith='__' + new_slug) or Q(slug=new_slug)))
+        if existing:
+            new_slug = "%i__%s.%s" % (existing + 1, slug, new_end)
+        self.slug = new_slug
 
-  def make_from_url(self, image_url, source_url=None):
-    # TODO use md5 to check if file already downloaded/uploaded
-    r = requests.get(image_url)
-    file = StringIO(r.content)
-    self.mime_type = r.headers['Content-Type']
-    self.source_image_url = image_url
-    self.source_page_url = source_url
-    fname = image_url.rsplit('/',1)[-1]
-    self.title = self.title or fname
-    self.image.put(file, content_type=self.mime_type, filename=fname)
-    logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
+    def make_from_url(self, image_url, source_url=None):
+        # TODO use md5 to check if file already downloaded/uploaded
+        r = requests.get(image_url)
+        file = StringIO(r.content)
+        self.mime_type = r.headers['Content-Type']
+        self.source_image_url = image_url
+        self.source_page_url = source_url
+        fname = image_url.rsplit('/', 1)[-1]
+        self.title = self.title or fname
+        self.image.put(file, content_type=self.mime_type, filename=fname)
+        logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
 
-  def make_from_file(self, file):
-    # block_size=256*128
-    # md5 = hashlib.md5()
-    # for chunk in iter(lambda: file.read(block_size), b''):
-    #      md5.update(chunk)
-    # print md5.hexdigest()
-    # file.seek(0) # reset
-    self.mime_type = file.mimetype if file.mimetype else mimetypes.guess_type(file.filename)[0]
-    self.image.put(file, content_type=self.mime_type, filename=file.filename)
+    def make_from_file(self, file):
+        # block_size=256*128
+        # md5 = hashlib.md5()
+        # for chunk in iter(lambda: file.read(block_size), b''):
+        #      md5.update(chunk)
+        # print md5.hexdigest()
+        # file.seek(0) # reset
+        self.mime_type = file.mimetype if file.mimetype else mimetypes.guess_type(file.filename)[0]
+        self.image.put(file, content_type=self.mime_type, filename=file.filename)
