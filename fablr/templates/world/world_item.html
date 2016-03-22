@@ -1,9 +1,11 @@
 {% extends "world/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO with context%}
 
+{% if world %}
 {% set recent_articles=world.articles().order_by('-created_date')[:5] if world %}
 {% set focus_articles=world.articles().order_by('-created_date').filter(featured=true)[:5] %}
 {% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
+{% endif %}
 
 {% block cssimports %}
 {{ super() }}
@@ -58,6 +60,7 @@
       {{ MACRO.FORM_FIELD(world_form.publisher) }}
       {{ MACRO.FORM_FIELD(world_form.rule_system) }}
       {{ MACRO.FORM_FIELD(world_form.status) }}
+      {{ MACRO.FORM_FIELD(world_form.language) }}
       {{ world_form.csrf_token }}
     </div>
     <div class="col-md-4">

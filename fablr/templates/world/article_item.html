@@ -1,7 +1,7 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% set article_type = article.type if article else args['keys'].get('type','default') %}
+{% set article_type = article.type if article else args['fields'].get('type','default') %}
 {% if article_form %}
   {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
@@ -46,12 +46,15 @@
 {% if article_form %}
 
 <form role="form" id='articleform' method="post" action="{{ action_url }}">
-  {{ article_form.csrf_token }}
-  {{ article_form.title(style="display:none;") }}
-  <h1 class="article_header">
-    <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
+    {{ article_form.csrf_token }}
+    {{ article_form.title(style="display:none;") }}
+    <h1 class="article_header">
+        <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
         <small>{{ tagline }}</small>
   </h1>
+{% if article_form.title.errors %}
+    <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
+{% endif %}
 {#
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
@@ -111,24 +114,23 @@
 
   </div>
   <div class="col-md-3 article_comment">
-    <ul class="nav nav-tabs content-menu">
     {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
       <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
       <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
       <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
     #}
       {% if not article or not article.is_published() %}
-      <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
+      <button type="submit" name="status" value="published" class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>
       {% endif %}
-      <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
-    </ul>
 
-    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
-    {{ MACRO.FORM_FIELD(article_form.featured) }}
-    {{ MACRO.FORM_FIELD(article_form.status) }}
-    {{ MACRO.FORM_FIELD(article_form.created_date) }}
-    {{ MACRO.FORM_FIELD(article_form.type) }}
-    {{ MACRO.FORM_FIELD(article_form.world) }}
+      <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>
+
+    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' input-sm fixed-width')}}
+    {{ MACRO.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
+    {{ MACRO.FORM_FIELD(article_form.status, controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.created_date, controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.type, controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.world,controlclass=' input-sm') }}
     <input type="hidden" name="feature_image" id="feature_image" value="" />
     {% if g.user.id %}
       <input type="hidden" name="creator" value="{{g.user.id}}" />

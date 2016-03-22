@@ -14,15 +14,16 @@ import logging
 import pprint
 import re
 import sys
-from functools import wraps, partial
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import FlaskView
+from flask.ext.mongoengine import Pagination
 from flask.ext.mongoengine.wtf import model_form
 from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField
 from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
+from flask import Response
 from flask.json import jsonify
 from flask.views import View
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
@@ -48,53 +49,11 @@ def generate_flash(action, name, model_identifiers, dest=''):
     return s
 
 
-def render_html_factory(template):
-    """A factory for html rendering based on given template"""
-    return partial(render_template, template)
-
-
-def render_json_factory(ignore):
-    # TBD needs to be cleaned up, take arguments for what to limit in json output
-    # d = {k:v for k,v in r.iteritems() if k in ['item','list','op','parents','next', 'pagination']}
-    return jsonify
-
-
-def render_csv_factory(ignore):
-    abort(501)  # Not implemented
-
-
 mime_types = {
     'html': 'text/html',
     'json': 'application/json',
     'csv': 'text/csv'
 }
-render_factories = {
-    'html': render_html_factory,
-    'json': render_json_factory,
-    'csv': render_csv_factory
-}
-
-
-def render(**kwargs):
-    """Creates a decorator that renders the given mime_types with respective rendering function"""
-    supported_mime_types = {mime_types[k]: render_factories[k](v) for k, v in kwargs.iteritems()}
-
-    def deco(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            norender = kwargs.get('norender', False)
-            if norender:
-                kwargs.pop('norender')
-            response = f(*args, **kwargs)
-            if not norender and isinstance(response, dict):
-                best = request.accept_mimetypes.best_match(supported_mime_types.keys())
-                response = supported_mime_types[best](**response)  # render
-            return response
-
-        return decorated_function
-
-    return deco
-
 
 # import collections
 #
@@ -181,65 +140,31 @@ def render(**kwargs):
 #         arg_fields['queryargs'] = f.FormField(key_form, separator='__')
 #     return type(model_class.__name__ + 'Args', (baseform,), arg_fields)
 
+common_args = frozenset(['page', 'per_page', 'debug', 'as_user', 'view', 'q', 'action', 'method', 'next', 'order_by'])
+
 re_operators = re.compile(
     r'__(ne|lt|lte|gt|in|nin|mod|all|size|exists|exact|iexact|contains|'
     'icontains|istartswith|endswith|iendswith|match|not__ne|not__lt|not__lte|'
     'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
     'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
     'not__endswith|not__iendswith)$')
-common_args = frozenset(['page', 'per_page', 'debug', 'as_user', 'view', 'q', 'action', 'method', 'next', 'order_by'])
-
-base_args = {
-    # none should remain for subsequent requests
-    'debug': lambda x: x.lower() == 'true',
-    'as_user': lambda x: x,
-}
 re_next = re.compile(r'^[/?].+')
+re_order_by = re.compile(r'^[+-]')
 
 
-def make_edit_args():
-    args = dict(base_args)  # Make a copy
-    args.update({
-        # none should remain for subsequent requests
-        '_method': lambda x: x if x.upper() in METHODS else None,
-        'next': lambda x: x if re_next.match(x) else None,
-    })
-    return args
-
-
-def make_get_args(fields=None):
+def prefillable_fields_parser(fields=None):
     fields = frozenset(fields or [])
-    args = dict(base_args)  # Make a copy
-    args.update({
-        'view': lambda x: x.lower() if x.lower() in 'markdown' else None,
-        'keys': fields
+    return dict(ItemResponse.arg_parser, **{
+        'fields': fields
     })
-    return args
 
 
-re_orderby = re.compile(r'^[+-]')
-
-
-def make_list_args(fields=None):
+def filterable_fields_parser(fields=None):
     fields = frozenset(fields or [])
-    args = dict(base_args)  # Make a copy
-    args.update({
-        'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
-        'per_page': lambda x: int(x) if x.isdigit() and int(x) >= -1 else 20,
-        'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
-        'order_by': lambda x: x.lower() if re_orderby.sub('', x.lower()) in fields else None,
-        'keys': fields
+    return dict(ListResponse.arg_parser, **{
+        'order_by': lambda x: x.lower() if re_order_by.sub('', x.lower()) in fields else None,
+        'fields': fields
     })
-    return args
-
-
-def parse_out_arg(out_param):
-    if out_param == 'json':
-        return out_param
-    elif out_param in ['page', 'modal', 'fragment']:
-        return '_%s.html' % out_param  # to use as template path in jinja
-    else:
-        return None  # Same as page, but set as None in order to not override template given inheritance
 
 
 action_strings = {
@@ -251,52 +176,211 @@ action_strings = {
 action_strings_translated = {
     'post': _('posted'),
     'put': _('put'),
+    'delete': _('deleted'),
     'patch': _('patched'),
-    'delete': _('deleted')
 }
 
 
-def parse_args(response, argparser):
-    """Parses request args through a form that sets defaults or removes invalid entries
-    """
-    action = response['action']
-    args = {k: '' for k, v in argparser.iteritems()}
-    for k in argparser:
-        if k != 'keys':
-            args[k] = argparser[k](request.args.get(k, ''))
+def change_endpoint(new_method, current_endpoint=None):
+    current_endpoint = (current_endpoint or request.endpoint).rsplit(':', 1)[0] + ':'
+    return current_endpoint + new_method
+
+
+class ResourceResponse(Response):
+    arg_parser = {
+        # none should remain for subsequent requests
+        'debug': lambda x: x.lower() == 'true',
+        'as_user': lambda x: x,
+        'render': lambda x: x if x in ['json', 'html'] else None
+    }
+
+    def __init__(self, resource_view, queries, formats=None, theme=None, extra_args=None):
+        # Can be set from Model
+        assert resource_view
+        self.resource_view = resource_view
+
+        self.resource_queries = []
+        assert queries and isinstance(queries, list)
+        for q in queries:
+            assert isinstance(q, tuple)
+            assert isinstance(q[0], basestring)
+            setattr(self, q[0], q[1])
+            self.resource_queries.append(q[0])  # remember names in order
+
+        self.access = resource_view.access_policy
+        self.model = resource_view.model
+
+        # To be set from from route
+        self.theme = theme
+        self.formats = formats or frozenset(['html','json'])
+        self.args = self.parse_args(self.arg_parser, extra_args or {})
+        super(ResourceResponse, self).__init__()  # init a blank flask Response
+
+    def auth_or_abort(self):
+        instance = getattr(self, 'instance', None)
+        auth = self.access.authorize(self.method, instance=instance)
+        if not auth:
+            raise ResourceError(auth.error_code, r={'TBD': 'TBD'}, message=auth.message)
         else:
-            args['keys'] = {}
-            for k, v in request.args.iteritems():
-                if k not in argparser:
-                    new_k = re_operators.sub('', k)  # remove operator
-                    if new_k in argparser['keys']:
-                        args['keys'][k] = v
-    # print args, arg_parser
-    response['args'] = args
-    return response
+            # if there's an intent, we also need to check that it's allowed
+            intent = self.args.get('intent', None)
+            if intent:
+                auth = self.access.authorize(intent, instance=instance)
+            self.auth = auth
+
+    def set_theme(self, theme_template):
+        self.theme = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
+
+    def render(self):
+        if self.args['render']:
+            best_type = mime_types[self.args['render']]
+        else:
+            best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
+        if best_type == 'text/html':
+            template_args = vars(self)  # All local and inherited variables
+            self.set_data(render_template(self.template, **template_args))
+            return self
+        elif best_type == 'application/json':
+            # TODO this will create a new response, which is a bit of waste
+            return jsonify({k: getattr(self, k) for k in self.json_fields})
+        else:  # csv
+            abort(406)  # Not acceptable content available
+
+    @staticmethod
+    def parse_args(arg_parser, extra_args):
+        """Parses request args through a form that sets defaults or removes invalid entries
+        """
+        args = {k: '' for k, v in arg_parser.iteritems()}  # Make copy of arg_parser for args
+        # TODO to_dict flattens the request dict, meaning we cannot take multiple
+        # values for same URL param (e.g. key=val1&key=val2)
+        req_args = dict(request.args.to_dict(), **extra_args)
+        # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
+        for k in arg_parser:
+            if k is not 'fields':
+                args[k] = arg_parser[k](req_args.get(k, ''))
+            else:
+                args['fields'] = {}
+                fields = arg_parser[k]
+                for q, w in req_args.iteritems():
+                    if q not in arg_parser:
+                        new_k = re_operators.sub('', q)  # remove mongo operators from filter key
+                        if new_k in fields:
+                            args['fields'][q] = w
+        # print args, arg_parser
+        return args
 
 
-def tune_query(response, query_key, *custom_filters):
-    """Processes a starting query based on request args provided, such as
-    ordering, filtering, pagination etc """
-    query = response[query_key]
-    args = response.get('args', {})
-    if 'order_by' in args and args['order_by']:
-        query = query.order_by(args['order_by'])
-    if 'keys' in args and args['keys']:
-        query = query.filter(**args['keys'])
+class ListResponse(ResourceResponse):
+    """index, listing of resources"""
 
-    if 'q' in args:
+    json_fields = frozenset(['query', 'pagination'])
+    arg_parser = dict(ResourceResponse.arg_parser, **{
+        'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
+        'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 20,
+        'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
+    })
+    method = 'list'
+
+    def __init__(self, resource_view, queries, formats=None, theme=None, extra_args=None):
+        list_arg_parser = getattr(resource_view, 'list_arg_parser', None)
+        if list_arg_parser:
+            self.arg_parser = list_arg_parser
+        super(ListResponse, self).__init__(resource_view, queries, formats, theme, extra_args)
+        self.template = resource_view.list_template
+
+    @property  # For convenience
+    def query(self):
+        return getattr(self, self.resource_queries[0])  # first queried item is the query
+
+    @query.setter
+    def query(self, x):
+        setattr(self, self.resource_queries[0], x)
+
+    def prepare_query(self, paginate=True):  # also filter by authorization, paginate
+        """Prepares an original query based on request args provided, such as
+        ordering, filtering, pagination etc """
+        if self.args['order_by']:
+            self.query = self.query.order_by(self.args['order_by'])
+        if self.args['fields']:
+            self.query = self.query.filter(**self.args['fields'])
+
         # TODO implement search, use textindex and do ".search_text()"
-        pass
 
-    pagination = None
-    if args['per_page'] > 0:  # -1 or 0 means all pages
-        pagination = query.paginate(page=args['page'], per_page=args['per_page'])
-        query = pagination.items
-    response['pagination'] = pagination
-    response[query_key] = query
-    return response
+        # TODO max query size 10000 implied here
+        per_page = self.args['per_page'] if paginate and self.args['per_page'] > 0 else 10000
+        self.pagination = self.query.paginate(page=self.args['page'], per_page=per_page)
+        self.query = self.pagination.items  # set default query as the paginated one
+
+
+class ItemResponse(ResourceResponse):
+    """both for getting and editing items of resources"""
+
+    json_fields = frozenset(['instance'])
+    arg_parser = dict(ResourceResponse.arg_parser, **{
+        'view': lambda x: x.lower() if x.lower() in 'markdown' else None,
+        'intent': lambda x: x if x.upper() in METHODS else None,
+        'next': lambda x: x if re_next.match(x) else None
+    })
+
+    def __init__(self, resource_view, queries, method='get', formats=None, theme=None, extra_args=None,
+                 extra_form_args=None):
+        item_arg_parser = getattr(resource_view, 'item_arg_parser', None)
+        if item_arg_parser:
+            self.arg_parser = item_arg_parser
+        super(ItemResponse, self).__init__(resource_view, queries, formats, theme, extra_args)
+
+        self.template = resource_view.item_template
+        self.method = method
+
+        if (self.method != 'get') or self.args['intent']:
+            form_args = extra_form_args or {}
+            if self.args['intent']:
+                # we want to serve a form, pre-filled with field values and parent queries
+                form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
+                form_args.update(self.args['fields'])
+                if self.args['intent'] == 'post':
+                    new_args = dict(request.view_args)
+                    new_args.pop('id')
+                    self.action_url = url_for(change_endpoint('post'), **new_args)
+                else:
+                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args)
+            self.form = self.resource_view.form_class(formdata=request.form, obj=self.instance, **form_args)
+
+    def validate(self):
+        return self.form.validate()
+
+    def commit(self, new_instance=None, next_url=None):
+        next_url = next_url or self.args['next']
+        new_args = dict(request.view_args)
+        new_args.pop('id', None)
+        if self.method == 'delete':
+            self.instance.delete()
+            if not next_url:
+                next_url = url_for(change_endpoint('index'), **new_args)
+        else:
+            instance = new_instance or self.instance
+            instance.save()
+            self.instance = instance  # only save back to response if successful in case we have a post
+            if not next_url:
+                next_url = url_for(change_endpoint('get'), id=self.instance.slug, **new_args)
+        log_event(self.method, self.instance)
+        self.next = next_url
+
+    @property  # For convenience
+    def instance(self):
+        return getattr(self, self.resource_queries[0])  # first queried item is the instance
+
+    @instance.setter
+    def instance(self, x):
+        setattr(self, self.resource_queries[0], x)
+
+    @property
+    def form(self):
+        return getattr(self, self.resource_queries[0] + "_form", None)  # first queried item is the instance
+
+    @form.setter
+    def form(self, x):
+        setattr(self, self.resource_queries[0] + "_form", x)
 
 
 def log_event(action, instance=None, message='', user=None):
@@ -311,15 +395,27 @@ def log_event(action, instance=None, message='', user=None):
     generate_flash(action_strings_translated[action], 'item', instance)
 
 
+def parse_out_arg(out_param):
+    if out_param == 'json':
+        return out_param
+    elif out_param in ['page', 'modal', 'fragment']:
+        return '_%s.html' % out_param  # to use as template path
+        # used in Jinja
+    else:
+        return None  # Same as page, but set as None in order to not override template given inheritance
+
+
 class ResourceView(FlaskView):
-    # Default args
-    list_args = make_list_args()
-    get_args = make_get_args()
-    edit_args = make_edit_args()
+    def after_request(self, name, response):
+        """Makes sure all ResourceResponse objects are rendered before sending onwards"""
+        if isinstance(response, ResourceResponse):
+            return response.render()
+        else:
+            return response
 
     @classmethod
     def register_with_access(cls, app, domain):
-        current_app.access_policy[domain] = cls.access
+        current_app.access_policy[domain] = cls.access_policy
         return cls.register(app)
 
         # def register(): # overload register method to register access policies automatically
@@ -373,6 +469,7 @@ class MultiCheckboxField(f.SelectMultipleField):
 
 class RacModelSelectField(ModelSelectField):
     # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
+    # have been fixed in 0.8 when released
     # This is required to accept custom primary keys
     # https://github.com/MongoEngine/flask-mongoengine/issues/82
     def process_formdata(self, valuelist):

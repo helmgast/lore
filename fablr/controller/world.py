@@ -20,11 +20,12 @@ from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine.queryset import Q
+from mongoengine import NotUniqueError
 from werkzeug.contrib.atom import AtomFeed
 
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
-                                       render, make_list_args, make_get_args, make_edit_args, ResourceView,
-                                       parse_args, tune_query, log_event)
+                                       ResourceView, filterable_fields_parser, prefillable_fields_parser,
+                                       ListResponse, ItemResponse)
 from fablr.model.world import (Article, World, PublishStatus, Publisher)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -56,25 +57,27 @@ def publish_filter(qr):
 
 
 class PublishersView(ResourceView):
-    list_template = 'world/publisher_list.html'
-    item_template = 'world/publisher_item.html'
-    form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
-    access = ResourceAccessPolicy({
+    access_policy = ResourceAccessPolicy({
         'view': 'user',
         '_default': 'admin'
     })
+    model = Publisher
+    list_template = 'world/publisher_list.html'
+    list_arg_parser = filterable_fields_parser(['title', 'owner', 'created_date'])
+    item_template = 'world/publisher_item.html'
+    item_arg_parser = prefillable_fields_parser(['title', 'owner', 'created_date'])
+    form_class = model_form(Publisher, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
 
-    @render(html=list_template, json=None)
     def index(self):
-        auth = self.access.auth_or_abort('list')
-        publishers = Publisher.objects()
-        return dict(publishers=publishers)
+        r = ListResponse(PublishersView, [('publishers', Publisher.objects())])
+        r.auth_or_abort()
+        return r
 
-    @render(html=item_template, json=None)
     def get(self, id):
         publisher = Publisher.objects(slug=id).first_or_404()
-        auth = self.access.auth_or_abort('view', publisher)
-        return dict(publisher=publisher)
+        r = ItemResponse(PublishersView, [('publisher', publisher)])
+        r.auth_or_abort()
+        return r
 
     def post(self):
         abort(501)  # Not implemented
@@ -88,61 +91,62 @@ class PublishersView(ResourceView):
 
 class WorldsView(ResourceView):
     route_base = '/'
+    access_policy = ResourceAccessPolicy({
+        'view': 'public',
+        'list': 'public',
+        '_default': 'admin'
+    })
+    model = World
     list_template = 'world/world_list.html'
+    list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     item_template = 'world/world_item.html'
+    item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
-    access = ResourceAccessPolicy()
 
     @route('/worlds/')
-    @render(html=list_template, json=None)
     def index(self):
-        response = parse_args(dict(worlds=World.objects(), action='list'), self.list_args)  # sets response['args']
-        response = self.access.auth_or_abort(response)  # sets response['auth']
-        response['worlds'] = publish_filter(response['worlds']).order_by('title')  # set filter
-        response = tune_query(response, 'worlds')  # sets filtering rules for list, response['pagination']
-        return response
+        r = ListResponse(WorldsView, [('worlds', World.objects())])
+        r.auth_or_abort()
+        r.worlds = publish_filter(r.worlds).order_by('title')
+        r.prepare_query()
+        return r
 
-    @route('/<id>', defaults={'intent': ''}, endpoint="WorldsView:get")
-    @route('/<id>/<any(put,patch):intent>', endpoint="WorldsView:get")
-    @route('/worlds/<any(post):intent>', defaults={'id': None}, endpoint="WorldsView:get")
-    @render(html=item_template, json=None)
-    def get(self, id, intent):
-        world = World.objects(slug=id).first_or_404()
-        if world.slug == 'kult':
-            g.lang = 'en'
-        response = dict(world=world, intent=intent, action='view')
-        response = self.access.auth_or_abort(response, instance=world)  # sets response['auth']
-        response = parse_args(response, self.get_args)  # sets response['args']
-        if intent in ['post', 'put', 'patch', 'delete']:  # a form is intended
-            response['world_form'] = self.form_class(obj=world, **response['args']['keys'])
-            response['action_url'] = ''  # url_for('world.WorldsView:get', **request.view_args)
-            print response['action_url']
-        theme_template = 'themes/%s-theme.html' % world.slug
-        response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
-
-        return response
+    def get(self, id):
+        if id == 'post':
+            r = ItemResponse(WorldsView, [('world', None)], extra_args={'intent': 'post'})
+        else:
+            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404())])
+            if r.world.language:
+                g.lang = r.world.language
+        r.auth_or_abort()
+        r.set_theme('themes/%s-theme.html' % id)  # id == world.slug
+        return r
 
     def post(self):
-        abort(501)  # Not implemented
+        r = ItemResponse(WorldsView, [('world', None)], method='post')
+        r.auth_or_abort()
+        world = World()
+        if not r.validate():
+            return r, 400
+        r.form.populate_obj(world)
+        try:
+            r.commit(new_instance=world)
+        except NotUniqueError:
+            r.form.title.errors.append('ID %s already in use')
+            return r, 400
+        return redirect(r.next)
 
-    @render(html=item_template, json=None)
     def patch(self, id):
         world = World.objects(slug=id).first_or_404()
-        response = self.access.auth_or_abort(dict(world=world, action='edit'), instance=world)
-        response = parse_args(response, self.edit_args)  # sets response['args']
-        form = self.form_class(request.form, obj=world)
-        if not isinstance(form, RacBaseForm):
+        r = ItemResponse(WorldsView, [('world', world)], method='patch')
+        if not isinstance(r.form, RacBaseForm):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
-        if not form.validate():
+        if not r.validate():
             # return same page but with form errors?
-            response['world_form'] = form
-            return response
-            # abort(400, response) # BadRequest
-        form.populate_obj(world, request.form.keys())  # only populate selected keys
-        world.save()
-        log_event('patch', world)
-        next = response['args']['next'] or url_for('world.WorldsView:get', id=world.slug)
-        return redirect(next)
+            return r, 400  # BadRequest
+        r.form.populate_obj(world, request.form.keys())  # only populate selected keys
+        r.commit()
+        return redirect(r.next)
 
     def delete(self, id):
         abort(501)  # Not implemented
@@ -150,52 +154,39 @@ class WorldsView(ResourceView):
 
 class ArticlesView(ResourceView):
     route_base = '/<world>'
+    access_policy = ResourceAccessPolicy()
+    model = Article
     list_template = 'world/article_list.html'
+    list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date'])
     item_template = 'world/article_item.html'
+    item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
                             exclude=['slug'],
                             converter=RacModelConverter())
-    access = ResourceAccessPolicy()
-    list_args = make_list_args(['title', 'type', 'creator', 'created_date'])
-    get_args = make_get_args(['title', 'type', 'creator', 'created_date'])
-    edit_args = make_edit_args()
 
-    @route('/articles/')
-    @render(html=list_template, json=None)
+    @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
     def index(self, world):
         world = World.objects(slug=world).first_or_404()
-        if world.slug == 'kult':
-            g.lang = 'en'
+        if world.language:
+            g.lang = world.language
         articles = Article.objects(world=world)
-        response = parse_args(dict(world=world, articles=articles, action='list'),
-                              self.list_args)  # sets response['args']
-        response = self.access.auth_or_abort(response)  # sets response['auth']
+        r = ListResponse(ArticlesView,
+                         [('articles', articles), ('world', world)])
+        r.auth_or_abort()
+        r.query = publish_filter(r.query).order_by('-created_date')
+        r.prepare_query()
+        r.set_theme('themes/%s-theme.html' % world.slug)
+        return r
 
-        response['articles'] = publish_filter(response['articles']).order_by('-created_date')  # set filter
-        # print list(response['articles'])
-
-        response = tune_query(response, 'articles')  # sets filtering rules for list, response['pagination']
-
-        print type(response['articles'])
-        theme_template = 'themes/%s-theme.html' % world.slug
-        response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
-        return response
-
-    # @route('/<world>/blog')
-    @render(html='world/article_blog.html', json=None)
     def blog(self, world):
-        # If decorated by @render, 'norender' means to skip rendering
-        response = self.index(world, norender=True)
-        # response['articles']._ordering # get ordering
-        response['args']['view'] = 'list'
-        response['articles'] = response['pagination'].iterable.filter(type='blogpost').order_by('-featured',
-                                                                                                '-created_date')
-        response = tune_query(response, 'articles')  # sets filtering rules for list, response['pagination']
-        return response
+        r = self.index(world)
+        r.args['view'] = 'list'
+        r.articles = r.pagination.iterable.filter(type='blogpost').order_by('-featured', '-created_date')
+        r.template = 'world/article_blog.html'
+        r.prepare_query()
+        return r
 
-    # @route('/<world>/feed')
-    # No renderer needed, it renders itself
     def feed(self, world):
         world = World.objects(slug=world).first_or_404()
         feed = AtomFeed(_('Recent Articles in ') + world.title,
@@ -211,80 +202,70 @@ class ArticlesView(ResourceView):
                      published=article.created_date)
         return feed.get_response()
 
-    # articles/<intent>post
-    # articles/<id>
-    # articles/<id>/patch
-    # articles/<id>/put
-    # important that /post comes below /<id>
-    @route('/<id>', defaults={'intent': ''}, endpoint="ArticlesView:get")
-    @route('/<id>/<any(put,patch):intent>', endpoint="ArticlesView:get")
-    @route('/articles/<any(post):intent>', defaults={'id': None}, endpoint="ArticlesView:get")
-    @render(html=item_template, json=None)
-    def get(self, world, id, intent):
+    def get(self, world, id):
         world = World.objects(slug=world).first_or_404()
-        if world.slug == 'kult':
-            g.lang = 'en'
-        article = Article.objects(slug=id).first_or_404() if id else None
-        response = dict(article=article, world=world, intent=intent, action='view')
-        response = self.access.auth_or_abort(response, instance=article)  # sets response['auth']
-        response = parse_args(response, self.get_args)  # sets response['args']
-        if intent in ['post', 'put', 'patch', 'delete']:  # a form is intended
-            response['article_form'] = self.form_class(obj=article, world=world, **response['args']['keys'])
-            response[
-                'action_url'] = ''  # url_for('world.ArticlesView:%s' % intent,  method=intent.upper(), **{k:v for k,v in request.view_args.iteritems() if k!='intent'} )
-        theme_template = 'themes/%s-theme.html' % world.slug if world.slug == 'kult' else ''
-        response['theme'] = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
-        print "--Reading------------------\n%s\n----------------------------" % article.content
-        return response
+        if world.language:
+            g.lang = world.language
+        # Special id post means we interpret this as intent=post (to allow simple routing to get)
+        if id == 'post':
+            r = ItemResponse(ArticlesView,
+                             [('article', None), ('world', world)],
+                             extra_args={'intent': 'post'})
+        else:
+            r = ItemResponse(ArticlesView,
+                             [('article', Article.objects(slug=id).first_or_404()), ('world', world)])
+        r.auth_or_abort()
+        r.set_theme('themes/%s-theme.html' % world.slug)
+        return r
 
-    @route('/articles/', methods=['POST'])
-    @render(html=item_template, json=None)
     def post(self, world):
         world = World.objects(slug=world).first_or_404()
-        response = parse_args(dict(world=world, action='new'), self.edit_args)  # sets response['args']
+        if world.language:
+            g.lang = world.language
+        r = ItemResponse(ArticlesView,
+                         [('article', None), ('world', world)],
+                         method='post')
+        r.auth_or_abort()
         article = Article()
-        form = self.form_class(request.form, obj=article)
-        if not form.validate():
-            # return same page but with form errors?
-            abort(400, form.errors)  # BadRequest
-        form.populate_obj(article)
-        print "-Post-new----------------------\n%s\n----------------------------" % article.content
-        article.save()
-        log_event('post', article)
-        next = response['args']['next'] or url_for('world.ArticlesView:get', id=article.slug, world=world.slug)
-        return redirect(next)
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(article)
+        try:
+            r.commit(new_instance=article)
+        except NotUniqueError:
+            r.form.title.errors.append('ID %s already in use')
+            return r, 400  # Respond with same page, including errors highlighted
+        return redirect(r.next)
 
-    @render(html=item_template, json=None)
     def patch(self, world, id):
         world = World.objects(slug=world).first_or_404()
+        if world.language:
+            g.lang = world.language
         article = Article.objects(slug=id).first_or_404()
-        response = dict(article=article, world=world, action='edit')
-        response = self.access.auth_or_abort(response, instance=article)
-        response = parse_args(response, self.edit_args)  # sets response['args']
-        form = self.form_class(request.form, obj=article)
-        if not isinstance(form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
-        if not form.validate():
-            # return same page but with form errors?
-            abort(400, response)  # BadRequest
-        form.populate_obj(article, request.form.keys())  # only populate selected keys
-        print "--Post-edit---------------\n%s\n----------------------------" % article.content
-        article.save()
-        log_event('patch', article)
-        next = response['args']['next'] or url_for('world.ArticlesView:get', id=article.slug, world=world.slug)
-        return redirect(next)
+        r = ItemResponse(ArticlesView,
+                         [('article', article), ('world', world)],
+                         method='patch')
+        r.auth_or_abort()
 
-    @render(html=item_template, json=None)
+        if not isinstance(r.form, RacBaseForm):
+            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(article, request.form.keys())  # only populate selected keys
+        r.commit()
+        return redirect(r.next)
+
     def delete(self, world, id):
         world = World.objects(slug=world).first_or_404()
+        if world.language:
+            g.lang = world.language
         article = Article.objects(slug=id).first_or_404()
-        response = dict(article=article, world=world, action='delete')
-        response = self.access.auth_or_abort(response, instance=article)
-        response = parse_args(response, self.edit_args)  # sets response['args']
-        next = response['args']['next'] or url_for('world.ArticlesView:index', world=world.slug)
-        article.delete()
-        log_event('delete', article)
-        return redirect(next)
+        r = ItemResponse(ArticlesView,
+                         [('article', article), ('world', world)],
+                         method='delete')
+        r.auth_or_abort()
+        r.commit()
+        return redirect(r.next)
 
 
 class ArticleRelationsView(ResourceView):
@@ -292,7 +273,7 @@ class ArticleRelationsView(ResourceView):
     list_template = 'world/articlerelation_list.html'
     item_template = 'world/articlerelation_item.html'
     form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
-    access = ResourceAccessPolicy()
+    access_policy = ResourceAccessPolicy()
 
     @route('/relations/')
     def index(self, world):
@@ -300,12 +281,14 @@ class ArticleRelationsView(ResourceView):
 
 
 @world_app.route('/')
-@render(html='helmgast.html', json=None)
 def homepage():
     world = World.objects(slug='helmgast').first_or_404()
     articles = Article.objects().filter(type='blogpost').order_by('-featured', '-created_date')
-    response = ArticlesView.access.auth_or_abort(dict(world=world, articles=articles, action='list'))
-    return response
+    r = ListResponse(ArticlesView, [('articles', articles), ('world', world)], formats=['html'])
+    r.template = 'helmgast.html'
+    r.auth_or_abort()
+    r.prepare_query()
+    return r.render()
 
 
 PublishersView.register_with_access(world_app, 'publisher')

@@ -39,6 +39,10 @@ GenderTypes = Choices(
     female=_('Female'),
     unknown=_('Unknown'))
 
+Languages = Choices(
+    en=_('English'),
+    se=_('Swedish')
+)
 
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -69,6 +73,7 @@ class World(Document):
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
+    language = StringField(choices=Languages.to_tuples(), verbose_name=_('Preferred Language'))
 
     def clean(self):
         self.slug = slugify(self.title)

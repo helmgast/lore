@@ -1,23 +1,23 @@
 
-Babel==2.0
+Babel==2.2.0
 facebook-sdk==0.4.0
 #Flask==0.10.1
 # Install specific dev version that supports turning off Set Cookie
-https://github.com/mitsuhiko/flask/archive/751fe451df7d0e03754a02a52e4b59152b37891a.zip
+git+git://github.com/mitsuhiko/flask#egg=Flask-dev
+git+https://github.com/ripperdoc/flask-classy
 Flask-Babel==0.9
 Flask-DebugToolbar==0.10.0
 Flask-Markdown==0.3
-flask-mongoengine==0.7.1
+flask-mongoengine==0.7.5
 Flask-WTF==0.12
 Flask-Script
-Flask-Classy
-google-api-python-client==1.4.0
-gunicorn==19.3.0
+google-api-python-client==1.5.0
+gunicorn==19.4.5
 mandrill==1.0.57
-Markdown==2.6.1
-mongoengine==0.9.0
-Pillow==2.8.1
-pymongo==2.8
-python-slugify==0.1.0
-stripe==1.22.2
-WTForms==2.0.2
+Markdown==2.6.5
+mongoengine==0.10.6
+Pillow==3.1.1
+pymongo==3.2.1
+python-slugify==1.2.0
+stripe==1.30.0
+WTForms==2.1

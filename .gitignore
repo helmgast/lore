@@ -4,7 +4,7 @@
 *.mo
 *.pot
 *.sublime*
-config.py
+fablr/config.py
 /.idea
 /.settings
 /.project

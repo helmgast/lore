@@ -15,6 +15,7 @@ from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
 from mongoengine import Document, QuerySet, ConnectionError
+from werkzeug.urls import url_decode
 
 toolbar = DebugToolbarExtension()
 
@@ -47,16 +48,25 @@ class MethodRewriteMiddleware(object):
     def __init__(self, app):
         self.app = app
 
+    # def __call__(self, environ, start_response):
+    #     if environ['REQUEST_METHOD'] == 'POST':
+    #         path = environ['PATH_INFO'].rsplit('/', 1)
+    #         if len(path) > 1:
+    #             intent = path[1].upper()
+    #             print "Path %s in list = %s" % (intent, intent in ['PUT', 'PATCH', 'DELETE'])
+    #             if intent in ['PUT', 'PATCH', 'DELETE']:
+    #                 intent = intent.encode('ascii', 'replace')
+    #                 environ['REQUEST_METHOD'] = intent
+    #                 environ['PATH_INFO'] = path[0]
+    #     return self.app(environ, start_response)
+
     def __call__(self, environ, start_response):
-        if environ['REQUEST_METHOD'] == 'POST':
-            path = environ['PATH_INFO'].rsplit('/', 1)
-            if len(path) > 1:
-                intent = path[1].upper()
-                print "Path %s in list = %s" % (intent, intent in ['PUT', 'PATCH', 'DELETE'])
-                if intent in ['PUT', 'PATCH', 'DELETE']:
-                    intent = intent.encode('ascii', 'replace')
-                    environ['REQUEST_METHOD'] = intent
-                    environ['PATH_INFO'] = path[0]
+        if 'method' in environ.get('QUERY_STRING', ''):
+            args = url_decode(environ['QUERY_STRING'])
+            method = args.get('method', '').upper()
+            if method and method in ['PUT', 'PATCH', 'DELETE']:
+                method = method.encode('ascii', 'replace')
+                environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
 
 
@@ -94,7 +104,7 @@ class MongoJSONEncoder(JSONEncoder):
         elif isinstance(o, ObjectId) or isinstance(o, QuerySet):
             return str(o)
         elif isinstance(o, Pagination):
-            return {'page': o.page, 'per_page': o.per_page, 'total': o.total}
+            return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
         print JSONEncoder.default(self, o)
         return JSONEncoder.default(self, o)
 

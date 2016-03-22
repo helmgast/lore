@@ -153,6 +153,13 @@ def configure_extensions(app):
 
     app.json_encoder = extensions.MongoJSONEncoder
 
+    # @app.url_defaults
+    # def default_publisher(endpoint, values):
+    #     if 'publisher' in values:
+    #         return
+    #     else:
+    #         values['publisher'] = 'helmgast'
+
     # app.url_map.host_matching = True
     # app.url_map.default_subdomain = 'fablr.local'
 
@@ -303,9 +310,9 @@ def register_main_routes(app, auth):
             if diff > 500:
                 app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
-                # Print rules in alphabetic order
-                # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
-                #   print rule.__repr__(), rule.subdomain
+    # Print rules in alphabetic order
+    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
+    #   print rule.__repr__(), rule.subdomain
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

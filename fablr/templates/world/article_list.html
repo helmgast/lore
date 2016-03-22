@@ -12,7 +12,7 @@
 
 {% block pre_content %}
 <h2 class="browseArticle">{{ _('Browse') }}</h2>
-{{MACRO.LIST_CONTROLS(articles[0].__class__, ['title', 'creator', 'type', 'created_date'])}}
+{{MACRO.LIST_CONTROLS(model, ['title', 'creator', 'type', 'created_date'])}}
 {% endblock %}
 
 {% block content %}
@@ -25,7 +25,7 @@
 
       {% for article in group.list %}
       <a class="blog_header" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><h3>{{ article. title}}</h3></a>
-      <ul class="list-inline article-meta" style="margin-bottom: 0px">
+      <ul class="list-inline article-meta" style="margin-bottom: 0">
         <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
       <li title="{{ _('Creator') }}">
       <span class="glyphicon glyphicon-user"></span>
@@ -62,12 +62,12 @@
 
     {% else %} {# ==table #}
     <table class="table table-hover">
-      {{ MACRO.TABLE_HEADER(articles[0].__class__, ['title', 'creator', 'type', 'created_date']) }}
+      {{ MACRO.TABLE_HEADER(model, ['title', 'creator', 'type', 'created_date']) }}
       <tbody>
 
         {% for article in group.list %}
         <tr>
-          <td><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug, intent='patch')}}">{{article.title}}</a></td>
+          <td><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug)}}">{{article.title}}</a></td>
           <td>{{article.creator}}</td>
           <td>{{article.get_type_display()}}</td>
           <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>
