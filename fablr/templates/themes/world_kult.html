@@ -1,0 +1,221 @@
+{% extends "_page.html" %}
+{% import 'includes/macros.html' as MACRO %}
+
+{% block cssimports %}
+{{super()}}
+<link href='http://fonts.googleapis.com/css?family=Enriqueta' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<style type="text/css">
+
+html {
+  background-color: #000;
+}
+
+.mybody  {
+	background: #000 url("{{ url_for('static', filename='img/themes/kultbakgrund-min.jpg') }}") no-repeat fixed center top;
+	font-family: 'Enriqueta', serif;
+  color: #fff;
+
+	}
+
+.privileged { /* modify color to fit kulttheme */
+  color: #fff;
+}
+
+.breakingline  {
+	max-width: 100%;
+	margin-left: auto;
+  margin-right: auto;
+	margin-top:10px;
+	margin-bottom:10px;	}
+
+
+.container {
+  max-width: 1024px;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.content {
+  background-color: inherit;
+}
+.header {
+	max-width: 95%;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.mainbody {
+	max-width: 100%;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+.table-hover>tbody>tr:hover {
+  background-color: #333;
+}
+
+a:hover {
+  color: #d00;
+}
+
+#content-editor p:hover {
+  background-color: #333;
+}
+
+.options {
+  background-color: #333;
+}
+
+textarea {
+  color: #000;
+}
+
+h1 {color:#d00;
+	font-size:50px;
+	font-family: 'Enriqueta', serif;
+	margin:0px;
+	padding:0px;
+	}
+
+h3 {color:#fff;
+	font-size:25px;
+	font-family: 'Enriqueta', serif;
+	margin:0px;
+	padding:0px;
+	}
+
+a {
+	color:#fff;
+	text-decoration:none;
+	font-weight:600;
+	}
+p {
+	color:#fff;
+	font-size:16px;
+	font-family: 'Enriqueta', serif;
+	text-align:justify;
+	line-height:22	px;
+	}
+
+span.red {
+	color:#d00;
+	font-weight:600;
+	}
+
+span.bold {
+	font-weight:600;
+	}
+
+.center p {
+	text-align:center;}
+
+span.italic {
+	font-style:italic;
+		}
+
+.blockquote {
+	max-width: 80%;
+	margin-left: auto;
+  margin-right: auto;
+	}
+
+.blockquote p {
+	color:#eee;
+	/*font-style:italic;*/
+	}
+
+blockquote {
+    background-image: url({{ url_for('static', filename='img/themes/quote_left.png') }});
+    background-position: top left;
+    background-repeat: no-repeat;
+    }
+/*blockquote:last-child {
+    background-image: url({{ url_for('static', filename='img/themes/quote_right.png') }});
+    background-repeat: no-repeat;
+    background-position: bottom right;
+}*/
+
+strong {
+  color:#d00;
+	font-weight:600;
+}
+
+.blocky-left {
+	float:left;
+	margin-right:10px;
+	overflow:hidden;
+	/*font-style:italic;*/
+	}
+
+.blocky-right {
+	margin-top:-80px;
+	float:right;
+	padding-left:20px;
+	overflow:hidden;
+	/*font-style:italic;*/
+	}
+
+
+</style>
+<link href="http://cdn-images.mailchimp.com/embedcode/slim-081711.css" rel="stylesheet" type="text/css">
+<style type="text/css">
+#mc_embed_signup{
+	clear:left;
+	width: 600px;
+	margin-left: auto;
+    margin-right: auto;
+}
+</style>
+{% endblock %}
+
+{% block content_title %}KULT: DIVINITY LOST{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block body_class %}mybody{% endblock %}
+
+
+{% block middle %}
+<img src="{{ url_for('static', filename='img/themes/kultlogo2-min.png') }}" width="100%" alt="the game logotype"/>
+{% block pre_content %}
+{% block hero_box %}
+<br><br>
+<div class="mainbody"><h1 style="text-align:center;">KULT: DIVINITY LOST ANNOUNCED</h1>
+  <h2><em> Arrives in 2016 – kickstarter launches in February! </em></h2>
+</div>
+<div class="mainbody"><img src="{{ url_for('static', filename='img/themes/angel-min.png') }}" width="100%" alt="flavour image of angel"/> </div>
+
+
+<!-- Begin MailChimp Signup Form -->
+<h2><label for="mce-EMAIL">Sign-up for Kult updates / newsletter</label></h2>
+<div id="mc_embed_signup">
+<form action="http://kultdivinitylost.us11.list-manage.com/subscribe/post?u=c2fb63161be612fbc2330d1d1&amp;id=ad4ba1c7a5" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" style="padding-right: 3%;" target="_blank" novalidate>
+    <div id="mc_embed_signup_scroll">
+
+	<input type="submit" value="Signup" name="subscribe" id="mc-embedded-subscribe" class="button" style="background-color: #d00; float: right;">
+	<input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL" placeholder="Your email address" required>
+    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+    <div style="position: absolute; left: -5000px;"><input type="text" name="b_c2fb63161be612fbc2330d1d1_ad4ba1c7a5" tabindex="-1" value=""></div>
+    <div class="clear"></div>
+    </div>
+</form>
+</div>
+<!--End mc_embed_signup-->
+
+<h2>For further information</h2>
+<div class="center"><p><a target="_blank" href="https://www.facebook.com/kultdivinitylost"><i class="fa fa-facebook-official">&nbsp;&nbsp;facebook.com/kultdivinitylost</i>
+</a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="mailto:info@helmgast.se"><i class="fa fa-envelope-o">&nbsp;&nbsp;</i>info@helmgast.se</a></p><br></div>
+{% endblock hero_box %}
+{% endblock pre_content %}
+{% block content %}
+
+<div class="mainbody">
+<div class="breakingline">
+<br><br><br><br>
+<img src="{{ url_for('static', filename='img/themes/streck2.png') }}" width="100%" alt="line that breaks the text"/><br><br><br><br></div>
+<p><span class="bold">Helmgast AB</span> is a renowned Swedish publisher and developer of award-winning roleplaying games, such as <span class="italic">Eon, Järn, Neotech</span>, and <span class="italic">Noir</span>. The company uses crowdfunding for launching titles, and has had great success with two top record-breaking Swedish campaigns (for <span class="italic">“Eon”</span> and <span class="italic">“Järn”</span>).</p>
+<p><span class="bold">Paradox Entertainment Inc</span>, which will be known as Cabinet Licensing after the recent change in ownership, manages and develops its rights library in all forms of entertainment, including the motion picture, television, gaming, publishing and toy industries. The Company’s library consists of such well-known brands as <span class="italic">Conan the Barbarian, Kull of Atlantis, Solomon Kane, Kult, Mutant Chronicles and Mutant: Year Zero</span>.</p><br><br>
+</div>
+{% endblock content %}
+{% endblock middle %}

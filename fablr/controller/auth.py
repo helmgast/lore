@@ -427,8 +427,8 @@ class Auth(object):
         return render_template('auth/login.html', form=form, op='login')
 
     def logout(self):
-        # if user is logged in via google, send token revoke
-        self.logout_user(self.get_logged_in_user())
+        # TODO if user is logged in via google, send token revoke
+        self.logout_user()
         return redirect(self.get_next_url())
 
     def remind(self):

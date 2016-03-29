@@ -15,10 +15,11 @@ import logging
 from datetime import datetime
 from itertools import groupby
 
-from flask import request, redirect, url_for, Blueprint, g, abort, current_app
+from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
+from jinja2 import TemplateNotFound
 from mongoengine.queryset import Q
 from mongoengine import NotUniqueError
 from werkzeug.contrib.atom import AtomFeed
@@ -89,7 +90,17 @@ class PublishersView(ResourceView):
         abort(501)  # Not implemented
 
 
+def set_theme(response, theme_type, slug):
+    try:
+        setattr(response, '%s_theme' % theme_type, current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
+        print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
+    except TemplateNotFound:
+        pass
+        print "Not finding theme %s_%s.html" % (theme_type, slug)
+
+
 class WorldsView(ResourceView):
+    subdomain = '<publisher>'
     route_base = '/'
     access_policy = ResourceAccessPolicy({
         'view': 'public',
@@ -103,28 +114,60 @@ class WorldsView(ResourceView):
     item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
 
+    @route('/')
+    def home(self, publisher):
+        world = World.objects(slug=publisher).first_or_404()
+        articles = Article.objects().filter(type='blogpost').order_by('-featured', '-created_date')
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
+                         formats=['html'])
+        r.template = 'world/home.html'
+        r.auth_or_abort()
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
+        return r
+
     @route('/worlds/')
-    def index(self):
-        r = ListResponse(WorldsView, [('worlds', World.objects())])
+    def index(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        r = ListResponse(WorldsView, [('worlds', World.objects()), ('publisher', publisher)])
         r.auth_or_abort()
         r.worlds = publish_filter(r.worlds).order_by('title')
         r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
         return r
 
-    def get(self, id):
+    # Lists all blogposts under a publisher, not world...
+    def blog(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        articles = Article.objects(publisher=publisher, type='blogpost')
+        r = ListResponse(ArticlesView,
+                         [('articles', articles), ('publisher', publisher)])
+        r.auth_or_abort()
+        r.query = publish_filter(r.query).order_by('-created_date')
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher)
+        return r
+
+    def get(self, publisher, id):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         if id == 'post':
-            r = ItemResponse(WorldsView, [('world', None)], extra_args={'intent': 'post'})
+            r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
         else:
-            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404())])
+            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
+            set_theme(r, 'world', r.world.slug)
             if r.world.language:
                 g.lang = r.world.language
         r.auth_or_abort()
-        r.set_theme('themes/%s-theme.html' % id)  # id == world.slug
+        set_theme(r, 'publisher', publisher.slug)
+
         return r
 
-    def post(self):
-        r = ItemResponse(WorldsView, [('world', None)], method='post')
+    def post(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
         world = World()
         if not r.validate():
             return r, 400
@@ -136,9 +179,11 @@ class WorldsView(ResourceView):
             return r, 400
         return redirect(r.next)
 
-    def patch(self, id):
+    def patch(self, publisher, id):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=id).first_or_404()
-        r = ItemResponse(WorldsView, [('world', world)], method='patch')
+        r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
+        set_theme(r, 'publisher', publisher.slug)
         if not isinstance(r.form, RacBaseForm):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
@@ -148,11 +193,12 @@ class WorldsView(ResourceView):
         r.commit()
         return redirect(r.next)
 
-    def delete(self, id):
+    def delete(self, publisher, id):
         abort(501)  # Not implemented
 
 
 class ArticlesView(ResourceView):
+    subdomain = '<publisher>'
     route_base = '/<world>'
     access_policy = ResourceAccessPolicy()
     model = Article
@@ -166,28 +212,31 @@ class ArticlesView(ResourceView):
                             converter=RacModelConverter())
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
-    def index(self, world):
+    def index(self, publisher, world):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         if world.language:
             g.lang = world.language
         articles = Article.objects(world=world)
         r = ListResponse(ArticlesView,
-                         [('articles', articles), ('world', world)])
+                         [('articles', articles), ('world', world), ('publisher', publisher)])
         r.auth_or_abort()
         r.query = publish_filter(r.query).order_by('-created_date')
         r.prepare_query()
-        r.set_theme('themes/%s-theme.html' % world.slug)
+        set_theme(r, 'publisher', publisher.slug)
+        set_theme(r, 'world', world.slug)
         return r
 
-    def blog(self, world):
-        r = self.index(world)
+    def blog(self, publisher, world):
+        r = self.index(publisher, world)
         r.args['view'] = 'list'
         r.articles = r.pagination.iterable.filter(type='blogpost').order_by('-featured', '-created_date')
         r.template = 'world/article_blog.html'
         r.prepare_query()
         return r
 
-    def feed(self, world):
+    def feed(self, publisher, world):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         feed = AtomFeed(_('Recent Articles in ') + world.title,
                         feed_url=request.url, url=request.url_root)
@@ -202,30 +251,39 @@ class ArticlesView(ResourceView):
                      published=article.created_date)
         return feed.get_response()
 
-    def get(self, world, id):
+    def get(self, publisher, world, id):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         if world.language:
             g.lang = world.language
         # Special id post means we interpret this as intent=post (to allow simple routing to get)
         if id == 'post':
             r = ItemResponse(ArticlesView,
-                             [('article', None), ('world', world)],
+                             [('article', None), ('world', world), ('publisher', publisher)],
                              extra_args={'intent': 'post'})
         else:
             r = ItemResponse(ArticlesView,
-                             [('article', Article.objects(slug=id).first_or_404()), ('world', world)])
+                             [('article', Article.objects(slug=id).first_or_404()), ('world', world),
+                              ('publisher', publisher)])
+            set_theme(r, 'article', r.article.theme or 'default')
+
         r.auth_or_abort()
-        r.set_theme('themes/%s-theme.html' % world.slug)
+        set_theme(r, 'publisher', publisher.slug)
+        set_theme(r, 'world', world.slug)
+
         return r
 
-    def post(self, world):
+    def post(self, publisher, world):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         if world.language:
             g.lang = world.language
         r = ItemResponse(ArticlesView,
-                         [('article', None), ('world', world)],
+                         [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        set_theme(r, 'world', world.slug)
         article = Article()
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
@@ -237,16 +295,18 @@ class ArticlesView(ResourceView):
             return r, 400  # Respond with same page, including errors highlighted
         return redirect(r.next)
 
-    def patch(self, world, id):
+    def patch(self, publisher, world, id):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         if world.language:
             g.lang = world.language
         article = Article.objects(slug=id).first_or_404()
         r = ItemResponse(ArticlesView,
-                         [('article', article), ('world', world)],
+                         [('article', article), ('world', world), ('publisher', publisher)],
                          method='patch')
         r.auth_or_abort()
-
+        set_theme(r, 'publisher', publisher.slug)
+        set_theme(r, 'world', world.slug)
         if not isinstance(r.form, RacBaseForm):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
@@ -255,20 +315,24 @@ class ArticlesView(ResourceView):
         r.commit()
         return redirect(r.next)
 
-    def delete(self, world, id):
+    def delete(self, publisher, world, id):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
         world = World.objects(slug=world).first_or_404()
         if world.language:
             g.lang = world.language
         article = Article.objects(slug=id).first_or_404()
         r = ItemResponse(ArticlesView,
-                         [('article', article), ('world', world)],
+                         [('article', article), ('world', world), ('publisher', publisher)],
                          method='delete')
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        set_theme(r, 'world', world.slug)
         r.commit()
         return redirect(r.next)
 
 
 class ArticleRelationsView(ResourceView):
+    subdomain = '<publisher>'
     route_base = '/<world>/<article>'
     list_template = 'world/articlerelation_list.html'
     item_template = 'world/articlerelation_item.html'
@@ -282,13 +346,7 @@ class ArticleRelationsView(ResourceView):
 
 @world_app.route('/')
 def homepage():
-    world = World.objects(slug='helmgast').first_or_404()
-    articles = Article.objects().filter(type='blogpost').order_by('-featured', '-created_date')
-    r = ListResponse(ArticlesView, [('articles', articles), ('world', world)], formats=['html'])
-    r.template = 'helmgast.html'
-    r.auth_or_abort()
-    r.prepare_query()
-    return r.render()
+    return render_template('homepage.html')
 
 
 PublishersView.register_with_access(world_app, 'publisher')

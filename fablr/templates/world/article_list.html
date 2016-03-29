@@ -1,4 +1,4 @@
-{% extends "world/world_item.html" if not parent_template else parent_template %}
+{% extends "world/world_item.html" if world else "world/_page.html" %}
 
 {% if args['order_by'] and args['order_by'].endswith('type') %}
     {% set groups = articles|by_articletype %}
@@ -24,7 +24,7 @@
     {% if args['view'] == 'list' %}
 
       {% for article in group.list %}
-      <a class="blog_header" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><h3>{{ article. title}}</h3></a>
+      <a class="blog_header" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><h3>{{ article. title}}</h3></a>
       <ul class="list-inline article-meta" style="margin-bottom: 0">
         <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
       <li title="{{ _('Creator') }}">
@@ -34,13 +34,13 @@
       </ul>
       <div class="media">
       {% if article.feature_image %}
-        <a class="pull-left" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}">
+        <a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">
         <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
         </a>
       {% endif %}
         <div class="media-body">
           {% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-          <a href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
+          <a href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
         </div>
       </div>
       {% endfor %}
@@ -49,12 +49,12 @@
 
       {% for article in group.list %}
       <div class="col-md-4 product">
-          {% if article.feature_image %}<a href="{{url_for('.ArticlesView:get', world=world.slug, id=article.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}"></a>{% endif %}
+          {% if article.feature_image %}<a href="{{url_for('.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}"></a>{% endif %}
           <ul class="product-details">
               <li class="product-type">{{article.get_type_display()}} {{article.created_date.strftime('%Y-%m-%d')}}</li>
           </ul>
           <div class="product-intro">
-              <h3><a href="{{url_for('.ArticlesView:get', world=world.slug, id=article.slug)}}">{{ article.title }}</a></h3>
+              <h3><a href="{{url_for('.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">{{ article.title }}</a></h3>
               <p>{{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}</p>
           </div>
       </div>
@@ -67,7 +67,7 @@
 
         {% for article in group.list %}
         <tr>
-          <td><a href="{{ url_for('.ArticlesView:get', id=article.slug, world=world.slug)}}">{{article.title}}</a></td>
+          <td><a href="{{ url_for('.ArticlesView:get', publisher=publisher.slug, id=article.slug, world=world.slug)}}">{{article.title}}</a></td>
           <td>{{article.creator}}</td>
           <td>{{article.get_type_display()}}</td>
           <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>

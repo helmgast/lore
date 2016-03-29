@@ -153,21 +153,22 @@ def configure_extensions(app):
 
     app.json_encoder = extensions.MongoJSONEncoder
 
+    app.url_rule_class = extensions.FablrRule
+
     # @app.url_defaults
-    # def default_publisher(endpoint, values):
-    #     if 'publisher' in values:
-    #         return
-    #     else:
-    #         values['publisher'] = 'helmgast'
+    def default_publisher(endpoint, values):
+        if 'publisher' in values:
+            return
+        elif endpoint.startswith('world.'):
+            values['publisher'] = 'helmgast'
 
-    # app.url_map.host_matching = True
-    # app.url_map.default_subdomain = 'fablr.local'
-
-    # def host_in_url(endpoint, values):
-    #     print "setting host from %s to %s" % (values.get('host', ''), 'sub')
-    #     values.setdefault('host', 'sub')
-
-    # app.url_defaults(host_in_url)
+    # Set fonts to allow cross origin, from different subdomains, when using development server
+    if app.debug:
+        def new_static(filename, **kwargs):
+            rv = app.send_static_file(filename)
+            rv.headers['Access-Control-Allow-Origin'] = '*'
+            return rv
+        app.view_functions['static'] = new_static
 
     extensions.start_db(app)
 
@@ -285,6 +286,11 @@ def register_main_routes(app, auth):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
+    @app.errorhandler(404)
+    def notfound(err):
+        print err
+        return err
+
     @app.template_filter('currentyear')
     def currentyear():
         return datetime.utcnow().strftime('%Y')
@@ -311,6 +317,8 @@ def register_main_routes(app, auth):
                 app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
     # Print rules in alphabetic order
+    for rule in app.url_map.iter_rules():
+        print rule.__repr__(), rule.subdomain
     # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
     #   print rule.__repr__(), rule.subdomain
 

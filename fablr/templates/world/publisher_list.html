@@ -1,47 +1,47 @@
-{% extends "world/_page.html" if not parent_template else parent_template %}
+{% extends "_page.html" %}
+
+{% block publishers_active %} class="active"{% endblock %}
 
 {% block content_title %}{{ _('Publisher') }}{% endblock %}
 {% block content_tagline %}{{ _('working hard to imagine') }}{% endblock %}
 
 
-{% block cssimports %}
-{{ super() }}
-{% include 'themes/' + (publisher.slug if publisher else 'default') + '-theme.html' ignore missing %}
-{% endblock %}
-
-
 {% block sidebar %}
-<ul class="nav nav-pills nav-stacked">
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list')) %}
-  <li><a class="{{privileged}}" href="{{ url_for('.PublishersView:index') }}"><span class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
-  {% endcall %}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
-  <li><a class="{{privileged}}" href="{{ url_for('.PublishersView:index', intent='post') }}"><span
-          class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-  {% endcall %}
+    <ul class="nav nav-pills nav-stacked">
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list')) %}
+            <li><a class="{{ privileged }}" href="{{ url_for('.PublishersView:index') }}"><span
+                    class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
+        {% endcall %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
+            <li><a class="{{ privileged }}" href="{{ url_for('.PublishersView:index', intent='post') }}"><span
+                    class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
+        {% endcall %}
 
-</ul>
-
+    </ul>
 {% endblock %}
+
 
 {% block content %}
     <div class="row">
-    {% for publisher in publishers %}
-    <div class="col-md-5 col-xs-6 publisher_item">
-        <h3><a href="{{ url_for('.PublishersView:get', id=publisher.slug)}}">{{ publisher.title }}</a>
-        <br><small>{{ publisher.description }}</small></h3>
-        <hr>
-        <dl class="dl-horizontal">
-            <dt>{{ _('Created date') }}</dt>
-            <dd>{{ publisher.created_date.strftime('%Y-%m-%d') }}</dd>
-        </dl>
-    </div>
-    {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
-    {% else %}
-    <div class="jumbotron text-center">
-    <h2>{{_('No publishers setup yet')}}</h2>
-    </div>
-    {% endfor %}
-  </div>
-  {% include "includes/pagination.html" %}
+        {% for publisher in publishers %}
+            <div class="col-md-5 col-xs-6 publisher_item">
+                <h3><a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
+                    <br>
+                    <small>{{ publisher.description }}</small>
+                </h3>
+                <hr>
+                <dl class="dl-horizontal">
+                    <dt>{{ _('Created date') }}</dt>
+                    <dd>{{ publisher.created_date.strftime('%Y-%m-%d') }}</dd>
+                </dl>
+            </div>
+            {% if loop.index is divisibleby 2 %}</div>
+                <div class="row">{% endif %}
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No publishers setup yet') }}</h2>
+            </div>
+        {% endfor %}
+        </div>
+    {% include "includes/pagination.html" %}
 {% endblock %}

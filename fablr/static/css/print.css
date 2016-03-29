@@ -1,0 +1,8 @@
+body {
+  color: #000;
+  background: #fff;
+}
+
+.sidebar, .navbar, .betaribbon, footer {
+    display: none;
+}

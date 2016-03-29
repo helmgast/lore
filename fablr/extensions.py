@@ -15,6 +15,7 @@ from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
 from mongoengine import Document, QuerySet, ConnectionError
+from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
 
 toolbar = DebugToolbarExtension()
@@ -68,6 +69,13 @@ class MethodRewriteMiddleware(object):
                 method = method.encode('ascii', 'replace')
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
+
+
+class FablrRule(Rule):
+    """Sorts rules starting with a variable, e.g. /<xyx>, last"""
+    def match_compare_key(self):
+        t = (self.rule.startswith('/<'),) + super(FablrRule, self).match_compare_key()
+        return t
 
 
 def db_config_string(app):

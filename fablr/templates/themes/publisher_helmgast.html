@@ -6,17 +6,19 @@
 {% block content_title %}Helmgast{% endblock %}
 {% block container_class %}container{% endblock %}
 
-{% block navbar %}
-<div class="jumbotron helmgast-header text-center">
-  <h1 class="h-shadow">HELMGAST</h1>
-  <h2>Vi gör rollspel</h2>
-</div>
-{{super()}}
-{% endblock %}
+{% block navbar_brand %}
+  <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}" >
+  <img src="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" style="width: 128px; height: 128px; margin-top: -35px">
+  </a>
+{% endblock navbar_brand %}
 
-{% block mainblock %}
+{% block home %}
 {% include "includes/flash.html" %}
-<div class="row">
+    <div class="jumbotron helmgast-header">
+  <h1>HELMGAST</h1>
+  <h2>Vi tar spel på allvar</h2>
+</div>
+    <div class="row">
 	<div class="col-md-6">
 	  <h1>{{ _('Welcome to') }} Helmgast</h1>
 	  <h4><i>Ny utgivare av klassiska rollspelen Eon, Neotech <br> med många fler i pipelinen!</i></h4>
@@ -28,15 +30,15 @@
 <div class="row">
 {% for article in articles %}
     <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
-      <a class="blog_header" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><h3>{{ article.title }}</h3></a>
+      <a class="blog_header" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><h3>{{ article.title }}</h3></a>
     {% if article.feature_image %}
-      <a class="pull-left" href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}">
+      <a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">
       <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
       </a>
     {% endif %}
 	  <p class="lead">{% if article.description %}{{article.description}}{% else
 	    %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-	    <a href="{{url_for('world.ArticlesView:get', world=world.slug, id=article.slug)}}"><em
+	    <a href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><em
 	    style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
 	  <hr-d>
 	    <ul class="list-inline article-meta" style="margin-bottom: 0;">

@@ -194,7 +194,7 @@ class ResourceResponse(Response):
         'render': lambda x: x if x in ['json', 'html'] else None
     }
 
-    def __init__(self, resource_view, queries, formats=None, theme=None, extra_args=None):
+    def __init__(self, resource_view, queries, formats=None, extra_args=None):
         # Can be set from Model
         assert resource_view
         self.resource_view = resource_view
@@ -211,7 +211,6 @@ class ResourceResponse(Response):
         self.model = resource_view.model
 
         # To be set from from route
-        self.theme = theme
         self.formats = formats or frozenset(['html','json'])
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         super(ResourceResponse, self).__init__()  # init a blank flask Response
@@ -227,9 +226,6 @@ class ResourceResponse(Response):
             if intent:
                 auth = self.access.authorize(intent, instance=instance)
             self.auth = auth
-
-    def set_theme(self, theme_template):
-        self.theme = current_app.jinja_env.get_or_select_template([theme_template, '_page.html'])
 
     def render(self):
         if self.args['render']:
@@ -281,11 +277,11 @@ class ListResponse(ResourceResponse):
     })
     method = 'list'
 
-    def __init__(self, resource_view, queries, formats=None, theme=None, extra_args=None):
+    def __init__(self, resource_view, queries, formats=None, extra_args=None):
         list_arg_parser = getattr(resource_view, 'list_arg_parser', None)
         if list_arg_parser:
             self.arg_parser = list_arg_parser
-        super(ListResponse, self).__init__(resource_view, queries, formats, theme, extra_args)
+        super(ListResponse, self).__init__(resource_view, queries, formats, extra_args)
         self.template = resource_view.list_template
 
     @property  # For convenience
@@ -322,12 +318,12 @@ class ItemResponse(ResourceResponse):
         'next': lambda x: x if re_next.match(x) else None
     })
 
-    def __init__(self, resource_view, queries, method='get', formats=None, theme=None, extra_args=None,
+    def __init__(self, resource_view, queries, method='get', formats=None, extra_args=None,
                  extra_form_args=None):
         item_arg_parser = getattr(resource_view, 'item_arg_parser', None)
         if item_arg_parser:
             self.arg_parser = item_arg_parser
-        super(ItemResponse, self).__init__(resource_view, queries, formats, theme, extra_args)
+        super(ItemResponse, self).__init__(resource_view, queries, formats, extra_args)
 
         self.template = resource_view.item_template
         self.method = method
@@ -416,6 +412,9 @@ class ResourceView(FlaskView):
     @classmethod
     def register_with_access(cls, app, domain):
         current_app.access_policy[domain] = cls.access_policy
+        if not current_app.config.get('ALLOW_SUBDOMAINS', False) and getattr(cls, 'subdomain', None):
+            cls.route_base = "/sub_"+cls.subdomain+cls.route_base
+            del cls.subdomain
         return cls.register(app)
 
         # def register(): # overload register method to register access policies automatically

@@ -178,6 +178,12 @@ ArticleTypes = Choices(
     chronicles=_('Chronicle')
 )
 
+ArticleThemes = Choices(
+    default=_('Default'),
+    newspaper=_('Newspaper'),
+    inkletter=_('Ink Letter')
+)
+
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']
 
@@ -197,6 +203,9 @@ class Article(Document):
     featured = BooleanField(default=False, verbose_name=_('Featured article'))
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
+    theme = StringField(choices=ArticleThemes.to_tuples(),
+                        default=ArticleThemes.default,
+                        verbose_name=_('Article Theme'))
 
     # modified_date = DateTimeField()
 

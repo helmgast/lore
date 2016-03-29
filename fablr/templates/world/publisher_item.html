@@ -1,4 +1,4 @@
-{% extends "world/publisher_list.html" if not parent_template else parent_template %}
+{% extends "world/publisher_list.html" %}
 
 {% block content_title %}{{publisher.title if publisher else _("New publisher")}}{% endblock %}
 {% block content_tagline %}{% endblock %}
@@ -13,7 +13,7 @@
     {% endif %}
 </ul>
 {% endcall %}
-{%endblock%}
+{% endblock %}
 
 {% block content %}{% block inline %}
 {% if publisher_form %}
@@ -64,6 +64,12 @@
                 <td><strong>{{ _('Owner') }}</strong></td>
                 <td>
                     <small>{{ publisher.owner|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Publisher Home') }}</strong></td>
+                <td>
+                    <a href="{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}">{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}</a>
                 </td>
             </tr>
         </table>

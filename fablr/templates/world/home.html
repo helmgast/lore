@@ -1,0 +1,5 @@
+{% extends "world/_page.html" %}
+{# will inherit publisher theme, which has special "home" block which overrides all content #}
+{% block mainblock %}
+    {{self.home()}}
+{% endblock mainblock %}

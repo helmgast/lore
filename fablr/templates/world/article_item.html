@@ -1,5 +1,4 @@
-{% extends "world/world_item.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
+{% extends "world/article_list.html" if not article_theme else article_theme %}
 
 {% set article_type = article.type if article else args['fields'].get('type','default') %}
 {% if article_form %}
@@ -28,6 +27,7 @@
 {% block cssimports %}
 {{ super() }}
 <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/print.css')}}" type="text/css" media="print" />
 {% endblock %}
 
 {% block jsimports %}
@@ -131,6 +131,9 @@
     {{ MACRO.FORM_FIELD(article_form.created_date, controlclass=' input-sm') }}
     {{ MACRO.FORM_FIELD(article_form.type, controlclass=' input-sm') }}
     {{ MACRO.FORM_FIELD(article_form.world,controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.license,controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.theme,controlclass=' input-sm') }}
+
     <input type="hidden" name="feature_image" id="feature_image" value="" />
     {% if g.user.id %}
       <input type="hidden" name="creator" value="{{g.user.id}}" />
@@ -160,8 +163,9 @@
   <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
   {% endif %}
   {% if not article.is_published() %}
-  <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Unpublished') }}</li>
+  <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Print') }}</li>
   {% endif %}
+<li class="content-menu-info" title=""><a href="javascript:window.print()"><span class="glyphicon glyphicon-print"></span></a></li>
 </ul>
 
 <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
@@ -201,7 +205,7 @@
 
 {% block final %}
 {% if article %}
-{{ MACRO.DELETE_MODAL(article.title, url_for('.ArticlesView:delete', world=world.slug, id=article.slug, method="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(article.title, url_for('.ArticlesView:delete', publisher=publisher.slug, world=world.slug, id=article.slug, method="DELETE") ) }}
 {% endif %}
 {{super()}}
 

@@ -1,139 +1,163 @@
-{% extends "world/_page.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO with context%}
+{% extends "world/world_list.html" if not world_theme else world_theme %}
 
 {% if world %}
-{% set recent_articles=world.articles().order_by('-created_date')[:5] if world %}
-{% set focus_articles=world.articles().order_by('-created_date').filter(featured=true)[:5] %}
-{% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
+    {% set recent_articles=world.articles().order_by('-created_date')[:5] if world %}
+    {% set focus_articles=world.articles().order_by('-created_date').filter(featured=true)[:5] %}
+    {% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
 {% endif %}
 
-{% block cssimports %}
-{{ super() }}
-{% if world %}
-<link rel="home" type="application/rss+xml" href="{{url_for('world.ArticlesView:feed', world=world.slug, _external=true)}}" />
-{% endif %}
-{% endblock %}
-
-{% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
+{% block content_title %}{{ world.title if world }}{{ ' - ' + article.title if article else '' }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+
+{% block hero_box %}{# Hide the hero if we are editing, it's destracting #}
+    {% if not world_form %}{{ super() }}{% endif %}
+{% endblock hero_box %}
+
+{% block cssimports %}
+    {{ super() }}
+    {% if world %}
+        <link rel="home" type="application/rss+xml"
+              href="{{ url_for('world.ArticlesView:feed', publisher=publisher.slug, world=world.slug, _external=true) }}"/>
+    {% endif %}
+{% endblock %}
+
+
 {% block sidebar %}
-{% if world.feature_image %}
-  <a class="lightbox" href="{{url_for('image', slug = world.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = world.feature_image.slug)}}"></a>
-{% else %}
-  <span class="glyphicon glyphicon-globe gianticon"></span>
-{% endif %}
-
-<div class="">
-  <ul class="nav nav-pills nav-stacked">
-      <li><a href="{{ url_for('world.WorldsView:get', id=world.slug) }}"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
-      {% if world %}
-      <li><a href="{{ url_for('world.ArticlesView:index', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-      <li><a href="{{ url_for('world.ArticlesView:blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-    {% include "world/new_article_menu.html" %}
-    {% if not article %} {# only show if we have only a world #}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
-    <li><a class="{{privileged}}" href="{{ url_for('world.WorldsView:get', intent='patch', id=world.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit')}} {{_('world')}}</a></li>
-    {% endcall %}
+    {% if world and world.feature_image %}
+        <a class="lightbox" href="{{ url_for('image', slug = world.feature_image.slug) }}"><img class="img-responsive"
+                                                                                                src="{{ url_for('image', slug = world.feature_image.slug) }}"></a>
+    {% else %}
+        <span class="glyphicon glyphicon-globe gianticon"></span>
     {% endif %}
+    <div class="">
+        <ul class="nav nav-pills nav-stacked">
+            <li><a href="{{ url_for('world.WorldsView:get', publisher=publisher.slug, id=world.slug) }}"><span
+                    class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
+            {% if world %}
+                <li><a href="{{ url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug) }}"><span
+                        class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world=world.slug) }}"><span
+                        class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+                {% include "world/new_article_menu.html" %}
+                {% if not article %} {# only show if we have only a world #}
+                    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
+                        <li><a class="{{ privileged }}"
+                               href="{{ url_for('world.WorldsView:get', publisher=publisher.slug, intent='patch', id=world.slug) }}"><span
+                                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }} {{ _('world') }}</a></li>
+                    {% endcall %}
+                {% endif %}
 
-    {% endif %}
-</ul>
-</div>
+            {% endif %}
+        </ul>
+    </div>
 {% endblock %}
 
 {% block sidebar_end %}
-{% include 'includes/social_icons.html' %}
+    {% include 'includes/social_icons.html' %}
 {% endblock %}
 
-{% block hero_box %}{# Hide the hero if we are editing, it's destracting #}
-{% if not world_form %}{{super()}}{% endif %}
-{% endblock hero_box %}
-
 {% block content %}
-{% if world_form %}
-<form method="post" action="{{action_url}}">
-  <div class="row">
-    <div class="col-md-8">
-      {{ MACRO.FORM_FIELD(world_form.title) }}
-      {{ MACRO.FORM_FIELD(world_form.description) }}
-      {{ MACRO.FORM_FIELD(world_form.publisher) }}
-      {{ MACRO.FORM_FIELD(world_form.rule_system) }}
-      {{ MACRO.FORM_FIELD(world_form.status) }}
-      {{ MACRO.FORM_FIELD(world_form.language) }}
-      {{ world_form.csrf_token }}
-    </div>
-    <div class="col-md-4">
-      {{ MACRO.FORM_FIELD(world_form.feature_image, **{'data-imageselect':true})}}
-    </div>
-  </div>
-  <div class="row form-actions">
-    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-    <a href="{{url_for('.WorldsView:index')}}" class="btn btn-default">{{ _('Cancel') }}</a>
-    {% if world %}
-      <a href="{{url_for('world.WorldsView:delete', id=world.slug, method='DELETE')}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
-    {% endif %}
-  </div>
-</form>
-{% else %}
-  <div class="row">
-    <div class="col-md-6">
-      <p class="worldDesc">{{ world.description }}</p>
-    </div>
-    <div class="col-md-4">
-      <table class="table">
-        <tr><td><strong>{{ _('Publisher') }}</strong></td>
-        <td><small>{{ world.publisher|default(_('No data'), true) }}</small></td></tr>
-        <tr><td><strong>{{ _('Rule System') }}</strong></td>
-        <td><small>{{ world.rule_system|default(_('No data'), true) }}</small></td></tr>
-{#
+    {% if world_form %}
+        <form method="post" action="{{ action_url }}">
+            <div class="row">
+                <div class="col-md-8">
+                    {{ MACRO.FORM_FIELD(world_form.title) }}
+                    {{ MACRO.FORM_FIELD(world_form.description) }}
+                    {{ MACRO.FORM_FIELD(world_form.publisher) }}
+                    {{ MACRO.FORM_FIELD(world_form.rule_system) }}
+                    {{ MACRO.FORM_FIELD(world_form.status) }}
+                    {{ MACRO.FORM_FIELD(world_form.language) }}
+                    {{ world_form.csrf_token }}
+                </div>
+                <div class="col-md-4">
+                    {{ MACRO.FORM_FIELD(world_form.feature_image, **{'data-imageselect':true}) }}
+                </div>
+            </div>
+            <div class="row form-actions">
+                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+                <a href="{{ url_for('.WorldsView:index', publisher=publisher.slug) }}"
+                   class="btn btn-default">{{ _('Cancel') }}</a>
+                {% if world %}
+                    <a href="{{ url_for('world.WorldsView:delete', publisher=publisher.slug, id=world.slug, method='DELETE') }}"
+                       class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+                {% endif %}
+            </div>
+        </form>
+    {% else %}
+        <div class="row">
+            <div class="col-md-6">
+                <p class="worldDesc">{{ world.description }}</p>
+            </div>
+            <div class="col-md-4">
+                <table class="table">
+                    <tr>
+                        <td><strong>{{ _('Publisher') }}</strong></td>
+                        <td>
+                            <small>{{ world.publisher|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Rule System') }}</strong></td>
+                        <td>
+                            <small>{{ world.rule_system|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    {#
         <tr><td><strong>{{ _('Status') }}</strong></td>
         <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
 #}
 
-      </table>
-    </div>
-    <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
-    <!--</div>-->
-  </div>
-  <div class="row">
-    <div class="col-md-4">
-      <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}</h4>
-      <ul>
-      {% for a in recent_articles %}
-      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
-      {% else %}
-      {% trans %}No data{% endtrans %}
-      {% endfor %}
-      </ul>
-    </div>
-    <div class="col-md-4">
-      {% if focus_articles %}
-      <h4><span class="glyphicon glyphicon-star"></span> {% trans %}Featured articles{% endtrans %}</h4>
-      {% for a in focus_articles %}
-      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
-      {% endfor %}
-      {% endif %}
-    </div>
-    <div class="col-md-4">
-      {% if top_material %}
-      <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
-      {% for a in top_material %}
-      <li><a href="{{url_for('world.ArticlesView:get', id=a.slug, world=world.slug)}}" alt="{{a.title}}">{{a.title}}</a></li>
-      {% endfor %}
-      {% endif %}
-    </div>
-  </div>
-{% endif %}
+                </table>
+            </div>
+            <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
+            <!--</div>-->
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}
+                </h4>
+                <ul>
+                    {% for a in recent_articles %}
+                        <li>
+                            <a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, id=a.slug, world=world.slug) }}"
+                               alt="{{ a.title }}">{{ a.title }}</a></li>
+                    {% else %}
+                        {% trans %}No data{% endtrans %}
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                {% if focus_articles %}
+                    <h4><span class="glyphicon glyphicon-star"></span> {% trans %}Featured articles{% endtrans %}</h4>
+                    {% for a in focus_articles %}
+                        <li>
+                            <a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, id=a.slug, world=world.slug) }}"
+                               alt="{{ a.title }}">{{ a.title }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                {% if top_material %}
+                    <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
+                    {% for a in top_material %}
+                        <li>
+                            <a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, id=a.slug, world=world.slug) }}"
+                               alt="{{ a.title }}">{{ a.title }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock content %}
 
 {% block final %}
-{{super()}}
-<script>
-var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
-</script>
+    {{ super() }}
+    <script>
+        var imageselect_options = {
+            csrf_token: "{{ csrf_token() }}",
+            image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
+            image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+        }
+    </script>
 {% endblock %}
