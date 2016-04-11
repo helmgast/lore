@@ -133,9 +133,9 @@
                     {% block navbar_right %}
 
                         {% if not session.logged_in %}
-                            <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('log in') }}</a></li>
+                            <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('Log In') }}</a></li>
                             {% call MACRO.IS_ENABLED("join") %}
-                                <li><a href="{{ url_for('auth.join') }}">{{ _('join') }}</a></li>
+                                <li><a href="{{ url_for('auth.join') }}">{{ _('Join') }}</a></li>
                             {% endcall %}
                         {% else %}
                             <li class="dropdown">
@@ -158,7 +158,7 @@
                                         </li>
                                     {% endcall %}
                                     <li role="separator" class="divider"></li>
-                                    <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('Log out') }}</a></li>
+                                    <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('Log Out') }}</a></li>
                                 </ul>
                             </li>
                         {% endif %}

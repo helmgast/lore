@@ -7,7 +7,11 @@
 
 {% trans user=user.display_name() %}<p>Thank you {{user}} for your order at helmgast.se! Please see your receipt below:</p>{% endtrans %}
 
-{% include "shop/order_table.html" %}
+<table style="width: 100%">
+    {% include "shop/order_header.html" %}
+    {% include "shop/order_lines.html" %}
+    {% include "shop/order_address.html" %}
+</table>
 
 {% trans %}<p><em>You received this email as a confirmation of your purchase order at helmgast.se.
 Please read the terms and conditions of purchase here.</em></p>{% endtrans %}

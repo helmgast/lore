@@ -12,16 +12,24 @@ import logging
 from itertools import izip
 
 import stripe
-from flask import render_template, Blueprint, current_app, g, request, url_for
+from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup
 from flask.ext.babel import lazy_gettext as _
+from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
-from wtforms.fields import FormField, FieldList, HiddenField
+from mongoengine import NotUniqueError, ValidationError
+from wtforms.fields import FormField, FieldList, StringField
+from wtforms.fields.html5 import EmailField
 from wtforms.utils import unset_value
+from wtforms.validators import InputRequired, Email
 
 from fablr.controller.mailer import send_mail
-from fablr.controller.resource import (ResourceHandler, ResourceRoutingStrategy, ResourceAccessPolicy,
-                                       RacModelConverter, RacBaseForm, ResourceError, generate_flash)
-from fablr.model.shop import Product, Order, OrderLine, OrderStatus, Address
+from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPolicy,
+                                       RacModelConverter, RacBaseForm, ResourceView,
+                                       filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse)
+from fablr.controller.world import set_theme
+from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus
+from fablr.model.user import User
+from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -29,75 +37,90 @@ shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
 
 stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
 
-product_access = ResourceAccessPolicy({
-    'view': 'user',
-    '_default': 'admin'
-})
 
-product_strategy = ResourceRoutingStrategy(
-    Product,
-    'products',
-    'slug',
-    short_url=False,
-    form_class=model_form(Product,
-                          base_class=RacBaseForm,
-                          exclude=['slug'],
-                          converter=RacModelConverter()),
-    access_policy=product_access)
+class ProductsView(ResourceView):
+    subdomain = '<publisher>'
+    access_policy = ResourceAccessPolicy({
+        'view': 'public',
+        'list': 'public',
+        '_default': 'admin'
+    })
+    model = Product
+    list_template = 'shop/product_list.html'
+    list_arg_parser = filterable_fields_parser(['title', 'created', 'family', 'publisher'])
+    item_template = 'shop/product_item.html'
+    item_arg_parser = prefillable_fields_parser(['title', 'created', 'family', 'publisher'])
+    form_class = model_form(Product,
+                            base_class=RacBaseForm,
+                            exclude=['slug'],
+                            converter=RacModelConverter())
+
+    def index(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        products = Product.objects(status__ne='hidden')
+        r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
+        r.auth_or_abort()
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
+
+        return r
+
+    def get(self, id, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        if id == 'post':
+            r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+        else:
+            product = Product.objects(slug=id).first_or_404()
+            r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)])
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        return r
+
+    def post(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
+        product = Product()
+        set_theme(r, 'publisher', publisher.slug)
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(product)
+        try:
+            r.commit(new_instance=product)
+        except (NotUniqueError, ValidationError) as err:
+            flash(err.message, 'danger')
+            return r, 400  # Respond with same page, including errors highlighted
+        return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
+
+    def patch(self, id, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        product = Product.objects(slug=id).first_or_404()
+        r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        if not isinstance(r.form, RacBaseForm):
+            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(product, request.form.keys())  # only populate selected keys
+        r.commit()
+        return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
+
+    def delete(self, id, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        product = Product.objects(slug=id).first_or_404()
+        r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='delete')
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        r.commit()
+        return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
 
 
-class ProductHandler(ResourceHandler):
-    def list(self, r):
-        if not (g.user and g.user.admin):
-            filter = r.get('filter', {})
-            filter.update({'status__ne': 'hidden'})
-            print filter
-            r['filter'] = filter
-        return super(ProductHandler, self).list(r)
+ProductsView.register_with_access(shop_app, 'product')
 
-
-ProductHandler.register_urls(shop_app, product_strategy)
-
-order_access = ResourceAccessPolicy({
-    'my_orders': 'user',
-    'view': 'private',
-    'list': 'admin',
-    'edit': 'admin',
-    'form_edit': 'admin',
-    '_default': 'admin'
-})
-
-order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
-    Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
-                                         'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
-
-
-# This injects the "cart_items" into templates in shop_app
-@shop_app.context_processor
-def inject_cart():
-    cart_order = Order.objects(user=g.user, status=OrderStatus.cart).only('total_items').first()
-    return dict(cart_items=cart_order.total_items if cart_order else 0)
-
-
-# Order states and form
-# cart.
-# Only one order per user can be in this state at the same time.
-# Product quantities and comments can be changed, new orderlines can be added or removed.
-# Address will not be editable
-# ordered
-# Order has been confirmed and sent for payment. Quantities can no longer be changed.
-# paid
-# Order has been confirmed paid. Address and comments can be changed, but with warning (as it may be too late for shipment)
-# shipped
-# Order has been shipped and is impossible to edit.
-# error
-# an error needing manual review. includes requests for refund, etc.
-
-CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=RacBaseForm,
-                               converter=RacModelConverter())
+CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such
 LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
-ShippingForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
+AddressForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
 
 
 class FixedFieldList(FieldList):
@@ -132,6 +155,8 @@ class FixedFieldList(FieldList):
                 except LookupError:
                     obj_data = unset_value
                 self._add_entry(formdata, obj_data, index=index)
+                # if not indices:  # empty the list
+                #     self.entries = []
         else:
             for obj_data in data:
                 self._add_entry(formdata, obj_data)
@@ -158,137 +183,259 @@ class FixedFieldList(FieldList):
         setattr(obj, name, output)
 
 
+class BuyForm(RacBaseForm):
+    product = StringField(validators=[InputRequired(_("Please enter your email address."))])
+
+
 class CartForm(RacBaseForm):
     order_lines = FixedFieldList(FormField(CartOrderLineForm))
-    shipping_address = FormField(ShippingForm)
-    stripe_token = HiddenField()
 
 
-class PostCartForm(RacBaseForm):
+class DetailsForm(RacBaseForm):
+    shipping_address = FormField(AddressForm)
+    email = EmailField("Email", validators=[
+        InputRequired(_("Please enter your email address.")),
+        Email(_("Please enter your email address."))])
+
+
+class PaymentForm(RacBaseForm):
     order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
-    shipping_address = FormField(ShippingForm)
+    stripe_token = StringField(validators=[InputRequired(_("Please enter your email address."))])
 
 
-class OrderHandler(ResourceHandler):
-    # We have to tailor our own edit because the form needs to be conditionally
-    # modified
-    def edit(self, r):
-        order = r['item']
-        auth = self.strategy.authorize(r['op'], order)
-        r['auth'] = auth
-        if not auth:
-            raise ResourceError(auth.error_code, r=r, message=auth.message)
-        r['template'] = self.strategy.item_template()
-        if order.status == 'cart':
-            Formclass = CartForm
-        else:
-            Formclass = PostCartForm
-        form = Formclass(request.form, obj=order)
-        # logger.warning('Form %s validates to %s' % (request.form, form.validate()))
-        if not form.validate():
-            r['form'] = form
-            raise ResourceError(400, r=r)
-        if not isinstance(form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
-        # We now have a validated form. Let's save the order first, then attempt to purchase it.
-        # This is very important, as the save() will re-calculate key values for this order
-        # print "Populating object %s with form keys %s, data %s" % (order, request.form.keys(), form.data)
-        print "Got order_lines %s extracted as indices %s" % (
-            request.form.keys(),
-            list(form.order_lines._extract_indices(form.order_lines.name, request.form))
-        )
-        # raise Exception()
-        form.populate_obj(order)
-        order.save()
+class PostPaymentForm(RacBaseForm):
+    order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
 
-        # In case slug has changed, query the new value before redirecting!
-        r['next'] = url_for('.order_form_edit', order=order.id)
 
-        if form.stripe_token.data:  # We have token data, so this is a purchase
+class OrdersView(ResourceView):
+    subdomain = '<publisher>'
+    access_policy = ResourceAccessPolicy({
+        'my_orders': 'user',
+        'view': 'private',
+        'list': 'admin',
+        'edit': 'admin',
+        'form_edit': 'admin',
+        '_default': 'admin'
+    })
+    model = Order
+    list_template = 'shop/order_list.html'
+    list_arg_parser = filterable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price'])
+    item_template = 'shop/order_item.html'
+    item_arg_parser = prefillable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price'])
+    form_class = form_class = model_form(Order,
+                                         base_class=RacBaseForm,
+                                         only=['order_lines', 'shipping_address', 'shipping_mobile'],
+                                         converter=RacModelConverter())
+
+    def index(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        orders = Order.objects().order_by('-updated')  # last updated will show paid highest
+        r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)])
+        r.auth_or_abort()
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
+        return r
+
+    def my_orders(self, publisher):
+        r = self.index(publisher)
+        r.orders = r.pagination.iterable.filter(user=g.user)
+        r.prepare_query()
+        return r
+
+    def get(self, id, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        # TODO we dont support new order creation outside of cart yet
+        # if id == 'post':
+        #     r = ItemResponse(OrdersView, [('order', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+        order = Order.objects(id=id).first_or_404()
+        r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], form_class=PostPaymentForm)
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug)
+        return r
+
+    def patch(self, id, publisher):
+        abort(501)  # Not implemented
+
+    @route('/buy', methods=['PATCH'])
+    def buy(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        cart_order = get_cart_order()
+        r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=BuyForm,
+                         method='patch')
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        p = Product.objects(slug=r.form.product.data).first()
+        if p:
+            if not cart_order:
+                # Create new cart-order and attach to session
+                cart_order = Order(status='cart')  # status defaults to cart, but let's be explicit
+                if g.user:
+                    cart_order.user = g.user
+                cart_order.save()  # Need to save to get an id
+                session['cart_id'] = cart_order.id
+                r.instance = cart_order  # set it in the response as well
+            found = False
+            for ol in cart_order.order_lines:
+                if ol.product == p:
+                    ol.quantity += 1
+                    found = True
+            if not found:  # create new orderline with this product
+                new_ol = OrderLine(product=p, price=p.price)
+                cart_order.order_lines.append(new_ol)
+            cart_order.save()
+            return r
+        abort(400, 'Badly formed cart patch request')
+
+    # Post means go to next step, patch means to stay
+    @route('/cart', methods=['GET', 'PATCH', 'POST'])
+    def cart(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        cart_order = get_cart_order()
+        r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=CartForm,
+                         extra_args={'view': 'cart', 'intent': 'post'})
+        set_theme(r, 'publisher', publisher.slug)
+        if request.method in ['PATCH', 'POST']:
+            r.method = request.method.lower()
+            if not r.validate():
+                return r, 400  # Respond with same page, including errors highlighted
+            r.form.populate_obj(cart_order)  # populate all of the object
+            try:
+                r.commit(flash=False)
+            except ValidationError as ve:
+                flash(ve.message, 'danger')
+                return r, 400  # Respond with same page, including errors highlighted
+            if request.method == 'PATCH':
+                return redirect(r.args['next'] or url_for('shop.OrdersView:cart', **request.view_args))
+            elif request.method == 'POST':
+                return redirect(r.args['next'] or url_for('shop.OrdersView:details', **request.view_args))
+        return r  # we got here if it's a get
+
+    @route('/details', methods=['GET', 'POST'])
+    def details(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        cart_order = get_cart_order()
+        if not cart_order or cart_order.total_items < 1:
+            return redirect(url_for('shop.OrdersView:cart', publisher=publisher.slug))
+
+        r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=DetailsForm,
+                         extra_args={'view': 'details', 'intent': 'post'})
+        set_theme(r, 'publisher', publisher.slug)
+        if request.method == 'POST':
+            r.method = 'post'
+            if not r.validate():
+                return r, 400  # Respond with same page, including errors highlighted
+            r.form.populate_obj(cart_order)  # populate all of the object
+            if not g.user and User.objects(email=cart_order.email)[:1]:
+                # An existing user has this email, force login or different email
+                flash(Markup(_(
+                    'Email belongs to existing user, please <a href="%(loginurl)s">login</a> first or change email',
+                    loginurl=url_for('auth.login', next=request.url))),
+                    'danger')
+                return r, 400
+            if not cart_order.is_digital():
+                shipping_products = Product.objects(
+                    publisher=publisher,
+                    type='shipping',
+                    currency=cart_order.currency,
+                    description__contains=cart_order.shipping_address.country).order_by('-price')
+                if shipping_products:
+                    cart_order.shipping = shipping_products[0]
+            try:
+                r.commit(flash=False)
+            except ValidationError as ve:
+                flash(ve.message, 'danger')
+                return r, 400  # Respond with same page, including errors highlighted
+            return redirect(r.args['next'] or url_for('shop.OrdersView:pay', **request.view_args))
+        return r  # we got here if it's a get
+
+    @route('/pay', methods=['GET', 'POST'])
+    def pay(self, publisher):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        cart_order = get_cart_order()
+        if not cart_order or not cart_order.shipping_address or not cart_order.user:
+            return redirect(url_for('shop.OrdersView:cart', publisher=publisher.slug))
+        r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=PaymentForm,
+                         extra_args={'view': 'pay', 'intent': 'post'})
+        set_theme(r, 'publisher', publisher.slug)
+        r.stripe_key = current_app.config['STRIPE_PUBLIC_KEY']
+        if request.method == 'POST':
+            r.method = 'post'
+            if not r.validate():
+                return r, 400  # Respond with same page, including errors highlighted
+            r.form.populate_obj(cart_order)  # populate all of the object
             try:
                 charge = stripe.Charge.create(
-                    source=form.stripe_token.data,
-                    amount=int(order.total_price * 100),  # Stripe takes input in "cents" or similar
-                    currency=order.currency,
-                    description=unicode(order),
-                    metadata={'order_id': order.id}
+                    source=r.form.stripe_token.data,
+                    amount=cart_order.total_price_int(),  # Stripe takes input in "cents" or similar
+                    currency=cart_order.currency,
+                    description=unicode(cart_order),
+                    metadata={'order_id': cart_order.id}
                 )
                 if charge['status'] == 'succeeded':
-                    order.status = OrderStatus.paid
-                    order.charge_id = charge['id']
-                    order.save()
-                    send_mail([g.user.email], _('Thank you for your order!'), 'order', user=g.user, order=order)
-                    logger.info("User %s purchased %s", g.user, order)
-                    generate_flash("Purchased", "order", order)
-                    return r
+                    cart_order.status = OrderStatus.paid
+                    cart_order.charge_id = charge['id']
             except stripe.error.CardError as e:
-                raise ResourceError(500, message="Could not complete purchase: %s" % e.message, r=r)
-
-        logger.info("Edit on %s/%s", self.strategy.resource_name, order.id)
-        generate_flash("Edited", self.strategy.resource_name, order)
-        return r
-
-    def my_orders(self, r):
-        filter = r.get('filter', {})
-        filter.update({'user': g.user})
-        r['filter'] = filter
-        return super(OrderHandler, self).list(r)
-
-    # Endpoint will be 'order_cart' as it's attached to OrderHandler
-    @ResourceHandler.methods(['GET', 'POST'])
-    def cart(self, r):
-        r['template'] = 'shop/order_item.html'
-
-        if g.user:
-            cart_order = Order.objects(user=g.user, status=OrderStatus.cart).first()
-            if not cart_order:
-                cart_order = Order(user=g.user, email=g.user.email).save()
-            r['item'] = cart_order
-            r['order'] = cart_order
-            r['url_args'] = {'order': cart_order.id}
-            r['stripe_key'] = current_app.config['STRIPE_PUBLIC_KEY']
-        else:
-            raise ResourceError(401, _('Need to log in to use shopping cart'))
-        if request.method == 'GET':
-            self.form_class = CartForm
-            r = self.form_edit(r)
-
-        elif request.method == 'POST':
-            if 'product' in request.form:
-                slug = request.form.get('product')
-                p = Product.objects(slug=slug).first()
-                if p:
-                    found = False
-                    for ol in cart_order.order_lines:
-                        if ol.product == p:
-                            ol.quantity += 1
-                            found = True
-                    if not found:  # create new orderline with this product
-                        newol = OrderLine(product=p, price=p.price)
-                        cart_order.order_lines.append(newol)
-                    cart_order.save()
-                    r['item'] = cart_order.total_items
-                else:
-                    raise ResourceError(400, r, 'No product with slug %s exists' % slug)
-            else:
-                raise ResourceError(400, r, 'Not supported')
-
-        return r
+                abort(500, "Could not complete purchase: %s" % e.message, r=r)
+            try:
+                r.commit()
+                send_mail([g.user.email], _('Thank you for your order!'), 'order', user=g.user, order=cart_order, publisher=publisher)
+            except ValidationError as ve:
+                flash(ve.message, 'danger')
+                return r, 400  # Respond with same page, including errors highlighted
+            return redirect(r.args['next'] or url_for('shop.OrdersView:get', id=cart_order.id, **request.view_args))
+        return r  # we got here if it's a get
 
 
-OrderHandler.register_urls(shop_app, order_strategy)
+OrdersView.register_with_access(shop_app, 'order')
+
+order_access = ResourceAccessPolicy({
+    'my_orders': 'user',
+    'view': 'private',
+    'list': 'admin',
+    'edit': 'admin',
+    'form_edit': 'admin',
+    '_default': 'admin'
+})
+
+order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
+    Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
+                                         'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
 
-@shop_app.route('/')
-def index():
-    product_families = Product.objects().distinct('family')
-    return render_template('shop/_page.html', product_families=product_families)
+def get_cart_order():
+    if session.get('cart_id', None):
+        cart_order = Order.objects(id=session['cart_id']).first()
+        if not cart_order or cart_order.status != 'cart' or (cart_order.user and cart_order.user != g.user):
+            # Error, maybe someone is manipulating input, or we logged out and should clear the
+            # association with that cart for safety
+            # True if current user is different, or if current user is none, and cart_order.user is not
+            session.pop('cart_id')
+            return None
+        elif not cart_order.user and g.user:
+            # We have logged in and cart in session is not tied to this user.
+            # Any old carts should be taken away - mark them as error
+            Order.objects(status='cart', user=g.user).update(status='error', internal_comment='Replaced by new cart')
+            # Set cart from session as new user cart
+            cart_order.user = g.user
+            cart_order.save()
+        return cart_order
+    elif g.user:
+        # We have a user but no cart_id in session yet, so someone has just logged in
+        cart_order = Order.objects(user=g.user, status='cart').first()
+        if cart_order:
+            session['cart_id'] = cart_order.id
+        return cart_order
+    else:
+        return None
 
 
-# POST cart - add products, create order if needed
-# GET cart - current order, displayed differently depending on current state
+# This injects the "cart_items" into templates in shop_app
+@shop_app.context_processor
+def inject_cart():
+    cart_order = get_cart_order()
+    return dict(cart_items=cart_order.total_items if cart_order else 0)
 
-# my orders
+
 @current_app.template_filter('currency')
 def currency(value):
     return ("{:.0f}" if float(value).is_integer() else "{:.2f}").format(value)

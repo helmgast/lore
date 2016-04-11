@@ -101,12 +101,12 @@
   {%- if condition -%}<small title="{{_('Your access rights allow you to view this resource in this view')}}"><span class="glyphicon glyphicon-eye-close"></span>&nbsp;</small>{%- endif %}
 {%- endmacro -%}
 
-{%- macro LIST_CONTROLS(model_class, fields, show=['view','order','page']) -%}
+{%- macro LIST_CONTROLS(model_class, fields, show=['view','order','page'], set_view=None, default='table') -%}
 <form class="form-inline">
 <div class="btn-toolbar">
 
 {% if 'view' in show %}
-{% set view = request.args.get('view','table') %}
+{% set view = set_view or request.args.get('view', default) %}
 <div class="btn-group">
 <a href="{{ current_url(view='card') }}" title="{% trans %}Card view{% endtrans %}" class="btn btn-default btn-sm{{ ' active' if view=='card'}}"><span class="glyphicon glyphicon-th-large"></span></a>
 <a href="{{ current_url(view='table') }}" title="{% trans %}Table view{% endtrans %}" class="btn btn-default btn-sm{{ ' active' if view=='table'}}"><span class="glyphicon glyphicon-list-alt"></span></a>

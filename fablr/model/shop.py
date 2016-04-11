@@ -11,7 +11,7 @@ from mongoengine.errors import ValidationError
 from asset import FileAsset
 from misc import slugify, Choices, Address
 from user import User
-from world import ImageAsset
+from world import ImageAsset, Publisher, World
 
 ProductTypes = Choices(
     book=_('Book'),
@@ -31,17 +31,32 @@ Currencies = Choices(
     sek='SEK'
 )
 
+# Product number logic
+# PB-PF-nnnn-x
+# PB = publisher code
+# PF = product family, e.g. J(arn), E(eon)
+# nnnn = article number
+# x = variant code (can be anything)
+
+# Shipping product numbers
+# PB-S-type-country
+# PB = publisher code
+# S = shipping
+# type = one of ProductTypes except shipping
+# country = 2-letter country code
+
 
 class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
-    product_no = StringField(unique=True, max_length=10, sparse=True)
+    product_number = StringField(max_length=10, sparse=True, verbose_name=_('Product Number'))
     title = StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
-    publisher = StringField(max_length=60, required=True, verbose_name=_('Publisher'))
+    publisher = ReferenceField(Publisher, required=True, verbose_name=_('Publisher'))
+    world = ReferenceField(World, verbose_name=_('World'))
     family = StringField(max_length=60, verbose_name=_('Product Family'))
     created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
     type = StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
-    # should be required=True, but that currently maps to Required, not InputRequired validator
+    # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
     price = FloatField(min_value=0, default=0, verbose_name=_('Price'))
     tax = FloatField(min_value=0, default=0.25, choices=[(0.25, '25%'), (0.06, '6%')], verbose_name=_('Tax'))
@@ -50,6 +65,7 @@ class Product(Document):
     status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     acknowledgement = BooleanField(default=False, verbose_name=_('Name in book'))
+    comment_instruction = StringField(max_length=20, verbose_name=_('Instructions for comments in order'))
     downloadable_files = ListField(ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
 
     # Executes before saving
@@ -74,6 +90,10 @@ class Product(Document):
     def is_owned_by_current_user(self):
         return g.user and (g.user.admin or self in products_owned_by_user(g.user))
 
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
+
 
 class OrderLine(EmbeddedDocument):
     quantity = IntField(min_value=1, default=1, verbose_name=_('Comment'))
@@ -87,6 +107,7 @@ class OrderLine(EmbeddedDocument):
 
 OrderStatus = Choices(
     cart=_('Cart'),
+    checkout=_('Checkout'),
     ordered=_('Ordered'),
     paid=_('Paid'),
     shipped=_('Shipped'),
@@ -96,18 +117,21 @@ OrderStatus = Choices(
 class Order(Document):
     user = ReferenceField(User, verbose_name=_('User'))
     session = StringField(verbose_name=_('Session ID'))
-    email = EmailField(max_length=60, required=True, verbose_name=_('Email'))
+    email = EmailField(max_length=60, verbose_name=_('Email'))
     order_lines = ListField(EmbeddedDocumentField(OrderLine))
     total_items = IntField(min_value=0, default=0)  # Total number of items
-    total_price = FloatField(min_value=0, default=0.0, verbose_name=_('Total price'))  # Total price of order
+    total_price = FloatField(min_value=0, default=0.0, verbose_name=_('Total price'))  # Total price of order incl shipping
+    total_tax = FloatField(min_value=0, default=0.0, verbose_name=_('Total tax'))  # Total tax of order
     currency = StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
     created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
     updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
     status = StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
+    shipping = ReferenceField(Product, verbose_name=_('Shipping'))
     charge_id = StringField()  # Stores the Stripe charge id
+    internal_comment = StringField(verbose_name=_('Internal Comment'))
     shipping_address = EmbeddedDocumentField(Address)
 
-    def __repr__(self):
+    def __str__(self):
         s = unicode(self).encode('utf-8')
         return s
 
@@ -124,13 +148,28 @@ class Order(Document):
             s = u'%s' % _('Empty order')
         return s
 
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
+
     def is_paid_or_shipped(self):
         return self.status in [OrderStatus.paid, OrderStatus.shipped]
+
+    def is_digital(self):
+        """True if this order only contains products of type Digital"""
+        for ol in self.order_lines:
+            if ol.product.type != ProductTypes.digital:
+                return False
+        return len(self.order_lines) > 0  # True if there was lines in order, false if not
+
+    def total_price_int(self):
+        """Returns total price as an int, suitable for Stripe"""
+        return int(self.total_price * 100)
 
     # Executes before saving
     def clean(self):
         self.updated = datetime.utcnow()
-        num, sum = 0, 0.0
+        num, sum, tax = 0, 0.0, 0.0
         for ol in self.order_lines:
             if self.currency:
                 if ol.product.currency != self.currency:
@@ -140,8 +179,19 @@ class Order(Document):
                 self.currency = ol.product.currency
             num += ol.quantity
             sum += ol.quantity * ol.price
+            # Tax rates are given as e.g. 25% or 0.25. The taxable part of sum is
+            # sum * (taxrate / (taxrate+1))
+            tax += ol.quantity * ol.price * (ol.product.tax/(ol.product.tax+1))
+
+        if self.shipping:
+            sum += self.shipping.price
+            tax += self.shipping.price*(self.shipping.tax/(self.shipping.tax+1))
         self.total_items = num
         self.total_price = sum
+        self.total_tax = tax
+        if self.user and not self.email:
+            self.email = self.user.email
+
 
 
 def products_owned_by_user(user):

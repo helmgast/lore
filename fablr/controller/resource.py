@@ -181,11 +181,6 @@ action_strings_translated = {
 }
 
 
-def change_endpoint(new_method, current_endpoint=None):
-    current_endpoint = (current_endpoint or request.endpoint).rsplit(':', 1)[0] + ':'
-    return current_endpoint + new_method
-
-
 class ResourceResponse(Response):
     arg_parser = {
         # none should remain for subsequent requests
@@ -211,7 +206,7 @@ class ResourceResponse(Response):
         self.model = resource_view.model
 
         # To be set from from route
-        self.formats = formats or frozenset(['html','json'])
+        self.formats = formats or frozenset(['html', 'json'])
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         super(ResourceResponse, self).__init__()  # init a blank flask Response
 
@@ -219,7 +214,7 @@ class ResourceResponse(Response):
         instance = getattr(self, 'instance', None)
         auth = self.access.authorize(self.method, instance=instance)
         if not auth:
-            raise ResourceError(auth.error_code, r={'TBD': 'TBD'}, message=auth.message)
+            abort(auth.error_code, auth.message)
         else:
             # if there's an intent, we also need to check that it's allowed
             intent = self.args.get('intent', None)
@@ -313,13 +308,13 @@ class ItemResponse(ResourceResponse):
 
     json_fields = frozenset(['instance'])
     arg_parser = dict(ResourceResponse.arg_parser, **{
-        'view': lambda x: x.lower() if x.lower() in 'markdown' else None,
+        'view': lambda x: x.lower() if x.lower() in ['markdown', 'pay', 'cart', 'details'] else None,
         'intent': lambda x: x if x.upper() in METHODS else None,
         'next': lambda x: x if re_next.match(x) else None
     })
 
     def __init__(self, resource_view, queries, method='get', formats=None, extra_args=None,
-                 extra_form_args=None):
+                 form_class=None, extra_form_args=None):
         item_arg_parser = getattr(resource_view, 'item_arg_parser', None)
         if item_arg_parser:
             self.arg_parser = item_arg_parser
@@ -335,32 +330,30 @@ class ItemResponse(ResourceResponse):
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
                 form_args.update(self.args['fields'])
                 if self.args['intent'] == 'post':
+                    # Will a post will not go to same URL, but a different on (e.g. a list
+                    # endpoint without an id parameter
                     new_args = dict(request.view_args)
-                    new_args.pop('id')
-                    self.action_url = url_for(change_endpoint('post'), **new_args)
+                    new_args.pop('id', None)
+                    self.action_url = url_for(request.endpoint.replace(':get', ':post'), **new_args)
                 else:
+                    # Will take current endpoint (a get) and returns same url but with method from intent
                     self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args)
-            self.form = self.resource_view.form_class(formdata=request.form, obj=self.instance, **form_args)
+            form_class = form_class or self.resource_view.form_class
+            self.form = form_class(formdata=request.form, obj=self.instance, **form_args)
 
     def validate(self):
         return self.form.validate()
 
-    def commit(self, new_instance=None, next_url=None):
-        next_url = next_url or self.args['next']
+    def commit(self, new_instance=None, flash=True):
         new_args = dict(request.view_args)
         new_args.pop('id', None)
         if self.method == 'delete':
             self.instance.delete()
-            if not next_url:
-                next_url = url_for(change_endpoint('index'), **new_args)
         else:
             instance = new_instance or self.instance
             instance.save()
             self.instance = instance  # only save back to response if successful in case we have a post
-            if not next_url:
-                next_url = url_for(change_endpoint('get'), id=self.instance.slug, **new_args)
-        log_event(self.method, self.instance)
-        self.next = next_url
+        log_event(self.method, self.instance, flash=flash)
 
     @property  # For convenience
     def instance(self):
@@ -379,7 +372,7 @@ class ItemResponse(ResourceResponse):
         setattr(self, self.resource_queries[0] + "_form", x)
 
 
-def log_event(action, instance=None, message='', user=None):
+def log_event(action, instance=None, message='', user=None, flash=True):
     # <datetime> <user> <action> <object> <message>
     # martin patch article(helmgast)
     user = user or g.user
@@ -388,7 +381,8 @@ def log_event(action, instance=None, message='', user=None):
     else:
         user = "System"
     logger.info("%s %s %s", user, action_strings[action], " (%s)" % message if message else "")
-    generate_flash(action_strings_translated[action], 'item', instance)
+    if flash:
+        generate_flash(action_strings_translated[action], 'item', instance)
 
 
 def parse_out_arg(out_param):
@@ -413,12 +407,19 @@ class ResourceView(FlaskView):
     def register_with_access(cls, app, domain):
         current_app.access_policy[domain] = cls.access_policy
         if not current_app.config.get('ALLOW_SUBDOMAINS', False) and getattr(cls, 'subdomain', None):
-            cls.route_base = "/sub_"+cls.subdomain+cls.route_base
+            cls.route_base = "/sub_" + cls.subdomain + "/" + cls.get_route_base()
             del cls.subdomain
         return cls.register(app)
 
         # def register(): # overload register method to register access policies automatically
 
+
+# WTForm Basics to remember
+# creating a form instance will have all data from formdata (input) take presedence. Not having it in
+# formdata is same as setting it to 0 / default.
+# to avoid a form field value to impact the object, remove it from the form. populate_obj can only
+# take data from fields that exist in the form.
+# when using a fieldlist or formfield we are just encapsulating forms that work as usual.
 
 class RacBaseForm(ModelForm):
     # TODO if fields_to_populate are set to use form keys, a deleted field may mean
@@ -571,8 +572,8 @@ class Authorization:
         self.only_fields = only_fields
 
     def __repr__(self):
-        return "%s%s" % (
-            "Authorized" if self.is_authorized else "UNAUTHORIZED", ": %s" % self.message if self.message else "")
+        return u"%s%s" % (
+            "Authorized" if self.is_authorized else "UNAUTHORIZED", u": %s" % self.message if self.message else "")
 
     def is_privileged(self):
         return self.privileged
@@ -585,7 +586,7 @@ class Authorization:
 class ResourceAccessPolicy(object):
     model_class = None
     levels = ['public', 'user', 'private', 'admin']
-    translate = {'post': 'new', 'patch': 'edit', 'put': 'edit', 'index': 'list', 'delete': 'edit'}
+    translate = {'post': 'new', 'patch': 'edit', 'put': 'edit', 'index': 'list', 'delete': 'edit', 'get': 'view'}
 
     def __init__(self, ops_levels=None, get_owner_func=None):
         if not ops_levels:
@@ -608,9 +609,9 @@ class ResourceAccessPolicy(object):
             level = self.ops_levels['_default']
         else:
             level = self.ops_levels[op]
-        msg = '%s requires a logged in user' % op
+        msg = _("%(op)s requires a logged in user", op=op)
         if level == 'public':
-            return Authorization(True, '%s is a publicly allowed operation' % op)
+            return Authorization(True, u'%s is a publicly allowed operation' % op)
         elif level == 'user':
             if g.user:
                 return Authorization(True, msg)
@@ -618,30 +619,33 @@ class ResourceAccessPolicy(object):
                 return Authorization(False, msg, error_code=401)  # Denoted that the user should log in first
         elif level == 'private':
             if not instance:
-                return Authorization(False, 'Error: Cannot apply private access without an instance')
+                return Authorization(False, _("Error: Cannot apply private access without an instance"))
             instance_owner = self.get_owner_func(instance)
 
             if g.user and g.user.admin:
-                return Authorization(True, '%s have access to do private operation %s on instance %s' % (
-                    unicode(instance_owner), op, instance), privileged=True)
-
+                return Authorization(True, _("%(instance_owner)s have access to do private operation %(op)s on "
+                                             "instance %(instance)s",
+                                             instance_owner=instance_owner, op=op, instance=instance), privileged=True)
             if not instance_owner:
-                return Authorization(False, 'Error: Cannot identify user which instance %s belongs to' % instance)
+                return Authorization(False,
+                                     _("Error: Cannot identify user which instance %(inst)s belongs to", inst=instance))
             elif not g.user:
                 return Authorization(False, msg, error_code=401)  # Denotes that the user should log in first
             elif not g.user == instance_owner:
-                return Authorization(False, '%s is a private operation which requires the owner to be logged in' % op)
+                return Authorization(False,
+                                     _("%(op)s is a private operation which requires the owner to be logged in", op=op))
             else:
-                return Authorization(True, '%s have access to do private operation %s on instance %s' % (
-                    unicode(instance_owner), op, instance), privileged=True)
+                return Authorization(True, _(
+                    "%(instance_owner)s have access to do private operation %(op)s on instance %(instance)s",
+                    instance_owner=instance_owner, op=op, instance=instance), privileged=True)
         elif level == 'admin':
             if not g.user:
                 return Authorization(False, msg, error_code=401)  # Denotes that the user should log in first
             elif not g.user.admin:
-                return Authorization(False, 'Need to be logged in with admin access')
+                return Authorization(False, _("Need to be logged in with admin access"))
             elif g.user:
-                return Authorization(True, '%s is an admin' % unicode(g.user), privileged=True)
-        return Authorization(False, 'This is catch all denied authorization, should not be here')
+                return Authorization(True, _("%(user)s is an admin", user=g.user), privileged=True)
+        return Authorization(False, _("This is catch all denied authorization, should not be here"))
 
     def auth_or_abort(self, response, instance=None):
         # if 'args' not in response or 'intent' not in response['args']:
@@ -661,7 +665,7 @@ class ResourceRoutingStrategy:
                  parent_strategy=None, parent_reference_field=None, short_url=False,
                  list_filters=None, use_subdomain=False, access_policy=None, post_edit_action='view'):
         if use_subdomain and parent_strategy:
-            raise ValueError("A subdomain-identified resource cannot have parents")
+            raise ValueError(u"A subdomain-identified resource cannot have parents")
         self.form_class = form_class if form_class else model_form(model_class, base_class=RacBaseForm,
                                                                    converter=RacModelConverter())
         self.model_class = model_class
@@ -782,7 +786,7 @@ class ResourceError(Exception):
     }
 
     def __init__(self, status_code, message=None, r=None, field_errors=None, template=None, template_vars=None):
-        message = message if message else self.default_messages.get(status_code, _('Unknown error'))
+        message = message if message else self.default_messages.get(status_code, u"%s" % _('Unknown error'))
         self.r = r
         if r:
             form = r.get('form', None)

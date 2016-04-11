@@ -1,0 +1,58 @@
+<!-- Order info-->
+<tr style="float: left">
+    <!-- Order/customer info-->
+    <td>
+        <h3>{{ _('Order Info') }}</h3>
+        <table class="table table-condensed">
+            <tr>
+                <th width="30%">{{ _('Order ID') }}</th>
+                <td>
+                    <small>{{ order.id }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th width="30%">{{ _('Name') }}</th>
+                <td>{{ order.user.realname|default(_('No name'), true) }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Email') }}</th>
+                <td>{{ order.user.email }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Created') }}</th>
+                <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Updated') }}</th>
+                <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Status') }}</th>
+                <td>{{ order.get_status_display() }}</td>
+            </tr>
+        </table>
+    </td>
+</tr>
+<tr style="float: right">
+    <!-- Seller info-->
+    <td>
+        <h3>{{ _('Seller Info') }}</h3>
+        <table class="table table-condensed">
+            <tr>
+                <th width="30%">{{ _('Publisher') }}</th>
+                <td>Helmgast AB</td>
+            </tr>
+            <tr>
+                <th>{{ _('Email') }}</th>
+                <td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td>
+            </tr>
+            <tr>
+                <th>{{ _('Address') }}</th>
+                <td>
+                    Värmlandsvägen 381<br>
+                    123 48 Farsta<br>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>

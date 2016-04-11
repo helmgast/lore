@@ -1,5 +1,4 @@
-{% extends "shop/product_list.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
+{% extends "shop/product_list.html" %}
 
 {% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
 
@@ -16,22 +15,24 @@
 {% if product %}
 {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
 <ul class="nav nav-pills nav-stacked">
-  <li><a class="{{privileged}}" href="{{ url_for('.product_form_edit', product=product.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+  <li><a class="{{privileged}}" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
 </ul>
 {% endcall %}
 {% include 'includes/social_icons.html' %}
 
 {% endif %}
-{%endblock%}
+{% endblock %}
 
 {% block content %}{% block inline %}
 {% if product_form %}
-<form method="post" action="{{product_form.action_url}}">
+<form method="post" action="{{action_url}}">
   <div class="row">
     <div class="col-md-8">
       {{ MACRO.FORM_FIELD(product_form.title) }}
+      {{ MACRO.FORM_FIELD(product_form.product_number) }}
       {{ MACRO.FORM_FIELD(product_form.description) }}
       {{ MACRO.FORM_FIELD(product_form.publisher) }}
+      {{ MACRO.FORM_FIELD(product_form.world) }}
       {{ MACRO.FORM_FIELD(product_form.family) }}
       {{ MACRO.FORM_FIELD(product_form.created) }}
       {{ MACRO.FORM_FIELD(product_form.type) }}
@@ -39,7 +40,6 @@
       {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
       {{ MACRO.FORM_FIELD(product_form.tax, required=true) }}
       {{ MACRO.FORM_FIELD(product_form.status) }}
-      {{ MACRO.FORM_FIELD_LIST(product_form.acknowledgement) }}
       {{ product_form.csrf_token }}
     </div>
     <div class="col-md-4">
@@ -49,14 +49,14 @@
   </div>
   <div class="row form-actions">
     <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-    <a href="{{url_for('.product_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
+    <a href="{{url_for('shop.ProductsView:index', publisher=publisher.slug)}}" class="btn btn-default">{{ _('Cancel') }}</a>
     {% if product %}
       <a class="btn btn-danger pull-right" href="#deletemodal" data-toggle="modal">{{ _('Delete') }}</a>
     {% endif %}
   </div>
 </form>
 {% if product %}
-{{ MACRO.DELETE_MODAL(product.title, url_for('.product_delete', product=product.slug, method="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE") ) }}
 {% endif %}
 {% else %}
 <div class="row">
@@ -64,8 +64,12 @@
       <table class="table">
         <tr><td><strong>{{ _('Title') }}</strong></td>
         <td><small>{{ product.title }}</small></td></tr>
+        <tr><td><strong>{{ _('Product Number') }}</strong></td>
+        <td><small>{{ product.product_number }}</small></td></tr>
         <tr><td><strong>{{ _('Publisher') }}</strong></td>
         <td><small>{{ product.publisher }}</small></td></tr>
+        <tr><td><strong>{{ _('World') }}</strong></td>
+        <td>{{ product.world }}</td></tr>
         <tr><td><strong>{{ _('Family') }}</strong></td>
         <td>{{ product.family }}</td></tr>
         <tr><td><strong>{{ _('Created') }}</strong></td>
@@ -98,13 +102,13 @@
       {% endif %}
     </div>
     <div class="col-md-4">
-      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>
+      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Buy') }}</a>
       <br>
       {% if product.feature_image %}<a class="lightbox" href="{{url_for('image', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = product.feature_image.slug)}}"></a>
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
-      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a>-->
+      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Buy') }}</a>-->
     </div>
 </div>
 {% if product.status != 'hidden' %}

@@ -19,6 +19,7 @@ from flaskext.markdown import Markdown
 # Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance).
 #  Admin is allowed to log in.
 # Public = Everyone is allowed to log in and create new accounts
+
 STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = "private", "protected", "public"
 STATE_TYPES = ((STATE_PRIVATE, _('Private')),
                (STATE_PROTECTED, _('Protected')),
@@ -143,6 +144,7 @@ def configure_logging(app):
 
 def configure_extensions(app):
     import extensions
+
     app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jina to run code
     if not app.debug:
         # Silence undefined errors in templates if not debug
@@ -187,6 +189,10 @@ def configure_extensions(app):
 
     app.md = Markdown(app, extensions=['attr_list'])
     app.md.register_extension(extensions.AutolinkedImage)
+
+    app.jinja_env.filters['dict_with'] = extensions.dict_with
+    app.jinja_env.filters['dict_without'] = extensions.dict_without
+    app.jinja_env.filters['currentyear'] = extensions.currentyear
 
     # Debug toolbar
     if app.config.get('DEBUG_TB_ENABLED', False):
@@ -286,25 +292,6 @@ def register_main_routes(app, auth):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-    @app.errorhandler(404)
-    def notfound(err):
-        print err
-        return err
-
-    @app.template_filter('currentyear')
-    def currentyear():
-        return datetime.utcnow().strftime('%Y')
-
-    @app.template_filter('dict_without')
-    def dict_without(value, *args):
-        return {k: value[k] for k in value.keys() if k not in args}
-
-    @app.template_filter('dict_with')
-    def dict_with(value, **kwargs):
-        z = value.copy()
-        z.update(kwargs)
-        return z
-
     @app.before_request
     def before_request():
         g.start = time.time()
@@ -317,8 +304,8 @@ def register_main_routes(app, auth):
                 app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
     # Print rules in alphabetic order
-    for rule in app.url_map.iter_rules():
-        print rule.__repr__(), rule.subdomain
+    # for rule in app.url_map.iter_rules():
+    #     print rule.__repr__(), rule.subdomain
     # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
     #   print rule.__repr__(), rule.subdomain
 

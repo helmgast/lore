@@ -14,7 +14,8 @@ from datetime import datetime
 from flask import current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine import Document  # Enhanced document
-from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
+                         ListField, IntField, EmailField, EmbeddedDocumentField)
 
 from asset import ImageAsset
 from misc import Choices, slugify, Address
@@ -44,8 +45,10 @@ Languages = Choices(
     se=_('Swedish')
 )
 
+
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
+    short_code = StringField(min_length=2, max_length=2, verbose_name=_('Short Code'))
     title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
@@ -84,10 +87,10 @@ class World(Document):
     def articles(self):
         return Article.objects(world=self).order_by('-created_date')
 
-    # startyear = 0
-    # daysperyear = 360
-    # datestring = "day %i in the year of %i"
-    # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
+        # startyear = 0
+        # daysperyear = 360
+        # datestring = "day %i in the year of %i"
+        # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
 
 class RelationType(Document):

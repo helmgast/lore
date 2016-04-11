@@ -160,7 +160,6 @@ class WorldsView(ResourceView):
                 g.lang = r.world.language
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
-
         return r
 
     def post(self, publisher):
@@ -177,7 +176,7 @@ class WorldsView(ResourceView):
         except NotUniqueError:
             r.form.title.errors.append('ID %s already in use')
             return r, 400
-        return redirect(r.next)
+        return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher=publisher.slug, id=world.slug))
 
     def patch(self, publisher, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -191,7 +190,7 @@ class WorldsView(ResourceView):
             return r, 400  # BadRequest
         r.form.populate_obj(world, request.form.keys())  # only populate selected keys
         r.commit()
-        return redirect(r.next)
+        return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher=publisher.slug, id=world.slug))
 
     def delete(self, publisher, id):
         abort(501)  # Not implemented
@@ -291,9 +290,9 @@ class ArticlesView(ResourceView):
         try:
             r.commit(new_instance=article)
         except NotUniqueError:
-            r.form.title.errors.append('ID %s already in use')
+            r.form.title.errors.append('ID already in use')
             return r, 400  # Respond with same page, including errors highlighted
-        return redirect(r.next)
+        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug, world=world.slug))
 
     def patch(self, publisher, world, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -313,7 +312,7 @@ class ArticlesView(ResourceView):
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
         r.commit()
-        return redirect(r.next)
+        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug, world=world.slug))
 
     def delete(self, publisher, world, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -328,7 +327,7 @@ class ArticlesView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
         r.commit()
-        return redirect(r.next)
+        return redirect(r.args['next'] or url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug))
 
 
 class ArticleRelationsView(ResourceView):

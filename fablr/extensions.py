@@ -15,6 +15,7 @@ from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
 from mongoengine import Document, QuerySet, ConnectionError
+from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
 
@@ -113,7 +114,8 @@ class MongoJSONEncoder(JSONEncoder):
             return str(o)
         elif isinstance(o, Pagination):
             return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
-        print JSONEncoder.default(self, o)
+        if isinstance(o, _LazyString):  # i18n Babel uses lazy strings, need to be treated as string here
+            return str(o)
         return JSONEncoder.default(self, o)
 
 
@@ -191,3 +193,16 @@ class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
         print 'JINJA2: something was undefined!'  # TODO, should print correct log error
         return None
+
+def currentyear():
+    return datetime.utcnow().strftime('%Y')
+
+
+def dict_without(value, *args):
+    return {k: value[k] for k in value.keys() if k not in args}
+
+
+def dict_with(value, **kwargs):
+    z = value.copy()
+    z.update(kwargs)
+    return z
