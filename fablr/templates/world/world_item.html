@@ -39,6 +39,8 @@
                         class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
                 <li><a href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world=world.slug) }}"><span
                         class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:random', publisher=publisher.slug, world=world.slug) }}"><span
+                        class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
                 {% include "world/new_article_menu.html" %}
                 {% if not article %} {# only show if we have only a world #}
                     {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}

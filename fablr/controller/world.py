@@ -12,6 +12,7 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 import logging
+import random
 from datetime import datetime
 from itertools import groupby
 
@@ -233,6 +234,18 @@ class ArticlesView(ResourceView):
         r.template = 'world/article_blog.html'
         r.prepare_query()
         return r
+
+    def random(self, publisher, world):
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        world = World.objects(slug=world).first_or_404()
+        # TODO ignores publisher for the moment
+        articles = Article.objects(world=world, status=PublishStatus.published, created_date__lte=datetime.utcnow())
+        # TODO very inefficient random sample, use mongodb aggregation instead
+        length = len(articles)
+        if length:
+            return redirect(url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=articles[random.randrange(length)].slug))
+        else:
+            return redirect(url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug))
 
     def feed(self, publisher, world):
         publisher = Publisher.objects(slug=publisher).first_or_404()
