@@ -13,7 +13,7 @@ Flask-WTF==0.12
 Flask-Script
 google-api-python-client==1.5.0
 gunicorn==19.4.5
-mandrill==1.0.57
+sparkpost==1.1.1
 Markdown==2.6.5
 mongoengine==0.10.6
 Pillow==3.1.1
