@@ -20,7 +20,6 @@ from wtforms.widgets import TextArea
 from flask.ext.babel import lazy_gettext as _
 from fablr.app import STATE_TYPES, FEATURE_TYPES
 import logging
-from collections import OrderedDict
 from flask import current_app
 from flask.ext.mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
@@ -77,6 +76,10 @@ def translate_action(action, item):
     else:
         return ''
 
+Languages = Choices(
+    en=_('English'),
+    sv=_('Swedish')
+)
 
 Countries = Choices(
     AF="Afghanistan",

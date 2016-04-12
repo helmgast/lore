@@ -1,0 +1,11 @@
+<div class="dropup">
+    <button class="btn btn-default btn-xs" type="button" id="languageChooser" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="true">
+        {{ locale_dict[g.locale] }} <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="languageChooser">
+        {% for lang in g.available_locales %}
+            <li><a class="btn-xs" href="{{ current_url(locale=lang) }}">{{ locale_dict[lang] }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

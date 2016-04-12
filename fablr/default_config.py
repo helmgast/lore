@@ -13,6 +13,7 @@ class Config(object):
     SESSION_REFRESH_EACH_REQUEST = False
     # Used by i18n translation using Babel
     BABEL_DEFAULT_LOCALE = 'sv'
+    BABEL_AVAILABLE_LOCALES = ['sv', 'en']
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
 

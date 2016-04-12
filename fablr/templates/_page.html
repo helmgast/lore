@@ -131,7 +131,6 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% block navbar_right %}
-
                         {% if not session.logged_in %}
                             <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('Log In') }}</a></li>
                             {% call MACRO.IS_ENABLED("join") %}

@@ -33,7 +33,7 @@ from wtforms import fields as f, validators as v, widgets
 from wtforms.compat import iteritems
 from wtforms.widgets import html5
 
-from fablr.model.misc import METHODS
+from fablr.model.misc import METHODS, Languages
 from fablr.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -186,7 +186,8 @@ class ResourceResponse(Response):
         # none should remain for subsequent requests
         'debug': lambda x: x.lower() == 'true',
         'as_user': lambda x: x,
-        'render': lambda x: x if x in ['json', 'html'] else None
+        'render': lambda x: x if x in ['json', 'html'] else None,
+        'locale': lambda x: x if x in Languages.keys() else None,
     }
 
     def __init__(self, resource_view, queries, formats=None, extra_args=None):

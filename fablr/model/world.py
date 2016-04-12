@@ -18,7 +18,7 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
                          ListField, IntField, EmailField, EmbeddedDocumentField)
 
 from asset import ImageAsset
-from misc import Choices, slugify, Address
+from misc import Choices, slugify, Address, Languages
 from user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -40,11 +40,6 @@ GenderTypes = Choices(
     female=_('Female'),
     unknown=_('Unknown'))
 
-Languages = Choices(
-    en=_('English'),
-    se=_('Swedish')
-)
-
 
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -59,6 +54,7 @@ class Publisher(Document):
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
+    languages = ListField(StringField(choices=Languages.to_tuples(), verbose_name=_('Available Languages')))
 
     def __unicode__(self):
         return self.title
@@ -76,7 +72,7 @@ class World(Document):
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    language = StringField(choices=Languages.to_tuples(), verbose_name=_('Preferred Language'))
+    languages = ListField(StringField(choices=Languages.to_tuples(), verbose_name=_('Available Languages')))
 
     def clean(self):
         self.slug = slugify(self.title)

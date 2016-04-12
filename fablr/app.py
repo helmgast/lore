@@ -183,7 +183,7 @@ def configure_extensions(app):
     extensions.babel.init_app(app)  # Automatically adds the extension to Jinja as well
     # Register callback that tells which language to serve
     extensions.babel.localeselector(extensions.get_locale)
-
+    # print extensions.babel.list_translations(), app.config['BABEL_DEFAULT_LOCALE']
     # Secure forms
     extensions.csrf.init_app(app)
 
@@ -231,6 +231,7 @@ def configure_hooks(app):
     @app.before_request
     def load_user():
         g.feature = app_features
+        g.available_locales = app.config['BABEL_AVAILABLE_LOCALES']
 
     @app.add_template_global
     def current_url(**kwargs):
@@ -242,9 +243,11 @@ def configure_hooks(app):
         copy_args = {k: v for k, v in copy_args.iteritems() if v is not None}
         return url_for(request.endpoint, **copy_args)
 
+    from model.misc import Languages
+
     @app.context_processor
     def inject_access():
-        return dict(access_policy=app.access_policy)
+        return dict(access_policy=app.access_policy, locale_dict=Languages)
 
 
 def register_main_routes(app, auth):
