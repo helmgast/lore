@@ -3,14 +3,11 @@
 Generic classes for all world children
 */
 
+@import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);
+
 @font-face {
   font-family: 'Vinque';
   src: url('../../../static/fonts/vinque.ttf');
-}
-
-@font-face {
-  font-family: 'Goudy';
-  src: url('../../../static/fonts/GoudyBookletter1911.otf');
 }
 
 @font-face {
@@ -20,8 +17,7 @@ Generic classes for all world children
 
 /* needs !important to overwrite other css classes */
 .container {
-  font-family: Goudy;
-  font-size: 18px;
+  font-family: 'Goudy Bookletter 1911', serif !important;
 }
 
 .container a {

@@ -16,6 +16,7 @@ import random
 from datetime import datetime
 from itertools import groupby
 
+from bson import DBRef
 from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import route
@@ -28,7 +29,7 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                        ListResponse, ItemResponse)
-from fablr.model.world import (Article, World, PublishStatus, Publisher)
+from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -92,12 +93,14 @@ class PublishersView(ResourceView):
 
 
 def set_theme(response, theme_type, slug):
-    try:
-        setattr(response, '%s_theme' % theme_type, current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
-        print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
-    except TemplateNotFound:
-        pass
-        print "Not finding theme %s_%s.html" % (theme_type, slug)
+    if response and theme_type and slug:
+        try:
+            setattr(response, '%s_theme' % theme_type,
+                    current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
+            print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
+        except TemplateNotFound:
+            pass
+            print "Not finding theme %s_%s.html" % (theme_type, slug)
 
 
 class WorldsView(ResourceView):
@@ -143,19 +146,20 @@ class WorldsView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         return r
 
-    # Lists all blogposts under a publisher, not world...
-    def blog(self, publisher):
-        publisher = Publisher.objects(slug=publisher).first_or_404()
-        articles = Article.objects(publisher=publisher, type='blogpost')
-        if publisher.languages:
-            g.available_locales = publisher.languages
-        r = ListResponse(ArticlesView,
-                         [('articles', articles), ('publisher', publisher)])
-        r.auth_or_abort()
-        r.query = publish_filter(r.query).order_by('-created_date')
-        r.prepare_query()
-        set_theme(r, 'publisher', publisher)
-        return r
+    # # Lists all blogposts under a publisher, not world...
+    # def blog(self, publisher):
+    #     publisher = Publisher.objects(slug=publisher).first_or_404()
+    #     articles = Article.objects(publisher=publisher, type='blogpost')
+    #     if publisher.languages:
+    #         g.available_locales = publisher.languages
+    #     r = ListResponse(ArticlesView,
+    #                      [('articles', articles), ('publisher', publisher)])
+    #     r.auth_or_abort()
+    #     r.template = ArticlesView.list_template
+    #     r.query = publish_filter(r.query).order_by('-created_date')
+    #     r.prepare_query()
+    #     set_theme(r, 'publisher', publisher)
+    #     return r
 
     def get(self, publisher, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -209,6 +213,21 @@ class WorldsView(ResourceView):
         abort(501)  # Not implemented
 
 
+def safeget(object, attr):
+    if not object:
+        if attr=='slug':
+            return 'meta'
+        else:
+            return None
+    else:
+        return getattr(object, attr, None)
+
+def if_not_meta(doc):
+    if isinstance(doc, WorldMeta):
+        return None
+    else:
+        return doc
+
 class ArticlesView(ResourceView):
     subdomain = '<publisher>'
     route_base = '/<world>'
@@ -226,11 +245,11 @@ class ArticlesView(ResourceView):
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
     def index(self, publisher, world):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.available_locales = lang_options
-        articles = Article.objects(world=world)
+        articles = Article.objects(world=if_not_meta(world))
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
         r.auth_or_abort()
@@ -250,19 +269,20 @@ class ArticlesView(ResourceView):
 
     def random(self, publisher, world):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else WorldMeta(publisher)
         # TODO ignores publisher for the moment
-        articles = Article.objects(world=world, status=PublishStatus.published, created_date__lte=datetime.utcnow())
+        articles = Article.objects(world=if_not_meta(world), status=PublishStatus.published, created_date__lte=datetime.utcnow())
         # TODO very inefficient random sample, use mongodb aggregation instead
         length = len(articles)
         if length:
-            return redirect(url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=articles[random.randrange(length)].slug))
+            return redirect(url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug,
+                                    id=articles[random.randrange(length)].slug))
         else:
             return redirect(url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug))
 
     def feed(self, publisher, world):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else WorldMeta(publisher)
         feed = AtomFeed(_('Recent Articles in ') + world.title,
                         feed_url=request.url, url=request.url_root)
         articles = Article.objects(status=PublishStatus.published,
@@ -278,7 +298,8 @@ class ArticlesView(ResourceView):
 
     def get(self, publisher, world, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else WorldMeta(publisher)
+
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.available_locales = lang_options
@@ -302,7 +323,7 @@ class ArticlesView(ResourceView):
 
     def post(self, publisher, world):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else  WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.available_locales = lang_options
@@ -321,11 +342,12 @@ class ArticlesView(ResourceView):
         except NotUniqueError:
             r.form.title.errors.append('ID already in use')
             return r, 400  # Respond with same page, including errors highlighted
-        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug, world=world.slug))
+        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug,
+                                                  world=world.slug))
 
     def patch(self, publisher, world, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else  WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
@@ -342,11 +364,12 @@ class ArticlesView(ResourceView):
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
         r.commit()
-        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug, world=world.slug))
+        return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher=publisher.slug,
+                                                  world=world.slug))
 
     def delete(self, publisher, world, id):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        world = World.objects(slug=world).first_or_404()
+        world = World.objects(slug=world).first_or_404() if world != 'meta' else WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
@@ -358,7 +381,8 @@ class ArticlesView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
         r.commit()
-        return redirect(r.args['next'] or url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug))
+        return redirect(
+            r.args['next'] or url_for('world.ArticlesView:index', publisher=publisher.slug, world=world.slug))
 
 
 class ArticleRelationsView(ResourceView):

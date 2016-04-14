@@ -88,6 +88,17 @@ class World(Document):
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+class WorldMeta(object):
+    """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
+    slug = 'meta'
+    languages = []
+
+    def __init__(self, publisher):
+        self.publisher = publisher
+
+    def articles(self):
+        return Article.objects(publisher=self.publisher, world=None).order_by('-created_date')
+
 
 class RelationType(Document):
     name = StringField()  # human friendly name

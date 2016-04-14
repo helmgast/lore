@@ -1,5 +1,4 @@
 /*noinspection CssUnknownTarget*/
-@import url(http://fonts.googleapis.com/css?family=Goudy+Bookletter+1911|Gentium+Book+Basic:400,400italic,700,700italic);
 
 html {
     position: relative;
@@ -27,6 +26,8 @@ h1, h2, h3, h4, h5, h6 {
     padding-bottom: 50px;
 }
 
+
+
 footer {
     bottom: 0;
     left: 0;
@@ -36,15 +37,14 @@ footer {
     display: flex;
     flex-direction: column;
     background-color: #333;
-    color: #fff !important;
+    padding-top: 20px;
+
 }
 
-footer h4 {
-  color: #fff !important;
-}
-
-footer p {
-  margin-top: 10px;
+footer a {
+    color: #a33 !important;
+    font-weight: 600;
+    font-size: 15px;
 }
 
 .longtext {
@@ -968,9 +968,13 @@ li:hover .btn-delete,
     max-height: 300px;
 }
 
+.language-chooser {
+    margin-top: 10px;
+    color: #000 !important;
+}
+
 .social {
-  padding-left: 25px;
-  padding-top: 10px;
+    padding-top: 10px;
 }
 
 .social a:hover {
@@ -1356,51 +1360,4 @@ body.template-helmgast .container {
 .navbar-nav-top a:hover, .navbar-nav-top .active a {
   border-bottom: 4px solid #a00;
   transition: border-color 1s ease-out;
-}
-
-.template-helmgast h1,
-.template-helmgast h2,
-.template-helmgast h3,
-.template-helmgast h4,
-.template-helmgast h5,
-.template-helmgast h6 {
-    font-family: 'Gentium Book Basic', sans-serif;
-    font-weight: 900;
-    color: #333;
-}
-
-.template-helmgast .helmgast-header {
-    background: url(../img/front/laura_4_header.jpg) no-repeat center top;
-    padding-top: 10px;
-    padding-bottom: 100px;
-    padding-left: 80px;
-    padding-left: 10vw;
-    background-attachment: relative;
-    background-position: center center;
-    width: 100%;
-
-    -webkit-background-size: 100%;
-    -moz-background-size: 100%;
-    -o-background-size: 100%;
-    background-size: 100%;
-
-    -webkit-background-size: cover;
-    -moz-background-size: cover;
-    -o-background-size: cover;
-    background-size: cover;
-}
-
-.template-helmgast .helmgast-header h1 {
-    letter-spacing: 1px;
-    text-shadow: black 3px 3px 6px;
-    color: white;
-}
-.template-helmgast .helmgast-header h2 {
-    color: white;
-}
-
-.template-helmgast .lead {
-    font-family: 'Gentium Book Basic', sans-serif;
-    font-weight: 400;
-    font-size: 14px;
 }

@@ -1,0 +1,26 @@
+{% extends "world/world_list.html" %}
+
+{% block cssimports %}
+    {{ super() }}
+    <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
+    <style>
+        @font-face {
+            font-family: 'Ringbearer-Medium';
+            src: url('../../../static/fonts/Ringbearer-Medium.ttf.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Ringbearer-Medium', sans-serif;
+            font-weight: 900;
+            color: #333;
+        }
+
+        .container {
+            font-family: 'Gentium Book Basic', sans-serif;
+            font-weight: 400;
+            font-size: 14px;
+        }
+    </style>
+{% endblock %}

@@ -18,6 +18,7 @@ from mongoengine import Document, QuerySet, ConnectionError
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
+from datetime import datetime
 
 toolbar = DebugToolbarExtension()
 
@@ -183,7 +184,7 @@ class SilentUndefined(Undefined):
         print 'JINJA2: something was undefined!'  # TODO, should print correct log error
         return None
 
-def currentyear():
+def currentyear(nada):
     return datetime.utcnow().strftime('%Y')
 
 

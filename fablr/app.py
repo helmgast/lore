@@ -9,7 +9,6 @@
 """
 
 import os
-from datetime import datetime
 import time
 from flask import Flask, render_template, request, redirect, url_for, flash, g
 from flask.ext.babel import lazy_gettext as _

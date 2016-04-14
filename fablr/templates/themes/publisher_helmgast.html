@@ -1,24 +1,75 @@
 {% extends "_page.html" %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block cssimports %}
+    {{ super() }}
+    <link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet"
+          type="text/css">
+    <style>
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Gentium Book Basic', sans-serif;
+            font-weight: 900;
+            color: #333;
+        }
+
+        .template-helmgast .helmgast-header {
+            background: url({{ url_for('static', filename="img/front/laura_4_header.jpg") }}) no-repeat center top;
+            padding-top: 10px;
+            padding-bottom: 100px;
+            padding-left: 80px;
+            padding-left: 10vw;
+            background-attachment: relative;
+            background-position: center center;
+            width: 100%;
+
+            -webkit-background-size: 100%;
+            -moz-background-size: 100%;
+            -o-background-size: 100%;
+            background-size: 100%;
+
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        .template-helmgast .helmgast-header h1 {
+            letter-spacing: 1px;
+            text-shadow: black 3px 3px 6px;
+            color: white;
+        }
+
+        .template-helmgast .helmgast-header h2 {
+            color: white;
+        }
+
+        .template-helmgast .lead {
+            font-family: 'Gentium Book Basic', sans-serif;
+            font-weight: 400;
+            font-size: 14px;
+        }
+    </style>
+{% endblock %}
 
 {% block body_class %}template-helmgast{% endblock %}
 {% block content_title %}Helmgast{% endblock %}
 {% block container_class %}container{% endblock %}
 
 {% block navbar_brand %}
-  <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}" >
-  <img src="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}" style="width: 128px; height: 128px; margin-top: -35px">
-  </a>
+    <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}">
+        <img src="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}"
+             style="width: 128px; height: 128px; margin-top: -35px">
+    </a>
 {% endblock navbar_brand %}
 
 {% block navbar_left %}
     {% call MACRO.IS_USER() %}
-        <li{% block world_active %}{% endblock %}><a href="{{ url_for('world.WorldsView:index', publisher=publisher.slug) }}"><span
+        <li{% block world_active %}{% endblock %}><a
+                href="{{ url_for('world.WorldsView:index', publisher=publisher.slug) }}"><span
                 class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
     {% endcall %}
     <li{% block blog_active %}{% endblock %}><a
-            href="{{ url_for('world.WorldsView:blog', publisher=publisher.slug) }}"><span
+            href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world='meta') }}"><span
             class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
     {% call MACRO.IS_ENABLED("campaign") %}
         <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span
@@ -31,147 +82,194 @@
     <li{% block ext_shop_active %}{% endblock %}><a href="http://webshop.helmgast.se"
                                                     target="_blank"><span
             class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
-    <li{% block shop_active %}{% endblock %}><a href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"><span
+    <li{% block shop_active %}{% endblock %}><a
+            href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"><span
             class="glyphicon glyphicon-list-alt"></span> {{ _('Order') }}</a></li>
     <li><a href="http://www.rollspel.nu/forum/neogames" target="_blank"><span
             class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
 {% endblock navbar_left %}
 
 {% block home %}
-{% include "includes/flash.html" %}
+    {% include "includes/flash.html" %}
     <div class="jumbotron helmgast-header">
-  <h1>HELMGAST</h1>
-  <h2>Vi tar spel på allvar</h2>
-</div>
+        <h1>HELMGAST</h1>
+        <h2>Vi tar spel på allvar</h2>
+    </div>
     <div class="row">
-	<div class="col-md-6">
-	  <h1>{{ _('Welcome to') }} Helmgast</h1>
-	  <h4><i>Ny utgivare av klassiska rollspelen Eon, Neotech <br> med många fler i pipelinen!</i></h4>
-	</div>
-	<div class="col-md-6">
- 	{% include "newsletter.html" %}
-	</div>
-</div>
-<div class="row">
-{% for article in articles %}
-    <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
-      <a class="blog_header" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><h3>{{ article.title }}</h3></a>
-    {% if article.feature_image %}
-      <a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">
-      <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
-      </a>
-    {% endif %}
-	  <p class="lead">{% if article.description %}{{article.description}}{% else
-	    %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-	    <a href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><em
-	    style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
-	  <hr-d>
-	    <ul class="list-inline article-meta" style="margin-bottom: 0;">
-	      <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
-	        {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
-	      </li>
-	      <li title="{{ _('Creator') }}">
-	      <span class="glyphicon glyphicon-user"></span>
-	      {{article.creator if article.creator else 'System'}}
-	      </li>
-	    </ul>
-	  </hr-d>
+        <div class="col-md-6">
+            <h1>{{ _('Welcome to') }} Helmgast</h1>
+            <h4><i>Ny utgivare av klassiska rollspelen Eon, Neotech <br> med många fler i pipelinen!</i></h4>
+        </div>
+        <div class="col-md-6">
+            {% include "newsletter.html" %}
+        </div>
     </div>
-    {% else %}
-    <div class="jumbotron text-center">
-      <h2>{{ _('No articles yet!') }}</h2>
+    <div class="row">
+        {% for article in articles %}
+            <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
+                <a class="blog_header"
+                   href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}">
+                    <h3>{{ article.title }}</h3></a>
+                {% if article.feature_image %}
+                    <a class="pull-left"
+                       href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}">
+                        <img class="media-object" src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}">
+                    </a>
+                {% endif %}
+                <p class="lead">{% if article.description %}{{ article.description }}{% else %}
+                    {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
+                    <a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}"><em
+                            style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
+                <hr-d>
+                    <ul class="list-inline article-meta" style="margin-bottom: 0;">
+                        <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
+                            {{ article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+                        </li>
+                        <li title="{{ _('Creator') }}">
+                            <span class="glyphicon glyphicon-user"></span>
+                            {{ article.creator if article.creator else 'System' }}
+                        </li>
+                    </ul>
+                </hr-d>
+            </div>
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No articles yet!') }}</h2>
+            </div>
+            <!-- col-lg-4 -->
+        {% endfor %}
     </div>
-    <!-- col-lg-4 -->
-	{% endfor %}
-</div>
-<div class="row">
-	<div class="col-lg-12">
-		<h2>Visioner av våra spel</h2>
-	</div>
-<div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port01.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port01.jpg') }}" alt="">
-      </a>
+    <div class="row">
+        <div class="col-lg-12">
+            <h2>Visioner av våra spel</h2>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port01.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port01.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>RUINERNA</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port02.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port02.jpg') }}" alt="">
-      </a>
+            <p>RUINERNA</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port02.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port02.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>FÅNGARNA</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port03.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port03.jpg') }}" alt="">
-      </a>
+            <p>FÅNGARNA</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port03.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port03.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>SLAGFÄLTET</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port04.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port04.jpg') }}" alt="">
-      </a>
+            <p>SLAGFÄLTET</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port04.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port04.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>ARKETYPEN LÄRD</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port05.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port05.jpg') }}" alt="">
-      </a>
+            <p>ARKETYPEN LÄRD</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port05.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port05.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>ARKETYPEN MYSTIKER</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port06.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port06.jpg') }}" alt="">
-      </a>
+            <p>ARKETYPEN MYSTIKER</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port06.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port06.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>ARKETYPEN KRIGARE</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port07.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port07.jpg') }}" alt="">
-      </a>
+            <p>ARKETYPEN KRIGARE</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port07.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port07.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>PSYCHO TRIBE</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port08.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port08.jpg') }}" alt="">
-      </a>
+            <p>PSYCHO TRIBE</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port08.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port08.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>NATURAL CHILD</p>
-    </div>
-    <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-      <a class="lightbox" href="{{ url_for('static', filename='img/front/port09.jpg') }}"><img class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port09.jpg') }}" alt="">
-      </a>
+            <p>NATURAL CHILD</p>
+        </div>
+        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
+            <a class="lightbox" href="{{ url_for('static', filename='img/front/port09.jpg') }}"><img
+                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port09.jpg') }}"
+                    alt="">
+            </a>
 
-      <p>LIVET I MING ESTATES</p>
+            <p>LIVET I MING ESTATES</p>
+        </div>
     </div>
-</div>
 {% endblock %}
 
 {% block footer %}
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-3 col-xs-6">
-        <h4>Kontakt</h4>
-        <p>
-          info@helmgast.se
-        </p>
-        <p>
-          © 2014 Helmgast AB
-        </p>
-          {% include 'includes/language_chooser.html' %}
-      </div>
-      <!-- --/col-lg-3 ---->
-      <div class="col-lg-3 col-xs-6">
-        <h4>Helmgastarna</h4>
-        <p>
-          Marco Behrmann<br/>
-          Paul Dali<br/>
-          Martin Fröjd<br/>
-          Niklas Fröjd<br/>
-          Petter Nallo<br/>
-          Anton Wahnström
-        </p>
-      </div>
-      <!-- --/col-lg-3 ---->
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-4">
+                <ul class="list-unstyled">
+                    <li><a data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
+            from_field=user.email, subject=gettext('Question')) }}">{% trans %}Contact Us{% endtrans %}</a></li>
+                    <li><a href="http://eepurl.com/RuMH1">{% trans %}Newsletter{% endtrans %}</a></li>
+                    <li>
+                        <div class="social">
+                            <a class="socialtw" href="https://twitter.com/helmgast" target="_blank">
+                                <svg class="social-icon icon-twitter" viewBox="0 0 1024 1024">
+                                    <path id="twitter" fill="#ababab"
+                                          d="M853.342 0h-682.656c-93.874 0-170.686 76.81-170.686 170.69v682.624c0 93.936 76.812 170.686 170.686 170.686h682.656c93.876 0 170.658-76.75 170.658-170.69v-682.62c0-93.88-76.782-170.69-170.658-170.69zM766.478 381.48c0.252 5.632 0.38 11.296 0.38 16.988 0 173.51-132.070 373.588-373.584 373.588-74.15 0-143.168-21.738-201.276-58.996 10.272 1.218 20.724 1.84 31.322 1.84 61.518 0 118.134-20.992 163.072-56.21-57.458-1.054-105.948-39.020-122.658-91.184 8.018 1.532 16.244 2.36 24.704 2.36 11.976 0 23.578-1.61 34.592-4.61-60.064-12.066-105.326-65.132-105.326-128.75 0-0.554 0-1.104 0.012-1.652 17.7 9.834 37.948 15.742 59.47 16.424-35.232-23.546-58.414-63.736-58.414-109.292 0-24.064 6.476-46.62 17.78-66.010 64.76 79.44 161.51 131.712 270.634 137.19-2.238-9.612-3.4-19.632-3.4-29.924 0-72.512 58.792-131.298 131.304-131.298 37.766 0 71.892 15.944 95.842 41.462 29.908-5.886 58.008-16.814 83.38-31.862-9.804 30.662-30.624 56.394-57.732 72.644 26.56-3.174 51.866-10.232 75.412-20.674-17.594 26.328-39.854 49.454-65.514 67.966z"></path>
+                                </svg>
+                            </a>
+                            <a class="socialfb" href="https://www.facebook.com/helmgast"
+                               target="_blank">
+                                <svg class="social-icon" viewBox="0 0 1024 1024">
+                                    <path id="facebook" fill="#ababab"
+                                          d="M853.35 0h-682.702c-94.25 0-170.648 76.42-170.648 170.686v682.63c0 94.266 76.398 170.684 170.648 170.684h341.352v-448h-128v-128h128v-96c0-88.366 71.634-160 160-160h160v128h-160c-17.674 0-32 14.328-32 32v96h176l-32 128h-144v448h213.35c94.25 0 170.65-76.418 170.65-170.684v-682.63c0-94.266-76.4-170.686-170.65-170.686z"></path>
+                                </svg>
+                            </a></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-xs-4">
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world='meta') }}">{% trans %}Blog{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='about') }}">{% trans %}About{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='media') }}">{% trans %}Media{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='work_with_us') }}">{% trans %}Work with us{% endtrans %}</a></li>
+                </ul>
+            </div>
+            <!-- --/col-lg-3 ---->
+
+            <div class="col-xs-4">
+                <ul class="list-unstyled">
+                    {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='terms_of_service') }}">{% trans %}Terms of Service{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='security_policy') }}">{% trans %}Security policy{% endtrans %}</a></li>
+                    <li class="language-chooser">{% include 'includes/language_chooser.html' %}</li>
+                </ul>
+            </div>
+            <!-- --/col-lg-3 ---->
+        </div>
+        <div class="row">
+            <p>
+                {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
+                Version xx.yy
+            </p>
+        </div>
+        <!-- --/row ---->
     </div>
-    <!-- --/row ---->
-  </div>
 {% endblock %}

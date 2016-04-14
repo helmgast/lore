@@ -44,7 +44,7 @@ objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
 def generate_flash(action, name, model_identifiers, dest=''):
     # s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
     #   else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
-    s = u'%s %s %s' % (_(u'Successfully'), action, name)
+    s = _('%(name)s was %(action)s', action=action, name=name)
     flash(s, 'success')
     return s
 
@@ -178,6 +178,12 @@ action_strings_translated = {
     'put': _('put'),
     'delete': _('deleted'),
     'patch': _('patched'),
+}
+instance_types_translated = {
+    'article': _('The article'),
+    'world': _('The world'),
+    'publisher': _('The publisher'),
+    'user': _('The user'),
 }
 
 
@@ -376,14 +382,20 @@ class ItemResponse(ResourceResponse):
 def log_event(action, instance=None, message='', user=None, flash=True):
     # <datetime> <user> <action> <object> <message>
     # martin patch article(helmgast)
+    # The article theArticle was patched
+    # Artikeln theArticle aandrad
     user = user or g.user
     if user:
         user.log(action, instance, message)
     else:
         user = "System"
     logger.info("%s %s %s", user, action_strings[action], " (%s)" % message if message else "")
+    if instance:
+        name = instance_types_translated.get(instance._class_name.lower(), _('The item'))
+    else:
+        name = _('The item')
     if flash:
-        generate_flash(action_strings_translated[action], 'item', instance)
+        generate_flash(action_strings_translated[action], name, instance)
 
 
 def parse_out_arg(out_param):
