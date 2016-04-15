@@ -115,7 +115,6 @@
 
 
 {%- macro LIST_CONTROLS(model_class, fields, show=['view','order','page'], set_view=None, default='table') -%}
-    <form class="form-inline">
         <div class="btn-toolbar">
 
             {% if 'view' in show %}
@@ -198,7 +197,6 @@
             {% endif %}
 
         </div>
-    </form>
 {%- endmacro -%}
 
 
@@ -208,14 +206,14 @@
     <tr>
         {% for f in fields %}
             {% set name = model_class._fields[f].verbose_name %}
-            <th>
+            <th style="white-space: nowrap">
                 {% if name %}
-                    {% if order_by== f %}
-                        <a href="?order_by=-{{ f }}">{{ name }} <span class="caret caret-up"></span></a>
-                    {% elif order_by=='-'+f %}
-                        <a href="?order_by={{ f }}">{{ name }} <span class="caret"></span></a>
+                    {% if order_by == f %}
+                        <a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span class="caret caret-up"></span></a>
+                    {% elif order_by == '-'+f %}
+                        <a href="{{ current_url(order_by=f) }}">{{ name }} <span class="caret"></span></a>
                     {% else %}
-                        <a href="?order_by={{ f }}">{{ name }} </a>
+                        <a href="{{ current_url(order_by=f) }}">{{ name }} </a>
                     {% endif %}
                 {% endif %}
             </th>

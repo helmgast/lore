@@ -47,17 +47,30 @@ class ProductsView(ResourceView):
     })
     model = Product
     list_template = 'shop/product_list.html'
-    list_arg_parser = filterable_fields_parser(['title', 'created', 'family', 'publisher'])
+    list_arg_parser = filterable_fields_parser(['title', 'description', 'type', 'world', 'price'])
     item_template = 'shop/product_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'created', 'family', 'publisher'])
+    item_arg_parser = prefillable_fields_parser(['title', 'description', 'type', 'world', 'price'])
     form_class = model_form(Product,
                             base_class=RacBaseForm,
                             exclude=['slug'],
                             converter=RacModelConverter())
 
+    # fields to order_by,(order_by key, e.g. order by id, by slug, etc?)
+    # no point ordering for reference fields, and translated choice fields will be wrong order as well
+
+    # fields to filter by
+    # DateTimeField - certain time spans: today, last week, last month, last year, >1 year
+    # Choice-fields: filter by the choices available
+    # Numeric fields (int, Float): e.g. 0-5,5-20,20-100, 100-200
+    # ReferenceFields: a select box to filter by one or many choices
+    # StringField: no filtering
+    # Boolean: Filter yes or no
+    # ListField: no filtering (could have "has members" or "not has members")
+    #
+
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
-        products = Product.objects(status__ne='hidden')
+        products = Product.objects(status__ne='hidden').order_by('type', '-price')
         r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
         r.auth_or_abort()
         r.prepare_query()

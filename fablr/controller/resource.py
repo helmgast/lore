@@ -26,6 +26,7 @@ from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
 from flask.views import View
+from mongoengine import ReferenceField
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from werkzeug.exceptions import HTTPException
 from wtforms import Form as OrigForm
@@ -143,7 +144,7 @@ mime_types = {
 common_args = frozenset(['page', 'per_page', 'debug', 'as_user', 'view', 'q', 'action', 'method', 'next', 'order_by'])
 
 re_operators = re.compile(
-    r'__(ne|lt|lte|gt|in|nin|mod|all|size|exists|exact|iexact|contains|'
+    r'__(ne|lt|lte|gt|gte|in|nin|mod|all|size|exists|exact|iexact|contains|'
     'icontains|istartswith|endswith|iendswith|match|not__ne|not__lt|not__lte|'
     'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
     'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
@@ -162,7 +163,7 @@ def prefillable_fields_parser(fields=None):
 def filterable_fields_parser(fields=None):
     fields = frozenset(fields or [])
     return dict(ListResponse.arg_parser, **{
-        'order_by': lambda x: x.lower() if re_order_by.sub('', x.lower()) in fields else None,
+        'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields],
         'fields': fields
     })
 
@@ -261,7 +262,8 @@ class ResourceResponse(Response):
                 fields = arg_parser[k]
                 for q, w in req_args.iteritems():
                     if q not in arg_parser:
-                        new_k = re_operators.sub('', q)  # remove mongo operators from filter key
+                        # new_k = re_operators.sub('', q)  # remove mongo operators from filter key
+                        new_k = q.split('__', 1)[0]  # allow all operators, just check field is valid
                         if new_k in fields:
                             args['fields'][q] = w
         # print args, arg_parser
@@ -297,16 +299,28 @@ class ListResponse(ResourceResponse):
     def prepare_query(self, paginate=True):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
-        if self.args['order_by']:
-            self.query = self.query.order_by(self.args['order_by'])
+        if self.args['order_by']:  # is a list
+            self.query = self.query.order_by(*self.args['order_by'])
         if self.args['fields']:
+            for k in self.args['fields'].keys():
+                # Replace slugs to object ids for reference fields
+                field = self.model._fields[k]
+                if isinstance(field, ReferenceField):
+                    instance = field.document_type.objects(slug=self.args['fields'][k]).only('id').first()
+                    if instance:
+                        self.args['fields'][k] = instance.id
+                    else:
+                        del self.args['fields'][k]
             self.query = self.query.filter(**self.args['fields'])
 
         # TODO implement search, use textindex and do ".search_text()"
 
         # TODO max query size 10000 implied here
         per_page = self.args['per_page'] if paginate and self.args['per_page'] > 0 else 10000
+        # try:
         self.pagination = self.query.paginate(page=self.args['page'], per_page=per_page)
+        # except ValidationError:
+        #     abort(404, "Incorrect URL parameter")
         self.query = self.pagination.items  # set default query as the paginated one
 
 

@@ -102,13 +102,13 @@
       {% endif %}
     </div>
     <div class="col-md-4">
-      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Buy') }}</a>
+      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>
       <br>
       {% if product.feature_image %}<a class="lightbox" href="{{url_for('image', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = product.feature_image.slug)}}"></a>
       {% else %}
         <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
       {% endif %}
-      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Buy') }}</a>-->
+      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
     </div>
 </div>
 {% if product.status != 'hidden' %}
