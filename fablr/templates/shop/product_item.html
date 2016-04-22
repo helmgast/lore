@@ -69,7 +69,7 @@
         <tr><td><strong>{{ _('Publisher') }}</strong></td>
         <td><small>{{ product.publisher }}</small></td></tr>
         <tr><td><strong>{{ _('World') }}</strong></td>
-        <td>{{ product.world }}</td></tr>
+        <td><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=product.world.slug) }}">{{ product.world }}</a></td></tr>
         <tr><td><strong>{{ _('Family') }}</strong></td>
         <td>{{ product.family }}</td></tr>
         <tr><td><strong>{{ _('Created') }}</strong></td>

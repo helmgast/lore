@@ -8,7 +8,7 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-import datetime
+from datetime import timedelta, date, datetime
 
 import wtforms as wtf
 from flask.ext.wtf import Form  # secure form
@@ -61,7 +61,7 @@ def list_to_choices(list):
 
 
 def now():
-    return datetime.datetime.now;
+    return datetime.now;
 
 
 def translate_action(action, item):
@@ -75,6 +75,64 @@ def translate_action(action, item):
         return _('"%(item)s" deleted', item=item)
     else:
         return ''
+
+
+def numerical_options(field_name, spans=None):
+    rv = []
+    if not spans:
+        raise ValueError("Need at least one value to span options for")
+    for s in spans:
+        if isinstance(s, tuple):
+            rv.append(({field_name + '__lte': s[0], field_name + '__gt': None}, s[1]))
+        else:
+            rv.append(({field_name + '__lte': s, field_name + '__gt': None}, _('Less than %(val)s', val=s)))
+    rv.append(({field_name + '__gt': spans[-1], field_name + '__lte': None}, _('More than %(val)s', val=spans[-1])))
+
+    def return_function(*args):
+        return rv
+
+    return return_function
+
+
+def reference_options(field_name, model):
+    def return_function(*args):
+        return [({field_name: o.slug}, o.title) for o in model.objects().distinct(field_name)]
+
+    return return_function
+
+
+def choice_options(field_name, choices):
+    rv = [({field_name: a}, b) for a, b in choices]
+
+    def return_function(*args):
+        return rv
+
+    return return_function
+
+
+def datetime_options(field_name, time_deltas=None):
+    rv = []
+    # 'Last %(d)s days, %(h)s hours, %(m)s minutes, %(s)s seconds'
+    if not time_deltas:
+        raise ValueError("Need at least one value in time_deltas")
+
+    # We pre-compute the filter choices in a intermediary form, without the dicts
+    # Will be completed in the return_function below
+    for t in time_deltas:
+        if isinstance(t, tuple):
+            rv.append((field_name + '__gte', field_name + '__lt', t[0], t[1]))
+        else:
+            rv.append((field_name + '__gte', field_name + '__lt', t, _('Last %(val)s days', val=t.days)))
+    rv.append((field_name + '__lt', field_name + '__gte', time_deltas[-1],
+               _('Older than %(val)s days', val=time_deltas[-1].days)))
+
+    def return_function(*args):
+        # Rebuild above list of tuples to one with dict, and make time - timedelta
+        return [({x[0]: date.today() - x[2], x[1]: None}, x[3]) for x in rv]
+
+    return return_function
+
+from7to365 = [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedelta(days=365)]
 
 Languages = Choices(
     en=_('English'),
@@ -330,7 +388,8 @@ class Address(EmbeddedDocument):
     zipcode = StringField(max_length=8, verbose_name=_('ZIP Code'))
     city = StringField(max_length=60, verbose_name=_('City'))
     # Tuples come unsorted, let's sort first
-    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), default=Countries.SE, verbose_name=_('Country'))
+    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), default=Countries.SE,
+                          verbose_name=_('Country'))
     mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
 
 

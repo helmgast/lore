@@ -9,7 +9,7 @@
 """
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import current_app
 from flask.ext.babel import lazy_gettext as _
@@ -18,7 +18,7 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
                          ListField, IntField, EmailField, EmbeddedDocumentField)
 
 from asset import ImageAsset
-from misc import Choices, slugify, Address, Languages
+from misc import Choices, slugify, Address, Languages, choice_options, datetime_options, reference_options
 from user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -87,6 +87,7 @@ class World(Document):
         # daysperyear = 360
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
+
 
 class WorldMeta(object):
     """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
@@ -216,6 +217,8 @@ class Article(Document):
     theme = StringField(choices=ArticleThemes.to_tuples(),
                         default=ArticleThemes.default,
                         verbose_name=_('Article Theme'))
+    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
     # modified_date = DateTimeField()
 
@@ -262,6 +265,15 @@ class Article(Document):
     eventdata = EmbeddedDocumentField(EventData)
     campaigndata = EmbeddedDocumentField(CampaignData)
     relations = ListField(EmbeddedDocumentField(ArticleRelation))
+
+
+Article.type.filter_options = choice_options('type', Article.type.choices)
+Article.world.filter_options = reference_options('world', Article)
+Article.created_date.filter_options = datetime_options('created_date',
+                                                       [timedelta(days=7),
+                                                        timedelta(days=30),
+                                                        timedelta(days=90),
+                                                        timedelta(days=365)])
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 # ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))

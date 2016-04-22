@@ -26,8 +26,10 @@ from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
 from flask.views import View
-from mongoengine import ReferenceField
+from mongoengine import ReferenceField, DateTimeField, Q
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
+from mongoengine.queryset.visitor import QNode
+from werkzeug.datastructures import CombinedMultiDict, MultiDict
 from werkzeug.exceptions import HTTPException
 from wtforms import Form as OrigForm
 from wtforms import fields as f, validators as v, widgets
@@ -249,23 +251,25 @@ class ResourceResponse(Response):
     def parse_args(arg_parser, extra_args):
         """Parses request args through a form that sets defaults or removes invalid entries
         """
-        args = {k: '' for k, v in arg_parser.iteritems()}  # Make copy of arg_parser for args
-        # TODO to_dict flattens the request dict, meaning we cannot take multiple
+        args = {'fields': MultiDict()}  # ensure we always have a fields value
         # values for same URL param (e.g. key=val1&key=val2)
-        req_args = dict(request.args.to_dict(), **extra_args)
+        # req_args = CombinedMultiDict([request.args, extra_args])
+        req_args = request.args.copy()
+        for k,v in extra_args.iteritems():
+            req_args.add(k, v)
         # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
         for k in arg_parser:
             if k is not 'fields':
+                # Defaults to empty string to ensure all keys exists
                 args[k] = arg_parser[k](req_args.get(k, ''))
             else:
-                args['fields'] = {}
                 fields = arg_parser[k]
-                for q, w in req_args.iteritems():
-                    if q not in arg_parser:
+                for q, w in req_args.iteritems(multi=True):
+                    if q not in arg_parser:  # Means its a field name, not a pre-defined arg
                         # new_k = re_operators.sub('', q)  # remove mongo operators from filter key
                         new_k = q.split('__', 1)[0]  # allow all operators, just check field is valid
                         if new_k in fields:
-                            args['fields'][q] = w
+                            args['fields'].add(q, w)
         # print args, arg_parser
         return args
 
@@ -296,23 +300,43 @@ class ListResponse(ResourceResponse):
     def query(self, x):
         setattr(self, self.resource_queries[0], x)
 
+    def slug_to_id(self, field, slug):
+        if objid_matcher.match(slug):
+            return slug  # Is already Object ID
+        elif isinstance(field, ReferenceField):
+            instance = field.document_type.objects(slug=slug).only('id').first()
+            if instance:
+                return instance.id
+            else:
+                return None
+        else:
+            return slug
+
     def prepare_query(self, paginate=True):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
         if self.args['order_by']:  # is a list
             self.query = self.query.order_by(*self.args['order_by'])
         if self.args['fields']:
-            for k in self.args['fields'].keys():
-                # Replace slugs to object ids for reference fields
-                field = self.model._fields[k]
-                if isinstance(field, ReferenceField):
-                    instance = field.document_type.objects(slug=self.args['fields'][k]).only('id').first()
-                    if instance:
-                        self.args['fields'][k] = instance.id
-                    else:
-                        del self.args['fields'][k]
-            self.query = self.query.filter(**self.args['fields'])
+            built_query = None
+            for k, values in self.args['fields'].iterlists():
+                field = self.model._fields[k.split('__', 1)[0]]  # Will skip __gte, __lt etc operators
+                q = Q(**{k: self.slug_to_id(field, values[0])})
+                if len(values) > 1:  # multiple values for this field, combine with or
+                    for v in values[1:]:
+                        q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
+                if not built_query:
+                    built_query = q
+                else:
+                    built_query = built_query._combine(q, QNode.AND)
+            self.query = self.query.filter(built_query)
 
+        self.filter_options = {}
+        for f in self.model._fields.keys():
+            field = self.model._fields[f]
+            if hasattr(field, 'filter_options'):
+                self.filter_options[f] = field.filter_options(self.model)
+                print f, field.filter_options(self.model)
         # TODO implement search, use textindex and do ".search_text()"
 
         # TODO max query size 10000 implied here
@@ -322,6 +346,16 @@ class ListResponse(ResourceResponse):
         # except ValidationError:
         #     abort(404, "Incorrect URL parameter")
         self.query = self.pagination.items  # set default query as the paginated one
+
+    # def make_filter_options(self, model, fields):
+    #     for f in fields:
+    #         field = model._fields[f]
+    #         if isinstance(field, ReferenceField):
+    #             values = model.distinct(f)
+    #         elif isinstance(field, DateTimeField):
+    #             datetime.utcwow()
+    #             pass
+    #         elif isinstance(field, DateTimeField):
 
 
 class ItemResponse(ResourceResponse):

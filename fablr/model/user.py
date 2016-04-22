@@ -11,9 +11,7 @@
 from hashlib import md5
 
 from baseuser import BaseUser, create_token
-from misc import now, Choices, slugify, translate_action
-
-# i18n (Babel)
+from misc import now, Choices, slugify, translate_action, datetime_options, choice_options, from7to365
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
@@ -28,6 +26,7 @@ UserStatus = Choices(
     invited=_('Invited'),
     active=_('Active'),
     deleted=_('Deleted'))
+
 AuthServices = Choices(
     google='Google',
     facebook='Facebook')
@@ -64,6 +63,7 @@ class User(Document, BaseUser):
         verbose_name=_('Description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
     xp = IntField(default=0, verbose_name=_('XP'))
     join_date = DateTimeField(default=now(), verbose_name=_('Join Date'))
+    last_login = DateTimeField(verbose_name=_('Last login'))
     # msglog = ReferenceField(Conversation)
     status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
     admin = BooleanField(default=False)
@@ -127,14 +127,10 @@ class User(Document, BaseUser):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
-    # @classmethod
-    # def allowed(cls, user, op='view', instance=None):
-    #     if user:
-    #         if op=='view' or op=='new':
-    #             return True
-    #         else:
-    #             return (user.id == instance.id) # requesting user and passed user instance has same ID - you can edit yourself
-    #     return False
+
+User.status.filter_options = choice_options('status', User.status.choices)
+User.last_login.filter_options = datetime_options('last_login', from7to365)
+User.join_date.filter_options = datetime_options('join_date', from7to365)
 
 
 class Conversation(Document):

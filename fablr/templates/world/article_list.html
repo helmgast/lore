@@ -10,80 +10,124 @@
     {% set groups = articles|dummygrouper %}
 {% endif %}
 
-{% block pre_content %}
-<h2 class="browseArticle">{{ _('Browse') }}</h2>
-{{MACRO.LIST_CONTROLS(model, ['title', 'creator', 'type', 'created_date'])}}
+{% block sidebar %}{{ super() }}
+    {{ MACRO.LIST_CONTROLS(model, args, ['title', 'creator', 'type', 'created_date']) }}
+
+    <h5>{% trans %}By world{% endtrans %}</h5>
+    <div class="btn-set">
+        {% for opt in filter_options['world'] %}
+            {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+        {% endfor %}
+    </div>
+
+    <h5>{% trans %}By type{% endtrans %}</h5>
+    <div class="btn-set">
+        {% for opt in filter_options['type'] %}
+            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+        {% endfor %}
+    </div>
+
+    <h5>{% trans %}By created date{% endtrans %}</h5>
+    <div class="btn-set">
+        {% for opt in filter_options['created_date'] %}
+            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+        {% endfor %}
+    </div>
 {% endblock %}
 
 {% block content %}
-<div>
-  {% for group in groups %}
-    {% if group.grouper %}
-    <h3>{{ _(group.grouper|capitalize) }}</h3>
-    {% endif %}
-    {% if args['view'] == 'list' %}
+    <div>
+        {% for group in groups %}
+            {% if group.grouper %}
+                <h3>{{ _(group.grouper|capitalize) }}</h3>
+            {% endif %}
+            {% if args['view'] == 'list' %}
 
-      {% for article in group.list %}
-      <a class="blog_header" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><h3>{{ article.title}}</h3></a>
-      <ul class="list-inline article-meta" style="margin-bottom: 0">
-        <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
-      <li title="{{ _('Creator') }}">
-      <span class="glyphicon glyphicon-user"></span>
-      {{article.creator if article.creator else 'System'}}
-      </li>
-      </ul>
-      <div class="media">
-      {% if article.feature_image %}
-        <a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">
-        <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
-        </a>
-      {% endif %}
-        <div class="media-body">
-          {% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-          <a href="{{url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-        </div>
-      </div>
-      {% endfor %}
+                {% for article in group.list %}
+                    <a class="blog_header"
+                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
+                        <h3>{{ article.title }}</h3></a>
+                    <ul class="list-inline article-meta" style="margin-bottom: 0">
+                        <li title="{{ _('Created') }}"><span
+                                class="glyphicon glyphicon-calendar"></span> {{ article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+                        </li>
+                        <li title="{{ _('Creator') }}">
+                            <span class="glyphicon glyphicon-user"></span>
+                            {{ article.creator if article.creator else 'System' }}
+                        </li>
+                    </ul>
+                    <div class="media">
+                        {% if article.feature_image %}
+                            <a class="pull-left"
+                               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
+                                <img class="media-object"
+                                     src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}">
+                            </a>
+                        {% endif %}
+                        <div class="media-body">
+                            {% if article.description %}{{ article.description }}{% else %}
+                                {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
+                            <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em
+                                    style="white-space: nowrap;">{{ _('Read more') }}</em></a>
+                        </div>
+                    </div>
+                {% endfor %}
 
-    {% elif args['view'] == 'card' %}
+            {% elif args['view'] == 'card' %}
+            <div class="cards">
+                <div class="row">
+                {% for article in group.list %}
+                    <div class="col-md-4 product">
+                        {% if article.feature_image %}
+                            <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><img
+                                    class="product-image"
+                                    src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}"></a>{% endif %}
+                        <ul class="product-details">
+                            <li class="product-type">{{ article.get_type_display() }} {{ article.created_date.strftime('%Y-%m-%d') }}</li>
+                        </ul>
+                        <div class="product-intro">
+                            <h3>
+                                <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
+                            </h3>
+                            <p>{{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}</p>
+                        </div>
+                    </div>
+                    {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
 
-      {% for article in group.list %}
-      <div class="col-md-4 product">
-          {% if article.feature_image %}<a href="{{url_for('.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}"></a>{% endif %}
-          <ul class="product-details">
-              <li class="product-type">{{article.get_type_display()}} {{article.created_date.strftime('%Y-%m-%d')}}</li>
-          </ul>
-          <div class="product-intro">
-              <h3><a href="{{url_for('.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug)}}">{{ article.title }}</a></h3>
-              <p>{{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}</p>
-          </div>
-      </div>
-      {% endfor %}
+            {% else %} {# ==table #}
+                <table class="table table-hover">
+                    <thead>
+                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
+                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'creator') }}</th>
+                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
+                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created_date') }}</th>
+                    </thead>
+                    <tbody>
 
-    {% else %} {# ==table #}
-    <table class="table table-hover">
-      {{ MACRO.TABLE_HEADER(model, ['title', 'creator', 'type', 'created_date']) }}
-      <tbody>
+                    {% for article in group.list %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}">{{ article.title }}</a>
+                            </td>
+                            <td>{{ article.creator }}</td>
+                            <td>{{ article.get_type_display() }}</td>
+                            <td class="small">{{ article.created_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                        </tr>
+                    {% endfor %}
 
-        {% for article in group.list %}
-        <tr>
-          <td><a href="{{ url_for('.ArticlesView:get', publisher=publisher.slug, id=article.slug, world=world.slug)}}">{{article.title}}</a></td>
-          <td>{{article.creator}}</td>
-          <td>{{article.get_type_display()}}</td>
-          <td class="small">{{article.created_date.strftime('%Y-%m-%d %H:%M')}}</td>
-        </tr>
+                    </tbody>
+                </table>
+            {% endif %}
+
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No articles yet!') }}</h2>
+            </div>
         {% endfor %}
 
-      </tbody>
-    </table>
-    {% endif %}
-
-  {% else %}
-  <div class="jumbotron text-center">
-  <h2>{{ _('No articles yet!') }}</h2>
-  </div>
-  {% endfor %}
-
-</div>
-{% include "includes/pagination.html" %}
+    </div>
+    {% include "includes/pagination.html" %}
 {% endblock %}

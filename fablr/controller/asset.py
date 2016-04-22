@@ -84,12 +84,13 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
     if not g.user:
         abort(403)
 
-    # List comprehensions are hard - here is the foor loop below would be
-    # assets = []
-    # for p in products_owned_by_user(g.user):
-    #     for a in p.downloadable_files:
-    #         assets.append(a)
     if g.user.admin or asset in [a for p in products_owned_by_user(g.user) for a in p.downloadable_files]:
+        # List comprehensions are hard - here is how above row would look as for loop
+        # assets = []
+        # for p in products_owned_by_user(g.user):
+        #     for a in p.downloadable_files:
+        #         assets.append(a)
+
         # A pdf that should be unique per user - we need to fingerprint it
         if mime == 'application/pdf' and asset.access_type == FileAccessType.user:
             fpid = g.user.id

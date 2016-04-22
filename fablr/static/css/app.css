@@ -771,6 +771,14 @@ important
     color: white;
 }
 
+.btn-set {
+    line-height: 25px;
+}
+
+.nobr {
+    white-space: nowrap;
+}
+
 .cards .row {
   display: flex;
 }

@@ -114,112 +114,107 @@
 {%- endmacro -%}
 
 
-{%- macro LIST_CONTROLS(model_class, fields, show=['view','order','page'], set_view=None, default='table') -%}
-        <div class="btn-toolbar">
+{%- macro LIST_CONTROLS(model_class, args, fields, show=['view','order','page'], set_view=None, default='table') -%}
+    <div class="btn-set">
+        {% if 'view' in show %}
+            <h5>{% trans %}View{% endtrans %}</h5>
+            {% set view = set_view or request.args.get('view', default) %}
+            <div class="btn-group">
+                <a href="{{ current_url(view='card') }}" title="{% trans %}Card view{% endtrans %}"
+                   class="btn btn-default btn-sm{{ ' active' if view=='card' }}"><span
+                        class="glyphicon glyphicon-th-large"></span></a>
+                <a href="{{ current_url(view='table') }}" title="{% trans %}Table view{% endtrans %}"
+                   class="btn btn-default btn-sm{{ ' active' if view=='table' }}"><span
+                        class="glyphicon glyphicon-list-alt"></span></a>
+                <a href="{{ current_url(view='list') }}" title="{% trans %}List view{% endtrans %}"
+                   class="btn btn-default btn-sm{{ ' active' if view=='list' }}"><span
+                        class="glyphicon glyphicon-align-justify"></span></a>
+            </div></br>
+        {% endif %}
 
-            {% if 'view' in show %}
-                {% set view = set_view or request.args.get('view', default) %}
-                <div class="btn-group">
-                    <a href="{{ current_url(view='card') }}" title="{% trans %}Card view{% endtrans %}"
-                       class="btn btn-default btn-sm{{ ' active' if view=='card' }}"><span
-                            class="glyphicon glyphicon-th-large"></span></a>
-                    <a href="{{ current_url(view='table') }}" title="{% trans %}Table view{% endtrans %}"
-                       class="btn btn-default btn-sm{{ ' active' if view=='table' }}"><span
-                            class="glyphicon glyphicon-list-alt"></span></a>
-                    <a href="{{ current_url(view='list') }}" title="{% trans %}List view{% endtrans %}"
-                       class="btn btn-default btn-sm{{ ' active' if view=='list' }}"><span
-                            class="glyphicon glyphicon-align-justify"></span></a>
-                </div>
-            {% endif %}
+        {% if 'order' in show %}
+            <div class="btn-group">
+                {% if in_current_args(['order_by']) %}
+                    {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
+                    <a href="{{ current_url(order_by=none) }}"
+                       title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info  btn-xs">
+                        {% trans %}Order by{% endtrans %}: {{ model_class._fields[clean_order_by].verbose_name }} &times;</a>
+                {% else %}
+                    <button type="button" title="{% trans %}Select ordering{% endtrans %}"
+                            class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"
+                            aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        {% for f in fields %}
+                            {% set name = model_class._fields[f].verbose_name %}
+                            {% if name %}
+                                <li><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
+                                        class="caret"></span></a></li>
+                                <li><a href="{{ current_url(order_by=f) }}">{{ name }} <span
+                                        class="caret caret-up"></span></a></li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
 
-            {% if 'order' in show %}
-                <div class="btn-group">
-                    {% if 'order_by' in request.args %}
-                        <a href="{{ current_url(order_by=none) }}"
-                           title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info btn-sm">
-                            {% trans %}Order by{% endtrans %}: {{ request.args.get('order_by') }} &times;</a>
-                    {% else %}
-                        <button type="button" title="{% trans %}Select ordering{% endtrans %}"
-                                class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
-                                aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            {% for f in fields %}
-                                {% set name = model_class._fields[f].verbose_name %}
-                                {% if name %}
-                                    <li><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
-                                            class="caret"></span></a></li>
-                                    <li><a href="{{ current_url(order_by=f) }}">{{ name }} <span
-                                            class="caret caret-up"></span></a></li>
-                                {% endif %}
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            {% endif %}
+        {% if 'page' in show %}
+            <div class="btn-group">
+                {% if in_current_args(['per_page']) %}
+                    <a href="{{ current_url(per_page=none) }}"
+                       title="{% trans %}Click to reset items per page{% endtrans %}" class="btn btn-info  btn-xs">
+                        {% trans %}Per page{% endtrans %}: {{ args['per_page'] }} &times;</a>
+                {% else %}
+                    <button type="button" title="{% trans %}Choose number of items per page{% endtrans %}"
+                            class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"
+                            aria-expanded="false">{% trans %}Per page{% endtrans %}: 20 <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ current_url(per_page=20) }}">20</a></li>
+                        <li><a href="{{ current_url(per_page=50) }}">50</a></li>
+                        <li><a href="{{ current_url(per_page=100) }}">100</a></li>
+                        <li><a href="{{ current_url(per_page=-1) }}">{% trans %}All{% endtrans %}</a></li>
+                    </ul>
+                {% endif %}
+            </div>
+        {% endif %}
 
-            {% if 'page' in show %}
-                <div class="btn-group">
-                    {% if 'per_page' in request.args %}
-                        <a href="{{ current_url(per_page=none) }}"
-                           title="{% trans %}Click to reset items per page{% endtrans %}" class="btn btn-info btn-sm">
-                            {% trans %}Per page{% endtrans %}: {{ request.args.get('per_page') }} &times;</a>
-                    {% else %}
-                        <button type="button" title="{% trans %}Choose number of items per page{% endtrans %}"
-                                class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown"
-                                aria-expanded="false">{% trans %}Per page{% endtrans %}: 20 <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="{{ current_url(per_page=20) }}">20</a></li>
-                            <li><a href="{{ current_url(per_page=50) }}">50</a></li>
-                            <li><a href="{{ current_url(per_page=100) }}">100</a></li>
-                            <li><a href="{{ current_url(per_page=-1) }}">{% trans %}All{% endtrans %}</a></li>
-                        </ul>
-                    {% endif %}
-                </div>
-            {% endif %}
+        {% if 'search' in show %}
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                <input type="text" class="form-control" placeholder="Search">
+            </div>
+        {% endif %}
 
-            <!-- <div class="btn-group">
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">Filter <span class="caret"></span></button>
-              <ul class="dropdown-menu" role="menu">
-                  <li><a href="#">Equals</a></li>
-                  <li><a href="#">Less than</a></li>
-                  <li><a href="#">Greater than</a></li>
-                  <li><a href="#">Not equal</a></li>
-              </ul>
-            </div> -->
+    </div>
+{%- endmacro -%}
 
-            {% if 'search' in show %}
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
-                    <input type="text" class="form-control" placeholder="Search">
-                </div>
-            {% endif %}
+{%- macro ARG_LINK(name, argdict, combine=False) -%}
+    {#    {{ 'req ' +request.args|urlencode+' vs new '+url_with}}#}
+    {#    {{ args|pprint }}#}
+    {% if in_current_args(argdict) %} {# all non-zero argdict in query_string #}
+        {# query_string without all parameters in argdict #}
+        <a href="{{ current_url(combine, **dict.fromkeys(argdict.keys(), none)) }}"
+           class="btn btn-info btn-xs">{{ name }} &times;</a>
 
-        </div>
+    {% else %}
+        {# query_string with all parameters in argdict added #}
+        <a href="{{ current_url(combine, **argdict) }}" class="btn btn-default btn-xs">{{ name }}</a>
+    {% endif %}
 {%- endmacro -%}
 
 
-{%- macro TABLE_HEADER(model_class, fields) -%}
-    {% set order_by = request.args.get('order_by', None) %}
-    <thead>
-    <tr>
-        {% for f in fields %}
-            {% set name = model_class._fields[f].verbose_name %}
-            <th style="white-space: nowrap">
-                {% if name %}
-                    {% if order_by == f %}
-                        <a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span class="caret caret-up"></span></a>
-                    {% elif order_by == '-'+f %}
-                        <a href="{{ current_url(order_by=f) }}">{{ name }} <span class="caret"></span></a>
-                    {% else %}
-                        <a href="{{ current_url(order_by=f) }}">{{ name }} </a>
-                    {% endif %}
-                {% endif %}
-            </th>
-        {% endfor %}
-    </tr>
-    </thead>
+{%- macro ORDER_BY_LINK(model_class, args, field_name) -%}
+    {% set order_by = args['order_by'] %}
+    {% set name = model_class._fields[field_name].verbose_name %}
+    {% if field_name in order_by %}
+        <a href="{{ current_url(order_by='-'+field_name) }}">{{ name }} <span class="caret caret-up"></span></a>
+    {% elif '-'+field_name in order_by %}
+        <a href="{{ current_url(order_by=field_name) }}">{{ name }} <span class="caret"></span></a>
+    {% else %}
+        <a href="{{ current_url(order_by=field_name) }}">{{ name }} </a>
+    {% endif %}
 {%- endmacro -%}
 
 

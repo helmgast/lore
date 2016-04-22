@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-04-15 00:39+0900\n"
+"POT-Creation-Date: 2016-04-17 22:49+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -18,24 +18,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.2.0\n"
 
-#: fablr/app.py:23
+#: fablr/app.py:25
 msgid "Private"
 msgstr "Privat"
 
-#: fablr/app.py:24
+#: fablr/app.py:26
 msgid "Protected"
 msgstr "Skyddad"
 
-#: fablr/app.py:25
+#: fablr/app.py:27
 msgid "Public"
 msgstr "Allmän"
 
-#: fablr/app.py:30 fablr/templates/_page.html:134
+#: fablr/app.py:32 fablr/templates/_page.html:134
 #: fablr/templates/auth/join.html:61 fablr/templates/auth/login.html:25
 msgid "Join"
 msgstr "Registrera"
 
-#: fablr/app.py:31 fablr/model/world.py:187
+#: fablr/app.py:33 fablr/model/world.py:188
 #: fablr/templates/campaign/_page.html:3
 #: fablr/templates/campaign/session_page.html:20
 #: fablr/templates/campaign/sessions.html:45
@@ -44,15 +44,15 @@ msgstr "Registrera"
 msgid "Campaign"
 msgstr "Kampanj"
 
-#: fablr/app.py:32 fablr/templates/social/_page.html:4
+#: fablr/app.py:34 fablr/templates/social/_page.html:4
 msgid "Social"
 msgstr "Social"
 
-#: fablr/app.py:33 fablr/templates/themes/publisher_helmgast.html:80
+#: fablr/app.py:35 fablr/templates/themes/publisher_helmgast.html:80
 msgid "Tools"
 msgstr "Verktyg"
 
-#: fablr/app.py:34 fablr/templates/shop/_page.html:5
+#: fablr/app.py:36 fablr/templates/shop/_page.html:5
 #: fablr/templates/themes/publisher_helmgast.html:84
 msgid "Shop"
 msgstr "Butik"
@@ -174,7 +174,7 @@ msgstr "Inbjudan att gå med i Helmgast.se"
 msgid "%(user)s, welcome to Helmgast!"
 msgstr "%(user)s, välkommen till Helmgast!"
 
-#: fablr/controller/mailer.py:99 fablr/controller/shop.py:381
+#: fablr/controller/mailer.py:99 fablr/controller/shop.py:406
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
@@ -183,120 +183,120 @@ msgstr "Tack för din beställning!"
 msgid "Sent email \"%(subject)s\" to %(recipients)s"
 msgstr "Skickade mail \"%(subject)s\" till %(recipients)s"
 
-#: fablr/controller/resource.py:47
+#: fablr/controller/resource.py:50
 #, python-format
 msgid "%(name)s was %(action)s"
 msgstr "%(name)s %(action)s"
 
-#: fablr/controller/resource.py:177
+#: fablr/controller/resource.py:180
 msgid "posted"
 msgstr "skapad"
 
-#: fablr/controller/resource.py:178
+#: fablr/controller/resource.py:181
 msgid "put"
 msgstr "uppdaterad"
 
-#: fablr/controller/resource.py:179
+#: fablr/controller/resource.py:182
 msgid "deleted"
 msgstr "borttagen"
 
-#: fablr/controller/resource.py:180
+#: fablr/controller/resource.py:183
 msgid "patched"
 msgstr "modifierad"
 
-#: fablr/controller/resource.py:183
+#: fablr/controller/resource.py:186
 msgid "The article"
 msgstr "Artikeln"
 
-#: fablr/controller/resource.py:184
+#: fablr/controller/resource.py:187
 msgid "The world"
 msgstr "Världen"
 
-#: fablr/controller/resource.py:185
+#: fablr/controller/resource.py:188
 msgid "The publisher"
 msgstr "Utgivaren"
 
-#: fablr/controller/resource.py:186
+#: fablr/controller/resource.py:189
 msgid "The user"
 msgstr "Användaren"
 
-#: fablr/controller/resource.py:394 fablr/controller/resource.py:396
+#: fablr/controller/resource.py:442 fablr/controller/resource.py:444
 msgid "The item"
 msgstr "Artikeln"
 
-#: fablr/controller/resource.py:625
+#: fablr/controller/resource.py:673
 #, python-format
 msgid "%(op)s requires a logged in user"
 msgstr ""
 
-#: fablr/controller/resource.py:635
+#: fablr/controller/resource.py:683
 msgid "Error: Cannot apply private access without an instance"
 msgstr ""
 
-#: fablr/controller/resource.py:639 fablr/controller/resource.py:651
+#: fablr/controller/resource.py:687 fablr/controller/resource.py:699
 #, python-format
 msgid ""
 "%(instance_owner)s have access to do private operation %(op)s on instance"
 " %(instance)s"
 msgstr ""
 
-#: fablr/controller/resource.py:644
+#: fablr/controller/resource.py:692
 #, python-format
 msgid "Error: Cannot identify user which instance %(inst)s belongs to"
 msgstr ""
 
-#: fablr/controller/resource.py:649
+#: fablr/controller/resource.py:697
 #, python-format
 msgid "%(op)s is a private operation which requires the owner to be logged in"
 msgstr ""
 
-#: fablr/controller/resource.py:658
+#: fablr/controller/resource.py:706
 msgid "Need to be logged in with admin access"
 msgstr ""
 
-#: fablr/controller/resource.py:660
+#: fablr/controller/resource.py:708
 #, python-format
 msgid "%(user)s is an admin"
 msgstr ""
 
-#: fablr/controller/resource.py:661
+#: fablr/controller/resource.py:709
 msgid "This is catch all denied authorization, should not be here"
 msgstr ""
 
-#: fablr/controller/resource.py:794
+#: fablr/controller/resource.py:842
 msgid "Bad request or invalid input"
 msgstr ""
 
-#: fablr/controller/resource.py:795
+#: fablr/controller/resource.py:843
 msgid "Unathorized access, please login"
 msgstr ""
 
-#: fablr/controller/resource.py:796
+#: fablr/controller/resource.py:844
 msgid "Forbidden, this is not an allowed operation"
 msgstr ""
 
-#: fablr/controller/resource.py:797
+#: fablr/controller/resource.py:845
 msgid "Resource not found"
 msgstr ""
 
-#: fablr/controller/resource.py:798
+#: fablr/controller/resource.py:846
 msgid "Internal server error"
 msgstr ""
 
-#: fablr/controller/resource.py:802
+#: fablr/controller/resource.py:850
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: fablr/controller/resource.py:1139
+#: fablr/controller/resource.py:1187
 msgid "edited"
 msgstr "redigerat"
 
-#: fablr/controller/shop.py:187 fablr/controller/shop.py:197
-#: fablr/controller/shop.py:198 fablr/controller/shop.py:203
+#: fablr/controller/shop.py:212 fablr/controller/shop.py:222
+#: fablr/controller/shop.py:223 fablr/controller/shop.py:228
 msgid "Please enter your email address."
 msgstr "Skriv in din email-adress"
 
-#: fablr/controller/shop.py:332
+#: fablr/controller/shop.py:357
 #, python-format
 msgid ""
 "Email belongs to existing user, please <a href=\"%(loginurl)s\">login</a>"
@@ -340,8 +340,8 @@ msgid "User unique and product required"
 msgstr "Användarunik och kräver produkt"
 
 #: fablr/model/asset.py:63 fablr/model/asset.py:134 fablr/model/shop.py:52
-#: fablr/model/world.py:47 fablr/model/world.py:65 fablr/model/world.py:159
-#: fablr/model/world.py:209 fablr/templates/asset/fileasset_item.html:56
+#: fablr/model/world.py:47 fablr/model/world.py:65 fablr/model/world.py:160
+#: fablr/model/world.py:210 fablr/templates/asset/fileasset_item.html:56
 #: fablr/templates/shop/product_item.html:65
 #: fablr/templates/social/conversation_item.html:27
 #: fablr/templates/world/publisher_item.html:52
@@ -350,7 +350,7 @@ msgstr "Titel"
 
 #: fablr/model/asset.py:64 fablr/model/asset.py:135 fablr/model/shop.py:53
 #: fablr/model/user.py:64 fablr/model/world.py:48 fablr/model/world.py:66
-#: fablr/model/world.py:160 fablr/model/world.py:210
+#: fablr/model/world.py:161 fablr/model/world.py:211
 #: fablr/templates/asset/fileasset_item.html:62
 #: fablr/templates/campaign/sessions.html:50
 #: fablr/templates/includes/feedback_modal.html:25
@@ -384,11 +384,11 @@ msgstr "Filer av typ %(mimetype)s är inte tillåtna"
 msgid "Slug"
 msgstr "Slug"
 
-#: fablr/model/asset.py:132 fablr/model/world.py:68 fablr/model/world.py:207
+#: fablr/model/asset.py:132 fablr/model/world.py:68 fablr/model/world.py:208
 #: fablr/templates/themes/publisher_helmgast.html:128
 #: fablr/templates/world/article_blog.html:15
 #: fablr/templates/world/article_item.html:152
-#: fablr/templates/world/article_list.html:30
+#: fablr/templates/world/article_list.html:54
 msgid "Creator"
 msgstr "Skapare"
 
@@ -417,15 +417,35 @@ msgstr "\"%(item)s\" ersatt"
 msgid "\"%(item)s\" deleted"
 msgstr "\"%(item)s\" borttagen"
 
-#: fablr/model/misc.py:80
+#: fablr/model/misc.py:88
+#, python-format
+msgid "Less than %(val)s"
+msgstr "Mindre än %(val)s"
+
+#: fablr/model/misc.py:89
+#, python-format
+msgid "More than %(val)s"
+msgstr "Mer än %(val)s"
+
+#: fablr/model/misc.py:125
+#, python-format
+msgid "Last %(val)s days"
+msgstr "Senaste %(val)s dagarna"
+
+#: fablr/model/misc.py:127
+#, python-format
+msgid "Older than %(val)s days"
+msgstr "Äldre än %(val)s dagar"
+
+#: fablr/model/misc.py:137
 msgid "English"
 msgstr "Engelska"
 
-#: fablr/model/misc.py:81
+#: fablr/model/misc.py:138
 msgid "Swedish"
 msgstr "Svenska"
 
-#: fablr/model/misc.py:328 fablr/templates/campaign/campaign_page.html:22
+#: fablr/model/misc.py:385 fablr/templates/campaign/campaign_page.html:22
 #: fablr/templates/shop/order_address.html:35
 #: fablr/templates/shop/order_header.html:14
 #: fablr/templates/shop/order_lines.html:59
@@ -433,57 +453,57 @@ msgstr "Svenska"
 msgid "Name"
 msgstr "Namn"
 
-#: fablr/model/misc.py:329 fablr/templates/shop/order_address.html:40
+#: fablr/model/misc.py:386 fablr/templates/shop/order_address.html:40
 msgid "Street"
 msgstr "Gatuaddress"
 
-#: fablr/model/misc.py:330 fablr/templates/shop/order_address.html:45
+#: fablr/model/misc.py:387 fablr/templates/shop/order_address.html:45
 msgid "ZIP Code"
 msgstr "Postnummer"
 
-#: fablr/model/misc.py:331 fablr/templates/shop/order_address.html:47
+#: fablr/model/misc.py:388 fablr/templates/shop/order_address.html:47
 msgid "City"
 msgstr "Stad"
 
-#: fablr/model/misc.py:333 fablr/templates/shop/order_address.html:51
+#: fablr/model/misc.py:391 fablr/templates/shop/order_address.html:51
 msgid "Country"
 msgstr "Land"
 
-#: fablr/model/misc.py:334 fablr/templates/shop/order_address.html:56
+#: fablr/model/misc.py:392 fablr/templates/shop/order_address.html:56
 msgid "Cellphone Number"
 msgstr "Mobilnummer"
 
-#: fablr/model/misc.py:359
+#: fablr/model/misc.py:417
 msgid "Do backup"
 msgstr "Gör en backup"
 
-#: fablr/model/misc.py:360
+#: fablr/model/misc.py:418
 msgid "Backup name"
 msgstr "Backup namn"
 
-#: fablr/model/misc.py:361
+#: fablr/model/misc.py:419
 msgid "Application state"
 msgstr "Tillstånd"
 
-#: fablr/model/misc.py:362
+#: fablr/model/misc.py:420
 msgid "Application features"
 msgstr "Det här kan du göra"
 
-#: fablr/model/misc.py:368 fablr/model/world.py:154
-#: fablr/templates/mail/one_column_mail.html:80
+#: fablr/model/misc.py:426 fablr/model/world.py:155
+#: fablr/templates/mail/one_column_mail.html:81
 msgid "To"
 msgstr "Till"
 
-#: fablr/model/misc.py:369 fablr/model/world.py:153
-#: fablr/templates/mail/one_column_mail.html:87
+#: fablr/model/misc.py:427 fablr/model/world.py:154
+#: fablr/templates/mail/one_column_mail.html:88
 msgid "From"
 msgstr "Från"
 
-#: fablr/model/misc.py:370 fablr/templates/mail/one_column_mail.html:94
+#: fablr/model/misc.py:428 fablr/templates/mail/one_column_mail.html:95
 msgid "Subject"
 msgstr "Ämne"
 
-#: fablr/model/misc.py:371 fablr/templates/mail/compose.html:39
+#: fablr/model/misc.py:429 fablr/templates/mail/compose.html:39
 msgid "Message"
 msgstr "Meddelande"
 
@@ -527,7 +547,7 @@ msgstr "Gömd"
 msgid "Product Number"
 msgstr "Produktnummer"
 
-#: fablr/model/shop.py:54 fablr/model/world.py:67 fablr/model/world.py:206
+#: fablr/model/shop.py:54 fablr/model/world.py:67 fablr/model/world.py:207
 #: fablr/templates/shop/order_header.html:42
 #: fablr/templates/shop/product_item.html:69
 #: fablr/templates/world/_page.html:26
@@ -537,7 +557,7 @@ msgstr "Produktnummer"
 msgid "Publisher"
 msgstr "Utgivare"
 
-#: fablr/model/shop.py:55 fablr/model/world.py:205
+#: fablr/model/shop.py:55 fablr/model/world.py:206
 #: fablr/templates/campaign/campaign_page.html:27
 #: fablr/templates/campaign/campaigninstance_list.html:22
 #: fablr/templates/shop/product_item.html:71 fablr/templates/world/_page.html:4
@@ -548,25 +568,25 @@ msgstr "Värld"
 msgid "Product Family"
 msgstr "Produktfamilj"
 
-#: fablr/model/shop.py:57 fablr/model/shop.py:126
+#: fablr/model/shop.py:57 fablr/model/shop.py:137
 #: fablr/templates/shop/order_header.html:22
 #: fablr/templates/shop/product_item.html:75
-#: fablr/templates/shop/product_list.html:30
+#: fablr/templates/shop/product_list.html:59
 #: fablr/templates/themes/publisher_helmgast.html:125
 #: fablr/templates/world/article_blog.html:14
 #: fablr/templates/world/article_item.html:156
-#: fablr/templates/world/article_list.html:29
+#: fablr/templates/world/article_list.html:51
 msgid "Created"
 msgstr "Skapad"
 
-#: fablr/model/shop.py:58 fablr/model/world.py:204
+#: fablr/model/shop.py:58 fablr/model/world.py:205
 #: fablr/templates/shop/product_item.html:77
 #: fablr/templates/world/article_item.html:174
 #: fablr/templates/world/article_item.html:176
 msgid "Type"
 msgstr "Typ"
 
-#: fablr/model/shop.py:61 fablr/model/shop.py:101
+#: fablr/model/shop.py:61 fablr/model/shop.py:111
 #: fablr/templates/shop/order_lines.html:14
 #: fablr/templates/shop/product_item.html:79
 msgid "Price"
@@ -576,20 +596,20 @@ msgstr "Pris"
 msgid "Tax"
 msgstr "Moms"
 
-#: fablr/model/shop.py:64 fablr/model/shop.py:125
+#: fablr/model/shop.py:64 fablr/model/shop.py:136
 #: fablr/templates/shop/product_item.html:81
 msgid "Currency"
 msgstr "Valuta"
 
-#: fablr/model/shop.py:65 fablr/model/shop.py:128 fablr/model/user.py:68
-#: fablr/model/world.py:53 fablr/model/world.py:71 fablr/model/world.py:212
+#: fablr/model/shop.py:65 fablr/model/shop.py:139 fablr/model/user.py:68
+#: fablr/model/world.py:53 fablr/model/world.py:71 fablr/model/world.py:213
 #: fablr/templates/shop/order_header.html:30
 #: fablr/templates/shop/product_item.html:85
 msgid "Status"
 msgstr "Status"
 
 #: fablr/model/shop.py:66 fablr/model/world.py:54 fablr/model/world.py:72
-#: fablr/model/world.py:214
+#: fablr/model/world.py:215
 msgid "Feature Image"
 msgstr "Presentationsbild"
 
@@ -608,52 +628,52 @@ msgstr "Nedladdningsbara filer"
 
 #: fablr/model/shop.py:88 fablr/templates/themes/publisher_helmgast.html:126
 #: fablr/templates/world/article_blog.html:14
-#: fablr/templates/world/article_list.html:29
+#: fablr/templates/world/article_list.html:52
 msgid "by"
 msgstr "av"
 
-#: fablr/model/shop.py:99 fablr/model/shop.py:102
+#: fablr/model/shop.py:109 fablr/model/shop.py:112
 msgid "Comment"
 msgstr "Kommentar"
 
-#: fablr/model/shop.py:100
+#: fablr/model/shop.py:110
 msgid "Product"
 msgstr "Produkt"
 
-#: fablr/model/shop.py:109 fablr/templates/shop/_page.html:11
+#: fablr/model/shop.py:119 fablr/templates/shop/_page.html:11
 #: fablr/templates/shop/order_item.html:7
 msgid "Cart"
 msgstr "Kundvagn"
 
-#: fablr/model/shop.py:110
+#: fablr/model/shop.py:120
 msgid "Checkout"
 msgstr "Lägg beställning"
 
-#: fablr/model/shop.py:111
+#: fablr/model/shop.py:121
 msgid "Ordered"
 msgstr "Beställd"
 
-#: fablr/model/shop.py:112
+#: fablr/model/shop.py:122
 msgid "Paid"
 msgstr "Betald"
 
-#: fablr/model/shop.py:113
+#: fablr/model/shop.py:123
 msgid "Shipped"
 msgstr "Fraktad"
 
-#: fablr/model/shop.py:114
+#: fablr/model/shop.py:124
 msgid "Error"
 msgstr "Fel"
 
-#: fablr/model/shop.py:118
+#: fablr/model/shop.py:128
 msgid "User"
 msgstr "Användare"
 
-#: fablr/model/shop.py:119
+#: fablr/model/shop.py:129
 msgid "Session ID"
 msgstr "Sessions ID"
 
-#: fablr/model/shop.py:120 fablr/model/user.py:60 fablr/model/world.py:52
+#: fablr/model/shop.py:130 fablr/model/user.py:60 fablr/model/world.py:52
 #: fablr/templates/shop/order_address.html:30
 #: fablr/templates/shop/order_header.html:18
 #: fablr/templates/shop/order_header.html:46
@@ -661,32 +681,36 @@ msgstr "Sessions ID"
 msgid "Email"
 msgstr "Email"
 
-#: fablr/model/shop.py:123
+#: fablr/model/shop.py:132
+msgid "# items"
+msgstr "# artiklar"
+
+#: fablr/model/shop.py:134
 msgid "Total price"
 msgstr "Ordervärde"
 
-#: fablr/model/shop.py:124
+#: fablr/model/shop.py:135
 msgid "Total tax"
 msgstr "Moms"
 
-#: fablr/model/shop.py:127 fablr/templates/shop/order_header.html:26
+#: fablr/model/shop.py:138 fablr/templates/shop/order_header.html:26
 msgid "Updated"
 msgstr "Uppdaterad"
 
-#: fablr/model/shop.py:129 fablr/templates/shop/order_lines.html:77
+#: fablr/model/shop.py:140 fablr/templates/shop/order_lines.html:77
 msgid "Shipping"
 msgstr "Frakt"
 
-#: fablr/model/shop.py:131
+#: fablr/model/shop.py:142
 msgid "Internal Comment"
 msgstr "Intern kommentar"
 
-#: fablr/model/shop.py:146
+#: fablr/model/shop.py:157
 #, python-format
 msgid "and %(total_items)s more"
 msgstr "och %(total_items)s till"
 
-#: fablr/model/shop.py:148
+#: fablr/model/shop.py:159
 msgid "Empty order"
 msgstr "Tom beställning"
 
@@ -748,6 +772,7 @@ msgstr "Anonym"
 #: fablr/templates/shop/order_address.html:48
 #: fablr/templates/shop/order_address.html:53
 #: fablr/templates/shop/order_address.html:58
+#: fablr/templates/shop/product_list.html:96
 #: fablr/templates/social/user_item.html:61
 #: fablr/templates/social/user_item.html:63
 #: fablr/templates/social/user_item.html:65
@@ -843,7 +868,7 @@ msgstr "Okänd"
 msgid "Short Code"
 msgstr ""
 
-#: fablr/model/world.py:49 fablr/model/world.py:70 fablr/model/world.py:208
+#: fablr/model/world.py:49 fablr/model/world.py:70 fablr/model/world.py:209
 msgid "Created on"
 msgstr "Skapad"
 
@@ -868,96 +893,96 @@ msgstr "Tillgängliga språk"
 msgid "Rule System"
 msgstr "Regelsystem"
 
-#: fablr/model/world.py:130
+#: fablr/model/world.py:131
 msgid "born"
 msgstr "Född"
 
-#: fablr/model/world.py:131
+#: fablr/model/world.py:132
 msgid "died"
 msgstr "Avliden"
 
-#: fablr/model/world.py:132
+#: fablr/model/world.py:133
 msgid "gender"
 msgstr "Kön"
 
-#: fablr/model/world.py:134
+#: fablr/model/world.py:135
 msgid "occupation"
 msgstr "Yrke"
 
-#: fablr/model/world.py:141
+#: fablr/model/world.py:142
 msgid "fraction"
 msgstr "organisation"
 
-#: fablr/model/world.py:146
+#: fablr/model/world.py:147
 msgid "Coordinate X"
 msgstr "Koordinat X"
 
-#: fablr/model/world.py:147
+#: fablr/model/world.py:148
 msgid "Coordinate Y"
 msgstr "Koordinat Y"
 
-#: fablr/model/world.py:149
+#: fablr/model/world.py:150
 msgid "Location type"
 msgstr "Typ av plats"
 
-#: fablr/model/world.py:180 fablr/model/world.py:192
+#: fablr/model/world.py:181 fablr/model/world.py:193
 #: fablr/templates/world/new_article_menu.html:6
 msgid "Default"
 msgstr "Allmän"
 
-#: fablr/model/world.py:181
+#: fablr/model/world.py:182
 msgid "Blog Post"
 msgstr "Bloggpost"
 
-#: fablr/model/world.py:182 fablr/templates/world/new_article_menu.html:8
+#: fablr/model/world.py:183 fablr/templates/world/new_article_menu.html:8
 msgid "Material"
 msgstr "Material"
 
-#: fablr/model/world.py:183 fablr/templates/world/new_article_menu.html:9
+#: fablr/model/world.py:184 fablr/templates/world/new_article_menu.html:9
 msgid "Person"
 msgstr "Person"
 
-#: fablr/model/world.py:184 fablr/templates/world/new_article_menu.html:10
+#: fablr/model/world.py:185 fablr/templates/world/new_article_menu.html:10
 msgid "Fraction"
 msgstr "Organisation"
 
-#: fablr/model/world.py:185 fablr/templates/world/new_article_menu.html:11
+#: fablr/model/world.py:186 fablr/templates/world/new_article_menu.html:11
 msgid "Place"
 msgstr "Plats"
 
-#: fablr/model/world.py:186 fablr/templates/world/new_article_menu.html:12
+#: fablr/model/world.py:187 fablr/templates/world/new_article_menu.html:12
 msgid "Event"
 msgstr "Händelse"
 
-#: fablr/model/world.py:188 fablr/templates/world/new_article_menu.html:14
+#: fablr/model/world.py:189 fablr/templates/world/new_article_menu.html:14
 msgid "Chronicle"
 msgstr "Krönika"
 
-#: fablr/model/world.py:193
+#: fablr/model/world.py:194
 msgid "Newspaper"
 msgstr "Dagstidning"
 
-#: fablr/model/world.py:194
+#: fablr/model/world.py:195
 msgid "Ink Letter"
 msgstr "Handskrivet brev"
 
-#: fablr/model/world.py:211 fablr/templates/world/article_item.html:192
+#: fablr/model/world.py:212 fablr/templates/world/article_item.html:192
 msgid "Content"
 msgstr "Innehåll"
 
-#: fablr/model/world.py:213
+#: fablr/model/world.py:214
 msgid "Featured article"
 msgstr "Fokusartikel"
 
-#: fablr/model/world.py:215
+#: fablr/model/world.py:216
 msgid "License"
 msgstr "Upphovsrättslicens"
 
-#: fablr/model/world.py:218
+#: fablr/model/world.py:219
 msgid "Article Theme"
 msgstr "Artikeltema"
 
-#: fablr/model/world.py:246
+#: fablr/model/world.py:247
 msgid "from"
 msgstr "från"
 
@@ -966,7 +991,7 @@ msgstr "från"
 #: fablr/templates/campaign/session_page.html:34
 #: fablr/templates/includes/confirm.html:15
 #: fablr/templates/includes/feedback_modal.html:36
-#: fablr/templates/includes/macros.html:241
+#: fablr/templates/includes/macros.html:234
 #: fablr/templates/shop/product_item.html:52
 #: fablr/templates/social/group_item.html:60
 #: fablr/templates/social/user_item.html:114
@@ -1612,7 +1637,7 @@ msgid "Email address"
 msgstr "Emailadress"
 
 #: fablr/templates/includes/feedback_modal.html:37
-#: fablr/templates/mail/one_column_mail.html:104
+#: fablr/templates/mail/one_column_mail.html:105
 #: fablr/templates/social/conversation_item.html:31
 msgid "Send"
 msgstr "Skicka"
@@ -1621,15 +1646,20 @@ msgstr "Skicka"
 msgid "Your access rights allow you to view this resource in this view"
 msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
 
-#: fablr/templates/includes/macros.html:124
+#: fablr/templates/includes/macros.html:120
+#: fablr/templates/world/article_action_menu.html:11
+msgid "View"
+msgstr "Visa"
+
+#: fablr/templates/includes/macros.html:123
 msgid "Card view"
 msgstr "Galleri-vy"
 
-#: fablr/templates/includes/macros.html:127
+#: fablr/templates/includes/macros.html:126
 msgid "Table view"
 msgstr "Tabell-vy"
 
-#: fablr/templates/includes/macros.html:130
+#: fablr/templates/includes/macros.html:129
 msgid "List view"
 msgstr "List-vy"
 
@@ -1663,11 +1693,11 @@ msgstr "Välj antar visade artiklar per sida"
 msgid "All"
 msgstr "Alla"
 
-#: fablr/templates/includes/macros.html:235
+#: fablr/templates/includes/macros.html:228
 msgid "Are you sure you want to delete"
 msgstr "Är du säker på att du vill ta bort"
 
-#: fablr/templates/includes/macros.html:242
+#: fablr/templates/includes/macros.html:235
 msgid "Yes"
 msgstr "Ja"
 
@@ -1721,7 +1751,11 @@ msgstr ""
 "href=\"http://helmgast.se\" "
 "class=\"utilityLink\">http://helmgast.se</a></p>\""
 
-#: fablr/templates/mail/one_column_mail.html:100
+#: fablr/templates/mail/one_column_mail.html:53
+msgid "If you have any problems, just reply to this email."
+msgstr "Om du har några problem, svara gärna på detta mail"
+
+#: fablr/templates/mail/one_column_mail.html:101
 #, python-format
 msgid ""
 "Below is a preview of the email, but may differ in design. Click <a "
@@ -2030,7 +2064,23 @@ msgstr "Totalsumma"
 msgid "Orders"
 msgstr "Ordrar"
 
-#: fablr/templates/shop/order_list.html:58
+#: fablr/templates/shop/order_list.html:14
+msgid "By updated"
+msgstr "Efter modifierad"
+
+#: fablr/templates/shop/order_list.html:21
+msgid "By total items"
+msgstr "Efter antal artiklar"
+
+#: fablr/templates/shop/order_list.html:28
+msgid "By total price"
+msgstr "Efter ordervärde"
+
+#: fablr/templates/shop/order_list.html:35
+msgid "By status"
+msgstr "Efter status"
+
+#: fablr/templates/shop/order_list.html:101
 msgid "You have not made any orders yet!"
 msgstr "Du har inte gjort några beställningar ännu!"
 
@@ -2049,14 +2099,32 @@ msgstr "Antal köp"
 
 #: fablr/templates/shop/product_item.html:105
 #: fablr/templates/shop/product_item.html:111
-#: fablr/templates/shop/product_list.html:85
-msgid "Buy"
-msgstr "Köp"
+#: fablr/templates/shop/product_list.html:123
+msgid "Add to cart"
+msgstr "Lägg i kundvagn"
 
-#: fablr/templates/shop/product_list.html:43
+#: fablr/templates/shop/product_list.html:20
+#: fablr/templates/world/article_list.html:16
+msgid "By world"
+msgstr "Efter värld"
+
+#: fablr/templates/shop/product_list.html:26
+msgid "By time"
+msgstr "Efter tid"
+
+#: fablr/templates/shop/product_list.html:33
+#: fablr/templates/world/article_list.html:23
+msgid "By type"
+msgstr "Efter typ"
+
+#: fablr/templates/shop/product_list.html:40
+msgid "By price"
+msgstr "Efter pris"
+
+#: fablr/templates/shop/product_list.html:72
 #: fablr/templates/themes/publisher_helmgast.html:122
 #: fablr/templates/world/article_blog.html:28
-#: fablr/templates/world/article_list.html:43
+#: fablr/templates/world/article_list.html:71
 msgid "Read more"
 msgstr "Läs mer"
 
@@ -2198,7 +2266,7 @@ msgstr "Blogg"
 
 #: fablr/templates/themes/publisher_helmgast.html:137
 #: fablr/templates/world/article_blog.html:33
-#: fablr/templates/world/article_list.html:83
+#: fablr/templates/world/article_list.html:127
 msgid "No articles yet!"
 msgstr "Inga artiklar än!"
 
@@ -2249,10 +2317,6 @@ msgstr "Artikel-funktioner"
 #: fablr/templates/world/article_action_menu.html:9
 msgid "Edit as Markdown"
 msgstr "Redigera som Markdown"
-
-#: fablr/templates/world/article_action_menu.html:11
-msgid "View"
-msgstr "Visa"
 
 #: fablr/templates/world/article_item.html:99
 msgid "Type or Paste URL here"
@@ -2322,10 +2386,9 @@ msgstr "Yrke"
 msgid "You have unsaved changes"
 msgstr "Du har osparade ändringar"
 
-#: fablr/templates/world/article_list.html:14
-#: fablr/templates/world/world_item.html:39
-msgid "Browse"
-msgstr "Bläddra"
+#: fablr/templates/world/article_list.html:30
+msgid "By created date"
+msgstr "Efter datum skapat"
 
 #: fablr/templates/world/new_article_menu.html:3
 msgid "New article"
@@ -2358,6 +2421,10 @@ msgstr "Alla utgivare"
 #: fablr/templates/world/publisher_list.html:42
 msgid "No publishers setup yet"
 msgstr "Inga utvigare har skapats ännu"
+
+#: fablr/templates/world/world_item.html:39
+msgid "Browse"
+msgstr "Bläddra"
 
 #: fablr/templates/world/world_item.html:43
 msgid "Random article"
@@ -2576,4 +2643,10 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 
 #~ msgid "Successfully %(action)s %(name)s"
 #~ msgstr "Genomfört "
+
+#~ msgid "Buy"
+#~ msgstr "Köp"
+
+#~ msgid "Ordering"
+#~ msgstr "Sortering"
 

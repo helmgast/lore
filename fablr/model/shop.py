@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
@@ -9,7 +9,8 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
 from mongoengine.errors import ValidationError
 
 from asset import FileAsset
-from misc import slugify, Choices, Address
+from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_options, \
+    from7to365
 from user import User
 from world import ImageAsset, Publisher, World
 
@@ -31,6 +32,7 @@ Currencies = Choices(
     sek='SEK'
 )
 
+
 # Product number logic
 # PB-PF-nnnn-x
 # PB = publisher code
@@ -44,7 +46,6 @@ Currencies = Choices(
 # S = shipping
 # type = one of ProductTypes except shipping
 # country = 2-letter country code
-
 
 class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -95,6 +96,12 @@ class Product(Document):
         return self._BaseDocument__get_field_display(self._fields[field])
 
 
+Product.world.filter_options = reference_options('world', Product)
+Product.type.filter_options = choice_options('type', Product.type.choices)
+Product.price.filter_options = numerical_options('price', [0, 50, 100, 200])
+Product.created.filter_options = datetime_options('created', from7to365)
+
+
 class OrderLine(EmbeddedDocument):
     quantity = IntField(min_value=1, default=1, verbose_name=_('Comment'))
     product = ReferenceField(Product, required=True, verbose_name=_('Product'))
@@ -119,8 +126,9 @@ class Order(Document):
     session = StringField(verbose_name=_('Session ID'))
     email = EmailField(max_length=60, verbose_name=_('Email'))
     order_lines = ListField(EmbeddedDocumentField(OrderLine))
-    total_items = IntField(min_value=0, default=0)  # Total number of items
-    total_price = FloatField(min_value=0, default=0.0, verbose_name=_('Total price'))  # Total price of order incl shipping
+    total_items = IntField(min_value=0, default=0, verbose_name=_('# items'))  # Total number of items
+    total_price = FloatField(min_value=0, default=0.0,
+                             verbose_name=_('Total price'))  # Total price of order incl shipping
     total_tax = FloatField(min_value=0, default=0.0, verbose_name=_('Total tax'))  # Total tax of order
     currency = StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
     created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
@@ -181,17 +189,27 @@ class Order(Document):
             sum += ol.quantity * ol.price
             # Tax rates are given as e.g. 25% or 0.25. The taxable part of sum is
             # sum * (taxrate / (taxrate+1))
-            tax += ol.quantity * ol.price * (ol.product.tax/(ol.product.tax+1))
+            tax += ol.quantity * ol.price * (ol.product.tax / (ol.product.tax + 1))
 
         if self.shipping:
             sum += self.shipping.price
-            tax += self.shipping.price*(self.shipping.tax/(self.shipping.tax+1))
+            tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
         self.total_items = num
         self.total_price = sum
         self.total_tax = tax
         if self.user and not self.email:
             self.email = self.user.email
 
+
+Order.total_items.filter_options = numerical_options('total_items', [0, 1, 3, 5])
+Order.total_price.filter_options = numerical_options('total_price', [0, 50, 100, 200])
+Order.status.filter_options = choice_options('status', Order.status.choices)
+Order.updated.filter_options = datetime_options('updated',
+                                                [timedelta(days=1),
+                                                 timedelta(days=7),
+                                                 timedelta(days=30),
+                                                 timedelta(days=90),
+                                                 timedelta(days=365)])
 
 
 def products_owned_by_user(user):

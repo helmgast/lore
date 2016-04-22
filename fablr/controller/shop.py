@@ -47,9 +47,9 @@ class ProductsView(ResourceView):
     })
     model = Product
     list_template = 'shop/product_list.html'
-    list_arg_parser = filterable_fields_parser(['title', 'description', 'type', 'world', 'price'])
+    list_arg_parser = filterable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
     item_template = 'shop/product_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'description', 'type', 'world', 'price'])
+    item_arg_parser = prefillable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
     form_class = model_form(Product,
                             base_class=RacBaseForm,
                             exclude=['slug'],
@@ -59,14 +59,26 @@ class ProductsView(ResourceView):
     # no point ordering for reference fields, and translated choice fields will be wrong order as well
 
     # fields to filter by
-    # DateTimeField - certain time spans: today, last week, last month, last year, >1 year
+    # DateTimeField - certain time spans: today, last week, last month, last year, >1 year.
+    #   Choices cannot be combined.
     # Choice-fields: filter by the choices available
+    #   Choices can be combined.
     # Numeric fields (int, Float): e.g. 0-5,5-20,20-100, 100-200
-    # ReferenceFields: a select box to filter by one or many choices
+    #   Cannot be combined.
+    # ReferenceFields: a select box to filter by one or many choices, or a few options if less than <6
+    #   Choices can be combined.
     # StringField: no filtering
     # Boolean: Filter yes or no
     # ListField: no filtering (could have "has members" or "not has members")
-    #
+    # filterable_fields = ['name', 'name2'], looked up at r.model._fields[name]
+    # field_options = {
+    #   'world': [
+    #       (url, active, name),
+    #       {'world'},
+    #       {'noir'}],
+    #   'price': [
+    #       {'price':0, 'price__lt':5}
+    #   ]
 
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -232,9 +244,9 @@ class OrdersView(ResourceView):
     })
     model = Order
     list_template = 'shop/order_list.html'
-    list_arg_parser = filterable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price'])
+    list_arg_parser = filterable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
     item_template = 'shop/order_item.html'
-    item_arg_parser = prefillable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price'])
+    item_arg_parser = prefillable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
     form_class = form_class = model_form(Order,
                                          base_class=RacBaseForm,
                                          only=['order_lines', 'shipping_address', 'shipping_mobile'],

@@ -9,6 +9,7 @@
 # mongoengine.connection.get_connection = new_get_connection
 
 import sys
+import urllib
 
 from bson.objectid import ObjectId
 from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
@@ -190,7 +191,6 @@ def currentyear(nada):
 
 def dict_without(value, *args):
     return {k: value[k] for k in value.keys() if k not in args}
-
 
 def dict_with(value, **kwargs):
     z = value.copy()

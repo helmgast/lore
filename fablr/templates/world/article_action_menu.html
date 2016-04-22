@@ -5,10 +5,10 @@
   </a>
   <ul class="dropdown-menu">
   {% if article %}
-    <li><a href="{{ url_for('.ArticlesView:get', publisher=publisher.slug, id=article.slug, world=world.slug, intent='patch') }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-    <li><a href="{{ url_for('.ArticlesView:get', publisher=publisher.slug, id=article.slug, world=world.slug, intent='patch', markdown=true) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit as Markdown') }}</a></li>
+    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug, intent='patch') }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug, intent='patch', markdown=true) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit as Markdown') }}</a></li>
     <li><a href="#deletemodal" data-toggle="modal"><span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-    <li><a href="{{ url_for('.ArticlesView:get', publisher=publisher.slug, id=article.slug, world=world.slug, ) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug, ) }}"><span class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
   {% endif %}
   </ul>
 </li>

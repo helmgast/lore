@@ -10,6 +10,7 @@
 
 import functools
 import os
+from datetime import datetime
 
 import facebook
 import httplib2
@@ -299,6 +300,7 @@ class Auth(object):
                             if form.email.data in emails or verified_email:
                                 # This user has a verified email
                                 user.status = 'active'
+                                user.last_login = datetime.utcnow()
                                 user.save()
                                 self.login_user(user)
                                 return redirect(self.get_next_url())
@@ -333,6 +335,7 @@ class Auth(object):
                                 del user.facebook_auth  # Clear any previous authentications
                                 del user.google_auth  # Clear any previous authentications
                                 user.password = form.password.data  # will be hashed when user is autosaved
+                                user.last_login = datetime.utcnow()
                                 user.save()
                                 self.login_user(user)
                                 flash(_('Password successfully changed'), 'success')
@@ -340,6 +343,7 @@ class Auth(object):
                             elif user.status == 'invited':
                                 user.status = 'active'
                                 form.populate_obj(user)  # any optional data that has been added
+                                user.last_login = datetime.utcnow()
                                 user.save()
                                 self.login_user(user)
                                 return redirect(self.get_next_url())
@@ -397,6 +401,7 @@ class Auth(object):
                             # Update the token, as it may have expired and been renewed
                             user.facebook_auth.long_token = external_access_token
                         if user.status == 'active':
+                            user.last_login = datetime.utcnow()
                             user.save()
                             self.login_user(user)
                             return redirect(self.get_next_url())
@@ -415,6 +420,8 @@ class Auth(object):
                 try:
                     user = self.User.objects(email=form.email.data.lower()).get()
                     if user.status == 'active' and check_password(form.password.data, user.password):
+                        user.last_login = datetime.utcnow()
+                        user.save()
                         self.login_user(user)
                         return redirect(self.get_next_url())
                     else:

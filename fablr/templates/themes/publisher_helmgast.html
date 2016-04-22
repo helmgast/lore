@@ -56,7 +56,7 @@
 {% block container_class %}container{% endblock %}
 
 {% block navbar_brand %}
-    <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher=publisher.slug) }}">
+    <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">
         <img src="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}"
              style="width: 128px; height: 128px; margin-top: -35px">
     </a>
@@ -65,11 +65,11 @@
 {% block navbar_left %}
     {% call MACRO.IS_USER() %}
         <li{% block world_active %}{% endblock %}><a
-                href="{{ url_for('world.WorldsView:index', publisher=publisher.slug) }}"><span
+                href="{{ url_for('world.WorldsView:index', publisher_=publisher.slug) }}"><span
                 class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
     {% endcall %}
     <li{% block blog_active %}{% endblock %}><a
-            href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world='meta') }}"><span
+            href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}"><span
             class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
     {% call MACRO.IS_ENABLED("campaign") %}
         <li{% block campaign_active %}{% endblock %}><a href="{{ url_for('campaign.index') }}"><span
@@ -108,17 +108,17 @@
         {% for article in articles %}
             <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
                 <a class="blog_header"
-                   href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}">
+                   href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
                     <h3>{{ article.title }}</h3></a>
                 {% if article.feature_image %}
                     <a class="pull-left"
-                       href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}">
+                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
                         <img class="media-object" src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}">
                     </a>
                 {% endif %}
                 <p class="lead">{% if article.description %}{{ article.description }}{% else %}
                     {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
-                    <a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world=world.slug, id=article.slug) }}"><em
+                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em
                             style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
                 <hr-d>
                     <ul class="list-inline article-meta" style="margin-bottom: 0;">
@@ -246,10 +246,10 @@
             </div>
             <div class="col-xs-4">
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('world.ArticlesView:blog', publisher=publisher.slug, world='meta') }}">{% trans %}Blog{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='about') }}">{% trans %}About{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='media') }}">{% trans %}Media{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='work_with_us') }}">{% trans %}Work with us{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}">{% trans %}Blog{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='about') }}">{% trans %}About{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">{% trans %}Media{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='work_with_us') }}">{% trans %}Work with us{% endtrans %}</a></li>
                 </ul>
             </div>
             <!-- --/col-lg-3 ---->
@@ -257,8 +257,8 @@
             <div class="col-xs-4">
                 <ul class="list-unstyled">
                     {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='terms_of_service') }}">{% trans %}Terms of Service{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher=publisher.slug, world='meta', id='security_policy') }}">{% trans %}Security policy{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service') }}">{% trans %}Terms of Service{% endtrans %}</a></li>
+                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='security_policy') }}">{% trans %}Security policy{% endtrans %}</a></li>
                     <li class="language-chooser">{% include 'includes/language_chooser.html' %}</li>
                 </ul>
             </div>

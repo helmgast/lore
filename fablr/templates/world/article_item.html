@@ -204,7 +204,7 @@
 
 {% block final %}
 {% if article %}
-{{ MACRO.DELETE_MODAL(article.title, url_for('.ArticlesView:delete', publisher=publisher.slug, world=world.slug, id=article.slug, method="DELETE") ) }}
+{{ MACRO.DELETE_MODAL(article.title, url_for('world.ArticlesView:delete', publisher_=publisher.slug, world_=world.slug, id=article.slug, method="DELETE") ) }}
 {% endif %}
 {{super()}}
 
