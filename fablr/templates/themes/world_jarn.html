@@ -6,7 +6,7 @@
     <style>
         @font-face {
             font-family: 'Ringbearer-Medium';
-            src: url('../../../static/fonts/Ringbearer-Medium.ttf.woff') format('woff');
+            src: url('{{ url_for('static', filename='fonts/Ringbearer-Medium.ttf.woff') }}') format('woff');
             font-weight: normal;
             font-style: normal;
         }
@@ -22,5 +22,13 @@
             font-weight: 400;
             font-size: 14px;
         }
+    .hero-unit {
+    background-image: url({{ url_for('static', filename='img/themes/jarn_cover_wide.jpeg') }});
+}
     </style>
 {% endblock %}
+
+{% block cover %}
+    <div class="row hero-unit">
+    </div>
+{% endblock cover %}

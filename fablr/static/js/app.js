@@ -652,6 +652,15 @@ function handle_action(e) {
   $('form select[data-role="chosen"]').chosen();
   $('form select[data-role="chosenblank"]').chosen();
 
+  $('.select2').select2({allowClear: true});
+
+  $('.select2').on('select2:unselect', function(e) {
+    // TODO this is a hack to select the __None item, residing at index 0, to correctly empty the field
+    if (e.currentTarget.selectedIndex == -1) {
+      e.currentTarget.selectedIndex = 0;
+    }
+  })
+
   // Change to * if more than <a> needed
   $('a[data-dismiss="back"]').click(function(e) {
       history.back();

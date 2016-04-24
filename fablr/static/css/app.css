@@ -493,7 +493,12 @@ a .icon-ok {
 }
 
 .hero-unit {
+    position: relative;
     padding: 30px;
+    min-height: 400px;
+    background-image: url(http://placehold.it/1200x600);
+    background-size: cover;
+    background-repeat: no-repeat no-repeat;
 }
 
 @media ( max-width : 767px) {
@@ -974,6 +979,10 @@ li:hover .btn-delete,
     max-width: 100%;
     height: auto;
     max-height: 300px;
+}
+
+.img-cover {
+    width: 100%;
 }
 
 .language-chooser {

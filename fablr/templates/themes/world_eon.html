@@ -4,4 +4,14 @@
 {{super()}}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/eon.css') }}">
 <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
+<style>
+.hero-unit {
+    background-image: url({{ url_for('static', filename='img/front/main01_cover.jpg') }});
+}
+</style>
 {% endblock %}
+
+{% block cover %}
+    <div class="row hero-unit">
+    </div>
+{% endblock cover %}
