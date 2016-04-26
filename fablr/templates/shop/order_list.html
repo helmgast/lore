@@ -9,6 +9,7 @@
 } %}
 
 {% block sidebar %}{{ super() }}
+    {% if filter_options %}
     {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated','status', 'total_price']) }}
 
     <h5>{% trans %}By updated{% endtrans %}</h5>
@@ -38,6 +39,7 @@
             {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
         {% endfor %}
     </div>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

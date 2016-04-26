@@ -383,12 +383,12 @@ Countries = Choices(
 
 
 class Address(EmbeddedDocument):
-    name = StringField(max_length=60, verbose_name=_('Name'))
-    street = StringField(max_length=60, verbose_name=_('Street'))
-    zipcode = StringField(max_length=8, verbose_name=_('ZIP Code'))
-    city = StringField(max_length=60, verbose_name=_('City'))
+    name = StringField(max_length=60, required=True, verbose_name=_('Name'))
+    street = StringField(max_length=60, required=True, verbose_name=_('Street'))
+    zipcode = StringField(max_length=8, required=True, verbose_name=_('ZIP Code'))
+    city = StringField(max_length=60, required=True, verbose_name=_('City'))
     # Tuples come unsorted, let's sort first
-    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), default=Countries.SE,
+    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), required=True, default=Countries.SE,
                           verbose_name=_('Country'))
     mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
 

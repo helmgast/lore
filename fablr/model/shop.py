@@ -50,6 +50,7 @@ Currencies = Choices(
 class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     product_number = StringField(max_length=10, sparse=True, verbose_name=_('Product Number'))
+    project_code = StringField(max_length=10, sparse=True, verbose_name=_('Project Code'))
     title = StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     publisher = ReferenceField(Publisher, required=True, verbose_name=_('Publisher'))
@@ -60,7 +61,7 @@ class Product(Document):
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
     price = FloatField(min_value=0, default=0, verbose_name=_('Price'))
-    tax = FloatField(min_value=0, default=0.25, choices=[(0.25, '25%'), (0.06, '6%')], verbose_name=_('Tax'))
+    tax = FloatField(min_value=0, default=0.25, choices=[(0.25, '25%'), (0.06, '6%'), (0, '0% (Auto)')], verbose_name=_('Tax'))
     currency = StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek,
                            verbose_name=_('Currency'))
     status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
@@ -192,8 +193,13 @@ class Order(Document):
             tax += ol.quantity * ol.price * (ol.product.tax / (ol.product.tax + 1))
 
         if self.shipping:
-            sum += self.shipping.price
-            tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
+            if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
+                tax_rate = tax/sum
+                tax += self.shipping.price * (tax_rate / (tax_rate + 1))
+            else:
+                tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
+            sum += self.shipping.price  # Do after we calculate average tax above
+
         self.total_items = num
         self.total_price = sum
         self.total_tax = tax

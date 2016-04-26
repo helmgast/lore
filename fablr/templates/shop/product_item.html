@@ -30,6 +30,7 @@
     <div class="col-md-8">
       {{ MACRO.FORM_FIELD(product_form.title) }}
       {{ MACRO.FORM_FIELD(product_form.product_number) }}
+      {{ MACRO.FORM_FIELD(product_form.project_code) }}
       {{ MACRO.FORM_FIELD(product_form.description) }}
       {{ MACRO.FORM_FIELD(product_form.publisher) }}
       {{ MACRO.FORM_FIELD(product_form.world) }}
@@ -66,6 +67,8 @@
         <td><small>{{ product.title }}</small></td></tr>
         <tr><td><strong>{{ _('Product Number') }}</strong></td>
         <td><small>{{ product.product_number }}</small></td></tr>
+        <tr><td><strong>{{ _('Project Code') }}</strong></td>
+        <td><small>{{ product.project_code }}</small></td></tr>
         <tr><td><strong>{{ _('Publisher') }}</strong></td>
         <td><small>{{ product.publisher }}</small></td></tr>
         <tr><td><strong>{{ _('World') }}</strong></td>
