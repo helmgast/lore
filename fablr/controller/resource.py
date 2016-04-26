@@ -20,7 +20,7 @@ from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import FlaskView
 from flask.ext.mongoengine import Pagination
 from flask.ext.mongoengine.wtf import model_form
-from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField
+from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField
 from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
@@ -199,7 +199,7 @@ class ResourceResponse(Response):
         'locale': lambda x: x if x in Languages.keys() else None,
     }
 
-    def __init__(self, resource_view, queries, formats=None, extra_args=None):
+    def __init__(self, resource_view, queries, method, formats=None, extra_args=None):
         # Can be set from Model
         assert resource_view
         self.resource_view = resource_view
@@ -212,6 +212,7 @@ class ResourceResponse(Response):
             setattr(self, q[0], q[1])
             self.resource_queries.append(q[0])  # remember names in order
 
+        self.method = method
         self.access = resource_view.access_policy
         self.model = resource_view.model
 
@@ -223,13 +224,14 @@ class ResourceResponse(Response):
     def auth_or_abort(self):
         instance = getattr(self, 'instance', None)
         auth = self.access.authorize(self.method, instance=instance)
-        if not auth:
-            abort(auth.error_code, auth.message)
-        else:
+        if auth:
             # if there's an intent, we also need to check that it's allowed
             intent = self.args.get('intent', None)
             if intent:
                 auth = self.access.authorize(intent, instance=instance)
+        if not auth:
+            abort(auth.error_code, auth.message)
+        else:
             self.auth = auth
 
     def render(self):
@@ -255,7 +257,7 @@ class ResourceResponse(Response):
         # values for same URL param (e.g. key=val1&key=val2)
         # req_args = CombinedMultiDict([request.args, extra_args])
         req_args = request.args.copy()
-        for k,v in extra_args.iteritems():
+        for k, v in extra_args.iteritems():
             req_args.add(k, v)
         # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
         for k in arg_parser:
@@ -285,11 +287,11 @@ class ListResponse(ResourceResponse):
     })
     method = 'list'
 
-    def __init__(self, resource_view, queries, formats=None, extra_args=None):
+    def __init__(self, resource_view, queries, method='list', formats=None, extra_args=None):
         list_arg_parser = getattr(resource_view, 'list_arg_parser', None)
         if list_arg_parser:
             self.arg_parser = list_arg_parser
-        super(ListResponse, self).__init__(resource_view, queries, formats, extra_args)
+        super(ListResponse, self).__init__(resource_view, queries, method, formats, extra_args)
         self.template = resource_view.list_template
 
     @property  # For convenience
@@ -336,7 +338,7 @@ class ListResponse(ResourceResponse):
             field = self.model._fields[f]
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
-                print f, field.filter_options(self.model)
+                # print f, field.filter_options(self.model)
         # TODO implement search, use textindex and do ".search_text()"
 
         # TODO max query size 10000 implied here
@@ -347,15 +349,15 @@ class ListResponse(ResourceResponse):
         #     abort(404, "Incorrect URL parameter")
         self.query = self.pagination.items  # set default query as the paginated one
 
-    # def make_filter_options(self, model, fields):
-    #     for f in fields:
-    #         field = model._fields[f]
-    #         if isinstance(field, ReferenceField):
-    #             values = model.distinct(f)
-    #         elif isinstance(field, DateTimeField):
-    #             datetime.utcwow()
-    #             pass
-    #         elif isinstance(field, DateTimeField):
+        # def make_filter_options(self, model, fields):
+        #     for f in fields:
+        #         field = model._fields[f]
+        #         if isinstance(field, ReferenceField):
+        #             values = model.distinct(f)
+        #         elif isinstance(field, DateTimeField):
+        #             datetime.utcwow()
+        #             pass
+        #         elif isinstance(field, DateTimeField):
 
 
 class ItemResponse(ResourceResponse):
@@ -373,10 +375,9 @@ class ItemResponse(ResourceResponse):
         item_arg_parser = getattr(resource_view, 'item_arg_parser', None)
         if item_arg_parser:
             self.arg_parser = item_arg_parser
-        super(ItemResponse, self).__init__(resource_view, queries, formats, extra_args)
+        super(ItemResponse, self).__init__(resource_view, queries, method, formats, extra_args)
 
         self.template = resource_view.item_template
-        self.method = method
 
         if (self.method != 'get') or self.args['intent']:
             form_args = extra_form_args or {}
@@ -442,6 +443,7 @@ def log_event(action, instance=None, message='', user=None, flash=True):
         name = instance_types_translated.get(instance._class_name.lower(), _('The item'))
     else:
         name = _('The item')
+    # print name
     if flash:
         generate_flash(action_strings_translated[action], name, instance)
 
@@ -570,6 +572,25 @@ class RacModelConverter(ModelConverter):
                                 base_class=OrigForm, field_args={})
         return f.FormField(form_class, **kwargs)
 
+    @converts('ListField')
+    def conv_List(self, model, field, kwargs):
+        if isinstance(field.field, ReferenceField):
+            kwargs[
+                'allow_blank'] = not field.required  # Added line, to make reference fields inslide listfields to allow blanks
+            return ModelSelectMultipleField(model=field.field.document_type, **kwargs)
+        if field.field.choices:
+            kwargs['multiple'] = True
+            return self.convert(model, field.field, kwargs)
+        field_args = kwargs.pop("field_args", {})
+        unbound_field = self.convert(model, field.field, field_args)
+        unacceptable = {
+            'validators': [],
+            'filters': [],
+            'min_entries': kwargs.get('min_entries', 0)
+        }
+        kwargs.update(unacceptable)
+        return f.FieldList(unbound_field, **kwargs)
+
     @converts('ReferenceField')
     def conv_Reference(self, model, field, kwargs):
         kwargs['allow_blank'] = not field.required
@@ -621,6 +642,41 @@ class RacModelConverter(ModelConverter):
         return f.TextAreaField(**kwargs)
 
 
+class ResourceError(Exception):
+    default_messages = {
+        400: u"%s" % _("Bad request or invalid input"),
+        401: u"%s" % _("Unathorized access, please login"),
+        403: u"%s" % _("Forbidden, this is not an allowed operation"),
+        404: u"%s" % _("Resource not found"),
+        500: u"%s" % _("Internal server error")
+    }
+
+    def __init__(self, status_code, message=None, r=None, field_errors=None, template=None, template_vars=None):
+        message = message if message else self.default_messages.get(status_code, u"%s" % _('Unknown error'))
+        self.r = r
+        if r:
+            form = r.get('form', None)
+            self.field_errors = form.errors if form else None
+            self.template = r.get('template', None)
+            self.template_vars = r
+        if status_code == 400 and field_errors:
+            message += u", invalid fields: \n%s" % pprint.pformat(field_errors)
+        self.message = message
+        self.status_code = status_code
+
+        if field_errors:
+            self.field_errors = field_errors
+        if template:
+            self.template = template
+        if template_vars:
+            self.template_vars = template_vars
+
+        logger.warning(u"%d: %s%s", self.status_code, self.message,
+                       u"\n%s\nin resource: \n%s\nwith formdata:\n%s" %
+                       (request.url, pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
+        Exception.__init__(self, "%i: %s" % (status_code, message))
+
+
 class Authorization:
     def __init__(self, is_authorized, message='', privileged=False, only_fields=None, error_code=403):
         self.is_authorized = is_authorized
@@ -646,10 +702,10 @@ class Authorization:
 # Checks if user is logged in and authorized
 class ResourceAccessPolicy(object):
     model_class = None
-    levels = ['public', 'user', 'private', 'admin']
+    levels = ['public', 'user', 'reader', 'editor', 'owner', 'admin']
     translate = {'post': 'new', 'patch': 'edit', 'put': 'edit', 'index': 'list', 'delete': 'edit', 'get': 'view'}
 
-    def __init__(self, ops_levels=None, get_owner_func=None):
+    def __init__(self, ops_levels=None):
         if not ops_levels:
             self.ops_levels = {
                 'view': 'public',
@@ -658,10 +714,6 @@ class ResourceAccessPolicy(object):
             }
         else:
             self.ops_levels = ops_levels
-        if not get_owner_func:
-            self.get_owner_func = lambda x: getattr(x, 'user', None)
-        else:
-            self.get_owner_func = get_owner_func
 
     def authorize(self, op, instance=None):
         if op in self.translate:  # TODO temporary translation between old and new op words, e.g. patch vs edit
@@ -670,42 +722,35 @@ class ResourceAccessPolicy(object):
             level = self.ops_levels['_default']
         else:
             level = self.ops_levels[op]
-        msg = _("%(op)s requires a logged in user", op=op)
-        if level == 'public':
-            return Authorization(True, u'%s is a publicly allowed operation' % op)
-        elif level == 'user':
-            if g.user:
-                return Authorization(True, msg)
-            else:
-                return Authorization(False, msg, error_code=401)  # Denoted that the user should log in first
-        elif level == 'private':
-            if not instance:
-                return Authorization(False, _("Error: Cannot apply private access without an instance"))
-            instance_owner = self.get_owner_func(instance)
 
-            if g.user and g.user.admin:
-                return Authorization(True, _("%(instance_owner)s have access to do private operation %(op)s on "
-                                             "instance %(instance)s",
-                                             instance_owner=instance_owner, op=op, instance=instance), privileged=True)
-            if not instance_owner:
-                return Authorization(False,
-                                     _("Error: Cannot identify user which instance %(inst)s belongs to", inst=instance))
-            elif not g.user:
-                return Authorization(False, msg, error_code=401)  # Denotes that the user should log in first
-            elif not g.user == instance_owner:
-                return Authorization(False,
-                                     _("%(op)s is a private operation which requires the owner to be logged in", op=op))
-            else:
-                return Authorization(True, _(
-                    "%(instance_owner)s have access to do private operation %(op)s on instance %(instance)s",
-                    instance_owner=instance_owner, op=op, instance=instance), privileged=True)
+        mod_level = self.get_access_level(op, instance)
+        if mod_level:
+            level = mod_level
+
+        if level == 'public':
+            return Authorization(True, _("%s is a publicly allowed operation", op=op))
+        elif level == 'user':
+            return self.is_user(op, instance)  # if we have a user, doesnt matter if admin
+
+        auth = self.is_user(op, instance)
+        if not auth:
+            return auth
+        if level == 'reader':
+            return (self.is_reader(op, instance) or
+                    self.is_editor(op, instance) or
+                    self.is_owner(op, instance) or
+                    self.is_admin(op, instance))
+        elif level == 'editor':
+            return (
+                self.is_editor(op, instance) or
+                self.is_owner(op, instance) or
+                self.is_admin(op, instance))
+        elif level == 'owner':
+            return (
+                self.is_owner(op, instance) or
+                self.is_admin(op, instance))
         elif level == 'admin':
-            if not g.user:
-                return Authorization(False, msg, error_code=401)  # Denotes that the user should log in first
-            elif not g.user.admin:
-                return Authorization(False, _("Need to be logged in with admin access"))
-            elif g.user:
-                return Authorization(True, _("%(user)s is an admin", user=g.user), privileged=True)
+            return self.is_admin(op, instance)
         return Authorization(False, _("This is catch all denied authorization, should not be here"))
 
     def auth_or_abort(self, response, instance=None):
@@ -719,6 +764,31 @@ class ResourceAccessPolicy(object):
         else:
             response['auth'] = auth
             return response
+
+    def get_access_level(self, op, instance):
+        return None
+
+    def is_user(self, op, instance):
+        msg = _("%(op)s requires a logged in user", op=op)
+        if g.user:
+            return Authorization(True, msg)
+        else:
+            return Authorization(False, msg, error_code=401)  # Denoted that the user should log in first
+
+    def is_reader(self, op, instance):
+        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+
+    def is_editor(self, op, instance):
+        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+
+    def is_owner(self, op, instance):
+        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+
+    def is_admin(self, op, instance):
+        if g.user.admin:
+            return Authorization(True, _("%(user)s is an admin", user=g.user), privileged=True)
+        else:
+            return Authorization(False, _("Need to be logged in with admin access"))
 
 
 class ResourceRoutingStrategy:
@@ -835,41 +905,6 @@ class ResourceRoutingStrategy:
 
     def authorize(self, op, instance=None):
         return self.access.authorize(op, instance)
-
-
-class ResourceError(Exception):
-    default_messages = {
-        400: u"%s" % _("Bad request or invalid input"),
-        401: u"%s" % _("Unathorized access, please login"),
-        403: u"%s" % _("Forbidden, this is not an allowed operation"),
-        404: u"%s" % _("Resource not found"),
-        500: u"%s" % _("Internal server error")
-    }
-
-    def __init__(self, status_code, message=None, r=None, field_errors=None, template=None, template_vars=None):
-        message = message if message else self.default_messages.get(status_code, u"%s" % _('Unknown error'))
-        self.r = r
-        if r:
-            form = r.get('form', None)
-            self.field_errors = form.errors if form else None
-            self.template = r.get('template', None)
-            self.template_vars = r
-        if status_code == 400 and field_errors:
-            message += u", invalid fields: \n%s" % pprint.pformat(field_errors)
-        self.message = message
-        self.status_code = status_code
-
-        if field_errors:
-            self.field_errors = field_errors
-        if template:
-            self.template = template
-        if template_vars:
-            self.template_vars = template_vars
-
-        logger.warning(u"%d: %s%s", self.status_code, self.message,
-                       u"\n%s\nin resource: \n%s\nwith formdata:\n%s" %
-                       (request.url, pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
-        Exception.__init__(self, "%i: %s" % (status_code, message))
 
 
 class ResourceHandler(View):

@@ -117,7 +117,7 @@ class MongoJSONEncoder(JSONEncoder):
         elif isinstance(o, Pagination):
             return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
         if isinstance(o, _LazyString):  # i18n Babel uses lazy strings, need to be treated as string here
-            return str(o)
+            return unicode(o)
         return JSONEncoder.default(self, o)
 
 

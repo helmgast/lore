@@ -15,6 +15,7 @@
 from flask import abort, request, render_template, Blueprint, g, current_app
 from flask.ext.classy import FlaskView
 from flask.ext.mongoengine.wtf import model_form
+from flask.ext.babel import lazy_gettext as _
 
 from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, \
     RacModelConverter, \
@@ -35,24 +36,18 @@ user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter
 #   validators.Length(max=40)])
 
 class UserAccessPolicy(ResourceAccessPolicy):
-    def authorize(self, op, instance=None):
-        if op not in self.ops_levels:
-            level = self.ops_levels['_default']
+    def is_owner(self, op, instance):
+        if g.user == instance:
+            return Authorization(True, _("User %(user)s allowed to %(op)s on own user profile", user=g.user, op=op), privileged=True)
         else:
-            level = self.ops_levels[op]
-        if level == 'private':
-            if g.user and instance == g.user:
-                return Authorization(True, '%s have access to do private operation %s on instance %s' % (
-                unicode(g.user), op, instance), privileged=True)
-        return super(UserAccessPolicy, self).authorize(op, instance)
-
+            return Authorization(False, _("Cannot access other user's user profile"))
 
 user_access = UserAccessPolicy({
-    'view': 'private',
-    'edit': 'private',
-    'form_edit': 'private',
+    'view': 'owner',
+    'edit': 'owner',
+    'form_edit': 'owner',
     '_default': 'admin'
-}, get_owner_func=lambda user: user)  # return user itself to check for owner of a user object
+})  # return user itself to check for owner of a user object
 
 admin_only_access = ResourceAccessPolicy({'_default': 'admin'})
 

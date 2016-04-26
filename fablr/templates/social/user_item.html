@@ -65,6 +65,9 @@
       <td>{{ user.location|default(_('No data'), true) }}</td></tr>
       <tr><td><strong>{{ _('Joined') }}</strong></td>
       <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+      <tr><td><strong>{{ _('Last login') }}</strong></td>
+      <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else _('Not logged in yet') }}</td></tr>
+
 
       {% call(privileged) MACRO.IS_ADMIN() %}
       <tr><td><strong>{{ _('Authentication') }}</strong></td>

@@ -83,8 +83,7 @@ class User(Document, BaseUser):
         return self.__unicode__()
 
     def __unicode__(self):
-        return self.username if self.username else (
-            self.realname.split(' ')[0] if self.realname else unicode(_('Anonymous')))
+        return self.username or (self.realname.split(' ')[0] if self.realname else None) or self.email.split('@')[0]
 
     def full_string(self):
         return "%s (%s)" % (self.username, self.realname)

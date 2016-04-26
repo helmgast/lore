@@ -25,7 +25,8 @@ from wtforms.validators import InputRequired, Email
 from fablr.controller.mailer import send_mail
 from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPolicy,
                                        RacModelConverter, RacBaseForm, ResourceView,
-                                       filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse)
+                                       filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
+                                       Authorization)
 from fablr.controller.world import set_theme
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus
 from fablr.model.user import User
@@ -232,11 +233,21 @@ class PostPaymentForm(RacBaseForm):
     order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
 
 
+class OrdersAccessPolicy(ResourceAccessPolicy):
+    def is_owner(self, op, instance):
+        if instance:
+            if g.user == instance.user:
+                return Authorization(True, _("Allowed access to %(instance)s as it's own order", instance=instance), privileged=True)
+            else:
+                return Authorization(False, _("Not allowed access to %(instance)s as not own order"))
+        else:
+            return Authorization(False, _("No instance to test for access on"))
+
 class OrdersView(ResourceView):
     subdomain = '<publisher>'
-    access_policy = ResourceAccessPolicy({
+    access_policy = OrdersAccessPolicy({
         'my_orders': 'user',
-        'view': 'private',
+        'view': 'owner',
         'list': 'admin',
         'edit': 'admin',
         'form_edit': 'admin',
@@ -262,9 +273,12 @@ class OrdersView(ResourceView):
         return r
 
     def my_orders(self, publisher):
-        r = self.index(publisher)
-        r.orders = r.pagination.iterable.filter(user=g.user)
+        publisher = Publisher.objects(slug=publisher).first_or_404()
+        orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
+        r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
+        r.auth_or_abort()
         r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
         return r
 
     def get(self, id, publisher):
@@ -413,18 +427,6 @@ class OrdersView(ResourceView):
 
 OrdersView.register_with_access(shop_app, 'order')
 
-order_access = ResourceAccessPolicy({
-    'my_orders': 'user',
-    'view': 'private',
-    'list': 'admin',
-    'edit': 'admin',
-    'form_edit': 'admin',
-    '_default': 'admin'
-})
-
-order_strategy = ResourceRoutingStrategy(Order, 'orders', form_class=model_form(
-    Order, base_class=RacBaseForm, only=['order_lines', 'shipping_address',
-                                         'shipping_mobile'], converter=RacModelConverter()), access_policy=order_access)
 
 
 def get_cart_order():

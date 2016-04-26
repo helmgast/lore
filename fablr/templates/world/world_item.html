@@ -27,23 +27,24 @@
     {% if world and world.feature_image %}
         <a class="lightbox" href="{{ url_for('image', slug = world.feature_image.slug) }}"><img class="img-responsive"
                                                                                                 src="{{ url_for('image', slug = world.feature_image.slug) }}"></a>
-    {% else %}
-        <span class="glyphicon glyphicon-globe gianticon"></span>
     {% endif %}
-    <div class="">
+    <div>
         <ul class="nav nav-pills nav-stacked">
             <li><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug) }}"><span
                     class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
             {% if world %}
-                <li><a href="{{ url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug) }}"><span
-                        class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-                <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug) }}"><span
-                        class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-                <li><a href="{{ url_for('world.ArticlesView:random', publisher_=publisher.slug, world_=world.slug) }}"><span
-                        class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug) }}"><span
+                            class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug) }}"><span
+                            class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:random', publisher_=publisher.slug, world_=world.slug) }}"><span
+                            class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
                 {% include "world/new_article_menu.html" %}
-                {% if not article %} {# only show if we have only a world #}
-                    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
+                {% if world.slug != 'meta' and not article %} {# only show if we have only a world #}
+                    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', instance=world)) %}
                         <li><a class="{{ privileged }}"
                                href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, intent='patch', id=world.slug) }}"><span
                                 class="glyphicon glyphicon-edit"></span> {{ _('Edit') }} {{ _('world') }}</a></li>
@@ -69,7 +70,9 @@
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
-                    {{ MACRO.FORM_FIELD(world_form.languages) }}
+                    {{ MACRO.FORM_FIELD(world_form.languages, controlclass='select2') }}
+                    {{ MACRO.FORM_FIELD(world_form.editors, controlclass='select2') }}
+                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='select2') }}
                     {{ world_form.csrf_token }}
                 </div>
                 <div class="col-md-4">

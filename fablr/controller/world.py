@@ -28,7 +28,7 @@ from werkzeug.contrib.atom import AtomFeed
 
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
-                                       ListResponse, ItemResponse)
+                                       ListResponse, ItemResponse, Authorization)
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -103,12 +103,40 @@ def set_theme(response, theme_type, slug):
             print "Not finding theme %s_%s.html" % (theme_type, slug)
 
 
+class WorldAccessPolicy(ResourceAccessPolicy):
+    def is_editor(self, op, instance):
+        if instance:
+            if g.user in instance.editors:
+                return Authorization(True, _("Allowed access to %(instance)s as editor", instance=instance), privileged=True)
+            else:
+                return Authorization(False, _("Not allowed access to %(instance)s as not an editor"))
+        else:
+            return Authorization(False, _("No instance to test for access on"))
+
+    def is_owner(self, op, instance):
+        if instance:
+            if g.user == instance.creator:
+                return Authorization(True, _("Allowed access to %(instance)s as creator", instance=instance), privileged=True)
+            else:
+                return Authorization(False, _("Not allowed access to %(instance)s as not an creator"))
+        else:
+            return Authorization(False, _("No instance to test for access on"))
+
+    def get_access_level(self, op, instance):
+        """Normally viewing a resource is public, unless status is private, draft or archived"""
+        if instance:
+            if op == 'view' and instance.status in (PublishStatus.private, PublishStatus.archived, PublishStatus.draft):
+                return 'reader'
+        return None
+
+
 class WorldsView(ResourceView):
     subdomain = '<publisher_>'
     route_base = '/'
-    access_policy = ResourceAccessPolicy({
+    access_policy = WorldAccessPolicy({
         'view': 'public',
         'list': 'public',
+        'edit': 'editor',
         '_default': 'admin'
     })
     model = World
@@ -116,7 +144,7 @@ class WorldsView(ResourceView):
     list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     item_template = 'world/world_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
+    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter(), field_args={'readers':{'allow_blank':True}})
 
     @route('/')
     def home(self, publisher_):
@@ -209,7 +237,7 @@ class WorldsView(ResourceView):
         r.commit()
         return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug))
 
-    def delete(self, publisher, id):
+    def delete(self, publisher_, id):
         abort(501)  # Not implemented
 
 
@@ -228,10 +256,16 @@ def if_not_meta(doc):
     else:
         return doc
 
+
 class ArticlesView(ResourceView):
     subdomain = '<publisher_>'
     route_base = '/<world_>'
-    access_policy = ResourceAccessPolicy()
+    access_policy = WorldAccessPolicy({
+        'view': 'public',
+        'list': 'public',
+        'edit': 'editor',
+        '_default': 'admin'
+    })
     model = Article
     list_template = 'world/article_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date'])
@@ -343,7 +377,7 @@ class ArticlesView(ResourceView):
             r.form.title.errors.append('ID already in use')
             return r, 400  # Respond with same page, including errors highlighted
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
-                                                  world=world.slug))
+                                                  world_=world.slug))
 
     def patch(self, publisher_, world_, id):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
@@ -365,7 +399,7 @@ class ArticlesView(ResourceView):
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
         r.commit()
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
-                                                  world=world.slug))
+                                                  world_=world.slug))
 
     def delete(self, publisher_, world_, id):
         publisher = Publisher.objects(slug=publisher_).first_or_404()

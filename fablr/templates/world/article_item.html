@@ -132,6 +132,9 @@
     {{ MACRO.FORM_FIELD(article_form.world,controlclass=' input-sm') }}
     {{ MACRO.FORM_FIELD(article_form.license,controlclass=' input-sm') }}
     {{ MACRO.FORM_FIELD(article_form.theme,controlclass=' input-sm') }}
+    {{ MACRO.FORM_FIELD(article_form.editors,controlclass=' input-sm select2') }}
+    {{ MACRO.FORM_FIELD(article_form.readers,controlclass=' input-sm select2') }}
+
 
     <input type="hidden" name="feature_image" id="feature_image" value="" />
     {% if g.user.id %}
@@ -151,7 +154,7 @@
   {% set articlegroups = article.articlegroups|list %}
   <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
     {%- if article.creator %}
-    {% if MACRO.AUTHORIZED(access_policy['user'].authorize('view')) %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}
+    {% if access_policy['user'].authorize('view') %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}
     {%- else -%}System{%- endif -%}</li>
   <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
   {% if articlegroups or g.user %}

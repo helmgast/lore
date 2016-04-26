@@ -24,10 +24,11 @@ from user import User
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 PublishStatus = Choices(
-    draft=_('Draft'),
-    revision=_('Revision'),
-    published=_('Published'),
-    archived=_('Archived'))
+    draft=_('Draft'),  # not published, visible to owner and editors
+    revision=_('Revision'),  # an older revision of the same article, currently not in use
+    published=_('Published'),  # published to all with normal access rights (ignoring "readers" attribute")
+    private=_('Private'),  # published, but only visible to those with explicit access
+    archived=_('Archived'))  # passed publishing, visible to owners and editors but not others
 
 Licenses = Choices(
     public_domain=_('Public Domain'),
@@ -48,13 +49,16 @@ class Publisher(Document):
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
     owner = ReferenceField(User, verbose_name=_('Owner'))
+    creator = ReferenceField(User, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=Languages.to_tuples(), verbose_name=_('Available Languages')))
+    languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
+    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
     def __unicode__(self):
         return self.title
@@ -72,7 +76,9 @@ class World(Document):
     feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=Languages.to_tuples(), verbose_name=_('Available Languages')))
+    languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
+    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
     def clean(self):
         self.slug = slugify(self.title)
