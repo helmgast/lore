@@ -2,6 +2,7 @@
 # Automatically imported, do not edit for local configuration!
 # For local configuration, create a config.py that overrides only the values
 # needed. The config.py should not use classes, just global variables.
+# All configs that should work need to have a default below, or they will be ignored by the ENV parser.
 
 
 class Config(object):
@@ -16,6 +17,7 @@ class Config(object):
     BABEL_AVAILABLE_LOCALES = ['sv', 'en']
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
+    ALLOW_SUBDOMAINS = False
 
 
 class SecretConfig(object):
