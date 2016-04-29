@@ -9,11 +9,11 @@
 {% block sidebar %}
     <ul class="nav nav-pills nav-stacked">
         {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list')) %}
-            <li><a class="{{ privileged }}" href="{{ url_for('.PublishersView:index') }}"><span
+            <li><a class="{{ privileged }}" href="{{ url_for('world.PublishersView:index') }}"><span
                     class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
         {% endcall %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
-            <li><a class="{{ privileged }}" href="{{ url_for('.PublishersView:index', intent='post') }}"><span
+            <li><a class="{{ privileged }}" href="{{ url_for('world.PublishersView:get', id='post') }}"><span
                     class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
         {% endcall %}
 

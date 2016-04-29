@@ -17,7 +17,7 @@ from datetime import datetime
 from itertools import groupby
 
 from bson import DBRef
-from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template
+from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template, flash
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
@@ -69,7 +69,7 @@ class PublishersView(ResourceView):
     list_arg_parser = filterable_fields_parser(['title', 'owner', 'created_date'])
     item_template = 'world/publisher_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'owner', 'created_date'])
-    form_class = model_form(Publisher, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
+    form_class = model_form(Publisher, base_class=RacBaseForm, converter=RacModelConverter())
 
     def index(self):
         r = ListResponse(PublishersView, [('publishers', Publisher.objects())])
@@ -77,16 +77,45 @@ class PublishersView(ResourceView):
         return r
 
     def get(self, id):
-        publisher = Publisher.objects(slug=id).first_or_404()
-        r = ItemResponse(PublishersView, [('publisher', publisher)])
+
+        if id == 'post':
+            r = ItemResponse(PublishersView, [('publisher', None)], extra_args={'intent': 'post'})
+        else:
+            publisher = Publisher.objects(slug=id).first_or_404()
+            r = ItemResponse(PublishersView, [('publisher', publisher)])
         r.auth_or_abort()
         return r
 
     def post(self):
-        abort(501)  # Not implemented
+        r = ItemResponse(PublishersView, [('publisher', None)], method='post')
+        r.auth_or_abort()
+        publisher = Publisher()
+        if not r.validate():
+            flash(_("Error in form"), 'danger')
+            return r, 400
+        r.form.populate_obj(publisher)
+        try:
+            r.commit(new_instance=publisher)
+        except NotUniqueError as err:
+            r.form.title.errors.append('ID %s already in use')
+            flash(_("Error in form"), 'danger')
+            return r, 400
+        return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
+
 
     def patch(self, id):
-        abort(501)  # Not implemented
+        publisher = Publisher.objects(slug=id).first_or_404()
+
+        r = ItemResponse(PublishersView, [('publisher', publisher)], method='patch')
+        if not isinstance(r.form, RacBaseForm):
+            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+        if not r.validate():
+            # return same page but with form errors?
+            flash(_("Error in form"), 'danger')
+            return r, 400  # BadRequest
+        r.form.populate_obj(publisher, request.form.keys())  # only populate selected keys
+        r.commit()
+        return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
 
     def delete(self, id):
         abort(501)  # Not implemented
@@ -97,7 +126,7 @@ def set_theme(response, theme_type, slug):
         try:
             setattr(response, '%s_theme' % theme_type,
                     current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
-            print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
+            # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
         except TemplateNotFound:
             pass
             print "Not finding theme %s_%s.html" % (theme_type, slug)
@@ -211,12 +240,14 @@ class WorldsView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         world = World()
         if not r.validate():
+            flash(_("Error in form"), 'danger')
             return r, 400
         r.form.populate_obj(world)
         try:
             r.commit(new_instance=world)
         except NotUniqueError:
             r.form.title.errors.append('ID %s already in use')
+            flash(_("Error in form"), 'danger')
             return r, 400
         return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug))
 
@@ -232,6 +263,7 @@ class WorldsView(ResourceView):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
             # return same page but with form errors?
+            flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
         r.form.populate_obj(world, request.form.keys())  # only populate selected keys
         r.commit()
@@ -369,12 +401,14 @@ class ArticlesView(ResourceView):
         set_theme(r, 'world', world.slug)
         article = Article()
         if not r.validate():
+            flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article)
         try:
             r.commit(new_instance=article)
         except NotUniqueError:
             r.form.title.errors.append('ID already in use')
+            flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
                                                   world_=world.slug))
@@ -395,6 +429,7 @@ class ArticlesView(ResourceView):
         if not isinstance(r.form, RacBaseForm):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
+            flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
         r.commit()

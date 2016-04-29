@@ -492,8 +492,8 @@ class RacBaseForm(ModelForm):
             # FormFields in form args will have '-' do denote it's subfields. We
             # only want the first part, or it won't match the field names
             new_fields_to_populate = set([fld.split('-', 1)[0] for fld in fields_to_populate])
-            print "In populate, fields_to_populate before \n%s\nand after\n%s\n" % (
-                fields_to_populate, new_fields_to_populate)
+            # print "In populate, fields_to_populate before \n%s\nand after\n%s\n" % (
+            #     fields_to_populate, new_fields_to_populate)
             newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in new_fields_to_populate]
         else:
             newfields = iteritems(self._fields)
@@ -536,7 +536,7 @@ class RacModelSelectField(ModelSelectField):
     # This is required to accept custom primary keys
     # https://github.com/MongoEngine/flask-mongoengine/issues/82
     def process_formdata(self, valuelist):
-        print valuelist
+        # print valuelist
         if valuelist:
             if valuelist[0] == '__None':
                 self.data = None

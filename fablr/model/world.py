@@ -44,7 +44,7 @@ GenderTypes = Choices(
 
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
-    short_code = StringField(min_length=2, max_length=2, verbose_name=_('Short Code'))
+    publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
     title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
