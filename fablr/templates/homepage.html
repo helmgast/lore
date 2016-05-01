@@ -12,9 +12,6 @@
     <h1>{{ _('Welcome to') }} Fablr</h1>
     {% include "newsletter.html" %}
     <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
-    <p>
-      <a class="btn btn-primary btn-lg">{{ _('Learn more') }}</a>
-    </p>
   </div>
 <h1>{{ _('For game masters') }}</h1>
   <div class="row">
@@ -104,4 +101,23 @@
       </p>
     </div>   
   </div>
+
+  <h1>{{ _('Our publishers') }}</h1>
+    <div class="row">
+        {% for publisher in publishers %}
+            <div class="col-md-5 world_item">
+                <h3><a href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
+                    <br>
+                    <small>{{ publisher.description }}</small>
+                </h3>
+            </div>
+            {% if loop.index is divisibleby 2 %}</div>
+                <div class="row">{% endif %}
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No publishers setup yet') }}</h2>
+            </div>
+        {% endfor %}
+        </div>
+    {% include "includes/pagination.html" %}
 {% endblock %}

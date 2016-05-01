@@ -61,7 +61,6 @@ def publish_filter(qr):
 
 class PublishersView(ResourceView):
     access_policy = ResourceAccessPolicy({
-        'view': 'user',
         '_default': 'admin'
     })
     model = Publisher
@@ -469,7 +468,8 @@ class ArticleRelationsView(ResourceView):
 
 @world_app.route('/')
 def homepage():
-    return render_template('homepage.html')
+    publishers = Publisher.objects()
+    return render_template('homepage.html', publishers=publishers)
 
 
 PublishersView.register_with_access(world_app, 'publisher')

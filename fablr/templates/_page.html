@@ -117,11 +117,13 @@
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav navbar-nav-top">
                     {% block navbar_left %}
+                        {% call(privileged) MACRO.IS_ADMIN() %}
                         <li{% block publishers_active %}{% endblock %}>
                             <a href="{{ url_for('world.PublishersView:index') }}">
                                 <span class="glyphicon glyphicon-asterisk"></span> {{ _('Publishers') }}
                             </a>
                         </li>
+                        {% endcall %}
                         {% call(privileged) MACRO.IS_ADMIN() %}
                         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span
                         class="glyphicon glyphicon-bullhorn"></span> {{ _('Users') }}</a></li>
