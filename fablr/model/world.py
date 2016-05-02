@@ -48,7 +48,7 @@ class Publisher(Document):
     title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
-    owner = ReferenceField(User, verbose_name=_('Owner'))
+    owner = ReferenceField(User, verbose_name=_('Owner'))  # TODO pick one of owner, creator
     creator = ReferenceField(User, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
@@ -59,6 +59,7 @@ class Publisher(Document):
     languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+    shop_enabled = BooleanField(default=False, verbose_name=_('Enable shop feature'))
 
     def __unicode__(self):
         return self.title
@@ -134,18 +135,18 @@ class ArticleRelation(EmbeddedDocument):
 
 
 class PersonData(EmbeddedDocument):
-    born = IntField(verbose_name=_('born'))
-    died = IntField(verbose_name=_('died'))
-    gender = StringField(default=GenderTypes.unknown, choices=GenderTypes.to_tuples(), verbose_name=_('gender'))
+    born = IntField(verbose_name=_('Born'))
+    died = IntField(verbose_name=_('Died'))
+    gender = StringField(default=GenderTypes.unknown, choices=GenderTypes.to_tuples(), verbose_name=_('Gender'))
     # otherNames = CharField()
-    occupation = StringField(max_length=60, verbose_name=_('occupation'))
+    occupation = StringField(max_length=60, verbose_name=_('Occupation'))
 
     def gender_name(self):
         return GenderTypes[self.gender]
 
 
 class FractionData(EmbeddedDocument):
-    fraction_type = StringField(max_length=60, verbose_name=_('fraction'))
+    fraction_type = StringField(max_length=60, verbose_name=_('Fraction'))
 
 
 class PlaceData(EmbeddedDocument):

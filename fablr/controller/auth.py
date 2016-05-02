@@ -196,7 +196,7 @@ class Auth(object):
     def get_next_url(self):
         n = request.args.get('next', None)
         # Avoid going next to other auth-pages, will just be confusing!
-        return n if (n and '/auth/' not in n) else url_for('homepage')
+        return n if (n and '/auth/' not in n) else url_for('world.homepage')
 
     # Join
     # Enter email (or pre-filled from url-arg)

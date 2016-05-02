@@ -1,0 +1,58 @@
+{% extends "_modal.html" %}
+
+{# remove args, and make external, as we are in a modal and may have a different URL #}
+{% set mail_url = current_url(intent=None, out=None, _external=true) %}
+
+
+{% block header %}
+    <h4 class="modal-title">{{ _('Send email') }}</h4>
+{% endblock %}
+
+{% block formtag %}
+    <form method="post" action="{{ mail_url }}" class="form-horizontal">{% endblock %}
+
+{% block form %}
+    {{ mailform.csrf_token }}
+    {% set form_args = {'class':"form-control input-sm"} %}
+    {% set disabled_form_args = {'class':"form-control input-sm", 'disabled':true} %}
+
+    <div class="form-group form-group-sm">
+        <label for="to_field" class="col-xs-2 control-label">{{ _('To') }}:</label>
+        <div class="col-xs-10">
+            {{ mailform.to_field(**(disabled_form_args if mailform.to_field.flags.disabled else form_args)) }}
+        </div>
+    </div>
+
+    <div class="form-group form-group-sm">
+        <label for="from_field" class="col-xs-2 control-label">{{ _('From') }}:</label>
+        <div class="col-xs-10">
+            {{ mailform.from_field(**(disabled_form_args if mailform.from_field.flags.disabled else form_args)) }}
+        </div>
+    </div>
+
+    <div class="form-group form-group-sm">
+        <label for="subject" class="col-xs-2 control-label">{{ _('Subject') }}:</label>
+        <div class="col-xs-10">
+            {{ mailform.subject(**(disabled_form_args if mailform.subject.flags.disabled else form_args)) }}
+        </div>
+    </div>
+
+    {% if mailform.message %}
+    <div class="form-group">
+        <label for="message" class="col-xs-2 control-label">{{ _('Message') }}:</label>
+        <div class="col-xs-10">
+            {{ mailform.message(class="form-control",rows="7") }}
+        </div>
+    </div>
+    {% endif %}
+    <hr>
+{% endblock %}
+
+{% block content %}
+    {% if not mailform.message %}
+    <iframe style="border: none" width="100%" height="400px" src="{{ mail_url }}"></iframe>
+    {% endif %}
+{% endblock content %}
+
+
+{% block submit_title %}{{ _('Send') }}{% endblock %}

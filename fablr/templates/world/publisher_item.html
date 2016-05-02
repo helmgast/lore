@@ -25,6 +25,11 @@
             {{ MACRO.FORM_FIELD(publisher_form.email) }}
             {{ MACRO.FORM_FIELD(publisher_form.title) }}
             {{ MACRO.FORM_FIELD(publisher_form.description) }}
+            {{ MACRO.FORM_FIELD(publisher_form.status) }}
+            {{ MACRO.FORM_FIELD(publisher_form.shop_enabled) }}
+            {{ MACRO.FORM_FIELD(publisher_form.languages, controlclass='select2') }}
+            {{ MACRO.FORM_FIELD(publisher_form.editors, controlclass='select2') }}
+            {{ MACRO.FORM_FIELD(publisher_form.readers, controlclass='select2') }}
             {{ publisher_form.csrf_token }}
             <h3>{{ _('Registered address') }}</h3>
             {{ MACRO.FORM_FIELD_COLS(publisher_form.address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}

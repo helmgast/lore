@@ -52,6 +52,10 @@ def generate_flash(action, name, model_identifiers, dest=''):
     return s
 
 
+def error_response(response, code, msg="Error", flash_type="danger"):
+    flash(msg, flash_type)
+    return response, code
+
 mime_types = {
     'html': 'text/html',
     'json': 'application/json',
@@ -645,7 +649,7 @@ class RacModelConverter(ModelConverter):
 class ResourceError(Exception):
     default_messages = {
         400: u"%s" % _("Bad request or invalid input"),
-        401: u"%s" % _("Unathorized access, please login"),
+        401: u"%s" % _("Unauthorized access, please login"),
         403: u"%s" % _("Forbidden, this is not an allowed operation"),
         404: u"%s" % _("Resource not found"),
         500: u"%s" % _("Internal server error")

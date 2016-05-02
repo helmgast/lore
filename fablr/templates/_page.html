@@ -154,8 +154,6 @@
                                         <li><a class="privileged"
                                                href="{{ url_for('assets.imageasset_list') }}">{{ _('Image Gallery') }}</a>
                                         </li>
-                                        <li><a class="privileged" href="{{ url_for('admin') }}">{{ _('Admin') }}</a>
-                                        </li>
                                     {% endcall %}
                                     <li role="separator" class="divider"></li>
                                     <li><a href="{{ url_for('auth.logout', next='/') }}">{{ _('Log Out') }}</a></li>

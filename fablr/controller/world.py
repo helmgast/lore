@@ -16,7 +16,6 @@ import random
 from datetime import datetime
 from itertools import groupby
 
-from bson import DBRef
 from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template, flash
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import route
@@ -101,7 +100,6 @@ class PublishersView(ResourceView):
             return r, 400
         return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
 
-
     def patch(self, id):
         publisher = Publisher.objects(slug=id).first_or_404()
 
@@ -135,7 +133,8 @@ class WorldAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, instance):
         if instance:
             if g.user in instance.editors:
-                return Authorization(True, _("Allowed access to %(instance)s as editor", instance=instance), privileged=True)
+                return Authorization(True, _("Allowed access to %(instance)s as editor", instance=instance),
+                                     privileged=True)
             else:
                 return Authorization(False, _("Not allowed access to %(instance)s as not an editor"))
         else:
@@ -144,7 +143,8 @@ class WorldAccessPolicy(ResourceAccessPolicy):
     def is_owner(self, op, instance):
         if instance:
             if g.user == instance.creator:
-                return Authorization(True, _("Allowed access to %(instance)s as creator", instance=instance), privileged=True)
+                return Authorization(True, _("Allowed access to %(instance)s as creator", instance=instance),
+                                     privileged=True)
             else:
                 return Authorization(False, _("Not allowed access to %(instance)s as not an creator"))
         else:
@@ -172,7 +172,8 @@ class WorldsView(ResourceView):
     list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     item_template = 'world/world_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter(), field_args={'readers':{'allow_blank':True}})
+    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter(),
+                            field_args={'readers': {'allow_blank': True}})
 
     @route('/')
     def home(self, publisher_):
@@ -274,12 +275,13 @@ class WorldsView(ResourceView):
 
 def safeget(object, attr):
     if not object:
-        if attr=='slug':
+        if attr == 'slug':
             return 'meta'
         else:
             return None
     else:
         return getattr(object, attr, None)
+
 
 def if_not_meta(doc):
     if isinstance(doc, WorldMeta):
@@ -336,7 +338,8 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         # TODO ignores publisher for the moment
-        articles = Article.objects(world=if_not_meta(world), status=PublishStatus.published, created_date__lte=datetime.utcnow())
+        articles = Article.objects(world=if_not_meta(world), status=PublishStatus.published,
+                                   created_date__lte=datetime.utcnow())
         # TODO very inefficient random sample, use mongodb aggregation instead
         length = len(articles)
         if length:

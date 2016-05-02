@@ -35,8 +35,8 @@ def lang_extract():
     print "------------------------"
     with open('fablr/translations/sv/LC_MESSAGES/messages.po') as f:
         s = f.read()
-        for m in re.findall(r'msgid "(.*)"\s+msgstr ""\s\s', s):
-            print m.split('/n')[0]  # avoid too long ones
+        for m in re.findall(r'msgid ((".*"\s+)+)msgstr ""\s\s', s):
+            print m[0].split('/n')[0]  # avoid too long ones
 
 
 @manager.command

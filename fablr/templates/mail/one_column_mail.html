@@ -49,7 +49,7 @@
                         <td align="center">
                         {% block footer_content %}
                         <p><a href="https://www.facebook.com/helmgast"><img alt="Facebook logo" style="vertical-align: middle;margin-right: 5px;" width="72" height="30" src="https://gallery.mailchimp.com/4412a3ce4ac556de77513666b/images/adc42642-7da1-49c2-b9af-b7e9a3a41a97.png">Helmgast {{_('on')}} Facebook!</a></p>
-                            {% trans email=user.email %}<p>You are receiving this email to {{email}} as a user of <a href="http://helmgast.se" class="utilityLink">http://helmgast.se</a></p>{% endtrans %}
+                            <p>{% trans email=user.email %}You are receiving this email to {{email}} as a user of{% endtrans %} <a href="http://helmgast.se" class="utilityLink">http://helmgast.se</a></p>
                             <p>{% trans %}If you have any problems, just reply to this email.{% endtrans %}</p>
                             <p><em>Copyright © 2015 Helmgast AB, All rights reserved.<br>
                             Värmlandsvägen 381 123 48 Farsta, Sweden</em></p>
@@ -69,37 +69,37 @@
 {% endblock %}
 {% block body %}{{ self.modal_body() }}{% endblock %}
 
-{% block formtag %}<form method="post" action="{{current_url()}}" class="form-horizontal">{% endblock %}
+{#{% block formtag %}<form method="post" action="{{current_url()}}" class="form-horizontal">{% endblock %}#}
 
-{% block form %}
-{{mailform.csrf_token }}
+{#{% block form %}#}
+{#{{mailform.csrf_token }}#}
 {#<input id="csrf_token" name="csrf_token" type="hidden" value="1425788851.32##1231234123123">#}
-{% set form_args = {'class':"form-control input-sm"}%}
-{% set disabled_form_args = {'class':"form-control input-sm", 'disabled':true}%}
+{#{% set form_args = {'class':"form-control input-sm"}%}#}
+{#{% set disabled_form_args = {'class':"form-control input-sm", 'disabled':true}%}#}
+{##}
+{#<div class="form-group form-group-sm">#}
+{#    <label for="to_field" class="col-xs-2 control-label">{{_('To')}}:</label>#}
+{#    <div class="col-xs-10">#}
+{#        {{mailform.to_field(**(disabled_form_args if mailform.to_field.flags.disabled else form_args))}}#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<div class="form-group form-group-sm">#}
+{#    <label for="from_field" class="col-xs-2 control-label">{{_('From')}}:</label>#}
+{#    <div class="col-xs-10">#}
+{#        {{mailform.from_field(**(disabled_form_args if mailform.from_field.flags.disabled else form_args))}}#}
+{#    </div>#}
+{#</div>#}
+{##}
+{#<div class="form-group form-group-sm">#}
+{#    <label for="subject" class="col-xs-2 control-label">{{_('Subject')}}:</label>#}
+{#    <div class="col-xs-10">#}
+{#        {{mailform.subject(**(disabled_form_args if mailform.subject.flags.disabled else form_args))}}#}
+{#    </div>#}
+{#</div>#}
+{#{% set mail_url = current_url() %} {# explicitly ignores url arguments, as they would include modal arg #}
+{#<small>{% trans mail_url=mail_url %}Below is a preview of the email, but may differ in design. Click <a target="_blank" href="{{mail_url}}">here</a> for full preview.{% endtrans %}</small>#}
+{#<hr>#}
+{#{% endblock %}#}
 
-<div class="form-group form-group-sm">
-    <label for="to_field" class="col-xs-2 control-label">{{_('To')}}:</label>
-    <div class="col-xs-10">
-        {{mailform.to_field(**(disabled_form_args if mailform.to_field.flags.disabled else form_args))}}
-    </div>
-</div>
-
-<div class="form-group form-group-sm">
-    <label for="from_field" class="col-xs-2 control-label">{{_('From')}}:</label>
-    <div class="col-xs-10">
-        {{mailform.from_field(**(disabled_form_args if mailform.from_field.flags.disabled else form_args))}}
-    </div>
-</div>
-
-<div class="form-group form-group-sm">
-    <label for="subject" class="col-xs-2 control-label">{{_('Subject')}}:</label>
-    <div class="col-xs-10">
-        {{mailform.subject(**(disabled_form_args if mailform.subject.flags.disabled else form_args))}}
-    </div>
-</div>
-{% set mail_url = current_url(request.args|dict_none_values) %} {# explicitly ignores url arguments, as they would include modal arg #}
-<small>{% trans mail_url=mail_url %}Below is a preview of the email, but may differ in design. Click <a target="_blank" href="{{mail_url}}">here</a> for full preview.{% endtrans %}</small>
-<hr>
-{% endblock %}
-
-{% block submit_title %}{{ _('Send') }}{% endblock %}
+{#{% block submit_title %}{{ _('Send') }}{% endblock %}#}

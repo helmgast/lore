@@ -20,9 +20,8 @@
             <ul class="nav nav-pills nav-stacked">
                 <li class="nav-header">{{ _('Actions') }}</li>
                 <li>
-                    <a class="{{ privileged }}" data-toggle="modal" data-target="#themodal" role="menuitem"
-                       tabindex="-1"
-                       href="{{ url_for('mail.mail_view', mail_type='order', user=user.id, order=order.id) }}">
+                    <a class="{{ privileged }}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1"
+                       href="{{ url_for('mail.mail_view', mail_type='order', user=user.id, order=order.id, publisher=publisher.slug, intent='post') }}">
                         <span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}
                     </a>
                 </li>
@@ -93,7 +92,7 @@
                 <div class="col-md-offset-8">
                     <a class="btn btn-warning btn-block" data-toggle="modal" data-target="#themodal"
                        href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-                           from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id)) }}">
+                           from_field=user.email, intent='post', subject=gettext('Regarding order %(order)s', order=order.id)) }}">
                         {{ _('Contact Us') }}</a>
                 </div>
 
@@ -152,7 +151,7 @@
         <div class="row">
             <div class="col-md-offset-8">
                 <a class="btn btn-warning" data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-            from_field=user.email, subject=gettext('Regarding order %(order)s', order=order.id)) }}">
+            from_field=user.email, intent='post', subject=gettext('Regarding order %(order)s', order=order.id)) }}">
                     {{ _('Contact Us') }}</a>
             </div>
         </div>

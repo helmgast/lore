@@ -675,8 +675,12 @@ function handle_action(e) {
 $('#themodal').on('show.bs.modal', function(event) {
   var href = event.relatedTarget.href
   if (href) {
-    var dest = $(this).find('.modal-content')
-    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal')
+    $modal = $(this)
+    var dest = $modal.find('.modal-content')
+    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal',
+      complete=function(responseText, textStatus, jqXHR){
+        handle_debug_error($modal, jqXHR, textStatus)
+      })
   }
 })
 
@@ -692,19 +696,24 @@ $modal.on('click', 'button[type="submit"]', function(e) {
         $modal.modal('hide')
       })
       .fail(function( jqXHR, textStatus, errorThrown) {
-        if (jqXHR.responseText.indexOf('__debugger__') > 0) {
-          // Response is a Flask Debugger response, overwrite whole page
-          document.open();
-          document.write(jqXHR.responseText);
-          document.close();
-        } else {
-          $modal.find('.modal-content').html(jqXHR.responseText);
-          console.log("Error: "+errorThrown);        }
+        handle_debug_error($modal, jqXHR, textStatus, errorThrown)
       })
   } else {
     $modal.modal('hide')
   }
 });
+
+function handle_debug_error($modal, jqXHR, textStatus, errorThrown) {
+    if (jqXHR.responseText.indexOf('__debugger__') > 0) {
+        // Response is a Flask Debugger response, overwrite whole page
+        document.open();
+        document.write(jqXHR.responseText);
+        document.close();
+    } else if (textStatus == 'error') {
+        $modal.find('.modal-content').html(jqXHR.responseText);
+        console.log("Error: "+errorThrown);
+    }
+}
 
 $('#feedback-modal').on('submit', 'form', function(e) {
   var input = $(this).serializeArray()

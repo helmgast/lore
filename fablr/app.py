@@ -12,50 +12,10 @@ import os
 import time
 import urllib
 
-from flask import Flask, render_template, request, redirect, url_for, flash, g
-from flask.ext.babel import lazy_gettext as _
+from flask import Flask, render_template, request, url_for, flash, g
 from flaskext.markdown import Markdown
 
-# Private = Everything locked down, no access to database (due to maintenance)
-# Protected = Site is fully visible. Resources are shown on a case-by-case (depending on default access allowance).
-#  Admin is allowed to log in.
-# Public = Everyone is allowed to log in and create new accounts
-
-STATE_PRIVATE, STATE_PROTECTED, STATE_PUBLIC = "private", "protected", "public"
-STATE_TYPES = ((STATE_PRIVATE, _('Private')),
-               (STATE_PROTECTED, _('Protected')),
-               (STATE_PUBLIC, _('Public')))
-
-FEATURE_JOIN, FEATURE_CAMPAIGN, FEATURE_SOCIAL, FEATURE_TOOLS, FEATURE_SHOP = 'join', 'campaign', 'social', 'tools', \
-                                                                              'shop'
-
-FEATURE_TYPES = ((FEATURE_JOIN, _('Join')),
-                 (FEATURE_CAMPAIGN, _('Campaign')),
-                 (FEATURE_SOCIAL, _('Social')),
-                 (FEATURE_TOOLS, _('Tools')),
-                 (FEATURE_SHOP, _('Shop'))
-                 )
-
-app_state = STATE_PUBLIC
-app_features = {
-    FEATURE_TOOLS: False,
-    FEATURE_CAMPAIGN: False,
-    FEATURE_SOCIAL: True,
-    FEATURE_JOIN: False,
-    FEATURE_SHOP: True
-}
-
-
-def is_private():
-    return app_state == STATE_PRIVATE
-
-
-def is_protected():
-    return app_state == STATE_PROTECTED
-
-
-def is_public():
-    return app_state == STATE_PUBLIC
+from fablr.controller.resource import ResourceError
 
 
 def create_app(no_init=False, **kwargs):
@@ -120,7 +80,6 @@ def init_app(app):
 
         configure_hooks(app)
 
-        register_main_routes(app, auth)
         app.config['initiated'] = True
 
 
@@ -171,6 +130,7 @@ def configure_extensions(app):
             rv = app.send_static_file(filename)
             rv.headers['Access-Control-Allow-Origin'] = '*'
             return rv
+
         app.view_functions['static'] = new_static
 
     extensions.start_db(app)
@@ -229,10 +189,16 @@ def configure_blueprints(app):
 
 
 def configure_hooks(app):
+
+    from model.misc import Languages
+
     @app.before_request
     def load_user():
-        g.feature = app_features
         g.available_locales = app.config['BABEL_AVAILABLE_LOCALES']
+
+    @app.context_processor
+    def inject_access():
+        return dict(access_policy=app.access_policy, locale_dict=Languages)
 
     @app.add_template_global
     def in_current_args(testargs):
@@ -267,51 +233,9 @@ def configure_hooks(app):
             u = url_for(request.endpoint, **copy_args.to_dict())
             return u
         else:
-            u = '?'+urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
+            u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
             return u
             # We are just changing url parameters, we can do a quicker way
-
-
-    from model.misc import Languages
-
-    @app.context_processor
-    def inject_access():
-        return dict(access_policy=app.access_policy, locale_dict=Languages)
-
-
-def register_main_routes(app, auth):
-    from controller.resource import ResourceError
-    from model.misc import ApplicationConfigForm
-    from extensions import db
-
-    @app.route('/admin/', methods=['GET', 'POST'])
-    @auth.admin_required
-    def admin():
-        global app_state, app_features
-
-        if request.method == 'GET':
-            feature_list = map(lambda (x, y): x, filter(lambda (x, y): y, app_features.items()))
-            config = ApplicationConfigForm(state=app_state, features=feature_list,
-                                           backup_name=time.time().strftime("backup_%Y_%m_%d"))
-            return render_template('admin.html', config=config)
-            # Requires additional auth, so skipped now
-            # databases=db.connection.database_names())
-        elif request.method == 'POST':
-            config = ApplicationConfigForm(request.form)
-            if not config.validate():
-                raise Exception("Bad request data")
-            if config.backup.data:
-                if config.backup_name.data in db.connection.database_names():
-                    raise Exception("Name already exists")
-                app.logger.info("Copying current database to '%s'", config.backup_name.data)
-                db.connection.copy_database('raconteurdb', config.backup_name.data)
-            if config.state.data:
-                app_state = config.state.data
-            if config.features.data is not None:
-                for feature in app_features:
-                    is_enabled = feature in config.features.data
-                    app_features[feature] = is_enabled
-            return redirect('/admin/')
 
     @app.errorhandler(ResourceError)
     def resource_error(err):
@@ -335,11 +259,12 @@ def register_main_routes(app, auth):
             if diff > 500:
                 app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
 
-    # Print rules in alphabetic order
-    # for rule in app.url_map.iter_rules():
-    #     print rule.__repr__(), rule.subdomain
-    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
-    #   print rule.__repr__(), rule.subdomain
+
+                # Print rules in alphabetic order
+                # for rule in app.url_map.iter_rules():
+                #     print rule.__repr__(), rule.subdomain
+                # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
+                #   print rule.__repr__(), rule.subdomain
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

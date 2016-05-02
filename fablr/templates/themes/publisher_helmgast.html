@@ -214,7 +214,7 @@
             <div class="col-xs-4">
                 <ul class="list-unstyled">
                     <li><a data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-            from_field=user.email, subject=gettext('Question')) }}">{% trans %}Contact Us{% endtrans %}</a></li>
+            from_field=user.email, subject=gettext('Question'), intent='post') }}">{% trans %}Contact Us{% endtrans %}</a></li>
                     <li><a href="http://eepurl.com/RuMH1">{% trans %}Newsletter{% endtrans %}</a></li>
                     <li>
                         <div class="social">

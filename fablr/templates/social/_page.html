@@ -24,7 +24,7 @@
   <ul class="nav nav-pills nav-stacked">
     <li class="nav-header">{{ _('Actions') }}</li>
     {% call(privileged) MACRO.IS_ADMIN('hej') %}
-    <li role="presentation"><a class="{{privileged}}"  data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='invite')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Invite user')}}</a></li>
+    <li role="presentation"><a class="{{privileged}}"  data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='invite', intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Invite user')}}</a></li>
     {% endcall %}
   </ul>
 {% endblock %}
