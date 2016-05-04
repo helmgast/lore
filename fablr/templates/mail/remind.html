@@ -9,7 +9,6 @@ Should have different instructions depending on signup method. #}
 
 {% block content %}
     {% set auth = user.auth_type() if user else none %}
-    {{ auth|pprint }}
     <p>{% trans %}You just requested information on how to login to helmgast.se:{% endtrans %}</p>
 
     {% if not auth %}

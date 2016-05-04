@@ -31,9 +31,10 @@ from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import CombinedMultiDict, MultiDict
 from werkzeug.exceptions import HTTPException
-from wtforms import Form as OrigForm
+from wtforms import Form as OrigForm, StringField
 from wtforms import fields as f, validators as v, widgets
 from wtforms.compat import iteritems
+from wtforms.utils import unset_value
 from wtforms.widgets import html5
 
 from fablr.model.misc import METHODS, Languages
@@ -50,11 +51,6 @@ def generate_flash(action, name, model_identifiers, dest=''):
     s = _('%(name)s was %(action)s', action=action, name=name)
     flash(s, 'success')
     return s
-
-
-def error_response(response, code, msg="Error", flash_type="danger"):
-    flash(msg, flash_type)
-    return response, code
 
 mime_types = {
     'html': 'text/html',
@@ -795,6 +791,18 @@ class ResourceAccessPolicy(object):
             return Authorization(False, _("Need to be logged in with admin access"))
 
 
+class DisabledField(StringField):
+    """A disabled field assumes it has default data that should be displayed when rendered but will ignore
+    input from forms"""
+
+    def process(self, formdata, data=unset_value):
+        # Ignore formdata input, otherwise proceed as normal
+        if data == unset_value:
+            raise ValueError("DisabledField needs to be explicitly set to a default value")
+        self.flags.disabled = True
+        super(StringField, self).process(None, data)
+
+
 class ResourceRoutingStrategy:
     def __init__(self, model_class, plural_name, id_field='id', form_class=None,
                  parent_strategy=None, parent_reference_field=None, short_url=False,
@@ -984,8 +992,8 @@ class ResourceHandler(View):
         # The reason is that endpoints are not unique, e.g. for a given URL there may be many endpoints
         # TODO unsafe to let us call a custom methods based on request args!
         r = self._parse_url(**kwargs)
-        print "Dispatch: got request.url = %s and endpoint %s and method %s, now r=%s" % (
-            request.url, request.endpoint, request.method, r)
+        # print "Dispatch: got request.url = %s and endpoint %s and method %s, now r=%s" % (
+        #     request.url, request.endpoint, request.method, r)
         try:
             if r['op'] not in self.__class__.allowed_ops:
                 raise ResourceError(400, r=r, message="Attempted op %s is not allowed for this handler" % r['op'])

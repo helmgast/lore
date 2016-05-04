@@ -9,7 +9,7 @@ import wtforms as wtf
 from flask.ext.wtf import Form  # secure form
 from wtforms.widgets import TextArea
 
-from fablr.controller.resource import parse_out_arg, ResourceError, error_response
+from fablr.controller.resource import parse_out_arg, ResourceError, DisabledField
 from fablr.model.baseuser import create_token
 from fablr.model.shop import Order
 from fablr.model.user import User
@@ -29,11 +29,11 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
     # template is the template object or path
     # sender is an email or a tuple (email, name)
     # kwargs represents context for the template to render correctly
-    for r in recipients+cc:
+    for r in recipients + cc:
         if not mail_regex.match(r):
             raise TypeError("Email %s is not correctly formed" % r)
-    if current_app.debug:
-        recipients = [current_app.config['MAIL_DEFAULT_SENDER']]
+    if current_app.debug and current_app.config['DEBUG_MAIL_OVERRIDE']:
+        recipients = [current_app.config['DEBUG_MAIL_OVERRIDE']]
         message_subject = u'DEBUG: %s' % message_subject
 
     sender = {
@@ -46,18 +46,33 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
 
     rv = mail_app.sparkpost_client.transmission.send(
         recipients=recipients,
-        subject=message_subject,
+        subject=unicode(message_subject),
         from_email=sender,
         reply_to=reply_to,
         cc=cc,
         inline_css=True,
         html=render_template(template, **kwargs))
-    logger.info("Sent email %s to %s" % (message_subject, recipients))
+    logger.info(u"Sent email %s to %s" % (message_subject, recipients))
 
 
-class MailForm(Form):
+class SystemMailForm(Form):
+    """No field in this form can actually be set, as we know who to send to already"""
+    to_field = DisabledField(_('To'))
+    from_field = DisabledField(_('From'))
+    subject = DisabledField(_('Subject'))
+
+
+class AnyUserSystemMailForm(Form):
+    """Here we only ask for the to_field, others are preset"""
     to_field = wtf.StringField(_('To'), [wtf.validators.Email(), wtf.validators.Required()])
+    from_field = DisabledField(_('From'))
+    subject = DisabledField(_('Subject'))
+
+
+class UserMailForm(Form):
+    """To field is preset as it goes to the publisher, others are open for formdata"""
     from_field = wtf.StringField(_('From'), [wtf.validators.Email(), wtf.validators.Required()])
+    to_field = DisabledField(_('To'))
     subject = wtf.StringField(_('Subject'), [wtf.validators.Length(min=1, max=200), wtf.validators.Required()])
     message = wtf.StringField(_('Message'), widget=TextArea())
 
@@ -99,14 +114,6 @@ class MailForm(Form):
 # 3) If valid, validate on other constraints
 # 4) Populate object
 
-
-def disable_fields(form, *fields):
-    for f in fields:
-        if request.method == 'GET':
-            form[f].flags.disabled = True
-        else:
-            form.__delitem__(f)
-
 @mail_app.route('/<any(compose, remind, order, verify, invite):mail_type>', methods=['GET', 'POST'])
 @current_app.admin_required
 def mail_view(mail_type):
@@ -130,34 +137,22 @@ def mail_view(mail_type):
         raise ResourceError(404, message=e.message)
 
     # parent_template = parse_out_arg(request.args.get('out', None))
-    mail = {'to_field':'', 'from_field': server_mail, 'subject': '', 'message': ''}
+    mail = {'to_field': '', 'from_field': server_mail, 'subject': '', 'message': ''}
 
-    mailform = MailForm()
     if mail_type == 'compose':
-        disable_fields(mailform, 'to_field')
-        mail['to_field'] = server_mail
-        mail['from_field'] = user.email if user else ''
+        mailform = UserMailForm(request.form, to_field=server_mail, from_field=user.email if user else '')
     elif mail_type == 'invite':
-        mail['subject'] = _('Invitation to join Helmgast.se')
-        disable_fields(mailform, 'from_field', 'subject')
-        del mailform.message
+        mailform = AnyUserSystemMailForm(request.form, subject=_('Invitation to join Helmgast.se'),
+                                         from_field=server_mail)
     elif mail_type == 'verify':
-        mail['subject'] =_('%(user)s, welcome to Helmgast!', user=user.display_name())
-        mail['to_field'] = user.email
-        disable_fields(mailform, 'from_field', 'subject')
-        del mailform.message
+        mailform = SystemMailForm(request.form, subject=_('%(user)s, welcome to Helmgast!', user=user.display_name()),
+                                  to_field=user.email, from_field=server_mail)
     elif mail_type == 'order':
-        mail['subject'] = _('Order confirmation on helmgast.se')
-        mail['to_field'] = user.email
-        disable_fields(mailform, 'from_field', 'subject')
-        del mailform.message
+        mailform = SystemMailForm(request.form, subject=_('Order confirmation on helmgast.se'),
+                                  to_field=user.email, from_field=server_mail)
     elif mail_type == 'remind':
-        mail['subject'] = _('Reminder on how to login to Helmgast.se')
-        mail['to_field'] = user.email
-        disable_fields(mailform, 'from_field', 'subject')
-        del mailform.message
-
-    mailform.process(request.form, **mail)  # Enter form input if post, and set defaults from mail-dict made above
+        mailform = SystemMailForm(request.form, subject=_('Reminder on how to login to Helmgast.se'),
+                                  to_field=user.email, from_field=server_mail)
 
     template_vars = {'mail_type': mail_type, 'user': user, 'order': order,
                      'publisher': publisher, 'mailform': mailform}
@@ -165,29 +160,31 @@ def mail_view(mail_type):
         template_vars['token'] = create_token(mailform.to_field.data)
 
     if request.method == 'POST':
-        # Remove all disabled fields from above
         if mailform.validate():
-            # Overwrite mail only from fields not disabled, even if those shouldn't have posted data
             mail.update(mailform.data)
             template_vars.update(mail)
             if mail_type == 'invite':
                 if not template_vars.get('token', None):
-                    return error_response(render_template('mail/mail_post.html', **template_vars), 400,
-                                          _("No token could be generated from email"))
+                    return render_template('mail/mail_post.html',
+                                           errors=[('danger', _("No token could be generated from email"))],
+                                           **template_vars), 400
                 # We should create an invited user to match when link is clicked
                 user = User(email=mail['to_field'])
                 try:
                     user.save()
                 except NotUniqueError as e:
-                    return error_response(render_template('mail/mail_post.html', **template_vars), 400,
-                                          _("User already exists"))
-            cc = [mail['from_field']] if mail_type == 'compose' else None  # Cc mail to the sender for reference
+                    return render_template('mail/mail_post.html',
+                                           errors=[('danger', _("User already exists"))],
+                                           **template_vars), 400
+            cc = [mail['from_field']] if mail_type == 'compose' else []  # Cc mail to the sender for reference
             send_mail([mail['to_field']], mail['subject'], reply_to=mail['from_field'], cc=cc, **template_vars)
             flash(_('Sent email "%(subject)s" to %(recipients)s', subject=mail['subject'],
                     recipients=mail['to_field']), 'success')
             return "Mail sent!"
         else:
-            return error_response(render_template('mail/mail_post.html', **template_vars), 400, _("Errors in form"))
+            return render_template('mail/mail_post.html',
+                                   errors=[('danger', _("Errors in form"))],
+                                   **template_vars), 400
 
     template_vars.update(mail)
     # No need to do anything special for GET

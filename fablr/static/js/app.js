@@ -679,7 +679,9 @@ $('#themodal').on('show.bs.modal', function(event) {
     var dest = $modal.find('.modal-content')
     dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal',
       complete=function(responseText, textStatus, jqXHR){
-        handle_debug_error($modal, jqXHR, textStatus)
+        if (textStatus != 'success' || textStatus != 'notmodified') {
+          handle_debug_error($modal, jqXHR, textStatus)
+        }
       })
   }
 })
@@ -709,7 +711,7 @@ function handle_debug_error($modal, jqXHR, textStatus, errorThrown) {
         document.open();
         document.write(jqXHR.responseText);
         document.close();
-    } else if (textStatus == 'error') {
+    } else {
         $modal.find('.modal-content').html(jqXHR.responseText);
         console.log("Error: "+errorThrown);
     }

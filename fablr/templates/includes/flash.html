@@ -1,4 +1,4 @@
-{% set flashes = get_flashed_messages(with_categories=true) %}
+{% set flashes = get_flashed_messages(with_categories=true) + errors if errors else [] %}
 <div id="alerts">
 	{% for category, message in flashes %}
 	<div class="alert alert-{{ category if category else 'warning' }} alert-dismissable">

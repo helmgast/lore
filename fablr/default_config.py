@@ -18,6 +18,7 @@ class Config(object):
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
     ALLOW_SUBDOMAINS = False
+    DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
 
 
 class SecretConfig(object):
