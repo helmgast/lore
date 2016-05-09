@@ -177,8 +177,8 @@ def configure_blueprints(app):
     app.register_blueprint(shop, url_prefix='/shop')
     app.register_blueprint(asset_app, url_prefix='/assets')
     app.register_blueprint(mail, url_prefix='/mail')
-    import mandrill
-    mail.mandrill_client = mandrill.Mandrill(app.config['MANDRILL_API_KEY'])
+    from sparkpost import SparkPost
+    mail.sparkpost_client = SparkPost(app.config['SPARKPOST_API_KEY'])
 
   return auth
 

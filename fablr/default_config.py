@@ -20,8 +20,8 @@ class SecretConfig(object):
 	MONGODB_HOST = 'mongodb://localhost@defaultdb'
 
 	SECRET_KEY = 'SECRET'
-	# Used by Mandrill email sending API
-	MANDRILL_API_KEY = 'SECRET'
+	# Used by Sparkpost email sending API
+	SPARKPOST_API_KEY = 'SECRET'
 
 	# Used by social login with Google
 	GOOGLE_CLIENT_ID = 'SECRET'

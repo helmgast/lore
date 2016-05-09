@@ -18,7 +18,7 @@ mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
 
 def send_mail(recipients, message_subject, mail_type, custom_template=None,
-    sender=None, **kwargs):
+    reply_to=None, sender_name='Helmgast', **kwargs):
   # recipients should be list of emails (extract from user before sending)
   # subject is a fixed string
   # template is the template object or path
@@ -31,22 +31,22 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
     recipients = [current_app.config['MAIL_DEFAULT_SENDER']]
     message_subject = u'DEBUG: %s' % message_subject
 
-  if not sender:
-    sender = (current_app.config['MAIL_DEFAULT_SENDER'], 'Helmgast')
+  sender = {
+    # Always need to send from default sender, e.g. our verified domain
+    'email': current_app.config['MAIL_DEFAULT_SENDER'],
+    'name': sender_name
+   }
 
   template = ('mail/%s.html' % mail_type) if not custom_template else custom_template
 
-  message = {
-    'to': [{'email':email} for email in recipients],
-    'subject': message_subject,
-    'from_email': sender[0] if type(sender) in [list,tuple] else sender,
-    'from_name': sender[1] if type(sender) in [list,tuple] else None,
-    'inline_css': True,
-    'html': render_template(template, **kwargs)
-  }
-
-  mail_app.mandrill_client.messages.send(message=message)
-  logger.info("Sent email %s to %s" % (message['subject'], message['to']))
+  rv = mail_app.sparkpost_client.transmission.send(
+    recipients=recipients,
+    subject=unicode(message_subject),
+    from_email=sender,
+    reply_to=reply_to,
+    inline_css=True,
+    html=render_template(template, **kwargs))
+  logger.info(u"Sent email %s to %s" % (message_subject, recipients))
 
 # GET
 # 1) Load model to form
@@ -68,6 +68,8 @@ def mail_view(mail_type):
   mail_type = secure_filename(mail_type)
   mail_template = 'mail/%s.html' % mail_type
   server_mail = current_app.config['MAIL_DEFAULT_SENDER']
+
+
   if mail_type not in ['compose', 'remind_login', 'order', 'verify', 'invite']:
     raise ResourceError(404)
   user = request.args.get('user', None)
@@ -80,6 +82,9 @@ def mail_view(mail_type):
   except Exception as e:
     raise ResourceError(404, message=e.message)
   parent_template = parse_out_arg(request.args.get('out', None))
+
+  template_vars = {'mail_type':mail_type, 'parent_template':parent_template,
+    'user':user,'order':order}
   if mail_type == 'compose':
     writable = {'from_field', 'subject', 'message'}
     overrides = {'to_field': server_mail}
@@ -96,10 +101,8 @@ def mail_view(mail_type):
     writable = {}
     overrides = {'from_field': server_mail, 'to_field':user.email, 'subject':subject}
 
-  template_vars = {'mail_type':mail_type, 'parent_template':parent_template,
-    'user':user,'order':order}
-  mailform = MailForm(request.form,
-    allowed_fields=writable, **overrides)
+
+  mailform = MailForm(request.form, allowed_fields=writable, **overrides)
   template_vars.update(mailform.data)
   template_vars['mailform'] = mailform
   if mail_type == 'invite':
@@ -121,7 +124,7 @@ def mail_view(mail_type):
         email = send_mail(
           [mailform.to_field.data],
           mailform.subject.data,
-          sender=[mailform.from_field.data, 'Helmgast'],
+          reply_to=mailform.from_field.data,
           **template_vars)
         flash(_('Sent email "%(subject)s" to %(recipients)s', subject=mailform.subject.data, recipients=mailform.to_field.data),'success')
         return "Mail sent!"
