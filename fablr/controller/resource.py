@@ -284,6 +284,7 @@ class ListResponse(ResourceResponse):
         'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
         'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 20,
         'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
+        'order_by': lambda x: ''
     })
     method = 'list'
 

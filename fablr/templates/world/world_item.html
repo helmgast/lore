@@ -95,6 +95,8 @@
                 <p class="worldDesc">{{ world.description }}</p>
             </div>
             <div class="col-md-4">
+                <p class="text-center"><a class="btn btn-lg btn-info" href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug, world=world.slug) }}">
+                    {% trans %}Buy in shop{% endtrans %}</a></p>
                 <table class="table">
                     <tr>
                         <td><strong>{{ _('Publisher') }}</strong></td>

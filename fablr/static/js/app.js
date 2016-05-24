@@ -1,54 +1,61 @@
 function flash_error(message, level, target) {
-  var $error = $('<div class="alert alert-'+(level || 'warning')+
-            ' alert-dismissable"> <button type="button" class="close"'+
-            'data-dismiss="alert" aria-hidden="true">&times;</button>'+
-            '<p>'+message+'</p>'+
+    if (message.indexOf('__debugger__') > 0) {
+        // Response is a Flask Debugger response, overwrite whole page
+        document.open();
+        document.write(message);
+        document.close();
+    } else {
+        var $error = $('<div class="alert alert-' + (level || 'warning') +
+            ' alert-dismissable"> <button type="button" class="close"' +
+            'data-dismiss="alert" aria-hidden="true">&times;</button>' +
+            '<p>' + message + '</p>' +
             '</div>');
-  if ( target ) {
-    $(target).append($error)
-  } else {
-    $('#alerts').append($error)
-  }
+        if (target) {
+            $(target).append($error)
+        } else {
+            $('#alerts').append($error)
+        }
+    }
 };
 
 
 +function ($) {
-  'use strict';
+    'use strict';
 
-  $.fn.autosave = function (options) {
-    return this.each(function () {
-      var $this   = $(this)
+    $.fn.autosave = function (options) {
+        return this.each(function () {
+            var $this = $(this)
 
-      var action = this.action || document.location.href
-      var csrf = $this.find('#csrf_token').val()
-      action = action + (/\?/.test(action) ? '&' : '?') + 'out=json'
-      $this.change(function(e) {
-        var $block = e.target.childNodes.length ? $(e.target) : $(e.target).parent()
-        $block.addClass('loading')
-        $.ajax({
-          url: action,
-          type: 'post',
-          data: $(e.target).serialize(),
-          headers: { 'X-CSRFToken': csrf },
-          dataType: 'json',
-          success: function (data) {
-              $block.removeClass('loading')
-          },
-          error: function (jqXHR, textStatus, errorThrown) {
-              var error = JSON.parse(jqXHR.responseText)
-              flash_error(errorThrown)
-          }
-        });
-      })
+            var action = this.action || document.location.href
+            var csrf = $this.find('#csrf_token').val()
+            action = action + (/\?/.test(action) ? '&' : '?') + 'out=json'
+            $this.change(function (e) {
+                var $block = e.target.childNodes.length ? $(e.target) : $(e.target).parent()
+                $block.addClass('loading')
+                $.ajax({
+                    url: action,
+                    type: 'post',
+                    data: $(e.target).serialize(),
+                    headers: {'X-CSRFToken': csrf},
+                    dataType: 'json',
+                    success: function (data) {
+                        $block.removeClass('loading')
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        var error = JSON.parse(jqXHR.responseText)
+                        flash_error(errorThrown)
+                    }
+                });
+            })
+        })
+    }
+
+    $(window).on('load', function () {
+        $('form[data-autosave]').each(function () {
+            var $autosave_form = $(this)
+            $autosave_form.autosave($autosave_form.data())
+        })
     })
-  }
-
-  $(window).on('load', function () {
-    $('form[data-autosave]').each(function () {
-      var $autosave_form = $(this)
-      $autosave_form.autosave($autosave_form.data())
-    })
-  })
 }(jQuery);
 
 // var order_line = {
@@ -73,93 +80,93 @@ function flash_error(message, level, target) {
  * (c) Helmgast AB
  */
 +function ($) {
-  'use strict';
+    'use strict';
 
-  $.fn.editablelist = function (options) {
-    return this.each(function () {
-      var $this   = $(this)
-      var remote  = options['remote']
-      var listname = options['editable']
-      if (options['optionRemove']!= 'off' )
-        var $removeBtn = $('<button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>')
-      if (options['optionAdd']!= 'off' )
-        var $addBtn = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
-      var $type = $this.prop('tagName');
-      var selectors = {
-        TABLE : {
-          eachItem: 'tr',
-          removeAt: ' td:last-child',
-          addAt : 'tbody'
-        },
-        UL : {
-          eachItem: 'li',
-          removeAt: '',
-          addAt : ''
-        },
-       DIV : {
-          eachItem: 'div.row',
-          removeAt: '',
-          addAt : ''
-        }
-      }
-      selectors.OL = selectors.UL
-      if (!selectors[$type])
-        return // not correct type
-      for (var opt in options) {
-        if(selectors[$type][opt])
-          selectors[$type][opt] = options[opt]
-      }
-      if ($removeBtn) {
-        $this.find(selectors[$type].eachItem+selectors[$type].removeAt).css('position', 'relative').append($removeBtn)
-        $this.on('click','.btn-delete', function() {
-          $(this).parents(selectors[$type].eachItem).first().remove()
-          $this.trigger('rac.removed')
+    $.fn.editablelist = function (options) {
+        return this.each(function () {
+            var $this = $(this)
+            var remote = options['remote']
+            var listname = options['editable']
+            if (options['optionRemove'] != 'off')
+                var $removeBtn = $('<button type="button" class="btn btn-default btn-xs btn-delete"><span class="glyphicon glyphicon-trash"></span></button>')
+            if (options['optionAdd'] != 'off')
+                var $addBtn = $('<button type="button" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-plus"></span> Add</button>')
+            var $type = $this.prop('tagName');
+            var selectors = {
+                TABLE: {
+                    eachItem: 'tr',
+                    removeAt: ' td:last-child',
+                    addAt: 'tbody'
+                },
+                UL: {
+                    eachItem: 'li',
+                    removeAt: '',
+                    addAt: ''
+                },
+                DIV: {
+                    eachItem: 'div.row',
+                    removeAt: '',
+                    addAt: ''
+                }
+            }
+            selectors.OL = selectors.UL
+            if (!selectors[$type])
+                return // not correct type
+            for (var opt in options) {
+                if (selectors[$type][opt])
+                    selectors[$type][opt] = options[opt]
+            }
+            if ($removeBtn) {
+                $this.find(selectors[$type].eachItem + selectors[$type].removeAt).css('position', 'relative').append($removeBtn)
+                $this.on('click', '.btn-delete', function () {
+                    $(this).parents(selectors[$type].eachItem).first().remove()
+                    $this.trigger('rac.removed')
+                })
+            }
+            if ($addBtn) {
+                $addBtn.click(function () {
+                    jQuery.get(remote, function (data) {
+                        var newel = $(data)
+                        // get # of rows, so we can correctly index the added inputs
+                        var name = listname + '-' + $this.find(selectors[$type].eachItem).length + '-' + newel.find('input, select').first().attr('name')
+                        newel.find('input, select, label').each(function () {
+                            this.name = this.name && name
+                            this.id = this.id && name
+                            this.htmlFor = this.htmlFor && name
+                        })
+                        newel.append($removeBtn.clone())
+                        selectors[$type].addAt ? $this.find(selectors[$type].addAt).append(newel) : $this.append(newel)
+                        // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
+                        $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
+                    })
+                })
+                $this.after($addBtn)
+            }
         })
-      }
-      if ($addBtn) {
-        $addBtn.click(function() {
-          jQuery.get(remote, function(data) {
-            var newel = $(data)
-            // get # of rows, so we can correctly index the added inputs
-            var name = listname +'-'+ $this.find(selectors[$type].eachItem).length+'-'+newel.find('input, select').first().attr('name')
-            newel.find('input, select, label').each(function() {
-              this.name = this.name && name
-              this.id = this.id && name
-              this.htmlFor = this.htmlFor && name
-            })
-            newel.append($removeBtn.clone())
-            selectors[$type].addAt ? $this.find(selectors[$type].addAt).append(newel) : $this.append(newel)
-            // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
-            $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
-          })
-        })
-        $this.after($addBtn)
-      }
-    })
-  }
+    }
 
-  $(window).on('load', function () {
-    $('div, table, ul, ol').filter('[data-editable]').each(function () {
-      var $editablelist = $(this)
-      $editablelist.editablelist($editablelist.data())
+    $(window).on('load', function () {
+        $('div, table, ul, ol').filter('[data-editable]').each(function () {
+            var $editablelist = $(this)
+            $editablelist.editablelist($editablelist.data())
+        })
     })
-  })
 }(jQuery);
 
 +function ($) {
-  'use strict';
+    'use strict';
 
-  $(window).on('load', function () {
-    $('textarea, input').filter('[data-formula]').each(function () {
-      var $t = $(this)
-      var particles = $t.data('formula').split("->")
-      var source = particles[0]
-      var $target = $(particles[1])
-      $t.on("change keyup paste", function() {
-        $target.html(eval(source))
-      })
+    $(window).on('load', function () {
+        $('textarea, input').filter('[data-formula]').each(function () {
+            var $t = $(this)
+            var particles = $t.data('formula').split("->")
+            var source = particles[0]
+            var $target = $(particles[1])
+            $t.on("change keyup paste", function () {
+                $target.html(eval(source))
+            })
+        })
     })
-  })
 }(jQuery);
 
 /* ========================================================================
@@ -168,90 +175,94 @@ function flash_error(message, level, target) {
  * From Terry Mun, http://codepen.io/terrymun/pen/GsJli
  */
 
-(function($,sr){
+(function ($, sr) {
 // debouncing function from John Hann
 // http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-var debounce = function (func, threshold, execAsap) {
-  var timeout;
+    var debounce = function (func, threshold, execAsap) {
+        var timeout;
 
-  return function debounced () {
-    var obj = this, args = arguments;
-    function delayed () {
-      if (!execAsap)
-        func.apply(obj, args);
-      timeout = null;
+        return function debounced() {
+            var obj = this, args = arguments;
+
+            function delayed() {
+                if (!execAsap)
+                    func.apply(obj, args);
+                timeout = null;
+            };
+
+            if (timeout)
+                clearTimeout(timeout);
+            else if (execAsap)
+                func.apply(obj, args);
+
+            timeout = setTimeout(delayed, threshold || 100);
+        };
+    }
+    // smartresize
+    jQuery.fn[sr] = function (fn) {
+        return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr);
     };
 
-    if (timeout)
-      clearTimeout(timeout);
-    else if (execAsap)
-      func.apply(obj, args);
-
-    timeout = setTimeout(delayed, threshold || 100);
-  };
-}
-  // smartresize
-  jQuery.fn[sr] = function(fn){  return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr); };
-
-})(jQuery,'smartresize');
+})(jQuery, 'smartresize');
 
 /*
-Wait for DOM to be ready
+ Wait for DOM to be ready
  */
-$(function() {
-  // Detect resize event
-  $(window).smartresize(function () {
-    // Set photoset image size
-    $('.gallery-row').each(function () {
-      var $pi    = $(this).find('.gallery'),
-          cWidth = $(this).parent('.gallery').width();
+$(function () {
+    // Detect resize event
+    $(window).smartresize(function () {
+        // Set photoset image size
+        $('.gallery-row').each(function () {
+            var $pi = $(this).find('.gallery'),
+                cWidth = $(this).parent('.gallery').width();
 
-      // Generate array containing all image aspect ratios
-      var ratios = $pi.map(function () {
-        return $(this).find('img').data('aspect');
-      }).get();
+            // Generate array containing all image aspect ratios
+            var ratios = $pi.map(function () {
+                return $(this).find('img').data('aspect');
+            }).get();
 
-      // Get sum of widths
-      var sumRatios = 0, sumMargins = 0,
-          minRatio  = Math.min.apply(Math, ratios);
-      for (var i = 0; i < $pi.length; i++) {
-        sumRatios += ratios[i]/minRatio;
-      };
+            // Get sum of widths
+            var sumRatios = 0, sumMargins = 0,
+                minRatio = Math.min.apply(Math, ratios);
+            for (var i = 0; i < $pi.length; i++) {
+                sumRatios += ratios[i] / minRatio;
+            }
+            ;
 
-      $pi.each(function (){
-        sumMargins += parseInt($(this).css('margin-left')) + parseInt($(this).css('margin-right'));
-      });
+            $pi.each(function () {
+                sumMargins += parseInt($(this).css('margin-left')) + parseInt($(this).css('margin-right'));
+            });
 
-      // Calculate dimensions
-      $pi.each(function (i) {
-        var minWidth = (cWidth - sumMargins)/sumRatios;
-        $(this).find('img')
-          .height(Math.floor(minWidth/minRatio))
-          .width(Math.floor(minWidth/minRatio) * ratios[i]);
-      });
+            // Calculate dimensions
+            $pi.each(function (i) {
+                var minWidth = (cWidth - sumMargins) / sumRatios;
+                $(this).find('img')
+                    .height(Math.floor(minWidth / minRatio))
+                    .width(Math.floor(minWidth / minRatio) * ratios[i]);
+            });
+        });
     });
-  });
 });
 
 function saveImgSize() {
-  $(this).data('org-width', $(this)[0].naturalWidth).data('org-height', $(this)[0].naturalHeight);
-  // $(this).data('org-width', $(this)[0].width).data('org-height', $(this)[0].height);
+    $(this).data('org-width', $(this)[0].naturalWidth).data('org-height', $(this)[0].naturalHeight);
+    // $(this).data('org-width', $(this)[0].width).data('org-height', $(this)[0].height);
 
 }
 
 /* Wait for images to be loaded */
 $(window).on('load shown.bs.modal', function (e) {
-  // Store original image dimensions
-  $(e.target).find('.gallery img').each(saveImgSize);
-  $(window).resize();
+    // Store original image dimensions
+    $(e.target).find('.gallery img').each(saveImgSize);
+    $(window).resize();
 });
 
 // $(document).on('', function (e) {
 //     $(e.target).removeData('bs.modal'); // clears modals after they have been hidden
 // });
 
-$(document).ready(function() {
-  $("a[data-toggle='tooltip']").tooltip()
+$(document).ready(function () {
+    $("a[data-toggle='tooltip']").tooltip()
 });
 
 // function serializeObject(form) {
@@ -336,195 +347,200 @@ $(document).ready(function() {
  * as an image tag into a text field (e.g. an article text) or it can be added to
  * a input control as the reference to the ImageAsset.
 
-data-imageselector: activates the button or control as an image selector
-data-target: the target is a selector. If the selector returns a compatible input
-control, the value of it will be set to the image ID. Otherwise, an image element
-will be appended to the target.
+ data-imageselector: activates the button or control as an image selector
+ data-target: the target is a selector. If the selector returns a compatible input
+ control, the value of it will be set to the image ID. Otherwise, an image element
+ will be appended to the target.
 
-*/
+ */
 
 +function ($) {
-  'use strict';
+    'use strict';
 
-  var tempImage;
+    var tempImage;
 
-  var ImageSelect = function (element, options) {
-    this.options   = options
-    this.$element  = $(element)
+    var ImageSelect = function (element, options) {
+        this.options = options
+        this.$element = $(element)
 
-    this.$imageEl =
-    $('<div class="image-selector" contenteditable="false">' +
-        '<div class="image-preview">' +
-          '<input type="text" class="image-preview-caption" placeholder="'+i18n['Caption']+'">' +
-          '<button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button>' +
-        '</div>' +
-        '<div class="image-upload form-group">' +
-          '<label for="imagefile" title="'+i18n['Drag or click to upload file']+'">' +
-            '<span class="glyphicon glyphicon-picture"></span>' +
-          '</label>' +
-          '<input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*">' +
-        '  <input type="text" class="form-control" ' +
-          'id="source_image_url" placeholder="http:// '+i18n['Image URL']+'"> '+
-          (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" '+
-            'href="'+options.image_list_url+'" class="btn btn-info image-library-select">'+i18n['Select from library']+'</a>' : '') +
-        '</div></div>');
+        this.$imageEl =
+            $('<div class="image-selector" contenteditable="false">' +
+                '<div class="image-preview">' +
+                '<input type="text" class="image-preview-caption" placeholder="' + i18n['Caption'] + '">' +
+                '<button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button>' +
+                '</div>' +
+                '<div class="image-upload form-group">' +
+                '<label for="imagefile" title="' + i18n['Drag or click to upload file'] + '">' +
+                '<span class="glyphicon glyphicon-picture"></span>' +
+                '</label>' +
+                '<input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*">' +
+                '  <input type="text" class="form-control" ' +
+                'id="source_image_url" placeholder="http:// ' + i18n['Image URL'] + '"> ' +
+                (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" ' +
+                'href="' + options.image_list_url + '" class="btn btn-info image-library-select">' + i18n['Select from library'] + '</a>' : '') +
+                '</div></div>');
 
-    this.$element.addClass('hide')
-    this.$element.after(this.$imageEl)
-    if (this.$element.is('select, input')) {
-      this.setVal = function(src, slug) {
-        // We cant set option that doesnt exist, so add if needed
-        if (!this.$element.find('option[value="'+slug+'"]').length)
-          this.$element.append($('<option>', {value:slug}))
-        this.$element.val(slug)
-        if (!this.$element.val())
-          this.$element.val('__None')
-      }
-      var val = this.$element.val()
-      if ( val && val != "__None")
-        this.imageSelected('/asset/image/'+val, val)
-    } else if (this.$element.is('a.lightbox')) {
-      this.setVal = function(src, slug) {
-        this.$element.attr('href', src)
-        this.$element.find('img').attr('src', src)
-      }
-      if ( this.$element.attr('href'))
-        this.imageSelected(this.$element.attr('href'))
-    } else {
-      console.log("ImageSelect doesn't work on this element")
-      return
-    }
-    var that = this // inside nested functions, this changes, so we keep it in 'that'
-    this.$imageEl.on('click', '.btn-delete', function(e){
-      if (that.$element.is('a.lightbox')) {
-        that.$imageEl.remove()
-        that.$element.remove()
-      } else {
-        that.$imageEl.find('.image-preview img').remove()
-        $('#themodal .gallery input[type="radio"]:checked').prop('checked', false)
-        that.$imageEl.find('.image-preview').removeClass('selected')
-        that.$element.val('__None') // Empty choice in Select box...
-      }
-    })
+        this.$element.addClass('hide')
+        this.$element.after(this.$imageEl)
+        if (this.$element.is('select, input')) {
+            this.setVal = function (src, slug) {
+                // We cant set option that doesnt exist, so add if needed
+                if (!this.$element.find('option[value="' + slug + '"]').length)
+                    this.$element.append($('<option>', {value: slug}))
+                this.$element.val(slug)
+                if (!this.$element.val())
+                    this.$element.val('__None')
+            }
+            var val = this.$element.val()
+            if (val && val != "__None")
+                this.imageSelected('/asset/image/' + val, val)
+        } else if (this.$element.is('a.lightbox')) {
+            this.setVal = function (src, slug) {
+                this.$element.attr('href', src)
+                this.$element.find('img').attr('src', src)
+            }
+            if (this.$element.attr('href'))
+                this.imageSelected(this.$element.attr('href'))
+        } else {
+            console.log("ImageSelect doesn't work on this element")
+            return
+        }
+        var that = this // inside nested functions, this changes, so we keep it in 'that'
+        this.$imageEl.on('click', '.btn-delete', function (e) {
+            if (that.$element.is('a.lightbox')) {
+                that.$imageEl.remove()
+                that.$element.remove()
+            } else {
+                that.$imageEl.find('.image-preview img').remove()
+                $('#themodal .gallery input[type="radio"]:checked').prop('checked', false)
+                that.$imageEl.find('.image-preview').removeClass('selected')
+                that.$element.val('__None') // Empty choice in Select box...
+            }
+        })
 
-    this.$imageEl.on('click', '.image-library-select', function(e) {
-      $(document).one('hide.bs.modal', '#themodal', function(e) {
-        var $sel = $(this).find('.gallery input[type="radio"]:checked')
-        if ($sel[0])
-          that.imageSelected($sel.parent().find('img')[0].src, $sel.val())
-      })
-    })
+        this.$imageEl.on('click', '.image-library-select', function (e) {
+            $(document).one('hide.bs.modal', '#themodal', function (e) {
+                var $sel = $(this).find('.gallery input[type="radio"]:checked')
+                if ($sel[0])
+                    that.imageSelected($sel.parent().find('img')[0].src, $sel.val())
+            })
+        })
 
-    $('#imagefile').change(this.fileSelected.bind(this))
-    $('.image-upload label').on('drop', this.fileSelected.bind(this)).on('dragover', function(e) {
-      e.stopPropagation()
-      e.preventDefault()
-      e.originalEvent.dataTransfer.dropEffect = 'copy'
-    })
+        $('#imagefile').change(this.fileSelected.bind(this))
+        $('.image-upload label').on('drop', this.fileSelected.bind(this)).on('dragover', function (e) {
+            e.stopPropagation()
+            e.preventDefault()
+            e.originalEvent.dataTransfer.dropEffect = 'copy'
+        })
 
-    tempImage = tempImage || new Image()
-    $('#source_image_url').on('input', function(e) {
-      if ( /^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
-        tempImage.onload = that.fileSelected.bind(that) // bind to set this to that when called
-        tempImage.src = e.target.value
-        e.target.style.color = ''
-      } else {
-        tempImage.src = ''
-        tempImage.onload = undefined
-        e.target.style.color = 'red'
-      }
-    })
-  }
-
-  ImageSelect.prototype.imageSelected = function(src, slug, no_set) {
-    var div = this.$imageEl.find('.image-preview')
-    div.children('img').remove()
-    div.append('<img src="'+src+'">')
-    this.$imageEl.find('.image-preview').addClass('selected')
-    if(!no_set)
-      this.setVal(src, slug)
-  }
-
-  ImageSelect.prototype.fileSelected = function (e) {
-    var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files)
-      , formData = new FormData(), that = this; // save this reference as it will be changed inside nested functions
-    if (files && files.length) {
-      var file = files[0]
-      var reader = new FileReader()
-      reader.onload = (function(tfile) {
-        return function(e) {
-          that.imageSelected(e.target.result)
-        };
-      }(file));
-      formData.append('imagefile', file)
-      formData.append('title', file.name)
-      reader.readAsDataURL(file);
-    } else if (e.target.src) {
-      formData.append('source_image_url', e.target.src)
-      formData.append('title', /[^/]+$/.exec(e.target.src)[0])
-    } else {
-      formData = null; return
+        tempImage = tempImage || new Image()
+        $('#source_image_url').on('input', function (e) {
+            if (/^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
+                tempImage.onload = that.fileSelected.bind(that) // bind to set this to that when called
+                tempImage.src = e.target.value
+                e.target.style.color = ''
+            } else {
+                tempImage.src = ''
+                tempImage.onload = undefined
+                e.target.style.color = 'red'
+            }
+        })
     }
 
-    formData.append('csrf_token', this.options.csrf_token)
-    var xhr = new XMLHttpRequest();
-    xhr.addEventListener("load", function() {
-      var res = JSON.parse(this.responseText)
-      if (this.status==200 && res.next) {
-        that.imageSelected(res.next, res.item._id);
-      } else {
-        flash_error(res.message || 'unknown error', 'warning')
-      }
-    }, false);
-    xhr.open('POST', that.options.image_upload_url)
-    xhr.send(formData) // does not work in IE9 and below
-    e.preventDefault()
-  }
+    ImageSelect.prototype.imageSelected = function (src, slug, no_set) {
+        var div = this.$imageEl.find('.image-preview')
+        div.children('img').remove()
+        div.append('<img src="' + src + '">')
+        this.$imageEl.find('.image-preview').addClass('selected')
+        if (!no_set)
+            this.setVal(src, slug)
+    }
 
-  $.fn.imageselect = function (option) {
-    return this.each(function () {
-      var $this   = $(this)
-      var data    = $this.data('rac.imageselect')
-      var options = $.extend(ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
-      // If no data set, create a ImageSelect object and attach to this element
-      if (!data) $this.data('rac.imageselect', (data = new ImageSelect(this, options)))
-      // if (typeof option == 'string') data[option](_relatedTarget)
-      // else if (options.show) data.show(_relatedTarget)
+    ImageSelect.prototype.fileSelected = function (e) {
+        var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files)
+            , formData = new FormData(), that = this; // save this reference as it will be changed inside nested functions
+        if (files && files.length) {
+            var file = files[0]
+            var reader = new FileReader()
+            reader.onload = (function (tfile) {
+                return function (e) {
+                    that.imageSelected(e.target.result)
+                };
+            }(file));
+            formData.append('imagefile', file)
+            formData.append('title', file.name)
+            reader.readAsDataURL(file);
+        } else if (e.target.src) {
+            formData.append('source_image_url', e.target.src)
+            formData.append('title', /[^/]+$/.exec(e.target.src)[0])
+        } else {
+            formData = null;
+            return
+        }
+
+        formData.append('csrf_token', this.options.csrf_token)
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("load", function () {
+            var res = JSON.parse(this.responseText)
+            if (this.status == 200 && res.next) {
+                that.imageSelected(res.next, res.item._id);
+            } else {
+                flash_error(res.message || 'unknown error', 'warning')
+            }
+        }, false);
+        xhr.open('POST', that.options.image_upload_url)
+        xhr.send(formData) // does not work in IE9 and below
+        e.preventDefault()
+    }
+
+    $.fn.imageselect = function (option) {
+        return this.each(function () {
+            var $this = $(this)
+            var data = $this.data('rac.imageselect')
+            var options = $.extend(ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
+            // If no data set, create a ImageSelect object and attach to this element
+            if (!data) $this.data('rac.imageselect', (data = new ImageSelect(this, options)))
+            // if (typeof option == 'string') data[option](_relatedTarget)
+            // else if (options.show) data.show(_relatedTarget)
+        })
+    }
+    $.fn.imageselect.Constructor = ImageSelect
+
+    $(window).on('load', function () {
+        $('[data-imageselect]').imageselect(typeof imageselect_options !== "undefined" && imageselect_options) // global var if exists
     })
-  }
-  $.fn.imageselect.Constructor = ImageSelect
 
-  $(window).on('load', function () {
-    $('[data-imageselect]').imageselect(typeof imageselect_options !== "undefined" && imageselect_options) // global var if exists
-  })
-
- }(jQuery);
+}(jQuery);
 
 $(window).on('load', function () {
-  var lb = $( '.lightbox' ).imageLightbox({
-  onStart:    function() {
-    $( '<div id="imagelightbox-overlay"></div>' ).appendTo( 'body' );
-    $( '<a href="#" id="imagelightbox-close">Close</a>' ).appendTo( 'body' )
-      .on( 'click touchend', function(){ $( this ).remove(); lb.quitImageLightbox(); return false; });
-  },
-  onEnd:      function() {
-    $( '#imagelightbox-overlay' ).remove();
-    $( '#imagelightbox-caption' ).remove();
-    $( '#imagelightbox-close' ).remove();
-    $( '#imagelightbox-loading' ).remove();
-  },
-  onLoadStart:  function() {
-    $( '#imagelightbox-caption' ).remove();
-    $( '<div id="imagelightbox-loading"><div></div></div>' ).appendTo( 'body' );
+    var lb = $('.lightbox').imageLightbox({
+        onStart: function () {
+            $('<div id="imagelightbox-overlay"></div>').appendTo('body');
+            $('<a href="#" id="imagelightbox-close">Close</a>').appendTo('body')
+                .on('click touchend', function () {
+                    $(this).remove();
+                    lb.quitImageLightbox();
+                    return false;
+                });
+        },
+        onEnd: function () {
+            $('#imagelightbox-overlay').remove();
+            $('#imagelightbox-caption').remove();
+            $('#imagelightbox-close').remove();
+            $('#imagelightbox-loading').remove();
+        },
+        onLoadStart: function () {
+            $('#imagelightbox-caption').remove();
+            $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body');
 
-  },
-  onLoadEnd:    function() {
-    var description = $( 'a[href="' + $( '#imagelightbox' ).attr( 'src' ) + '"] img' ).attr( 'alt' );
-    if( description && description.length > 0 )
-      $( '<div id="imagelightbox-caption">' + description + '</div>' ).appendTo( 'body' );
-    $( '#imagelightbox-loading' ).remove();
-  }
-  });
+        },
+        onLoadEnd: function () {
+            var description = $('a[href="' + $('#imagelightbox').attr('src') + '"] img').attr('alt');
+            if (description && description.length > 0)
+                $('<div id="imagelightbox-caption">' + description + '</div>').appendTo('body');
+            $('#imagelightbox-loading').remove();
+        }
+    });
 })
 
 
@@ -538,205 +554,223 @@ $(window).on('load', function () {
  * https://github.com/luis-almeida
  */
 
-;(function($) {
+;
+(function ($) {
 
-  $.fn.unveil = function(threshold, callback) {
+    $.fn.unveil = function (threshold, callback) {
 
-    var $w = $(window),
-        th = threshold || 0,
-        retina = window.devicePixelRatio > 1,
-        attrib = retina? "data-src-retina" : "data-src",
-        images = this,
-        loaded;
+        var $w = $(window),
+            th = threshold || 0,
+            retina = window.devicePixelRatio > 1,
+            attrib = retina ? "data-src-retina" : "data-src",
+            images = this,
+            loaded;
 
-    this.one("unveil", function() {
-      var source = this.getAttribute(attrib);
-      source = source || this.getAttribute("data-src");
-      if (source) {
-        this.setAttribute("src", source);
-        if (typeof callback === "function") callback.call(this);
-      }
-    });
+        this.one("unveil", function () {
+            var source = this.getAttribute(attrib);
+            source = source || this.getAttribute("data-src");
+            if (source) {
+                this.setAttribute("src", source);
+                if (typeof callback === "function") callback.call(this);
+            }
+        });
 
-    function unveil() {
-      var inview = images.filter(function() {
-        var $e = $(this);
-        if ($e.is(":hidden")) return;
+        function unveil() {
+            var inview = images.filter(function () {
+                var $e = $(this);
+                if ($e.is(":hidden")) return;
 
-        var wt = $w.scrollTop(),
-            wb = wt + $w.height(),
-            et = $e.offset().top,
-            eb = et + $e.height();
+                var wt = $w.scrollTop(),
+                    wb = wt + $w.height(),
+                    et = $e.offset().top,
+                    eb = et + $e.height();
 
-        return eb >= wt - th && et <= wb + th;
-      });
+                return eb >= wt - th && et <= wb + th;
+            });
 
-      loaded = inview.trigger("unveil");
-      images = images.not(loaded);
-    }
+            loaded = inview.trigger("unveil");
+            images = images.not(loaded);
+        }
 
-    $w.on("scroll.unveil resize.unveil lookup.unveil", unveil);
+        $w.on("scroll.unveil resize.unveil lookup.unveil", unveil);
 
-    unveil();
+        unveil();
 
-    return this;
+        return this;
 
-  };
+    };
 
 })(window.jQuery || window.Zepto);
 
 function post_action($t) {
-  var vars, type = $t.data('action-type'), href=$t.attr('href'),
-    action=href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
-    action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
-  if(type==='modal') {
-    vars = $('#themodal').find('form').serialize()
-  } else if (type==='inplace') {
-    //vars = $t.parents('form').serialize()
-  } else {
-    vars = action_parent.find('input, textarea').serialize()
-  }
-  $t.button('reset') // reset button
-  $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function(data) { // always add inline to the actual request
-    var $d = $(data), $a = $d.filter('#alerts')
-    var action_re = new RegExp(action+'(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
-    switch(action) {
-      case 'add': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-      case 'new': action_parent.find('.m_instance').last().after($d.filter('#changes').html()); break;
-      case 'edit': break;
-      case 'remove': if(action_parent.hasClass('m_selector')) {action_parent.replaceWith($d.filter('#changes').html()); break; }
-      case 'delete': action_parent.remove(); break;// remove the selected instance
-      case 'follow': $t.html("Unfollow").toggleClass("btn-primary").attr('href',href.replace(action_re,'unfollow$1')); break;
-      case 'unfollow': $t.html("Follow ...").toggleClass("btn-primary").attr('href',href.replace(action_re,'follow$1')); break;
-      default:
+    var vars, type = $t.data('action-type'), href = $t.attr('href'),
+        action = href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
+        action_parent = $t.closest('.m_instance, .m_field, .m_view, .m_selector');
+    if (type === 'modal') {
+        vars = $('#themodal').find('form').serialize()
+    } else if (type === 'inplace') {
+        //vars = $t.parents('form').serialize()
+    } else {
+        vars = action_parent.find('input, textarea').serialize()
     }
+    $t.button('reset') // reset button
+    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function (data) { // always add inline to the actual request
+        var $d = $(data), $a = $d.filter('#alerts')
+        var action_re = new RegExp(action + '(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
+        switch (action) {
+            case 'add':
+                if (action_parent.hasClass('m_selector')) {
+                    action_parent.replaceWith($d.filter('#changes').html());
+                    break;
+                }
+            case 'new':
+                action_parent.find('.m_instance').last().after($d.filter('#changes').html());
+                break;
+            case 'edit':
+                break;
+            case 'remove':
+                if (action_parent.hasClass('m_selector')) {
+                    action_parent.replaceWith($d.filter('#changes').html());
+                    break;
+                }
+            case 'delete':
+                action_parent.remove();
+                break;// remove the selected instance
+            case 'follow':
+                $t.html("Unfollow").toggleClass("btn-primary").attr('href', href.replace(action_re, 'unfollow$1'));
+                break;
+            case 'unfollow':
+                $t.html("Follow ...").toggleClass("btn-primary").attr('href', href.replace(action_re, 'follow$1'));
+                break;
+            default:
+        }
 
-    if(type==='modal') { // show response in modal
-      $('#themodal').html(data)
-      setTimeout(function() {$('#themodal').modal('hide')},3000)
-    } else if ($a.children().length > 0) {
-      $t.popover({trigger: 'manual', html:true, content:$a.html()})
-      $t.popover('show')
-      $('body').one('click', function() {$t.popover('destroy')})
-    }
+        if (type === 'modal') { // show response in modal
+            $('#themodal').html(data)
+            setTimeout(function () {
+                $('#themodal').modal('hide')
+            }, 3000)
+        } else if ($a.children().length > 0) {
+            $t.popover({trigger: 'manual', html: true, content: $a.html()})
+            $t.popover('show')
+            $('body').one('click', function () {
+                $t.popover('destroy')
+            })
+        }
 
-  }).error(function(xhr, errorType, exception) {
-    if(type==='modal') { $('#themodal').modal('hide') }
-    var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText
-    alert( "There was an error: " + errorMessage );
-  });
+    }).error(function (xhr, errorType, exception) {
+        if (type === 'modal') {
+            $('#themodal').modal('hide')
+        }
+        var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText
+        alert("There was an error: " + errorMessage);
+    });
 }
 
 function handle_action(e) {
-  var $t = $(e.currentTarget); // current to make sure we capture the button with .m_action, not children of it
-  if (!$t.hasClass('disabled')) { // if not disabled, means no action is current with this button
-    $t.button('loading') // disables the button until we're done
-    // preparations
-    switch ($t.data('action-type')) {
-      case 'modal':
-        var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
+    var $t = $(e.currentTarget); // current to make sure we capture the button with .m_action, not children of it
+    if (!$t.hasClass('disabled')) { // if not disabled, means no action is current with this button
+        $t.button('loading') // disables the button until we're done
+        // preparations
+        switch ($t.data('action-type')) {
+            case 'modal':
+                var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
 //          $('#themodal').data('modal').options.caller = $t P: options.caller deprecated as of Bootstrap 3?
-        $('#themodal').load(href).modal('show'); break;
-      case 'inplace': break;// replace instance with form
-      default: // post directly
-        post_action($t);
-    }
+                $('#themodal').load(href).modal('show');
+                break;
+            case 'inplace':
+                break;// replace instance with form
+            default: // post directly
+                post_action($t);
+        }
 
-  }
-  e.preventDefault()
+    }
+    e.preventDefault()
 }
 
 
-  $('body').on('click', '.m_action', handle_action)
+$('body').on('click', '.m_action', handle_action)
 
-  $('form select[data-role="chosen"]').chosen();
-  $('form select[data-role="chosenblank"]').chosen();
+$('form select[data-role="chosen"]').chosen();
+$('form select[data-role="chosenblank"]').chosen();
 
-  $('.select2').select2({allowClear: true});
+$('.select2').select2({allowClear: true});
 
-  $('.select2').on('select2:unselect', function(e) {
+$('.select2').on('select2:unselect', function (e) {
     // TODO this is a hack to select the __None item, residing at index 0, to correctly empty the field
     if (e.currentTarget.selectedIndex == -1) {
-      e.currentTarget.selectedIndex = 0;
+        e.currentTarget.selectedIndex = 0;
     }
-  })
+})
 
-  // Change to * if more than <a> needed
-  $('a[data-dismiss="back"]').click(function(e) {
-      history.back();
-      // Required, not sure why
-      e.preventDefault();
-  });
+// Change to * if more than <a> needed
+$('a[data-dismiss="back"]').click(function (e) {
+    history.back();
+    // Required, not sure why
+    e.preventDefault();
+});
 
 
 //////////////// new modal code ///////////
 
 // Loads content from href into the modal (functionality was removed from bootstrap3)
-$('#themodal').on('show.bs.modal', function(event) {
-  var href = event.relatedTarget.href
-  if (href) {
-    $modal = $(this)
-    var dest = $modal.find('.modal-content')
-    dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal',
-      complete=function(responseText, textStatus, jqXHR){
-        if (textStatus != 'success' || textStatus != 'notmodified') {
-          handle_debug_error($modal, jqXHR, textStatus)
-        }
-      })
-  }
+
+$('#themodal').on('show.bs.modal', function (event) {
+    var href = event.relatedTarget.href
+    if (href) {
+        $modal = $(this)
+        var dest = $modal.find('.modal-content')
+        dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal',
+            complete = function (responseText, textStatus, jqXHR) {
+                if (textStatus != 'success' || textStatus != 'notmodified')
+                {
+                    flash_error(responseText, 'danger', $modal.find('#alerts'))
+                }
+            });
+    }
 })
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
-$modal.on('click', 'button[type="submit"]', function(e) {
-  var form = $modal.find('form')[0]
-  if (form && form.action) {
-    e.preventDefault()
-    var jqxhr = $.post(form.action, $(form).serialize())
-      .done(function(data, textStatus, jqXHR) {
-        console.log(data)
+$modal.on('click', 'button[type="submit"]', function (e) {
+    var form = $modal.find('form')[0]
+    if (form && form.action) {
+        e.preventDefault()
+        var jqxhr = $.post(form.action, $(form).serialize())
+            .done(function (data, textStatus, jqXHR) {
+                console.log(data)
+                $modal.modal('hide')
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                flash_error(jqXHR.responseText, 'danger', $modal.find('#alerts'))
+            })
+    } else {
         $modal.modal('hide')
-      })
-      .fail(function( jqXHR, textStatus, errorThrown) {
-        handle_debug_error($modal, jqXHR, textStatus, errorThrown)
-      })
-  } else {
-    $modal.modal('hide')
-  }
+    }
 });
 
-function handle_debug_error($modal, jqXHR, textStatus, errorThrown) {
-    if (jqXHR.responseText.indexOf('__debugger__') > 0) {
-        // Response is a Flask Debugger response, overwrite whole page
-        document.open();
-        document.write(jqXHR.responseText);
-        document.close();
-    } else {
-        $modal.find('.modal-content').html(jqXHR.responseText);
-        console.log("Error: "+errorThrown);
+$('#feedback-modal').on('submit', 'form', function (e) {
+    var input = $(this).serializeArray()
+    var type = input[0]['value'] || 'error'
+    var desc = input[1]['value'] || 'none'
+    var user = input[2]['value'] || 'Anonymous'
+    var payload = {
+        'attachments': [
+            {
+                "fallback": "Received " + type + ": " + desc,
+                "pretext": "Received " + type + " for " + window.location,
+                "text": desc,
+                "author_name": user,
+                "author_link": user.indexOf("@") > 0 ? "mailto:" + user : '',
+                "color": type == 'error' ? "danger" : "warning"
+            }
+        ]
     }
-}
-
-$('#feedback-modal').on('submit', 'form', function(e) {
-  var input = $(this).serializeArray()
-  var type = input[0]['value'] || 'error'
-  var desc = input[1]['value'] || 'none'
-  var user = input[2]['value'] || 'Anonymous'
-  var payload = {'attachments':[
-    {
-      "fallback": "Received "+type+": "+desc,
-      "pretext": "Received "+type+" for "+window.location,
-      "text": desc,
-      "author_name": user,
-      "author_link": user.indexOf("@") >0 ? "mailto:"+user : '',
-      "color":type=='error' ? "danger" : "warning"
-    }
-  ]}
-  ga('send', 'event', type , '(selector)', desc);
-  $.post(
-    'https://hooks.slack.com/services/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',
-    JSON.stringify(payload))
-  e.preventDefault()
-  $('#feedback-modal').modal('hide')
+    ga('send', 'event', type, '(selector)', desc);
+    $.post(
+        'https://hooks.slack.com/services/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',
+        JSON.stringify(payload))
+    e.preventDefault()
+    $('#feedback-modal').modal('hide')
 });
 // hej

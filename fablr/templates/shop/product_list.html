@@ -51,89 +51,94 @@
 
 {% block content %}
 
-    {% if args['view'] == 'list' %}
+    {% if products %}
+        {% if args['view'] == 'list' %}
 
-        {% for product in products %}
-            <a class="blog_header"
-               href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                <h3>{{ product.title }}</h3></a>
-            <ul class="list-inline article-meta" style="margin-bottom: 0">
-                <li title="{{ _('Created') }}"><span
-                        class="glyphicon glyphicon-calendar"></span> {{ product.created.strftime('%Y-%m-%d') }}</li>
-            </ul>
-            <div class="media">
-                {% if product.feature_image %}
-                    <a class="pull-left"
-                       href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                        <img class="media-object" src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}">
-                    </a>
-                {% endif %}
-                <div class="media-body">
-                    {{ product.description }}
-                    <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><em
-                            style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-                </div>
-            </div>
-        {% endfor %}
-
-    {% elif args['view'] == 'table' %}
-
-        <table class="table table-hover">
-            <thead>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'description') }}</th>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
-            <th>{{ MACRO.ORDER_BY_LINK(model, args, 'price') }}</th>
-            </thead>
-            <tbody>
             {% for product in products %}
-                <tr>
-                    <td>
-                        <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
-                    </td>
-                    <td>{{ product.description }}</td>
-                    <td>{{ product.get_field_display('type') }}</td>
-                    <td>{{ product.world|default(_('No data'),true) }}</td>
-                    <td class="nobr">{{ product.created.strftime('%Y-%m-%d') }}</td>
-                    <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-
-    {% else %} {# ==table #}
-        <div class="cards">
-            <div class="row">
-                {% for product in products %}
-                    <div class="col-md-4 product">
-                        {% if product.feature_image %}
-                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><img
-                                    class="product-image"
-                                    src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}"></a>{% endif %}
-                        <div class="product-intro">
-                            <h3>
-                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
-                            </h3>
-                            <p>{{ product.description }}</p>
-                        </div>
-                        <ul class="product-details">
-                            <li class="product-type">{{ product.get_field_display('type') }}</li>
-                            <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
-                            <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
-                                   href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
-                            </li>
-                        </ul>
+                <a class="blog_header"
+                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                    <h3>{{ product.title }}</h3></a>
+                <ul class="list-inline article-meta" style="margin-bottom: 0">
+                    <li title="{{ _('Created') }}"><span
+                            class="glyphicon glyphicon-calendar"></span> {{ product.created.strftime('%Y-%m-%d') }}</li>
+                </ul>
+                <div class="media">
+                    {% if product.feature_image %}
+                        <a class="pull-left"
+                           href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                            <img class="media-object" src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}">
+                        </a>
+                    {% endif %}
+                    <div class="media-body">
+                        {{ product.description }}
+                        <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><em
+                                style="white-space: nowrap;">{{ _('Read more') }}</em></a>
                     </div>
-                    {% if loop.index is divisibleby 3 %}</div>
-                        <div class="row">{% endif %}
-                {% endfor %}
                 </div>
+            {% endfor %}
+
+        {% elif args['view'] == 'table' %}
+
+            <table class="table table-hover">
+                <thead>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'description') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'price') }}</th>
+                </thead>
+                <tbody>
+                {% for product in products %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                        </td>
+                        <td>{{ product.description }}</td>
+                        <td>{{ product.get_field_display('type') }}</td>
+                        <td>{{ product.world|default(_('No data'),true) }}</td>
+                        <td class="nobr">{{ product.created.strftime('%Y-%m-%d') }}</td>
+                        <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        {% else %} {# ==table #}
+            <div class="cards">
+                <div class="row">
+                    {% for product in products %}
+                        <div class="col-md-4 product">
+                            {% if product.feature_image %}
+                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><img
+                                        class="product-image"
+                                        src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}"></a>{% endif %}
+                            <div class="product-intro">
+                                <h3>
+                                    <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                                </h3>
+                                <p>{{ product.description }}</p>
+                            </div>
+                            <ul class="product-details">
+                                <li class="product-type">{{ product.get_field_display('type') }}</li>
+                                <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
+                                <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
+                                       href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                                </li>
+                            </ul>
+                        </div>
+                        {% if loop.index is divisibleby 3 %}</div>
+                            <div class="row">{% endif %}
+                    {% endfor %}
+                    </div>
+            </div>
+        {% endif %}
+        {% include "includes/pagination.html" %}
+    {% else %}
+        <div class="jumbotron text-center">
+            <h2>{{ _('No products available') }}</h2>
         </div>
     {% endif %}
-    {% include "includes/pagination.html" %}
-    </div>
 {% endblock %}
 
 {% block final %}
@@ -155,14 +160,8 @@
                             $c.addClass("highlight")
                         }
                     })
-                    .fail(function (jqXHR) {
-                        try {
-                            var res = JSON.parse(jqXHR.responseText)
-                            var err = res.message
-                        } catch (e) {
-                            var err = "Unknown error occurred"
-                        }
-                        flash_error(err, 'danger')
+                    .fail(function( jqXHR, textStatus, errorThrown) {
+                        flash_error(jqXHR.responseText)
                     });
             e.preventDefault();
         });

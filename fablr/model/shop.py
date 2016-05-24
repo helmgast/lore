@@ -3,9 +3,9 @@ from datetime import datetime, timedelta, date
 from flask import g
 from flask import request
 from flask.ext.babel import lazy_gettext as _
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask.ext.mongoengine import Document, DynamicDocument  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
-                         ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
+                         ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
 from mongoengine.errors import ValidationError
 
 from asset import FileAsset
@@ -57,6 +57,7 @@ class Product(Document):
     world = ReferenceField(World, verbose_name=_('World'))
     family = StringField(max_length=60, verbose_name=_('Product Family'))
     created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
+    updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
     type = StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
@@ -72,8 +73,10 @@ class Product(Document):
 
     # Executes before saving
     def clean(self):
+        self.updated = datetime.utcnow()
         if request.values.get('downloadable_files', None) is None:
             self.downloadable_files = []
+        self.slug = slugify(self.title)
         self.slug = slugify(self.title)
 
     def in_orders(self):
@@ -121,6 +124,32 @@ OrderStatus = Choices(
     shipped=_('Shipped'),
     error=_('Error'))
 
+
+class Stock(Document):
+    """This is a special document which holds all stock status for a publisher's products.
+    It is kept as a single document, to ensure that we can do single document atomic updates
+    using mongodb, without too much trouble. E.g. we can update the stock status of a full OrderList
+    with one command and one lock.
+    """
+    publisher = ReferenceField(Publisher, unique=True, verbose_name=_('Publisher'))
+    updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
+    stock_count = MapField(field=IntField(min_value=-1, default=0))
+
+    def clean(self):
+        self.updated = datetime.utcnow()
+
+    def display_stock(self, product):
+        if product in self.stock_count:
+            if self.stock_count[product] <0:
+                return _("Unlimited stock")
+            if self.stock_count[product] == 0:
+                return _("No stock")
+            elif self.stock_count[product] > 0 and self.stock_count[product] < 5:
+                return _("A few items")
+            else:
+                return _("Many items")
+        else:
+           return _("Unknown")
 
 class Order(Document):
     user = ReferenceField(User, verbose_name=_('User'))
@@ -175,6 +204,38 @@ class Order(Document):
         """Returns total price as an int, suitable for Stripe"""
         return int(self.total_price * 100)
 
+    def update_stock(self, publisher, update_op, select_op=None):
+        """Updates the stock count (either by inc(rement) or dec(rement) operators) and optionally ensures a select
+        query first goes through, e.g. "gte 5". Is an atomic operation."""
+        stock = Stock.objects(publisher=publisher).first()
+        if stock:
+            order_dict = {}
+            for ol in self.order_lines:
+                # Only pick products that are supposed to be available in stock (typically ignoring digital)
+                if ol.product.status == ProductStatus.available:
+                    order_dict[ol.product.slug] = order_dict.get(ol.product.slug, 0) + ol.quantity
+            select_args = {}
+            update_args = {}
+            for prod, quantity in order_dict.iteritems():
+                if select_op:  # We only need to do this check when reducing quantity
+                    select_args['stock_count__%s__%s' % (prod, select_op)] = quantity
+                update_args['%s__stock_count__%s' % (update_op, prod)] = quantity
+            if select_args and update_args:
+                # Makes an atomic update
+                allowed = stock.modify(query=select_args, **update_args)
+                print select_args, update_args, "was allowed? %s" % allowed
+                return allowed
+            else:
+                return True  # If nothing to update, approve it
+        else:
+            raise ValueError("No stock status available for publisher %s" % publisher)
+
+    def deduct_stock(self, publisher):
+        return self.update_stock(publisher, 'dec', 'gte')
+
+    def return_stock(self, publisher):
+        return self.update_stock(publisher, 'inc')
+
     # Executes before saving
     def clean(self):
         self.updated = datetime.utcnow()
@@ -183,22 +244,27 @@ class Order(Document):
             if self.currency:
                 if ol.product.currency != self.currency:
                     raise ValidationError(
-                        'This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
+                        u'This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
             else:
                 self.currency = ol.product.currency
+            if ol.product.status == ProductStatus.out_of_stock:
+                raise ValidationError(u'Product %s is out of stock' % ol.product)
+
             num += ol.quantity
             sum += ol.quantity * ol.price
             # Tax rates are given as e.g. 25% or 0.25. The taxable part of sum is
             # sum * (taxrate / (taxrate+1))
             tax += ol.quantity * ol.price * (ol.product.tax / (ol.product.tax + 1))
-
-        if self.shipping:
-            if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
-                tax_rate = tax/sum
-                tax += self.shipping.price * (tax_rate / (tax_rate + 1))
-            else:
-                tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
-            sum += self.shipping.price  # Do after we calculate average tax above
+        if sum > 0:
+            if self.shipping:
+                if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
+                    tax_rate = tax/sum
+                    tax += self.shipping.price * (tax_rate / (tax_rate + 1))
+                else:
+                    tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
+                sum += self.shipping.price  # Do after we calculate average tax above
+        else:
+            self.currency = None  # Clear it to avoid errors adding different product currencies back again
 
         self.total_items = num
         self.total_price = sum

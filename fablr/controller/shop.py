@@ -18,9 +18,9 @@ from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
 from wtforms.fields import FormField, FieldList, StringField
-from wtforms.fields.html5 import EmailField
+from wtforms.fields.html5 import EmailField, IntegerField
 from wtforms.utils import unset_value
-from wtforms.validators import InputRequired, Email
+from wtforms.validators import InputRequired, Email, DataRequired, NumberRange
 
 from fablr.controller.mailer import send_mail
 from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPolicy,
@@ -28,7 +28,7 @@ from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPo
                                        filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                        Authorization)
 from fablr.controller.world import set_theme
-from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus
+from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock
 from fablr.model.user import User
 from fablr.model.world import Publisher
 
@@ -37,6 +37,14 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
 
 stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
+
+
+def get_or_create_stock(publisher_ref):
+    stock = Stock.objects(publisher=publisher_ref).get()
+    if not stock:
+        stock = Stock(publisher=publisher_ref)
+        stock.save()
+    return stock
 
 
 class ProductsView(ResourceView):
@@ -55,6 +63,7 @@ class ProductsView(ResourceView):
                             base_class=RacBaseForm,
                             exclude=['slug'],
                             converter=RacModelConverter())
+    form_class.stock_count = IntegerField(validators=[DataRequired(), NumberRange(min=-1)])
 
     # fields to order_by,(order_by key, e.g. order by id, by slug, etc?)
     # no point ordering for reference fields, and translated choice fields will be wrong order as well
@@ -97,14 +106,22 @@ class ProductsView(ResourceView):
             r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
         else:
             product = Product.objects(slug=id).first_or_404()
-            r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)])
+            # We will load the stock count from the publisher specific Stock object
+            stock = get_or_create_stock(publisher)
+            stock_count = stock.stock_count.get(product.slug, None)
+            extra_form_args = {} if stock_count is None else {'stock_count': stock_count}
+            r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)],
+                             extra_form_args=extra_form_args)
+            r.stock = stock
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
+
         return r
 
     def post(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
+        r.stock = get_or_create_stock(publisher)
         product = Product()
         set_theme(r, 'publisher', publisher.slug)
         if not r.validate():
@@ -115,12 +132,15 @@ class ProductsView(ResourceView):
         except (NotUniqueError, ValidationError) as err:
             flash(err.message, 'danger')
             return r, 400  # Respond with same page, including errors highlighted
+        r.stock.stock_count[product.slug] = r.form.stock_count.data
+        r.stock.save()
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
 
     def patch(self, id, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
+        r.stock = get_or_create_stock(publisher)
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         if not isinstance(r.form, RacBaseForm):
@@ -129,15 +149,22 @@ class ProductsView(ResourceView):
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product, request.form.keys())  # only populate selected keys
         r.commit()
+        r.stock.stock_count[product.slug] = r.form.stock_count.data
+        r.stock.save()
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
 
     def delete(self, id, publisher):
-        publisher = Publisher.objects(slug=publisher).first_or_404()
-        product = Product.objects(slug=id).first_or_404()
-        r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='delete')
-        r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
-        r.commit()
+        abort(503)  # Unsafe to delete products as they are referred to in orders
+        # publisher = Publisher.objects(slug=publisher).first_or_404()
+        # product = Product.objects(slug=id).first_or_404()
+        # r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='delete')
+        # r.auth_or_abort()
+        # set_theme(r, 'publisher', publisher.slug)
+        # r.commit()
+        # stock = Stock.objects(publisher=publisher).get()
+        # if stock:
+        #     del stock.stock_count[product.slug]
+        #     stock.save()
         return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
 
 
@@ -226,7 +253,7 @@ class DetailsForm(RacBaseForm):
 
 class PaymentForm(RacBaseForm):
     order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
-    stripe_token = StringField(validators=[InputRequired(_("Please enter your email address."))])
+    stripe_token = StringField(validators=[InputRequired(_("Error, missing Stripe token"))])
 
 
 class PostPaymentForm(RacBaseForm):
@@ -237,11 +264,13 @@ class OrdersAccessPolicy(ResourceAccessPolicy):
     def is_owner(self, op, instance):
         if instance:
             if g.user == instance.user:
-                return Authorization(True, _("Allowed access to %(instance)s as it's own order", instance=instance), privileged=True)
+                return Authorization(True, _("Allowed access to %(instance)s as it's own order", instance=instance),
+                                     privileged=True)
             else:
                 return Authorization(False, _("Not allowed access to %(instance)s as not own order"))
         else:
             return Authorization(False, _("No instance to test for access on"))
+
 
 class OrdersView(ResourceView):
     subdomain = '<publisher>'
@@ -255,9 +284,11 @@ class OrdersView(ResourceView):
     })
     model = Order
     list_template = 'shop/order_list.html'
-    list_arg_parser = filterable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
+    list_arg_parser = filterable_fields_parser(
+        ['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
     item_template = 'shop/order_item.html'
-    item_arg_parser = prefillable_fields_parser(['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
+    item_arg_parser = prefillable_fields_parser(
+        ['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
     form_class = form_class = model_form(Order,
                                          base_class=RacBaseForm,
                                          only=['order_lines', 'shipping_address', 'shipping_mobile'],
@@ -321,7 +352,10 @@ class OrdersView(ResourceView):
             if not found:  # create new orderline with this product
                 new_ol = OrderLine(product=p, price=p.price)
                 cart_order.order_lines.append(new_ol)
-            cart_order.save()
+            try:
+                cart_order.save()
+            except ValidationError as ve:
+                return ve._format_errors(), 400
             return r
         abort(400, 'Badly formed cart patch request')
 
@@ -402,7 +436,14 @@ class OrdersView(ResourceView):
             if not r.validate():
                 return r, 400  # Respond with same page, including errors highlighted
             r.form.populate_obj(cart_order)  # populate all of the object
+            # Remove the purchased quantities from the products, ensuring we don't go below zero
+            # If failed, the product has no more stock, we have to abort purchase
+            stock_available = cart_order.deduct_stock(publisher)
+            if not stock_available:
+                r.errors = [('danger', 'Out of stock for a product in this order, purchase cancelled')]
+                return r, 400
             try:
+                # Will raise CardError if not succeeded
                 charge = stripe.Charge.create(
                     source=r.form.stripe_token.data,
                     amount=cart_order.total_price_int(),  # Stripe takes input in "cents" or similar
@@ -410,17 +451,21 @@ class OrdersView(ResourceView):
                     description=unicode(cart_order),
                     metadata={'order_id': cart_order.id}
                 )
-                if charge['status'] == 'succeeded':
-                    cart_order.status = OrderStatus.paid
-                    cart_order.charge_id = charge['id']
-            except stripe.error.CardError as e:
-                abort(500, "Could not complete purchase: %s" % e.message, r=r)
-            try:
+                cart_order.status = OrderStatus.paid
+                cart_order.charge_id = charge['id']
                 r.commit()
-                send_mail([g.user.email], _('Thank you for your order!'), 'order', user=g.user, order=cart_order, publisher=publisher)
+                send_mail(recipients=[g.user.email], message_subject=_('Thank you for your order!'), mail_type='order',
+                          cc=[current_app.config['MAIL_DEFAULT_SENDER']], user=g.user, order=cart_order, publisher=publisher)
+            except stripe.error.CardError as ce:
+                r.errors = [('danger', ce.json_body['error']['message'])]
+                return r, 400
             except ValidationError as ve:
-                flash(ve.message, 'danger')
+                r.errors = [('danger', ve._format_errors())]
                 return r, 400  # Respond with same page, including errors highlighted
+            finally:
+                # Executes at any exception from above try clause, before returning / raising
+                # Return purchased quantities to the products
+                cart_order.return_stock(publisher)
             return redirect(r.args['next'] or url_for('shop.OrdersView:get', id=cart_order.id, **request.view_args))
         return r  # we got here if it's a get
 
@@ -428,9 +473,9 @@ class OrdersView(ResourceView):
 OrdersView.register_with_access(shop_app, 'order')
 
 
-
 def get_cart_order():
     if session.get('cart_id', None):
+        # We have a cart in the session
         cart_order = Order.objects(id=session['cart_id']).first()
         if not cart_order or cart_order.status != 'cart' or (cart_order.user and cart_order.user != g.user):
             # Error, maybe someone is manipulating input, or we logged out and should clear the
@@ -439,15 +484,16 @@ def get_cart_order():
             session.pop('cart_id')
             return None
         elif not cart_order.user and g.user:
-            # We have logged in and cart in session is not tied to this user.
-            # Any old carts should be taken away - mark them as error
-            Order.objects(status='cart', user=g.user).update(status='error', internal_comment='Replaced by new cart')
-            # Set cart from session as new user cart
+            # We have logged in and cart in session lacks a user, means the cart came from before login
+            # There may be old carts registered to this user, let's delete them, e.g. overwrite with new cart
+            Order.objects(status='cart', user=g.user).delete()
+            # Attach cart from session to the newly logged in user
             cart_order.user = g.user
-            cart_order.save()
+            cart_order.save()  # Save the new cart
         return cart_order
     elif g.user:
-        # We have a user but no cart_id in session yet, so someone has just logged in
+        # We have no cart_id in session yet, but we have a user, so someone has just logged in
+        # Let's find any old carts belonging to this user
         cart_order = Order.objects(user=g.user, status='cart').first()
         if cart_order:
             session['cart_id'] = cart_order.id

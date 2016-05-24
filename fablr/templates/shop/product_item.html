@@ -1,133 +1,203 @@
 {% extends "shop/product_list.html" %}
 
-{% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'}%}
+{% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'} %}
 
 {% set currencies = {
   'eur' : '€ %s',
   'sek' : '%s :-'
-}%}
+} %}
 
-{% block content_title %}{{product.title if product else _("New product")}}{% endblock %}
+{% block content_title %}{{ product.title if product else _("New product") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{super()}}
+{% block sidebar %}{{ super() }}
 
-{% if product %}
-{% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
-<ul class="nav nav-pills nav-stacked">
-  <li><a class="{{privileged}}" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-</ul>
-{% endcall %}
-{% include 'includes/social_icons.html' %}
+    {% if product %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
+            <ul class="nav nav-pills nav-stacked">
+                <li><a class="{{ privileged }}"
+                       href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span
+                        class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+            </ul>
+        {% endcall %}
+        {% include 'includes/social_icons.html' %}
 
-{% endif %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}{% block inline %}
-{% if product_form %}
-<form method="post" action="{{action_url}}">
-  <div class="row">
-    <div class="col-md-8">
-      {{ MACRO.FORM_FIELD(product_form.title) }}
-      {{ MACRO.FORM_FIELD(product_form.product_number) }}
-      {{ MACRO.FORM_FIELD(product_form.project_code) }}
-      {{ MACRO.FORM_FIELD(product_form.description) }}
-      {{ MACRO.FORM_FIELD(product_form.publisher) }}
-      {{ MACRO.FORM_FIELD(product_form.world) }}
-      {{ MACRO.FORM_FIELD(product_form.family) }}
-      {{ MACRO.FORM_FIELD(product_form.created) }}
-      {{ MACRO.FORM_FIELD(product_form.type) }}
-      {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
-      {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
-      {{ MACRO.FORM_FIELD(product_form.tax, required=true) }}
-      {{ MACRO.FORM_FIELD(product_form.status) }}
-      {{ product_form.csrf_token }}
-    </div>
-    <div class="col-md-4">
-      {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true})}}
-      {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='select2', **{'size': 18}) }}
-    </div>
-  </div>
-  <div class="row form-actions">
-    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-    <a href="{{url_for('shop.ProductsView:index', publisher=publisher.slug)}}" class="btn btn-default">{{ _('Cancel') }}</a>
-    {% if product %}
-      <a class="btn btn-danger pull-right" href="#deletemodal" data-toggle="modal">{{ _('Delete') }}</a>
+    {% if product_form %}
+        <form method="post" action="{{ action_url }}">
+            <div class="row">
+                <div class="col-md-8">
+                    {{ MACRO.FORM_FIELD(product_form.title) }}
+                    {{ MACRO.FORM_FIELD(product_form.product_number) }}
+                    {{ MACRO.FORM_FIELD(product_form.project_code) }}
+                    {{ MACRO.FORM_FIELD(product_form.description) }}
+                    {{ MACRO.FORM_FIELD(product_form.publisher) }}
+                    {{ MACRO.FORM_FIELD(product_form.world) }}
+                    {{ MACRO.FORM_FIELD(product_form.family) }}
+                    {{ MACRO.FORM_FIELD(product_form.created) }}
+                    {{ MACRO.FORM_FIELD(product_form.type) }}
+                    {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
+                    {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
+                    {{ MACRO.FORM_FIELD(product_form.tax, required=true) }}
+                    {{ MACRO.FORM_FIELD(product_form.status) }}
+                    {{ MACRO.FORM_FIELD(product_form.stock_count) }}
+                    {{ product_form.csrf_token }}
+                </div>
+                <div class="col-md-4">
+                    {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true}) }}
+                    {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='select2', **{'size': 18}) }}
+                </div>
+            </div>
+            <div class="row form-actions">
+                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+                <a href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"
+                   class="btn btn-default">{{ _('Cancel') }}</a>
+                {% if product %}
+                    <a class="btn btn-danger pull-right" href="#deletemodal" data-toggle="modal">{{ _('Delete') }}</a>
+                {% endif %}
+            </div>
+        </form>
+        {% if product %}
+            {{ MACRO.DELETE_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE") ) }}
+        {% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table">
+                    <tr>
+                        <td><strong>{{ _('Title') }}</strong></td>
+                        <td>
+                            <small>{{ product.title }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Product Number') }}</strong></td>
+                        <td>
+                            <small>{{ product.product_number }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Project Code') }}</strong></td>
+                        <td>
+                            <small>{{ product.project_code }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Publisher') }}</strong></td>
+                        <td>
+                            <small>{{ product.publisher }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('World') }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=product.world.slug) }}">{{ product.world }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Family') }}</strong></td>
+                        <td>{{ product.family }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Created') }}</strong></td>
+                        <td>{{ product.created.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Updated') }}</strong></td>
+                        <td>{{ product.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Type') }}</strong></td>
+                        <td>
+                            <small>{{ product.get_type_display() }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Price') }}</strong></td>
+                        <td>
+                            <small>{{ currencies[product.currency] % product.price|currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Currency') }}</strong></td>
+                        <td>
+                            <small>{{ product.get_currency_display() }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Tax') }}</strong></td>
+                        <td>
+                            <small>{{ product.tax*100 }}%</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Status') }}</strong></td>
+                        <td>
+                            <small>{{ product.get_status_display() }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Remaining Stock') }}</strong></td>
+                        {% if access_policy['product'].authorize('edit') %}
+                            <td class="privileged">
+                                <small>{{ stock.stock_count.get(product.slug, _('Unknown')) }}</small>
+                            </td></tr>
+                        {% else %}
+                            <td>
+                                <small>{{ stock.display_stock(product.slug) if stock else _('Unknown') }}</small>
+                            </td></tr>
+                        {% endif %}
+                    <tr>
+                        <td><strong>{{ _('Times purchased') }}</strong></td>
+                        <td>
+                            <small>{{ product.in_orders().count() }}</small>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="well">{{ product.description }}</div>
+                {% if product.downloadable_files %}
+                    <div class="well"><strong>{{ _('Downloadable files') }}</strong>
+                        {% for file_asset in product.downloadable_files %}
+                            <div>{% if product.is_owned_by_current_user() %}<a
+                                    href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
+                                    class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
+                                <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description %}:
+                                {{ file_asset.description }}{% endif %}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <a id="{{ product.slug }}" class="btn btn-block btn-primary buy-link"
+                   href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                <br>
+                {% if product.feature_image %}
+                    <a class="lightbox" href="{{ url_for('image', slug = product.feature_image.slug) }}"><img
+                            class="img-responsive" src="{{ url_for('image', slug = product.feature_image.slug) }}"></a>
+                {% else %}
+                    <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
+                {% endif %}
+                <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
+            </div>
+        </div>
+        {% if product.status != 'hidden' %}
+            {% include 'includes/disqus.html' %}
+        {% endif %}
+
     {% endif %}
-  </div>
-</form>
-{% if product %}
-{{ MACRO.DELETE_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE") ) }}
-{% endif %}
-{% else %}
-<div class="row">
-    <div class="col-md-8">
-      <table class="table">
-        <tr><td><strong>{{ _('Title') }}</strong></td>
-        <td><small>{{ product.title }}</small></td></tr>
-        <tr><td><strong>{{ _('Product Number') }}</strong></td>
-        <td><small>{{ product.product_number }}</small></td></tr>
-        <tr><td><strong>{{ _('Project Code') }}</strong></td>
-        <td><small>{{ product.project_code }}</small></td></tr>
-        <tr><td><strong>{{ _('Publisher') }}</strong></td>
-        <td><small>{{ product.publisher }}</small></td></tr>
-        <tr><td><strong>{{ _('World') }}</strong></td>
-        <td><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=product.world.slug) }}">{{ product.world }}</a></td></tr>
-        <tr><td><strong>{{ _('Family') }}</strong></td>
-        <td>{{ product.family }}</td></tr>
-        <tr><td><strong>{{ _('Created') }}</strong></td>
-        <td>{{ product.created.strftime('%Y-%m-%d %H:%M') }}</td></tr>
-        <tr><td><strong>{{ _('Type') }}</strong></td>
-        <td><small>{{ product.get_type_display() }}</small></td></tr>
-        <tr><td><strong>{{ _('Price') }}</strong></td>
-        <td><small>{{ currencies[product.currency] % product.price|currency }}</small></td></tr>
-        <tr><td><strong>{{ _('Currency') }}</strong></td>
-        <td><small>{{ product.get_currency_display() }}</small></td></tr>
-        <tr><td><strong>{{ _('Tax') }}</strong></td>
-        <td><small>{{ product.tax*100 }}%</small></td></tr>
-        <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ product.get_status_display() }}</small></td></tr>
-        <tr><td><strong>{{ _('Times purchased') }}</strong></td>
-        <td><small>{{ product.in_orders().count() }}</small></td></tr>
-      </table>
-
-      <div class="well">{{ product.description }}</div>
-      {% if product.downloadable_files %}
-      <div class="well"><strong>{{ _('Downloadable files') }}</strong>
-          {% for file_asset in product.downloadable_files %}
-          <div>{% if product.is_owned_by_current_user() %}<a
-                  href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
-                  class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
-              <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description
-              %}: {{ file_asset.description }}{% endif %}</div>
-          {% endfor %}
-      </div>
-      {% endif %}
-    </div>
-    <div class="col-md-4">
-      <a id="{{product.slug}}" class="btn btn-block btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>
-      <br>
-      {% if product.feature_image %}<a class="lightbox" href="{{url_for('image', slug = product.feature_image.slug)}}"><img class="img-responsive" src="{{url_for('image', slug = product.feature_image.slug)}}"></a>
-      {% else %}
-        <span class="glyphicon glyphicon-{{product_icons[product.type]}} gianticon"></span>
-      {% endif %}
-      <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
-    </div>
-</div>
-{% if product.status != 'hidden' %}
-{% include 'includes/disqus.html' %}
-{% endif %}
-
-{% endif %}
 {% endblock %}{% endblock %}
 
 {% block final %}
-{{super()}}
-<script>
-var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
-</script>
+    {{ super() }}
+    <script>
+        var imageselect_options = {
+            csrf_token: "{{ csrf_token() }}",
+            image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
+            image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+        }
+    </script>
 {% endblock %}
