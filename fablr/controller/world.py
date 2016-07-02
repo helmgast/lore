@@ -94,8 +94,8 @@ class PublishersView(ResourceView):
         r.form.populate_obj(publisher)
         try:
             r.commit(new_instance=publisher)
-        except NotUniqueError as err:
-            r.error_response(err)
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
 
     def patch(self, id):
@@ -109,7 +109,10 @@ class PublishersView(ResourceView):
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
         r.form.populate_obj(publisher, request.form.keys())  # only populate selected keys
-        r.commit()
+        try:
+            r.commit()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
 
     def delete(self, id):
@@ -245,10 +248,8 @@ class WorldsView(ResourceView):
         r.form.populate_obj(world)
         try:
             r.commit(new_instance=world)
-        except NotUniqueError:
-            r.form.title.errors.append('ID %s already in use')
-            flash(_("Error in form"), 'danger')
-            return r, 400
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug))
 
     def patch(self, publisher_, id):
@@ -266,7 +267,10 @@ class WorldsView(ResourceView):
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
         r.form.populate_obj(world, request.form.keys())  # only populate selected keys
-        r.commit()
+        try:
+            r.commit()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug))
 
     def delete(self, publisher_, id):
@@ -412,7 +416,7 @@ class ArticlesView(ResourceView):
         r.form.populate_obj(article)
         try:
             r.commit(new_instance=article)
-        except NotUniqueError as err:
+        except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
                                                   world_=world.slug))
@@ -438,7 +442,7 @@ class ArticlesView(ResourceView):
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
         try:
             r.commit()
-        except NotUniqueError as err:
+        except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
                                                   world_=world.slug))

@@ -66,30 +66,6 @@ class ProductsView(ResourceView):
                             converter=RacModelConverter())
     form_class.stock_count = IntegerField(validators=[DataRequired(), NumberRange(min=-1)])
 
-    # fields to order_by,(order_by key, e.g. order by id, by slug, etc?)
-    # no point ordering for reference fields, and translated choice fields will be wrong order as well
-
-    # fields to filter by
-    # DateTimeField - certain time spans: today, last week, last month, last year, >1 year.
-    #   Choices cannot be combined.
-    # Choice-fields: filter by the choices available
-    #   Choices can be combined.
-    # Numeric fields (int, Float): e.g. 0-5,5-20,20-100, 100-200
-    #   Cannot be combined.
-    # ReferenceFields: a select box to filter by one or many choices, or a few options if less than <6
-    #   Choices can be combined.
-    # StringField: no filtering
-    # Boolean: Filter yes or no
-    # ListField: no filtering (could have "has members" or "not has members")
-    # filterable_fields = ['name', 'name2'], looked up at r.model._fields[name]
-    # field_options = {
-    #   'world': [
-    #       (url, active, name),
-    #       {'world'},
-    #       {'noir'}],
-    #   'price': [
-    #       {'price':0, 'price__lt':5}
-    #   ]
 
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -131,8 +107,7 @@ class ProductsView(ResourceView):
         try:
             r.commit(new_instance=product)
         except (NotUniqueError, ValidationError) as err:
-            flash(err.message, 'danger')
-            return r, 400  # Respond with same page, including errors highlighted
+            return r.error_response(err)
         r.stock.stock_count[product.slug] = r.form.stock_count.data
         r.stock.save()
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
@@ -156,9 +131,12 @@ class ProductsView(ResourceView):
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product, request.form.keys())  # only populate selected keys
-        r.commit()
-        r.stock.stock_count[product.slug] = r.form.stock_count.data
-        r.stock.save()
+        try:
+            r.commit()
+            r.stock.stock_count[product.slug] = r.form.stock_count.data
+            r.stock.save()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
 
     def delete(self, id, publisher):
@@ -173,7 +151,7 @@ class ProductsView(ResourceView):
         # if stock:
         #     del stock.stock_count[product.slug]
         #     stock.save()
-        return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
+        # return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
 
 
 ProductsView.register_with_access(shop_app, 'product')
@@ -362,8 +340,8 @@ class OrdersView(ResourceView):
                 cart_order.order_lines.append(new_ol)
             try:
                 cart_order.save()
-            except ValidationError as ve:
-                return ve._format_errors(), 400
+            except (NotUniqueError, ValidationError) as err:
+                return r.error_response(err)
             return r
         abort(400, 'Badly formed cart patch request')
 
@@ -382,9 +360,8 @@ class OrdersView(ResourceView):
             r.form.populate_obj(cart_order)  # populate all of the object
             try:
                 r.commit(flash=False)
-            except ValidationError as ve:
-                flash(ve.message, 'danger')
-                return r, 400  # Respond with same page, including errors highlighted
+            except (NotUniqueError, ValidationError) as err:
+                return r.error_response(err)
             if request.method == 'PATCH':
                 return redirect(r.args['next'] or url_for('shop.OrdersView:cart', **request.view_args))
             elif request.method == 'POST':
@@ -423,9 +400,8 @@ class OrdersView(ResourceView):
                     cart_order.shipping = shipping_products[0]
             try:
                 r.commit(flash=False)
-            except ValidationError as ve:
-                flash(ve.message, 'danger')
-                return r, 400  # Respond with same page, including errors highlighted
+            except (NotUniqueError, ValidationError) as err:
+                return r.error_response(err)
             return redirect(r.args['next'] or url_for('shop.OrdersView:pay', **request.view_args))
         return r  # we got here if it's a get
 

@@ -192,7 +192,10 @@ class FileAssetsView(ResourceView):
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
         r.form.populate_obj(fileasset)  # only populate selected keys. will skip empty selects!
-        r.commit()
+        try:
+            r.commit()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('assets.FileAssetsView:get', id=fileasset.slug))
 
     def post(self):

@@ -274,6 +274,7 @@ class ResourceResponse(Response):
                 self.form._errors = {'all': 'Duplicate title already exists, try renaming'}
 
         elif isinstance(err, ValidationError):
+            # TODO checkout ValidationError._format_errors()
             err_dict = {}
             for k, v in err.errors.items():
                 if hasattr(v, 'message') and v.message:
