@@ -15,6 +15,7 @@ from bson.objectid import ObjectId
 from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
+from markdown.treeprocessors import Treeprocessor
 from mongoengine import Document, QuerySet, ConnectionError
 from speaklater import _LazyString
 from werkzeug.routing import Rule
@@ -130,12 +131,15 @@ from flask import g, request, current_app, session
 
 def get_locale():
     # If a route has set a different locale availability, we will take that from g object
-    locale = request.accept_languages.best_match(g.available_locales, current_app.config['BABEL_DEFAULT_LOCALE'])
-    if 'locale' in request.args and request.args['locale'] in g.available_locales:
-        locale = request.args['locale']
-        session['locale'] = locale
-    elif session.get('locale',None) in g.available_locales:
-        locale = session.get('locale', None)  # If user have selected language
+    if 'available_locales' in g:
+        locale = request.accept_languages.best_match(g.available_locales, current_app.config['BABEL_DEFAULT_LOCALE'])
+        if 'locale' in request.args and request.args['locale'] in g.available_locales:
+            locale = request.args['locale']
+            session['locale'] = locale
+        elif session.get('locale', None) in g.available_locales:
+            locale = session.get('locale', None)  # If user have selected language
+    else:
+        locale = current_app.config.get('BABEL_DEFAULT_LOCALE','en')
     g.locale = locale
     # print "Got lang %s, available_locale %s" % (locale, g.available_locales)
     return locale
@@ -151,30 +155,55 @@ from markdown.util import etree
 import re
 
 
+class GalleryList(Treeprocessor):
+
+    def run(self, root):
+        for ul in root.findall('ul'):
+            if len(ul) and ul[0].text:
+                h_text = ul[0].text.strip()
+                if h_text in ['gallery-center', 'gallery-wide', 'gallery-side']:
+                    ul.set('class', 'gallery %s' % h_text)
+                    ul[0].set('class', 'hide')
+                    for li in list(ul)[1:]:
+                        li.set('class', 'gallery-item')
+                        a_el = etree.Element('a')
+                        a_el.set('href', '#')
+                        a_el.set('class', 'zoomable')
+                        a_el.extend(list(li))  # add all children of the list
+                        for e in li:
+                            li.remove(e)
+                        li.append(a_el)
+            # imgs = list(ul.iterfind('.//img'))
+            # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+            # # if there are same amount of images as text items, and the text is zero, we have only images in the list
+            # # however, they may be nested in other tags, e.g. a
+            # if ''.join(txts).strip() == '':  # All text nodes empty in the list
+
+
+
+
 class NewImagePattern(ImagePattern):
     def handleMatch(self, m):
         el = super(NewImagePattern, self).handleMatch(m)
         alt = el.get('alt')
         src = el.get('src')
-        parts = alt.rsplit('|', 1)
-        el.set('alt', parts[0])
-        cl = parts[1] if len(parts) == 2 else None
-        # if not re.match(r'http(s)?://|data',src):
-        #     src = ('/asset/image/thumbs/' if cl in ['gallery', 'thumb'] else '/asset/image/')+src
-        #     el.set('src', src)
-        if cl:
-            el.set('class', cl)
-        a_el = etree.Element('a')
-        a_el.set('class', 'lightbox')
+        # parts = alt.rsplit('|', 1)
+        # el.set('alt', parts[0])
+        # cl = parts[1] if len(parts) == 2 else None
+        # if cl:
+        #     el.set('class', cl)
+        a_el = etree.Element('p')
+        a_el.set('class', 'gallery')
         a_el.append(el)
-        a_el.set('href', src)
+        # a_el.set('href', src)
         return a_el
 
 
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
         # Insert instance of 'mypattern' before 'references' pattern
-        md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+        # md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+        md.treeprocessors['gallery'] = GalleryList()
 
 
 from jinja2 import Undefined

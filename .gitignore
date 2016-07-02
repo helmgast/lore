@@ -5,6 +5,7 @@
 *.pot
 *.sublime*
 fablr/config.py
+gfx/
 /.idea
 /.settings
 /.project

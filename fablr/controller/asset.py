@@ -1,14 +1,23 @@
 import logging
+import os.path
 from time import time
 
-from flask import Blueprint, current_app, redirect, url_for, g, request, Response
+from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
+from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
+from mongoengine import NotUniqueError, ValidationError
 from werkzeug.exceptions import abort
+from flask.ext.babel import lazy_gettext as _
+from werkzeug.utils import secure_filename
+from wtforms.widgets import Select
 
 from fablr.controller.pdf import fingerprint_pdf
 from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, RacModelConverter, \
-    ResourceAccessPolicy, ResourceError
-from fablr.model.asset import FileAsset, FileAccessType, ImageAsset
+    ResourceAccessPolicy, ResourceError, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
+    filterable_fields_parser, \
+    prefillable_fields_parser
+from fablr.model.asset import FileAsset, FileAccessType, ImageAsset, allowed_mimetypes
+from fablr.model.misc import slugify
 from fablr.model.shop import products_owned_by_user
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -25,7 +34,17 @@ file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug',
                                                   '_default': 'admin'
                                               }),
                                               post_edit_action='list')
-ResourceHandler.register_urls(asset_app, file_asset_strategy)
+
+
+# ResourceHandler.register_urls(asset_app, file_asset_strategy)
+
+
+def set_cache(rv, cache_timeout):
+    if cache_timeout is not None:
+        rv.cache_control.public = True
+        rv.cache_control.max_age = cache_timeout
+        rv.expires = int(time() + cache_timeout)
+    return rv
 
 
 # Inspiration
@@ -55,10 +74,7 @@ def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
         headers=headers,
         content_type=mimetype,
         direct_passthrough=True)
-    if cache_timeout is not None:
-        rv.cache_control.public = True
-        rv.cache_control.max_age = cache_timeout
-        rv.expires = int(time() + cache_timeout)
+    set_cache(rv, cache_timeout)
     if add_etags:
         rv.set_etag(md5)
     if conditional:
@@ -109,7 +125,187 @@ imageasset_strategy = ResourceRoutingStrategy(
 )
 
 
+class FileAssetsView(ResourceView):
+    route_base = '/media/'
+    access_policy = ResourceAccessPolicy({
+        'view': 'user',
+        'list': 'user',
+        'edit': 'editor',
+        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
+        '_default': 'admin'
+    })
+    model = FileAsset
+    list_template = 'fileasset_list.html'
+    item_template = 'fileasset_item.html'
+    form_class = model_form(FileAsset,
+                            # Allows editing slug, not normally done
+                            exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width', 'height'],
+                            base_class=RacBaseForm,
+                            converter=RacModelConverter())
+    list_arg_parser = filterable_fields_parser(
+        ['slug', 'owner', 'access_type', 'content_type', 'tags', 'length'],
+        choice=lambda x: x if x in ['single', 'multiple'] else 'multiple',
+        select=lambda x: x.split(','),
+        position=lambda x: x if x in ['gallery-center', 'gallery-side', 'gallery-wide'] else 'gallery-center'
+    )
+
+    item_arg_parser = prefillable_fields_parser(
+        ['slug', 'owner', 'access_type', 'tags', 'length'])
+
+    def index(self, **kwargs):
+        r = ListResponse(FileAssetsView, [('files', FileAsset.objects().order_by('-created_date'))], extra_args=kwargs)
+        r.auth_or_abort()
+
+        # This will re-order so that any selected files are guaranteed to show first
+        if r.args['select'] and len(r.args['select']) > 0:
+            r.prepare_query(paginate=False)
+            head, tail = [], []
+            for item in r.files:
+                if item.slug in r.args['select']:
+                    head.append(item)
+                else:
+                    tail.append(item)
+            r.files = head+tail
+            r.paginate()
+        else:
+            r.prepare_query()
+
+        return r
+
+    def get(self, id):
+        if id == 'post':
+            r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={'intent': 'post'})
+        else:
+            fileasset = FileAsset.objects(slug=id).first_or_404()
+            r = ItemResponse(FileAssetsView, [('fileasset', fileasset)])
+        r.auth_or_abort()
+        return r
+
+    def patch(self, id):
+        fileasset = FileAsset.objects(slug=id).first_or_404()
+
+        r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
+        if not isinstance(r.form, RacBaseForm):
+            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+        if not r.validate():
+            # return same page but with form errors?
+            flash(_("Error in form"), 'danger')
+            return r, 400  # BadRequest
+        r.form.populate_obj(fileasset)  # only populate selected keys. will skip empty selects!
+        r.commit()
+        return redirect(r.args['next'] or url_for('assets.FileAssetsView:get', id=fileasset.slug))
+
+    def post(self):
+        r = ItemResponse(FileAssetsView, [('fileasset', None)], method='post')
+        r.auth_or_abort()
+        fileasset = FileAsset()
+        if not r.validate():
+            flash(_("Error in form"), 'danger')
+            return r, 400
+        r.form.populate_obj(fileasset)
+        try:
+            r.commit(new_instance=fileasset)
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
+        return redirect(r.args['next'] or url_for('assets.FileAssetsView:get', id=fileasset.slug))
+
+    def file_selector(self, type):
+        kwargs = {
+            'out': 'modal',
+            'intent': 'patch',
+            'view': 'card',
+        }
+        if type == 'image':
+            kwargs['content_type__startswith'] = 'image/'
+        elif type == 'document':
+            kwargs['content_type__not__startswith'] = 'image/'
+        elif type == 'any':
+            pass  # no content_type requirement
+        else:
+            abort(404)
+        r = self.index(**kwargs)
+        return r
+
+    def delete(self, id):
+        abort(501)
+
+
+class ImagesView(ResourceView):
+    route_base = '/images/'
+    access_policy = ResourceAccessPolicy({
+        'view': 'public',
+        'list': 'public',
+        'edit': 'editor',
+        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
+        '_default': 'admin'
+    })
+    model = ImageAsset
+    list_template = 'imageasset_list.html'
+    # list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
+    item_template = 'imageasset_item.html'
+    # item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
+    form_class = model_form(ImageAsset, exclude=['image', 'mime_type', 'slug'], converter=RacModelConverter())
+
+    def index(self):
+        r = ListResponse(ImagesView, [('images', ImageAsset.objects().order_by('-created_date'))])
+        r.auth_or_abort()
+        # r.worlds = publish_filter(r.worlds).order_by('title')
+        r.prepare_query()
+        # set_theme(r, 'publisher', publisher.slug)
+
+        # Groups images into rows of reasonable aspect ratio to create a good masonry effect
+        max_aspect_per_row = 5
+        groups = []
+        sumaspect = 0.0
+        tmplist = []
+        for img in r.images:
+            aspect = img.image.width / float(img.image.height)
+            # Ensures we stay below aspect ratio 4:1 on a row, with exception that
+            # we'll always add one item to the row.
+            if sumaspect + aspect > max_aspect_per_row:  # row gets too wide
+                if tmplist:  # if we have a list from previous iteration, save it
+                    groups.append((tmplist, sumaspect))
+                sumaspect = 0
+                tmplist = []
+            sumaspect += aspect
+            tmplist.append(img)
+
+        r.groups = groups
+        return r
+
+    def post(self):
+        abort(501)
+
+
+ImagesView.register_with_access(asset_app, 'images')
+FileAssetsView.register_with_access(asset_app, 'files')
+
+
 class ImageAssetHandler(ResourceHandler):
+    default_per_page = 24  # Multiple of 2 and 3 looks best on most columns
+
+    def list(self, r):
+        r = super(ImageAssetHandler, self).list(r)
+
+        # Groups images into rows of reasonable aspect ratio to create a good masonry effect
+        groups = []
+        sumaspect = 0.0
+        tmplist = []
+        for img in r['images']:
+            aspect = img.image.width / float(img.image.height)
+            # Ensures we stay below aspect ratio 4:1 on a row, with exception that
+            # we'll always add one item to the row.
+            if sumaspect + aspect > 5:  # row gets too wide
+                if tmplist:  # if we have a list from previous iteration, save it
+                    groups.append((tmplist, sumaspect))
+                sumaspect = 0
+                tmplist = []
+            sumaspect += aspect
+            tmplist.append(img)
+
+        r['groups'] = groups
+        return r
+
     def new(self, r):
         '''Override new() to do some custom file pre-handling'''
         self.strategy.authorize(r['op'])
@@ -134,12 +330,12 @@ class ImageAssetHandler(ResourceHandler):
         return r
 
 
-ImageAssetHandler.register_urls(asset_app, imageasset_strategy)
+# ImageAssetHandler.register_urls(asset_app, imageasset_strategy)
 
 
 @asset_app.route('/')
 def index():
-    return redirect(url_for('.fileasset_list'))
+    return redirect(url_for('assets.FileAssetsView:index'))
 
 
 @current_app.route('/asset/link/<fileasset>')
@@ -154,12 +350,18 @@ def download(fileasset):
 
 @current_app.route('/asset/image/<slug>')
 def image(slug):
-    asset = ImageAsset.objects(slug=slug).first_or_404()
-    r = send_gridfs_file(asset.image.get(), mimetype=asset.mime_type)
+    asset = FileAsset.objects(slug=slug).first_or_404()
+    if asset.content_type and asset.content_type.startswith('image/'):
+        r = send_gridfs_file(asset.file_data.get(), mimetype=asset.content_type)
+    else:
+        r = redirect(url_for('static', filename='img/icon/%s-icon.svg' % secure_filename(asset.content_type)))
+        # Redirect default uses 302 temporary redirect, but we want to cache it for a while
+        set_cache(r, 10)  # 10 seconds, should be 2628000 = 1 month
     return r
 
 
 @current_app.route('/asset/image/thumbs/<slug>')
 def image_thumb(slug):
-    asset = ImageAsset.objects(slug=slug).first_or_404()
-    return send_gridfs_file(asset.image.thumbnail, mimetype=asset.mime_type)
+    return image(slug.lower())  # thumbs temporarily out of play
+    # asset = FileAsset.objects(slug=slug).first_or_404()
+    # return send_gridfs_file(asset.file_data.thumbnail, mimetype=asset.content_type)

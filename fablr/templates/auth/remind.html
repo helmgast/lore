@@ -1,4 +1,4 @@
-{% extends "_page.html" if not parent_template else parent_template %}
+{% extends "_page.html" %} {# Doesn't use root_template object as this will never be served as modal or fragment #}
 {# Note, we don't inherit from auth page here, because it contains lots of
 scripts we don't need for this simple page #}
 

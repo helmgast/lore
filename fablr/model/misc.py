@@ -7,7 +7,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-
+from collections import namedtuple
 from datetime import timedelta, date, datetime
 
 import wtforms as wtf
@@ -75,16 +75,28 @@ def translate_action(action, item):
         return ''
 
 
-def numerical_options(field_name, spans=None):
+FilterOption = namedtuple('FilterOption', 'kwargs label')
+
+
+def numerical_options(field_name, spans=None, labels=None):
     rv = []
     if not spans:
         raise ValueError("Need at least one value to span options for")
-    for s in spans:
-        if isinstance(s, tuple):
-            rv.append(({field_name + '__lte': s[0], field_name + '__gt': None}, s[1]))
+    own_labels = isinstance(labels, list)
+    if own_labels and len(labels) != len(spans) + 1:
+        raise ValueError("Need one label more than items in spans, as the last label 'More than [last value of spans]'")
+    for idx, span in enumerate(spans):
+        if own_labels:
+            rv.append(FilterOption(kwargs={field_name + '__lte': span, field_name + '__gt': None}, label=labels[idx]))
         else:
-            rv.append(({field_name + '__lte': s, field_name + '__gt': None}, _('Less than %(val)s', val=s)))
-    rv.append(({field_name + '__gt': spans[-1], field_name + '__lte': None}, _('More than %(val)s', val=spans[-1])))
+            rv.append(FilterOption(kwargs={field_name + '__lte': span, field_name + '__gt': None},
+                                   label=_('Less than %(val)s', val=span)))
+    # Add last filter value, as more than the highest value of span
+    if own_labels:
+        rv.append(FilterOption(kwargs={field_name + '__gt': spans[-1], field_name + '__lte': None}, label=labels[-1]))
+    else:
+        rv.append(FilterOption(kwargs={field_name + '__gt': spans[-1], field_name + '__lte': None},
+                               label=_('More than %(val)s', val=spans[-1])))
 
     def return_function(*args):
         return rv
@@ -94,13 +106,13 @@ def numerical_options(field_name, spans=None):
 
 def reference_options(field_name, model):
     def return_function(*args):
-        return [({field_name: o.slug}, o.title) for o in model.objects().distinct(field_name)]
+        return [FilterOption(kwargs={field_name: o.slug}, label=o.title) for o in model.objects().distinct(field_name)]
 
     return return_function
 
 
 def choice_options(field_name, choices):
-    rv = [({field_name: a}, b) for a, b in choices]
+    rv = [FilterOption(kwargs={field_name: a}, label=b) for a, b in choices]
 
     def return_function(*args):
         return rv
@@ -126,11 +138,22 @@ def datetime_options(field_name, time_deltas=None):
 
     def return_function(*args):
         # Rebuild above list of tuples to one with dict, and make time - timedelta
-        return [({x[0]: date.today() - x[2], x[1]: None}, x[3]) for x in rv]
+        return [FilterOption(kwargs={x[0]: date.today() - x[2], x[1]: None}, label=x[3]) for x in rv]
 
     return return_function
 
+
 from7to365 = [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedelta(days=365)]
+
+
+def distinct_options(field_name, model):
+    def return_function(*args):
+        values = model.objects().distinct(field_name)
+        rv = [FilterOption(kwargs={field_name: v}, label=v) for v in values]
+        return rv
+
+    return return_function
+
 
 Languages = Choices(
     en=_('English'),
@@ -386,7 +409,8 @@ class Address(EmbeddedDocument):
     zipcode = StringField(max_length=8, required=True, verbose_name=_('ZIP Code'))
     city = StringField(max_length=60, required=True, verbose_name=_('City'))
     # Tuples come unsorted, let's sort first
-    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), required=True, default=Countries.SE,
+    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), required=True,
+                          default=Countries.SE,
                           verbose_name=_('Country'))
     mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
 

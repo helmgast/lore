@@ -29,8 +29,9 @@
         {{ MACRO.FORM_FIELD(imageasset_form.description)}}
       </fieldset>
     </form>
+      
   </div>
-  <div class="tab-pane" id="modalgallery" data-remote="{{url_for('assets.imageasset_list', out='fragment')}}">...</div>
+  <div class="tab-pane" id="modalgallery" data-remote="{{url_for('assets.ImagesView:index', out='fragment')}}">...</div>
 </div>
 <div class="form-inline image-selected">
   <input type="text" class="form-control" id="imgcaption" style="width: 60%">

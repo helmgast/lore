@@ -1,4 +1,4 @@
-{% extends "_page.html" %}
+{% extends root_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block cssimports %}
@@ -100,10 +100,10 @@
                 <a class="blog_header"
                    href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
                     <h3>{{ article.title }}</h3></a>
-                {% if article.feature_image %}
+                {% if article.get_feature_image %}
                     <a class="pull-left"
                        href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
-                        <img class="media-object" src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}">
+                        <img class="media-object" src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
                     </a>
                 {% endif %}
                 <p class="lead">{% if article.description %}{{ article.description }}{% else %}

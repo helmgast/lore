@@ -37,7 +37,7 @@
                     {{ MACRO.FORM_FIELD(product_form.publisher) }}
                     {{ MACRO.FORM_FIELD(product_form.world) }}
                     {{ MACRO.FORM_FIELD(product_form.family) }}
-                    {{ MACRO.FORM_FIELD(product_form.created) }}
+                    {{ MACRO.FORM_FIELD(product_form.created, controlclass="flatpickr", data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
                     {{ MACRO.FORM_FIELD(product_form.type) }}
                     {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
                     {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
@@ -47,8 +47,12 @@
                     {{ product_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
-                    {{ MACRO.FORM_FIELD(product_form.feature_image, **{'data-imageselect':true}) }}
-                    {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='select2', **{'size': 18}) }}
+                    {# data_end becomes data-end automatically #}
+                    {{ MACRO.FORM_FIELD(product_form.images, controlclass='fileselect', data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
+
+                    {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='fileselect', data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document') }}
                 </div>
             </div>
             <div class="row form-actions">
@@ -56,12 +60,12 @@
                 <a href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"
                    class="btn btn-default">{{ _('Cancel') }}</a>
                 {% if product %}
-                    <a class="btn btn-danger pull-right" href="#deletemodal" data-toggle="modal">{{ _('Delete') }}</a>
+                    <a class="btn btn-danger pull-right" href="#confirm-modal" data-toggle="modal">{{ _('Delete') }}</a>
                 {% endif %}
             </div>
         </form>
         {% if product %}
-            {{ MACRO.DELETE_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE") ) }}
+            {{ MACRO.CONFIRM_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE"), _('delete') ) }}
         {% endif %}
     {% else %}
         <div class="row">
@@ -94,7 +98,11 @@
                     <tr>
                         <td><strong>{{ _('World') }}</strong></td>
                         <td>
+                            {% if product.world %}
                             <a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=product.world.slug) }}">{{ product.world }}</a>
+                            {% else %}
+                                {% trans %}No data{% endtrans %}
+                            {% endif %}
                         </td>
                     </tr>
                     <tr>
@@ -165,22 +173,26 @@
                             <div>{% if product.is_owned_by_current_user() %}<a
                                     href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
                                     class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
-                                <strong>{{ file_asset.title }}</strong>{% endif %}{% if file_asset.description %}:
+                                <strong>{{ file_asset.slug }}</strong>{% endif %}{% if file_asset.description %}:
                                 {{ file_asset.description }}{% endif %}</div>
                         {% endfor %}
                     </div>
                 {% endif %}
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 zoom-container">
                 <a id="{{ product.slug }}" class="btn btn-block btn-primary buy-link"
                    href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
                 <br>
-                {% if product.feature_image %}
-                    <a class="lightbox" href="{{ url_for('image', slug = product.feature_image.slug) }}"><img
-                            class="img-responsive" src="{{ url_for('image', slug = product.feature_image.slug) }}"></a>
-                {% else %}
-                    <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
-                {% endif %}
+                <div class="gallery feature-images" data-maxaspect="1">
+                    {% for img in product.images %}
+                        <a class="gallery-item zoomable" data-aspect="{{ img.aspect_ratio() }}"
+                           href="{{ url_for('image', slug = img.slug) }}"><img
+                                src="{{ url_for('image', slug = img.slug) }}"></a>
+                    {% else %}
+                        <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
+                    {% endfor %}
+                </div>
+
                 <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
             </div>
         </div>
@@ -196,8 +208,8 @@
     <script>
         var imageselect_options = {
             csrf_token: "{{ csrf_token() }}",
-            image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
-            image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+            image_list_url: "{{url_for('assets.ImagesView:index', per_page='all', out='modal')}}",
+            image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
         }
     </script>
 {% endblock %}

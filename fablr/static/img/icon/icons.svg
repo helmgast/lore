@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<symbol id="fablr-gallery-wide" viewBox="0 0 72 72"><path d="M4.5 24.5h64v24h-64v-24z"/><path d="M12.5 8.5h48v4h-48v-4zm0 8h48v4h-48v-4zm0 36h48v4h-48v-4zm0 8h48v4h-48v-4z"/></symbol>
+<symbol id="fablr-gallery-center" viewBox="0 0 72 72"><path d="M16.5 24.5h40v24h-40v-24z"/><path d="M12.5 8.5h48v4h-48v-4zm0 8h48v4h-48v-4zm0 36h48v4h-48v-4zm0 8h48v4h-48v-4z"/></symbol>
+<symbol id="fablr-gallery-side" viewBox="0 0 72 72"><path d="M44.5 8.5h20v32h-20v-32z"/><path d="M12.5 12.5h28v4h-28v-4zm0 8h28v4h-28v-4zm0 24h48v4h-48v-4zm0 16h48v4h-48v-4zm0-32h28v4h-28v-4zm0 8h28v4h-28v-4zm0 16h48v4h-48v-4z"/></symbol>
+</svg>

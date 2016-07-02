@@ -22,7 +22,7 @@ from flask.ext.classy import route
 from flask.ext.mongoengine.wtf import model_form
 from jinja2 import TemplateNotFound
 from mongoengine.queryset import Q
-from mongoengine import NotUniqueError
+from mongoengine import NotUniqueError, ValidationError
 from werkzeug.contrib.atom import AtomFeed
 
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
@@ -95,9 +95,7 @@ class PublishersView(ResourceView):
         try:
             r.commit(new_instance=publisher)
         except NotUniqueError as err:
-            r.form.title.errors.append('ID %s already in use')
-            flash(_("Error in form"), 'danger')
-            return r, 400
+            r.error_response(err)
         return redirect(r.args['next'] or url_for('world.PublishersView:get', id=publisher.slug))
 
     def patch(self, id):
@@ -155,7 +153,7 @@ class WorldAccessPolicy(ResourceAccessPolicy):
         if instance:
             if op == 'view' and instance.status in (PublishStatus.private, PublishStatus.archived, PublishStatus.draft):
                 return 'reader'
-        return None
+        return None  # means we will default to access level set in the policy
 
 
 class WorldsView(ResourceView):
@@ -165,6 +163,7 @@ class WorldsView(ResourceView):
         'view': 'public',
         'list': 'public',
         'edit': 'editor',
+        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
         '_default': 'admin'
     })
     model = World
@@ -178,8 +177,8 @@ class WorldsView(ResourceView):
     @route('/')
     def home(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
-        world = World.objects(slug=publisher_).first_or_404()
-        articles = Article.objects().filter(type='blogpost').order_by('-featured', '-created_date')
+        world = WorldMeta(publisher)
+        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.available_locales = lang_options
@@ -224,10 +223,11 @@ class WorldsView(ResourceView):
             g.available_locales = publisher.languages
         if id == 'post':
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.auth_or_abort(instance=publisher) # check auth scoped to publisher, as we want to create new
         else:
             r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
+            r.auth_or_abort()
             set_theme(r, 'world', r.world.slug)
-        r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         return r
 
@@ -297,6 +297,7 @@ class ArticlesView(ResourceView):
         'view': 'public',
         'list': 'public',
         'edit': 'editor',
+        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
         '_default': 'admin'
     })
     model = Article
@@ -306,7 +307,7 @@ class ArticlesView(ResourceView):
     item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
-                            exclude=['slug'],
+                            exclude=['slug', 'images', 'feature_image'],
                             converter=RacModelConverter())
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
@@ -377,13 +378,15 @@ class ArticlesView(ResourceView):
             r = ItemResponse(ArticlesView,
                              [('article', None), ('world', world), ('publisher', publisher)],
                              extra_args={'intent': 'post'})
+            # check auth scoped to world or publisher, as we want to create new and use them as parent
+            r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
         else:
             r = ItemResponse(ArticlesView,
                              [('article', Article.objects(slug=id).first_or_404()), ('world', world),
                               ('publisher', publisher)])
+            r.auth_or_abort()
             set_theme(r, 'article', r.article.theme or 'default')
 
-        r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
 
@@ -391,14 +394,15 @@ class ArticlesView(ResourceView):
 
     def post(self, publisher_, world_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
-        world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else  WorldMeta(publisher)
+        world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.available_locales = lang_options
         r = ItemResponse(ArticlesView,
                          [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
-        r.auth_or_abort()
+        # Check auth scoped to world or publisher, as we want to create new and use them as parent
+        r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
         article = Article()
@@ -408,10 +412,8 @@ class ArticlesView(ResourceView):
         r.form.populate_obj(article)
         try:
             r.commit(new_instance=article)
-        except NotUniqueError:
-            r.form.title.errors.append('ID already in use')
-            flash(_("Error in form"), 'danger')
-            return r, 400  # Respond with same page, including errors highlighted
+        except NotUniqueError as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
                                                   world_=world.slug))
 
@@ -434,7 +436,10 @@ class ArticlesView(ResourceView):
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article, request.form.keys())  # only populate selected keys
-        r.commit()
+        try:
+            r.commit()
+        except NotUniqueError as err:
+            return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, publisher_=publisher.slug,
                                                   world_=world.slug))
 

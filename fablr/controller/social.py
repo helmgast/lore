@@ -19,7 +19,7 @@ from flask.ext.babel import lazy_gettext as _
 
 from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, \
     RacModelConverter, \
-    ResourceAccessPolicy, Authorization
+    ResourceAccessPolicy, Authorization, get_root_template
 from fablr.model.user import User, Group, Member, Conversation, Message
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
@@ -38,9 +38,11 @@ user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter
 class UserAccessPolicy(ResourceAccessPolicy):
     def is_owner(self, op, instance):
         if g.user == instance:
-            return Authorization(True, _("User %(user)s allowed to %(op)s on own user profile", user=g.user, op=op), privileged=True)
+            return Authorization(True, _("User %(user)s allowed to %(op)s on own user profile", user=g.user, op=op),
+                                 privileged=True)
         else:
             return Authorization(False, _("Cannot access other user's user profile"))
+
 
 user_access = UserAccessPolicy({
     'view': 'owner',
@@ -174,4 +176,6 @@ social.add_app_template_filter(is_following)
 @current_app.login_required
 def index():
     following_messages = Message.objects(conversation=None, user__in=g.user.following).order_by('-pub_date')
-    return render_template('social/_page.html', following_message_list=following_messages)
+    return render_template('social/_page.html',
+                           root_template=get_root_template(request.args.get('out', None)),
+                           following_message_list=following_messages)

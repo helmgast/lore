@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
-from flask.ext.babel import lazy_gettext as _
+from flask.ext.babel import lazy_gettext as _, gettext
 from flask.ext.mongoengine import Document, DynamicDocument  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
@@ -66,7 +66,9 @@ class Product(Document):
     currency = StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek,
                            verbose_name=_('Currency'))
     status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
-    feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+    # TODO DEPRECATE in DB version 3
+    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset), verbose_name=_('Product Images'))
     acknowledgement = BooleanField(default=False, verbose_name=_('Name in book'))
     comment_instruction = StringField(max_length=20, verbose_name=_('Instructions for comments in order'))
     downloadable_files = ListField(ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
@@ -79,6 +81,10 @@ class Product(Document):
         self.slug = slugify(self.title)
         self.slug = slugify(self.title)
 
+    @property  # For convenience
+    def get_feature_image(self):
+        return self.images[0] if self.images else None
+
     def in_orders(self):
         # This raw query finds orders where at least on order_line includes this product
         q = Order.objects(__raw__={'order_lines': {'$elemMatch': {'product': self.id}}})
@@ -90,7 +96,7 @@ class Product(Document):
         super(Product, self).delete()
 
     def __unicode__(self):
-        return u'%s %s %s' % (self.title, _('by'), self.publisher)
+        return u'%s %s %s' % (self.title, gettext('by'), self.publisher)
 
     def is_owned_by_current_user(self):
         return g.user and (g.user.admin or self in products_owned_by_user(g.user))

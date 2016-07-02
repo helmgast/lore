@@ -17,7 +17,7 @@ from flask.ext.mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField)
 
-from asset import ImageAsset
+from asset import ImageAsset, FileAsset
 from misc import Choices, slugify, Address, Languages, choice_options, datetime_options, reference_options
 from user import User
 
@@ -45,7 +45,7 @@ GenderTypes = Choices(
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
-    title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
+    title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
     owner = ReferenceField(User, verbose_name=_('Owner'))  # TODO pick one of owner, creator
@@ -53,7 +53,10 @@ class Publisher(Document):
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+    # TODO DEPRECATE in DB version 3
+    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset), verbose_name=_('Publisher Images'))
+
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
     languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
@@ -61,20 +64,26 @@ class Publisher(Document):
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
     shop_enabled = BooleanField(default=False, verbose_name=_('Enable shop feature'))
 
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
     def __unicode__(self):
         return self.title
 
 
 class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
-    title = StringField(min_length=3, max_length=60, verbose_name=_('Title'))
+    title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))  # TODO set to required
     creator = ReferenceField(User, verbose_name=_('Creator'))
     rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
     created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+    # TODO DEPRECATE in DB version 3
+    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
+
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
     languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
@@ -83,6 +92,9 @@ class World(Document):
 
     def clean(self):
         self.slug = slugify(self.title)
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
 
     def __unicode__(self):
         return self.title
@@ -100,9 +112,14 @@ class WorldMeta(object):
     """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
     slug = 'meta'
     languages = []
+    editors = []
+    creator = None
 
     def __init__(self, publisher):
         self.publisher = publisher
+
+    def __unicode__(self):
+        return unicode(self.publisher) or u'Meta'
 
     def articles(self):
         return Article.objects(publisher=self.publisher, world=None).order_by('-created_date')
@@ -199,7 +216,9 @@ ArticleTypes = Choices(
 ArticleThemes = Choices(
     default=_('Default'),
     newspaper=_('Newspaper'),
-    inkletter=_('Ink Letter')
+    inkletter=_('Ink Letter'),
+    papernote=_('Paper Note'),
+    vintage_form=_('Vintage Form'),
 )
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
@@ -213,17 +232,20 @@ class Article(Document):
     world = ReferenceField(World, verbose_name=_('World'))
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))
     creator = ReferenceField(User, verbose_name=_('Creator'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
-    title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
+    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
+    title = StringField(min_length=1, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     featured = BooleanField(default=False, verbose_name=_('Featured article'))
-    feature_image = ReferenceField(ImageAsset, verbose_name=_('Feature Image'))
+    # TODO DEPRECATE in DB version 3
+    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset), verbose_name=_('Images'))
+
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
     theme = StringField(choices=ArticleThemes.to_tuples(),
                         default=ArticleThemes.default,
-                        verbose_name=_('Article Theme'))
+                        verbose_name=_('Theme'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
@@ -241,6 +263,9 @@ class Article(Document):
             new_type_data = Article.type_data_name(new_type)
             if new_type_data in EMBEDDED_TYPES and getattr(self, new_type_data) is None:
                 setattr(self, new_type_data, self._fields[new_type_data].document_type())
+
+    def long_title(self):
+        return u"%s - %s" % (self.world or self.world or u'Fablr', self)
 
     # Executes before saving
     def clean(self):

@@ -1,5 +1,8 @@
 {% extends "shop/_page.html" %}
 
+{% set product_icons = {'book':'book','item':'glass','digital':'floppy-disk','shipping':'barcode'} %}
+
+
 {% set currencies = {
   'eur' : '€ %s',
   'sek' : '%s :-'
@@ -27,7 +30,7 @@
         <h5>{% trans %}By time{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['created'] %}
-                {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
 
@@ -41,7 +44,7 @@
         <h5>{% trans %}By price{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['price'] %}
-                {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
         {% endif %}
@@ -63,10 +66,10 @@
                             class="glyphicon glyphicon-calendar"></span> {{ product.created.strftime('%Y-%m-%d') }}</li>
                 </ul>
                 <div class="media">
-                    {% if product.feature_image %}
+                    {% if product.get_feature_image %}
                         <a class="pull-left"
                            href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                            <img class="media-object" src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}">
+                            <img class="media-object" src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
                         </a>
                     {% endif %}
                     <div class="media-body">
@@ -106,13 +109,16 @@
 
         {% else %} {# ==table #}
             <div class="cards">
-                <div class="row">
                     {% for product in products %}
-                        <div class="col-md-4 product">
-                            {% if product.feature_image %}
-                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><img
-                                        class="product-image"
-                                        src="{{ url_for('image_thumb', slug=product.feature_image.slug) }}"></a>{% endif %}
+                        <div class="product">
+                            {% if product.get_feature_image %}
+                                <a class="product-cover" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"
+                                style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;">
+                            {% else %}
+                                <a class="product-cover" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                                <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
+                            {% endif %}
+                                </a>
                             <div class="product-intro">
                                 <h3>
                                     <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
@@ -127,8 +133,6 @@
                                 </li>
                             </ul>
                         </div>
-                        {% if loop.index is divisibleby 3 %}</div>
-                            <div class="row">{% endif %}
                     {% endfor %}
                     </div>
             </div>

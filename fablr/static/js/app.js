@@ -1,24 +1,75 @@
+svg4everybody(); // Do shim for IE support of external svg
+
+/* ========================================================================
+ * Helpers
+ * ========================================================================
+ * (c) Helmgast AB
+ */
 function flash_error(message, level, target) {
-    if (message.indexOf('__debugger__') > 0) {
+    message = message || 'Unknown error'
+    target = $(target)
+    if (!target.length)
+        target = $('#alerts')
+
+    if (message instanceof Object) {
+        var new_message = ''
+        Object.keys(message.errors).forEach(function(key, index) {
+            new_message += key + ': ' + message.errors[key] + ', '
+        });
+        message = new_message
+    } else if (message.indexOf('__debugger__') > 0) {
         // Response is a Flask Debugger response, overwrite whole page
         document.open();
         document.write(message);
         document.close();
-    } else {
-        var $error = $('<div class="alert alert-' + (level || 'warning') +
-            ' alert-dismissable"> <button type="button" class="close"' +
-            'data-dismiss="alert" aria-hidden="true">&times;</button>' +
-            '<p>' + message + '</p>' +
-            '</div>');
-        if (target) {
-            $(target).append($error)
-        } else {
-            $('#alerts').append($error)
-        }
+        return false
     }
+
+    var $error = $('<div class="alert alert-' + (level || 'warning') +
+        ' alert-dismissable"> <button type="button" class="close"' +
+        'data-dismiss="alert" aria-hidden="true">&times;</button>' +
+        '<p>' + message + '</p>' +
+        '</div>');
+    target.append($error)
 };
 
+function decompose_url(url) {
+    if (!url)
+        return {}
+    var a = document.createElement('a'), params = {}
+    a.href = decodeURIComponent(url)
+    // Search starts with ?, let's remove
+    var query_parts = a.search.substring(1,a.search.length).split('&')
+    for (var i = 0; i < query_parts.length; i++) {
+        var nv = query_parts[i].split('=');
+        if (!nv[0] || !nv[1]) continue;
+        params[nv[0]] = nv[1] || true;
+    }
+    var i = a.pathname.lastIndexOf("/")
+    var parts = {netloc: a.protocol +'//'+ a.hostname + (a.port ? ":"+a.port : ""), path: a.pathname.substring(0,i+1),
+        file: a.pathname.substring(i+1), hash: a.hash, params: params}
+    // Remove parts that where not in original URL
+    if (url.lastIndexOf('?', 0) === 0) {
+        $.extend(parts, {netloc: '', path: '', file: ''})
+    } else if (url.lastIndexOf('/', 0) === 0) {
+        $.extend(parts, {netloc: ''})
+    }
+    return parts
+}
 
+// Adds, replaces or removes from current URL param string
+function modify_url(url, new_params, new_url_parts) {
+    var url = decompose_url(url)
+    $.extend(url.params, new_params)
+    $.extend(url, new_url_parts || {})
+    return url.netloc + url.path + url.file + '?' + $.param(url.params) + url.hash;
+}
+
+/* ========================================================================
+ * Autosave
+ * ========================================================================
+ * (c) Helmgast AB
+ */
 +function ($) {
     'use strict';
 
@@ -50,29 +101,15 @@ function flash_error(message, level, target) {
         })
     }
 
-    $(window).on('load', function () {
-        $('form[data-autosave]').each(function () {
-            var $autosave_form = $(this)
-            $autosave_form.autosave($autosave_form.data())
-        })
-    })
+    // Loaded in the bottom of app.js
+    //$(window).on('load', function () {
+    //    $('form[data-autosave]').each(function () {
+    //        var $autosave_form = $(this)
+    //        $autosave_form.autosave($autosave_form.data())
+    //    })
+    //})
 }(jQuery);
 
-// var order_line = {
-//   product: {},
-//   total: {
-//     value: function() { self.quantity*self.price },
-//     render: function() { return value+":-"}
-//   },
-//   price: function() {},
-//   quantity: {
-//     value: 0,
-//   },
-// }
-
-// var order = {
-
-// }
 
 /* ========================================================================
  * Editable list
@@ -120,7 +157,7 @@ function flash_error(message, level, target) {
                 $this.find(selectors[$type].eachItem + selectors[$type].removeAt).css('position', 'relative').append($removeBtn)
                 $this.on('click', '.btn-delete', function () {
                     $(this).parents(selectors[$type].eachItem).first().remove()
-                    $this.trigger('rac.removed')
+                    $this.trigger('fablr.removed')
                 })
             }
             if ($addBtn) {
@@ -145,196 +182,15 @@ function flash_error(message, level, target) {
         })
     }
 
-    $(window).on('load', function () {
-        $('div, table, ul, ol').filter('[data-editable]').each(function () {
-            var $editablelist = $(this)
-            $editablelist.editablelist($editablelist.data())
-        })
-    })
+    // Loaded at bottom of app.js
+    //$(window).on('load', function () {
+    //    $('div, table, ul, ol').filter('[data-editable]').each(function () {
+    //        var $editablelist = $(this)
+    //        $editablelist.editablelist($editablelist.data())
+    //    })
+    //})
 }(jQuery);
 
-+function ($) {
-    'use strict';
-
-    $(window).on('load', function () {
-        $('textarea, input').filter('[data-formula]').each(function () {
-            var $t = $(this)
-            var particles = $t.data('formula').split("->")
-            var source = particles[0]
-            var $target = $(particles[1])
-            $t.on("change keyup paste", function () {
-                $target.html(eval(source))
-            })
-        })
-    })
-}(jQuery);
-
-/* ========================================================================
- * Fluid photoset
- * ========================================================================
- * From Terry Mun, http://codepen.io/terrymun/pen/GsJli
- */
-
-(function ($, sr) {
-// debouncing function from John Hann
-// http://unscriptable.com/index.php/2009/03/20/debouncing-javascript-methods/
-    var debounce = function (func, threshold, execAsap) {
-        var timeout;
-
-        return function debounced() {
-            var obj = this, args = arguments;
-
-            function delayed() {
-                if (!execAsap)
-                    func.apply(obj, args);
-                timeout = null;
-            };
-
-            if (timeout)
-                clearTimeout(timeout);
-            else if (execAsap)
-                func.apply(obj, args);
-
-            timeout = setTimeout(delayed, threshold || 100);
-        };
-    }
-    // smartresize
-    jQuery.fn[sr] = function (fn) {
-        return fn ? this.bind('resize', debounce(fn)) : this.trigger(sr);
-    };
-
-})(jQuery, 'smartresize');
-
-/*
- Wait for DOM to be ready
- */
-$(function () {
-    // Detect resize event
-    $(window).smartresize(function () {
-        // Set photoset image size
-        $('.gallery-row').each(function () {
-            var $pi = $(this).find('.gallery'),
-                cWidth = $(this).parent('.gallery').width();
-
-            // Generate array containing all image aspect ratios
-            var ratios = $pi.map(function () {
-                return $(this).find('img').data('aspect');
-            }).get();
-
-            // Get sum of widths
-            var sumRatios = 0, sumMargins = 0,
-                minRatio = Math.min.apply(Math, ratios);
-            for (var i = 0; i < $pi.length; i++) {
-                sumRatios += ratios[i] / minRatio;
-            }
-            ;
-
-            $pi.each(function () {
-                sumMargins += parseInt($(this).css('margin-left')) + parseInt($(this).css('margin-right'));
-            });
-
-            // Calculate dimensions
-            $pi.each(function (i) {
-                var minWidth = (cWidth - sumMargins) / sumRatios;
-                $(this).find('img')
-                    .height(Math.floor(minWidth / minRatio))
-                    .width(Math.floor(minWidth / minRatio) * ratios[i]);
-            });
-        });
-    });
-});
-
-function saveImgSize() {
-    $(this).data('org-width', $(this)[0].naturalWidth).data('org-height', $(this)[0].naturalHeight);
-    // $(this).data('org-width', $(this)[0].width).data('org-height', $(this)[0].height);
-
-}
-
-/* Wait for images to be loaded */
-$(window).on('load shown.bs.modal', function (e) {
-    // Store original image dimensions
-    $(e.target).find('.gallery img').each(saveImgSize);
-    $(window).resize();
-});
-
-// $(document).on('', function (e) {
-//     $(e.target).removeData('bs.modal'); // clears modals after they have been hidden
-// });
-
-$(document).ready(function () {
-    $("a[data-toggle='tooltip']").tooltip()
-});
-
-// function serializeObject(form) {
-//   var o = {};
-//   var a = form.serializeArray();
-//   $.each(a, function() {
-//     if (o[this.name] !== undefined) {
-//       if (!o[this.name].push) {
-//         o[this.name] = [o[this.name]];
-//       }
-//         o[this.name].push(this.value || '');
-//       } else {
-//         o[this.name] = this.value || '';
-//       }
-//   });
-//   return o;
-// };
-
-// jQuery.extend( {
-//   dictreplace: function(s, d) {
-//     if (s && d) {
-//       var p = s.split("__")
-//       for (i=1; i<p.length;i=i+2) {
-//         if (d[p[i]]) {
-//           p[i] = d[p[i]]
-//         }
-//       }
-//       return p.join('')
-//     }
-//     return s
-//   }
-// });
-
-// li class="total"
-// "/text=|#order_lines-0-quantityval/val| * |.product_price/text|"
-
-
-// +function ($) {
-//   'use strict';
-
-//     var self, CalcQuery = function (element, options) {
-//       var q = $(element).data('calcquery'), vars = q.match(/\|.+?\|/g), varmap = {}
-//       for (var i = 0, n=97; i<vars.length;i++) {
-//         if (!varmap[vars[i]]) {
-//           varmap[vars[i]] = String.fromCharCode(n++)
-//           q = q.replace(vars[i], varmap[vars[i]])
-//         }
-//       }
-//       for (var path in varmap) {
-//         var p_parts = path.split('|/')[1].split('/')
-//         var $path = $(p_parts[0])
-//       }
-//     }
-
-//     $.fn.calcquery = function (option) {
-//     return this.each(function () {
-//       var $this   = $(this)
-//       var data    = $this.data('rac.calcquery')
-//       var options = $.extend({}, CalcQuery.DEFAULTS, $this.data(), typeof option == 'object' && option)
-//       // If no data set, create a ImageSelect object and attach to this element
-//       if (!data) $this.data('rac.calcquery', (data = new CalcQuery(this, options)))
-//       // if (typeof option == 'string') data[option](_relatedTarget)
-//       // else if (options.show) data.show(_relatedTarget)
-//     })
-//   }
-//   $.fn.calcquery.Constructor = CalcQuery
-
-//   $(window).on('load', function () {
-//     $('[data-calcquery]').calcquery()
-//   })
-
-//  }(jQuery);
 
 /* ========================================================================
  * Image Selector
@@ -496,10 +352,10 @@ $(document).ready(function () {
     $.fn.imageselect = function (option) {
         return this.each(function () {
             var $this = $(this)
-            var data = $this.data('rac.imageselect')
+            var data = $this.data('fablr.imageselect')
             var options = $.extend(ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
             // If no data set, create a ImageSelect object and attach to this element
-            if (!data) $this.data('rac.imageselect', (data = new ImageSelect(this, options)))
+            if (!data) $this.data('fablr.imageselect', (data = new ImageSelect(this, options)))
             // if (typeof option == 'string') data[option](_relatedTarget)
             // else if (options.show) data.show(_relatedTarget)
         })
@@ -512,37 +368,321 @@ $(document).ready(function () {
 
 }(jQuery);
 
-$(window).on('load', function () {
-    var lb = $('.lightbox').imageLightbox({
-        onStart: function () {
-            $('<div id="imagelightbox-overlay"></div>').appendTo('body');
-            $('<a href="#" id="imagelightbox-close">Close</a>').appendTo('body')
-                .on('click touchend', function () {
-                    $(this).remove();
-                    lb.quitImageLightbox();
-                    return false;
-                });
-        },
-        onEnd: function () {
-            $('#imagelightbox-overlay').remove();
-            $('#imagelightbox-caption').remove();
-            $('#imagelightbox-close').remove();
-            $('#imagelightbox-loading').remove();
-        },
-        onLoadStart: function () {
-            $('#imagelightbox-caption').remove();
-            $('<div id="imagelightbox-loading"><div></div></div>').appendTo('body');
++function ($) {
+    'use strict';
+    var tempImage;
+    var FileUpload = function (element, options) {
+        var that = this;
+        this.$el = $(element);
+        this.$gallery = this.$el.closest('.gallery')
+        this.$form = this.$el.find('form')
+        this.options = options;
 
+        this.$el.find('#file_data').on('change', that.fileSelected.bind(this));
+
+        this.$el.find('label')
+            .on('drop', this.fileSelected.bind(this))
+            .on('dragover', function (e) {
+                e.stopPropagation()
+                e.preventDefault()
+                e.originalEvent.dataTransfer.dropEffect = 'copy'
+            })
+
+        //$form.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+        //e.preventDefault();
+        //e.stopPropagation();
+        //})
+        //.on('dragover dragenter', function() {
+        //$form.addClass('is-dragover');
+        //})
+        //.on('dragleave dragend drop', function() {
+        //$form.removeClass('is-dragover');
+        //})
+        //.on('drop', function(e) {
+        //droppedFiles = e.originalEvent.dataTransfer.files;
+        //});
+
+        tempImage = tempImage || new Image()
+        this.$el.find('#source_file_url').on('input', function (e) {
+            if (/^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
+                tempImage.onload = that.fileSelected.bind(that) // bind to set this to that when called
+                tempImage.src = e.target.value
+                e.target.style.color = ''
+            } else {
+                tempImage.src = ''
+                tempImage.onload = undefined
+                e.target.style.color = 'red'
+            }
+        })
+
+    }
+
+    FileUpload.prototype.fileSelected = function (e) {
+        var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files) || [e.target]
+        var formData, that = this; // save this reference as it will be changed inside nested functions
+
+        e.stopPropagation();
+        e.preventDefault();
+        if (files) {
+            $.each(files, function (i, file) {
+                var $fig;
+                formData = new FormData();
+                formData.append('csrf_token', that.$form.find('input[name=csrf_token]').val())
+                if (file.type && file.type.indexOf('image/') == 0) {
+                    var reader = new FileReader()
+                    $fig = $('<figure class="gallery-item loading loading-large"><img src=""></figure>')
+                    var img = $fig.find('img')
+                    reader.addEventListener("load", function () {
+                        img.attr('src', reader.result);
+                        $fig.data('aspect', img[0].width / img[0].height);
+                        that.$el.after($fig)
+                        that.$gallery.trigger('fablr.gallery-updated')
+                    }, false);
+                    // Read into a data URL for inline display
+                    reader.readAsDataURL(file);
+                    formData.append('file_data', file)
+                } else if (file.type) {
+                    var icon_url = that.options.static_url.replace('replace', 'img/icon/' + file.type.replace('/', '_') + '-icon.svg')
+                    $fig = $('<figure class="gallery-item loading loading-large"><img src="' + icon_url + '"></figure>')
+                    that.$el.after($fig)
+                    that.$gallery.trigger('fablr.gallery-updated')
+                    formData.append('file_data', file)
+                } else if (file.src) {
+                    formData.append('source_file_url', file.src)
+                    $fig = $('<figure class="gallery-item loading loading-large"></figure>')
+                    $fig.append(file)  // is a direct img node
+                    $fig.data('aspect', file.width / file.height);
+                    that.$el.after($fig)
+                    that.$gallery.trigger('fablr.gallery-updated')
+                }
+
+                if ($fig) {
+                    $.ajax({
+                        url: that.$form.attr('action'),
+                        type: 'POST',
+                        data: formData,
+                        dataType: 'json',
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        complete: function (jqXHR, textStatus) {
+                            if (textStatus != 'success' && textStatus != 'notmodified') {
+                                flash_error(jqXHR.responseJSON || jqXHR.responseText, 'danger', $modal.find('#alerts'))
+                                $fig.remove()
+                                that.$gallery.trigger('fablr.gallery-updated')
+                            } else {
+                                // Trigger all plugins on added content
+                                $fig.removeClass('loading loading-large');
+                            }
+                        }
+                    });
+                } else {
+                   flash_error('Unknown error', 'danger', $modal.find('#alerts'))
+                }
+
+
+            })
+            //
+            //} else if (e.target.src) {
+            //    formData = new FormData()
+            //    formData.append('source_file_url', e.target.src)
+            //} else {
+            //    var formData = null;
+        }
+        return false;
+        //formData.append('csrf_token', this.options.csrf_token)
+        //var xhr = new XMLHttpRequest();
+        //xhr.addEventListener("load", function () {
+        //    var res = JSON.parse(this.responseText)
+        //    if (this.status == 200 && res.next) {
+        //        that.imageSelected(res.next, res.item._id);
+        //    } else {
+        //        flash_error(res.message || 'unknown error', 'warning')
+        //    }
+        //}, false);
+        //xhr.open('POST', that.options.image_upload_url)
+        //xhr.send(formData) // does not work in IE9 and below
+        //e.preventDefault()
+    }
+
+    $.fn.fileupload = function (option) {
+        return this.each(function () {
+            var $this = $(this)
+            var data = $this.data('fablr.fileselect')
+            var options = $.extend(FileUpload.DEFAULTS, $this.data(), typeof option == 'object' && option)
+            // If no data set, create a FileSelect object and attach to this element
+            if (!data) $this.data('fablr.fileupload', (data = new FileUpload(this, options)))
+            // if (typeof option == 'string') data[option](_relatedTarget)
+            // else if (options.show) data.show(_relatedTarget)
+        })
+    }
+
+
+}(jQuery);
+
++function ($) {
+    'use strict';
+
+    var FileSelect = function (element, options) {
+        var that = this;
+        this.options = options
+        if (element) {
+            this.$element = $(element)
+            this.$element.addClass('hide')
+            this.$gallery =
+                $('<a class="gallery fileselect ' + (this.options.class || '') + '" contenteditable="false" data-toggle="modal" data-target="#themodal"></a>');
+            this.selectFiles($.map(this.$element.find(':selected'), function(el){
+               return {id: el.value, slug: el.text}
+            }));
+            this.$element.after(this.$gallery)
+
+            this.$gallery.on('hide.bs.modal.atbtn', function (e) {
+                // Images have been selected
+                that.selectFiles($.map($('#themodal').find("[data-selection]"), function (el) {
+                    return {id: el.id, slug: $(el).find('.slug').text().trim()}
+                }))
+            })
+        }
+    }
+    FileSelect.prototype.selectFiles = function (selected_files) {
+        var that = this, select_params = [], gallery_html = '', options_html = '';
+        (selected_files || []).forEach(function (file) {
+            gallery_html += '<figure class="gallery-item"><img src="' + that.options.image_url.replace('replace', file.slug) + '"></figure>'
+            options_html += '<option value="'+file.id+'" selected></option>';
+            select_params.push(file.slug)
+        });
+        if (!options_html)
+            options_html = '<option value="__None" selected>---</option>'
+        this.$gallery.attr('href', modify_url(that.options.endpoint, {select: select_params.join()}))
+        this.$gallery.html(gallery_html)
+        this.$element.html(options_html)
+        // TODO not working for some reason
+        this.$gallery.trigger('fablr.dom-updated')
+
+    }
+
+    $.fn.fileselect = function (option) {
+        return this.each(function () {
+            var $this = $(this)
+            var data = $this.data('fablr.fileselect')
+            var options = $.extend(FileSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
+            // If no data set, create a FileSelect object and attach to this element
+            if (!data) $this.data('fablr.fileselect', (data = new FileSelect(this, options)))
+        })
+    }
+
+    var defaultOptions = {};
+
+    $.extend(true, $.trumbowyg, {
+        langs: {
+            // jshint camelcase:false
+            en: {
+                fileselect: 'Select File',
+                file: 'File',
+                uploadError: 'Error'
+            }
         },
-        onLoadEnd: function () {
-            var description = $('a[href="' + $('#imagelightbox').attr('src') + '"] img').attr('alt');
-            if (description && description.length > 0)
-                $('<div id="imagelightbox-caption">' + description + '</div>').appendTo('body');
-            $('#imagelightbox-loading').remove();
+        // jshint camelcase:true
+
+        plugins: {
+            fileselect: {
+                init: function (trumbowyg) {
+                    trumbowyg.o.plugins.fileselect = $.extend(true, {}, defaultOptions, trumbowyg.o.plugins.fileselect || {fs_obj: new FileSelect('')});
+                    trumbowyg.o.imgDblClickHandler = function(e) { return false }
+                    trumbowyg.$c.on('click', '.gallery', function(e) {
+                        var $figure = $(this).closest('.gallery');
+                        select_image($figure)
+                        return false
+                    })
+                    // Below is hack to avoid exception on focusnode being null
+                    var r = document.createRange()
+                    r.setStart(trumbowyg.$ta[0],0)
+                    r.setEnd(trumbowyg.$ta[0],0)
+                    document.getSelection().addRange(r)
+                    console.log(document.getSelection().focusNode)
+
+                    var select_image = function($elem) {
+                        trumbowyg.saveRange();
+                        var select_params = [], insert_position = 'gallery-center';
+                        if ($elem instanceof jQuery) {
+                            $elem.find('img').each(function(i, el) {
+                                select_params.push(decompose_url(el.src).file) // take filename part of URL
+                            });
+                            if ($elem.hasClass('gallery-wide')){
+                                insert_position = 'gallery-wide'
+                            } else if ($elem.hasClass('gallery-side')){
+                                insert_position = 'gallery-side'
+                            }
+                        } else {
+                            // Select closest element which is a direct child of the editor, will not select text nodes
+                            $elem = $(trumbowyg.range && trumbowyg.range.startContainer).closest('.trumbowyg-editor > *')
+                            if (!$elem.parents('#content-editor').length)
+                                $elem = $('#content-editor *').first() // select first
+                            $elem = $('<p>').insertBefore($elem)
+                        }
+                        $('#themodal').modal('show', {href: modify_url(trumbowyg.o.image_select_url, {select: select_params.join(), position: insert_position})})
+                                .one('hide.bs.modal', {t: trumbowyg, $elem:$elem}, function (e) {
+                                    var $newelem, selected = $('#themodal').find("[data-selection]").sort(function(a,b){
+                                        return $(a).data('selection') > $(b).data('selection')
+                                    });
+                                    var insert_choice = $('#insert-position .active input'), insert_position = 'gallery-center'
+                                    if (insert_choice.length) {
+                                        insert_position = insert_choice[0].id
+                                    }
+                                    if (selected.length > 0) {
+                                        $newelem = $('<ul contenteditable="false" class="gallery '+insert_position+'"><li class="hide">'+insert_position+'</li></ul>')
+                                        if (insert_position=='gallery-wide')
+                                            $newelem.attr('data-maxaspect',100)
+                                        selected.each(function(i, el) {
+                                            var $el = $(el)
+                                            $newelem.append('<li class="gallery-item" data-aspect="'+$el.data('aspect')+'"><img src="'+$el.find('img')[0].src+'"></li>')
+                                        })
+                                        $(e.data.$elem).replaceWith($newelem)
+                                        $newelem.trigger('fablr.dom-updated')
+                                        //e.data.t.restoreRange()
+                                        //e.data.t.execCmd('insertImage', src, false, "donotuse");
+                                    } else {
+                                       $(e.data.$elem).remove() // it's now empty
+                                    }
+                                    e.data.t.syncCode();
+                                    e.data.t.semanticCode(false, true);
+                                    e.data.t.updateButtonPaneStatus();
+                                    e.data.t.$c.trigger('tbwchange');
+                            })
+                    }
+
+                    trumbowyg.addBtnDef('fileselect', {
+                        fn: select_image,
+                        ico: 'insert-image',
+                        tag: 'gallery'
+                    });
+                    //trumbowyg.addBtnDef('wide', {
+                    //    fn: function()
+                    //    tag:'wide'
+                    //});
+                    //trumbowyg.addBtnDef('center', {tag:'center'});
+                    //trumbowyg.addBtnDef('portrait', {tag:'portrait'});
+
+
+                },
+                //tagHandler: function(element, t) {
+                //    if (element.className.indexOf('gallery') > -1) {
+                //        if (element.className.indexOf('wide') > -1) {
+                //            return ['GALLERY', 'WIDE'];
+                //        } else if (element.className.indexOf('portrait') > -1) {
+                //            return ['GALLERY', 'PORTRAIT'];
+                //        } else {
+                //            return ['GALLERY', 'CENTER']; // fake tag, but will activate the gallery button
+                //        }
+                //    } else {
+                //        return '';
+                //    }
+                //}
+            }
         }
     });
-})
 
+}(jQuery);
 
 /**
  * jQuery Unveil
@@ -602,6 +742,11 @@ $(window).on('load', function () {
 
 })(window.jQuery || window.Zepto);
 
+/* ========================================================================
+ * Handle action buttons
+ * ========================================================================
+ * (c) Helmgast AB
+ */
 function post_action($t) {
     var vars, type = $t.data('action-type'), href = $t.attr('href'),
         action = href.replace(/.*\/([^/?]+)(\?.*)?\/?/, "$1"), // takes last word of url
@@ -614,7 +759,8 @@ function post_action($t) {
         vars = action_parent.find('input, textarea').serialize()
     }
     $t.button('reset') // reset button
-    $.post(href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline', vars, function (data) { // always add inline to the actual request
+    href = modify_url(href, {inline: true})
+    $.post(href, vars, function (data) { // always add inline to the actual request
         var $d = $(data), $a = $d.filter('#alerts')
         var action_re = new RegExp(action + '(\\/?\\??[^/]*)?$') // replace the action part of the url, leaving args or trailing slash intact
         switch (action) {
@@ -674,7 +820,7 @@ function handle_action(e) {
         // preparations
         switch ($t.data('action-type')) {
             case 'modal':
-                var href = $t.attr('href'), href = href + (href.indexOf('?') > 0 ? '&' : '?') + 'inline' //attach inline param
+                var href = $t.attr('href'), href = modify_url(href, {inline: true}) //attach inline param
 //          $('#themodal').data('modal').options.caller = $t P: options.caller deprecated as of Bootstrap 3?
                 $('#themodal').load(href).modal('show');
                 break;
@@ -688,15 +834,9 @@ function handle_action(e) {
     e.preventDefault()
 }
 
-
 $('body').on('click', '.m_action', handle_action)
 
-$('form select[data-role="chosen"]').chosen();
-$('form select[data-role="chosenblank"]').chosen();
-
-$('.select2').select2({allowClear: true});
-
-$('.select2').on('select2:unselect', function (e) {
+$('.selectize').on('selectize:unselect', function (e) {
     // TODO this is a hack to select the __None item, residing at index 0, to correctly empty the field
     if (e.currentTarget.selectedIndex == -1) {
         e.currentTarget.selectedIndex = 0;
@@ -713,22 +853,19 @@ $('a[data-dismiss="back"]').click(function (e) {
 
 //////////////// new modal code ///////////
 
-// Loads content from href into the modal (functionality was removed from bootstrap3)
-
 $('#themodal').on('show.bs.modal', function (event) {
-    var href = event.relatedTarget.href
-    if (href) {
-        $modal = $(this)
-        var dest = $modal.find('.modal-content')
-        dest.load(href + (href.indexOf('?') > 0 ? '&' : '?') + 'out=modal',
-            complete = function (responseText, textStatus, jqXHR) {
-                if (textStatus != 'success' || textStatus != 'notmodified')
-                {
-                    flash_error(responseText, 'danger', $modal.find('#alerts'))
-                }
-            });
+    if (event.relatedTarget.href) {
+        var $thm = $('#themodal')
+        // This is hack, normally remote would be populated but when launched manually from trumbowyg it isn't
+        $thm.data('bs.modal').options.remote = event.relatedTarget.href;
+        load_content(event.relatedTarget.href, $thm.find('.modal-content'));
     }
-})
+    $(document).one('hide.bs.modal', '#themodal', function (e) {
+        // We notify the originating button that modal was closed
+        $(event.relatedTarget).trigger('hide.bs.modal.atbtn')
+    });
+});
+
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
@@ -749,6 +886,52 @@ $modal.on('click', 'button[type="submit"]', function (e) {
     }
 });
 
+function load_content(href, target, base_href, append) {
+    var dest = $(target), parts = {}
+    if (base_href) {
+        parts = decompose_url(base_href)
+        parts = {netloc: parts.netloc, path:parts.path, file: parts.file}
+    }
+
+    href = modify_url(href, {out: dest.hasClass('modal-content') ? 'modal' : 'fragment'}, parts)
+    if (dest && href) {
+        $.get(href, function (data, textStatus, jqXHR) {
+            if (textStatus != 'success' && textStatus != 'notmodified') {
+                flash_error(data, 'danger', $modal.find('#alerts'))
+            } else {
+                if (append) {
+                    dest.append(data)
+                } else {
+                    dest.html(data)
+                }
+                // Trigger all plugins on added content
+                dest.trigger('fablr.dom-updated')
+            }
+        }, 'html');
+    }
+}
+
+$(document).on('click', '#content-editor a', function(e) {
+    return false; // Ignore clicks on links in editor so we dont leave page
+});
+
+$(document).on('click', '#themodal a', function (e) {
+    var $a = $(this), target = $a.attr('target'), $thm = $('#themodal')
+    if (target !== '_blank') {
+        load_content($a.attr('href'), target || $thm.find('.modal-content'), $thm.data('bs.modal').options.remote);
+        return false
+    } // else do nothing special
+});
+
+// Loads HTML fragment data into a container when a link is pressed
+$('body').on('click', '.loadlink', function (e) {
+    var $a = $(this), $parent = $a.parent()
+    load_content($a.attr('href'), $parent, null, true);
+    $a.remove()
+    return false;
+});
+
+// Send feedback to Slack
 $('#feedback-modal').on('submit', 'form', function (e) {
     var input = $(this).serializeArray()
     var type = input[0]['value'] || 'error'
@@ -773,4 +956,202 @@ $('#feedback-modal').on('submit', 'form', function (e) {
     e.preventDefault()
     $('#feedback-modal').modal('hide')
 });
-// hej
+
+$(document).on('click', '.selectable', function (e) {
+    var $target = $(e.currentTarget), sel = parseInt($target.attr('data-selection'));
+    var $parent = $target.parent(), multi = $parent.data('selectmultiple');
+    if (!multi) {
+        // If single select, always remove all other selections
+        $parent.find('[data-selection]').each(function (i, el) {
+            $(el).removeAttr('data-selection')
+        })
+    }
+    if (sel > 0) {
+        $target.removeAttr('data-selection') // Remove old selection
+        var $selected = $parent.find('[data-selection]');
+        $selected.each(function (i, el) {
+            var $el = $(el);
+            var n = parseInt($el.attr('data-selection'));
+            if (n > sel)
+                $el.attr('data-selection', n - 1)
+
+        });
+    } else {
+        var total = $parent.find('[data-selection]').length;
+        $target.attr('data-selection', total + 1) // Add new selection with last index
+        // No need to update previous selections
+    }
+});
+
+
+$(document).on('ready fablr.dom-updated fablr.gallery-updated', function (e) {
+    var list = $(e.target).find('.gallery');
+    if (!list.length)
+        list = [$(e.target)]; // the scope is gallery itself, so start from itself
+    $.each(list, function (i, el) {
+        var $el = $(el), max_aspect = $el.data('maxaspect') || 3.0, items = $el.find('.gallery-item'), sumaspect = 0.0,
+            row = [], aspect;
+        items.each(function (i, item) {
+            item = $(item)
+            row.push(item)
+            aspect = parseFloat(item.data('aspect')) || 1.0;
+            sumaspect += aspect;
+            if (sumaspect > max_aspect || i == items.length - 1) {
+                $.each(row, function (i, item) {
+                    var w = (100 - row.length) * (parseFloat(item.data('aspect')) || 1.0) / sumaspect;
+                    item.css('width', w + "%")
+                });
+                // set width for all in row
+                row = [];
+                sumaspect = 0.0
+            }
+        })
+    })
+});
+
+/* ========================================================================
+ * Loaders. Will run on document ready as well as own event fablr.dom-updated.
+ * Trigger fablr.dom-updated after adding content to dom. It will only apply
+ * the loaders on the e.target part of the tree (which by default is document)
+ * ========================================================================
+ */
+$(document).on('ready fablr.dom-updated', function (e) {
+    var scope = $(e.target)
+    scope.find("a[data-toggle='tooltip']").tooltip()
+    //scope.find('form select[data-role="chosen"]').chosen();
+    //scope.find('form select[data-role="chosenblank"]').chosen();
+    //scope.find('.selectize').selectize({allowClear: true});
+    //scope.find('.selectize-tags').selectize({allowClear: true, tags: true});
+    scope.find('.selectize').selectize()
+    scope.find('.selectize-tags').selectize({
+        delimiter: ',',
+        persist: false,
+        create: function (input) {
+            return {
+                value: input,
+                text: input
+            }
+        }
+    });
+    scope.find('.selectize-file').selectize({
+        render: {
+            item: function (item, escape) {
+                return '<img src="'+image_url.replace('replace', item.text) +'">';
+            }
+        }
+    });
+
+    flatpickr('.flatpickr')
+
+
+    scope.find('form[data-autosave]').each(function () {
+        var $autosave_form = $(this)
+        $autosave_form.autosave($autosave_form.data())
+    });
+    scope.find('div, table, ul, ol').filter('[data-editable]').each(function () {
+        var $editablelist = $(this)
+        $editablelist.editablelist($editablelist.data())
+    });
+    scope.find('select.fileselect').fileselect({image_url: image_url});
+    scope.find('.file-upload').fileupload({static_url: static_url});
+    scope.find('.zoom-container .zoomable').on('click', function (e) {
+        var $el = $(e.delegateTarget), $img = $el.find('img')
+        var screenAspect = document.documentElement.clientWidth / document.documentElement.clientHeight;
+        var img_aspect = $img.width() / $img.height()
+        $el.toggleClass('zoomed')
+        if (img_aspect > screenAspect) { // wider than screen
+            $img.toggleClass('fill-width')
+        } else {
+            $img.toggleClass('fill-height')
+        }
+        return false;
+    });
+
+});
+
+// function serializeObject(form) {
+//   var o = {};
+//   var a = form.serializeArray();
+//   $.each(a, function() {
+//     if (o[this.name] !== undefined) {
+//       if (!o[this.name].push) {
+//         o[this.name] = [o[this.name]];
+//       }
+//         o[this.name].push(this.value || '');
+//       } else {
+//         o[this.name] = this.value || '';
+//       }
+//   });
+//   return o;
+// };
+
+// jQuery.extend( {
+//   dictreplace: function(s, d) {
+//     if (s && d) {
+//       var p = s.split("__")
+//       for (i=1; i<p.length;i=i+2) {
+//         if (d[p[i]]) {
+//           p[i] = d[p[i]]
+//         }
+//       }
+//       return p.join('')
+//     }
+//     return s
+//   }
+// });
+
+// li class="total"
+// "/text=|#order_lines-0-quantityval/val| * |.product_price/text|"
+
+
+// +function ($) {
+//   'use strict';
+
+//     var self, CalcQuery = function (element, options) {
+//       var q = $(element).data('calcquery'), vars = q.match(/\|.+?\|/g), varmap = {}
+//       for (var i = 0, n=97; i<vars.length;i++) {
+//         if (!varmap[vars[i]]) {
+//           varmap[vars[i]] = String.fromCharCode(n++)
+//           q = q.replace(vars[i], varmap[vars[i]])
+//         }
+//       }
+//       for (var path in varmap) {
+//         var p_parts = path.split('|/')[1].split('/')
+//         var $path = $(p_parts[0])
+//       }
+//     }
+
+//     $.fn.calcquery = function (option) {
+//     return this.each(function () {
+//       var $this   = $(this)
+//       var data    = $this.data('fablr.calcquery')
+//       var options = $.extend({}, CalcQuery.DEFAULTS, $this.data(), typeof option == 'object' && option)
+//       // If no data set, create a ImageSelect object and attach to this element
+//       if (!data) $this.data('fablr.calcquery', (data = new CalcQuery(this, options)))
+//       // if (typeof option == 'string') data[option](_relatedTarget)
+//       // else if (options.show) data.show(_relatedTarget)
+//     })
+//   }
+//   $.fn.calcquery.Constructor = CalcQuery
+
+//   $(window).on('load', function () {
+//     $('[data-calcquery]').calcquery()
+//   })
+
+//  }(jQuery);
+
+//+function ($) {
+//    'use strict';
+//
+//    $(window).on('load', function () {
+//        $('textarea, input').filter('[data-formula]').each(function () {
+//            var $t = $(this)
+//            var particles = $t.data('formula').split("->")
+//            var source = particles[0]
+//            var $target = $(particles[1])
+//            $t.on("change keyup paste", function () {
+//                $target.html(eval(source))
+//            })
+//        })
+//    })
+//}(jQuery);

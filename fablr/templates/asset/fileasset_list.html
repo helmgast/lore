@@ -1,35 +1,196 @@
 {% extends "asset/_page.html" if not parent_template else parent_template %}
 
-{% block content %}
-{% if files %}
-<table class="table">
-    <thead>
-    <tr>
-        <td>{{_('File')}}</td>
-        <td>{{_('Filename')}}</td>
-        <td>{{_('Access type')}}</td>
-        <td>{{_('File size')}}</td>
-        <td>{{_('Actions')}}</td>
-    </tr>
-    </thead>
-    <tbody>
-    {% for fileasset in files %}
-    <tr>
-        <td><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug)}}">{{fileasset.title}}</a></td>
-        <td>{{fileasset.source_filename}}</td>
-        <td>{{fileasset.get_access_type_display()}}</td>
-        <td>{{fileasset.file_data.length|filesizeformat}}</td>
-        <td>
-          <a href="{{ url_for('link', fileasset=fileasset.slug) }}" title="{% trans %}Open file{% endtrans %}"><span class="glyphicon glyphicon-play-circle"></span></a>
-          <a href="{{ url_for('download', fileasset=fileasset.slug) }}" title="{% trans %}Download file{% endtrans %}"><span class="glyphicon glyphicon-save"></span></a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% include "includes/pagination.html" %}
+{% set modal = (args['out'] == 'modal') %}
 
-{% else %}
-<h3>{{_('No file assets available!')}}</h3>
-{% endif %}
+{% block cssimports %}
+    <meta name="pinterest" content="nopin"/>
+    {{ super() }}
+{% endblock %}
+
+{% block sidebar %}{{ super() }}
+    {% if filter_options %}
+        {{ MACRO.LIST_CONTROLS(model, args, ['slug', 'owner', 'access_type', 'tags']) }}
+
+        <h5>{% trans %}By owner{% endtrans %}</h5>
+        <div class="btn-set">
+            {{ MACRO.ARG_LINK(_('Myself'), {'owner':g.user.id, 'owner__ne':none}) }}
+            {{ MACRO.ARG_LINK(_('Others'), {'owner':none, 'owner__ne':g.user.id}) }}
+        </div>
+
+        <h5>{% trans %}By tag{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['tags'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By access type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['access_type'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By content type{% endtrans %}</h5>
+        <div class="btn-set">
+            {{ MACRO.ARG_LINK('image', {'content_type__startswith':'image/'}) }}
+            {{ MACRO.ARG_LINK('other', {'content_type__startswith':'application/'}) }}
+        </div>
+
+        <h5>{% trans %}By size{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['length'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if not args.get('view') or args.get('view') == 'table' %}
+        {% if files %}
+            <table class="table">
+                <thead>
+                <tr>
+                    <td>{{ _('File') }}</td>
+                    <td>{{ _('Tags') }}</td>
+                    <td>{{ _('Access type') }}</td>
+                    <td>{{ _('File size') }}</td>
+                    <td>{{ _('Actions') }}</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for fileasset in files %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}">{{ fileasset.slug }}</a>
+                        </td>
+                        <td>
+                            {% for t in fileasset.tags %}
+                                <span class="badge">{{ t }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>{{ fileasset.get_field_display('access_type') }}</td>
+                        <td>{{ fileasset.file_data.length|filesizeformat }}</td>
+                        <td>
+                            <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Open file{% endtrans %}"><span class="glyphicon glyphicon-link"></span></a>
+                            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Download file{% endtrans %}"><span
+                                    class="glyphicon glyphicon-cloud-download"></span></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% include "includes/pagination.html" %}
+        {% else %}
+            <h3>{{ _('No file assets available!') }}</h3>
+        {% endif %}
+    {% else %}
+        {% set patch = args.get('intent',None)=='patch' %}
+        {% if modal %}
+            <div class="btn-set margin-below">
+                {% for opt in filter_options['tags'] %}
+                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+                {% endfor %}
+                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}) }}
+                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}) }}
+                <small>Insert position:</small>
+                <div id="insert-position" class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-center' }}">
+                        <input type="radio" name="gallery-class" id="gallery-center"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-center' }}>
+                        <svg>
+                            <use xlink:href="{{ iconpath }}#fablr-gallery-center"></use>
+                        </svg>
+                    </label>
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-wide' }}">
+                        <input type="radio" name="gallery-class" id="gallery-wide"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-wide' }}>
+                        <svg>
+                            <use xlink:href="{{ iconpath }}#fablr-gallery-wide"></use>
+                        </svg>
+                    </label>
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-side' }}">
+                        <input type="radio" name="gallery-class" id="gallery-side"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-side' }}>
+                        <svg>
+                            <use xlink:href="{{ iconpath }}#fablr-gallery-side"></use>
+                        </svg>
+                    </label>
+                </div>
+            </div>
+
+        {% endif %}
+        {% if files %}
+            <div class="gallery zoom-container" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
+                {% if patch and args.get('out') != 'fragment' %}
+                    <div class="file-upload form-group gallery-item" data-aspect="2">
+                        <form action="{{ url_for('assets.FileAssetsView:post') }}">
+                            {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
+                            <label for="file_data"
+                                   title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">
+                                <img src="{{ url_for('static', filename='img/icon/upload2-1.svg') }}">
+                            </label>
+                            <input type="text" class="form-control input-sm" id="source_file_url" pattern="https?://.+"
+                                   placeholder="{% trans %}Paste file URL here{% endtrans %}">
+                            {% if args['fields'].get('content_type__startswith', '')=='image/' %}
+                                {% set upload_accept = 'image/*' %}
+                            {% elif args['fields'].get('content_type__not__startswith', '')=='image/' %}
+                                {% set upload_accept = '.pdf,.rtf,.zip,.doc,.xls,.txt' %}
+                            {% endif %}
+
+                            <input multiple type="file" class="hide" name="file_data" id="file_data"
+                                   accept="{{ upload_accept }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        </form>
+                    </div>
+                {% endif %}
+                {% block fragment %}
+                    {% set patch = args.get('intent',None)=='patch' %} {# need this again as we're in a new block #}
+                    {% for fileasset in files %}
+                        {% if fileasset.slug in args['select'] %}
+                            {% set selection = 'data-selection=%i'|format(args['select'].index(fileasset.slug) + 1) %}
+                        {% else %}
+                            {% set selection='' %}
+                        {% endif %}
+                        <figure class="gallery-item{{ ' selectable' if patch }}"
+                                data-aspect="{{ fileasset.aspect_ratio() }}"
+                                {{ selection }} id="{{ fileasset.id }}">
+                            {% if not patch %}
+                                <a class="zoomable" href="#">
+                            {% endif %}
+                            <img src="{{ url_for('image', slug = fileasset.slug, _external=true) }}">
+                            {% if not patch %}
+                                </a>
+                            {% endif %}
+                            <figcaption><a class="slug"
+                                           href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"
+                                    {{ 'target=_blank' if modal else '' }}>
+                                {{ fileasset.slug }}</a>
+                                <br>[{{ fileasset.created_date.strftime("%Y-%m-%d") }} {{ fileasset.width }}x{{ fileasset.height }}
+                                px]
+                            </figcaption>
+                        </figure>
+                    {% endfor %}
+                    {% if pagination and pagination.has_next %}
+                        <a class="btn btn-primary pagination loadlink" target="#show-more-link"
+                           href="{{ current_url(page=pagination.next_num, _external=true) }}">
+                            {% trans %}Show more{% endtrans %}</a>
+                    {% endif %}
+                {% endblock fragment %}
+            </div>
+        {% else %}
+            <h3>{{ _('No file assets available!') }}</h3>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block final %}
+    {{ super() }}
+    {#<script type="text/javascript" src="{{ url_for('static', filename="js/minimal-lightbox.js") }}"></script>#}
+    {#    <script>#}
+    {#    var fablr_lightbox = true;#}
+    {#    </script>#}
 {% endblock %}

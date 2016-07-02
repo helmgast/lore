@@ -15,7 +15,7 @@ import urllib
 from flask import Flask, render_template, request, url_for, flash, g
 from flaskext.markdown import Markdown
 
-from fablr.controller.resource import ResourceError
+from fablr.controller.resource import ResourceError, get_root_template
 
 
 def create_app(no_init=False, **kwargs):
@@ -198,7 +198,9 @@ def configure_hooks(app):
 
     @app.context_processor
     def inject_access():
-        return dict(access_policy=app.access_policy, locale_dict=Languages)
+        return dict(access_policy=app.access_policy,
+                    locale_dict=Languages,
+                    iconpath=url_for('static', filename='img/icon/icons.svg'))
 
     @app.add_template_global
     def in_current_args(testargs):
@@ -237,6 +239,11 @@ def configure_hooks(app):
             return u
             # We are just changing url parameters, we can do a quicker way
 
+    # @app.errorhandler(404)
+    # def not_found(err):
+    #     print err
+    #     raise err
+
     @app.errorhandler(ResourceError)
     def resource_error(err):
         # if request.args.has_key('debug') and current_app.debug:
@@ -245,6 +252,7 @@ def configure_hooks(app):
         if err.status_code == 400:  # bad request
             if err.template:
                 flash(err.message, 'warning')
+                err.template_vars['root_template'] = get_root_template(request.args.get('out', None))
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 

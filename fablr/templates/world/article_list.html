@@ -24,20 +24,20 @@
     <h5>{% trans %}By type{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['type'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
 
     <h5>{% trans %}By created date{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['created_date'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
     {% endif %}
 {% endblock %}
 
-{% block hero_box %}{# Emtpy it #}
+{% block cover %}
 {% endblock %}
 
 {% block content %}
@@ -62,11 +62,11 @@
                         </li>
                     </ul>
                     <div class="media">
-                        {% if article.feature_image %}
+                        {% if article.get_feature_image %}
                             <a class="pull-left"
                                href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
                                 <img class="media-object"
-                                     src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}">
+                                     src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
                             </a>
                         {% endif %}
                         <div class="media-body">
@@ -83,10 +83,10 @@
                 <div class="row">
                 {% for article in group.list %}
                     <div class="col-md-4 product">
-                        {% if article.feature_image %}
+                        {% if article.get_feature_image %}
                             <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><img
                                     class="product-image"
-                                    src="{{ url_for('image_thumb', slug=article.feature_image.slug) }}"></a>{% endif %}
+                                    src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}"></a>{% endif %}
                         <ul class="product-details">
                             <li class="product-type">{{ article.get_type_display() }} {{ article.created_date.strftime('%Y-%m-%d') }}</li>
                         </ul>

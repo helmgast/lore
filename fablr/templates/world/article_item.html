@@ -2,59 +2,60 @@
 
 {% set article_type = article.type if article else args['fields'].get('type','default') %}
 {% if article_form %}
-  {% set type_form = article_form[article_type+'data'] %}
+    {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
 
 {% if not article %}
-  {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
+    {% set tagline = world.title %}
+    {% set title = 'New '+article_type+' article' %}
 {% else %}
-  {% set tagline = article.get_type_display() %} {% set title = article.title %}
+    {% set tagline = article.get_type_display() %}
+    {% set title = article.title %}
 {% endif %}
 
 {% if request.args.has_key('markdown') %}
- {% set markdown=true %}
+    {% set markdown=true %}
 {% endif %}
 
+
+{% block content_title %}{{ article.long_title() if article else (world or publisher) ~ ' - ' ~ title }}{% endblock %}
+
+
 {% block sidebar %}
-{{super()}}
-{% if intent!='post' %}
-{% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-{% include 'world/article_action_menu.html' %}
-{% endcall %}
-{% endif %}
+    {{ super() }}
+    {% if article %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
+            {% include 'world/article_action_menu.html' %}
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block cssimports %}
-{{ super() }}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/print.css')}}" type="text/css" media="print" />
+    <link href="{{ url_for('static', filename='js/trumbo/ui/trumbowyg.min.css') }}" rel="stylesheet">
+    {# Add before parent so we can override trumbo's styles #}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" type="text/css" media="print"/>
 {% endblock %}
 
 {% block jsimports %}
-{{ super() }}
-<script src="{{ url_for('static', filename='js/autosize.min.js') }}"></script>
+    {{ super() }}
+    <script src="{{ url_for('static', filename='js/autosize.min.js') }}"></script>
 {% endblock %}
 
 
 {% block opengraph %}
-{{ MACRO.OG_ARTICLE(article) }}
+    {{ MACRO.OG_ARTICLE(article) }}
 {% endblock %}
 
 {% block middle %}
 
-{#### FORM ####}
-{% if article_form %}
+    {#### FORM ####}
+    {% if article_form %}
 
-<form role="form" id='articleform' method="post" action="{{ action_url }}">
-    {{ article_form.csrf_token }}
-    {{ article_form.title(style="display:none;") }}
-    <h1 class="article_header">
-        <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
-        <small>{{ tagline }}</small>
-  </h1>
-{% if article_form.title.errors %}
-    <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
-{% endif %}
-{#
+        <form role="form" id='articleform' method="post" action="{{ action_url }}">
+            {{ article_form.csrf_token }}
+
+            {#
 <div class="tab-content content-panel">
   <div class="tab-pane fade" id="focus"></div>
 
@@ -83,240 +84,191 @@
     </div>
   </div>
 </div>#}
-<div class="row">
-  <div class="col-md-9 article_text">
-    {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide' if not markdown else '' }) }}
-    {% if not markdown %}
-    <div id="content-editor" class="content{{' '}}" contenteditable="true"><p class="hide" contenteditable="false"></p>
-    {{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
-    </div>
-    <span id="hinter"></span>
-    <div class="bubble-bar" id="text-options">
-      <div class="options">
-        <span class="no-overflow">
-          <span class="lengthen ui-inputs">
-            <button type="button" class="url"><span class="glyphicon glyphicon-link"></span></button>
-            <input class="url-input" type="text" placeholder="{{ _('Type or Paste URL here') }}"/>
-            <button type="button" class="bold">b</button>
-            <button type="button" class="italic">i</button>
-            <button type="button" class="quote">&rdquo;</button>
-          </span>
-        </span>
-      </div>
-    </div>
-    <div class="bubble-bar" id="margin-options">
-      <div class="options ui-inputs">
-        <a href="#" data-target=""><span class="glyphicon glyphicon-picture"></span></a>
-      </div>
-    </div>
-    {% endif %}
+            <div class="row">
+                <div class="col-md-9 article_text">
+            <h1 class="article_header">
+                {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
+                <small>{{ tagline }}</small>
+            </h1>
+            {% if article_form.title.errors %}
+                <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
+            {% endif %}
 
-  </div>
-  <div class="col-md-3 article_comment">
-    {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
+                    {#                    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' input-sm fixed-width',#}
+{#                placeholder=_('Optional, 500 characters. If not entered, will use beginning of article content.')) }}#}
+
+                    {#                    'class':'hide' if not markdown else ''#}
+                    {% if not markdown %}
+                        <div id="content-editor" placeholder="{{ _('Start writing here!') }}">{{ article_form.content.data|markdown|trim if article_form.content.data }}</div>
+                    {% endif %}
+                    {{ article_form.content(class="form-control", placeholder=_('Start writing here!')) }}
+
+                </div>
+                <div class="col-md-3 article_comment form-horizontal">
+                    {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
       <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
       <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
       <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
     #}
-      {% if not article or not article.is_published() %}
-      <button type="submit" name="status" value="published" class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>
-      {% endif %}
+                    {% if not article or not article.is_published() %}
+                        <button type="submit" name="status" value="published"
+                                class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>
+                    {% endif %}
 
-      <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>
+                    <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>
 
-    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' input-sm fixed-width')}}
-    {{ MACRO.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
-    {{ MACRO.FORM_FIELD(article_form.status, controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.created_date, controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.type, controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.world,controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.license,controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.theme,controlclass=' input-sm') }}
-    {{ MACRO.FORM_FIELD(article_form.editors,controlclass=' input-sm select2') }}
-    {{ MACRO.FORM_FIELD(article_form.readers,controlclass=' input-sm select2') }}
+                    {{ MACRO.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
+                    {{ MACRO.FORM_FIELD_COLS(article_form.status, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                    {{ MACRO.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
+
+                    {{ MACRO.FORM_FIELD_COLS(article_form.type, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                    {{ MACRO.FORM_FIELD_COLS(article_form.world, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                    {{ MACRO.FORM_FIELD_COLS(article_form.license, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                    {{ MACRO.FORM_FIELD_COLS(article_form.theme, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                    {{ MACRO.FORM_FIELD(article_form.editors,controlclass=' input-sm selectize') }}
+                    {{ MACRO.FORM_FIELD(article_form.readers,controlclass=' input-sm selectize') }}
 
 
-    <input type="hidden" name="feature_image" id="feature_image" value="" />
-    {% if g.user.id %}
-      <input type="hidden" name="creator" value="{{g.user.id}}" />
-    {% endif %}
+                    <input type="hidden" name="feature_image" id="feature_image" value=""/>
+                    {% if g.user.id %}
+                        <input type="hidden" name="creator" value="{{ g.user.id }}"/>
+                    {% endif %}
 
-  </div>
-</div>
-</form>
+                </div>
+            </div>
+        </form>
 
-{#### PAGE ####}
-{%- else -%}
-<h1 class="article_header">{{ title }}
-    <small>{{ tagline }}</small>
-</h1>
-<ul class="nav nav-tabs content-menu">
-  {% set articlegroups = article.articlegroups|list %}
-  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
-    {%- if article.creator %}
-    {% if access_policy['user'].authorize('view') %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}
-    {%- else -%}System{%- endif -%}</li>
-  <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  {% if articlegroups or g.user %}
-  <li class="content-menu-info" title="{{ _('Visibility') }}"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-  {% endif %}
-  {% if g.user %}
-  <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-  <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
-  {% endif %}
-  {% if not article.is_published() %}
-  <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Print') }}</li>
-  {% endif %}
-<li class="content-menu-info" title=""><a href="javascript:window.print()"><span class="glyphicon glyphicon-print"></span></a></li>
-</ul>
+        {#### PAGE ####}
+    {%- else -%}
+        <h1 class="article_header">{{ title }}
+            <small class="article_tagline">{{ tagline }}</small>
+        </h1>
+        <ul class="nav nav-tabs content-menu margin-below">
+            {% set articlegroups = article.articlegroups|list %}
+            <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
+                {%- if article.creator %}
+                    {% if access_policy['user'].authorize('view') %}
+                        <a href="{{ url_for('social.user_view', user=article.creator.identifier()) }}">{{ article.creator }}</a>
+                    {% else %}
+                        {{ article.creator }}{% endif %}
+                {%- else -%}System{%- endif -%}</li>
+            <li class="content-menu-info" title="{{ _('Created') }}"><span
+                    class="glyphicon glyphicon-calendar"></span> {{ article.created_date.strftime('%Y-%m-%d') }}</li>
+            {% if articlegroups or g.user %}
+                <li class="content-menu-info" title="{{ _('Visibility') }}"><span
+                        class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}
+                </li>
+            {% endif %}
+            {% if g.user %}
+                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i
+                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
+                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i
+                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
+            {% endif %}
+            {% if not article.is_published() %}
+                <li class="content-menu-info" title="{{ _('Unpublished') }}"><span
+                        class="glyphicon glyphicon-pencil"></span> {{ _('Print') }}</li>
+            {% endif %}
+            <li class="content-menu-info" title=""><a href="javascript:window.print()"><span
+                    class="glyphicon glyphicon-print"></span></a></li>
+        </ul>
 
-<ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
-{%- if article.type=='place' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.placedata.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.placedata.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.placedata.location_type }}</li>
-{%- elif article.type=='image' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.imagedata.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article.imagedata.url}}">{{article.imagedata.url|truncate(30, true)}}</a></li>
-{%- elif article.type=='event' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.eventdata.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.eventdata.to_date}}</li>
-{%- elif article.type=='person' and article.persondata -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.persondata.born}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.persondata.died}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.persondata.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.persondata.occupation}}</li>
-{%- endif -%}
-</ul>
-</div>
+        <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
+            {%- if article.type=='place' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Lon') }}</span>{{ article.placedata.coordinate_x }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Lat') }}</span>{{ article.placedata.coordinate_y }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Type') }}</span>{{ article.placedata.location_type }}</li>
+            {%- elif article.type=='image' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Type') }}</span>{{ article.imagedata.mime_type }}</li>
+                <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a
+                        href="{{ article.imagedata.url }}">{{ article.imagedata.url|truncate(30, true) }}</a></li>
+            {%- elif article.type=='event' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Started') }}</span>{{ article.eventdata.from_date }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Ended') }}</span>{{ article.eventdata.to_date }}</li>
+            {%- elif article.type=='person' and article.persondata -%}
+                <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{ article.persondata.born }}
+                </li>
+                <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{ article.persondata.died }}
+                </li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Gender') }}</span>{{ article.persondata.gender_name() }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Occupation') }}</span>{{ article.persondata.occupation }}</li>
+            {%- endif -%}
+        </ul>
+        </div>
 
-<div class="row">
-  <div class="col-md-9 article_text">
-    {{ article.content|markdown if article.content else _("Content")}}
-  </div>
-  <div class="col-md-3 article_comment">
-    <!--Example comment-->
-  </div>
-</div>
+        <div class="row">
+            <div class="col-md-9 article_text zoom-container">
+                {{ article.content|markdown if article.content else _("Content") }}
+            </div>
+{#            <div class="col-md-3 article_comment">#}
+{#                <!--Example comment-->#}
+{#            </div>#}
+        </div>
 
-{% if article.type == 'blogpost' %}
-{% include 'includes/disqus.html' %}
-{% endif %}
+        {% if article.type == 'blogpost' %}
+            {% include 'includes/disqus.html' %}
+        {% endif %}
 
-{% endif %} {% endblock %}
+    {% endif %} {% endblock %}
 
 {% block final %}
-{% if article %}
-{{ MACRO.DELETE_MODAL(article.title, url_for('world.ArticlesView:delete', publisher_=publisher.slug, world_=world.slug, id=article.slug, method="DELETE") ) }}
-{% endif %}
-{{super()}}
+    {# Add trumbowyg before as it's used by app.js #}
+    <script src="{{ url_for('static', filename='js/trumbo/trumbowyg.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/htmlparser.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/upndown.bundle.min.js') }}"></script>
 
-<script>
-{% if article_form %}
+    {#    <script src="{{ url_for('static', filename='js/trumbo/plugins/fileselect/trumbowyg.fileselect.js') }}"></script>#}
+    {#    <script src="{{ url_for('static', filename='js/trumbo/plugins/upload/trumbowyg.upload.js') }}"></script>#}
 
-  autosize($('textarea'))
+    {% if article %}
+        {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', publisher_=publisher.slug, world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
+    {% endif %}
+    {{ super() }}
 
-  var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', per_page='all', out='fragment')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
+    <script>
+        {% if article_form %}
 
-  // Load required scripts.
-  {% if not markdown %}
-  head.js(
-    "{{ url_for('static', filename='js/utils.js') }}",
-    "{{ url_for('static', filename='js/editor.js') }}",
-        function(){ editor.init(); }
-      );
-      $('#content-editor a.lightbox').imageselect(imageselect_options);
+            autosize($('textarea'))
 
-      $('.bubble-bar .ui-inputs a').click(function(e) {
-        var $block = $(editor.getActiveBlock());
-        var $existing_insert = $('#insert_image_asset');
-        if ($existing_insert.length) {
-            $existing_insert.next('.image-selector').remove();
-            $existing_insert.remove();
-        }
-        var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
-        $block.before($a);
-        $a.imageselect(imageselect_options);
-      })
-  {% endif %}
-
-
-  $('#articleform').one('change', function(e) {
-    console.log('Form has changed')
-    $(window).on('beforeunload', function() {
-      return "{{_('You have unsaved changes')}}";
-    });
-  })
-
-	$(document).ready(
-			function() {
-        {% if not markdown %}
-        $ta = $('#content')
-        $ta.parents('form').on('submit', function(e) {
-              $(window).off('beforeunload') // remove warning
-              $('#content-editor .image-selector').replaceWith(function() {
-                return $(this).find('.image-link')
-              })
-              var text = editor.exportText()
-              $ta.val(text);
-              var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)
-              if (image_match && image_match.length > 2 && image_match[2]) {
-                $('#feature_image').val(image_match[2])
-              }
+            var imageselect_options = {
+                csrf_token: "{{ csrf_token() }}",
+                image_list_url: "{{url_for('assets.ImagesView:index', order_by='-created_date', per_page='all', out='fragment')}}",
+                image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
             }
-        );
+
+            var image_select_url = "{{ url_for('assets.FileAssetsView:index', out='fragment', intent='patch', view='card',
+                type='image', choice='multiple')|safe }}"
+            // Load required scripts.
+            {% if not markdown %}
+                var und = new upndown();
+                var $textarea = $('#content')
+                var $editor = $('#content-editor');
+                $editor.trumbowyg({
+                            btns: ['strong', 'em', '|', 'formatting', 'unorderedList', 'orderedList', 'link', ['fileselect', 'wide', 'center', 'portrait'], 'fullscreen'],
+                            autogrow: true,
+                            removeformatPasted: true,
+                            image_select_url: image_select_url
+                        })
+                        .on('tbwchange', function (e) {
+                            und.convert($editor.trumbowyg('html'), function (err, markdown) {
+                                if (err) {
+                                    console.err(err);
+                                } else {
+                                    $textarea.val(markdown);
+                                    autosize.update($textarea); // resize Textarea
+                                }
+                            })
+                        });
+            {% endif %}
         {% endif %}
-        //----------------------------------
-        $('#header')
-          .blur(function(e) {
-            $('#title').val(this.textContent); })
-          .on('paste', function(e) {
-            $this = $(this)
-            setTimeout(function() {
-              $this.html($this.text()); // clean the html
-            }, 100);})
-          .focus();
-
-        /*
-        var latlng = [parseFloat($('#placedata-coordinate_x').val()), parseFloat($('#placedata-coordinate_y').val())]
-
-        var map = L.map('map', {
-          center: [-77, 660],
-          zoom: 1,
-          minZoom: 0,
-          maxZoom: 1
-        });
-        L.tileLayer('//googledrive.com/host/0Bybs2FIAp3ZTUFd5RHgwS0FCU3M/map/mundana_stor_karta_{z}_{x}_{y}.png', {
-          attribution: 'Map data &copy; Neogames',
-        minZoom: 0,
-        maxZoom: 1,
-        noWrap: true,
-        continuousWorld: true,
-        }).addTo(map);
-
-        var marker
-        if (!isNaN(latlng[0]) && !isNaN(latlng[1])) {
-          marker = L.marker(latlng).addTo(map);
-          map.panTo(latlng);
-        }
-
-        function onMapClick(e) {
-          $('#placedata-coordinate_x').val(e.latlng.lat);
-          $('#placedata-coordinate_y').val(e.latlng.lng);
-          if(!marker) {
-            marker = L.marker(e.latlng).addTo(map);
-          } else {
-            marker.setLatLng(e.latlng);
-          }
-        }
-
-        map.on('click', onMapClick);
-        */
-			});
-{% endif %}
-</script>
+    </script>
 {% endblock %}

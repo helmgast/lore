@@ -6,9 +6,9 @@
         <meta name="twitter:title" property="og:title" content="{{ article.title }}">
         <meta name="twitter:description" property="og:description" content="{{ article.description }}">
         <meta property="og:type" content="article"/>
-        {% if article.feature_image %}
+        {% if article.get_feature_image %}
             <meta name="twitter:image" property="og:image"
-                  content="{{ url_for('image_thumb', slug=article.feature_image.slug, _external=true) }}"/>
+                  content="{{ url_for('image_thumb', slug=article.get_feature_image.slug, _external=true) }}"/>
         {% else %}
             <meta name="twitter:image" property="og:image"
                   content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}"/>
@@ -68,11 +68,12 @@
     {% do fieldargs.update({'required':true}) if field.flags.required %}
     {% do fieldargs.update(kwargs) if kwargs %}
     <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{ ' '+groupclass if groupclass }}">
-        {{ field.label(class="control-label "+labelclass+" "+labelcol) if field.label }}
+        {{ field.label(class="control-label "+labelclass+" " ~ labelcol) if field.label }}
         <div class="{{ inputcol }}">
             {{ field(**fieldargs) }}
             {%- if field.errors -%}
                 <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+                <span class="help-block">{{ field.errors|join(' ') }}</span>
             {%- endif -%}
         </div>
     </div>
@@ -218,18 +219,18 @@
 {%- endmacro -%}
 
 
-{%- macro DELETE_MODAL(title, action_url) -%}
-    <div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+{%- macro CONFIRM_MODAL(title, action_url, action) -%}
+    <div class="modal fade bs-modal-sm" id="confirm-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }}
+                    <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to') }} {{ action }}
                         "{{ title }}"?</h4>
                 </div>
                 <div class="modal-body">
-                    <form id='deleteform' method="post" action="{{ action_url }}">
+                    <form id='confirmform' method="post" action="{{ action_url }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
                         <button type="submit" class="btn btn-danger">{{ _('Yes') }}</button>

@@ -6,7 +6,7 @@
     {% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
 {% endif %}
 
-{% block content_title %}{{ world.title if world }}{{ ' - ' + article.title if article else '' }}{% endblock %}
+{% block content_title %}{{ world.title if world else publisher.title}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 
@@ -24,9 +24,9 @@
 
 
 {% block sidebar %}
-    {% if world and world.feature_image %}
-        <a class="lightbox" href="{{ url_for('image', slug = world.feature_image.slug) }}"><img class="img-responsive"
-                                                                                                src="{{ url_for('image', slug = world.feature_image.slug) }}"></a>
+    {% if world and world.get_feature_image %}
+        <a class="lightbox" href="{{ url_for('image', slug = world.get_feature_image.slug) }}"><img class="img-responsive"
+                                                                                                src="{{ url_for('image', slug = world.get_feature_image.slug) }}"></a>
     {% endif %}
     <div>
         <ul class="nav nav-pills nav-stacked">
@@ -70,13 +70,15 @@
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
-                    {{ MACRO.FORM_FIELD(world_form.languages, controlclass='select2') }}
-                    {{ MACRO.FORM_FIELD(world_form.editors, controlclass='select2') }}
-                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='select2') }}
+                    {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize') }}
                     {{ world_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
-                    {{ MACRO.FORM_FIELD(world_form.feature_image, **{'data-imageselect':true}) }}
+                    {# data_end becomes data-end automatically #}
+                    {{ MACRO.FORM_FIELD(world_form.images, controlclass="fileselect", data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
                 </div>
             </div>
             <div class="row form-actions">
@@ -163,8 +165,8 @@
     <script>
         var imageselect_options = {
             csrf_token: "{{ csrf_token() }}",
-            image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
-            image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
+            image_list_url: "{{url_for('assets.ImagesView:index', per_page='all', out='modal')}}",
+            image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
         }
     </script>
 {% endblock %}

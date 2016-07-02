@@ -1,104 +1,107 @@
 {% extends "world/publisher_list.html" %}
 
-{% block content_title %}{{publisher.title if publisher else _("New publisher")}}{% endblock %}
+{% block content_title %}{{ publisher.title if publisher else _("New publisher") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{super()}}
-{% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit')) %}
-<ul class="nav nav-pills nav-stacked">
-    <li class="nav-header">{{ _('Actions') }}</li>
-    {% if op != 'new' %}
-    <li><a class="{{privileged}}" href="{{ url_for('world.PublishersView:get', id=publisher.slug, intent='patch') }}"><span
-            class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-    {% endif %}
-</ul>
-{% endcall %}
+{% block sidebar %}{{ super() }}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit')) %}
+        <ul class="nav nav-pills nav-stacked">
+            <li class="nav-header">{{ _('Actions') }}</li>
+            {% if op != 'new' %}
+                <li><a class="{{ privileged }}"
+                       href="{{ url_for('world.PublishersView:get', id=publisher.slug, intent='patch') }}"><span
+                        class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+            {% endif %}
+        </ul>
+    {% endcall %}
 {% endblock %}
 
 {% block content %}{% block inline %}
-{% if publisher_form %}
-<form method="post" action="{{action_url}}" enctype=multipart/form-data>
-    <div class="row">
-        <div class="col-md-8">
-          {{ MACRO.FORM_FIELD(publisher_form.slug) }}
-            {{ MACRO.FORM_FIELD(publisher_form.publisher_code) }}
-            {{ MACRO.FORM_FIELD(publisher_form.email) }}
-            {{ MACRO.FORM_FIELD(publisher_form.title) }}
-            {{ MACRO.FORM_FIELD(publisher_form.description) }}
-            {{ MACRO.FORM_FIELD(publisher_form.status) }}
-            {{ MACRO.FORM_FIELD(publisher_form.shop_enabled) }}
-            {{ MACRO.FORM_FIELD(publisher_form.languages, controlclass='select2') }}
-            {{ MACRO.FORM_FIELD(publisher_form.editors, controlclass='select2') }}
-            {{ MACRO.FORM_FIELD(publisher_form.readers, controlclass='select2') }}
-            {{ publisher_form.csrf_token }}
-            <h3>{{ _('Registered address') }}</h3>
-            {{ MACRO.FORM_FIELD_COLS(publisher_form.address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
-            {{ MACRO.FORM_FIELD_COLS(publisher_form.address.street, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
-            {{ MACRO.FORM_FIELD_COLS(publisher_form.address.zipcode, "col-sm-3", "col-sm-3", autocomplete="postal-code") }}
-            {{ MACRO.FORM_FIELD_COLS(publisher_form.address.city, "col-sm-1", "col-sm-5", groupclass="clearfix", autocomplete="address-level2") }}
-            {{ MACRO.FORM_FIELD_COLS(publisher_form.address.country, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="country") }}
+    {% if publisher_form %}
+        <form method="post" action="{{ action_url }}" enctype=multipart/form-data>
+            <div class="row">
+                <div class="col-md-8">
+                    {{ MACRO.FORM_FIELD(publisher_form.slug) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.publisher_code) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.email) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.title) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.description) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.status) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.shop_enabled) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.languages, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(publisher_form.editors, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(publisher_form.readers, controlclass='selectize') }}
+                    {{ publisher_form.csrf_token }}
+                    <h3>{{ _('Registered address') }}</h3>
+                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
+                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.street, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
+                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.zipcode, "col-sm-3", "col-sm-3", autocomplete="postal-code") }}
+                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.city, "col-sm-1", "col-sm-5", groupclass="clearfix", autocomplete="address-level2") }}
+                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.country, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="country") }}
+                </div>
+                <div class="col-md-4">
+                    {# data_end becomes data-end automatically #}
+                    {{ MACRO.FORM_FIELD(publisher_form.images, controlclass="fileselect", data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
+                </div>
+            </div>
+            <div class="row form-actions">
+                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+                <a href="{{ url_for('world.PublishersView:index') }}" class="btn btn-default">{{ _('Cancel') }}</a>
+                {% if op != 'new' %}
+                    <a href="{{ url_for('world.PublishersView:delete', id=publisher.slug) }}"
+                       class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+                {% endif %}
+            </div>
+        </form>
+    {% else %}
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table">
+                    <tr>
+                        <td><strong>{{ _('Domain') }}</strong></td>
+                        <td>
+                            <small>{{ publisher.slug|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Title') }}</strong></td>
+                        <td>
+                            <small>{{ publisher.title|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Description') }}</strong></td>
+                        <td>
+                            <small>{{ publisher.description|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Owner') }}</strong></td>
+                        <td>
+                            <small>{{ publisher.owner|default(_('No data'), true) }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>{{ _('Publisher Home') }}</strong></td>
+                        <td>
+                            <a href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
-        <div class="col-md-4">
-          {{ MACRO.FORM_FIELD(publisher_form.feature_image, **{'data-imageselect':true})}}
-        </div>
-    </div>
-    <div class="row form-actions">
-        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-        <a href="{{url_for('world.PublishersView:index')}}" class="btn btn-default">{{ _('Cancel') }}</a>
-        {% if op != 'new' %}
-        <a href="{{url_for('world.PublishersView:delete', id=publisher.slug)}}"
-           class="btn btn-danger pull-right">{{ _('Delete')}}</a>
-        {% endif %}
-    </div>
-</form>
-{% else %}
-<div class="row">
-    <div class="col-md-8">
-        <table class="table">
-            <tr>
-                <td><strong>{{ _('Domain') }}</strong></td>
-                <td>
-                    <small>{{ publisher.slug|default(_('No data'), true) }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Title') }}</strong></td>
-                <td>
-                    <small>{{ publisher.title|default(_('No data'), true) }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Description') }}</strong></td>
-                <td>
-                    <small>{{ publisher.description|default(_('No data'), true) }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Owner') }}</strong></td>
-                <td>
-                    <small>{{ publisher.owner|default(_('No data'), true) }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Publisher Home') }}</strong></td>
-                <td>
-                    <a href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}</a>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 {% endblock %}
 {% endblock %}
 
 {% block final %}
-{{super()}}
-<script>
-var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', per_page='all', out='modal')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
-</script>
+    {{ super() }}
+    <script>
+        var imageselect_options = {
+            csrf_token: "{{ csrf_token() }}",
+            image_list_url: "{{url_for('assets.ImagesView:index', per_page='all', out='modal')}}",
+            image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
+        }
+    </script>
 {% endblock %}

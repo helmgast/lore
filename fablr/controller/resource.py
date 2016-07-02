@@ -31,11 +31,11 @@ from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import CombinedMultiDict, MultiDict
 from werkzeug.exceptions import HTTPException
-from wtforms import Form as OrigForm, StringField
+from wtforms import Form as OrigForm, StringField, SelectMultipleField
 from wtforms import fields as f, validators as v, widgets
-from wtforms.compat import iteritems
+from wtforms.compat import iteritems, text_type
 from wtforms.utils import unset_value
-from wtforms.widgets import html5
+from wtforms.widgets import html5, HTMLString, html_params
 
 from fablr.model.misc import METHODS, Languages
 from fablr.model.world import EMBEDDED_TYPES, Article
@@ -155,19 +155,18 @@ re_next = re.compile(r'^[/?].+')
 re_order_by = re.compile(r'^[+-]')
 
 
-def prefillable_fields_parser(fields=None):
+def prefillable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
-    return dict(ItemResponse.arg_parser, **{
-        'fields': fields
-    })
+    extend = {'fields': fields}
+    extend.update(kwargs)
+    return dict(ItemResponse.arg_parser, **extend)
 
 
-def filterable_fields_parser(fields=None):
+def filterable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
-    return dict(ListResponse.arg_parser, **{
-        'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields],
-        'fields': fields
-    })
+    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields], 'fields': fields}
+    extend.update(kwargs)
+    return dict(ListResponse.arg_parser, **extend)
 
 
 action_strings = {
@@ -190,13 +189,24 @@ instance_types_translated = {
 }
 
 
+def get_root_template(out_value):
+    if out_value == 'modal':
+        return current_app.jinja_env.get_or_select_template('_modal.html')
+    elif out_value == 'fragment':
+        return current_app.jinja_env.get_or_select_template('_fragment.html')
+    else:
+        return current_app.jinja_env.get_or_select_template('_page.html')
+
+
 class ResourceResponse(Response):
     arg_parser = {
         # none should remain for subsequent requests
         'debug': lambda x: x.lower() == 'true',
         'as_user': lambda x: x,
         'render': lambda x: x if x in ['json', 'html'] else None,
+        'out': lambda x: x if x in ['modal', 'fragment'] else None,
         'locale': lambda x: x if x in Languages.keys() else None,
+        'intent': lambda x: x if x.upper() in METHODS else None,
     }
 
     def __init__(self, resource_view, queries, method, formats=None, extra_args=None):
@@ -221,8 +231,8 @@ class ResourceResponse(Response):
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         super(ResourceResponse, self).__init__()  # init a blank flask Response
 
-    def auth_or_abort(self):
-        instance = getattr(self, 'instance', None)
+    def auth_or_abort(self, instance=None):
+        instance = instance or getattr(self, 'instance', None)
         auth = self.access.authorize(self.method, instance=instance)
         if auth:
             # if there's an intent, we also need to check that it's allowed
@@ -241,13 +251,41 @@ class ResourceResponse(Response):
             best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
         if best_type == 'text/html':
             template_args = vars(self)  # All local and inherited variables
+            template_args['root_template'] = get_root_template(self.args.get('out', None))
             self.set_data(render_template(self.template, **template_args))
             return self
         elif best_type == 'application/json':
             # TODO this will create a new response, which is a bit of waste
-            return jsonify({k: getattr(self, k) for k in self.json_fields})
+            # Need to at least keep the status from before
+            if hasattr(self, 'form') and self.form and self.form.errors:
+                return jsonify(errors=self.form.errors), self.status
+            else:
+                return jsonify({k: getattr(self, k) for k in self.json_fields}), self.status
         else:  # csv
             abort(406)  # Not acceptable content available
+
+    def error_response(self, err, status=0):
+        if isinstance(err, NotUniqueError):
+            if 'title' in self.form:
+                self.form['title'].errors.append('Duplicate title already exists, try renaming')
+            elif 'slug' in self.form:
+                self.form['slug'].errors.append('Duplicate slug already exists, try renaming')
+            else:
+                self.form._errors = {'all': 'Duplicate title already exists, try renaming'}
+
+        elif isinstance(err, ValidationError):
+            err_dict = {}
+            for k, v in err.errors.items():
+                if hasattr(v, 'message') and v.message:
+                    err_dict[k] = v.message
+                else:
+                    err_dict[k] = str(v)
+            self.form._errors = err_dict
+        else:
+            self.form._errors = {'all', str(err)}
+        flash(_("Error in form"), 'danger')
+        return self, status or 400
+
 
     @staticmethod
     def parse_args(arg_parser, extra_args):
@@ -323,7 +361,8 @@ class ListResponse(ResourceResponse):
         if self.args['fields']:
             built_query = None
             for k, values in self.args['fields'].iterlists():
-                field = self.model._fields[k.split('__', 1)[0]]  # Will skip __gte, __lt etc operators
+                # Field name is string until first __ (operators are after)
+                field = self.model._fields[k.split('__', 1)[0]]
                 q = Q(**{k: self.slug_to_id(field, values[0])})
                 if len(values) > 1:  # multiple values for this field, combine with or
                     for v in values[1:]:
@@ -342,23 +381,14 @@ class ListResponse(ResourceResponse):
                 # print f, field.filter_options(self.model)
         # TODO implement search, use textindex and do ".search_text()"
 
-        # TODO max query size 10000 implied here
-        per_page = self.args['per_page'] if paginate and self.args['per_page'] > 0 else 10000
-        # try:
-        self.pagination = self.query.paginate(page=self.args['page'], per_page=per_page)
-        # except ValidationError:
-        #     abort(404, "Incorrect URL parameter")
-        self.query = self.pagination.items  # set default query as the paginated one
+        if paginate:
+            self.paginate()
 
-        # def make_filter_options(self, model, fields):
-        #     for f in fields:
-        #         field = model._fields[f]
-        #         if isinstance(field, ReferenceField):
-        #             values = model.distinct(f)
-        #         elif isinstance(field, DateTimeField):
-        #             datetime.utcwow()
-        #             pass
-        #         elif isinstance(field, DateTimeField):
+    def paginate(self):
+        # TODO max query size 10000 implied here
+        per_page = self.args['per_page'] if self.args['per_page'] > 0 else 10000
+        self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
+        self.query = self.pagination.items  # set default query as the paginated one
 
 
 class ItemResponse(ResourceResponse):
@@ -367,7 +397,6 @@ class ItemResponse(ResourceResponse):
     json_fields = frozenset(['instance'])
     arg_parser = dict(ResourceResponse.arg_parser, **{
         'view': lambda x: x.lower() if x.lower() in ['markdown', 'pay', 'cart', 'details'] else None,
-        'intent': lambda x: x if x.upper() in METHODS else None,
         'next': lambda x: x if re_next.match(x) else None
     })
 
@@ -531,27 +560,107 @@ class MultiCheckboxField(f.SelectMultipleField):
     option_widget = widgets.CheckboxInput()
 
 
-class RacModelSelectField(ModelSelectField):
-    # TODO quick fix to change queryset.get(id=...) to queryset.get(pk=...)
-    # have been fixed in 0.8 when released
-    # This is required to accept custom primary keys
-    # https://github.com/MongoEngine/flask-mongoengine/issues/82
+class TagField(SelectMultipleField):
+
+    def __init__(self, queryset, **kwargs):
+        self.queryset = queryset
+        super(TagField, self).__init__(**kwargs)
+
+    @classmethod
+    def _remove_duplicates(cls, seq):
+        """Remove duplicates in a case insensitive, but case preserving manner"""
+        d = {}
+        for item in seq:
+            if item.lower() not in d:
+                d[item.lower()] = True
+                yield item
+
+    def iter_choices(self):
+        # Selects distinct values for the field tags in the queryset that represents all documents for this model
+        for value in self.queryset.distinct('tags'):
+            selected = self.data is not None and self.coerce(value) in self.data
+            yield (value, value, selected)
+
+    def pre_validate(self, form):
+        pass  # Override parent class method which checks that every choice is in
+
     def process_formdata(self, valuelist):
-        # print valuelist
+        try:
+            self.data = list(self._remove_duplicates(self.coerce(x) for x in valuelist))
+            if len(self.data) == 0:
+                self.data = None  # needed to actually clear the value in Mongoengine
+        except ValueError:
+            raise ValueError(self.gettext('Invalid choice(s): one or more data inputs could not be coerced'))
+
+class SelectizeWidget(object):
+
+    def __init__(self, html_tag='ul', prefix_label=True):
+        self.html_tag = 'input type="text"'  # ignore
+        self.prefix_label = prefix_label
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('name', field.id)
+        html_class = kwargs.get('class', '')
+        kwargs['class'] = html_class + ' selectize'
+
+        return HTMLString('<%s %s value="%s">' % (self.html_tag, html_params(**kwargs),
+                                                  ', '.join([item.slug for item in field.data])))
+
+class FablrModelSelectMultipleField(ModelSelectMultipleField):
+    """
+    A variant of ModelSelectMultipleField that keeps order of selected items between saves, which is otherwise thrown away.
+    """
+
+    def __init__(self, **kwargs):
+        super(FablrModelSelectMultipleField, self).__init__(**kwargs)
+
+    def iter_choices(self):
+        if self.allow_blank:
+            yield (u'__None', self.blank_text, self.data is None)
+
+        if self.queryset is None:
+            return
+
+        self.queryset.rewind()
+        if isinstance(self.data, list):
+            selected = self.data
+        elif self.data:
+            selected = [self.data]
+        else:
+            selected = []
+
+        for obj in selected:
+            label = self.label_attr and getattr(obj, self.label_attr) or obj
+            yield (obj.id, label, True)
+        for obj in self.queryset:
+            label = self.label_attr and getattr(obj, self.label_attr) or obj
+            if obj not in selected:
+                yield (obj.id, label, False)
+
+    def process_formdata(self, valuelist):
         if valuelist:
             if valuelist[0] == '__None':
                 self.data = None
             else:
-                if self.queryset is None:
+                if not self.queryset:
                     self.data = None
                     return
-                try:
-                    # clone() because of https://github.com/MongoEngine/mongoengine/issues/56
-                    obj = self.queryset.get(pk=valuelist[0])
-                    self.data = obj
-                except DoesNotExist:
+
+                self.queryset.rewind()
+                tmp = dict()
+                for obj in self.queryset:
+                    try:
+                        i = valuelist.index(str(obj.id))
+                        tmp[i] = obj
+                    except ValueError:
+                        pass
+                self.data = [tmp[k] for k in sorted(tmp)]
+                if not len(self.data):
                     self.data = None
 
+class FablrModelSelectField(ModelSelectField):
+    pass
 
 class RacModelConverter(ModelConverter):
     @converts('EmbeddedDocumentField')
@@ -575,10 +684,12 @@ class RacModelConverter(ModelConverter):
 
     @converts('ListField')
     def conv_List(self, model, field, kwargs):
-        if isinstance(field.field, ReferenceField):
+        if field.name == 'tags':
+            return TagField(queryset=model.objects(), **kwargs)
+        elif isinstance(field.field, ReferenceField):
             kwargs[
                 'allow_blank'] = not field.required  # Added line, to make reference fields inslide listfields to allow blanks
-            return ModelSelectMultipleField(model=field.field.document_type, **kwargs)
+            return FablrModelSelectMultipleField(model=field.field.document_type, **kwargs)
         if field.field.choices:
             kwargs['multiple'] = True
             return self.convert(model, field.field, kwargs)
@@ -595,7 +706,7 @@ class RacModelConverter(ModelConverter):
     @converts('ReferenceField')
     def conv_Reference(self, model, field, kwargs):
         kwargs['allow_blank'] = not field.required
-        return RacModelSelectField(model=field.document_type, **kwargs)
+        return ModelSelectField(model=field.document_type, **kwargs)
 
     @converts('URLField')
     def conv_URL(self, model, field, kwargs):
@@ -724,9 +835,9 @@ class ResourceAccessPolicy(object):
         else:
             level = self.ops_levels[op]
 
-        mod_level = self.get_access_level(op, instance)
-        if mod_level:
-            level = mod_level
+        changed_level = self.get_access_level(op, instance)
+        if changed_level:
+            level = changed_level
 
         if level == 'public':
             return Authorization(True, _("%s is a publicly allowed operation", op=op))
@@ -805,6 +916,7 @@ class DisabledField(StringField):
 
 
 class ResourceRoutingStrategy:
+
     def __init__(self, model_class, plural_name, id_field='id', form_class=None,
                  parent_strategy=None, parent_reference_field=None, short_url=False,
                  list_filters=None, use_subdomain=False, access_policy=None, post_edit_action='view'):
@@ -924,6 +1036,7 @@ class ResourceHandler(View):
     allowed_ops = ['view', 'form_new', 'form_edit', 'list', 'new', 'replace', 'edit', 'delete']
     ignored_methods = ['as_view', 'dispatch_request', 'register_urls', 'return_json', 'methods']
     get_post_pairs = {'edit': 'form_edit', 'new': 'form_new', 'replace': 'form_edit', 'delete': 'edit'}
+    default_per_page = 20
 
     def __init__(self, strategy):
         self.logger = current_app.logger
@@ -1015,6 +1128,7 @@ class ResourceHandler(View):
                     return self.return_json(r, err)
                 elif 'template' in r:
                     flash(err.message, 'warning')
+                    r['root_template'] = get_root_template(r['out'])
                     return render_template(r['template'], **r), 400
                 else:
                     return err.message, 400
@@ -1085,6 +1199,7 @@ class ResourceHandler(View):
             return r['response']  # op function may have rendered the answer itself
         else:
             # if json, return json instead of render
+            r['root_template'] = get_root_template(r['out'])
             return render_template(r['template'], **r)
 
     def return_json(self, r, err=None, status_code=0):
@@ -1178,7 +1293,7 @@ class ResourceHandler(View):
             # it will not work
             listquery = listquery.filter(**r['parents'])
         page = request.args.get('page', 1)
-        per_page = request.args.get('per_page', 20)
+        per_page = request.args.get('per_page', self.default_per_page)
         if per_page == 'all':
             r['list'] = listquery
             r[self.strategy.plural_name] = listquery

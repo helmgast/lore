@@ -1,13 +1,15 @@
-import subprocess as sp
-import shlex
 import os
 import re
-
+import shlex
+import subprocess as sp
 import sys
+
+from flask import g
+from flask.ext.mongoengine import Document
 from flask.ext.script import Manager, prompt_pass
+
 from fablr.app import create_app, init_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user
-from flask.ext.mongoengine import Document
 
 os.environ['RACONTEUR_CONFIG_FILE'] = 'config.py'
 app = create_app(no_init=True)  # delay initializaiton to avoid database etc
@@ -130,7 +132,8 @@ def db_migrate():
     from mongoengine.connection import get_db
     init_app(app)
     db = get_db()
-    db_migration.db_migrate(db)
+    with app.app_context():
+        db_migration.db_migrate(db)
 
 
 @manager.command

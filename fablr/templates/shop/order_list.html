@@ -15,28 +15,28 @@
     <h5>{% trans %}By updated{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['updated'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
 
     <h5>{% trans %}By total items{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['total_items'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
 
     <h5>{% trans %}By total price{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['total_price'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
 
     <h5>{% trans %}By status{% endtrans %}</h5>
     <div class="btn-set">
         {% for opt in filter_options['status'] %}
-            {{ MACRO.ARG_LINK(opt[1],opt[0]) }}
+            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
         {% endfor %}
     </div>
     {% endif %}
@@ -45,7 +45,7 @@
 {% block content %}
 
     {% if orders %}
-        {% if request.args.get('view', 'table') == 'table' %}
+        {% if args.get('view', 'table') == 'table' %}
             <table class="table table-hover">
                 <thead>
                 <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
@@ -77,8 +77,8 @@
                 <div class="row">
                     {% for order in orders %}
                         <div class="col-md-4 product">
-                            {% if order.order_lines[0].product.feature_image %}<img class="product-image"
-                                                                                    src="{{ url_for('image_thumb', slug=order.order_lines[0].product.feature_image.slug) }}">
+                            {% if order.order_lines[0].product.get_feature_image %}<img class="product-image"
+                                                                                    src="{{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}">
                                 </a>{% endif %}
                             <div class="product-intro">
                                 <h3>

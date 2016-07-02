@@ -18,9 +18,9 @@
 	</li>
 	</ul>
 	<div class="media">
-	{% if article.feature_image %}
+	{% if article.get_feature_image %}
   	<a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}">
-  	<img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
+  	<img class="media-object" src="{{url_for('image_thumb', slug=article.get_feature_image.slug)}}">
 		</a>
 	{% endif %}
 		<div class="media-body">

@@ -28,6 +28,7 @@ from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPo
                                        filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                        Authorization)
 from fablr.controller.world import set_theme
+from fablr.model.asset import FileAsset
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock
 from fablr.model.user import User
 from fablr.model.world import Publisher
@@ -137,6 +138,13 @@ class ProductsView(ResourceView):
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
 
     def patch(self, id, publisher):
+        print "Got request form data %s" % request.form
+        print "Got request images data %s" % request.form.getlist('images')
+        fa = []
+        for i in request.form.getlist('images'):
+            fa.append(FileAsset.objects(id=i).first())
+        print fa
+
         publisher = Publisher.objects(slug=publisher).first_or_404()
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
