@@ -174,7 +174,6 @@ function modify_url(url, new_params, new_url_parts) {
                         newel.append($removeBtn.clone())
                         selectors[$type].addAt ? $this.find(selectors[$type].addAt).append(newel) : $this.append(newel)
                         // TODO data activated js should be reloaded by throwing an event that the normal on load code can pick up
-                        $this.find('select[data-role="chosen"]').chosen(); // need to reactivate chosen for any loaded html
                     })
                 })
                 $this.after($addBtn)
@@ -189,183 +188,6 @@ function modify_url(url, new_params, new_url_parts) {
     //        $editablelist.editablelist($editablelist.data())
     //    })
     //})
-}(jQuery);
-
-
-/* ========================================================================
- * Image Selector
- * ========================================================================
- * Copyright Helmgast AB 2014
-
- * Activate on a button or input control, which will launch a modal to upload an
- * image and place a preview in it. The modal will take care of all user
- * interfacing and remove itself when done. The selected image can be represented
- * as an image tag into a text field (e.g. an article text) or it can be added to
- * a input control as the reference to the ImageAsset.
-
- data-imageselector: activates the button or control as an image selector
- data-target: the target is a selector. If the selector returns a compatible input
- control, the value of it will be set to the image ID. Otherwise, an image element
- will be appended to the target.
-
- */
-
-+function ($) {
-    'use strict';
-
-    var tempImage;
-
-    var ImageSelect = function (element, options) {
-        this.options = options
-        this.$element = $(element)
-
-        this.$imageEl =
-            $('<div class="image-selector" contenteditable="false">' +
-                '<div class="image-preview">' +
-                '<input type="text" class="image-preview-caption" placeholder="' + i18n['Caption'] + '">' +
-                '<button type="button" class="btn btn-default btn-delete"><span class="glyphicon glyphicon-trash"></span></button>' +
-                '</div>' +
-                '<div class="image-upload form-group">' +
-                '<label for="imagefile" title="' + i18n['Drag or click to upload file'] + '">' +
-                '<span class="glyphicon glyphicon-picture"></span>' +
-                '</label>' +
-                '<input type="file" class="hide" name="imagefile" id="imagefile" accept="image/*">' +
-                '  <input type="text" class="form-control" ' +
-                'id="source_image_url" placeholder="http:// ' + i18n['Image URL'] + '"> ' +
-                (options.image_list_url ? '<a data-toggle="modal" data-target="#themodal" ' +
-                'href="' + options.image_list_url + '" class="btn btn-info image-library-select">' + i18n['Select from library'] + '</a>' : '') +
-                '</div></div>');
-
-        this.$element.addClass('hide')
-        this.$element.after(this.$imageEl)
-        if (this.$element.is('select, input')) {
-            this.setVal = function (src, slug) {
-                // We cant set option that doesnt exist, so add if needed
-                if (!this.$element.find('option[value="' + slug + '"]').length)
-                    this.$element.append($('<option>', {value: slug}))
-                this.$element.val(slug)
-                if (!this.$element.val())
-                    this.$element.val('__None')
-            }
-            var val = this.$element.val()
-            if (val && val != "__None")
-                this.imageSelected('/asset/image/' + val, val)
-        } else if (this.$element.is('a.lightbox')) {
-            this.setVal = function (src, slug) {
-                this.$element.attr('href', src)
-                this.$element.find('img').attr('src', src)
-            }
-            if (this.$element.attr('href'))
-                this.imageSelected(this.$element.attr('href'))
-        } else {
-            console.log("ImageSelect doesn't work on this element")
-            return
-        }
-        var that = this // inside nested functions, this changes, so we keep it in 'that'
-        this.$imageEl.on('click', '.btn-delete', function (e) {
-            if (that.$element.is('a.lightbox')) {
-                that.$imageEl.remove()
-                that.$element.remove()
-            } else {
-                that.$imageEl.find('.image-preview img').remove()
-                $('#themodal .gallery input[type="radio"]:checked').prop('checked', false)
-                that.$imageEl.find('.image-preview').removeClass('selected')
-                that.$element.val('__None') // Empty choice in Select box...
-            }
-        })
-
-        this.$imageEl.on('click', '.image-library-select', function (e) {
-            $(document).one('hide.bs.modal', '#themodal', function (e) {
-                var $sel = $(this).find('.gallery input[type="radio"]:checked')
-                if ($sel[0])
-                    that.imageSelected($sel.parent().find('img')[0].src, $sel.val())
-            })
-        })
-
-        $('#imagefile').change(this.fileSelected.bind(this))
-        $('.image-upload label').on('drop', this.fileSelected.bind(this)).on('dragover', function (e) {
-            e.stopPropagation()
-            e.preventDefault()
-            e.originalEvent.dataTransfer.dropEffect = 'copy'
-        })
-
-        tempImage = tempImage || new Image()
-        $('#source_image_url').on('input', function (e) {
-            if (/^http(s)?:\/\/[^/]+\/.+/.test(e.target.value)) {
-                tempImage.onload = that.fileSelected.bind(that) // bind to set this to that when called
-                tempImage.src = e.target.value
-                e.target.style.color = ''
-            } else {
-                tempImage.src = ''
-                tempImage.onload = undefined
-                e.target.style.color = 'red'
-            }
-        })
-    }
-
-    ImageSelect.prototype.imageSelected = function (src, slug, no_set) {
-        var div = this.$imageEl.find('.image-preview')
-        div.children('img').remove()
-        div.append('<img src="' + src + '">')
-        this.$imageEl.find('.image-preview').addClass('selected')
-        if (!no_set)
-            this.setVal(src, slug)
-    }
-
-    ImageSelect.prototype.fileSelected = function (e) {
-        var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files)
-            , formData = new FormData(), that = this; // save this reference as it will be changed inside nested functions
-        if (files && files.length) {
-            var file = files[0]
-            var reader = new FileReader()
-            reader.onload = (function (tfile) {
-                return function (e) {
-                    that.imageSelected(e.target.result)
-                };
-            }(file));
-            formData.append('imagefile', file)
-            formData.append('title', file.name)
-            reader.readAsDataURL(file);
-        } else if (e.target.src) {
-            formData.append('source_image_url', e.target.src)
-            formData.append('title', /[^/]+$/.exec(e.target.src)[0])
-        } else {
-            formData = null;
-            return
-        }
-
-        formData.append('csrf_token', this.options.csrf_token)
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener("load", function () {
-            var res = JSON.parse(this.responseText)
-            if (this.status == 200 && res.next) {
-                that.imageSelected(res.next, res.item._id);
-            } else {
-                flash_error(res.message || 'unknown error', 'warning')
-            }
-        }, false);
-        xhr.open('POST', that.options.image_upload_url)
-        xhr.send(formData) // does not work in IE9 and below
-        e.preventDefault()
-    }
-
-    $.fn.imageselect = function (option) {
-        return this.each(function () {
-            var $this = $(this)
-            var data = $this.data('fablr.imageselect')
-            var options = $.extend(ImageSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
-            // If no data set, create a ImageSelect object and attach to this element
-            if (!data) $this.data('fablr.imageselect', (data = new ImageSelect(this, options)))
-            // if (typeof option == 'string') data[option](_relatedTarget)
-            // else if (options.show) data.show(_relatedTarget)
-        })
-    }
-    $.fn.imageselect.Constructor = ImageSelect
-
-    $(window).on('load', function () {
-        $('[data-imageselect]').imageselect(typeof imageselect_options !== "undefined" && imageselect_options) // global var if exists
-    })
-
 }(jQuery);
 
 +function ($) {
@@ -482,27 +304,8 @@ function modify_url(url, new_params, new_url_parts) {
 
 
             })
-            //
-            //} else if (e.target.src) {
-            //    formData = new FormData()
-            //    formData.append('source_file_url', e.target.src)
-            //} else {
-            //    var formData = null;
         }
         return false;
-        //formData.append('csrf_token', this.options.csrf_token)
-        //var xhr = new XMLHttpRequest();
-        //xhr.addEventListener("load", function () {
-        //    var res = JSON.parse(this.responseText)
-        //    if (this.status == 200 && res.next) {
-        //        that.imageSelected(res.next, res.item._id);
-        //    } else {
-        //        flash_error(res.message || 'unknown error', 'warning')
-        //    }
-        //}, false);
-        //xhr.open('POST', that.options.image_upload_url)
-        //xhr.send(formData) // does not work in IE9 and below
-        //e.preventDefault()
     }
 
     $.fn.fileupload = function (option) {
@@ -1018,10 +821,6 @@ $(document).on('ready fablr.dom-updated fablr.gallery-updated', function (e) {
 $(document).on('ready fablr.dom-updated', function (e) {
     var scope = $(e.target)
     scope.find("a[data-toggle='tooltip']").tooltip()
-    //scope.find('form select[data-role="chosen"]').chosen();
-    //scope.find('form select[data-role="chosenblank"]').chosen();
-    //scope.find('.selectize').selectize({allowClear: true});
-    //scope.find('.selectize-tags').selectize({allowClear: true, tags: true});
     scope.find('.selectize').selectize()
     scope.find('.selectize-tags').selectize({
         delimiter: ',',
@@ -1042,7 +841,6 @@ $(document).on('ready fablr.dom-updated', function (e) {
     });
 
     flatpickr('.flatpickr')
-
 
     scope.find('form[data-autosave]').each(function () {
         var $autosave_form = $(this)

@@ -253,13 +253,6 @@ form input[type="text"].datetime-widget {
     font-size: 20px;
 }
 
-.chosen-container {
-    min-width: 250px !important; /* Customize to meet your needs */
-}
-
-.relation-type-selector + .chosen-container {
-    min-width: 90px !important; /* Customize to meet your needs */
-}
 
 div.sidebar li.active {
     font-weight: bold;

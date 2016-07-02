@@ -239,12 +239,6 @@
 
             autosize($('textarea'))
 
-            var imageselect_options = {
-                csrf_token: "{{ csrf_token() }}",
-                image_list_url: "{{url_for('assets.ImagesView:index', order_by='-created_date', per_page='all', out='fragment')}}",
-                image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
-            }
-
             var image_select_url = "{{ url_for('assets.FileAssetsView:index', out='fragment', intent='patch', view='card',
                 type='image', choice='multiple')|safe }}"
             // Load required scripts.

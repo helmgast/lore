@@ -202,14 +202,3 @@
 
     {% endif %}
 {% endblock %}{% endblock %}
-
-{% block final %}
-    {{ super() }}
-    <script>
-        var imageselect_options = {
-            csrf_token: "{{ csrf_token() }}",
-            image_list_url: "{{url_for('assets.ImagesView:index', per_page='all', out='modal')}}",
-            image_upload_url: "{{url_for('assets.ImagesView:post', out='json')}}"
-        }
-    </script>
-{% endblock %}
