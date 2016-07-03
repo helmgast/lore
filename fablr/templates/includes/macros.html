@@ -80,7 +80,7 @@
 {%- endmacro -%}
 
 {% macro MAKE_INPUT(label, id='', cols=10, labelcols=2, type='text', placeholder='', suffix='', prefix='', rows=3, class="nosubmit") %}
-    {#    {% set disabled = true if args.get('intent','')!='patch' else false %}#}
+    {% set readonly = true if args.get('intent','')!='patch' else false %}
     {% if not id %}
         {% set id = label.lower() %}
     {% endif %}
@@ -95,10 +95,10 @@
 
         {% if type=='text' %}
             <input type="{{ type }}" class="form-control {{ class }}" id="{{ id }}" name="{{ id }}"
-                   placeholder="{{ placeholder }}" {{ 'disabled' if disabled }}>
+                   placeholder="{{ placeholder }}" {{ 'readonly' if readonly }}>
         {% elif type=='textarea' %}
             <textarea class="form-control {{ class }}" id="{{ id }}" name="{{ id }}" rows="{{ rows }}"
-                      placeholder="{{ placeholder }}" {{ 'disabled' if disabled }}></textarea>
+                      placeholder="{{ placeholder }}" {{ 'readonly' if readonly }}></textarea>
         {% endif %}
         {% if suffix or prefix %}
             {% if suffix %}
@@ -110,11 +110,12 @@
 {% endmacro %}
 
 {% macro MAKE_TD_INPUT(label, id='', placeholder='', class="nosubmit", min=1, max=12) %}
+    {% set readonly = true if args.get('intent','')!='patch' else false %}
     {% if not id %}
         {% set id = label.lower() %}
     {% endif %}
     <td><label for="{{ id }}" class="control-label">{{ label }}</label></td>
-    <td><input type="number" min={{ min }} max={{ max }} class="form-control {{ class }}" id="{{ id }}" name="{{ id }}">
+    <td><input type="number" min={{ min }} max={{ max }} class="form-control {{ class }}" id="{{ id }}" name="{{ id }}" {{ 'readonly' if readonly }}>
     </td>
 {% endmacro %}
 

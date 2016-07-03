@@ -86,22 +86,19 @@
 </div>#}
             <div class="row">
                 <div class="col-md-9 article_text">
-            <h1 class="article_header">
-                {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
-                <small>{{ tagline }}</small>
-            </h1>
-            {% if article_form.title.errors %}
-                <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
-            {% endif %}
-
-                    {#                    {{ MACRO.FORM_FIELD(article_form.description, controlclass=' input-sm fixed-width',#}
-{#                placeholder=_('Optional, 500 characters. If not entered, will use beginning of article content.')) }}#}
-
-                    {#                    'class':'hide' if not markdown else ''#}
-                    {% if not markdown %}
-                        <div id="content-editor" placeholder="{{ _('Start writing here!') }}">{{ article_form.content.data|markdown|trim if article_form.content.data }}</div>
+                    <h1 class="article_header">
+                        {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
+                        <small>{{ tagline }}</small>
+                    </h1>
+                    {% if article_form.title.errors %}
+                        <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
                     {% endif %}
-                    {{ article_form.content(class="form-control", placeholder=_('Start writing here!')) }}
+
+                    {% if not markdown %}
+                        <div id="content-editor"
+                             placeholder="{{ _('Start writing here!') }}">{{ article_form.content.data|markdown|trim if article_form.content.data }}</div>
+                    {% endif %}
+                    {{ article_form.content(class="hide form-control", placeholder=_('Start writing here!')) }}
 
                 </div>
                 <div class="col-md-3 article_comment form-horizontal">
@@ -209,9 +206,9 @@
             <div class="col-md-9 article_text zoom-container">
                 {{ article.content|markdown if article.content else _("Content") }}
             </div>
-{#            <div class="col-md-3 article_comment">#}
-{#                <!--Example comment-->#}
-{#            </div>#}
+            {#            <div class="col-md-3 article_comment">#}
+            {#                <!--Example comment-->#}
+            {#            </div>#}
         </div>
 
         {% if article.type == 'blogpost' %}
@@ -222,6 +219,7 @@
 
 {% block final %}
     {# Add trumbowyg before as it's used by app.js #}
+    {% include 'includes/trumbowyg-icons.html' %}
     <script src="{{ url_for('static', filename='js/trumbo/trumbowyg.js') }}"></script>
     <script src="{{ url_for('static', filename='js/htmlparser.js') }}"></script>
     <script src="{{ url_for('static', filename='js/upndown.bundle.min.js') }}"></script>

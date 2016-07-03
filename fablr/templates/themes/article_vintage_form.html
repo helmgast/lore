@@ -52,11 +52,17 @@
         }
 
         textarea.form-control {
-            background-image: linear-gradient(left, #f9f7f1 10px, transparent 10px), linear-gradient(right, #f9f7f1 10px, transparent 10px), linear-gradient(#f9f7f1 30px, #000 30px, #000 31px, #f9f7f1 31px);
-            background-image: -webkit-linear-gradient(left, #f9f7f1 10px, transparent 10px), -webkit-linear-gradient(right, #f9f7f1 10px, transparent 10px), -webkit-linear-gradient(#f9f7f1 30px, #000 30px, #000 31px, #f9f7f1 31px);
+{#            background: url(data:image/gif;base64,R0lGODlhAQAfAIAAAAAAAP///yH5BAEAAAEALAAAAAABAB8AAAIFjI+pa1AAOw==) repeat;#}
+            background: repeating-linear-gradient(to bottom, transparent, transparent 30px, #000 30px, #000 31px );
+            background: -webkit-repeating-linear-gradient(to bottom, transparent, transparent 30px, #000 30px, #000 31px );
             line-height: 31px;
             border: none;
+            -webkit-print-color-adjust: exact; /* keeps the lines even when printing and background removed */
+            print-color-adjust: exact;
+        }
 
+        .form-control .gallery {
+            max-height:250px;
         }
 
         .stats input {
@@ -492,7 +498,7 @@
                     obj[el.id] = $(el).val()
             })
             $('#characterdata__stats').val(JSON.stringify(obj))
-            $inputs.prop('disabled', true);
+            $inputs.prop('disabled', true); // will remove from form submission
         })
     </script>
 {% endblock final %}

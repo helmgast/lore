@@ -415,7 +415,7 @@ class ArticlesView(ResourceView):
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article)
-        set_theme(r, 'article', r.article.theme or 'default')  # Incase we need to return to user
+        set_theme(r, 'article', article.theme or 'default')  # Incase we need to return to user
 
         try:
             r.commit(new_instance=article)

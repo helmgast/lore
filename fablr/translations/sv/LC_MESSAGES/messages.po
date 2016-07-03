@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-07-03 18:05+0900\n"
+"POT-Creation-Date: 2016-07-03 20:00+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -1105,7 +1105,7 @@ msgstr "från"
 #: fablr/templates/campaign/session_page.html:34
 #: fablr/templates/includes/confirm.html:15
 #: fablr/templates/includes/feedback_modal.html:36
-#: fablr/templates/includes/macros.html:274
+#: fablr/templates/includes/macros.html:275
 #: fablr/templates/shop/product_item.html:61
 #: fablr/templates/social/group_item.html:60
 #: fablr/templates/social/user_item.html:117
@@ -1462,7 +1462,7 @@ msgid "Edit"
 msgstr "Ändra"
 
 #: fablr/templates/asset/fileasset_item.html:14
-#: fablr/templates/includes/macros.html:159
+#: fablr/templates/includes/macros.html:160
 #: fablr/templates/world/article_action_menu.html:11
 msgid "View"
 msgstr "Visa"
@@ -1799,7 +1799,7 @@ msgid "Present"
 msgstr "Nuvarande"
 
 #: fablr/templates/includes/confirm.html:6
-#: fablr/templates/includes/macros.html:268
+#: fablr/templates/includes/macros.html:269
 msgid "Are you sure you want to"
 msgstr "Är du säker att du vill"
 
@@ -1829,53 +1829,53 @@ msgstr "Emailadress"
 msgid "Send"
 msgstr "Skicka"
 
-#: fablr/templates/includes/macros.html:151
+#: fablr/templates/includes/macros.html:152
 msgid "Your access rights allow you to view this resource in this view"
 msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
 
-#: fablr/templates/includes/macros.html:162
+#: fablr/templates/includes/macros.html:163
 msgid "Card view"
 msgstr "Galleri-vy"
 
-#: fablr/templates/includes/macros.html:165
+#: fablr/templates/includes/macros.html:166
 msgid "Table view"
 msgstr "Tabell-vy"
 
-#: fablr/templates/includes/macros.html:168
+#: fablr/templates/includes/macros.html:169
 msgid "List view"
 msgstr "List-vy"
 
-#: fablr/templates/includes/macros.html:179
+#: fablr/templates/includes/macros.html:180
 msgid "Click to reset current ordering"
 msgstr "Klicka för att återställa sorteringen"
 
-#: fablr/templates/includes/macros.html:180
-#: fablr/templates/includes/macros.html:185
+#: fablr/templates/includes/macros.html:181
+#: fablr/templates/includes/macros.html:186
 msgid "Order by"
 msgstr "Sortera på"
 
-#: fablr/templates/includes/macros.html:183
+#: fablr/templates/includes/macros.html:184
 msgid "Select ordering"
 msgstr "Välj sortering"
 
-#: fablr/templates/includes/macros.html:206
+#: fablr/templates/includes/macros.html:207
 msgid "Click to reset items per page"
 msgstr "Klicka för att återställa visade artiklar per sida"
 
-#: fablr/templates/includes/macros.html:207
-#: fablr/templates/includes/macros.html:211
+#: fablr/templates/includes/macros.html:208
+#: fablr/templates/includes/macros.html:212
 msgid "Per page"
 msgstr "Per sida"
 
-#: fablr/templates/includes/macros.html:209
+#: fablr/templates/includes/macros.html:210
 msgid "Choose number of items per page"
 msgstr "Välj antar visade artiklar per sida"
 
-#: fablr/templates/includes/macros.html:217
+#: fablr/templates/includes/macros.html:218
 msgid "All"
 msgstr "Alla"
 
-#: fablr/templates/includes/macros.html:275
+#: fablr/templates/includes/macros.html:276
 msgid "Yes"
 msgstr "Ja"
 
