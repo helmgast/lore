@@ -215,8 +215,8 @@
     {% block footer %}{% endblock %}
 </footer>
 {% include "includes/feedback_modal.html" %}
-{# Standard modal element, don't touch #}
-<div class="modal fade" id="themodal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+{# Standard modal element, don't touch #} {# TODO data-remote='' cancels out remote setting from data-toggle=modal to stop remote loading#}
+<div class="modal fade" id="themodal" data-remote="" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
      aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">Modal loading...</div>

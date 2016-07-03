@@ -484,11 +484,14 @@
     {{ super() }}
     <script>
         $(document).on('ready', function (e) {
-            var data = $.parseJSON($('#characterdata__stats').val())
-            Object.keys(data).forEach(function (val) {
-                $('#' + val).val(data[val])
-            })
-            $(document).trigger('fablr.dom-updated')
+            var data = $('#characterdata__stats').val()
+            if (data) {
+                data = $.parseJSON(data)
+                Object.keys(data).forEach(function (val) {
+                    $('#' + val).val(data[val])
+                })
+                $(document).trigger('fablr.dom-updated')
+            }
         })
         $('#articleform').submit(function (e) {
             var $inputs = $(this).find('.nosubmit')

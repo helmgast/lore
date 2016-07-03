@@ -13,7 +13,7 @@ function flash_error(message, level, target) {
 
     if (message instanceof Object) {
         var new_message = ''
-        Object.keys(message.errors).forEach(function(key, index) {
+        Object.keys(message.errors).forEach(function (key, index) {
             new_message += key + ': ' + message.errors[key] + ', '
         });
         message = new_message
@@ -39,15 +39,17 @@ function decompose_url(url) {
     var a = document.createElement('a'), params = {}
     a.href = decodeURIComponent(url)
     // Search starts with ?, let's remove
-    var query_parts = a.search.substring(1,a.search.length).split('&')
+    var query_parts = a.search.substring(1, a.search.length).split('&')
     for (var i = 0; i < query_parts.length; i++) {
         var nv = query_parts[i].split('=');
         if (!nv[0] || !nv[1]) continue;
         params[nv[0]] = nv[1] || true;
     }
     var i = a.pathname.lastIndexOf("/")
-    var parts = {netloc: a.protocol +'//'+ a.hostname + (a.port ? ":"+a.port : ""), path: a.pathname.substring(0,i+1),
-        file: a.pathname.substring(i+1), hash: a.hash, params: params}
+    var parts = {
+        netloc: a.protocol + '//' + a.hostname + (a.port ? ":" + a.port : ""), path: a.pathname.substring(0, i + 1),
+        file: a.pathname.substring(i + 1), hash: a.hash, params: params
+    }
     // Remove parts that where not in original URL
     if (url.lastIndexOf('?', 0) === 0) {
         $.extend(parts, {netloc: '', path: '', file: ''})
@@ -299,7 +301,7 @@ function modify_url(url, new_params, new_url_parts) {
                         }
                     });
                 } else {
-                   flash_error('Unknown error', 'danger', $modal.find('#alerts'))
+                    flash_error('Unknown error', 'danger', $modal.find('#alerts'))
                 }
 
 
@@ -334,8 +336,8 @@ function modify_url(url, new_params, new_url_parts) {
             this.$element.addClass('hide')
             this.$gallery =
                 $('<a class="gallery fileselect ' + (this.options.class || '') + '" contenteditable="false" data-toggle="modal" data-target="#themodal"></a>');
-            this.selectFiles($.map(this.$element.find(':selected'), function(el){
-               return {id: el.value, slug: el.text}
+            this.selectFiles($.map(this.$element.find(':selected'), function (el) {
+                return {id: el.value, slug: el.text}
             }));
             this.$element.after(this.$gallery)
 
@@ -351,7 +353,7 @@ function modify_url(url, new_params, new_url_parts) {
         var that = this, select_params = [], gallery_html = '', options_html = '';
         (selected_files || []).forEach(function (file) {
             gallery_html += '<figure class="gallery-item"><img src="' + that.options.image_url.replace('replace', file.slug) + '"></figure>'
-            options_html += '<option value="'+file.id+'" selected></option>';
+            options_html += '<option value="' + file.id + '" selected></option>';
             select_params.push(file.slug)
         });
         if (!options_html)
@@ -391,29 +393,31 @@ function modify_url(url, new_params, new_url_parts) {
             fileselect: {
                 init: function (trumbowyg) {
                     trumbowyg.o.plugins.fileselect = $.extend(true, {}, defaultOptions, trumbowyg.o.plugins.fileselect || {fs_obj: new FileSelect('')});
-                    trumbowyg.o.imgDblClickHandler = function(e) { return false }
-                    trumbowyg.$c.on('click', '.gallery', function(e) {
+                    trumbowyg.o.imgDblClickHandler = function (e) {
+                        return false
+                    }
+                    trumbowyg.$c.on('click', '.gallery', function (e) {
                         var $figure = $(this).closest('.gallery');
                         select_image($figure)
                         return false
                     })
                     // Below is hack to avoid exception on focusnode being null
                     var r = document.createRange()
-                    r.setStart(trumbowyg.$ta[0],0)
-                    r.setEnd(trumbowyg.$ta[0],0)
+                    r.setStart(trumbowyg.$ta[0], 0)
+                    r.setEnd(trumbowyg.$ta[0], 0)
                     document.getSelection().addRange(r)
                     console.log(document.getSelection().focusNode)
 
-                    var select_image = function($elem) {
+                    var select_image = function ($elem) {
                         trumbowyg.saveRange();
                         var select_params = [], insert_position = 'gallery-center';
                         if ($elem instanceof jQuery) {
-                            $elem.find('img').each(function(i, el) {
+                            $elem.find('img').each(function (i, el) {
                                 select_params.push(decompose_url(el.src).file) // take filename part of URL
                             });
-                            if ($elem.hasClass('gallery-wide')){
+                            if ($elem.hasClass('gallery-wide')) {
                                 insert_position = 'gallery-wide'
-                            } else if ($elem.hasClass('gallery-side')){
+                            } else if ($elem.hasClass('gallery-side')) {
                                 insert_position = 'gallery-side'
                             }
                         } else {
@@ -423,34 +427,41 @@ function modify_url(url, new_params, new_url_parts) {
                                 $elem = $('#content-editor *').first() // select first
                             $elem = $('<p>').insertBefore($elem)
                         }
-                        $('#themodal').modal('show', {href: modify_url(trumbowyg.o.image_select_url, {select: select_params.join(), position: insert_position})})
-                                .one('hide.bs.modal', {t: trumbowyg, $elem:$elem}, function (e) {
-                                    var $newelem, selected = $('#themodal').find("[data-selection]").sort(function(a,b){
-                                        return $(a).data('selection') > $(b).data('selection')
-                                    });
-                                    var insert_choice = $('#insert-position .active input'), insert_position = 'gallery-center'
-                                    if (insert_choice.length) {
-                                        insert_position = insert_choice[0].id
-                                    }
-                                    if (selected.length > 0) {
-                                        $newelem = $('<ul contenteditable="false" class="gallery '+insert_position+'"><li class="hide">'+insert_position+'</li></ul>')
-                                        if (insert_position=='gallery-wide')
-                                            $newelem.attr('data-maxaspect',100)
-                                        selected.each(function(i, el) {
-                                            var $el = $(el)
-                                            $newelem.append('<li class="gallery-item" data-aspect="'+$el.data('aspect')+'"><img src="'+$el.find('img')[0].src+'"></li>')
-                                        })
-                                        $(e.data.$elem).replaceWith($newelem)
-                                        $newelem.trigger('fablr.dom-updated')
-                                        //e.data.t.restoreRange()
-                                        //e.data.t.execCmd('insertImage', src, false, "donotuse");
-                                    } else {
-                                       $(e.data.$elem).remove() // it's now empty
-                                    }
-                                    e.data.t.syncCode();
-                                    e.data.t.semanticCode(false, true);
-                                    e.data.t.updateButtonPaneStatus();
-                                    e.data.t.$c.trigger('tbwchange');
+                        // Calls a modal, we use an empty options object (with no remote to not start Bootstraps ajax load)
+                        // Instead we create a fake target object with a href, that mimics what would normally be an <a>
+                        $('#themodal').modal({}, {
+                                href: modify_url(trumbowyg.o.image_select_url, {
+                                    select: select_params.join(),
+                                    position: insert_position
+                                })
+                            })
+                            .one('hide.bs.modal', {t: trumbowyg, $elem: $elem}, function (e) {
+                                var $newelem, selected = $('#themodal').find("[data-selection]").sort(function (a, b) {
+                                    return $(a).data('selection') > $(b).data('selection')
+                                });
+                                var insert_choice = $('#insert-position .active input'), insert_position = 'gallery-center'
+                                if (insert_choice.length) {
+                                    insert_position = insert_choice[0].id
+                                }
+                                if (selected.length > 0) {
+                                    $newelem = $('<ul contenteditable="false" class="gallery ' + insert_position + '"><li class="hide">' + insert_position + '</li></ul>')
+                                    if (insert_position == 'gallery-wide')
+                                        $newelem.attr('data-maxaspect', 100)
+                                    selected.each(function (i, el) {
+                                        var $el = $(el)
+                                        $newelem.append('<li class="gallery-item" data-aspect="' + $el.data('aspect') + '"><img src="' + $el.find('img')[0].src + '"></li>')
+                                    })
+                                    $(e.data.$elem).replaceWith($newelem)
+                                    $newelem.trigger('fablr.dom-updated')
+                                    //e.data.t.restoreRange()
+                                    //e.data.t.execCmd('insertImage', src, false, "donotuse");
+                                } else {
+                                    $(e.data.$elem).remove() // it's now empty
+                                }
+                                e.data.t.syncCode();
+                                e.data.t.semanticCode(false, true);
+                                e.data.t.updateButtonPaneStatus();
+                                e.data.t.$c.trigger('tbwchange');
                             })
                     }
 
@@ -459,12 +470,6 @@ function modify_url(url, new_params, new_url_parts) {
                         ico: 'insert-image',
                         tag: 'gallery'
                     });
-                    //trumbowyg.addBtnDef('wide', {
-                    //    fn: function()
-                    //    tag:'wide'
-                    //});
-                    //trumbowyg.addBtnDef('center', {tag:'center'});
-                    //trumbowyg.addBtnDef('portrait', {tag:'portrait'});
 
 
                 },
@@ -656,19 +661,20 @@ $('a[data-dismiss="back"]').click(function (e) {
 
 //////////////// new modal code ///////////
 
+// TODO replace with load_content when using Bootstrap 4, as it has deprecated own loading
+
 $('#themodal').on('show.bs.modal', function (event) {
-    if (event.relatedTarget.href) {
-        var $thm = $('#themodal')
+    if (event.relatedTarget && event.relatedTarget.href) {
+        var $modal = $(this)
         // This is hack, normally remote would be populated but when launched manually from trumbowyg it isn't
-        $thm.data('bs.modal').options.remote = event.relatedTarget.href;
-        load_content(event.relatedTarget.href, $thm.find('.modal-content'));
+        //$modal.data('bs.modal').options.remote = event.relatedTarget.href;
+        load_content(event.relatedTarget.href, $modal.find('.modal-content'));
     }
     $(document).one('hide.bs.modal', '#themodal', function (e) {
         // We notify the originating button that modal was closed
         $(event.relatedTarget).trigger('hide.bs.modal.atbtn')
     });
 });
-
 
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
@@ -693,28 +699,39 @@ function load_content(href, target, base_href, append) {
     var dest = $(target), parts = {}
     if (base_href) {
         parts = decompose_url(base_href)
-        parts = {netloc: parts.netloc, path:parts.path, file: parts.file}
+        parts = {netloc: parts.netloc, path: parts.path, file: parts.file}
     }
 
     href = modify_url(href, {out: dest.hasClass('modal-content') ? 'modal' : 'fragment'}, parts)
     if (dest && href) {
-        $.get(href, function (data, textStatus, jqXHR) {
-            if (textStatus != 'success' && textStatus != 'notmodified') {
-                flash_error(data, 'danger', $modal.find('#alerts'))
-            } else {
-                if (append) {
-                    dest.append(data)
-                } else {
-                    dest.html(data)
-                }
-                // Trigger all plugins on added content
-                dest.trigger('fablr.dom-updated')
-            }
-        }, 'html');
+        xhrFields: {
+            withCredentials: true
+        }
     }
+    $.get({
+            url: href,
+            success: function (data, textStatus, jqXHR) {
+                if (textStatus != 'success' && textStatus != 'notmodified') {
+                    flash_error(data, 'danger', $modal.find('#alerts'))
+                } else {
+                    if (append) {
+                        dest.append(data)
+                    } else {
+                        dest.html(data)
+                    }
+                    // Trigger all plugins on added content
+                    dest.trigger('fablr.dom-updated')
+                }
+            },
+            dataType: 'html',
+            xhrFields: {
+                withCredentials: true
+            }
+        }
+    );
 }
 
-$(document).on('click', '#content-editor a', function(e) {
+$(document).on('click', '#content-editor a', function (e) {
     return false; // Ignore clicks on links in editor so we dont leave page
 });
 
@@ -835,7 +852,7 @@ $(document).on('ready fablr.dom-updated', function (e) {
     scope.find('.selectize-file').selectize({
         render: {
             item: function (item, escape) {
-                return '<img src="'+image_url.replace('replace', item.text) +'">';
+                return '<img src="' + image_url.replace('replace', item.text) + '">';
             }
         }
     });
@@ -865,22 +882,22 @@ $(document).on('ready fablr.dom-updated', function (e) {
         return false;
     });
 
-    scope.find('.calc[data-formula]').each(function(i, el){
+    scope.find('.calc[data-formula]').each(function (i, el) {
         var pattern = /#([a-zA-Z\d_.:]+)/gi
         var $el = $(el)
         var formula = $el.attr('data-formula')  // use attr as it will always come out as a string
         var ancestors = formula.match(pattern) || []
 
-        ancestors.forEach(function(an){
+        ancestors.forEach(function (an) {
             $an = $(an)
             if (!$an.length)
-                console.log(an+' is not a valid id')
+                console.log(an + ' is not a valid id')
             if ($an.is('input, textarea')) {
-                formula = formula.replace(an, "(parseInt(document.getElementById('"+an.substring(1)+"').value) || 0)")
+                formula = formula.replace(an, "(parseInt(document.getElementById('" + an.substring(1) + "').value) || 0)")
             } else {
-                formula = formula.replace(an, "(parseInt(document.getElementById('"+an.substring(1)+"').innerText) || 0)")
+                formula = formula.replace(an, "(parseInt(document.getElementById('" + an.substring(1) + "').innerText) || 0)")
             }
-            $an.on("click keyup", function(e) {
+            $an.on("click keyup", function (e) {
                 $el.trigger('recalc')
             })
         })
