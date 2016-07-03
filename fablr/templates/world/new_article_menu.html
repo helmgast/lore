@@ -12,6 +12,8 @@
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
+      <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='character')}}"><span class="glyphicon glyphicon-heart"></span> {{ _('Character') }}</a></li>
+
     </ul>
   </li>
 {% endcall %}

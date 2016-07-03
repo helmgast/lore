@@ -409,13 +409,14 @@ class ArticlesView(ResourceView):
         r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
-        set_theme(r, 'article', r.article.theme or 'default')
 
         article = Article()
         if not r.validate():
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(article)
+        set_theme(r, 'article', r.article.theme or 'default')  # Incase we need to return to user
+
         try:
             r.commit(new_instance=article)
         except (NotUniqueError, ValidationError) as err:

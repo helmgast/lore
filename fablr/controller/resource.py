@@ -379,7 +379,6 @@ class ListResponse(ResourceResponse):
             field = self.model._fields[f]
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
-                # print f, field.filter_options(self.model)
         # TODO implement search, use textindex and do ".search_text()"
 
         if paginate:

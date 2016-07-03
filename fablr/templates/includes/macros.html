@@ -232,7 +232,7 @@
 
 {%- macro ARG_LINK(name, argdict, combine=False) -%}
     {#    {{ 'req ' +request.args|urlencode+' vs new '+url_with}}#}
-    {#    {{ args|pprint }}#}
+    {% do argdict.update({'page':none}) %} {# Remote page reference as may not be valid after filtering #}
     {% if in_current_args(argdict) %} {# all non-zero argdict in query_string #}
         {# query_string without all parameters in argdict #}
         <a href="{{ current_url(combine, **dict.fromkeys(argdict.keys(), none)) }}"
