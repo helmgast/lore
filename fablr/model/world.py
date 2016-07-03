@@ -15,7 +15,8 @@ from flask import current_app
 from flask.ext.babel import lazy_gettext as _
 from flask.ext.mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
-                         ListField, IntField, EmailField, EmbeddedDocumentField)
+                         ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
+                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField)
 
 from asset import ImageAsset, FileAsset
 from misc import Choices, slugify, Address, Languages, choice_options, datetime_options, reference_options
@@ -179,6 +180,10 @@ class EventData(EmbeddedDocument):
     to_date = IntField(verbose_name=_('To'))
 
 
+class CharacterData(EmbeddedDocument):
+    stats = DynamicField()
+
+
 class Episode(EmbeddedDocument):
     id = StringField(unique=True)  # URL-friendly name?
     title = StringField(max_length=60, verbose_name=_('Title'))
@@ -210,7 +215,8 @@ ArticleTypes = Choices(
     place=_('Place'),
     event=_('Event'),
     campaign=_('Campaign'),
-    chronicles=_('Chronicle')
+    chronicles=_('Chronicle'),
+    character=_('Character')
 )
 
 ArticleThemes = Choices(
@@ -222,7 +228,7 @@ ArticleThemes = Choices(
 )
 
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
-EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata']
+EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata', 'characterdata']
 
 
 class Article(Document):
@@ -296,6 +302,8 @@ class Article(Document):
     placedata = EmbeddedDocumentField(PlaceData)
     eventdata = EmbeddedDocumentField(EventData)
     campaigndata = EmbeddedDocumentField(CampaignData)
+    characterdata = EmbeddedDocumentField(CharacterData)
+
     relations = ListField(EmbeddedDocumentField(ArticleRelation))
 
 

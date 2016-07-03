@@ -20,7 +20,7 @@ from flask.ext.babel import lazy_gettext as _
 from flask.ext.classy import FlaskView
 from flask.ext.mongoengine import Pagination
 from flask.ext.mongoengine.wtf import model_form
-from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField
+from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField, JSONField
 from flask.ext.mongoengine.wtf.models import ModelForm
 from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
@@ -509,7 +509,7 @@ class ResourceView(FlaskView):
 
 
 # WTForm Basics to remember
-# creating a form instance will have all data from formdata (input) take presedence. Not having it in
+# creating a form instance will have all data from formdata (input) take precedence. Not having it in
 # formdata is same as setting it to 0 / default.
 # to avoid a form field value to impact the object, remove it from the form. populate_obj can only
 # take data from fields that exist in the form.
@@ -522,7 +522,7 @@ class RacBaseForm(ModelForm):
         if fields_to_populate:
             # FormFields in form args will have '-' do denote it's subfields. We
             # only want the first part, or it won't match the field names
-            new_fields_to_populate = set([fld.split('-', 1)[0] for fld in fields_to_populate])
+            new_fields_to_populate = set([fld.split('__', 1)[0] for fld in fields_to_populate])
             # print "In populate, fields_to_populate before \n%s\nand after\n%s\n" % (
             #     fields_to_populate, new_fields_to_populate)
             newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in new_fields_to_populate]
@@ -553,7 +553,7 @@ class ArticleBaseForm(RacBaseForm):
             new_type = self.data['type']
             # Tell the Article we have changed type
             obj.change_type(new_type)
-        super(ArticleBaseForm, self).populate_obj(obj)
+        super(ArticleBaseForm, self).populate_obj(obj, fields_to_populate)
 
 
 class MultiCheckboxField(f.SelectMultipleField):
@@ -660,8 +660,10 @@ class FablrModelSelectMultipleField(ModelSelectMultipleField):
                 if not len(self.data):
                     self.data = None
 
+
 class FablrModelSelectField(ModelSelectField):
     pass
+
 
 class RacModelConverter(ModelConverter):
     @converts('EmbeddedDocumentField')
@@ -753,6 +755,10 @@ class RacModelConverter(ModelConverter):
         if field.max_length and field.max_length < 100:  # changed from original code
             return f.StringField(**kwargs)
         return f.TextAreaField(**kwargs)
+
+    @converts('DynamicField')
+    def conv_DynamicField(self, model, field, kwargs):
+        return JSONField(**kwargs)
 
 
 class ResourceError(Exception):

@@ -1086,7 +1086,7 @@ msgstr "Bilder"
 
 #: fablr/model/world.py:245
 msgid "License"
-msgstr "Upphovsrättslicens"
+msgstr "Licens"
 
 #: fablr/model/world.py:248
 msgid "Theme"

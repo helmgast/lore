@@ -311,7 +311,7 @@ class ArticlesView(ResourceView):
     item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
-                            exclude=['slug', 'images', 'feature_image'],
+                            exclude=['slug', 'feature_image'],
                             converter=RacModelConverter())
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
@@ -409,6 +409,8 @@ class ArticlesView(ResourceView):
         r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
+        set_theme(r, 'article', r.article.theme or 'default')
+
         article = Article()
         if not r.validate():
             flash(_("Error in form"), 'danger')
@@ -423,7 +425,7 @@ class ArticlesView(ResourceView):
 
     def patch(self, publisher_, world_, id):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
-        world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else  WorldMeta(publisher)
+        world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
@@ -434,6 +436,8 @@ class ArticlesView(ResourceView):
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
+        set_theme(r, 'article', r.article.theme or 'default')
+
         if not isinstance(r.form, RacBaseForm):
             raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
@@ -460,6 +464,8 @@ class ArticlesView(ResourceView):
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
+        set_theme(r, 'article', r.article.theme or 'default')
+
         r.commit()
         return redirect(
             r.args['next'] or url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug))

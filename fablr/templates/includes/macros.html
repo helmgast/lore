@@ -79,6 +79,44 @@
     </div>
 {%- endmacro -%}
 
+{% macro MAKE_INPUT(label, id='', cols=10, labelcols=2, type='text', placeholder='', suffix='', prefix='', rows=3, class="nosubmit") %}
+    {#    {% set disabled = true if args.get('intent','')!='patch' else false %}#}
+    {% if not id %}
+        {% set id = label.lower() %}
+    {% endif %}
+    <label for="{{ id }}" class="col-sm-{{ labelcols }} control-label">{{ label }}</label>
+    <div class="col-sm-{{ cols }}">
+        {% if suffix or prefix %}
+            <div class="input-group">
+            {% if prefix %}
+                <span class="input-group-addon">{{ prefix }}</span>
+            {% endif %}
+        {% endif %}
+
+        {% if type=='text' %}
+            <input type="{{ type }}" class="form-control {{ class }}" id="{{ id }}" name="{{ id }}"
+                   placeholder="{{ placeholder }}" {{ 'disabled' if disabled }}>
+        {% elif type=='textarea' %}
+            <textarea class="form-control {{ class }}" id="{{ id }}" name="{{ id }}" rows="{{ rows }}"
+                      placeholder="{{ placeholder }}" {{ 'disabled' if disabled }}></textarea>
+        {% endif %}
+        {% if suffix or prefix %}
+            {% if suffix %}
+                <span class="input-group-addon">{{ suffix }}</span>
+            {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro MAKE_TD_INPUT(label, id='', placeholder='', class="nosubmit", min=1, max=12) %}
+    {% if not id %}
+        {% set id = label.lower() %}
+    {% endif %}
+    <td><label for="{{ id }}" class="control-label">{{ label }}</label></td>
+    <td><input type="number" min={{ min }} max={{ max }} class="form-control {{ class }}" id="{{ id }}" name="{{ id }}">
+    </td>
+{% endmacro %}
 
 {%- macro AUTHORIZED(auth) -%}
     {% if auth %}
@@ -139,7 +177,8 @@
                     {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
                     <a href="{{ current_url(order_by=none) }}"
                        title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info  btn-xs">
-                        {% trans %}Order by{% endtrans %}: {{ model_class._fields[clean_order_by].verbose_name }} &times;</a>
+                        {% trans %}Order by{% endtrans %}
+                        : {{ model_class._fields[clean_order_by].verbose_name }} &times;</a>
                 {% else %}
                     <button type="button" title="{% trans %}Select ordering{% endtrans %}"
                             class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"

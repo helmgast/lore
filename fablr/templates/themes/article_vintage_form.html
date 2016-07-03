@@ -1,9 +1,19 @@
 {% extends "world/article_list.html" %}
 
+{% import 'includes/macros.html' as MACRO2 with context %}
+
+{% if not article_form %}
+    {% set article_form = resource_view.form_class(obj=article) %}
+{% endif %}
+
 {% block cssimports %}
     {{ super() }}
     <style>
         @import url(https://fonts.googleapis.com/css?family=Special+Elite);
+
+        textarea {
+            resize: none;
+        }
 
         .article_header {
             font-family: 'Playfair Display', serif;
@@ -32,7 +42,7 @@
             font-family: 'Special Elite', cursive;
         }
 
-        .form-control {
+        .form-control, .input-group-addon {
             background-color: inherit;
             webkit-box-shadow: none;
             box-shadow: none;
@@ -41,27 +51,48 @@
             border-bottom: 1px solid black;
         }
 
-        {#        .article_text {#}
-        {#            line-height: 1;#}
-        {#            margin-top: 40px;#}
-        {#            margin-left: 90px;#}
-        {#            width: 50%;#}
-        {#            padding: 20px 10px 20px 65px;#}
-        {#            background-color: #fff;#}
-        {#            background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 59px, #abced4 59px, #abced4 61px, rgba(0, 0, 0, 0) 61px), linear-gradient(#e1e1e1 0.1em, rgba(0, 0, 0, 0) 0.1em);#}
-        {#            background-size: 100% 1em;#}
-        {#            font-size: 18px;#}
-        {#            -moz-transform: rotate(10deg);#}
-        {#            -ms-transform: rotate(10deg);#}
-        {#            -webkit-transform: rotate(10deg);#}
-        {#            transform: rotate(5deg);#}
-        {#            -moz-box-shadow: #ccc 3px 3px 6px;#}
-        {#            -webkit-box-shadow: #ccc 3px 3px 6px;#}
-        {#            box-shadow: #ccc 3px 3px 6px;#}
-        {#            font-family: "Annie Use Your Telescope";#}
-        {#            font-weight: normal;#}
-        {#            color: #777;#}
-        {#        }#}
+        textarea.form-control {
+            background-image: linear-gradient(left, #f9f7f1 10px, transparent 10px), linear-gradient(right, #f9f7f1 10px, transparent 10px), linear-gradient(#f9f7f1 30px, #000 30px, #000 31px, #f9f7f1 31px);
+            background-image: -webkit-linear-gradient(left, #f9f7f1 10px, transparent 10px), -webkit-linear-gradient(right, #f9f7f1 10px, transparent 10px), -webkit-linear-gradient(#f9f7f1 30px, #000 30px, #000 31px, #f9f7f1 31px);
+            line-height: 31px;
+            border: none;
+
+        }
+
+        .stats input {
+            padding: 1px;
+            padding-top: 14px;
+            text-align: center;
+        }
+
+        .stats > tbody > tr > td {
+            padding: 0px;
+            vertical-align: bottom;
+            text-align: center;
+        }
+
+        .stats label {
+            font-weight: inherit;
+        }
+
+        .stats tr:nth-child(4n+1) {
+            font-weight:700;
+        }
+
+        .stats tr:nth-child(4n+1) td:nth-child(3) {
+            font-size: 80%;
+        }
+
+
+        input:invalid {
+            background-color: red;
+        }
+
+        .input-group {
+            float: default;
+            padding-right: default;
+            padding-left: default;
+        }
     </style>
 {% endblock %}
 
@@ -69,67 +100,399 @@
 {% block content_tagline %}
 {% endblock %}
 
+
 {% block mainblock %}
-    <div class="col-md-3 sidebar">
-        {% block sidebar %}
-            &nbsp;
-        {% endblock %}
-        {% block sidebar_end %}
-        {% endblock %}
-    </div>
-    <div class="col-md-9">
-        <div class="content">
-            {% include "includes/flash.html" %}
-            <h2 class="center">Personakt</h2>
-            <form class="form-horizontal">
+    <form class="form-horizontal" role="form" id='articleform' method="post"
+          action="{{ current_url(method='patch', next=current_url(intent='patch', full_url=true)) }}">
+        <div class="col-md-3 sidebar">
+            {% block sidebar %}
+                &nbsp;
+            {% endblock %}
+            {% block sidebar_end %}
+                {% if args.get('intent','')=='patch' %} {# we are always creating an article_form for this theme #}
+                    {{ article_form.csrf_token }}
+                    <div class="article_comment form-horizontal">
 
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Namn</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="name" placeholder="Namn">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputPassword" class="col-sm-2 control-label">Aka</label>
-                    <div class="col-sm-10">
-                        <input type="aka" class="form-control" id="aka" placeholder="Aka">
-                    </div>
-                </div>
+                        {% if not article or not article.is_published() %}
+                            <button type="submit" name="status" value="published"
+                                    class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>
+                        {% endif %}
 
-                <div class="form-group">
-                    <label class="col-sm-1 control-label">Vikt</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="vikt" placeholder="xx kg">
-                    </div>
-                    <label class="col-sm-1 control-label">Längd</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="vikt" placeholder="xxx cm">
-                    </div>
-                    <label class="col-sm-1 control-label">Kön</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="vikt" placeholder="Vikt">
-                    </div>
-                    <label class="col-sm-1 control-label">Ras</label>
-                    <div class="col-sm-2">
-                        <input type="text" class="form-control" id="vikt" placeholder="Vikt">
-                    </div>
-                </div>
+                        <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>
 
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">Ögonfärg</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="vikt" placeholder="xx kg">
-                    </div>
-                    <label class="col-sm-2 control-label">Hårfärg</label>
-                    <div class="col-sm-4">
-                        <input type="text" class="form-control" id="vikt" placeholder="xxx cm">
-                    </div>
+                        {{ MACRO2.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.status, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
-                </div>
-
-            </form>
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.type, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.world, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.license, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.theme, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
+                        {{ MACRO2.FORM_FIELD(article_form.editors,controlclass=' input-sm selectize') }}
+                        {{ MACRO2.FORM_FIELD(article_form.readers,controlclass=' input-sm selectize') }}
 
 
+                        <input type="hidden" name="feature_image" id="feature_image" value=""/>
+                        {% if g.user.id %}
+                            <input type="hidden" name="creator" value="{{ g.user.id }}"/>
+                        {% endif %}
+
+                    </div>
+                {% endif %}
+            {% endblock %}
         </div>
-    </div>
+        <div class="col-md-9 content">
+            {% include "includes/flash.html" %}
+            <h2 class="center">Personakt - {{ article.title }}</h2>
+            {{ article_form.characterdata.stats(class='hide') }}
+
+            <div class="row">
+                <div class="col-sm-8">
+                    <div class="form-group{{ ' has-error has-feedback' if article_form.title.errors }}">
+                        <label for="title" class="col-sm-2 control-label">Namn</label>
+                        <div class="col-sm-10">
+                            {{ article_form.title(class="form-control") }}
+                            {%- if article_form.title.errors -%}
+                                <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+                                <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
+                            {%- endif -%}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ MACRO2.MAKE_INPUT("Alias") }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ MACRO2.MAKE_INPUT("Korporation", cols=4) }}
+                        {{ MACRO2.MAKE_INPUT("Reg. nr", id='regnr', cols=4, placeholder='xxx-xx-xxxx, Planet') }}
+                    </div>
+
+                    <div class="form-group">
+                        {{ MACRO2.MAKE_INPUT("Vikt", cols=2, labelcols=1, placeholder='xx', suffix='kg') }}
+                        {{ MACRO2.MAKE_INPUT("Längd", id='langd', cols=2, labelcols=1,  placeholder='xx', suffix='cm') }}
+                        {{ MACRO2.MAKE_INPUT("Kön", id='kon', cols=2, labelcols=1) }}
+                        {{ MACRO2.MAKE_INPUT("Ras", cols=2, labelcols=1) }}
+                    </div>
+                    <div class="form-group">
+                        {{ MACRO2.MAKE_INPUT("Ögonfärg", id='ogonfarg') }}
+                    </div>
+                    <div class="form-group">
+                        {{ MACRO2.MAKE_INPUT("Hårfärg", id='harfarg') }}
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    {{ MACRO.FORM_FIELD(article_form.images, controlclass='fileselect', data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Födelsedatum", id='fodelsedatum', cols=4, placeholder='1225/01/02') }}
+                {{ MACRO2.MAKE_INPUT("Födelseort", id='fodelseort', cols=4) }}
+            </div>
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Civilstånd", id='civilstand') }}
+            </div>
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Make/ maka", id='makemaka', placeholder='Titel, Namn (född), yrke, hemvist') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Barn", placeholder='Namn (född), Namn (född)') }}
+            </div>
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Far", placeholder='Titel, Namn (född), yrke, hemvist') }}
+            </div>
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Mor", placeholder='Titel, Namn (född), yrke, hemvist') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Övrig familj", id='familj', type='textarea') }}
+            </div>
+
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Inkomst", placeholder='Marker per år') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Tillgångar", id='tillgangar', type='textarea', placeholder='Föremål (uppskattat värde), ...') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Skulder", type='textarea', placeholder='Fordringsägare (summa), ...') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Nuvarande yrke", id='nuvarandeyrke', placeholder='Yrkestitel, ort, arbetsgivare') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Tidigare yrken", id='tidigareyrke', type='textarea', placeholder='Yrkestitel, ort, arbetsgivare (årtal)') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Utbildningar", type='textarea', placeholder='Utbildning, skola, ort, (årtal)') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Brottsregister", type='textarea', placeholder='Brott: straff (årtal)') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Särskilda signalement", id='sarskildasignalement', type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Kontakter", type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Vistelseplatser", type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Misstänkt aktivitet", id='misstanktaktivitet', type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Brödraskapets bedömning", id='brodraskapetsbedomning', type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Övrigt", id='ovrigt', type='textarea') }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Referens#", id='referens', type='textarea') }}
+            </div>
+            <h3>Profil</h3>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Berättelse", id='berattelse', cols=4) }}
+                {{ MACRO2.MAKE_INPUT("Koncept", cols=4) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Karaktärsdrag", id='karaktarsdrag', type='textarea', cols=4) }}
+                {{ MACRO2.MAKE_INPUT("Drivkrafter", type='textarea', cols=4) }}
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+
+                    <table class="table stats">
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Koordination", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Närstrid", id='narstrid') }}
+                            <td class="calc" data-formula="#koordination+#narstrid"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Reaktioner") }}
+                            <td id="reaktioner_sum" class="calc" data-formula="#koordination+#reaktioner"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Rörlighet", id='rorlighet') }}
+                            <td id="rorlighet_sum" class="calc" data-formula="#koordination+#rorlighet"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Kroppsbyggnad", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Kondition") }}
+                            <td id="kondition_sum" class="calc" data-formula="#kroppsbyggnad+#kondition"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Styrka") }}
+                            <td id="styrka_sum" class="calc" data-formula="#kroppsbyggnad+#styrka"></td>
+
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Tolerans") }}
+                            <td class="calc" data-formula="#kroppsbyggnad+#tolerans"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Motorik", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Fingerfärdighet", id='fingerfardighet') }}
+                            <td class="calc" data-formula="#motorik+#fingerfardighet"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Kastvapen") }}
+                            <td class="calc" data-formula="#motorik+#kastvapen"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Skjutvapen") }}
+                            <td class="calc" data-formula="#motorik+#skjutvapen"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-4">
+                    <table class="table stats">
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Bildning", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Humaniora") }}
+                            <td class="calc" data-formula="#bildning+#humaniora"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Medicin") }}
+                            <td class="calc" data-formula="#bildning+#medicin"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Naturvetenskap") }}
+                            <td class="calc" data-formula="#bildning+#naturvetenskap"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Kreativitet", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Konstruktion") }}
+                            <td class="calc" data-formula="#kreativitet+#konstruktion"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Skapa") }}
+                            <td class="calc" data-formula="#kreativitet+#skapa"></td>
+
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Slutledning") }}
+                            <td id="slutledning_sum" class="calc" data-formula="#kreativitet+#slutledning"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Vilja", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Beslutsamhet") }}
+                            <td id="beslutsamhet_sum" class="calc" data-formula="#vilja+#beslutsamhet"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Resistens") }}
+                            <td id="resistens_sum" class="calc" data-formula="#vilja+#resistens"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Sans") }}
+                            <td id='sans_sum' class="calc" data-formula="#vilja+#sans"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-sm-4">
+                    <table class="table stats">
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Insikt", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Empati") }}
+                            <td class="calc" data-formula="#insikt+#empati"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Motstå", id='motsta') }}
+                            <td class="calc" data-formula="#insikt+#motsta"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Världsvana", id='varldsvana') }}
+                            <td id='varldsvana_sum' class="calc" data-formula="#insikt+#varldsvana"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Perception", min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Intuition") }}
+                            <td id="intuition_sum" class="calc" data-formula="#perception+#intuition"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Fordon") }}
+                            <td class="calc" data-formula="#perception+#fordon"></td>
+
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Uppmärksamhet", id='uppmarksamhet') }}
+                            <td id="uppmarksamhet_sum" class="calc" data-formula="#perception+#uppmarksamhet"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Utstrålning", id='utstralning', min=2, max=6) }}
+                            <td>Skicklighet</td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Charm") }}
+                            <td id='charm_sum' class="calc" data-formula="#utstralning+#charm"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Ledarskap") }}
+                            <td id='ledarskap_sum' class="calc" data-formula="#utstralning+#ledarskap"></td>
+                        </tr>
+                        <tr>
+                            {{ MACRO2.MAKE_TD_INPUT("Övertyga", id='overtyga') }}
+                            <td class="calc" class="calc" data-formula="#utstralning+#overtyga"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Storlek", cols=4, prefix='<b id="storlek" class="calc" data-formula="15"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Intryck", cols=4,
+                        prefix='<b class="calc" data-formula="parseInt((Math.max(#charm_sum, #ledarskap_sum)+#sans_sum+#varldsvana_sum)/3)"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Ryktbarhet", cols=4, prefix='<b class="calc" data-formula="5"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Utseende", cols=4, prefix='<b class="calc" data-formula="0"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Överblick", id='overblick', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#reaktioner_sum+#sans_sum+#uppmarksamhet_sum)/3)"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Stridsförflyttning", id='stridsforflyttning', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#beslutsamhet_sum+#kondition_sum+#rorlighet_sum)/3)"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Skadestegring", cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#storlek+#styrka_sum)/10)"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Sårtröskel", id='sartroskel', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#kondition_sum+#storlek+#styrka_sum)/3)"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Uthållighet", id='uthallighet', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#resistens_sum+#storlek+#styrka_sum)/3)+5"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Lisvilja", cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#beslutsamhet_sum+#kondition_sum+#sans_sum)/3)+5"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Försvar", id='forsvar', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#intuition_sum+#reaktioner_sum+#uppmarksamhet_sum)/3)+5"></b>'|safe) }}
+                {{ MACRO2.MAKE_INPUT("Inlärning", id='inlarning', cols=4,
+                    prefix='<b class="calc" data-formula="parseInt((#beslutsamhet_sum+#slutledning_sum+#varldsvana_sum)/3)+5"></b>'|safe) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Expertiser", type='textarea', rows=10, cols=4) }}
+                {{ MACRO2.MAKE_INPUT("Begränsningar & Kännetecken", id='begransningar', type='textarea', rows=10, cols=4) }}
+            </div>
+            <div class="form-group">
+                {{ MACRO2.MAKE_INPUT("Utrustning", type='textarea', rows=10, cols=4) }}
+                {{ MACRO2.MAKE_INPUT("Kontakter", type='textarea', rows=10, cols=4) }}
+            </div>
+        </div>
+    </form>
 {% endblock %}
+
+{% block final %}
+    {{ super() }}
+    <script>
+        $(document).on('ready', function (e) {
+            var data = $.parseJSON($('#characterdata__stats').val())
+            Object.keys(data).forEach(function (val) {
+                $('#' + val).val(data[val])
+            })
+            $(document).trigger('fablr.dom-updated')
+        })
+        $('#articleform').submit(function (e) {
+            var $inputs = $(this).find('.nosubmit')
+            var obj = {}
+            $inputs.each(function (i, el) {
+                if (el.id)
+                    obj[el.id] = $(el).val()
+            })
+            $('#characterdata__stats').val(JSON.stringify(obj))
+            $inputs.prop('disabled', true);
+        })
+    </script>
+{% endblock final %}

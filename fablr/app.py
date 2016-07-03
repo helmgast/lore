@@ -16,6 +16,7 @@ from flask import Flask, render_template, request, url_for, flash, g
 from flaskext.markdown import Markdown
 
 from fablr.controller.resource import ResourceError, get_root_template
+from fablr.model import misc
 
 
 def create_app(no_init=False, **kwargs):
@@ -220,7 +221,7 @@ def configure_hooks(app):
         """Returns the current request URL with selected modifications. Set an argument to
         None when calling this to remove it from the current URL"""
         copy_args = request.args.copy()
-        non_param_args = False
+        non_param_args = kwargs.pop('full_url', False)
         for k, v in kwargs.iteritems():
             if v is None:
                 copy_args.poplist(k)
