@@ -704,7 +704,7 @@ function load_content(href, target, base_href, append) {
 
     href = modify_url(href, {out: dest.hasClass('modal-content') ? 'modal' : 'fragment'}, parts)
     if (dest && href) {
-        $.get({
+        $.ajax({
                 url: href,
                 success: function (data, textStatus, jqXHR) {
                     if (textStatus != 'success' && textStatus != 'notmodified') {
