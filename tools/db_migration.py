@@ -65,9 +65,8 @@ def migrate_1to2():
         except Exception as e:
           failed.append((e.message, fa))
 
-
     for p in Product.objects():
-        if not p.publisher:
+        if not p.publisher or isinstance(p.publisher, DBRef):
             p.publisher = default_publisher
 
         img = p.feature_image
@@ -102,15 +101,17 @@ def migrate_1to2():
     images = ImageAsset.objects()
     for ia in images:
         fs = ia.image.get()
-        print "Found %s with format %s and size %s" % (fs.filename, fs.content_type, fs.length)
+        fname = fs.filename or ia.id
+        ctype = fs.content_type or ia.mime_type
+        print "Found %s with format %s and size %s" % (fname, ctype, fs.length)
         try:
-            slug = FileAsset.make_slug(fs.filename, fs.content_type)
+            slug = FileAsset.make_slug(fname, ctype)
             # Find existing and replace info as needed
             fileasset = FileAsset.objects(slug=slug).first()
             if not fileasset:
                 fileasset = FileAsset()
 
-            fileasset.set_file(fs, filename=fs.filename)
+            fileasset.set_file(fs, filename=fname)
             fileasset.access_type = 'public'  # All ImageAssets are public by default
             fileasset.save()  # Save first to check we can use slug
             ia.delete()
