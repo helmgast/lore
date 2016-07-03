@@ -704,31 +704,28 @@ function load_content(href, target, base_href, append) {
 
     href = modify_url(href, {out: dest.hasClass('modal-content') ? 'modal' : 'fragment'}, parts)
     if (dest && href) {
-        xhrFields: {
-            withCredentials: true
-        }
-    }
-    $.get({
-            url: href,
-            success: function (data, textStatus, jqXHR) {
-                if (textStatus != 'success' && textStatus != 'notmodified') {
-                    flash_error(data, 'danger', $modal.find('#alerts'))
-                } else {
-                    if (append) {
-                        dest.append(data)
+        $.get({
+                url: href,
+                success: function (data, textStatus, jqXHR) {
+                    if (textStatus != 'success' && textStatus != 'notmodified') {
+                        flash_error(data, 'danger', $modal.find('#alerts'))
                     } else {
-                        dest.html(data)
+                        if (append) {
+                            dest.append(data)
+                        } else {
+                            dest.html(data)
+                        }
+                        // Trigger all plugins on added content
+                        dest.trigger('fablr.dom-updated')
                     }
-                    // Trigger all plugins on added content
-                    dest.trigger('fablr.dom-updated')
+                },
+                dataType: 'html',
+                xhrFields: {
+                    withCredentials: true
                 }
-            },
-            dataType: 'html',
-            xhrFields: {
-                withCredentials: true
             }
-        }
-    );
+        );
+    }
 }
 
 $(document).on('click', '#content-editor a', function (e) {
