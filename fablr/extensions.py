@@ -55,10 +55,9 @@ def start_db(app):
     dbstring = db_config_string(app)
     print >> sys.stderr, "Cannot connect to database: %s" % dbstring
     raise
-    exit(1)
   if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
     print >> sys.stderr, "Database is empty, run python manage.py db_setup"
-    exit(1)
+    raise
 
 class MongoJSONEncoder(JSONEncoder):
   def default(self, o):
