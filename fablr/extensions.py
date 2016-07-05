@@ -14,6 +14,7 @@ from mongoengine import Document, QuerySet, ConnectionError
 from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask_debugtoolbar import DebugToolbarExtension
 import sys
+import time
 import re
 
 toolbar = DebugToolbarExtension()
@@ -49,15 +50,16 @@ db = MongoEngine()
 db.Document = DynamicDocument
 
 def start_db(app):
-  try:
-    db.init_app(app)
-  except ConnectionError:
-    dbstring = db_config_string(app)
-    print >> sys.stderr, "Cannot connect to database: %s" % dbstring
-    raise
-  if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
-    print >> sys.stderr, "Database is empty, run python manage.py db_setup"
-    raise
+  while True:
+    try:
+      dbstring = db_config_string(app)
+      db.init_app(app)
+      if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
+        print >> sys.stderr, "Database %s is empty, run python manage.py db_setup" % dbstring
+      break
+    except ConnectionError:
+      print >> sys.stderr, "Cannot connect to database: %s [waiting 20s]" % dbstring
+      time.sleep(20)
 
 class MongoJSONEncoder(JSONEncoder):
   def default(self, o):
