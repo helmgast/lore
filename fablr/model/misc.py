@@ -11,15 +11,15 @@ from collections import namedtuple
 from datetime import timedelta, date, datetime
 
 import wtforms as wtf
-from flask.ext.wtf import Form  # secure form
+from flask_wtf import Form  # secure form
 from slugify import slugify as ext_slugify
 
 from wtforms.compat import iteritems
 from wtforms.widgets import TextArea
-from flask.ext.babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _
 import logging
 from flask import current_app
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)

@@ -16,13 +16,13 @@ import re
 import sys
 
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.classy import FlaskView
-from flask.ext.mongoengine import Pagination
-from flask.ext.mongoengine.wtf import model_form
-from flask.ext.mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField, JSONField
-from flask.ext.mongoengine.wtf.models import ModelForm
-from flask.ext.mongoengine.wtf.orm import ModelConverter, converts
+from flask_babel import lazy_gettext as _
+from flask_classy import FlaskView
+from flask_mongoengine import Pagination
+from flask_mongoengine.wtf import model_form
+from flask_mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField, JSONField
+from flask_mongoengine.wtf.models import ModelForm
+from flask_mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
 from flask.views import View

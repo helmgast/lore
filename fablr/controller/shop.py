@@ -13,9 +13,9 @@ from itertools import izip
 
 import stripe
 from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.classy import route
-from flask.ext.mongoengine.wtf import model_form
+from flask_babel import lazy_gettext as _
+from flask_classy import route
+from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
 from wtforms.fields import FormField, FieldList, StringField
 from wtforms.fields.html5 import EmailField, IntegerField

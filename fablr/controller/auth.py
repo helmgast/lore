@@ -17,8 +17,8 @@ import httplib2
 from apiclient.discovery import build
 from flask import Blueprint, render_template, request, session, flash
 from flask import redirect, url_for, g
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.mongoengine.wtf import model_form
+from flask_babel import lazy_gettext as _
+from flask_mongoengine.wtf import model_form
 from oauth2client.client import OAuth2WebServerFlow
 from wtforms import HiddenField
 

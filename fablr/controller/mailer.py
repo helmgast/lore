@@ -2,11 +2,11 @@ import logging
 import re
 
 from flask import Blueprint, current_app, render_template, request, flash
-from flask.ext.babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _
 from mongoengine.errors import NotUniqueError
 from werkzeug.utils import secure_filename
 import wtforms as wtf
-from flask.ext.wtf import Form  # secure form
+from flask_wtf import Form  # secure form
 from wtforms.widgets import TextArea
 
 from fablr.controller.resource import parse_out_arg, ResourceError, DisabledField

@@ -17,9 +17,9 @@ from datetime import datetime
 from itertools import groupby
 
 from flask import request, redirect, url_for, Blueprint, g, abort, current_app, render_template, flash
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.classy import route
-from flask.ext.mongoengine.wtf import model_form
+from flask_babel import lazy_gettext as _
+from flask_classy import route
+from flask_mongoengine.wtf import model_form
 from jinja2 import TemplateNotFound
 from mongoengine.queryset import Q
 from mongoengine import NotUniqueError, ValidationError

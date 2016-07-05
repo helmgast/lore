@@ -11,8 +11,9 @@
 import sys
 import urllib
 
+from datetime import datetime
 from bson.objectid import ObjectId
-from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
+from flask_mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
 from markdown.treeprocessors import Treeprocessor
@@ -20,7 +21,7 @@ from mongoengine import Document, QuerySet, ConnectionError
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
-from datetime import datetime
+import time
 
 toolbar = DebugToolbarExtension()
 
@@ -77,6 +78,7 @@ class MethodRewriteMiddleware(object):
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
+
     def match_compare_key(self):
         t = (self.rule.startswith('/<'),) + super(FablrRule, self).match_compare_key()
         return t
@@ -98,15 +100,16 @@ db.Document = DynamicDocument
 
 
 def start_db(app):
-    try:
-        db.init_app(app)
-    except ConnectionError:
-        dbstring = db_config_string(app)
-        print >> sys.stderr, "Cannot connect to database: %s" % dbstring
-        raise
-    if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
-        print >> sys.stderr, "Database is empty, run python manage.py db_setup"
-        raise
+    while True:
+        try:
+            dbstring = db_config_string(app)
+            db.init_app(app)
+            if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
+                print >> sys.stderr, "Database %s is empty, run python manage.py db_setup" % dbstring
+            break
+        except ConnectionError:
+            print >> sys.stderr, "Cannot connect to database: %s [waiting 20s]" % dbstring
+            time.sleep(20)
 
 
 class MongoJSONEncoder(JSONEncoder):
@@ -122,7 +125,7 @@ class MongoJSONEncoder(JSONEncoder):
         return JSONEncoder.default(self, o)
 
 
-from flask.ext.babel import Babel
+from flask_babel import Babel
 
 babel = Babel()
 
@@ -139,7 +142,7 @@ def get_locale():
         elif session.get('locale', None) in g.available_locales:
             locale = session.get('locale', None)  # If user have selected language
     else:
-        locale = current_app.config.get('BABEL_DEFAULT_LOCALE','en')
+        locale = current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
     g.locale = locale
     # print "Got lang %s, available_locale %s" % (locale, g.available_locales)
     return locale
@@ -156,7 +159,6 @@ import re
 
 
 class GalleryList(Treeprocessor):
-
     def run(self, root):
         for ul in root.findall('ul'):
             if len(ul) and ul[0].text:
@@ -173,13 +175,11 @@ class GalleryList(Treeprocessor):
                         for e in li:
                             li.remove(e)
                         li.append(a_el)
-            # imgs = list(ul.iterfind('.//img'))
-            # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-            # # if there are same amount of images as text items, and the text is zero, we have only images in the list
-            # # however, they may be nested in other tags, e.g. a
-            # if ''.join(txts).strip() == '':  # All text nodes empty in the list
-
-
+                        # imgs = list(ul.iterfind('.//img'))
+                        # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+                        # # if there are same amount of images as text items, and the text is zero, we have only images in the list
+                        # # however, they may be nested in other tags, e.g. a
+                        # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
 
 class NewImagePattern(ImagePattern):
@@ -214,12 +214,14 @@ class SilentUndefined(Undefined):
         print 'JINJA2: something was undefined!'  # TODO, should print correct log error
         return None
 
+
 def currentyear(nada):
     return datetime.utcnow().strftime('%Y')
 
 
 def dict_without(value, *args):
     return {k: value[k] for k in value.keys() if k not in args}
+
 
 def dict_with(value, **kwargs):
     z = value.copy()

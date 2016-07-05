@@ -1,7 +1,7 @@
 import unittest
 
-from flask.ext.mongoengine.wtf.models import ModelForm
-from flask.ext.mongoengine.wtf import model_form
+from flask_mongoengine.wtf.models import ModelForm
+from flask_mongoengine.wtf import model_form
 
 # Below 3 lines needed to be able to access fablr module
 import sys
@@ -10,7 +10,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from fablr.app import create_app
-from flask.ext.mongoengine import Document
+from flask_mongoengine import Document
 from mongoengine import EmbeddedDocument, StringField
 from werkzeug.datastructures import ImmutableMultiDict
 
@@ -68,7 +68,7 @@ class FablrTestCase(unittest.TestCase):
     def test_forms2(self):
         from fablr.model.shop import Order, OrderLine
         from fablr.controller.resource import RacBaseForm, RacModelConverter
-        from flask.ext.mongoengine.wtf import model_form
+        from flask_mongoengine.wtf import model_form
         from wtforms.fields import FormField
         from fablr.controller.shop import FixedFieldList, CartForm
         CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=RacBaseForm,

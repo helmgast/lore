@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
-from flask.ext.babel import lazy_gettext as _, gettext
-from flask.ext.mongoengine import Document, DynamicDocument  # Enhanced document
+from flask_babel import lazy_gettext as _, gettext
+from flask_mongoengine import Document, DynamicDocument  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
 from mongoengine.errors import ValidationError

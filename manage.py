@@ -5,8 +5,8 @@ import subprocess as sp
 import sys
 
 from flask import g
-from flask.ext.mongoengine import Document
-from flask.ext.script import Manager, prompt_pass
+from flask_mongoengine import Document
+from flask_script import Manager, prompt_pass
 
 from fablr.app import create_app, init_app
 from fablr.controller.pdf import fingerprint_pdf, get_fingerprints, fingerprint_from_user

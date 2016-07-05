@@ -12,8 +12,8 @@ import logging
 from datetime import datetime, timedelta
 
 from flask import current_app
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask_babel import lazy_gettext as _
+from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
                          GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField)

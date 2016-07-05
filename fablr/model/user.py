@@ -12,8 +12,8 @@ from hashlib import md5
 
 from baseuser import BaseUser, create_token
 from misc import now, Choices, slugify, translate_action, datetime_options, choice_options, from7to365
-from flask.ext.babel import lazy_gettext as _
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask_babel import lazy_gettext as _
+from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
 

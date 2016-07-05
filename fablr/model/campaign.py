@@ -7,7 +7,7 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, BooleanField, ListField,
                          EmbeddedDocumentField)
 

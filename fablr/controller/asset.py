@@ -3,11 +3,11 @@ import os.path
 from time import time
 
 from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
-from flask.ext.classy import route
-from flask.ext.mongoengine.wtf import model_form
+from flask_classy import route
+from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
 from werkzeug.exceptions import abort
-from flask.ext.babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _
 from werkzeug.utils import secure_filename
 from wtforms.widgets import Select
 

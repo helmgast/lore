@@ -15,8 +15,8 @@ import os.path
 
 from bson import ObjectId
 from flask import request, current_app, g
-from flask.ext.babel import gettext, lazy_gettext as _
-from flask.ext.mongoengine import Document  # Enhanced document
+from flask_babel import gettext, lazy_gettext as _
+from flask_mongoengine import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
                          ReferenceField, ListField, FileField, IntField)

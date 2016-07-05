@@ -13,9 +13,9 @@
 """
 
 from flask import abort, request, render_template, Blueprint, g, current_app
-from flask.ext.classy import FlaskView
-from flask.ext.mongoengine.wtf import model_form
-from flask.ext.babel import lazy_gettext as _
+from flask_classy import FlaskView
+from flask_mongoengine.wtf import model_form
+from flask_babel import lazy_gettext as _
 
 from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, \
     RacModelConverter, \
