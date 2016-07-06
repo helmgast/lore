@@ -37,7 +37,7 @@ def create_app(no_init=False, **kwargs):
     env_config = []
     for k in the_app.config.iterkeys():
         env_k = 'FABLR_%s' % k
-        if env_k in os.environ and os.environ[env_k]:
+        if env_k in os.environ:
             env_v = os.environ[env_k]
             if str(env_v).lower() in ['true', 'false']:
                 env_v = str(env_v).lower() == 'true'
