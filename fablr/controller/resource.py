@@ -414,7 +414,7 @@ class ItemResponse(ResourceResponse):
             if self.args['intent']:
                 # we want to serve a form, pre-filled with field values and parent queries
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
-                form_args.update(self.args['fields'])
+                form_args.update(self.args['fields'].iteritems())
                 if self.args['intent'] == 'post':
                     # Will a post will not go to same URL, but a different on (e.g. a list
                     # endpoint without an id parameter

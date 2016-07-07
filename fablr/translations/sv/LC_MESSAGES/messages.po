@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2016-07-03 20:00+0900\n"
+"POT-Creation-Date: 2016-07-07 16:11+0900\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -22,8 +22,8 @@ msgstr ""
 #: fablr/controller/auth.py:378 fablr/controller/auth.py:433
 #: fablr/controller/resource.py:287 fablr/controller/world.py:92
 #: fablr/controller/world.py:109 fablr/controller/world.py:246
-#: fablr/controller/world.py:267 fablr/controller/world.py:415
-#: fablr/controller/world.py:445
+#: fablr/controller/world.py:267 fablr/controller/world.py:416
+#: fablr/controller/world.py:446
 msgid "Error in form"
 msgstr "Fel i formuläret"
 
@@ -349,23 +349,23 @@ msgstr ""
 msgid "Recent Articles in "
 msgstr "Nya artiklar på "
 
-#: fablr/controller/world.py:541
+#: fablr/controller/world.py:542
 msgid "Today"
 msgstr "Idag"
 
-#: fablr/controller/world.py:543
+#: fablr/controller/world.py:544
 msgid "Last week"
 msgstr "Förra veckan"
 
-#: fablr/controller/world.py:545
+#: fablr/controller/world.py:546
 msgid "Last month"
 msgstr "Förra månaden"
 
-#: fablr/controller/world.py:547
+#: fablr/controller/world.py:548
 msgid "Last year"
 msgstr "Förra året"
 
-#: fablr/controller/world.py:549
+#: fablr/controller/world.py:550
 msgid "Older"
 msgstr "Äldre"
 
@@ -477,7 +477,7 @@ msgstr "Slug"
 #: fablr/model/asset.py:254 fablr/model/world.py:80 fablr/model/world.py:240
 #: fablr/templates/themes/publisher_helmgast.html:118
 #: fablr/templates/world/article_blog.html:15
-#: fablr/templates/world/article_item.html:149
+#: fablr/templates/world/article_item.html:146
 #: fablr/templates/world/article_list.html:59
 msgid "Creator"
 msgstr "Skapare"
@@ -529,7 +529,7 @@ msgstr "Svenska"
 #: fablr/templates/shop/order_address.html:35
 #: fablr/templates/shop/order_header.html:14
 #: fablr/templates/shop/order_lines.html:59
-#: fablr/templates/social/user_item.html:62
+#: fablr/templates/social/user_item.html:63
 msgid "Name"
 msgstr "Namn"
 
@@ -621,7 +621,7 @@ msgstr "Produktfamilj"
 #: fablr/templates/shop/product_list.html:65
 #: fablr/templates/themes/publisher_helmgast.html:115
 #: fablr/templates/world/article_blog.html:14
-#: fablr/templates/world/article_item.html:156
+#: fablr/templates/world/article_item.html:153
 #: fablr/templates/world/article_list.html:56
 msgid "Created"
 msgstr "Skapad"
@@ -634,8 +634,8 @@ msgstr "Uppdaterad"
 
 #: fablr/model/shop.py:61 fablr/model/world.py:237
 #: fablr/templates/shop/product_item.html:121
+#: fablr/templates/world/article_item.html:181
 #: fablr/templates/world/article_item.html:184
-#: fablr/templates/world/article_item.html:187
 msgid "Type"
 msgstr "Typ"
 
@@ -752,7 +752,7 @@ msgstr "Sessions ID"
 #: fablr/templates/shop/order_address.html:30
 #: fablr/templates/shop/order_header.html:18
 #: fablr/templates/shop/order_header.html:46
-#: fablr/templates/social/user_item.html:58
+#: fablr/templates/social/user_item.html:59
 msgid "Email"
 msgstr "Email"
 
@@ -798,7 +798,7 @@ msgid "Deleted"
 msgstr "Borttagen"
 
 #: fablr/model/user.py:57 fablr/templates/social/group_item.html:28
-#: fablr/templates/social/user_item.html:60
+#: fablr/templates/social/user_item.html:61
 #: fablr/templates/social/user_list_component.html:4
 msgid "Username"
 msgstr "Användarnamn"
@@ -815,12 +815,12 @@ msgstr "Namn"
 #: fablr/model/user.py:61 fablr/templates/campaign/session_page.html:22
 #: fablr/templates/campaign/sessions.html:49
 #: fablr/templates/social/group_list.html:32
-#: fablr/templates/social/user_item.html:64
+#: fablr/templates/social/user_item.html:65
 #: fablr/templates/social/user_list_component.html:6
 msgid "Location"
 msgstr "Plats"
 
-#: fablr/model/user.py:64 fablr/templates/social/user_item.html:97
+#: fablr/model/user.py:64 fablr/templates/social/user_item.html:98
 msgid "XP"
 msgstr ""
 
@@ -828,7 +828,7 @@ msgstr ""
 msgid "Join Date"
 msgstr "Gick med"
 
-#: fablr/model/user.py:66 fablr/templates/social/user_item.html:68
+#: fablr/model/user.py:66 fablr/templates/social/user_item.html:69
 msgid "Last login"
 msgstr "Senaste inloggning"
 
@@ -845,9 +845,9 @@ msgstr "Följande"
 #: fablr/templates/shop/order_address.html:58
 #: fablr/templates/shop/product_item.html:104
 #: fablr/templates/shop/product_list.html:102
-#: fablr/templates/social/user_item.html:61
-#: fablr/templates/social/user_item.html:63
-#: fablr/templates/social/user_item.html:65
+#: fablr/templates/social/user_item.html:62
+#: fablr/templates/social/user_item.html:64
+#: fablr/templates/social/user_item.html:66
 #: fablr/templates/world/publisher_item.html:64
 #: fablr/templates/world/publisher_item.html:70
 #: fablr/templates/world/publisher_item.html:76
@@ -987,19 +987,19 @@ msgstr "Regelsystem"
 msgid "World Images"
 msgstr "Världsbilder"
 
-#: fablr/model/world.py:156 fablr/templates/world/article_item.html:196
+#: fablr/model/world.py:156 fablr/templates/world/article_item.html:193
 msgid "Born"
 msgstr "Född"
 
-#: fablr/model/world.py:157 fablr/templates/world/article_item.html:198
+#: fablr/model/world.py:157 fablr/templates/world/article_item.html:195
 msgid "Died"
 msgstr "Avliden"
 
-#: fablr/model/world.py:158 fablr/templates/world/article_item.html:201
+#: fablr/model/world.py:158 fablr/templates/world/article_item.html:198
 msgid "Gender"
 msgstr "Kön"
 
-#: fablr/model/world.py:160 fablr/templates/world/article_item.html:203
+#: fablr/model/world.py:160 fablr/templates/world/article_item.html:200
 msgid "Occupation"
 msgstr "Yrke"
 
@@ -1076,7 +1076,7 @@ msgstr "Papperslapp"
 msgid "Vintage Form"
 msgstr "Gammaldags formulär"
 
-#: fablr/model/world.py:244 fablr/templates/world/article_item.html:210
+#: fablr/model/world.py:244 fablr/templates/world/article_item.html:207
 msgid "Content"
 msgstr "Innehåll"
 
@@ -1108,7 +1108,7 @@ msgstr "från"
 #: fablr/templates/includes/macros.html:275
 #: fablr/templates/shop/product_item.html:61
 #: fablr/templates/social/group_item.html:60
-#: fablr/templates/social/user_item.html:117
+#: fablr/templates/social/user_item.html:118
 #: fablr/templates/world/publisher_item.html:50
 #: fablr/templates/world/world_item.html:87
 msgid "Cancel"
@@ -1443,7 +1443,7 @@ msgstr "Ny fil"
 
 #: fablr/templates/asset/fileasset_item.html:9
 #: fablr/templates/asset/fileasset_list.html:59
-#: fablr/templates/shop/order_item.html:21 fablr/templates/social/_page.html:25
+#: fablr/templates/shop/order_item.html:21 fablr/templates/social/_page.html:28
 #: fablr/templates/social/group_item.html:11
 #: fablr/templates/social/group_list.html:7
 #: fablr/templates/social/user_list_component.html:7
@@ -1480,9 +1480,9 @@ msgstr "Ingen fil"
 #: fablr/templates/campaign/session_page.html:33
 #: fablr/templates/shop/product_item.html:59
 #: fablr/templates/social/group_item.html:59
-#: fablr/templates/social/user_item.html:116
-#: fablr/templates/themes/article_vintage_form.html:121
-#: fablr/templates/world/article_item.html:118
+#: fablr/templates/social/user_item.html:117
+#: fablr/templates/themes/article_vintage_form.html:127
+#: fablr/templates/world/article_item.html:115
 #: fablr/templates/world/publisher_item.html:49
 #: fablr/templates/world/world_item.html:85
 msgid "Save changes"
@@ -1499,7 +1499,7 @@ msgstr "Ta bort"
 
 #: fablr/templates/asset/fileasset_item.html:48
 #: fablr/templates/shop/product_item.html:68
-#: fablr/templates/world/article_item.html:233
+#: fablr/templates/world/article_item.html:231
 msgid "delete"
 msgstr "ta bort"
 
@@ -1592,15 +1592,15 @@ msgstr "Färdigställ ditt konto"
 msgid "Login"
 msgstr "Logga in"
 
-#: fablr/templates/auth/_page.html:203
+#: fablr/templates/auth/_page.html:204
 msgid "Authorized with Google as"
 msgstr "Identifierad av Google som"
 
-#: fablr/templates/auth/_page.html:203 fablr/templates/auth/_page.html:239
+#: fablr/templates/auth/_page.html:204 fablr/templates/auth/_page.html:240
 msgid "associated email"
 msgstr "anknuten email"
 
-#: fablr/templates/auth/_page.html:239
+#: fablr/templates/auth/_page.html:240
 msgid "Authorized with Facebook as"
 msgstr "Identifierad av Facebook som"
 
@@ -1683,7 +1683,7 @@ msgstr ""
 "        din metod eller lösenord, klicka nedan!"
 
 #: fablr/templates/auth/login.html:21 fablr/templates/auth/remind.html:10
-#: fablr/templates/auth/remind.html:15 fablr/templates/social/user_item.html:15
+#: fablr/templates/auth/remind.html:15 fablr/templates/social/user_item.html:16
 msgid "Remind login"
 msgstr "Påminn om login"
 
@@ -2329,7 +2329,7 @@ msgstr "Grupper"
 msgid "Forum"
 msgstr "Forum"
 
-#: fablr/templates/social/_page.html:27
+#: fablr/templates/social/_page.html:23
 msgid "Invite user"
 msgstr "Bjud in användare"
 
@@ -2397,38 +2397,42 @@ msgid "Followers"
 msgstr "Följare"
 
 #: fablr/templates/social/user_item.html:14
-msgid "Send verification link"
-msgstr "Skicka verifikationslänk"
+msgid "Send reset link"
+msgstr "Skicka återställningslänk"
 
-#: fablr/templates/social/user_item.html:26
+#: fablr/templates/social/user_item.html:15
+msgid "Copy reset link"
+msgstr "Kopiera återställningslänk"
+
+#: fablr/templates/social/user_item.html:27
 msgid "Pick your avatar at"
 msgstr "Välj din avatar hos"
 
-#: fablr/templates/social/user_item.html:66
+#: fablr/templates/social/user_item.html:67
 msgid "Joined"
 msgstr "Registrerad"
 
-#: fablr/templates/social/user_item.html:69
+#: fablr/templates/social/user_item.html:70
 msgid "Not logged in yet"
 msgstr "Har inte loggat in än"
 
-#: fablr/templates/social/user_item.html:73
+#: fablr/templates/social/user_item.html:74
 msgid "Authentication"
 msgstr "Autentisering"
 
-#: fablr/templates/social/user_item.html:89
+#: fablr/templates/social/user_item.html:90
 msgid "Empty..."
 msgstr "Tom..."
 
-#: fablr/templates/social/user_item.html:92
+#: fablr/templates/social/user_item.html:93
 msgid "History"
 msgstr "Historik"
 
-#: fablr/templates/social/user_item.html:95
+#: fablr/templates/social/user_item.html:96
 msgid "Time"
 msgstr "Tidpunkt"
 
-#: fablr/templates/social/user_item.html:96
+#: fablr/templates/social/user_item.html:97
 msgid "Activity"
 msgstr "Aktivitet"
 
@@ -2436,10 +2440,16 @@ msgstr "Aktivitet"
 msgid "All gamers"
 msgstr "Alla spelare"
 
-#: fablr/templates/themes/article_vintage_form.html:118
-#: fablr/templates/world/article_item.html:115
+#: fablr/templates/themes/article_vintage_form.html:124
+#: fablr/templates/world/article_item.html:112
 msgid "Save and publish"
 msgstr "Spara och publicera"
+
+#: fablr/templates/themes/article_vintage_form.html:157
+msgid ""
+"Warning, this form is only compatible with \"Character\" type articles. "
+"Change on the left or your changes will not be saved."
+msgstr ""
 
 #: fablr/templates/themes/publisher_helmgast.html:68
 msgid "Worlds"
@@ -2501,48 +2511,48 @@ msgstr "Artikel-funktioner"
 msgid "Edit as Markdown"
 msgstr "Ändra i Markdown"
 
-#: fablr/templates/world/article_item.html:102
-#: fablr/templates/world/article_item.html:104
+#: fablr/templates/world/article_item.html:99
+#: fablr/templates/world/article_item.html:101
 msgid "Start writing here!"
 msgstr "Börja skriv här!"
 
-#: fablr/templates/world/article_item.html:159
+#: fablr/templates/world/article_item.html:156
 msgid "Visibility"
 msgstr "Synlighet"
 
-#: fablr/templates/world/article_item.html:164
+#: fablr/templates/world/article_item.html:161
 msgid "Relations to other articles"
 msgstr "Relationer till andra artiklar"
 
-#: fablr/templates/world/article_item.html:166
+#: fablr/templates/world/article_item.html:163
 msgid "Other articles relation to this article"
 msgstr "Artiklar med relationer till denna"
 
-#: fablr/templates/world/article_item.html:170
+#: fablr/templates/world/article_item.html:167
 msgid "Unpublished"
 msgstr "Ej publicerad"
 
-#: fablr/templates/world/article_item.html:171
+#: fablr/templates/world/article_item.html:168
 msgid "Print"
 msgstr "Skriv ut"
 
-#: fablr/templates/world/article_item.html:180
+#: fablr/templates/world/article_item.html:177
 msgid "Lon"
 msgstr "Lon"
 
-#: fablr/templates/world/article_item.html:182
+#: fablr/templates/world/article_item.html:179
 msgid "Lat"
 msgstr "Lat"
 
-#: fablr/templates/world/article_item.html:188
+#: fablr/templates/world/article_item.html:185
 msgid "URL"
 msgstr "URL"
 
-#: fablr/templates/world/article_item.html:192
+#: fablr/templates/world/article_item.html:189
 msgid "Started"
 msgstr "Startad"
 
-#: fablr/templates/world/article_item.html:194
+#: fablr/templates/world/article_item.html:191
 msgid "Ended"
 msgstr "Avslutad"
 
@@ -2918,4 +2928,7 @@ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
 
 #~ msgid "Article Theme"
 #~ msgstr "Artikeltema"
+
+#~ msgid "Send verification link"
+#~ msgstr "Skicka verifikationslänk"
 

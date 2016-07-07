@@ -390,6 +390,7 @@ class ArticlesView(ResourceView):
                               ('publisher', publisher)])
             r.auth_or_abort()
             set_theme(r, 'article', r.article.theme or 'default')
+        # 1/0
 
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)

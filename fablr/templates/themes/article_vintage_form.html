@@ -65,7 +65,7 @@
             max-height:250px;
         }
 
-        .stats input {
+        .stats input, .tightpadding input {
             padding: 1px;
             padding-top: 14px;
             text-align: center;
@@ -150,6 +150,13 @@
         </div>
         <div class="col-md-9 content">
             {% include "includes/flash.html" %}
+            {% set article_type = article.type if article else args['fields'].get('type','default') %}
+            {% if article_type != 'character' %}
+                <div class="alert alert-danger' }} alert-dismissable">
+		            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+		            <p>{% trans %}Warning, this form is only compatible with "Character" type articles. Change on the left or your changes will not be saved.{% endtrans %}</p>
+	            </div>
+            {% endif %}
             <h2 class="center">Personakt - {{ article.title }}</h2>
             {{ article_form.characterdata.stats(class='hide') }}
 
@@ -175,7 +182,7 @@
                         {{ MACRO2.MAKE_INPUT("Reg. nr", id='regnr', cols=4, placeholder='xxx-xx-xxxx, Planet') }}
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group tightpadding">
                         {{ MACRO2.MAKE_INPUT("Vikt", cols=2, labelcols=1, placeholder='xx', suffix='kg') }}
                         {{ MACRO2.MAKE_INPUT("Längd", id='langd', cols=2, labelcols=1,  placeholder='xx', suffix='cm') }}
                         {{ MACRO2.MAKE_INPUT("Kön", id='kon', cols=2, labelcols=1) }}
@@ -274,12 +281,13 @@
                 {{ MACRO2.MAKE_INPUT("Drivkrafter", type='textarea', cols=4) }}
             </div>
             <div class="row">
+                <p>Egenskapsvärden (fetstil) skall fördelas som 8, 6, 5, 5, 4, 4, 3, 3, och 2 eller 6, 5, 4, 4, 4, 3, 3, 3 och 2</p>
                 <div class="col-sm-4">
 
                     <table class="table stats">
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Koordination", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Koordination", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#koordination*2-#narstrid-#reaktioner-#rorlighet"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Närstrid", id='narstrid') }}
@@ -294,8 +302,8 @@
                             <td id="rorlighet_sum" class="calc" data-formula="#koordination+#rorlighet"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Kroppsbyggnad", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Kroppsbyggnad", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#kroppsbyggnad*2-#kondition-#styrka-#tolerans"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Kondition") }}
@@ -311,8 +319,8 @@
                             <td class="calc" data-formula="#kroppsbyggnad+#tolerans"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Motorik", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Motorik", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#motorik*2-#fingerfardighet-#kastvapen-#skjutvapen"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Fingerfärdighet", id='fingerfardighet') }}
@@ -331,8 +339,8 @@
                 <div class="col-sm-4">
                     <table class="table stats">
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Bildning", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Bildning", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#bildning*2-#humaniora-#medicin-#naturvetenskap"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Humaniora") }}
@@ -347,8 +355,8 @@
                             <td class="calc" data-formula="#bildning+#naturvetenskap"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Kreativitet", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Kreativitet", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#kreativitet*2-#konstruktion-#skapa-#slutledning"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Konstruktion") }}
@@ -364,8 +372,8 @@
                             <td id="slutledning_sum" class="calc" data-formula="#kreativitet+#slutledning"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Vilja", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Vilja", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#vilja*2-#beslutsamhet-#resistens-#sans"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Beslutsamhet") }}
@@ -384,8 +392,8 @@
                 <div class="col-sm-4">
                     <table class="table stats">
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Insikt", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Insikt", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#insikt*2-#empati-#motsta-#varldsvana"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Empati") }}
@@ -400,8 +408,8 @@
                             <td id='varldsvana_sum' class="calc" data-formula="#insikt+#varldsvana"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Perception", min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Perception", min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#perception*2-#intuition-#fordon-#uppmarksamhet"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Intuition") }}
@@ -417,8 +425,8 @@
                             <td id="uppmarksamhet_sum" class="calc" data-formula="#perception+#uppmarksamhet"></td>
                         </tr>
                         <tr>
-                            {{ MACRO2.MAKE_TD_INPUT("Utstrålning", id='utstralning', min=2, max=6) }}
-                            <td>Skicklighet</td>
+                            {{ MACRO2.MAKE_TD_INPUT("Utstrålning", id='utstralning', min=2, max=8) }}
+                            <td>Skicklighet<br>[<b class="calc" data-formula="#utstralning*2-#charm-#ledarskap-#overtyga"></b>p]</td>
                         </tr>
                         <tr>
                             {{ MACRO2.MAKE_TD_INPUT("Charm") }}
