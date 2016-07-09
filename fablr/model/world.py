@@ -273,6 +273,10 @@ class Article(Document):
     def long_title(self):
         return u"%s - %s" % (self.world or self.world or u'Fablr', self)
 
+    @property  # For convenience
+    def get_feature_image(self):
+        return self.images[0] if self.images else None
+
     # Executes before saving
     def clean(self):
         self.slug = slugify(self.title)

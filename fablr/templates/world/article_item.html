@@ -98,7 +98,7 @@
                         <div id="content-editor"
                              placeholder="{{ _('Start writing here!') }}">{{ article_form.content.data|markdown|trim if article_form.content.data }}</div>
                     {% endif %}
-                    {{ article_form.content(class="hide form-control", placeholder=_('Start writing here!')) }}
+                    {{ article_form.content(class="form-control", placeholder=_('Start writing here!')) }}
 
                 </div>
                 <div class="col-md-3 article_comment form-horizontal">
@@ -126,8 +126,9 @@
                     {{ MACRO.FORM_FIELD(article_form.editors,controlclass=' input-sm selectize') }}
                     {{ MACRO.FORM_FIELD(article_form.readers,controlclass=' input-sm selectize') }}
 
+                    {{ article_form.images(class='hide') }}
 
-                    <input type="hidden" name="feature_image" id="feature_image" value=""/>
+
                     {% if g.user.id %}
                         <input type="hidden" name="creator" value="{{ g.user.id }}"/>
                     {% endif %}
@@ -244,6 +245,10 @@
                 var und = new upndown();
                 var $textarea = $('#content')
                 var $editor = $('#content-editor');
+                var options = {}
+                $.each($('#images').find('option'), function (i, el) {
+                    options[el.text.trim()] = el.value;
+                })
                 $editor.trumbowyg({
                             btns: ['strong', 'em', '|', 'formatting', 'unorderedList', 'orderedList', 'link', ['fileselect', 'wide', 'center', 'portrait'], 'fullscreen'],
                             autogrow: true,
@@ -253,13 +258,21 @@
                         .on('tbwchange', function (e) {
                             und.convert($editor.trumbowyg('html'), function (err, markdown) {
                                 if (err) {
-                                    console.err(err);
+                                    console.log(err);
                                 } else {
                                     $textarea.val(markdown);
                                     autosize.update($textarea); // resize Textarea
+                                    var selection = []
+                                    markdown.replace(/!\[.*\]\(.*\/([^)]+)\)/g, function (string, match) {
+                                        selection.push(options[match]);
+                                    });
+                                    $('#images').val(selection)
                                 }
                             })
-                        });
+
+                        })
+                $editor.trigger('tbwchange')
+
             {% endif %}
         {% endif %}
     </script>

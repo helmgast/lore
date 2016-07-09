@@ -9,6 +9,8 @@ body {
 @page {
     size: auto;   /* auto is the initial value */
     margin: 0mm;  /* this affects the margin in the printer settings */
+    margin-top: 10mm;
+    magin-bottom: 10mm;
 }
 
 tr,

@@ -191,8 +191,7 @@
         </div>
         <!-- /sidebar -->
 
-        <div class="col-md-9">
-            <div class="content">
+        <div class="col-md-9 content">
                 {% include "includes/flash.html" %}
                 {% block middle %}
                     {% block pre_content %}
@@ -206,7 +205,6 @@
                     {% endblock pre_content %}
                     {% block content %}{% endblock content %}
                 {% endblock middle %}
-            </div>
             <!-- /content -->
         </div>
     {% endblock mainblock %}

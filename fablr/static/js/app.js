@@ -334,8 +334,12 @@ function modify_url(url, new_params, new_url_parts) {
         if (element) {
             this.$element = $(element)
             this.$element.addClass('hide')
-            this.$gallery =
+            if (this.$element.attr('readonly') || this.$element.attr('disabled')) {
+                this.$gallery = $('<figure class="gallery fileselect ' + (this.options.class || '') + '"></figure>');
+            } else {
+                this.$gallery =
                 $('<a class="gallery fileselect ' + (this.options.class || '') + '" contenteditable="false" data-toggle="modal" data-target="#themodal"></a>');
+            }
             this.selectFiles($.map(this.$element.find(':selected'), function (el) {
                 return {id: el.value, slug: el.text}
             }));
@@ -369,6 +373,7 @@ function modify_url(url, new_params, new_url_parts) {
     $.fn.fileselect = function (option) {
         return this.each(function () {
             var $this = $(this)
+
             var data = $this.data('fablr.fileselect')
             var options = $.extend(FileSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
             // If no data set, create a FileSelect object and attach to this element

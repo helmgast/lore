@@ -197,7 +197,7 @@
                 </div>
                 <div class="col-sm-4">
                     {{ MACRO.FORM_FIELD(article_form.images, controlclass='fileselect', data_endpoint=
-                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image', readonly=(args.get('intent','')!='patch')) }}
                 </div>
             </div>
 
