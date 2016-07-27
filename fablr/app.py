@@ -12,6 +12,8 @@ import os, sys
 from flask import Flask, Markup, render_template, request, redirect, url_for, flash, g, make_response, current_app, abort
 from flask.ext.babel import lazy_gettext as _
 from flaskext.markdown import Markdown
+from jinja2 import TemplateNotFound
+
 from extensions import db, start_db, csrf, babel, AutolinkedImage, MongoJSONEncoder, SilentUndefined, toolbar
 from time import gmtime, strftime
 

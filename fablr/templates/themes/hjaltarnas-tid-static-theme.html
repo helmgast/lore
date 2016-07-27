@@ -1,0 +1,100 @@
+{% extends "_page.html" %}
+
+{% block cssimports %}
+    {{ super() }}
+    <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
+    <style>
+{#        @font-face {#}
+{#            font-family: 'Ringbearer-Medium';#}
+{#            src: url('{{ url_for('static', filename='fonts/Ringbearer-Medium.ttf.woff') }}') format('woff');#}
+{#            font-weight: normal;#}
+{#            font-style: normal;#}
+{#        }#}
+{#        h1, h2, h3, h4, h5, h6 {#}
+{#            font-family: 'Ringbearer-Medium', sans-serif;#}
+{#            font-weight: 900;#}
+{#            color: #333;#}
+{#        }#}
+        .container {
+            font-family: 'Gentium Book Basic', sans-serif;
+            font-weight: 400;
+            font-size: 18px;
+        }
+    .hero-unit {
+    background-image: url({{ url_for('static', filename='img/themes/ht-1200x600.min.jpg') }});
+width: 100%;
+    height: 400px;
+    background-size: cover;
+    margin-top: -15px;
+    }
+
+    .btn-info {
+            background-color: #b54456;
+    border-color: #242a38;
+    }
+
+        .btn-info:hover {
+            background-color: #D14D61;
+    border-color: #242a38;
+    }
+
+    </style>
+{% endblock %}
+
+{% block navbar %}
+    {{ super() }}
+    <div class="row hero-unit">
+    </div>
+{% endblock %}
+
+{% block sidebar %}
+{{super()}}
+    <a href="https://www.facebook.com/hjaltarnastid/"><img class="center-block" src="{{ url_for('static', filename='img/icon/fb_like_icon_144px.png') }}"></a>
+{#    <p class="text-center"><a class="btn btn-lg btn-info" href="">#}
+{#                    Förhandsbeställ</a></p>#}
+{% include 'includes/social_icons.html' %}
+{% endblock %}
+
+{% block content %}
+    <h1>Hjältarnas tid <small>av Krister Sundelin</small></h1>
+    <p>Hjältarnas tid är ett fantasyrollspel som öppnar porten till fantastiska äventyr. Du tar rollen av en hjälte som försöker nå ära och berömmelse genom att överkomma faror, besegra fiender, och finna skatter. Tillsammans med dina vänner skapar du berättelsen och äventyret.</p>
+
+    <p>Boxen innehåller allt du behöver för att börja spela:</p>
+
+    <ul>
+    <li>Ett 40-sidigt starthäfte som hjälper dig som aldrig har spelat rollspel förut att komma igång snabbt.
+</li>
+    <li>En 80-sidig grundbok som beskriver hur ni gör rollpersoner, hur ni möter faror och fiender, hur du spelleder och befolkar världen med monster och fiender.
+</li>
+    <li>Sex färdiga och illustrerade rollpersoner.
+</li>
+    <li>Sex tomma rollformulär så att ni kan skapa egna rollpersoner.
+</li>
+    <li>Två tiosidiga och sju sexsidiga tärningar.
+</li>
+    </ul>
+
+<p>Hjältarnas tid passar spelare på alla nivåer. Med färdiga rollpersoner, ett pedagogiskt starthäfte och tydliga instruktioner är Hjältarnas tid speciellt framtaget för att passa nybörjare. Det är enkelt att hantera, roligt att spela och spännande att uppleva. Samla dina vänner, skrapa ihop tärningarna och följ med till Hjältarnas tid!</p>
+<p><a href="{{ url_for('static', filename='img/themes/ht-rollformular-1.01.pdf') }}">Ladda ner Rollformulär</a></p>
+    <h1>Produktbilder <small style="font-size: 14px">utseende kan ändras till den slutgiltiga produkten</small></h1>
+    <div class="row">
+    <div class="col-md-12 desc">
+        <a class="lightbox" href="/static/img/themes/ht-box-mockup-2-min.png"><img class="img-responsive center-block" width="500" src="/static/img/themes/ht-box-mockup-2-min.png" alt="">
+      </a>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-4 desc">
+        <a class="lightbox" href="/static/img/themes/ht-bok-mockup-min.png"><img class="img-responsive" width="350" src="/static/img/themes/ht-bok-mockup-min.png" alt="">
+      </a>
+    </div>
+    <div class="col-md-4 desc">
+        <a class="lightbox" href="/static/img/themes/ht-starthafte-inlaga-min.png"><img class="img-responsive" width="350" src="/static/img/themes/ht-starthafte-inlaga-min.png" alt="">
+      </a>
+    </div>
+    <div class="col-md-4 desc">
+        <a class="lightbox" href="/static/img/themes/ht-starthafte-mockup-min.png"><img class="img-responsive" width="350" src="/static/img/themes/ht-starthafte-mockup-min.png" alt="">
+      </a>
+    </div>
+    </div>
+{% endblock %}

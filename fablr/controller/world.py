@@ -13,6 +13,8 @@
 """
 
 from flask import request, redirect, url_for, render_template, Blueprint, flash, make_response, g, abort, current_app
+from jinja2 import TemplateNotFound
+
 from fablr.model.world import (Article, World, ArticleRelation, PersonData, PlaceData,
   EventData, FractionData, PublishStatus)
 from fablr.model.user import Group
@@ -48,6 +50,14 @@ class WorldHandler(ResourceHandler):
       return r
     else:
       return self.list(r)
+
+  def view(self, r):
+    r = super(WorldHandler, self).view(r)
+    try:
+      r['template'] = current_app.jinja_env.get_template('themes/%s-static-theme.html' % r['world'].slug)
+    except TemplateNotFound:
+      pass  # proceed as usual
+    return r
 
 WorldHandler.register_urls(world_app, world_strategy, sub=True)
 
