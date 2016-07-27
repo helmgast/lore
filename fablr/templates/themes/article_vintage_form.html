@@ -472,9 +472,9 @@
             </div>
             <div class="form-group">
                 {{ MACRO2.MAKE_INPUT("Försvar", id='forsvar', cols=4,
-                    prefix='<b class="calc" data-formula="parseInt((#intuition_sum+#reaktioner_sum+#uppmarksamhet_sum)/3)+5"></b>'|safe) }}
+                    prefix='<b class="calc" data-formula="parseInt((#intuition_sum+#reaktioner_sum+#uppmarksamhet_sum)/3)"></b>'|safe) }}
                 {{ MACRO2.MAKE_INPUT("Inlärning", id='inlarning', cols=4,
-                    prefix='<b class="calc" data-formula="parseInt((#beslutsamhet_sum+#slutledning_sum+#varldsvana_sum)/3)+5"></b>'|safe) }}
+                    prefix='<b class="calc" data-formula="parseInt((#beslutsamhet_sum+#slutledning_sum+#varldsvana_sum)/3)"></b>'|safe) }}
             </div>
             <div class="form-group">
                 {{ MACRO2.MAKE_INPUT("Expertiser", type='textarea', rows=10, cols=4) }}

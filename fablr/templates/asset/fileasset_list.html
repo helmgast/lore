@@ -127,7 +127,7 @@
             <div class="gallery zoom-container" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
                 {% if patch and args.get('out') != 'fragment' %}
                     <div class="file-upload form-group gallery-item" data-aspect="2">
-                        <form action="{{ url_for('assets.FileAssetsView:post') }}">
+                        <form action="{{ url_for('assets.FileAssetsView:post', _external=true) }}">
                             {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
                             <label for="file_data"
                                    title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">

@@ -693,7 +693,7 @@ select {
     margin-left: 0;
 }
 
-.sidebar, .navbar, .betaribbon, footer, #flDebugToolbarHandle {
+.sidebar, .navbar, .betaribbon, .pagination, footer, #flDebugToolbarHandle {
     display: none !important;
 }
 

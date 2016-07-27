@@ -296,6 +296,9 @@ function modify_url(url, new_params, new_url_parts) {
                                 that.$gallery.trigger('fablr.gallery-updated')
                             } else {
                                 // Trigger all plugins on added content
+                                if ($fig.find('img').attr('src').match(/^data:/)) {
+                                    console.log('TODO: replace this with original url')
+                                }
                                 $fig.removeClass('loading loading-large');
                             }
                         }
