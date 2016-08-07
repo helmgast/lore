@@ -22,7 +22,7 @@ from mongoengine import (StringField, DateTimeField, ImageField, URLField,
                          ReferenceField, ListField, FileField, IntField)
 from mongoengine import ValidationError
 from mongoengine.queryset import Q
-from rfc6266 import parse_requests_response
+from rfc6266 import parse_requests_response, ContentDisposition
 from werkzeug.utils import secure_filename
 
 from misc import Choices, reference_options, choice_options, numerical_options, distinct_options
@@ -181,8 +181,14 @@ class FileAsset(Document):
             self.set_file(new_file_obj, filename=new_file_obj.filename)
         elif self.source_file_url and not self.file_data:
             r = requests.get(self.source_file_url)
-            fname = parse_requests_response(r).filename_unsafe  # it will be made safe when converted to slug
-            print fname
+            # Try to fetch correct filename based on Content-Disposition header or location
+            # TODO this is a bug in rfc6266 package for handling a header like 'inline;filename=""'
+            try:
+                content_disp = parse_requests_response(r)
+            except Exception as e:
+                content_disp = ContentDisposition(location=self.source_file_url)  # Filename from URL
+                logger.warning("Got exception %s when parsing fname of %s" % (e, self.source_file_url))
+            fname = content_disp.filename_unsafe  # Will be made safe in set_file when creating slug
             self.set_file(StringIO(r.content), filename=fname)
             self.source_page_url = self.source_file_url
 
@@ -275,24 +281,3 @@ class ImageAsset(Document):
             new_slug = "%i__%s.%s" % (existing + 1, slug, new_end)
         self.slug = new_slug
 
-    def make_from_url(self, image_url, source_url=None):
-        # TODO use md5 to check if file already downloaded/uploaded
-        r = requests.get(image_url)
-        file = StringIO(r.content)
-        self.mime_type = r.headers['Content-Type']
-        self.source_image_url = image_url
-        self.source_page_url = source_url
-        fname = image_url.rsplit('/', 1)[-1]
-        self.title = self.title or fname
-        self.image.put(file, content_type=self.mime_type, filename=fname)
-        logger.info("Fetched %s image from %s to DB", self.image.format, image_url)
-
-    def make_from_file(self, file):
-        # block_size=256*128
-        # md5 = hashlib.md5()
-        # for chunk in iter(lambda: file.read(block_size), b''):
-        #      md5.update(chunk)
-        # print md5.hexdigest()
-        # file.seek(0) # reset
-        self.mime_type = file.mimetype if file.mimetype else mimetypes.guess_type(file.filename)[0]
-        self.image.put(file, content_type=self.mime_type, filename=file.filename)

@@ -19,6 +19,7 @@ class Config(object):
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
     ALLOW_SUBDOMAINS = False
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
+    VERSION = "No Version"
 
 
 class SecretConfig(object):
@@ -28,6 +29,11 @@ class SecretConfig(object):
     SECRET_KEY = 'SECRET'
     # Used by Sparkpost email sending API
     SPARKPOST_API_KEY = 'SECRET'
+
+    # Used to access Auth0 authentication backend
+    AUTH0_CLIENT_SECRET = 'SECRET'
+    AUTH0_CLIENT_ID = 'SECRET'
+    AUTH0_DOMAIN = 'SECRET'
 
     # Used by social login with Google
     GOOGLE_CLIENT_ID = 'SECRET'

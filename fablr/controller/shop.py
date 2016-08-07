@@ -113,8 +113,7 @@ class ProductsView(ResourceView):
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug))
 
     def patch(self, id, publisher):
-        print "Got request form data %s" % request.form
-        print "Got request images data %s" % request.form.getlist('images')
+
         fa = []
         for i in request.form.getlist('images'):
             fa.append(FileAsset.objects(id=i).first())
@@ -328,7 +327,7 @@ class OrdersView(ResourceView):
                 if g.user:
                     cart_order.user = g.user
                 cart_order.save()  # Need to save to get an id
-                session['cart_id'] = cart_order.id
+                session['cart_id'] = str(cart_order.id)
                 r.instance = cart_order  # set it in the response as well
             found = False
             for ol in cart_order.order_lines:

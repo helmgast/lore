@@ -80,7 +80,6 @@
 {% endblock navbar_left %}
 
 {% block home %}
-    {% include "includes/flash.html" %}
     <div class="jumbotron helmgast-header">
         <h1>HELMGAST</h1>
         <h2>Vi tar spel på allvar</h2>
@@ -209,57 +208,49 @@
 {% endblock %}
 
 {% block footer %}
-    <div class="container">
-        <div class="row">
-            <div class="col-xs-4">
-                <ul class="list-unstyled">
-                    <li><a data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-            from_field=user.email, subject=gettext('Question'), intent='post') }}">{% trans %}Contact Us{% endtrans %}</a></li>
-                    <li><a href="http://eepurl.com/RuMH1">{% trans %}Newsletter{% endtrans %}</a></li>
-                    <li>
-                        <div class="social">
-                            <a class="socialtw" href="https://twitter.com/helmgast" target="_blank">
-                                <svg class="social-icon icon-twitter" viewBox="0 0 1024 1024">
-                                    <path id="twitter" fill="#ababab"
-                                          d="M853.342 0h-682.656c-93.874 0-170.686 76.81-170.686 170.69v682.624c0 93.936 76.812 170.686 170.686 170.686h682.656c93.876 0 170.658-76.75 170.658-170.69v-682.62c0-93.88-76.782-170.69-170.658-170.69zM766.478 381.48c0.252 5.632 0.38 11.296 0.38 16.988 0 173.51-132.070 373.588-373.584 373.588-74.15 0-143.168-21.738-201.276-58.996 10.272 1.218 20.724 1.84 31.322 1.84 61.518 0 118.134-20.992 163.072-56.21-57.458-1.054-105.948-39.020-122.658-91.184 8.018 1.532 16.244 2.36 24.704 2.36 11.976 0 23.578-1.61 34.592-4.61-60.064-12.066-105.326-65.132-105.326-128.75 0-0.554 0-1.104 0.012-1.652 17.7 9.834 37.948 15.742 59.47 16.424-35.232-23.546-58.414-63.736-58.414-109.292 0-24.064 6.476-46.62 17.78-66.010 64.76 79.44 161.51 131.712 270.634 137.19-2.238-9.612-3.4-19.632-3.4-29.924 0-72.512 58.792-131.298 131.304-131.298 37.766 0 71.892 15.944 95.842 41.462 29.908-5.886 58.008-16.814 83.38-31.862-9.804 30.662-30.624 56.394-57.732 72.644 26.56-3.174 51.866-10.232 75.412-20.674-17.594 26.328-39.854 49.454-65.514 67.966z"></path>
-                                </svg>
-                            </a>
-                            <a class="socialfb" href="https://www.facebook.com/helmgast"
-                               target="_blank">
-                                <svg class="social-icon" viewBox="0 0 1024 1024">
-                                    <path id="facebook" fill="#ababab"
-                                          d="M853.35 0h-682.702c-94.25 0-170.648 76.42-170.648 170.686v682.63c0 94.266 76.398 170.684 170.648 170.684h341.352v-448h-128v-128h128v-96c0-88.366 71.634-160 160-160h160v128h-160c-17.674 0-32 14.328-32 32v96h176l-32 128h-144v448h213.35c94.25 0 170.65-76.418 170.65-170.684v-682.63c0-94.266-76.4-170.686-170.65-170.686z"></path>
-                                </svg>
-                            </a></div>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-xs-4">
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}">{% trans %}Blog{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='about') }}">{% trans %}About{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">{% trans %}Media{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='work_with_us') }}">{% trans %}Work with us{% endtrans %}</a></li>
-                </ul>
-            </div>
-            <!-- --/col-lg-3 ---->
+    <div class="row">
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                <li><a data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
+        from_field=user.email, subject=gettext('Question'), intent='post') }}">{% trans %}Contact Us{% endtrans %}</a></li>
+                <li><a href="http://eepurl.com/RuMH1">{% trans %}Newsletter{% endtrans %}</a></li>
+                <li>
+                    <div class="social">
+                        <a class="socialtw" href="https://twitter.com/helmgast" target="_blank">
+                            <svg class="social-icon icon-twitter" viewBox="0 0 1024 1024">
+                                <path id="twitter" fill="#ababab"
+                                      d="M853.342 0h-682.656c-93.874 0-170.686 76.81-170.686 170.69v682.624c0 93.936 76.812 170.686 170.686 170.686h682.656c93.876 0 170.658-76.75 170.658-170.69v-682.62c0-93.88-76.782-170.69-170.658-170.69zM766.478 381.48c0.252 5.632 0.38 11.296 0.38 16.988 0 173.51-132.070 373.588-373.584 373.588-74.15 0-143.168-21.738-201.276-58.996 10.272 1.218 20.724 1.84 31.322 1.84 61.518 0 118.134-20.992 163.072-56.21-57.458-1.054-105.948-39.020-122.658-91.184 8.018 1.532 16.244 2.36 24.704 2.36 11.976 0 23.578-1.61 34.592-4.61-60.064-12.066-105.326-65.132-105.326-128.75 0-0.554 0-1.104 0.012-1.652 17.7 9.834 37.948 15.742 59.47 16.424-35.232-23.546-58.414-63.736-58.414-109.292 0-24.064 6.476-46.62 17.78-66.010 64.76 79.44 161.51 131.712 270.634 137.19-2.238-9.612-3.4-19.632-3.4-29.924 0-72.512 58.792-131.298 131.304-131.298 37.766 0 71.892 15.944 95.842 41.462 29.908-5.886 58.008-16.814 83.38-31.862-9.804 30.662-30.624 56.394-57.732 72.644 26.56-3.174 51.866-10.232 75.412-20.674-17.594 26.328-39.854 49.454-65.514 67.966z"></path>
+                            </svg>
+                        </a>
+                        <a class="socialfb" href="https://www.facebook.com/helmgast"
+                           target="_blank">
+                            <svg class="social-icon" viewBox="0 0 1024 1024">
+                                <path id="facebook" fill="#ababab"
+                                      d="M853.35 0h-682.702c-94.25 0-170.648 76.42-170.648 170.686v682.63c0 94.266 76.398 170.684 170.648 170.684h341.352v-448h-128v-128h128v-96c0-88.366 71.634-160 160-160h160v128h-160c-17.674 0-32 14.328-32 32v96h176l-32 128h-144v448h213.35c94.25 0 170.65-76.418 170.65-170.684v-682.63c0-94.266-76.4-170.686-170.65-170.686z"></path>
+                            </svg>
+                        </a></div>
+                </li>
+            </ul>
+        </div>
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}">{% trans %}Blog{% endtrans %}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='about') }}">{% trans %}About{% endtrans %}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">{% trans %}Media{% endtrans %}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='work_with_us') }}">{% trans %}Work with us{% endtrans %}</a></li>
+            </ul>
+        </div>
+        <!-- --/col-lg-3 ---->
 
-            <div class="col-xs-4">
-                <ul class="list-unstyled">
-                    {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service') }}">{% trans %}Terms of Service{% endtrans %}</a></li>
-                    <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='security_policy') }}">{% trans %}Security policy{% endtrans %}</a></li>
-                    <li class="language-chooser">{% include 'includes/language_chooser.html' %}</li>
-                </ul>
-            </div>
-            <!-- --/col-lg-3 ---->
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
+                <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service') }}">{% trans %}Terms of Service{% endtrans %}</a></li>
+                <li><a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='security_policy') }}">{% trans %}Security policy{% endtrans %}</a></li>
+                <li class="language-chooser">{% include 'includes/language_chooser.html' %}</li>
+            </ul>
         </div>
-        <div class="row">
-            <p>
-                {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
-                Version xx.yy
-            </p>
-        </div>
-        <!-- --/row ---->
+        <!-- --/col-lg-3 ---->
     </div>
+    <!-- --/row ---->
 {% endblock %}

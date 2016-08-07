@@ -149,7 +149,6 @@
             {% endblock %}
         </div>
         <div class="col-md-9 content">
-            {% include "includes/flash.html" %}
             {% set article_type = article.type if article else args['fields'].get('type','default') %}
             {% if article_type != 'character' %}
                 <div class="alert alert-danger' }} alert-dismissable">

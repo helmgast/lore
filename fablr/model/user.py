@@ -66,12 +66,10 @@ class User(Document, BaseUser):
     email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
     realname = StringField(max_length=60, verbose_name=_('Real name'))
     location = StringField(max_length=60, verbose_name=_('Location'))
-    description = StringField(
-        verbose_name=_('Description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
+    description = StringField(max_length=500, verbose_name=_('Description'))
     xp = IntField(default=0, verbose_name=_('XP'))
     join_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Join Date'))
     last_login = DateTimeField(verbose_name=_('Last login'))
-    # msglog = ReferenceField(Conversation)
     status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
     hidden = BooleanField(default=False)
     admin = BooleanField(default=False)
@@ -88,13 +86,6 @@ class User(Document, BaseUser):
     google_auth = EmbeddedDocumentField(ExternalAuth)
     facebook_auth = EmbeddedDocumentField(ExternalAuth)
     event_log = ListField(EmbeddedDocumentField(UserEvent))
-    following = ListField(ReferenceField('self'), verbose_name=_('Following'))
-
-    def clean(self):
-        # TODO Our password hashes contain 46 characters, so we can check if the value
-        # set is less, which means it's a user input that we need to hash before saving
-        if self.password and len(self.password) <= 40:
-            self.set_password(self.password)
 
     def clean(self):
         # if self.username and self.location and self.description and self.images:

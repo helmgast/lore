@@ -90,7 +90,6 @@ class Product(Document):
         if request.values.get('downloadable_files', None) is None:
             self.downloadable_files = []
         self.slug = slugify(self.title)
-        self.slug = slugify(self.title)
 
     @property  # For convenience
     def get_feature_image(self):

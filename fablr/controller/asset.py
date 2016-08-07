@@ -1,31 +1,25 @@
 import logging
-import os.path
 from time import time
 
 from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
-from flask_classy import route
+from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
 from werkzeug.exceptions import abort
-from flask_babel import lazy_gettext as _
 from werkzeug.utils import secure_filename
-from wtforms.widgets import Select
 
 from fablr.controller.pdf import fingerprint_pdf
 from fablr.controller.resource import RacModelConverter, \
-    ResourceAccessPolicy, ResourceError, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
+    ResourceAccessPolicy, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
     filterable_fields_parser, \
     prefillable_fields_parser
-from fablr.model.asset import FileAsset, FileAccessType, ImageAsset, allowed_mimetypes
+
+from fablr.model.asset import FileAsset, FileAccessType
 from fablr.model.shop import products_owned_by_user
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
-
-
-
-# ResourceHandler.register_urls(asset_app, file_asset_strategy)
 
 
 def set_cache(rv, cache_timeout):

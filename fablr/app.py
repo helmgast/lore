@@ -17,7 +17,6 @@ from flaskext.markdown import Markdown
 from pymongo.errors import ConnectionFailure
 
 from fablr.controller.resource import ResourceError, get_root_template
-from fablr.model import misc
 
 
 def create_app(no_init=False, **kwargs):
@@ -31,7 +30,6 @@ def create_app(no_init=False, **kwargs):
         config_string += " file config.py, "
     except IOError:
         pass
-    the_app.config.from_pyfile('version.cfg', silent=True)
 
     # Override defaults with any environment variables, as long as they are defined in default.
     # TODO there could be name collision with env variables, and this may be unsafe
@@ -165,6 +163,7 @@ def configure_extensions(app):
 def identity(ob):
     return ob
 
+
 def configure_blueprints(app):
     with app.app_context():
         from model.user import User, ExternalAuth
@@ -192,11 +191,10 @@ def configure_blueprints(app):
 
 
 def configure_hooks(app):
-
     from model.misc import Languages
 
     @app.before_request
-    def load_user():
+    def load_locale():
         g.available_locales = app.config['BABEL_AVAILABLE_LOCALES']
 
     @app.context_processor
@@ -265,16 +263,9 @@ def configure_hooks(app):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-
-                # Print rules in alphabetic order
-                # for rule in app.url_map.iter_rules():
-                #     print rule.__repr__(), rule.subdomain
-                # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
-                #   print rule.__repr__(), rule.subdomain
-
-    @app.route('/')
-    def homepage():
-        return "Homepage"
+    # @app.route('/')
+    # def homepage():
+    #     return "Homepage"
 
     # @app.before_request
     # def before_request():

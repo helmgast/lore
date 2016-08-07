@@ -17,6 +17,9 @@ COPY tools/ tools/
 COPY fablr/ fablr/
 COPY manage.py manage.py
 COPY run.py run.py
+
 RUN python manage.py lang_compile
 
+ARG FABLR_VERSION=noversion
+ENV FABLR_VERSION $FABLR_VERSION
 ENTRYPOINT python run.py
