@@ -1,65 +1,70 @@
 {% extends "social/_page.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
 
 {% set members=group.members if group else [] %}
 
-{% block content_title %}{{group.name if group}}{% endblock %}
+{% block content_title %}{{ group.name if group }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{super()}}
-<ul class="nav nav-pills nav-stacked">
-<li class="nav-header">{{ _('Actions') }}</li>
-<li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-{% if op!='new' %}
-<li><a href="{{ url_for('.group_form_edit', group=group.slug) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-{% endif %}
-</ul>
-{%endblock%}
+{% block sidebar %}{{ super() }}
+    <ul class="nav nav-pills nav-stacked">
+        <li><a href="{{ url_for('social.GroupsView:get', id='post') }}"><span
+                class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
+        {% if op!='new' %}
+            <li><a href="{{ url_for('social.GroupsView:get', id=group.slug, intent='patch') }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+        {% endif %}
+    </ul>
+{% endblock %}
 
 {% block content %}{% block inline %}
-{% if group_form %}<form method="post" action="{{group_form.action_url}}">{% endif %}
+    {% if group_form %}
+        <form method="post" action="{{ action_url }}">
+    {% endif %}
 <div class="row">
-  <div class="col-md-6">
-    <table class="table table-striped"
-    {%- if group_form -%} data-editable="members" data-remote="{{url_for('.member_form_new', group=group.slug)}}"
-    {%- endif -%}>
-      <thead>
-        <tr>
-          <th>{{ _('Username') }}</th>
-          <th>{{ _('Real name') }}</th>
-          <th>{{ _('Role') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-      {%- for member in members -%}
-        {% set member_form = group_form.members[loop.index0] if group_form %}
-        {% include "social/member_item.html" %}      
-      {%- endfor -%}
-      </tbody>
-    </table>
-  </div>
-  <div class="col-md-6">
-    <h5>{{ _('Details') }}</h5>
-    {{ MACRO.FORM_FIELD(group_form.description) if group_form else group.description }}
-    {{ MACRO.FORM_FIELD(group_form.name) if group_form else group.name }}
-    {{ MACRO.FORM_FIELD(group_form.location) if group_form else group.location }}
+    <div class="col-md-6">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>{{ _('Username') }}</th>
+                <th>{{ _('Real name') }}</th>
+                <th>{{ _('Role') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {%- for member in members -%}
+                {% set member_form = group_form.members[loop.index0] if group_form %}
+                {% include "social/member_item.html" %}
+            {%- endfor -%}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-6">
+        <h5>{{ _('Details') }}</h5>
+        {{ MACRO.FORM_FIELD(group_form.description) if group_form else group.description }}
+        {{ MACRO.FORM_FIELD(group_form.title) if group_form else group.title }}
+        {{ MACRO.FORM_FIELD(group_form.location) if group_form else group.location }}
 
-    <table class="table">
-      <tr><td><strong>{{ _('Members') }}</strong></td>
-      <td></td></tr>
-      <tr><td><strong>{{ _('Meetings') }}</strong></td>
-      <td><span class="badge">0</span></td></tr>
-    </table>
-    
-  </div>
+        <table class="table">
+            <tr>
+                <td><strong>{{ _('Members') }}</strong></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><strong>{{ _('Meetings') }}</strong></td>
+                <td><span class="badge">0</span></td>
+            </tr>
+        </table>
+
+    </div>
 </div>
 {% if group_form %}
-{{ group_form.csrf_token }}
-<div class="row form-actions">
-    <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-    <a href="{{url_for('.group_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
-    {% if op!='new' %}
-    <a href="{{url_for('.group_delete', group=group.slug)}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
-    {% endif %}
-</div></form>{% endif %}
+    {{ group_form.csrf_token }}
+    <div class="row form-actions">
+        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+        <a href="{{ url_for('social.GroupsView:index') }}" class="btn btn-default">{{ _('Cancel') }}</a>
+        {% if op!='new' %}
+            <a href="{{ url_for('social.GroupsView:delete', id=group.slug) }}"
+               class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+        {% endif %}
+    </div></form>{% endif %}
 {% endblock %}{% endblock %}

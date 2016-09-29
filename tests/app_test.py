@@ -100,47 +100,6 @@ class FablrTestCase(unittest.TestCase):
         #   print "Obj2 \n%s\n" % obj2.to_mongo()
         self.assertEqual(expected_obj.to_mongo(), obj.to_mongo())
 
-    def test_strategy_simple(self):
-        strategy = self.ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
-        # Test that a strategy correctly sets up url routes
-        self.assertEqual('/test_objects/', strategy.url_list())
-        self.assertEqual('/test_objects/new', strategy.url_list('new'))
-        self.assertEqual('/<testobject>/', strategy.url_item())
-        self.assertEqual('/<testobject>/edit', strategy.url_item('edit'))
-        self.assertEqual('testobject_item.html', strategy.item_template())
-        self.assertEqual('testobject_list.html', strategy.list_template())
-        self.assertEqual('testobject_view', strategy.endpoint_name('view'))
-
-    def test_strategy_query(self):
-        strategy = self.ResourceRoutingStrategy(TestObject, 'test_objects', short_url=True)
-        obj = TestObject(name="test_name").save()
-        self.assertIn(obj, strategy.query_list({"name": "test_name"}))
-        self.assertEqual(0, len(strategy.query_list({"name": "test_name_1"})))
-        self.assertEqual(1, len(strategy.query_list({"name_1": "test_name"})))
-        self.assertEqual({}, strategy.query_parents(**{"name": "test_name"}))
-        self.assertAlmostEqual(type(TestObject()), type(strategy.create_item()))
-        self.assertEqual({'testobject': None}, strategy.all_view_args(TestObject()))
-
-    def test_handler(self):
-        strategy = self.ResourceRoutingStrategy(TestObject, 'test_objects',
-                                                form_class=model_form(TestObject))
-        handler = self.ResourceHandler(strategy)
-        handler.register_urls(self.app, strategy)
-        with self.app.test_request_context(path='/test_objects/new', method="POST", data={"name": "test_name_handler"}):
-            self.app.preprocess_request()  # Correctly sets up auth, etc
-            result = handler.new({'op': 'new'})
-            self.assertEqual('new', result['op'])
-            self.assertEqual(u'test_name_handler', result['item'].name)
-
-    def login(self, username, password):
-        return self.client.post('/accounts/login/', data=dict(
-            username=username,
-            password=password
-        ), follow_redirects=True)
-
-    def logout(self):
-        return self.client.get('/accounts/logout', follow_redirects=True)
-
     def setUp(self):
         # PRESERVE_CONTEXT... needed for avoiding context pop error, see
         # http://stackoverflow.com/questions/26647032/py-test-to-test-flask-register-assertionerror-popped-wrong-request-context

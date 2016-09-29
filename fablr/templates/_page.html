@@ -133,9 +133,32 @@
                             </a>
                         </li>
                     {% endcall %}
-                    {% call(privileged) MACRO.IS_ADMIN() %}
-                        <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span
-                                class="glyphicon glyphicon-bullhorn"></span> {{ _('Users') }}</a></li>
+                    {% call(privileged) MACRO.IS_USER() %}
+                        <li class="dropdown {% block social_active %}{% endblock %}">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                               aria-haspopup="true" aria-expanded="false"><span
+                                    class="glyphicon glyphicon-user"></span> {{ _('Users') }} <span
+                                    class="caret"></span></a>
+                            <ul class="dropdown-menu">
+
+                                <li><a href="{{ url_for('social.UsersView:index') }}"><span
+                                        class="glyphicon glyphicon-bullhorn"></span> {{ _('Browse') }}</a></li>
+                                <li role="separator" class="divider"></li>
+
+                                <li><a href="{{ url_for('social.GroupsView:index') }}"><span
+                                        class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
+                                {% call(privileged) MACRO.IS_ADMIN() %}
+                                    <li role="separator" class="divider"></li>
+                                    <li role="presentation">
+                                        <a class="{{ privileged }}" data-toggle="modal" data-target="#themodal"
+                                           role="menuitem" tabindex="-1" href=
+                                                   "{{ url_for('mail.mail_view', mail_type='invite', intent='post') }}">
+                                            <span class="glyphicon glyphicon-hand-right"></span> {{ _('Invite user') }}
+                                        </a>
+                                    </li>
+                                {% endcall %}
+                            </ul>
+                        </li>
                     {% endcall %}
                 {% endblock navbar_left %}
             </ul>
@@ -154,7 +177,7 @@
                                     class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a {% call MACRO.IS_USER() %}href="{{ url_for('social.user_view', user=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a>
+                                    <a {% call MACRO.IS_USER() %}href="{{ url_for('social.UsersView:get', id=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a>
                                 </li>
                                 {% call(privileged) MACRO.IS_ADMIN() %}
                                     <li role="separator" class="divider"></li>

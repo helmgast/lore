@@ -88,7 +88,7 @@
                             <ul class="product-details">
                                 <li class="product-type">{{ order.user.username }}</li>
                                 <li class="product-type">{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</li>
-                                <li class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency }}</li>
+                                <li class="product-price">{{ order.total_price_display() }}</li>
                             </ul>
                         </div>
                         {% if loop.index is divisibleby 3 %}</div>

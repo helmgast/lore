@@ -41,7 +41,7 @@ footer {
 }
 
 footer a {
-    color: #a33 !important;
+    color: #f74d4d !important;
     font-weight: 600;
     font-size: 15px;
 }
@@ -388,14 +388,9 @@ a.highlight {
 }
 
 .message_name {
-    position: absolute;
-    margin-left: -20px;
     border: 1px solid #ebebeb;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
     border-radius: 5px;
     background: #fff;
-    padding: 0px 2px;
 }
 
 .message_name small {
@@ -1487,25 +1482,10 @@ li:hover .btn-delete,
     margin-bottom: 15px;
 }
 
-/*
-.privileged>a:hover:before {
-  display: block;
-  position: absolute;
-  padding: .4em;
-  max-width: 60px;
-  text-align: center;
-  width: auto;
-  height: auto;
-  right: -20px;
-  background: rgba(0,0,0,.8);
-  -moz-border-radius:6px;
-  -webkit-border-radius:6px;
-  border-radius:6px;
-  color: #fff;
-  font-size: .7em;
-  z-index: 900;
+.dropdown-menu .privileged {
+    border: none;
 }
-*/
+
 .privileged {
     background-color: rgba(252, 252, 252, 0.8);
     color: #2a6496;
@@ -1591,12 +1571,12 @@ body.template-helmgast .container {
 /*background-color: transparent;*/
 /*}*/
 
-.navbar-nav-top a {
+.navbar-nav-top>li>a {
     border-bottom: 4px solid transparent;
     padding-bottom: 11px;
 }
 
-.navbar-nav-top a:hover, .navbar-nav-top .active a {
+.navbar-nav-top>li>a:hover, .navbar-nav-top>li.active>a {
     border-bottom: 4px solid #a00;
     transition: border-color 1s ease-out;
 }

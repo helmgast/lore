@@ -12,28 +12,17 @@ from werkzeug.utils import secure_filename
 from wtforms.widgets import Select
 
 from fablr.controller.pdf import fingerprint_pdf
-from fablr.controller.resource import ResourceHandler, ResourceRoutingStrategy, RacModelConverter, \
+from fablr.controller.resource import RacModelConverter, \
     ResourceAccessPolicy, ResourceError, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
     filterable_fields_parser, \
     prefillable_fields_parser
 from fablr.model.asset import FileAsset, FileAccessType, ImageAsset, allowed_mimetypes
-from fablr.model.misc import slugify
 from fablr.model.shop import products_owned_by_user
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
 
-file_asset_strategy = ResourceRoutingStrategy(FileAsset, 'files', 'slug',
-                                              access_policy=ResourceAccessPolicy({
-                                                  #   'view': 'private', # Add these later to allow personal files
-                                                  #   'edit': 'private',
-                                                  #   'form_edit': 'private',
-                                                  #   'replace': 'private',
-                                                  #   'delete': 'private',
-                                                  '_default': 'admin'
-                                              }),
-                                              post_edit_action='list')
 
 
 # ResourceHandler.register_urls(asset_app, file_asset_strategy)
@@ -117,12 +106,6 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
         rv.headers['Cache-Control'] = 'private'  # Override the public cache
         return rv
     abort(403)
-
-
-imageasset_strategy = ResourceRoutingStrategy(
-    ImageAsset, 'images', form_class=
-    model_form(ImageAsset, exclude=['image', 'mime_type', 'slug'], converter=RacModelConverter())
-)
 
 
 class FileAssetsView(ResourceView):
@@ -232,108 +215,7 @@ class FileAssetsView(ResourceView):
     def delete(self, id):
         abort(501)
 
-
-class ImagesView(ResourceView):
-    route_base = '/images/'
-    access_policy = ResourceAccessPolicy({
-        'view': 'public',
-        'list': 'public',
-        'edit': 'editor',
-        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
-        '_default': 'admin'
-    })
-    model = ImageAsset
-    list_template = 'imageasset_list.html'
-    # list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    item_template = 'imageasset_item.html'
-    # item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    form_class = model_form(ImageAsset, exclude=['image', 'mime_type', 'slug'], converter=RacModelConverter())
-
-    def index(self):
-        r = ListResponse(ImagesView, [('images', ImageAsset.objects().order_by('-created_date'))])
-        r.auth_or_abort()
-        # r.worlds = publish_filter(r.worlds).order_by('title')
-        r.prepare_query()
-        # set_theme(r, 'publisher', publisher.slug)
-
-        # Groups images into rows of reasonable aspect ratio to create a good masonry effect
-        max_aspect_per_row = 5
-        groups = []
-        sumaspect = 0.0
-        tmplist = []
-        for img in r.images:
-            aspect = img.image.width / float(img.image.height)
-            # Ensures we stay below aspect ratio 4:1 on a row, with exception that
-            # we'll always add one item to the row.
-            if sumaspect + aspect > max_aspect_per_row:  # row gets too wide
-                if tmplist:  # if we have a list from previous iteration, save it
-                    groups.append((tmplist, sumaspect))
-                sumaspect = 0
-                tmplist = []
-            sumaspect += aspect
-            tmplist.append(img)
-
-        r.groups = groups
-        return r
-
-    def post(self):
-        abort(501)
-
-
-ImagesView.register_with_access(asset_app, 'images')
 FileAssetsView.register_with_access(asset_app, 'files')
-
-
-class ImageAssetHandler(ResourceHandler):
-    default_per_page = 24  # Multiple of 2 and 3 looks best on most columns
-
-    def list(self, r):
-        r = super(ImageAssetHandler, self).list(r)
-
-        # Groups images into rows of reasonable aspect ratio to create a good masonry effect
-        groups = []
-        sumaspect = 0.0
-        tmplist = []
-        for img in r['images']:
-            aspect = img.image.width / float(img.image.height)
-            # Ensures we stay below aspect ratio 4:1 on a row, with exception that
-            # we'll always add one item to the row.
-            if sumaspect + aspect > 5:  # row gets too wide
-                if tmplist:  # if we have a list from previous iteration, save it
-                    groups.append((tmplist, sumaspect))
-                sumaspect = 0
-                tmplist = []
-            sumaspect += aspect
-            tmplist.append(img)
-
-        r['groups'] = groups
-        return r
-
-    def new(self, r):
-        '''Override new() to do some custom file pre-handling'''
-        self.strategy.authorize(r['op'])
-        form = self.form_class(request.form, obj=None)
-        print request.form
-        # del form.slug # remove slug so it wont throw errors here
-        if not form.validate():
-            r['form'] = form
-            raise ResourceError(400, r)
-        file = request.files.get('imagefile', None)
-        item = ImageAsset(creator=g.user)
-        if file:
-            item.make_from_file(file)
-        elif request.form.has_key('source_image_url'):
-            item.make_from_url(request.form['source_image_url'])
-        else:
-            abort(403)
-        form.populate_obj(item)
-        item.save()
-        r['item'] = item
-        r['next'] = url_for('image', slug=item.slug)
-        return r
-
-
-# ImageAssetHandler.register_urls(asset_app, imageasset_strategy)
 
 
 @asset_app.route('/')

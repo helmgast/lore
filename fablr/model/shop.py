@@ -1,9 +1,11 @@
+# coding: utf-8
+
 from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
 from flask_babel import lazy_gettext as _, gettext
-from flask_mongoengine import Document, DynamicDocument  # Enhanced document
+from misc import Document # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
 from mongoengine.errors import ValidationError
@@ -12,7 +14,7 @@ from asset import FileAsset
 from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_options, \
     from7to365
 from user import User
-from world import ImageAsset, Publisher, World
+from world import Publisher, World
 
 ProductTypes = Choices(
     book=_('Book'),
@@ -32,6 +34,15 @@ Currencies = Choices(
     sek='SEK'
 )
 
+FX_FORMAT ={
+    'eur': u'€ %s',
+    'sek': u'%s :-'
+}
+
+FX_IN_SEK = {
+    'eur': 9.0,
+    'sek': 1.0
+}
 
 # Product number logic
 # PB-PF-nnnn-x
@@ -56,8 +67,8 @@ class Product(Document):
     publisher = ReferenceField(Publisher, required=True, verbose_name=_('Publisher'))
     world = ReferenceField(World, verbose_name=_('World'))
     family = StringField(max_length=60, verbose_name=_('Product Family'))
-    created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
-    updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     type = StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
@@ -138,7 +149,7 @@ class Stock(Document):
     with one command and one lock.
     """
     publisher = ReferenceField(Publisher, unique=True, verbose_name=_('Publisher'))
-    updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
+    updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     stock_count = MapField(field=IntField(min_value=-1, default=0))
 
     def clean(self):
@@ -167,8 +178,8 @@ class Order(Document):
                              verbose_name=_('Total price'))  # Total price of order incl shipping
     total_tax = FloatField(min_value=0, default=0.0, verbose_name=_('Total tax'))  # Total tax of order
     currency = StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
-    created = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
-    updated = DateTimeField(default=datetime.utcnow(), verbose_name=_('Updated'))
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     status = StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
     shipping = ReferenceField(Product, verbose_name=_('Shipping'))
     charge_id = StringField()  # Stores the Stripe charge id
@@ -188,6 +199,7 @@ class Order(Document):
             s = u'%s%s' % (
                 max_prod.title,
                 ' ' + _('and %(total_items)s more', total_items=self.total_items) if len(self.order_lines) > 1 else '')
+            s += u' [%s]' % self.total_price_display()
         else:
             s = u'%s' % _('Empty order')
         return s
@@ -209,6 +221,16 @@ class Order(Document):
     def total_price_int(self):
         """Returns total price as an int, suitable for Stripe"""
         return int(self.total_price * 100)
+
+    def total_price_sek(self):
+        """Returns total price as an int in SEK equivalent based on pre-defined FX rate"""
+        return int(self.total_price*FX_IN_SEK[self.currency])
+
+    def total_price_display(self):
+        price_format = (u'{:.0f}' if float(self.total_price).is_integer() else u'{:.2f}').format(self.total_price)
+        fx_format = FX_FORMAT.get(self.currency, u'%s')
+        return fx_format % price_format
+
 
     def update_stock(self, publisher, update_op, select_op=None):
         """Updates the stock count (either by inc(rement) or dec(rement) operators) and optionally ensures a select

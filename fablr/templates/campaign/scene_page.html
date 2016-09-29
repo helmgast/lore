@@ -1,5 +1,0 @@
-{% extends "campaign/_page.html" if not parent_template else parent_template%}
-
-{% block content_title %}{{'New ' if not the_session}}Session{% endblock %}
-
-{% block content_tagline %}{{ the_session.campaign.name if the_session }}{% endblock %}

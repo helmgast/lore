@@ -147,7 +147,7 @@
             <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
                 {%- if article.creator %}
                     {% if access_policy['user'].authorize('view') %}
-                        <a href="{{ url_for('social.user_view', user=article.creator.identifier()) }}">{{ article.creator }}</a>
+                        <a href="{{ url_for('social.UsersView:get', id=article.creator.identifier()) }}">{{ article.creator }}</a>
                     {% else %}
                         {{ article.creator }}{% endif %}
                 {%- else -%}System{%- endif -%}</li>

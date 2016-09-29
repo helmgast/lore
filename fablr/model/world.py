@@ -13,12 +13,12 @@ from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_babel import lazy_gettext as _
-from flask_mongoengine import Document  # Enhanced document
+from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
                          GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField)
 
-from asset import ImageAsset, FileAsset
+from asset import FileAsset
 from misc import Choices, slugify, Address, Languages, choice_options, datetime_options, reference_options
 from user import User
 
@@ -48,7 +48,7 @@ class Publisher(Document):
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     owner = ReferenceField(User, verbose_name=_('Owner'))  # TODO pick one of owner, creator
     creator = ReferenceField(User, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
@@ -79,7 +79,7 @@ class World(Document):
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))  # TODO set to required
     creator = ReferenceField(User, verbose_name=_('Creator'))
     rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created on'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
@@ -238,7 +238,7 @@ class Article(Document):
     world = ReferenceField(World, verbose_name=_('World'))
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))
     creator = ReferenceField(User, verbose_name=_('Creator'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     title = StringField(min_length=1, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))

@@ -18,6 +18,7 @@ from flask.json import JSONEncoder
 from flask_debugtoolbar import DebugToolbarExtension
 from markdown.treeprocessors import Treeprocessor
 from mongoengine import Document, QuerySet, ConnectionError
+from pymongo.errors import ConnectionFailure
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
@@ -96,20 +97,35 @@ def is_db_empty(db):
 db = MongoEngine()
 # TODO this is a hack to turn of schema validation, as it reacts when database contains fields
 # not in model, which can happen if we have a database that is used for branches with both new and old schema
-db.Document = DynamicDocument
+# db.Document = DynamicDocument
+
+# db.Document._meta['auto_create_index'] = False
 
 
 def start_db(app):
-    while True:
-        try:
-            dbstring = db_config_string(app)
-            db.init_app(app)
-            if not app.debug and len(db.connection.get_default_database().collection_names(False)) == 0:
-                print >> sys.stderr, "Database %s is empty, run python manage.py db_setup" % dbstring
-            break
-        except ConnectionError:
-            print >> sys.stderr, "Cannot connect to database: %s [waiting 20s]" % dbstring
-            time.sleep(20)
+    # while True:
+    dbstring = db_config_string(app)
+    db_config = {
+        'MONGODB_SETTINGS': {
+            'host': app.config['MONGODB_HOST'],
+            'connectTimeoutMS': 50,
+            'serverSelectionTimeoutMS': 50
+        }
+    }
+    db.init_app(app, config=db_config)
+    # try:
+    with app.app_context():
+        num_collections = len(db.connection.get_default_database().collection_names(False))
+        if not app.debug and num_collections == 0:
+            print >> sys.stderr, "Database %s is empty, run python manage.py db_setup" % dbstring
+    # except ConnectionFailure as e:
+    #     print >> sys.stderr, "Database connection failure %s: %s" % (e.__class__, e)
+    #     exit(1)
+
+        # break
+        # except None:
+        #     print >> sys.stderr, "Cannot connect to database: %s [waiting 20s]" % dbstring
+        #     time.sleep(20)
 
 
 class MongoJSONEncoder(JSONEncoder):

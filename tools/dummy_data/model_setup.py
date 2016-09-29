@@ -208,9 +208,9 @@ Här lämnar vi våra kämpar.
 #     Relationship(from_user=ar, to_user=mb).save()
 
   # Conversation.drop_collection()
-  c1 = Conversation(members=[mf, nf]).save()
-  c2 = Conversation(members=[mf, mb]).save()
-  c3 = Conversation(members=[nf, ks]).save()
+  # c1 = Conversation(members=[mf, nf]).save()
+  # c2 = Conversation(members=[mf, mb]).save()
+  # c3 = Conversation(members=[nf, ks]).save()
   
   # Group.drop_collection()
   ng = Group(name='Nero', location='Gothenburg', description=u'Liten spelgrupp som gillar pervers humor').save()
@@ -225,18 +225,7 @@ Här lämnar vi våra kämpar.
   kg.add_masters([rl])
   kg.add_members([mb, pn, ks])
   kg.save()
-  
-  # Message.drop_collection()
-  # Make sure you use unicode strings by prefixing with u''
-  Message(user=nf, content=u'Hur går det, får jag höja min xp som vi pratade om?', conversation=c1).save()
-  Message(user=jg, content=u'Kul spel sist!').save()
-  Message(user=vs, content=u'Min karaktär dog, helvete!').save()
-  Message(user=ks, content=u'När får jag vara med då?').save()
-  Message(user=ar, content=u'Jag tar med ölen').save()
-  Message(user=mf, content=u'Visst, inga problem1', conversation=c1).save()
-  Message(user=mf, content=u'Vi borde testa raconteur snart!', conversation=c2).save()
-  Message(user=mb, content=u'Definitivt!', conversation=c2).save()
-  Message(user=nf, content=u'Hallå?', conversation=c3).save()
+
 
   scmpa = Article(type='campaign', title=u"Spelveckan", world=mundana, content=u"Deep drama at the beginning of July each year.").save()
   cd4ka = Article(type='campaign', title=u"Den Fjärde Konfluxen", world=altor, description=u"Rollpersonerna (Kandor, Zebbe, Navi, Josay och Titziana) är ordensmedlemmar i Yvainorden i staden Yavaris i Banborstland på Pandaros. Yvain är en av de fyra plågade hjältarna och hans ordnar kontrollerar mer eller mindre de civiliserade delarna av kontinenten.").save()
@@ -247,67 +236,67 @@ Här lämnar vi våra kämpar.
   ycmpa.relations = [ArticleRelation(relation_type=enemy, article=scmpa), ArticleRelation(relation_type=friend, article=kcmpa)]
   ycmpa.save()
   
-  scmpa.children = [Episode(id=u"1", title=u"Intro"),
-                    Episode(id=u"2", title=u"The old man in the taverna"),
-                    Episode(id=u"3", title=u"Going to the cave"),
-                    Episode(id=u"4", title=u"Not finding the way"),
-                    Episode(id=u"5", title=u"The general comes all over")]
-  scmpa.save()
+  # scmpa.children = [Episode(id=u"1", title=u"Intro"),
+  #                   Episode(id=u"2", title=u"The old man in the taverna"),
+  #                   Episode(id=u"3", title=u"Going to the cave"),
+  #                   Episode(id=u"4", title=u"Not finding the way"),
+  #                   Episode(id=u"5", title=u"The general comes all over")]
+  # scmpa.save()
+  #
+  #   # CampaignInstance.drop_collection()
+  #
+  # scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
+  # cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()
+  # cd6k = CampaignInstance(campaign=cd6ka, name=u"Den Sjätte Konfluxen", group=mg, rule_system=u"Fate").save()
+  # kcmp = CampaignInstance(campaign=kcmpa, name=u"Kult AW", group=kg, rule_system=u"AW").save()
+  # CampaignInstance(campaign=ycmpa, name=u"Yerlog", group=ng, rule_system=u"Eon").save()
 
-    # CampaignInstance.drop_collection()
-
-  scmp = CampaignInstance(campaign=scmpa, name=u"Spelveckan", group=ng, rule_system=u"Eon").save()
-  cd4k = CampaignInstance(campaign=cd4ka, name=u"Den Fjärde Konfluxen", group=mg, rule_system=u"Drakar & Demoner").save()
-  cd6k = CampaignInstance(campaign=cd6ka, name=u"Den Sjätte Konfluxen", group=mg, rule_system=u"Fate").save()
-  kcmp = CampaignInstance(campaign=kcmpa, name=u"Kult AW", group=kg, rule_system=u"AW").save()
-  CampaignInstance(campaign=ycmpa, name=u"Yerlog", group=ng, rule_system=u"Eon").save()
-
-  scmp.sessions = [Session(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), location=u'Snöflingeg')]
-  scmp.save()
-
-  kcmp.sessions = [Session(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), location=u'Åby')]
-  kcmp.save()
-
-  cd4k.sessions = [Session(play_start=datetime.datetime(2006,07,28,18,0), play_end=datetime.datetime(2006,07,28,23,0), location=u'Snöflingegatan'),
-                   Session(play_start=datetime.datetime(2006,07,29,18,0), play_end=datetime.datetime(2006,07,29,23,0), location=u'Snöflingegatan'),
-                   Session(play_start=datetime.datetime(2006,07,30,18,0), play_end=datetime.datetime(2006,07,30,23,0), location=u'Snöflingegatan'),
-                   Session(play_start=datetime.datetime(2006,12,28,18,0), play_end=datetime.datetime(2006,12,28,23,0), location=u'Mor märtas väg'),
-                   Session(play_start=datetime.datetime(2006,12,29,18,0), play_end=datetime.datetime(2006,12,29,23,0), location=u'Mor märtas väg'),
-                   Session(play_start=datetime.datetime(2006,12,30,18,0), play_end=datetime.datetime(2006,12,30,23,0), location=u'Persmässvägen'),
-                   Session(play_start=datetime.datetime(2007,01,02,18,0), play_end=datetime.datetime(2007,01,02,23,0), location=u'Mjödvägen'),
-                   Session(play_start=datetime.datetime(2007,01,03,18,0), play_end=datetime.datetime(2007,01,03,23,0), location=u'Mjödvägen'),
-                   Session(play_start=datetime.datetime(2007,01,04,18,0), play_end=datetime.datetime(2007,01,04,23,0), location=u'Storsvängen'),
-                   Session(play_start=datetime.datetime(2007,01,05,18,0), play_end=datetime.datetime(2007,01,05,23,0), location=u'Storsvängen')]
-  cd4k.save()
-
-  cd6k.sessions = [Session(play_start=datetime.datetime(2009,01,05,18,0), play_end=datetime.datetime(2009,01,05,23,0), location=u'Ulvsbygatan'),
-                   Session(play_start=datetime.datetime(2009,01,06,18,0), play_end=datetime.datetime(2009,01,06,23,0), location=u'Ulvsbygatan'),
-                   Session(play_start=datetime.datetime(2009,8,9,18,0), play_end=datetime.datetime(2009,8,9,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2009,8,10,18,0), play_end=datetime.datetime(2009,8,10,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2009,8,11,18,0), play_end=datetime.datetime(2009,8,11,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2009,8,12,18,0), play_end=datetime.datetime(2009,8,12,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2010,4,19,18,0), play_end=datetime.datetime(2010,4,19,23,0), location=u'Ulvsbygatan'),
-                   Session(play_start=datetime.datetime(2010,4,20,18,0), play_end=datetime.datetime(2010,4,20,23,0), location=u'Ulvsbygatan'),
-                   Session(play_start=datetime.datetime(2010,4,21,18,0), play_end=datetime.datetime(2010,4,21,23,0), location=u'Ulvsbygatan'),
-                   Session(play_start=datetime.datetime(2010,9,3,18,0), play_end=datetime.datetime(2010,9,3,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2010,9,4,18,0), play_end=datetime.datetime(2010,9,4,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2010,9,5,18,0), play_end=datetime.datetime(2010,9,5,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2011,5,27,18,0), play_end=datetime.datetime(2011,5,27,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2011,5,28,18,0), play_end=datetime.datetime(2011,5,28,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2011,5,29,18,0), play_end=datetime.datetime(2011,5,29,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2011,8,20,18,0), play_end=datetime.datetime(201,8,20,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2011,8,21,18,0), play_end=datetime.datetime(201,8,21,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2011,8,22,18,0), play_end=datetime.datetime(201,8,22,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2011,8,24,18,0), play_end=datetime.datetime(201,8,24,23,0), location=u'Olsäter'),
-                   Session(play_start=datetime.datetime(2012,1,27,18,0), play_end=datetime.datetime(2012,1,27,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,1,28,18,0), play_end=datetime.datetime(2012,1,28,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,1,29,18,0), play_end=datetime.datetime(2012,1,29,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,4,28,18,0), play_end=datetime.datetime(2012,4,28,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,4,29,18,0), play_end=datetime.datetime(2012,4,29,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), location=u'Mölndalsvägen'),
-                   Session(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), location=u'Mölndalsvägen')] 
-  cd6k.save()
+  # scmp.sessions = [Session(play_start=datetime.datetime(2012,10,20,18,0), play_end=datetime.datetime(2012,10,20,23,0), location=u'Snöflingeg')]
+  # scmp.save()
+  #
+  # kcmp.sessions = [Session(play_start=datetime.datetime(2012,10,30,18,0), play_end=datetime.datetime(2012,10,30,23,0), location=u'Åby')]
+  # kcmp.save()
+  #
+  # cd4k.sessions = [Session(play_start=datetime.datetime(2006,07,28,18,0), play_end=datetime.datetime(2006,07,28,23,0), location=u'Snöflingegatan'),
+  #                  Session(play_start=datetime.datetime(2006,07,29,18,0), play_end=datetime.datetime(2006,07,29,23,0), location=u'Snöflingegatan'),
+  #                  Session(play_start=datetime.datetime(2006,07,30,18,0), play_end=datetime.datetime(2006,07,30,23,0), location=u'Snöflingegatan'),
+  #                  Session(play_start=datetime.datetime(2006,12,28,18,0), play_end=datetime.datetime(2006,12,28,23,0), location=u'Mor märtas väg'),
+  #                  Session(play_start=datetime.datetime(2006,12,29,18,0), play_end=datetime.datetime(2006,12,29,23,0), location=u'Mor märtas väg'),
+  #                  Session(play_start=datetime.datetime(2006,12,30,18,0), play_end=datetime.datetime(2006,12,30,23,0), location=u'Persmässvägen'),
+  #                  Session(play_start=datetime.datetime(2007,01,02,18,0), play_end=datetime.datetime(2007,01,02,23,0), location=u'Mjödvägen'),
+  #                  Session(play_start=datetime.datetime(2007,01,03,18,0), play_end=datetime.datetime(2007,01,03,23,0), location=u'Mjödvägen'),
+  #                  Session(play_start=datetime.datetime(2007,01,04,18,0), play_end=datetime.datetime(2007,01,04,23,0), location=u'Storsvängen'),
+  #                  Session(play_start=datetime.datetime(2007,01,05,18,0), play_end=datetime.datetime(2007,01,05,23,0), location=u'Storsvängen')]
+  # cd4k.save()
+  #
+  # cd6k.sessions = [Session(play_start=datetime.datetime(2009,01,05,18,0), play_end=datetime.datetime(2009,01,05,23,0), location=u'Ulvsbygatan'),
+  #                  Session(play_start=datetime.datetime(2009,01,06,18,0), play_end=datetime.datetime(2009,01,06,23,0), location=u'Ulvsbygatan'),
+  #                  Session(play_start=datetime.datetime(2009,8,9,18,0), play_end=datetime.datetime(2009,8,9,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2009,8,10,18,0), play_end=datetime.datetime(2009,8,10,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2009,8,11,18,0), play_end=datetime.datetime(2009,8,11,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2009,8,12,18,0), play_end=datetime.datetime(2009,8,12,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2010,4,19,18,0), play_end=datetime.datetime(2010,4,19,23,0), location=u'Ulvsbygatan'),
+  #                  Session(play_start=datetime.datetime(2010,4,20,18,0), play_end=datetime.datetime(2010,4,20,23,0), location=u'Ulvsbygatan'),
+  #                  Session(play_start=datetime.datetime(2010,4,21,18,0), play_end=datetime.datetime(2010,4,21,23,0), location=u'Ulvsbygatan'),
+  #                  Session(play_start=datetime.datetime(2010,9,3,18,0), play_end=datetime.datetime(2010,9,3,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2010,9,4,18,0), play_end=datetime.datetime(2010,9,4,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2010,9,5,18,0), play_end=datetime.datetime(2010,9,5,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2011,5,27,18,0), play_end=datetime.datetime(2011,5,27,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2011,5,28,18,0), play_end=datetime.datetime(2011,5,28,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2011,5,29,18,0), play_end=datetime.datetime(2011,5,29,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2011,8,20,18,0), play_end=datetime.datetime(201,8,20,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2011,8,21,18,0), play_end=datetime.datetime(201,8,21,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2011,8,22,18,0), play_end=datetime.datetime(201,8,22,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2011,8,24,18,0), play_end=datetime.datetime(201,8,24,23,0), location=u'Olsäter'),
+  #                  Session(play_start=datetime.datetime(2012,1,27,18,0), play_end=datetime.datetime(2012,1,27,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,1,28,18,0), play_end=datetime.datetime(2012,1,28,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,1,29,18,0), play_end=datetime.datetime(2012,1,29,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,4,28,18,0), play_end=datetime.datetime(2012,4,28,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,4,29,18,0), play_end=datetime.datetime(2012,4,29,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,8,31,18,0), play_end=datetime.datetime(2012,8,31,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,9,1,18,0), play_end=datetime.datetime(2012,9,1,23,0), location=u'Mölndalsvägen'),
+  #                  Session(play_start=datetime.datetime(2012,9,2,18,0), play_end=datetime.datetime(2012,9,2,23,0), location=u'Mölndalsvägen')]
+  # cd6k.save()
     
     # gil1 = GeneratorInputList(name=u'Korhiv start letter').save()
     # gil2 = GeneratorInputList(name=u'Korhiv middle syllables').save()

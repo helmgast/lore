@@ -7,15 +7,20 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
-
+from datetime import datetime
 from hashlib import md5
 
+import math
+
+from flask import flash
+
 from baseuser import BaseUser, create_token
-from misc import now, Choices, slugify, translate_action, datetime_options, choice_options, from7to365
+from misc import Choices, slugify, translate_action, datetime_options, choice_options, from7to365, \
+    numerical_options
 from flask_babel import lazy_gettext as _
-from flask_mongoengine import Document  # Enhanced document
+from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
-                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField)
+                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField)
 
 import logging
 from flask import current_app
@@ -27,19 +32,22 @@ UserStatus = Choices(
     active=_('Active'),
     deleted=_('Deleted'))
 
+# TODO deprecate
 AuthServices = Choices(
     google='Google',
     facebook='Facebook')
 
 
+# TODO deprecate
 class ExternalAuth(EmbeddedDocument):
-    id = StringField(required=True, choices=AuthServices.to_tuples())
+    id = StringField(required=True)
     long_token = StringField()
     emails = ListField(EmailField())
 
 
+# TODO deprecate
 class UserEvent(EmbeddedDocument):
-    created = DateTimeField(default=now())
+    created = DateTimeField(default=datetime.utcnow)
     action = StringField()
     instance = GenericReferenceField()
     message = StringField()
@@ -55,18 +63,27 @@ class User(Document, BaseUser):
     # but in case where username is created, we want to allow empty values
     # Currently it's only a display name, not used for URLs!
     username = StringField(max_length=60, verbose_name=_('Username'))
-    password = StringField(max_length=60, verbose_name=_('Password'))
     email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
     realname = StringField(max_length=60, verbose_name=_('Real name'))
     location = StringField(max_length=60, verbose_name=_('Location'))
     description = StringField(
         verbose_name=_('Description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
     xp = IntField(default=0, verbose_name=_('XP'))
-    join_date = DateTimeField(default=now(), verbose_name=_('Join Date'))
+    join_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Join Date'))
     last_login = DateTimeField(verbose_name=_('Last login'))
     # msglog = ReferenceField(Conversation)
     status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
+    hidden = BooleanField(default=False)
     admin = BooleanField(default=False)
+
+    # Uses string instead of Class to avoid circular import
+    publishers_newsletters = ListField(ReferenceField('Publisher'))
+    world_newsletters = ListField(ReferenceField('World'))
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))
+    following = ListField(ReferenceField('self'), verbose_name=_('Following'))
+
+    # TODO deprecate
+    password = StringField(max_length=60, verbose_name=_('Password'))
     newsletter = BooleanField(default=True)
     google_auth = EmbeddedDocumentField(ExternalAuth)
     facebook_auth = EmbeddedDocumentField(ExternalAuth)
@@ -79,6 +96,19 @@ class User(Document, BaseUser):
         if self.password and len(self.password) <= 40:
             self.set_password(self.password)
 
+    def clean(self):
+        # if self.username and self.location and self.description and self.images:
+        #     # Profile is completed
+        #     self.log(action='completed_profile', resource=self)  # metric is 1
+        self.recalculate_xp()
+
+    def recalculate_xp(self):
+        xp = Event.objects(user=self).sum('xp')
+        if xp != self.xp:
+            self.xp = xp
+            return True
+        return False
+
     def display_name(self):
         return self.__unicode__()
 
@@ -86,12 +116,12 @@ class User(Document, BaseUser):
         return self.username or (self.realname.split(' ')[0] if self.realname else None) or self.email.split('@')[0]
 
     def full_string(self):
-        return "%s (%s)" % (self.username, self.realname)
+        return u"%s (%s)" % (self.username, self.realname)
 
-    def log(self, action, instance, message='', metric=0):
-        ue = UserEvent(action=action, instance=instance, message=message, xp=metric)
-        self.event_log.insert(0, ue)  # insert at beginning to always have latest actions first
-        self.save()
+    def log(self, action, resource, message='', metric=1.0):
+        ev = Event(user=self, action=action, resource=resource, message=message, metric=metric)
+        ev.save()
+        return ev.xp
 
     def create_token(self):
         return create_token(self.email)
@@ -107,55 +137,76 @@ class User(Document, BaseUser):
         # TODO to also allow username here
         return self.id
 
-    def messages(self):
-        return Message.objects(user=self).order_by('-pub_date')
-
-    def get_most_recent_conversation_with(self, recipients):
-        # A private conversation is one which is only between this user
-        # and the given recipients, with no other users
-        if not recipients:
-            raise ValueError('Empty list of recipients')
-        if not isinstance(recipients, list) or not isinstance(recipients[0], User):
-            raise TypeError('Expects a list of User')
-        logger.info("recipients is list of %s, first item is %s", type(recipients[0]), recipients[0])
-        recipients = recipients + [self]
-        # All conversations where all recipients are present and the length of the lists are the same
-        return Conversation.objects(members__all=recipients, members__size=len(recipients))
 
     def gravatar_url(self, size=48):
         return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
 
 User.status.filter_options = choice_options('status', User.status.choices)
 User.last_login.filter_options = datetime_options('last_login', from7to365)
 User.join_date.filter_options = datetime_options('join_date', from7to365)
+User.xp.filter_options = numerical_options('xp', [0, 50, 100, 200])
+
+class Event(Document):
+    meta = {
+        'ordering': ['-created']
+    }
+
+    action = StringField(required=True, max_length=62, unique_with=(['created', 'user']))  # URL-friendly name
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    user = ReferenceField(User, verbose_name=_('User'))
+    resource = GenericReferenceField(verbose_name=_('Resource'))
+    message = StringField(max_length=500, verbose_name=_('Message'))
+    metric = FloatField(default=1.0, verbose_name=_('Metric'))
+    xp = IntField(default=0, verbose_name=_('XP'))
+
+    def clean(self):
+        self.xp = Event.calculate_xp(self)
+
+    def action_string(self):
+        return translate_action(self.action, self.resource)
+
+    @staticmethod
+    def calculate_xp(event):
+        if event.action in xp_actions:
+            count = len(Event.objects(user=event.user, action=event.action)) + 1
+            if isPower(count, xp_actions[event.action]['base']):
+                xp = xp_actions[event.action]['func'](event.metric)
+                if xp:
+                    flash(_('%(action)s: %(xp)s XP awarded to %(user)s', action=event.action_string(), xp=xp, user=event.user, ), 'info')
+                return xp
+        return 0
+
+# When we add an Event, we check below formulas for XP per metric.
+# However, we need to throttle new XP, which we do by counting number of same action from same user before
+# We do this with an exponential period, which means we award XP with an ever-growing interval. Different XP actions
+# can have a different base value:
+#  base=0: only first event will ever count
+#  base=1: every event will count
+#  base=2: 1st, 2nd, 4th, 8th, etc event will count
+#  base=3: and so on
+# We can count these events throughout all history or for a limited time period, thus resetting the counter
 
 
-class Conversation(Document):
-    modified_date = DateTimeField(default=now())
-    members = ListField(ReferenceField(User))
-    title = StringField(max_length=60)
-    topic = StringField(max_length=60)
+xp_actions = {
+    'patch': {'func': lambda x: int(5*x), 'base':2},  # Patched a resource
+    'post': {'func': lambda x: int(10*x), 'base':2},  # Posted a new resource
+    'get': {'func': lambda x: int(1*x), 'base':2},  # Visit a page
+    'comment': {'func': lambda x: int(3*x), 'base':2},  # Posted a disqus comment (TBD)
+    'completed_profile': {'func': lambda x: int(10*x), 'base':0},  # Completed profile
+    'purchase': {'func': lambda x: int(x), 'base':1},  # 1 per SEK, with fixed FX
+    'share': {'func': lambda x: int(3*x), 'base':2},  # Initiate a share on Facebook etc (TBD)
+}
 
-    members.verbose_name = _('members')
-    title.verbose_name = _('title')
-    topic.verbose_name = _('topic')
-
-    meta = {'ordering': ['-modified_date']}
-
-    def is_private(self):
-        return self.members and len(self.members) > 1
-
-    def messages(self):
-        return Message.objects(conversation=self)
-
-    def last_message(self):
-        return Message.objects(conversation=self).order_by('-pub_date').first()  # first only or none
-
-    def __unicode__(self):
-        return u'conversation'
-
+def isPower(num, base):
+    if base == 1: return True
+    if base == 0: return num == 1
+    if base < 0: return False
+    return base ** int(math.log(num, base) + .5) == num
 
 MemberRoles = Choices(
     master=_('Master'),
@@ -175,19 +226,24 @@ class Member(EmbeddedDocument):
 # and players
 GroupTypes = Choices(gamegroup=_('Game Group'),
                      worldgroup=_('World Group'),
-                     articlegroup=_('Article Group'))
+                     articlegroup=_('Article Group'),
+                     newsletter=_('Newsletter'))
 
 
 class Group(Document):
-    name = StringField(max_length=60, required=True)
+    slug = StringField(unique=True, max_length=62)  # URL-friendly name
+    title = StringField(max_length=60, required=True, verbose_name=_('Title'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     location = StringField(max_length=60)
-    slug = StringField()
-    description = StringField()  # TODO should have a max length, but if we set it, won't be rendered as TextArea
     type = StringField(choices=GroupTypes.to_tuples(), default=GroupTypes.gamegroup)
+
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))
     members = ListField(EmbeddedDocumentField(Member))
 
     def __unicode__(self):
-        return self.name
+        return self.title or u''
 
     def add_masters(self, new_masters):
         self.members.extend([Member(user=m, role=MemberRoles.master) for m in new_masters])
@@ -195,27 +251,17 @@ class Group(Document):
     def add_members(self, new_members):
         self.members.extend([Member(user=m, role=MemberRoles.master) for m in new_members])
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        return super(Group, self).save(*args, **kwargs)
+    def clean(self):
+        self.updated = datetime.utcnow()
+        self.slug = slugify(self.title)
 
     def members_as_users(self):
         return [m.user for m in self.members]
 
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
 
-# A message from a user (to everyone)
-class Message(Document):
-    user = ReferenceField(User)
-    content = StringField()
-    pub_date = DateTimeField(default=now())
-    conversation = ReferenceField(Conversation)
-
-    # readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
-
-    def __unicode__(self):
-        return '%s: %s' % (self.user, self.content)
-
-    def clean(self):
-        if self.conversation:
-            self.conversation.modified_date = self.pub_date
-            self.conversation.save()
+Group.type.filter_options = choice_options('type', Group.type.choices)
+Group.created.filter_options = datetime_options('created', from7to365)
+Group.updated.filter_options = datetime_options('updated', from7to365)

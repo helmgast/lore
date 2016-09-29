@@ -16,7 +16,7 @@ import os.path
 from bson import ObjectId
 from flask import request, current_app, g
 from flask_babel import gettext, lazy_gettext as _
-from flask_mongoengine import Document  # Enhanced document
+from misc import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
                          ReferenceField, ListField, FileField, IntField)
@@ -81,7 +81,7 @@ class FileAsset(Document):
 
     # Variables reflecting the underlying file object, updates on clean
     source_filename = StringField(max_length=60, verbose_name=_('Filename'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Uploaded on'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Uploaded on'))
     content_type = StringField()
     length = IntField()
     width = IntField()
@@ -252,7 +252,7 @@ class ImageAsset(Document):
     tags = ListField(StringField(max_length=30))
     mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
     creator = ReferenceField(User, verbose_name=_('Creator'))
-    created_date = DateTimeField(default=datetime.utcnow(), verbose_name=_('Created date'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created date'))
     title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
 

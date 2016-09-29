@@ -491,7 +491,6 @@ def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
 
-
 PublishersView.register_with_access(world_app, 'publisher')
 WorldsView.register_with_access(world_app, 'world')
 ArticlesView.register_with_access(world_app, 'article')

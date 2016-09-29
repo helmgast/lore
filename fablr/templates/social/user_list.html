@@ -2,7 +2,57 @@
 
 {% block content_title %}{{ _('All gamers') }}{% endblock %}
 
+{% block sidebar %}{{ super() }}
+    {% if filter_options %}
+        {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login']) }}
+
+        <h5>{% trans %}By username{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['username'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By XP{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['xp'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By location{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['location'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By join date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['join_date'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By last login date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['last_login'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
-  {% include "social/user_list_component.html" %}
-  {% include "includes/pagination.html" %}
+    {% if users %}
+        {% include "social/user_list_component.html" %}
+        {% include "includes/pagination.html" %}
+    {% else %}
+        <h3>{{ _('No users visible!') }}</h3>
+    {% endif %}
 {% endblock %}

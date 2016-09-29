@@ -9,11 +9,12 @@
 """
 
 import os
-import time
 import urllib
 
+import sys
 from flask import Flask, render_template, request, url_for, flash, g
 from flaskext.markdown import Markdown
+from pymongo.errors import ConnectionFailure
 
 from fablr.controller.resource import ResourceError, get_root_template
 from fablr.model import misc
@@ -145,7 +146,6 @@ def configure_extensions(app):
     extensions.babel.init_app(app)  # Automatically adds the extension to Jinja as well
     # Register callback that tells which language to serve
     extensions.babel.localeselector(extensions.get_locale)
-    # print extensions.babel.list_translations(), app.config['BABEL_DEFAULT_LOCALE']
     # Secure forms
     extensions.csrf.init_app(app)
 
@@ -161,6 +161,10 @@ def configure_extensions(app):
         extensions.toolbar.init_app(app)
 
 
+# Dummy function that returns what it was passed
+def identity(ob):
+    return ob
+
 def configure_blueprints(app):
     with app.app_context():
         from model.user import User, ExternalAuth
@@ -172,14 +176,12 @@ def configure_blueprints(app):
         from controller.world import world_app as world
         from controller.social import social
         from controller.generator import generator
-        from controller.campaign import campaign_app as campaign
         from controller.shop import shop_app as shop
         from controller.mailer import mail_app as mail
 
         app.register_blueprint(world)
         app.register_blueprint(generator, url_prefix='/generator')
         app.register_blueprint(social, url_prefix='/social')
-        app.register_blueprint(campaign, url_prefix='/campaign')
         app.register_blueprint(shop, url_prefix='/shop')
         app.register_blueprint(asset_app, url_prefix='/assets')
         app.register_blueprint(mail, url_prefix='/mail')
@@ -245,6 +247,12 @@ def configure_hooks(app):
     #     print err
     #     raise err
 
+    @app.errorhandler(ConnectionFailure)
+    def db_error(err):
+        print err
+        raise err
+        return "<body>No database</body>", 500
+
     @app.errorhandler(ResourceError)
     def resource_error(err):
         # if request.args.has_key('debug') and current_app.debug:
@@ -257,23 +265,34 @@ def configure_hooks(app):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-    @app.before_request
-    def before_request():
-        g.start = time.time()
-
-    @app.teardown_request
-    def teardown_request(exception=None):
-        if 'start' in g:
-            diff = time.time() - g.start
-            if diff > 500:
-                app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
-
 
                 # Print rules in alphabetic order
                 # for rule in app.url_map.iter_rules():
                 #     print rule.__repr__(), rule.subdomain
                 # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
                 #   print rule.__repr__(), rule.subdomain
+
+    @app.route('/')
+    def homepage():
+        return "Homepage"
+
+    # @app.before_request
+    # def before_request():
+    #     g.start = time.time()
+    #
+    # @app.teardown_request
+    # def teardown_request(exception=None):
+    #     if 'start' in g:
+    #         diff = time.time() - g.start
+    #         if diff > 500:
+    #             app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
+    #
+    #
+    #             # Print rules in alphabetic order
+    #             # for rule in app.url_map.iter_rules():
+    #             #     print rule.__repr__(), rule.subdomain
+    #             # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
+    #             #   print rule.__repr__(), rule.subdomain
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

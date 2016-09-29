@@ -2,46 +2,99 @@
 
 {% block content_title %}{{ _('Groups') }}{% endblock %}
 
-{% block sidebar %}{{super()}}
-<ul class="nav nav-pills nav-stacked">
-<li class="nav-header">{{ _('Actions') }}</li>
-<li><a href="{{ url_for('.group_form_new') }}"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-</ul>
+{% block sidebar %}{{ super() }}
+    <ul class="nav nav-pills nav-stacked">
+        <li><a href="{{ url_for('social.GroupsView:get', id='post') }}"><span
+                class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
+    </ul>
+    {% if filter_options %}
+        {{ MACRO.LIST_CONTROLS(model, args, ['type', 'location', 'created', 'updated']) }}
+
+        <h5>{% trans %}By type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['type'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By location{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['location'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By created{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By updated{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['updated'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+    {% if groups %}
+        {% if args.get('view', 'table') == 'card' %}
+            <div class="cards">
+                <div class="row">
+                    {% for group in groups %}
+                        <div class="col-md-4 product">
+                            {% if group.get_feature_image %}
+                                <img class="product-image"
+                                     src="{{ url_for('image_thumb', slug=group.get_feature_image.slug) }}">
+                            {% endif %}
+                            <div class="product-intro">
+                                <h3>
+                                    <a href="{{ url_for('social.GroupsView:get', id=group.slug) }}">{{ group }}</a>
+                                </h3>
+                            </div>
+                            <ul class="product-details">
+                                <li class="product-type">{{ group.location }}</li>
+                                <li class="product-type">{{ group.created.strftime('%Y-%m-%d %H:%M') }}</li>
+                            </ul>
+                        </div>
+                        {% if loop.index is divisibleby 3 %}</div>
+                            <div class="row">{% endif %}
+                    {% endfor %}
+                    </div>
+            </div>
+        {% else %}
+            <table class="table table-striped table-hover">
+                <thead>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'location') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'updated') }}</th>
+                </thead>
+                <tbody>
+                {% for group in groups %}
+                    <tr>
+                        <td><a href="{{ url_for('social.GroupsView:get', id=group.slug) }}">
+                            <strong class="message_name">{{ group.title|default(_('No data'), true) }}</strong>
+                        </a></td>
+                        <td>{{ group.get_field_display('type') }}</td>
+                        <td>{{ group.location|default }}</td>
+                        <td class="small">{{ group.created.strftime('%Y-%m-%d %H:%M') if group.created }}</td>
+                        <td class="small">{{ group.updated.strftime('%Y-%m-%d %H:%M') if group.updated }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
 
-  <div class="row">
-    <h2>{{ _('My groups') }}</h2> 
-    {% for group in my_master_groups %}
-    <div class="col-md-4 well">
-      <h3>{{ group.name }}</h3>
-      {% set members=group.members() %}
-      {% include "social/group_member_view.html" %}
-    </div>
-    {% endfor %}
-  </div>
+        {% include "includes/pagination.html" %}
+    {% else %}
+        <h3>{{ _('No users visible!') }}</h3>
+    {% endif %}
 
-  <div class="row">
-    <div class="col-md-4">
-      <h3>{{ _('All groups') }}</h3>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>{{ _('Group name') }}</th>
-            <th>{{ _('Location') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for group in groups %}
-            <tr class="user-tablerow">
-              <td><strong><a href="{{ url_for('.group_view', group=group.slug) }}">{{group.name}}</a></strong></td>
-              <td>{{group.location}}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-  </div>
-  {% include "includes/pagination.html" %}
 {% endblock %}

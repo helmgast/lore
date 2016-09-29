@@ -95,7 +95,7 @@ def db_setup(reset=False):
 def validate_model():
     init_app(app)
     is_ok = True
-    pkgs = ['model.campaign', 'model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
+    pkgs = ['model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
     for doc in Document._subclasses:  # Ugly way of finding all document type
         if doc != 'Document':  # Ignore base type (since we don't own it)
             for pkg in pkgs:

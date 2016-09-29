@@ -10,6 +10,7 @@
 from collections import namedtuple
 from datetime import timedelta, date, datetime
 
+import flask_mongoengine
 import wtforms as wtf
 from flask_wtf import Form  # secure form
 from slugify import slugify as ext_slugify
@@ -26,6 +27,9 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 METHODS = frozenset(['POST', 'PUT', 'PATCH', 'DELETE'])
 
+Document = flask_mongoengine.Document
+# Turns off automatic index creation because if DB errors out, it would happen at import time
+Document._meta['auto_create_index'] = False
 
 def slugify(title):
     slug = ext_slugify(title)
@@ -58,10 +62,6 @@ def list_to_choices(list):
     return [(s.lower(), _(s)) for s in list]
 
 
-def now():
-    return datetime.now;
-
-
 def translate_action(action, item):
     if action == 'patch':
         return _('"%(item)s" edited', item=item)
@@ -71,8 +71,12 @@ def translate_action(action, item):
         return _('"%(item)s" replaced', item=item)
     elif action == 'delete':
         return _('"%(item)s" deleted', item=item)
+    elif action == 'completed_profile':
+        return _('Completed profile')
+    elif action == 'purchase':
+        return _('Purchased "%(item)s"', item=item)
     else:
-        return ''
+        return action
 
 
 FilterOption = namedtuple('FilterOption', 'kwargs label')
@@ -156,8 +160,8 @@ def distinct_options(field_name, model):
 
 
 Languages = Choices(
-    en=_('English'),
-    sv=_('Swedish')
+    en=u'English',
+    sv=u'Svenska'
 )
 
 Countries = Choices(

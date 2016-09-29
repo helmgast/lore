@@ -3,32 +3,35 @@
 
 
 {% block content_title %}{{ user }}{% endblock %}
-{% block content_tagline %}{{ user.realname if user.username else ''}}{% endblock %}
+{% block content_tagline %}{{ user.xp }} XP{% endblock %}
 
-{% block sidebar %}{{super()}}
-  <ul class="nav nav-pills nav-stacked">
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
-    <li><a class="{{privileged}}" href="{{ url_for('.user_form_edit', user=user.identifier()) }}"><span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-    {% endcall %}
-    {% call(privileged) MACRO.IS_ADMIN() %}
-    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Send reset link')}}</a></li>
-    <li role="presentation"><a class="{{privileged}}" href="{{url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true)}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Copy reset link')}}</a></li>
-    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='remind', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Remind login')}}</a></li>
-    {% endcall %}
-  </ul>
-{%endblock%}
+{% block sidebar %}{{ super() }}
+    <ul class="nav nav-pills nav-stacked">
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+            <li><a class="{{ privileged }}"
+                   href="{{ url_for('social.UsersView:get', intent='patch', id=user.identifier()) }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+        {% endcall %}
+        {#    {% call(privileged) MACRO.IS_ADMIN() %}#}
+        {#    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Send reset link')}}</a></li>#}
+        {#    <li role="presentation"><a class="{{privileged}}" href="{{url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true)}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Copy reset link')}}</a></li>#}
+        {#    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='remind', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Remind login')}}</a></li>#}
+        {#    {% endcall %}#}
+    </ul>
+{% endblock %}
 
 {% block content %}
-{% if user_form %}<form class="form-horizontal" role="form" id='userform' method="post" action="{{ user_form.action_url }}">{%endif%}
+    {% if user_form %}
+        <form class="form-horizontal" role="form" id='userform' method="post" action="{{ action_url }}">{% endif %}
 <div class="row">
-  <div class="col-md-4">
-    <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
-    {% if user_form or g.user==user %}
-      {{ _('Pick your avatar at') }} <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
-    {% endif %}
-    {#<h4 class="pagination-centered">{{ user.exp }} XP</h4>#}
-    <div class="btn-toolbar">
-{#        {% if resouxrce.op == 'view' %}
+    <div class="col-md-4">
+        <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
+        {% if user_form or g.user==user %}
+            {{ _('Pick your avatar at') }} <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
+        {% endif %}
+        {#<h4 class="pagination-centered">{{ user.exp }} XP</h4>#}
+        <div class="btn-toolbar">
+            {#        {% if resouxrce.op == 'view' %}
       <button type="button" class="btn btn-small m_action
         {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
         {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">{{ _('Follow') }} ...
@@ -41,86 +44,110 @@
       <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=true)}}" data-action-type="modal">{{ _('Send message') }}</button>
     {% endif %}
 #}
+        </div>
     </div>
-  </div>
-  <div class="col-md-8">
-    {% if user_form %}
-      {% if user and user==g.user %}
-        {{ MACRO.FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9')}}
-{#        {{ MACRO.FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
+    <div class="col-md-8">
+        {% if user_form %}
+            {% if user and user==g.user %}
+                {{ MACRO.FORM_FIELD_COLS(user_form.username, 'col-sm-3', 'col-sm-9') }}
+                {#        {{ MACRO.FORM_FIELD_COLS(user_form.password, 'col-sm-3', 'col-sm-9')}}
         {{ MACRO.FORM_FIELD_COLS(user_form.confirm, 'col-sm-3', 'col-sm-9')}} #}
-      {% endif %}
-{#      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}} #}
-      {{ MACRO.FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9')}}
-      {{ MACRO.FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9')}}
-      {{ MACRO.FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9')}}
-    {% else %}
-    <table class="table">
-      <tr><td><strong>{{ _('Email') }}</strong></td>
-      <td><small>{{ user.email }}</small></td></tr>
-      <tr><td><strong>{{ _('Username') }}</strong></td>
-      <td><small>{{ user.username|default(_('No data'), true) }}</small></td></tr>
-      <tr><td><strong>{{ _('Name') }}</strong></td>
-      <td>{{ user.realname|default(_('No data'), true) }}</td></tr>
-      <tr><td><strong>{{ _('Location') }}</strong></td>
-      <td>{{ user.location|default(_('No data'), true) }}</td></tr>
-      <tr><td><strong>{{ _('Joined') }}</strong></td>
-      <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td></tr>
-      <tr><td><strong>{{ _('Last login') }}</strong></td>
-      <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else _('Not logged in yet') }}</td></tr>
+            {% endif %}
+            {#      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}} #}
+            {{ MACRO.FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9') }}
+            {{ MACRO.FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9') }}
+            {{ MACRO.FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9') }}
+        {% else %}
+            <table class="table">
+                {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+                    <tr>
+                        <td><strong>{{ _('Email') }}</strong></td>
+                        <td>
+                            <small>{{ user.email }}</small>
+                        </td>
+                    </tr>
+                {% endcall %}
+
+                <tr>
+                    <td><strong>{{ _('Username') }}</strong></td>
+                    <td>
+                        <small>{{ user.username|default(_('No data'), true) }}</small>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>{{ _('Name') }}</strong></td>
+                    <td>{{ user.realname|default(_('No data'), true) }}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{ _('Location') }}</strong></td>
+                    <td>{{ user.location|default(_('No data'), true) }}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{ _('Joined') }}</strong></td>
+                    <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{ _('Last login') }}</strong></td>
+                    <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else _('Not logged in yet') }}</td>
+                </tr>
 
 
-      {% call(privileged) MACRO.IS_ADMIN() %}
-      <tr><td><strong>{{ _('Authentication') }}</strong></td>
-        <td>{{ user.auth_type() }}
-        </td></tr>
-      {#<tr><td><strong>{{ _('Join link') }}</strong></td>
+                {% call(privileged) MACRO.IS_ADMIN() %}
+                    <tr>
+                        <td><strong>{{ _('Authentication') }}</strong></td>
+                        <td>{{ user.auth_type() }}
+                        </td>
+                    </tr>
+                    {#<tr><td><strong>{{ _('Join link') }}</strong></td>
         <td style="max-width: 200px; word-wrap: break-word;"><a
-        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.user_view', user=user.id), reset=true) }}">{{
+        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.UsersView:get', id=user.id), reset=true) }}">{{
           url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}</a></td>
       </tr>#}
-      {% endcall %}
-      {#
+                {% endcall %}
+                {#
       <tr><td><strong>{{ _('Following') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
       <tr><td><strong>{{ _('Followers') }}</strong></td>
       <td><span class="badge">N/A</span></td></tr>
       #}
-    </table>
-    <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|default(_('Empty...'), true) }}</div>
-    {% call(privileged) MACRO.IS_ADMIN() %}
-    {% if user.event_log %}
-    <h3>{{_('History')}}</h3>
-    <table class="table">
-      <tr>
-        <th>{{_('Time')}}</th>
-        <th>{{_('Activity')}}</th>
-        <th>{{_('XP')}}</th>
-      </tr>
-      {% for event in user.event_log %}
-      <tr>
-        <td><small>{{event.created.strftime('%Y-%m-%d %H:%M') }}</small></td>
-        <td>{{event.action_string()}}</td>
-        <td>{{event.xp}}</td>
-      </tr>
-      {% endfor %}
-    </table>
-    {% endif %}
-    {% endcall %}
-    {% endif %}
-  </div>
+            </table>
+            <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|default(_('Empty...'), true) }}</div>
+            {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+
+            <h3>{{ _('History') }}</h3>
+            <table class="table">
+                <tr>
+                    <th>{{ _('Time') }}</th>
+                    <th>{{ _('Activity') }}</th>
+                    <th>{{ _('XP') }}</th>
+                </tr>
+                {% for event in events %}
+                    <tr>
+                        <td>
+                            <small>{{ event.created.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                        </td>
+                        <td>{{ event.action_string() }}</td>
+                        <td>{{ event.xp }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            {% endcall %}
+
+        {% endif %}
+    </div>
 </div>
 
 {% if user_form %}
-<div class="row form-actions">
-  {{ user_form.csrf_token }}
-  <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-  <a href="{{ url_for('.user_view', user=user.identifier()) }}" class="btn btn-default">{{ _('Cancel') }}</a>
-  {#{% if op!='new' %}
+    <div class="row form-actions">
+        {{ user_form.csrf_token }}
+        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
+        <a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}"
+           class="btn btn-default">{{ _('Cancel') }}</a>
+        {#{% if op!='new' %}
   <a href="{{url_for('.user_delete', user=user.identifier())}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
   {% endif %}#}
-</div></form>{%endif%}
-{#
+    </div></form>{% endif %}
+    {#
 <div class="row">
   <div class="col-md-5">
   <h4>{{ _('Groups') }}</h4>
@@ -138,7 +165,7 @@
     <tbody>
         {% for group in groups %}
         <tr class="user-tablerow">
-          <td><strong><a href="{{ url_for('social.group_view', group=group.slug) }}">{{group.name}}</a></strong></td>
+          <td><strong><a href="{{ url_for('social.GroupsView:get', id=group.slug) }}">{{group.name}}</a></strong></td>
           <td>{{group.location}}</td>
           <td><span class="badge badge-info">{{group.members|length }}</span></td>
           <td>#TODO</td>

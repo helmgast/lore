@@ -23,7 +23,7 @@ from wtforms.utils import unset_value
 from wtforms.validators import InputRequired, Email, DataRequired, NumberRange
 
 from fablr.controller.mailer import send_mail
-from fablr.controller.resource import (ResourceRoutingStrategy, ResourceAccessPolicy,
+from fablr.controller.resource import (ResourceAccessPolicy,
                                        RacModelConverter, RacBaseForm, ResourceView,
                                        filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                        Authorization)
@@ -437,7 +437,9 @@ class OrdersView(ResourceView):
                 )
                 cart_order.status = OrderStatus.paid
                 cart_order.charge_id = charge['id']
+
                 r.commit()
+                g.user.log(action='purchase', resource=cart_order, metric=cart_order.total_price_sek())
                 send_mail(recipients=[g.user.email], message_subject=_('Thank you for your order!'), mail_type='order',
                           cc=[current_app.config['MAIL_DEFAULT_SENDER']], user=g.user, order=cart_order, publisher=publisher)
             except stripe.error.CardError as ce:

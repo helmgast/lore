@@ -12,7 +12,7 @@
       {% if member_form %}
       	<input type="hidden" name="members-{{index}}-user" value="{{member.user.identifier()}}" />
       {% endif %}
-      <a href="{{ url_for('.user_view', user=member.user.identifier()) }}">
+      <a href="{{ url_for('social.UsersView:get', id=member.user.identifier()) }}">
       <img class="avatar" src="{{ member.user.gravatar_url() }}" />
       <strong class="message_name">{{member.user}}</strong></a>
     </td>
