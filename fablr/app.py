@@ -76,7 +76,7 @@ def init_app(app):
         configure_extensions(app)
 
         # Configure all blueprints
-        auth = configure_blueprints(app)
+        configure_blueprints(app)
 
         configure_hooks(app)
 
@@ -166,11 +166,12 @@ def identity(ob):
 
 def configure_blueprints(app):
     with app.app_context():
-        from model.user import User, ExternalAuth
-        from controller.auth import Auth
-        from extensions import db
-        auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
+        # TODO deprecate
+        app.access_policy = {}  # Set up dict for access policies to be stored in
+        app.login_required = identity
+        app.admin_required = identity
 
+        from controller.auth import auth_app as auth_app
         from controller.asset import asset_app as asset_app
         from controller.world import world_app as world
         from controller.social import social
@@ -178,6 +179,7 @@ def configure_blueprints(app):
         from controller.shop import shop_app as shop
         from controller.mailer import mail_app as mail
 
+        app.register_blueprint(auth_app, url_prefix='/auth')
         app.register_blueprint(world)
         app.register_blueprint(generator, url_prefix='/generator')
         app.register_blueprint(social, url_prefix='/social')
@@ -186,8 +188,6 @@ def configure_blueprints(app):
         app.register_blueprint(mail, url_prefix='/mail')
         from sparkpost import SparkPost
         mail.sparkpost_client = SparkPost(app.config['SPARKPOST_API_KEY'])
-
-    return auth
 
 
 def configure_hooks(app):
