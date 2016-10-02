@@ -178,7 +178,7 @@ class WorldsView(ResourceView):
                             field_args={'readers': {'allow_blank': True}})
 
     @route('/')
-    def home(self, publisher_):
+    def publisher_home(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         world = WorldMeta(publisher)
         articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
@@ -221,18 +221,19 @@ class WorldsView(ResourceView):
     #     return r
 
     def get(self, publisher_, id):
-        publisher = Publisher.objects(slug=publisher_).first_or_404()
-        if publisher.languages:
-            g.available_locales = publisher.languages
-        if id == 'post':
-            r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
-            r.auth_or_abort(instance=publisher) # check auth scoped to publisher, as we want to create new
-        else:
-            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
-            r.auth_or_abort()
-            set_theme(r, 'world', r.world.slug)
-        set_theme(r, 'publisher', publisher.slug)
-        return r
+        return redirect(url_for('world.ArticlesView:world_home', publisher_=publisher_, world_=id))
+        # publisher = Publisher.objects(slug=publisher_).first_or_404()
+        # if publisher.languages:
+        #     g.available_locales = publisher.languages
+        # if id == 'post':
+        #     r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+        #     r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+        # else:
+        #     r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
+        #     r.auth_or_abort()
+        #     set_theme(r, 'world', r.world.slug)
+        # set_theme(r, 'publisher', publisher.slug)
+        # return r
 
     def post(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
@@ -313,6 +314,21 @@ class ArticlesView(ResourceView):
                             base_class=ArticleBaseForm,
                             exclude=['slug', 'feature_image'],
                             converter=RacModelConverter())
+
+    @route('/')
+    def world_home(self, publisher_, world_):
+        publisher = Publisher.objects(slug=publisher_).first_or_404()
+        if publisher.languages:
+            g.available_locales = publisher.languages
+        if world_ == 'post':
+            r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+        else:
+            r = ItemResponse(WorldsView, [('world', World.objects(slug=world_).first_or_404()), ('publisher', publisher)])
+            r.auth_or_abort()
+            set_theme(r, 'world', r.world.slug)
+        set_theme(r, 'publisher', publisher.slug)
+        return r
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
     def index(self, publisher_, world_):

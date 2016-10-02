@@ -932,6 +932,11 @@ important;
     }
 }
 
+.product-intro {
+    flex: 1 1 auto;
+    overflow: scroll;
+}
+
 .product-intro h3 {
     margin-top: 5px;
     font-size: 18px;
@@ -942,7 +947,9 @@ important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0px;
+    padding: 6px;
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
 
 .product-details li {

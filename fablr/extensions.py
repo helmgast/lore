@@ -79,6 +79,18 @@ class MethodRewriteMiddleware(object):
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
+    allow_subdomains = True
+    # def __init__(self, string, **kwargs):
+    #     if current_app and current_app.config.get('ALLOW_SUBDOMAINS', False) and 'subdomain' in kwargs:
+    #         string = "/sub_" + kwargs.pop('subdomain') + "/" + string.lstrip("/")
+    #     super(FablrRule, self).__init__(string, **kwargs)
+
+    def bind(self, map, rebind=False):
+        subd = self.subdomain or map.default_subdomain
+        if subd and not self.allow_subdomains:
+            self.rule = "/sub_" + subd + "/" + self.rule.lstrip("/")
+            self.subdomain = ''  # Hack, parent bind will check if None, '' will be read as having one
+        super(FablrRule, self).bind(map, rebind)
 
     def match_compare_key(self):
         t = (self.rule.startswith('/<'),) + super(FablrRule, self).match_compare_key()

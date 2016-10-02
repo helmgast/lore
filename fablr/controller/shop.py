@@ -26,7 +26,7 @@ from fablr.controller.mailer import send_mail
 from fablr.controller.resource import (ResourceAccessPolicy,
                                        RacModelConverter, RacBaseForm, ResourceView,
                                        filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
-                                       Authorization)
+                                       Authorization, route_subdomain)
 from fablr.controller.world import set_theme
 from fablr.model.asset import FileAsset
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock
@@ -41,7 +41,7 @@ stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
 
 
 def get_or_create_stock(publisher_ref):
-    stock = Stock.objects(publisher=publisher_ref).get()
+    stock = Stock.objects(publisher=publisher_ref).first()
     if not stock:
         stock = Stock(publisher=publisher_ref)
         stock.save()
@@ -65,7 +65,6 @@ class ProductsView(ResourceView):
                             exclude=['slug'],
                             converter=RacModelConverter())
     form_class.stock_count = IntegerField(validators=[DataRequired(), NumberRange(min=-1)])
-
 
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -146,14 +145,15 @@ class ProductsView(ResourceView):
         # r.auth_or_abort()
         # set_theme(r, 'publisher', publisher.slug)
         # r.commit()
-        # stock = Stock.objects(publisher=publisher).get()
+        # stock = Stock.objects(publisher=publisher).first()
         # if stock:
         #     del stock.stock_count[product.slug]
         #     stock.save()
         # return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
 
-
 ProductsView.register_with_access(shop_app, 'product')
+
+shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
 CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such

@@ -106,7 +106,7 @@
     <div class="row">
         {% for publisher in publishers %}
             <div class="col-md-5 world_item">
-                <h3><a href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
+                <h3><a href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
                     <br>
                     <small>{{ publisher.description }}</small>
                 </h3>

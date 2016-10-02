@@ -146,6 +146,7 @@ def configure_extensions(app):
     app.json_encoder = extensions.MongoJSONEncoder
 
     app.url_rule_class = extensions.FablrRule
+    app.url_rule_class.allow_subdomains = app.config['ALLOW_SUBDOMAINS']
 
     # @app.url_defaults
     def default_publisher(endpoint, values):
@@ -208,7 +209,7 @@ def configure_blueprints(app):
         from controller.shop import shop_app as shop
         from controller.mailer import mail_app as mail
 
-        app.register_blueprint(world)
+        app.register_blueprint(world)  # No url_prefix as we build it up as /<world>/<article>
         app.register_blueprint(generator, url_prefix='/generator')
         app.register_blueprint(social, url_prefix='/social')
         app.register_blueprint(shop, url_prefix='/shop')

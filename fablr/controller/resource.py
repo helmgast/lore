@@ -15,6 +15,7 @@ import pprint
 import re
 import sys
 
+import flask
 from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
@@ -499,12 +500,19 @@ class ResourceView(FlaskView):
     @classmethod
     def register_with_access(cls, app, domain):
         current_app.access_policy[domain] = cls.access_policy
-        if not current_app.config.get('ALLOW_SUBDOMAINS', False) and getattr(cls, 'subdomain', None):
-            cls.route_base = "/sub_" + cls.subdomain + "/" + cls.get_route_base()
-            del cls.subdomain
+        # if not current_app.config.get('ALLOW_SUBDOMAINS', False) and getattr(cls, 'subdomain', None):
+        #     cls.route_base = "/sub_" + cls.subdomain + "/" + cls.get_route_base()
+        #     del cls.subdomain
         return cls.register(app)
 
         # def register(): # overload register method to register access policies automatically
+
+
+def route_subdomain(app, rule, **options):
+    # if not current_app.config.get('ALLOW_SUBDOMAINS', False) and 'subdomain' in options:
+    #     sub = options.pop('subdomain')
+    #     rule = "/sub_" + sub + "/" + rule.lstrip("/")
+    return app.route(rule, **options)
 
 
 # WTForm Basics to remember

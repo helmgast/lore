@@ -148,3 +148,5 @@ class GroupsView(ResourceView):
         abort(501)  # Not implemented
 
 GroupsView.register_with_access(social, 'group')
+
+social.add_url_rule('/', endpoint='social_home', redirect_to='/social/users/')

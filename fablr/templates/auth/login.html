@@ -5,7 +5,6 @@
 
 {% block mainblock %}
 <form id="auth-form" method="post" action="" class="col-sm-6 col-sm-offset-3" role="form">
-  {% include "includes/flash.html" %}
   <h2 class="form-signin-heading">{{ _('Please sign in') }}</h2>
   <input type="hidden" name="next" value="{{ next }}" />
 

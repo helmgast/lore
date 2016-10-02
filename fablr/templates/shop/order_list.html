@@ -77,7 +77,7 @@
                 <div class="row">
                     {% for order in orders %}
                         <div class="col-md-4 product">
-                            {% if order.order_lines[0].product.get_feature_image %}<img class="product-image"
+                            {% if len(order.order_lines) and order.order_lines[0].product.get_feature_image %}<img class="product-image"
                                                                                     src="{{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}">
                                 </a>{% endif %}
                             <div class="product-intro">

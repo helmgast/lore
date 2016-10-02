@@ -56,7 +56,7 @@
 {% block container_class %}container{% endblock %}
 
 {% block navbar_brand %}
-    <a class="navbar-brand" href="{{ url_for('world.WorldsView:home', publisher_=publisher.slug) }}">
+    <a class="navbar-brand" href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">
         <img src="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}"
              style="width: 128px; height: 128px; margin-top: -35px">
     </a>
