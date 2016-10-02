@@ -30,6 +30,8 @@ class SecretConfig(object):
     # Used by Sparkpost email sending API
     SPARKPOST_API_KEY = 'SECRET'
 
+    ROLLBAR_TOKEN = 'SECRET'
+
     # Used to access Auth0 authentication backend
     AUTH0_CLIENT_SECRET = 'SECRET'
     AUTH0_CLIENT_ID = 'SECRET'

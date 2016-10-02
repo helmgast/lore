@@ -12,7 +12,10 @@ import os
 import urllib
 
 import sys
+
+import rollbar
 from flask import Flask, render_template, request, url_for, flash, g
+from flask import got_request_exception
 from flaskext.markdown import Markdown
 from pymongo.errors import ConnectionFailure
 
@@ -83,6 +86,14 @@ def init_app(app):
         app.config['initiated'] = True
 
 
+def my_report_exception(app, exception):
+    # Modified from rollbar.contrib.flask to automatically insert user data
+    if g.user:
+        person = {'id': g.user.id, 'email': g.user.email}
+    else:
+        person = {'id': request.remote_addr if request else 'non-request'}
+    rollbar.report_exc_info(request=request, payload_data={'person': person})
+
 def configure_logging(app):
     # Custom logging that always goes to stderr
     import logging
@@ -94,6 +105,25 @@ def configure_logging(app):
         app.logger.setLevel(logging.DEBUG)
     else:
         app.logger.setLevel(logging.INFO)
+
+    rollbar_token = app.config['ROLLBAR_TOKEN']
+    if app.debug:
+        if rollbar_token != 'SECRET':  # SECRET is default, non-set state
+            rollbar.init(
+                rollbar_token,
+                # environment name
+                'fablr',
+                # server root directory, makes tracebacks prettier
+                root=os.path.dirname(os.path.realpath(__file__)),
+                # flask already sets up logging
+                allow_logging_basic_config=False)
+
+            # send exceptions from `app` to rollbar, using flask's signal system.
+            # got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+            got_request_exception.connect(my_report_exception, app)
+            rollbar.report_message("Initiated rollbar on %s" % app.config.get('VERSION', None), 'info')
+        else:
+            app.logger.warning("No ROLLBAR_TOKEN given in config, cannot be started")
 
         # app.logger.debug("Debug")
         # app.logger.info("Info")
