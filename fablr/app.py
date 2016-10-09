@@ -107,7 +107,7 @@ def configure_logging(app):
         app.logger.setLevel(logging.INFO)
 
     rollbar_token = app.config['ROLLBAR_TOKEN']
-    if app.debug:
+    if not app.debug:
         if rollbar_token != 'SECRET':  # SECRET is default, non-set state
             rollbar.init(
                 rollbar_token,

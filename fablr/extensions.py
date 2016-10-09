@@ -120,8 +120,8 @@ def start_db(app):
     db_config = {
         'MONGODB_SETTINGS': {
             'host': app.config['MONGODB_HOST'],
-            'connectTimeoutMS': 50,
-            'serverSelectionTimeoutMS': 50
+            'connectTimeoutMS': 1000,
+            'serverSelectionTimeoutMS': 1000
         }
     }
     db.init_app(app, config=db_config)
