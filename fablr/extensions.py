@@ -22,6 +22,7 @@ from pymongo.errors import ConnectionFailure
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
+# from flask_webpack import Webpack
 import time
 
 toolbar = DebugToolbarExtension()
@@ -117,14 +118,14 @@ db = MongoEngine()
 def start_db(app):
     # while True:
     dbstring = db_config_string(app)
-    db_config = {
-        'MONGODB_SETTINGS': {
-            'host': app.config['MONGODB_HOST'],
-            'connectTimeoutMS': 1000,
-            'serverSelectionTimeoutMS': 1000
-        }
-    }
-    db.init_app(app, config=db_config)
+    # db_config = {
+    #     'MONGODB_SETTINGS': {
+    #         'host': app.config['MONGODB_HOST'],
+    #         'connectTimeoutMS': 1000,
+    #         'serverSelectionTimeoutMS': 1000
+    #     }
+    # }
+    db.init_app(app)
     # try:
     with app.app_context():
         num_collections = len(db.connection.get_default_database().collection_names(False))
@@ -179,6 +180,8 @@ def get_locale():
 from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
+
+# webpack = Webpack()
 
 from markdown.extensions import Extension
 from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
