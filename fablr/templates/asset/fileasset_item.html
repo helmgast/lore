@@ -22,7 +22,7 @@
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(fileasset_form.slug) }}
-                    {{ MACRO.FORM_FIELD(fileasset_form.description) }}
+                    {{ MACRO.FORM_FIELD(fileasset_form.description, controlclass=" content-editor") }}
                     {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
 
                     <div class="form-group">
@@ -34,6 +34,9 @@
                     {{ MACRO.FORM_FIELD(fileasset_form.source_page_url) }}
                     {{ MACRO.FORM_FIELD(fileasset_form.tags, controlclass=' selectize-tags') }}
                     {{ fileasset_form.csrf_token }}
+                </div>
+                <div class="col-md-4">
+                    <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive" src="{{ url_for('image', slug = fileasset.slug) }}"></a>
                 </div>
             </div>
             <div class="row form-actions">
@@ -60,7 +63,7 @@
                     <tr>
                         <td><strong>{{ _('Description') }}</strong></td>
                         <td>
-                            <small>{{ fileasset.description }}</small>
+                            <small>{{ fileasset.description|markdown }}</small>
                         </td>
                     </tr>
                     <tr>
@@ -122,7 +125,7 @@
                 </table>
             </div>
             <div class="col-md-4">
-                <a class="lightbox" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive" src="{{ url_for('image', slug = fileasset.slug) }}"></a>
+                <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive" src="{{ url_for('image', slug = fileasset.slug) }}"></a>
             </div>
         </div>
     {% endif %}

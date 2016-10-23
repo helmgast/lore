@@ -6,5 +6,5 @@
 {%- if scene -%}
     <div class="btn-group"><a class="btn btn-xs" title="Edit"><span class="glyphicon glyphicon-edit"></span></a><a class="btn btn-xs" title="Remove"><span class="glyphicon glyphicon-trash"></span></a></div>
 {%- endif -%}
-<div class="collapse scene-text {{ 'in' if form }}">{{ form.description if form else scene.description }}</div>
+<div class="collapse scene-text {{ 'in' if form }}">{{ form.description|markdown if form else scene.description|markdown }}</div>
 {%- endmacro -%}

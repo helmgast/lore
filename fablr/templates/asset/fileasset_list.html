@@ -89,49 +89,50 @@
         {% endif %}
     {% else %}
         {% set patch = args.get('intent',None)=='patch' %}
-        {% if modal %}
+        {% if modal %}  {# Modal buttons for quick filtering #}
             <div class="btn-set margin-below">
                 {% for opt in filter_options['tags'] %}
-                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs, full_url=true) }}
                 {% endfor %}
-                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}) }}
-                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}) }}
+                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}, full_url=true) }}
+                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}, full_url=true) }}
                 <small>Insert position:</small>
                 <div id="insert-position" class="btn-group" data-toggle="buttons">
                     <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-center' }}">
                         <input type="radio" name="gallery-class" id="gallery-center"
                                autocomplete="off" {{ 'checked' if args.get('position')=='gallery-center' }}>
-                        <svg>
-                            <use xlink:href="{{ iconpath }}#fablr-gallery-center"></use>
+                        <svg class="fablr-icon-btn">
+                            <use xlink:href="#fablr-gallery-center"></use>
                         </svg>
                     </label>
                     <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-wide' }}">
                         <input type="radio" name="gallery-class" id="gallery-wide"
                                autocomplete="off" {{ 'checked' if args.get('position')=='gallery-wide' }}>
-                        <svg>
-                            <use xlink:href="{{ iconpath }}#fablr-gallery-wide"></use>
+                        <svg class="fablr-icon-btn">
+                            <use xlink:href="#fablr-gallery-wide"></use>
                         </svg>
                     </label>
                     <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-side' }}">
                         <input type="radio" name="gallery-class" id="gallery-side"
                                autocomplete="off" {{ 'checked' if args.get('position')=='gallery-side' }}>
-                        <svg>
-                            <use xlink:href="{{ iconpath }}#fablr-gallery-side"></use>
+                        <svg class="fablr-icon-btn">
+                            <use xlink:href="#fablr-gallery-side"></use>
                         </svg>
                     </label>
                 </div>
             </div>
 
         {% endif %}
+
         {% if files %}
-            <div class="gallery zoom-container" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
+            <div class="gallery" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
                 {% if patch and args.get('out') != 'fragment' %}
-                    <div class="file-upload form-group gallery-item" data-aspect="2">
+                    <div class="file-upload form-group gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(2.0) }}">
                         <form action="{{ url_for('assets.FileAssetsView:post', _external=true) }}">
                             {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
                             <label for="file_data"
                                    title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">
-                                <img src="{{ url_for('static', filename='img/icon/upload2-1.svg') }}">
+                                    <svg class="fablr-icon-stretch"><use xlink:href="#fablr-upload2-1"/></svg>
                             </label>
                             <input type="text" class="form-control input-sm" id="source_file_url" pattern="https?://.+"
                                    placeholder="{% trans %}Paste file URL here{% endtrans %}">
@@ -156,7 +157,7 @@
                             {% set selection='' %}
                         {% endif %}
                         <figure class="gallery-item{{ ' selectable' if patch }}"
-                                data-aspect="{{ fileasset.aspect_ratio() }}"
+                                style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}"
                                 {{ selection }} id="{{ fileasset.id }}">
                             {% if not patch %}
                                 <a class="zoomable" href="#">
@@ -185,12 +186,4 @@
             <h3>{{ _('No file assets available!') }}</h3>
         {% endif %}
     {% endif %}
-{% endblock %}
-
-{% block final %}
-    {{ super() }}
-    {#<script type="text/javascript" src="{{ url_for('static', filename="js/minimal-lightbox.js") }}"></script>#}
-    {#    <script>#}
-    {#    var fablr_lightbox = true;#}
-    {#    </script>#}
 {% endblock %}

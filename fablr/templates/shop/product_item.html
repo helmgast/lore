@@ -31,11 +31,11 @@
                     {{ MACRO.FORM_FIELD(product_form.title) }}
                     {{ MACRO.FORM_FIELD(product_form.product_number) }}
                     {{ MACRO.FORM_FIELD(product_form.project_code) }}
-                    {{ MACRO.FORM_FIELD(product_form.description) }}
+                    {{ MACRO.FORM_FIELD(product_form.description, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(product_form.publisher) }}
                     {{ MACRO.FORM_FIELD(product_form.world) }}
                     {{ MACRO.FORM_FIELD(product_form.family) }}
-                    {{ MACRO.FORM_FIELD(product_form.created, controlclass="flatpickr", data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
+                    {{ MACRO.FORM_FIELD(product_form.created, controlclass="flatpickr-datetime") }}
                     {{ MACRO.FORM_FIELD(product_form.type) }}
                     {{ MACRO.FORM_FIELD(product_form.price, required=true) }}
                     {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
@@ -47,10 +47,10 @@
                 <div class="col-md-4">
                     {# data_end becomes data-end automatically #}
                     {{ MACRO.FORM_FIELD(product_form.images, controlclass='fileselect', data_endpoint=
-                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image') }}
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
                     {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='fileselect', data_endpoint=
-                        url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document') }}
+                        url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document feature-images') }}
                 </div>
             </div>
             <div class="row form-actions">
@@ -164,7 +164,7 @@
                     </tr>
                 </table>
 
-                <div class="well">{{ product.description }}</div>
+                <div class="well">{{ product.description|markdown }}</div>
                 {% if product.downloadable_files %}
                     <div class="well"><strong>{{ _('Downloadable files') }}</strong>
                         {% for file_asset in product.downloadable_files %}
@@ -172,18 +172,18 @@
                                     href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
                                     class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
                                 <strong>{{ file_asset.slug }}</strong>{% endif %}{% if file_asset.description %}:
-                                {{ file_asset.description }}{% endif %}</div>
+                                {{ file_asset.description|markdown }}{% endif %}</div>
                         {% endfor %}
                     </div>
                 {% endif %}
             </div>
-            <div class="col-md-4 zoom-container">
+            <div class="col-md-4">
                 <a id="{{ product.slug }}" class="btn btn-block btn-primary buy-link"
                    href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
                 <br>
-                <div class="gallery feature-images" data-maxaspect="1">
+                <div class="gallery feature-images">
                     {% for img in product.images %}
-                        <a class="gallery-item zoomable" data-aspect="{{ img.aspect_ratio() }}"
+                        <a class="gallery-item zoomable" style="{{ MACRO.GALLERY_ITEM_STYLE(img.aspect_ratio()) }}"
                            href="{{ url_for('image', slug = img.slug) }}"><img
                                 src="{{ url_for('image', slug = img.slug) }}"></a>
                     {% else %}

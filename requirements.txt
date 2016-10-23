@@ -1,5 +1,5 @@
 # git+git://github.com/mitsuhiko/flask#egg=Flask-dev
-# Install specific dev version that supports turning off Set Cookie
+
 Babel==2.3.4
 facebook-sdk==2.0.0
 Flask-Babel==0.11.1

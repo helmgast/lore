@@ -73,7 +73,7 @@
                         </a>
                     {% endif %}
                     <div class="media-body">
-                        {{ product.description }}
+                        {{ product.description|markdown }}
                         <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><em
                                 style="white-space: nowrap;">{{ _('Read more') }}</em></a>
                     </div>
@@ -97,7 +97,7 @@
                         <td>
                             <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
                         </td>
-                        <td>{{ product.description }}</td>
+                        <td>{{ product.description|markdown }}</td>
                         <td>{{ product.get_field_display('type') }}</td>
                         <td>{{ product.world|default(_('No data'),true) }}</td>
                         <td class="nobr">{{ product.created.strftime('%Y-%m-%d') }}</td>
@@ -123,7 +123,7 @@
                                 <h3>
                                     <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
                                 </h3>
-                                <p>{{ product.description }}</p>
+                                <p>{{ product.description|markdown }}</p>
                             </div>
                             <ul class="product-details">
                                 <li class="product-type">{{ product.get_field_display('type') }}</li>
@@ -146,28 +146,8 @@
 {% endblock %}
 
 {% block final %}
-    {{ super() }}
     <script>
-        $('.buy-link').click(function (e) {
-            var jqxhr = $.ajax({
-                        url: "{{ url_for('shop.OrdersView:buy', publisher=publisher.slug)}}",
-                        type: 'patch',
-                        data: {product: this.id},
-                        headers: {'X-CSRFToken': "{{ csrf_token() }}"},
-                        dataType: 'json',
-                        success: function (data) {
-                            $c = $('#cart-counter')
-                            $c.find('.badge').html(data.instance.total_items)
-                            $c.addClass("bounce").one('animationend webkitAnimationEnd oAnimationEnd', function () {
-                                $c.removeClass("bounce");
-                            });
-                            $c.addClass("highlight")
-                        }
-                    })
-                    .fail(function( jqXHR, textStatus, errorThrown) {
-                        flash_error(jqXHR.responseText)
-                    });
-            e.preventDefault();
-        });
+        var SHOP_URL = "{{ url_for('shop.OrdersView:buy', publisher=publisher.slug)}}"
     </script>
+    {{ super() }}
 {% endblock %}

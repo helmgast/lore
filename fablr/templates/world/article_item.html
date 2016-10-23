@@ -13,10 +13,6 @@
     {% set title = article.title %}
 {% endif %}
 
-{% if request.args.has_key('markdown') %}
-    {% set markdown=true %}
-{% endif %}
-
 
 {% block content_title %}{{ article.long_title() if article else (world or publisher) ~ ' - ' ~ title }}{% endblock %}
 
@@ -31,15 +27,8 @@
 {% endblock %}
 
 {% block cssimports %}
-    <link href="{{ url_for('static', filename='js/trumbo/ui/trumbowyg.min.css') }}" rel="stylesheet">
-    {# Add before parent so we can override trumbo's styles #}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" type="text/css" media="print"/>
-{% endblock %}
-
-{% block jsimports %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='js/autosize.min.js') }}"></script>
 {% endblock %}
 
 
@@ -93,12 +82,8 @@
                     {% if article_form.title.errors %}
                         <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
                     {% endif %}
-
-                    {% if not markdown %}
-                        <div id="content-editor"
-                             placeholder="{{ _('Start writing here!') }}">{{ article_form.content.data|markdown|trim if article_form.content.data }}</div>
-                    {% endif %}
-                    {{ article_form.content(class="form-control", placeholder=_('Start writing here!')) }}
+                    {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
+                    <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
 
                 </div>
                 <div class="col-md-3 article_comment form-horizontal">
@@ -116,7 +101,7 @@
 
                     {{ MACRO.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
                     {{ MACRO.FORM_FIELD_COLS(article_form.status, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr',
+                    {{ MACRO.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
                     {{ MACRO.FORM_FIELD_COLS(article_form.type, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
@@ -204,7 +189,7 @@
         </div>
 
         <div class="row">
-            <div class="col-md-9 article_text zoom-container">
+            <div class="col-md-9 article_text">
                 {{ article.content|markdown if article.content else _("Content") }}
             </div>
             {#            <div class="col-md-3 article_comment">#}
@@ -219,61 +204,8 @@
     {% endif %} {% endblock %}
 
 {% block final %}
-    {# Add trumbowyg before as it's used by app.js #}
-    {% include 'includes/trumbowyg-icons.html' %}
-    <script src="{{ url_for('static', filename='js/trumbo/trumbowyg.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/htmlparser.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/upndown.bundle.min.js') }}"></script>
-
-    {#    <script src="{{ url_for('static', filename='js/trumbo/plugins/fileselect/trumbowyg.fileselect.js') }}"></script>#}
-    {#    <script src="{{ url_for('static', filename='js/trumbo/plugins/upload/trumbowyg.upload.js') }}"></script>#}
-
     {% if article %}
         {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', publisher_=publisher.slug, world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
     {% endif %}
     {{ super() }}
-
-    <script>
-        {% if article_form %}
-
-            autosize($('textarea'))
-
-            var image_select_url = "{{ url_for('assets.FileAssetsView:index', out='fragment', intent='patch', view='card',
-                type='image', choice='multiple')|safe }}"
-            // Load required scripts.
-            {% if not markdown %}
-                var und = new upndown();
-                var $textarea = $('#content')
-                var $editor = $('#content-editor');
-                var options = {}
-                $.each($('#images').find('option'), function (i, el) {
-                    options[el.text.trim()] = el.value;
-                })
-                $editor.trumbowyg({
-                            btns: ['strong', 'em', '|', 'formatting', 'unorderedList', 'orderedList', 'link', ['fileselect', 'wide', 'center', 'portrait'], 'fullscreen'],
-                            autogrow: true,
-                            removeformatPasted: true,
-                            image_select_url: image_select_url
-                        })
-                        .on('tbwchange', function (e) {
-                            und.convert($editor.trumbowyg('html'), function (err, markdown) {
-                                if (err) {
-                                    console.log(err);
-                                } else {
-                                    $textarea.val(markdown);
-                                    autosize.update($textarea); // resize Textarea
-                                    var selection = []
-                                    markdown.replace(/!\[.*\]\(.*\/([^)]+)\)/g, function (string, match) {
-                                        selection.push(options[match]);
-                                    });
-                                    $('#images').val(selection)
-                                }
-                            })
-
-                        })
-                $editor.trigger('tbwchange')
-
-            {% endif %}
-        {% endif %}
-    </script>
 {% endblock %}

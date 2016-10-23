@@ -40,7 +40,7 @@
     </div>
     <div class="col-md-6">
         <h5>{{ _('Details') }}</h5>
-        {{ MACRO.FORM_FIELD(group_form.description) if group_form else group.description }}
+        {{ MACRO.FORM_FIELD(group_form.description, controlclass=' content-editor') if group_form else group.description|markdown }}
         {{ MACRO.FORM_FIELD(group_form.title) if group_form else group.title }}
         {{ MACRO.FORM_FIELD(group_form.location) if group_form else group.location }}
 

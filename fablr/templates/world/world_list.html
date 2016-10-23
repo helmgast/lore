@@ -19,7 +19,7 @@
     {% for world in worlds %}
     <div class="col-md-5 col-xs-6 world_item">
         <h3><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)}}">{{ world.title }}</a>
-        <br><small>{{ world.description }}</small></h3>
+        <br><small>{{ world.description|markdown }}</small></h3>
         <hr>
         <dl class="dl-horizontal">
             <dt>{{ _('Publisher') }}</dt>

@@ -25,7 +25,7 @@
 
 {% block sidebar %}
     {% if world and world.get_feature_image %}
-        <a class="lightbox" href="{{ url_for('image', slug = world.get_feature_image.slug) }}"><img class="img-responsive"
+        <a class="zoomable" href="{{ url_for('image', slug = world.get_feature_image.slug) }}"><img class="img-responsive"
                                                                                                 src="{{ url_for('image', slug = world.get_feature_image.slug) }}"></a>
     {% endif %}
     <div>
@@ -66,7 +66,7 @@
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(world_form.title) }}
-                    {{ MACRO.FORM_FIELD(world_form.description) }}
+                    {{ MACRO.FORM_FIELD(world_form.description, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
@@ -94,7 +94,7 @@
     {% else %}
         <div class="row">
             <div class="col-md-6">
-                <p class="worldDesc">{{ world.description }}</p>
+                <p class="worldDesc">{{ world.description|markdown }}</p>
             </div>
             <div class="col-md-4">
                 <p class="text-center"><a class="btn btn-lg btn-info" href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug, world=world.slug) }}">

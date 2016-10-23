@@ -20,7 +20,7 @@
                 {% endif %}
                 <div class="media-body">
                     <h4 class="media-heading">{{ product.title }}</h4>
-                    {{ product.description }}
+                    {{ product.description|markdown }}
                 </div>
             </li>
         {% endfor %}

@@ -14,7 +14,7 @@ import urllib
 from datetime import datetime
 from bson.objectid import ObjectId
 from flask_mongoengine import Pagination, MongoEngine, DynamicDocument
-from flask.json import JSONEncoder
+from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
 from markdown.treeprocessors import Treeprocessor
 from mongoengine import Document, QuerySet, ConnectionError
@@ -22,7 +22,6 @@ from pymongo.errors import ConnectionFailure
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
-# from flask_webpack import Webpack
 import time
 
 toolbar = DebugToolbarExtension()
@@ -181,13 +180,22 @@ from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
 
-# webpack = Webpack()
+# Inspired by flask webpack but without any cruft
+def init_assets(app):
+    try:
+        with app.open_resource(app.config.get('WEBPACK_MANIFEST_PATH'), 'r') as stats_json:
+            stats = load(stats_json)
+            app.assets = stats['assets']
+    except IOError as io:
+        raise RuntimeError(
+            "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
+            "it must point to a valid json file.")
+
 
 from markdown.extensions import Extension
 from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
 from markdown.util import etree
 import re
-
 
 class GalleryList(Treeprocessor):
     def run(self, root):
@@ -202,8 +210,10 @@ class GalleryList(Treeprocessor):
                         a_el = etree.Element('a')
                         a_el.set('href', '#')
                         a_el.set('class', 'zoomable')
-                        a_el.extend(list(li))  # add all children of the list
+                        a_el.extend(list(li))  # list(li) enumerates all children of li
                         for e in li:
+                            # Image to set its aspect once loaded, we dont know width/height here
+                            e.set('onload', 'set_aspect(this)')
                             li.remove(e)
                         li.append(a_el)
                         # imgs = list(ul.iterfind('.//img'))
@@ -213,27 +223,8 @@ class GalleryList(Treeprocessor):
                         # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
 
-class NewImagePattern(ImagePattern):
-    def handleMatch(self, m):
-        el = super(NewImagePattern, self).handleMatch(m)
-        alt = el.get('alt')
-        src = el.get('src')
-        # parts = alt.rsplit('|', 1)
-        # el.set('alt', parts[0])
-        # cl = parts[1] if len(parts) == 2 else None
-        # if cl:
-        #     el.set('class', cl)
-        a_el = etree.Element('p')
-        a_el.set('class', 'gallery')
-        a_el.append(el)
-        # a_el.set('href', src)
-        return a_el
-
-
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
-        # Insert instance of 'mypattern' before 'references' pattern
-        # md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
         md.treeprocessors['gallery'] = GalleryList()
 
 

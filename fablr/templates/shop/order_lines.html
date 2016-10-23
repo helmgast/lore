@@ -27,7 +27,7 @@
                                 <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=line.product.slug, _external=true) }}">{{ line.product.title }}</a>
                                 <small>{{ line.product.get_field_display('type') }}</small>
                             </h3>
-                            <p>{{ line.product.description }}</p>
+                            <p>{{ line.product.description|markdown }}</p>
                             {% if order and order.is_paid_or_shipped() %}
                                 {% if line.product.downloadable_files %}
                                     <div><strong>{{ _('Downloadable files') }}</strong>
@@ -37,7 +37,7 @@
                                                         class="glyphicon glyphicon-download"></span>
                                                     <strong>{{ file_asset.title }}</strong>
                                                 </a>{% if file_asset.description %}:
-                                                {{ file_asset.description }}{% endif %}
+                                                {{ file_asset.description|markdown }}{% endif %}
                                             </div>
                                         {% endfor %}
                                     </div>

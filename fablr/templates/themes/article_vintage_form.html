@@ -9,7 +9,7 @@
 {% block cssimports %}
     {{ super() }}
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Special+Elite);
+        @import url(//fonts.googleapis.com/css?family=Special+Elite);
 
         textarea {
             resize: none;
@@ -128,7 +128,7 @@
 
                         {{ MACRO2.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
                         {{ MACRO2.FORM_FIELD_COLS(article_form.status, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                        {{ MACRO2.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr',
+                        {{ MACRO2.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
                         {{ MACRO2.FORM_FIELD_COLS(article_form.type, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}

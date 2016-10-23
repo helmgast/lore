@@ -20,7 +20,8 @@ class Config(object):
     ALLOW_SUBDOMAINS = False
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
-
+    WEBPACK_MANIFEST_PATH = '../static/manifest.json'
+    WEBPACK_ASSETS_URL = '/static/'
 
 class SecretConfig(object):
     # Replace with mongodb://user:pass@host/dbname in config.py file

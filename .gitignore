@@ -5,10 +5,11 @@
 *.pot
 *.sublime*
 fablr/config.py
-gfx/
+front/
 /.idea
 /.settings
 /.project
 /.pydevproject
 /Raconteur.egg-info
 /venv
+/node_modules

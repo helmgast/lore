@@ -4,111 +4,185 @@
 {% block container_class %}container{% endblock %}
 
 {% block mainblock %}
-  {{ self.content() }}
+    {{ self.content() }}
 {% endblock %}
 
 {% block content %}
-  <div class="jumbotron">
-    <h1>{{ _('Welcome to') }} Fablr</h1>
-    {% include "newsletter.html" %}
-    <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
-  </div>
-<h1>{{ _('For game masters') }}</h1>
-  <div class="row">
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_009_magic.png">
-      <h3> {{ _('Plan your campaigns and game sessions') }}</h3>
-      <p>
-      {{ _('Not only schedule sessions, but create and organize the content you need,
+    <div class="jumbotron">
+        <h1>{{ _('Welcome to') }} Fablr</h1>
+        {% include "newsletter.html" %}
+        <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
+    </div>
+    <h1>{{ _('For game masters') }}</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-magic-wand"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Plan your campaigns and game sessions') }}</h3>
+                    {{ _('Not only schedule sessions, but create and organize the content you need,
       such as handouts, images, music, texts, etc. Use it as your notes for playing,
       but also easily share it on a screen or with the players during a session!') }}
-      </p>
-    </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_043_group.png">
-      <h3>{{ _('Manage your group and find new players') }}</h3>
-      <p>
-      {{ _('Manage your groups and campaigns. Find new players based on their location
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-md-4">
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-group"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Manage your group and find new players') }}</h3>
+                    {{ _('Manage your groups and campaigns. Find new players based on their location
       and preferences and invite them! Easily communicate with the whole group.') }}
-      </p>
-    </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_351_book_open.png">
-      <h3>{{ _('Read and write about the game world') }}</h3>
-      <p>
-       {{ _('The game is a wiki, and you can both build your own content, and merge it
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-md-4">
+
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-read"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Read and write about the game world') }}</h3>
+                    {{ _('The game is a wiki, and you can both build your own content, and merge it
        with the official content. Together with other game masters, you are constantly
        evolving the game world!') }}
-      </p>
-    </div>   
-  </div>
-  <h1>{{ _('For players') }}</h1>
-  <div class="row">
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_162_ipad.png">
-      <h3>{{ _('Use on your phone or tablet when gaming!') }}</h3>
-      <p>
-       {{ _('Have your character digitally on your phone, and update instantly as you
-       increase in level or evolve your character.') }}
-      </p>
+                </div>
+            </div>
+
+        </div>
     </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_159_picture.png">
-      <h3>{{ _('See handouts for the current scene') }}</h3>
-      <p>
-       {{ _('Access all the content for a scene in the game, such as NPC portraits,
+    <h1>{{ _('For players') }}</h1>
+    <div class="row">
+        <div class="col-md-4">
+
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-mobile"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Use on your phone or tablet when gaming!') }}</h3>
+                    {{ _('Have your character digitally on your phone, and update instantly as you
+       increase in level or evolve your character.') }}
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-md-4">
+
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-images"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('See handouts for the current scene') }}</h3>
+                    {{ _('Access all the content for a scene in the game, such as NPC portraits,
        maps, articles, etc. Excellent to read up and make use of those times
        your character is not active in the game.') }}
-      </p>
-    </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_010_envelope.png">
-      <h3>{{ _('Send messages and take notes') }}</h3>
-      <p>
-        {{ _('Use a super-simple messaging function to send secret notes to the game
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-envelope"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Send messages and take notes') }}</h3>
+                    {{ _('Use a super-simple messaging function to send secret notes to the game
         master, other players or to take shorter side discussions. Let your
         character events be auto-shared with the others. Take easy notes.') }}
-      </p>
-    </div>   
-  </div>
-  <h1>{{ _('For game authors') }}</h1>
-  <div class="row">
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_071_book.png">
-      <h3>{{ _('Publish your game digitally and interactively!') }}</h3>
-      <p>
-        {{ _('People use laptops, tablets and phones at the game sessions all the time.
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <h1>{{ _('For game authors') }}</h1>
+    <div class="row">
+        <div class="col-md-4">
+
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-book"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Publish your game digitally and interactively!') }}</h3>
+                    {{ _('People use laptops, tablets and phones at the game sessions all the time.
         Let people read and browse your game right there. Go beyond boring PDFs
         and offer content with hyperlinks and videos.') }}
-      </p>
-    </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_340_globe.png">
-      <h3>{{ _("Offer a world that changes as player's explore it") }}</h3>
-      <p>
-       {{ _('Your game can be an instant wiki, where people can edit and even things
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-md-4">
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-earth"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _("Offer a world that changes as player's explore it") }}</h3>
+                    {{ _('Your game can be an instant wiki, where people can edit and even things
        that happen in sessions can be auto-posted back to the world. Your game
        world is alive!') }}
-      </p>
-    </div>
-    <div class="col-md-4">
-      <img class="bs-icon" src="/static/img/glyphicons/glyphicons_326_share.png">
-      <h3>{{ _('Build a social community around your game') }}</h3>
-      <p>
-       {{ _("Build a social following around your game, that doesn't limit you to only
+                </div>
+            </div>
+
+        </div>
+        <div class="col-md-4">
+            <div class="media">
+                <div class="media-left">
+                    <svg class="fablr-icon">
+                        <use xlink:href="#fablr-share"></use>
+                    </svg>
+                </div>
+                <div class="media-body">
+                    <h3 class="media-heading">{{ _('Build a social community around your game') }}</h3>
+                    {{ _("Build a social following around your game, that doesn't limit you to only
        one platform. Make it easy for people to share articles and game sessions
        on their social networks.") }}
-      </p>
-    </div>   
-  </div>
+                </div>
+            </div>
 
-  <h1>{{ _('Our publishers') }}</h1>
+
+        </div>
+    </div>
+
+    <h1>{{ _('Our publishers') }}</h1>
     <div class="row">
         {% for publisher in publishers %}
             <div class="col-md-5 world_item">
-                <h3><a href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
+                <h3>
+                    <a href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
                     <br>
-                    <small>{{ publisher.description }}</small>
+                    <small>{{ publisher.description|markdown }}</small>
                 </h3>
             </div>
             {% if loop.index is divisibleby 2 %}</div>

@@ -27,7 +27,7 @@
             <div class="col-md-5 col-xs-6 publisher_item">
                 <h3><a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
                     <br>
-                    <small>{{ publisher.description }}</small>
+                    <small>{{ publisher.description|markdown }}</small>
                 </h3>
                 <hr>
                 <dl class="dl-horizontal">

@@ -127,16 +127,6 @@
                     <a class="btn btn-default" href="details">{{ _("Go back") }}</a>
                 </div>
                 <div class="col-md-offset-8">
-{#                  <script#}
-{#                    src="https://checkout.stripe.com/checkout.js" class="stripe-button"#}
-{#                    data-key="{{stripe_key}}"#}
-{#                    data-image="{{ url_for('static', filename='img/helmgast_512px.png') }}"#}
-{#                    data-name="Helmgast"#}
-{#                    data-description="{{order}}"#}
-{#                    data-currency="{{ order.currency }}"#}
-{#                    data-amount="{{ order.total_price_int() }}"#}
-{#                    data-locale="auto">#}
-{#                  </script>#}
                     <button type="submit" id="checkout" class="btn btn-primary btn-block btn-lg">{{ _('Pay order') }}
                         <span class="glyphicon glyphicon-credit-card"></span></button>
                     <small>For test, use VISA 4242424242424242, any expiry and CVC</small>
@@ -193,34 +183,6 @@
                         email: "{{order.email}}"
                     });
                 });
-
-                // function calcTotal(e) {
-                //   var $prod = $(e.delegateTarget)
-                //   var qty = parseInt((e.target && e.target.value) || "0")
-                //   var price = parseFloat(/[0-9.,]+/.exec($prod.find('.product-price').text())[0])
-                //   var total = $prod.find('.product-total').text()
-                //   total = total.replace(/[0-9.,]+/, qty*price)
-                //   $prod.find('.product-total').text(total)
-                //   calcGrandtotal()
-                // }
-                // function calcGrandtotal(e) {
-                //   var grandtot = $('.product-subtotals .product-price')
-                //   var sum = 0.0, num=0
-                //   $('.product').each(function() {
-                //     sum += parseFloat(/[0-9.,]+/.exec($(this).find('.product-total').text())[0])
-                //     num += parseInt($(this).find('.product-quantity').val())
-                //   })
-                //   grandtot.text(grandtot.text().replace(/[0-9.,]+/, sum))
-                //   $('#cart-counter').text(num)
-                // }
-                // $('.product').on('change', '.product-quantity', calcTotal)
-                // $('.product-list').on('rac.removed', calcGrandtotal)
-                // $('.product').each(function() {
-                //   calcTotal({delegateTarget:this,target:$(this).find('.product-quantity')[0]})
-                // })
-            // $('#formsave').click(function(e){
-            //   $.post('{{order_form.action_url}}', $('.order-cart').serialize());
-            // })
         </script>
         {% endif %}
     {% endif %}

@@ -1,9 +1,12 @@
 .idea/
 .settings/
 .project/
+node_modules/
 .pydevproject/
 Raconteur.egg-info/
 venv/
+assets/
+front/
 .git*
 *.pyc
 */*.pyc

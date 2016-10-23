@@ -23,12 +23,13 @@ from fablr.controller.resource import ResourceError, get_root_template
 
 
 def create_app(no_init=False, **kwargs):
-    the_app = Flask('fablr')  # Creates new flask instance
+    # Creates new flask instance, also keeps static at
+    the_app = Flask('fablr', static_folder='../static')
     config_string = "config from:"
     import default_config
     the_app.config.from_object(default_config.Config)  # Default config that applies to all deployments
     the_app.config.from_object(default_config.SecretConfig)  # Add dummy secrets
-    try:
+    try:  # Instead of silent=True, use try/except to be able to write config_string only if loaded
         the_app.config.from_pyfile('config.py', silent=False)  # Now override with custom settings if exist
         config_string += " file config.py, "
     except IOError:
@@ -149,11 +150,11 @@ def configure_extensions(app):
     app.url_rule_class.allow_subdomains = app.config['ALLOW_SUBDOMAINS']
 
     # @app.url_defaults
-    def default_publisher(endpoint, values):
-        if 'publisher' in values:
-            return
-        elif endpoint.startswith('world.'):
-            values['publisher'] = 'helmgast'
+    # def default_publisher(endpoint, values):
+    #     if 'publisher' in values:
+    #         return
+    #     elif endpoint.startswith('world.'):
+    #         values['publisher'] = 'helmgast'
 
     # Set fonts to allow cross origin, from different subdomains, when using development server
     if app.debug:
@@ -178,6 +179,8 @@ def configure_extensions(app):
     # Secure forms
     extensions.csrf.init_app(app)
 
+    extensions.init_assets(app)
+
     app.md = Markdown(app, extensions=['attr_list'])
     app.md.register_extension(extensions.AutolinkedImage)
 
@@ -185,9 +188,8 @@ def configure_extensions(app):
     app.jinja_env.filters['dict_without'] = extensions.dict_without
     app.jinja_env.filters['currentyear'] = extensions.currentyear
 
-    # Debug toolbar
-    if app.config.get('DEBUG_TB_ENABLED', False):
-        extensions.toolbar.init_app(app)
+    # Debug toolbar, will stop if DEBUG_TB_ENABLED = False or if not else if DEBUG=False
+    extensions.toolbar.init_app(app)
 
 
 # Dummy function that returns what it was passed
@@ -231,8 +233,7 @@ def configure_hooks(app):
     @app.context_processor
     def inject_access():
         return dict(access_policy=app.access_policy,
-                    locale_dict=Languages,
-                    iconpath=url_for('static', filename='img/icon/icons.svg'))
+                    locale_dict=Languages, debug=app.debug, assets=app.assets)
 
     @app.add_template_global
     def in_current_args(testargs):
