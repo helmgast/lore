@@ -1,58 +1,81 @@
+<style type="text/css">
+    .order_info {
+        width: 40%;
+        padding-right: 10%
+    }
+
+    @media only screen and (max-width: 600px) {
+        .order_info {
+            display: block !important;
+            width: 100% !important;
+        }
+    }
+</style>
+
 <!-- Order info-->
-<tr style="float: left">
-    <!-- Order/customer info-->
+<tr>
     <td>
-        <h3>{{ _('Order Info') }}</h3>
-        <table class="table table-condensed">
-            <tr>
-                <th width="30%">{{ _('Order ID') }}</th>
-                <td>
-                    <small>{{ order.id }}</small>
-                </td>
-            </tr>
-            <tr>
-                <th width="30%">{{ _('Name') }}</th>
-                <td>{{ order.user.realname|default(_('No name'), true) }}</td>
-            </tr>
-            <tr>
-                <th>{{ _('Email') }}</th>
-                <td>{{ order.user.email }}</td>
-            </tr>
-            <tr>
-                <th>{{ _('Created') }}</th>
-                <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            <tr>
-                <th>{{ _('Updated') }}</th>
-                <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td>
-            </tr>
-            <tr>
-                <th>{{ _('Status') }}</th>
-                <td>{{ order.get_status_display() }}</td>
-            </tr>
-        </table>
-    </td>
-</tr>
-<tr style="float: right">
-    <!-- Seller info-->
-    <td>
-        <h3>{{ _('Seller Info') }}</h3>
-        <table class="table table-condensed">
-            <tr>
-                <th width="30%">{{ _('Publisher') }}</th>
-                <td>Helmgast AB</td>
-            </tr>
-            <tr>
-                <th>{{ _('Email') }}</th>
-                <td><a href="mailto:info@helmgast.se">info@helmgast.se</a></td>
-            </tr>
-            <tr>
-                <th>{{ _('Address') }}</th>
-                <td>
-                    Värmlandsvägen 381<br>
-                    123 48 Farsta<br>
-                </td>
-            </tr>
-        </table>
-    </td>
+    <table width="100%">
+        <tr>
+            <!-- Order/customer info-->
+            <td align="center" valign="top" class="order_info">
+                <h3>{{ _('Order Info') }}</h3>
+                <table class="table table-condensed">
+                    <tr>
+                        <th width="30%">{{ _('Order ID') }}</th>
+                        <td>
+                            <small>{{ order.id }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th width="30%">{{ _('Name') }}</th>
+                        <td>{{ order.user.realname|default(_('No name'), true) }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Email') }}</th>
+                        <td>{{ order.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Created') }}</th>
+                        <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Updated') }}</th>
+                        <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Status') }}</th>
+                        <td>{{ order.get_status_display() }}</td>
+                    </tr>
+                </table>
+            </td>
+            <!-- Seller info-->
+            <td align="center" valign="top" class="order_info">
+                <h3>{{ _('Seller Info') }}</h3>
+                <table class="table table-condensed">
+                    <tr>
+                        <th width="30%">{{ _('Publisher') }}</th>
+                        <td>{{ publisher.address.name if publisher.address else publisher.title }}</td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Email') }}</th>
+                        <td><a href="mailto:{{ publisher.email }}">{{ publisher.email }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Address') }}</th>
+                        <td>
+                            {% if publisher.address %}
+                            {{ publisher.address.street }}<br>
+                            {{ publisher.address.zipcode }} {{ publisher.address.city }}<br>
+                            {{ publisher.address.country }}
+                            {% else %}
+                                {{ _('No data') }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+        </td>
 </tr>

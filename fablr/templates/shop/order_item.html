@@ -71,7 +71,7 @@
             </div>
             {% endif %}
         {% endif %}
-    <table style="width: 100%">
+    <table style="width: 100%"><tbody>
         {% if order.status != 'cart' %}
             {% include "shop/order_header.html" %}
         {% endif %}
@@ -81,7 +81,7 @@
         {% if order.status != 'cart' or args['view'] in ['details','pay'] %}
             {% include "shop/order_address.html" %}
         {% endif %}
-    </table>
+    </tbody></table>
 
     {% if order_form %}
         <div class="row">

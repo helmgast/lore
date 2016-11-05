@@ -33,9 +33,11 @@ define(["jquery", "utils"], function ($, utils) {
     FileSelect.prototype.selectFiles = function (selected_files) {
         var that = this, select_params = [], gallery_html = '', options_html = '';
         (selected_files || []).forEach(function (file) {
-            gallery_html += '<figure class="gallery-item"><img onload="set_aspect(this)" src="' + that.options.image_url.replace('replace', file.slug) + '"></figure>'
-            options_html += '<option value="' + file.id + '" selected></option>';
-            select_params.push(file.slug)
+            if(file.id && file.id!='__None') {  // Ignore None if selected
+                gallery_html += '<figure class="gallery-item"><img onload="set_aspect(this)" src="' + that.options.image_url.replace('replace', file.slug) + '"></figure>'
+                options_html += '<option value="' + file.id + '" selected></option>';
+                select_params.push(file.slug)
+            }
         });
         if (!options_html)
             options_html = '<option value="__None" selected>---</option>'

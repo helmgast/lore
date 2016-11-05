@@ -266,26 +266,26 @@ class ResourceResponse(Response):
             abort(406)  # Not acceptable content available
 
     def error_response(self, err, status=0):
+        general_errors = []
         if isinstance(err, NotUniqueError):
             if 'title' in self.form:
                 self.form['title'].errors.append('Duplicate title already exists, try renaming')
             elif 'slug' in self.form:
                 self.form['slug'].errors.append('Duplicate slug already exists, try renaming')
             else:
-                self.form._errors = {'all': 'Duplicate title already exists, try renaming'}
+                general_errors.append('Duplicate title already exists, try renaming')
 
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
-            err_dict = {}
             for k, v in err.errors.items():
-                if hasattr(v, 'message') and v.message:
-                    err_dict[k] = v.message
+                msg = v.message if hasattr(v, 'message') and v.message else str(v)
+                if k in self.form:  # We have a field, append the error there
+                    self.form[k].errors.append(msg)
                 else:
-                    err_dict[k] = str(v)
-            self.form._errors = err_dict
+                    general_errors.append(msg)
         else:
-            self.form._errors = {'all', str(err)}
-        flash(_("Error in form"), 'danger')
+            general_errors.append(str(err))
+        flash(_("Errors in form, %(errors)s", errors=u",".join(general_errors)), 'danger')
         return self, status or 400
 
 
@@ -322,7 +322,7 @@ class ListResponse(ResourceResponse):
     json_fields = frozenset(['query', 'pagination'])
     arg_parser = dict(ResourceResponse.arg_parser, **{
         'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
-        'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 20,
+        'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 15,
         'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
         'order_by': lambda x: ''
     })

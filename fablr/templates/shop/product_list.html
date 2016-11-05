@@ -1,6 +1,7 @@
 {% extends "shop/_page.html" %}
 
-{% set product_icons = {'book':'book','item':'gift','digital':'floppy-disk','shipping':'barcode'} %}
+{# Unicode codes representing Bootstrap glyphicons #}
+{% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 
 
 {% set currencies = {
@@ -18,35 +19,35 @@
             </ul>
         {% endcall %}
 
-    {% if filter_options %}
-        {{ MACRO.LIST_CONTROLS(model, args, ['title', 'description', 'type', 'world', 'created', 'price'], set_view=args['view'], default='card') }}
+        {% if filter_options %}
+            {{ MACRO.LIST_CONTROLS(model, args, ['title', 'description', 'type', 'world', 'created', 'price'], set_view=args['view'], default='card') }}
 
-        <h5>{% trans %}By world{% endtrans %}</h5>
-        <div class="btn-set">
-            {% for opt in filter_options['world'] %}
-                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
-            {% endfor %}
-        </div>
-        <h5>{% trans %}By time{% endtrans %}</h5>
-        <div class="btn-set">
-            {% for opt in filter_options['created'] %}
-                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-            {% endfor %}
-        </div>
+            <h5>{% trans %}By world{% endtrans %}</h5>
+            <div class="btn-set">
+                {% for opt in filter_options['world'] %}
+                    {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+                {% endfor %}
+            </div>
+            <h5>{% trans %}By time{% endtrans %}</h5>
+            <div class="btn-set">
+                {% for opt in filter_options['created'] %}
+                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+                {% endfor %}
+            </div>
 
-        <h5>{% trans %}By type{% endtrans %}</h5>
-        <div class="btn-set">
-            {% for opt in filter_options['type'] %}
-                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
-            {% endfor %}
-        </div>
+            <h5>{% trans %}By type{% endtrans %}</h5>
+            <div class="btn-set">
+                {% for opt in filter_options['type'] %}
+                    {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+                {% endfor %}
+            </div>
 
-        <h5>{% trans %}By price{% endtrans %}</h5>
-        <div class="btn-set">
-            {% for opt in filter_options['price'] %}
-                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-            {% endfor %}
-        </div>
+            <h5>{% trans %}By price{% endtrans %}</h5>
+            <div class="btn-set">
+                {% for opt in filter_options['price'] %}
+                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+                {% endfor %}
+            </div>
         {% endif %}
 
     {% endif %}
@@ -69,7 +70,8 @@
                     {% if product.get_feature_image %}
                         <a class="pull-left"
                            href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                            <img class="media-object" src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
+                            <img class="media-object"
+                                 src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
                         </a>
                     {% endif %}
                     <div class="media-body">
@@ -109,32 +111,30 @@
 
         {% else %} {# ==table #}
             <div class="cards">
-                    {% for product in products %}
-                        <div class="product">
-                            {% if product.get_feature_image %}
-                                <a class="product-cover" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"
-                                style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;">
-                            {% else %}
-                                <a class="product-cover" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                                <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
-                            {% endif %}
-                                </a>
-                            <div class="product-intro">
-                                <h3>
-                                    <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
-                                </h3>
-                                <p>{{ product.description|markdown }}</p>
-                            </div>
-                            <ul class="product-details">
-                                <li class="product-type">{{ product.get_field_display('type') }}</li>
-                                <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
-                                <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
-                                       href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
-                                </li>
-                            </ul>
+                {% for product in products %}
+                    <div class="card"
+                         {%- if product.get_feature_image -%}
+                            style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
+                         {%- endif -%}>
+                            <a class="card-cover gianticon" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                                {{ product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
+                            </a>
+                        <div class="card-text">
+                        <h3 class="card-title dobr">
+                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                        </h3>
+                        <div class="card-description">{{ product.description|markdown }}</div>
+                        <ul class="card-details">
+                            <li class="product-type">{{ product.get_field_display('type') }}</li>
+                            <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
+                            <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
+                                   href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                            </li>
+                        </ul>
                         </div>
-                    {% endfor %}
                     </div>
+                {% endfor %}
+            </div>
             </div>
         {% endif %}
         {% include "includes/pagination.html" %}

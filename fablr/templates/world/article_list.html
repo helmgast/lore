@@ -1,14 +1,6 @@
 {% extends "world/world_item.html" if world else "world/_page.html" %}
 
-{% if args['order_by'] and args['order_by'].endswith('type') %}
-    {% set groups = articles|by_articletype %}
-{% elif args['order_by'] and args['order_by'].endswith('created_date') %}
-    {% set groups = articles|by_time %}
-{% elif args['order_by'] and args['order_by'].endswith('title') %}
-    {% set groups = articles|by_initials %}
-{% else %}
-    {% set groups = articles|dummygrouper %}
-{% endif %}
+{% set groups = articles|dummygrouper %}
 
 {% block cssimports %}
     {{ super() }}
@@ -131,21 +123,20 @@
             {% elif args['view'] == 'card' %}
                 <div class="cards">
                     {% for article in group.list %}
-                        <div class="product" style="page-break-after: always">
-                            {% if article.get_feature_image %}
-                                <a class="product-cover"
-                                   href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}"
-                                   style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"></a>
-                            {% endif %}
-                            <ul class="product-details">
-                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date.strftime('%Y-%m-%d') }}</li>
-                            </ul>
-                            <div class="product-intro">
-                                <h3>
+                        <div class="card"
+                            {%- if article.get_feature_image -%}
+                                style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
+                            {%- endif -%}>
+                            <div class="card-text">
+                                <h3 class="card-title">
                                     <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">{{ article.title }}</a>
                                 </h3>
                                 {% set desc =  (article.content|markdown|striptags|replace('gallery-center','')).split('. R') %}
-                                <p>{{ article.description|markdown if article.description else desc[0] }}</p>
+
+                                <div class="card-description">{{ desc[0] }}</div>
+                                <ul class="card-details">
+                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date.strftime('%Y-%m-%d') }}</li>
+                            </ul>
                             </div>
                         </div>
                         {% if loop.index is divisibleby 9 %}</div>

@@ -15,27 +15,33 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-    {% for world in worlds %}
-    <div class="col-md-5 col-xs-6 world_item">
-        <h3><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)}}">{{ world.title }}</a>
-        <br><small>{{ world.description|markdown }}</small></h3>
-        <hr>
-        <dl class="dl-horizontal">
-            <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ world.publisher|default(_('No data'), true) }}</dd>
-            <dt>{{ _('Rule System') }}</dt>
-            <dd>{{ world.rule_system|default(_('No data'), true) }}</dd>
-            <dt>{{ _('Created date') }}</dt>
-            <dd>{{ world.created_date.strftime('%Y-%m-%d') }}</dd>
-        </dl>
+
+   <div class="cards">
+        {% for world in worlds %}
+            <div class="card"
+                    {%- if world.get_feature_image -%}
+                 style="background: url({{ url_for('image_thumb', slug=world.get_feature_image.slug) }}) center top/cover;"
+                    {%- endif -%}>
+                <a class="card-cover gianticon" href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)}}">
+                    <svg class="fablr-icon fablr-icon-stretch">
+                        <use xlink:href="#fablr-earth"></use>
+                    </svg>
+                </a>
+                <div class="card-text">
+                    <h3 class="card-title dobr">
+                        <a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)}}">{{ world.title }}</a>
+                    </h3>
+                    <div class="card-description">
+                        {{ world.description|markdown }}
+                    </div>
+                    <ul class="card-details">
+                        <li class="product-type">{{ _('Publisher') }}: {{ world.publisher|default(_('No data'), true) }}</li>
+                        <li class="product-type">{{ _('Rule System') }}: {{ world.rule_system|default(_('No data'), true) }}</li>
+                        <li class="product-type">{{ _('Created date') }}: {{ world.created_date.strftime('%Y-%m-%d') }}</li>
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
     </div>
-    {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
-    {% else %}
-    <div class="jumbotron text-center">
-    <h2>{{_('Aeon is working on some worlds, please check back later!')}}</h2>
-    </div>
-    {% endfor %}
-  </div>
   {% include "includes/pagination.html" %}
 {% endblock %}

@@ -1,27 +1,27 @@
 {% import 'includes/macros.html' as MACRO %}
 
-{% if args.get('view', 'table') == 'card' %}
+{% if args.get('view', '') == 'card' %}
     <div class="cards">
-        <div class="row">
             {% for user in users %}
-                <div class="col-md-4 product">
-                    {% if user.get_feature_image %}
-                        <img class="product-image" src="{{ url_for('image_thumb', slug=user.get_feature_image.slug) }}">
-                    {% endif %}
-                    <div class="product-intro">
-                        <h3>
-                            <a href="{{ url_for('social.UsersView:get', id=user.identifier) }}">{{ user }}</a>
-                        </h3>
-                    </div>
-                    <ul class="product-details">
-                        <li class="product-type">{{ user.username }}</li>
-                        <li class="product-type">{{ user.join_date.strftime('%Y-%m-%d %H:%M')}}</li>
+                <div class="card"
+                    {%- if user.get_feature_image -%}
+                        style="background: url({{ url_for('image_thumb', slug=user.get_feature_image.slug) }}) center top/contain no-repeat;"
+                    {%- else -%}
+                         style="background: url({{ user.gravatar_url(size=256) }}) center top/contain no-repeat;"
+                    {%- endif -%}>
+
+                    <div class="card-text">
+                    <h3 class="card-title dobr">
+                        <a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}">{{ user }}</a>
+                    </h3>
+                    <ul class="card-details">
+                        <li class="product-type">{{ user.xp }} XP</li>
+                        <li class="product-type">{% trans %}Joined{% endtrans %}: {{ user.join_date.strftime('%Y-%m-%d')}}</li>
                     </ul>
+                    </div>
+
                 </div>
-                {% if loop.index is divisibleby 3 %}</div>
-                    <div class="row">{% endif %}
             {% endfor %}
-            </div>
     </div>
 {% else %}
     <table class="table table-striped table-hover">

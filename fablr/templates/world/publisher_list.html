@@ -22,26 +22,30 @@
 
 
 {% block content %}
-    <div class="row">
+    <div class="cards">
         {% for publisher in publishers %}
-            <div class="col-md-5 col-xs-6 publisher_item">
-                <h3><a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
-                    <br>
-                    <small>{{ publisher.description|markdown }}</small>
-                </h3>
-                <hr>
-                <dl class="dl-horizontal">
-                    <dt>{{ _('Created date') }}</dt>
-                    <dd>{{ publisher.created_date.strftime('%Y-%m-%d') }}</dd>
-                </dl>
-            </div>
-            {% if loop.index is divisibleby 2 %}</div>
-                <div class="row">{% endif %}
-        {% else %}
-            <div class="jumbotron text-center">
-                <h2>{{ _('No publishers setup yet') }}</h2>
+            <div class="card"
+                    {%- if publisher.get_feature_image -%}
+                 style="background: url({{ url_for('image_thumb', slug=publisher.get_feature_image.slug) }}) center top/cover;"
+                    {%- endif -%}>
+                <a class="card-cover gianticon" href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">
+                    <svg class="fablr-icon fablr-icon-stretch">
+                        <use xlink:href="#fablr-book"></use>
+                    </svg>
+                </a>
+                <div class="card-text">
+                    <h3 class="card-title dobr">
+                        <a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
+                    </h3>
+                    <div class="card-description">
+                        {{ publisher.description|markdown }}
+                    </div>
+                    <ul class="card-details">
+                        <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date.strftime('%Y-%m-%d') }}</li>
+                    </ul>
+                </div>
             </div>
         {% endfor %}
-        </div>
+    </div>
     {% include "includes/pagination.html" %}
 {% endblock %}

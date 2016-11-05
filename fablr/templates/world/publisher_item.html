@@ -73,7 +73,7 @@
                     <tr>
                         <td><strong>{{ _('Description') }}</strong></td>
                         <td>
-                            <small>{{ publisher.description|default(_('No data'), true) }}</small>
+                            <small>{{ publisher.description|default(_('No data'), true)|markdown }}</small>
                         </td>
                     </tr>
                     <tr>

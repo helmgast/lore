@@ -10,42 +10,67 @@
 
 {% block sidebar %}{{ super() }}
     {% if filter_options %}
-    {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated','status', 'total_price']) }}
+        {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated','status', 'total_price']) }}
 
-    <h5>{% trans %}By updated{% endtrans %}</h5>
-    <div class="btn-set">
-        {% for opt in filter_options['updated'] %}
-            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-        {% endfor %}
-    </div>
+        <h5>{% trans %}By updated{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['updated'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
 
-    <h5>{% trans %}By total items{% endtrans %}</h5>
-    <div class="btn-set">
-        {% for opt in filter_options['total_items'] %}
-            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-        {% endfor %}
-    </div>
+        <h5>{% trans %}By total items{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['total_items'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
 
-    <h5>{% trans %}By total price{% endtrans %}</h5>
-    <div class="btn-set">
-        {% for opt in filter_options['total_price'] %}
-            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-        {% endfor %}
-    </div>
+        <h5>{% trans %}By total price{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['total_price'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
 
-    <h5>{% trans %}By status{% endtrans %}</h5>
-    <div class="btn-set">
-        {% for opt in filter_options['status'] %}
-            {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-        {% endfor %}
-    </div>
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
     {% endif %}
 {% endblock %}
 
 {% block content %}
 
     {% if orders %}
-        {% if args.get('view', 'table') == 'table' %}
+        {% if args.get('view', none) == 'card' %}
+            <div class="cards">
+                {% for order in orders %}
+                    <div class="card"
+                            {%- if order.order_lines|length and order.order_lines[0].product.get_feature_image -%}
+                         style="background: url({{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}) center top/cover;"
+                            {%- endif -%}>
+                        <a class="card-cover gianticon"
+                           href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">
+                            {{ "\uE032" if not (order.order_lines|length and order.order_lines[0].product.get_feature_image) else "&nbsp;"|safe }}
+                        </a>
+                        <div class="card-text">
+                            <h3 class="card-title dobr">
+                                <a href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">{{ order }}</a>
+                            </h3>
+                            <ul class="card-details">
+                                <li class="product-type">{{ order.user.username }}</li>
+                                <li class="product-type">{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</li>
+                                <li class="product-price">{{ order.total_price_display() }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
             <table class="table table-hover">
                 <thead>
                 <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
@@ -72,30 +97,6 @@
                 {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <div class="cards">
-                <div class="row">
-                    {% for order in orders %}
-                        <div class="col-md-4 product">
-                            {% if len(order.order_lines) and order.order_lines[0].product.get_feature_image %}<img class="product-image"
-                                                                                    src="{{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}">
-                                </a>{% endif %}
-                            <div class="product-intro">
-                                <h3>
-                                    <a href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">{{ order }}</a>
-                                </h3>
-                            </div>
-                            <ul class="product-details">
-                                <li class="product-type">{{ order.user.username }}</li>
-                                <li class="product-type">{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</li>
-                                <li class="product-price">{{ order.total_price_display() }}</li>
-                            </ul>
-                        </div>
-                        {% if loop.index is divisibleby 3 %}</div>
-                            <div class="row">{% endif %}
-                    {% endfor %}
-                    </div>
-            </div>
         {% endif %}
         {% include "includes/pagination.html" %}
 

@@ -66,7 +66,6 @@ class UsersView(ResourceView):
             r = ItemResponse(UsersView, [('user', user)])
         r.events = Event.objects(user=user) if user else []
         r.auth_or_abort()
-        flash("Hej")
         return r
 
     def patch(self, id):
