@@ -5,6 +5,7 @@
 *.pot
 *.sublime*
 config.py
+/node_modules
 /.idea
 /.settings
 /.project

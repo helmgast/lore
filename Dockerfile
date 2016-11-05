@@ -13,4 +13,5 @@ COPY manage.py manage.py
 COPY run.py run.py
 RUN python manage.py lang_compile
 
-ENTRYPOINT python run.py
+ENV SOURCE_COMMIT $SOURCE_COMMIT
+CMD ["python","run.py"] # This format runs executable without bash/shell
