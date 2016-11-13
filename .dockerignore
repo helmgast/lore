@@ -2,6 +2,7 @@
 .settings/
 .project/
 .pydevproject/
+node_modules/
 Raconteur.egg-info/
 venv/
 .git*
