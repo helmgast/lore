@@ -79,17 +79,21 @@ class MethodRewriteMiddleware(object):
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
-    allow_subdomains = True
-    # def __init__(self, string, **kwargs):
-    #     if current_app and current_app.config.get('ALLOW_SUBDOMAINS', False) and 'subdomain' in kwargs:
-    #         string = "/sub_" + kwargs.pop('subdomain') + "/" + string.lstrip("/")
-    #     super(FablrRule, self).__init__(string, **kwargs)
+    allow_domains = True
+    default_host = None
 
     def bind(self, map, rebind=False):
-        subd = self.subdomain or map.default_subdomain
-        if subd and not self.allow_subdomains:
-            self.rule = "/sub_" + subd + "/" + self.rule.lstrip("/")
+        # if self.subdomain:  # Convert subdomain to full host rule
+            # self.host = self.subdomain + '.' + self.default_host
+            # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
+        thehost = self.subdomain or None
+
+        if thehost and not self.allow_domains:
+            self.rule = "/_" + thehost + "/" + self.rule.lstrip("/")
             self.subdomain = ''  # Hack, parent bind will check if None, '' will be read as having one
+            self.host = ''
+        else:
+            self.host = thehost or self.default_host
         super(FablrRule, self).bind(map, rebind)
 
     def match_compare_key(self):

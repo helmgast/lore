@@ -17,7 +17,8 @@ class Config(object):
     BABEL_AVAILABLE_LOCALES = ['sv', 'en']
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
-    ALLOW_SUBDOMAINS = False
+    ALLOW_DOMAINS = False
+    DEFAULT_HOST = None  # Needed if ALLOW domains
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'

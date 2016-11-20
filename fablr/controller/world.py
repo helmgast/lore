@@ -13,6 +13,7 @@
 """
 import logging
 import random
+import re
 from datetime import datetime
 from itertools import groupby
 
@@ -118,16 +119,17 @@ class PublishersView(ResourceView):
     def delete(self, id):
         abort(501)  # Not implemented
 
+domain_slug = re.compile(r'(www.)?([^.]+)')
 
 def set_theme(response, theme_type, slug):
     if response and theme_type and slug:
+        slug = domain_slug.search(slug).group(2)  # www.domain.tld --> domain
         try:
             setattr(response, '%s_theme' % theme_type,
                     current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
             # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
         except TemplateNotFound:
-            pass
-            print "Not finding theme %s_%s.html" % (theme_type, slug)
+            logger.warning("Not finding theme %s_%s.html" % (theme_type, slug))
 
 
 class WorldAccessPolicy(ResourceAccessPolicy):

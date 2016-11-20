@@ -500,12 +500,7 @@ class ResourceView(FlaskView):
     @classmethod
     def register_with_access(cls, app, domain):
         current_app.access_policy[domain] = cls.access_policy
-        # if not current_app.config.get('ALLOW_SUBDOMAINS', False) and getattr(cls, 'subdomain', None):
-        #     cls.route_base = "/sub_" + cls.subdomain + "/" + cls.get_route_base()
-        #     del cls.subdomain
         return cls.register(app)
-
-        # def register(): # overload register method to register access policies automatically
 
 
 def route_subdomain(app, rule, **options):

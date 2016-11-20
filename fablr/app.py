@@ -18,6 +18,7 @@ from flask import Flask, render_template, request, url_for, flash, g
 from flask import got_request_exception
 from flaskext.markdown import Markdown
 from pymongo.errors import ConnectionFailure
+from werkzeug.routing import Map
 
 from fablr.controller.resource import ResourceError, get_root_template
 
@@ -147,7 +148,12 @@ def configure_extensions(app):
     app.json_encoder = extensions.MongoJSONEncoder
 
     app.url_rule_class = extensions.FablrRule
-    app.url_rule_class.allow_subdomains = app.config['ALLOW_SUBDOMAINS']
+    app.url_rule_class.allow_domains = app.config['ALLOW_DOMAINS']
+    app.url_rule_class.default_host = app.config['DEFAULT_HOST']
+    if app.config['ALLOW_DOMAINS']:
+        app.url_map = Map(host_matching=True)
+        # Re-add the static rule
+        app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
 
     # @app.url_defaults
     # def default_publisher(endpoint, values):
