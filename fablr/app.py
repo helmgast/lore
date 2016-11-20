@@ -148,28 +148,13 @@ def configure_extensions(app):
     app.json_encoder = extensions.MongoJSONEncoder
 
     app.url_rule_class = extensions.FablrRule
-    app.url_rule_class.allow_domains = app.config['ALLOW_DOMAINS']
-    app.url_rule_class.default_host = app.config['DEFAULT_HOST']
-    if app.config['ALLOW_DOMAINS']:
-        app.url_map = Map(host_matching=True)
-        # Re-add the static rule
-        app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
-
-    # @app.url_defaults
-    # def default_publisher(endpoint, values):
-    #     if 'publisher' in values:
-    #         return
-    #     elif endpoint.startswith('world.'):
-    #         values['publisher'] = 'helmgast'
-
-    # Set fonts to allow cross origin, from different subdomains, when using development server
-    if app.debug:
-        def new_static(filename, **kwargs):
-            rv = app.send_static_file(filename)
-            rv.headers['Access-Control-Allow-Origin'] = '*'
-            return rv
-
-        app.view_functions['static'] = new_static
+    if 'FLASK_APP' not in os.environ:  # If not set, we are not in local dev server, so we can apply hostname routing
+        app.url_rule_class.allow_domains = True
+        app.url_rule_class.default_host = app.config['DEFAULT_HOST']
+        if app.url_rule_class.default_host:  # Need to have default host to enable host_matching
+            app.url_map = Map(host_matching=True)
+            # Re-add the static rule
+            app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
 
     extensions.start_db(app)
 

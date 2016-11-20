@@ -79,7 +79,7 @@ class MethodRewriteMiddleware(object):
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
-    allow_domains = True
+    allow_domains = False
     default_host = None
 
     def bind(self, map, rebind=False):
