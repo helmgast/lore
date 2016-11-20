@@ -7,11 +7,12 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-COPY tools/ tools/
-COPY fablr/ fablr/
 COPY manage.py manage.py
 COPY run.py run.py
+COPY tools/ tools/
+COPY fablr/ fablr/
 RUN python manage.py lang_compile
+COPY static/ static/
 
 # provide from git or by Docker autobild
 ARG SOURCE_COMMIT=no_ver

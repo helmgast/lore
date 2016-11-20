@@ -184,6 +184,7 @@ from flask_wtf.csrf import CsrfProtect
 
 csrf = CsrfProtect()
 
+
 # Inspired by flask webpack but without any cruft
 def init_assets(app):
     try:
@@ -193,13 +194,14 @@ def init_assets(app):
     except IOError as io:
         raise RuntimeError(
             "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
-            "it must point to a valid json file.")
+            "it must point to a valid json file. It was %s. %s" % (app.config.get('WEBPACK_MANIFEST_PATH'), io))
 
 
 from markdown.extensions import Extension
 from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
 from markdown.util import etree
 import re
+
 
 class GalleryList(Treeprocessor):
     def run(self, root):
