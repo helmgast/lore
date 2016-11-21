@@ -155,6 +155,8 @@ def configure_extensions(app):
             app.url_map = Map(host_matching=True)
             # Re-add the static rule
             app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
+    else:
+        app.logger.warning('Running in local dev mode without hostnames')
 
     extensions.start_db(app)
 
@@ -199,11 +201,13 @@ def configure_blueprints(app):
         from controller.world import world_app as world
         from controller.social import social
         from controller.generator import generator
+        from controller.admin import admin
         from controller.shop import shop_app as shop
         from controller.mailer import mail_app as mail
 
         app.register_blueprint(world)  # No url_prefix as we build it up as /<world>/<article>
         app.register_blueprint(generator, url_prefix='/generator')
+        app.register_blueprint(admin, url_prefix='/admin')
         app.register_blueprint(social, url_prefix='/social')
         app.register_blueprint(shop, url_prefix='/shop')
         app.register_blueprint(asset_app, url_prefix='/assets')

@@ -12,6 +12,7 @@ Flask==0.11.1
 git+https://github.com/ripperdoc/flask-classy
 google-api-python-client==1.5.3
 gunicorn==19.6.0
+ipaddress==1.0.17
 Markdown==2.6.7
 mongoengine==0.10.6
 Pillow==3.3.1
