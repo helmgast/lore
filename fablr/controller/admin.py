@@ -79,10 +79,10 @@ def git_webhook(get_json=None):
         # Check if POST request signature is valid
         key = repo.get('key', None)
         if key:
-            signature = request.headers.get('X-Hub-Signature').split('=')[1]
-            if type(key) == unicode:
-                key = key.encode()
-            mac = hmac.new(key, msg=request.data, digestmod=sha1)
+            signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
+            # if type(key) == unicode:
+            #     key = key.encode()
+            mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
             if not hmac.compare_digest(mac.hexdigest(), signature):
                 logger.warn('git_webhook: Incorrect key')
                 abort(403, "Incorrect key")
