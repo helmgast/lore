@@ -43,7 +43,7 @@ def git_webhook(get_json=None):
             if ipaddress.ip_address(request_ip) in ipaddress.ip_network(block):
                 break  # the remote_addr is within the network range of github.
         else:
-            logger.warn('git_webhook: Incorrect IP')
+            logger.warn('git_webhook: Incorrect IP: %s not in %s' % (ipaddress.ip_address(request_ip), ipaddress.ip_network(block)))
             abort(403, 'Incorrect IP')
 
         if request.headers.get('X-GitHub-Event') == "ping":
