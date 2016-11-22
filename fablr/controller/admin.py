@@ -1,4 +1,5 @@
 import hmac
+import logging
 import os
 from hashlib import sha1
 import re
@@ -8,12 +9,15 @@ import requests
 import subprocess
 from flask import Blueprint
 from flask import abort
+from flask import current_app
 from flask import json
 from flask import request
 
 from fablr.extensions import csrf
 
 admin = Blueprint('admin', __name__, template_folder='../templates/admin')
+
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 repos = {
     "ripperdoc/MediaSorter": {
@@ -39,11 +43,13 @@ def git_webhook(get_json=None):
             if ipaddress.ip_address(request_ip) in ipaddress.ip_network(block):
                 break  # the remote_addr is within the network range of github.
         else:
+            logger.warn('git_webhook: Incorrect IP')
             abort(403, 'Incorrect IP')
 
         if request.headers.get('X-GitHub-Event') == "ping":
             return json.dumps({'msg': 'Hi!'})
         if request.headers.get('X-GitHub-Event') != "push":
+            logger.warn('git_webhook: Wrong event type')
             return json.dumps({'msg': "wrong event type"})
 
         payload = request.get_json()
@@ -64,16 +70,20 @@ def git_webhook(get_json=None):
         if not repo:
             repo = repos.get('{owner}/{name}'.format(**repo_meta), None)
 
-        if repo and repo.get('path', None):
-            # Check if POST request signature is valid
-            key = repo.get('key', None)
-            if key:
-                signature = request.headers.get('X-Hub-Signature').split('=')[1]
-                if type(key) == unicode:
-                    key = key.encode()
-                mac = hmac.new(key, msg=request.data, digestmod=sha1)
-                if not hmac.compare_digest(mac.hexdigest(), signature):
-                    abort(403, "Incorrect key")
+        if not repo or not repo.get('path', None):
+            logger.warn('git_webhook: No repo %s or repo path' % repo_meta)
+            abort(400, "No repo %s or repo path" % repo_meta)
+
+        # Check if POST request signature is valid
+        key = repo.get('key', None)
+        if key:
+            signature = request.headers.get('X-Hub-Signature').split('=')[1]
+            if type(key) == unicode:
+                key = key.encode()
+            mac = hmac.new(key, msg=request.data, digestmod=sha1)
+            if not hmac.compare_digest(mac.hexdigest(), signature):
+                logger.warn('git_webhook: Incorrect key')
+                abort(403, "Incorrect key")
 
         cwd = os.path.join(repo.get('path'), '.')
         rm = subprocess.Popen(('rm', '-r', os.path.join(repo.get('path'), '*')), cwd=cwd)
@@ -84,5 +94,4 @@ def git_webhook(get_json=None):
         curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
                                 cwd=cwd, stdout=subprocess.PIPE)
         tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
-
         return 'OK'
