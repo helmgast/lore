@@ -20,9 +20,9 @@ admin = Blueprint('admin', __name__, template_folder='../templates/admin')
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 repos = {
-    "ripperdoc/MediaSorter": {
-        "path": "/data/www/geneti.ca/test/",
-        "key": "MyVerySecretKey",
+    "avatarex/rpgen": {
+        "path": "/data/www/other/eongen/beta/",
+        "key": "kasdnasdl987as",
     },
 }
 
