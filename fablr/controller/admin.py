@@ -34,7 +34,9 @@ def git_webhook(get_json=None):
         return 'OK'
     elif request.method == 'POST':
         # Store the IP address of the requester
-        request_ip = ipaddress.ip_address(u'{0}'.format(request.remote_addr))
+
+        headers_list = request.headers.getlist("X-Real-IP")  # IP before proxy if such exists
+        request_ip = ipaddress.ip_address(u'{0}'.format(headers_list[0] if headers_list else request.remote_addr))
 
         hook_blocks = requests.get('https://api.github.com/meta').json()['hooks']
 
