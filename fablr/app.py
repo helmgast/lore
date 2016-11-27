@@ -18,6 +18,7 @@ from flask import Flask, render_template, request, url_for, flash, g
 from flask import got_request_exception
 from flaskext.markdown import Markdown
 from pymongo.errors import ConnectionFailure
+from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.routing import Map
 
 from fablr.controller.resource import ResourceError, get_root_template
@@ -143,12 +144,12 @@ def configure_extensions(app):
         app.jinja_env.undefined = extensions.SilentUndefined
     # app.jinja_options = ImmutableDict({'extensions': ['jinja2.ext.autoescape', 'jinja2.ext.with_']})
 
-    app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
-
     app.json_encoder = extensions.MongoJSONEncoder
 
     app.url_rule_class = extensions.FablrRule
     if 'FLASK_APP' not in os.environ:  # If not set, we are not in local dev server, so we can apply hostname routing
+        # Assume we are in a proxy setup and fix headers for that
+        app.wsgi_app = ProxyFix(app.wsgi_app)
         app.url_rule_class.allow_domains = True
         app.url_rule_class.default_host = app.config['DEFAULT_HOST']
         if app.url_rule_class.default_host:  # Need to have default host to enable host_matching
@@ -157,6 +158,9 @@ def configure_extensions(app):
             app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
     else:
         app.logger.warning('Running in local dev mode without hostnames')
+
+    # Rewrites POSTs with specific methods into the real method, to allow HTML forms to send PUT, DELETE, etc
+    app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
 
     extensions.start_db(app)
 

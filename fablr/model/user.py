@@ -130,7 +130,7 @@ class User(Document, BaseUser):
 
 
     def gravatar_url(self, size=48):
-        return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
+        return '//www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
     # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279

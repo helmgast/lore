@@ -22,6 +22,7 @@ class Config(object):
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
+    PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
 
 class SecretConfig(object):
     # Replace with mongodb://user:pass@host/dbname in config.py file

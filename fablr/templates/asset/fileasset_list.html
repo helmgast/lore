@@ -128,7 +128,7 @@
             <div class="gallery" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
                 {% if patch and args.get('out') != 'fragment' %}
                     <div class="file-upload form-group gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(2.0) }}">
-                        <form action="{{ url_for('assets.FileAssetsView:post', _external=true) }}">
+                        <form action="{{ url_for('assets.FileAssetsView:post', _external=true, _scheme='') }}">
                             {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
                             <label for="file_data"
                                    title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">
@@ -162,7 +162,7 @@
                             {% if not patch %}
                                 <a class="zoomable" href="#">
                             {% endif %}
-                            <img src="{{ url_for('image', slug = fileasset.slug, _external=true) }}">
+                            <img src="{{ url_for('image', slug = fileasset.slug, _external=true, _scheme='') }}">
                             {% if not patch %}
                                 </a>
                             {% endif %}
@@ -177,7 +177,7 @@
                     {% endfor %}
                     {% if pagination and pagination.has_next %}
                         <a class="btn btn-primary pagination loadlink" target="#show-more-link"
-                           href="{{ current_url(page=pagination.next_num, _external=true) }}">
+                           href="{{ current_url(page=pagination.next_num, _external=true, _scheme='') }}">
                             {% trans %}Show more{% endtrans %}</a>
                     {% endif %}
                 {% endblock fragment %}

@@ -645,7 +645,7 @@ a .icon-ok {
     position: relative;
     padding: 30px;
     min-height: 400px;
-    background-image: url(http://placehold.it/1200x600);
+    background-image: url(//placehold.it/1200x600);
     background-size: cover;
     background-repeat: no-repeat no-repeat;
 }

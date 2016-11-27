@@ -1,7 +1,7 @@
 {% extends "_modal.html" %}
 
 {# remove args, and make external, as we are in a modal and may have a different URL #}
-{% set mail_url = current_url(intent=None, out=None, _external=true) %}
+{% set mail_url = current_url(intent=None, out=None, _external=true, _scheme='') %}
 
 
 {% block header %}

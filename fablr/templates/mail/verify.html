@@ -3,7 +3,7 @@ Should also work as invite mail. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true) %}
+{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true, _scheme='') %}
 
 {% block preview %}{% trans %}Verify your email to complete registration on helmgast.se{% endtrans %}{% endblock %}
 

@@ -1,6 +1,6 @@
 {% extends "mail/one_column_mail.html" %}
 
-{% set invite_url = url_for('auth.join', email=to_field, email_token=token, _external=true) %}
+{% set invite_url = url_for('auth.join', email=to_field, email_token=token, _external=true, _scheme='') %}
 
 {% block preview %}{{subject}}{% endblock %}
 

@@ -18,13 +18,13 @@
                 {% if line.product.status != 'hidden' %}
                     <tr class="product">
                         <td>{% if line.product.get_feature_image %}
-                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=line.product.slug, _external=true) }}"><img
+                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=line.product.slug, _external=true, _scheme='') }}"><img
                                     class="product-image"
-                                    src="{{ url_for('image_thumb', slug=line.product.get_feature_image.slug, _external=true) }}"></a>{% endif %}
+                                    src="{{ url_for('image_thumb', slug=line.product.get_feature_image.slug, _external=true, _scheme='') }}"></a>{% endif %}
                         </td>
                         <td>
                             <h3>
-                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=line.product.slug, _external=true) }}">{{ line.product.title }}</a>
+                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=line.product.slug, _external=true, _scheme='') }}">{{ line.product.title }}</a>
                                 <small>{{ line.product.get_field_display('type') }}</small>
                             </h3>
                             <p>{{ line.product.description|markdown }}</p>
@@ -33,7 +33,7 @@
                                     <div><strong>{{ _('Downloadable files') }}</strong>
                                         {% for file_asset in line.product.downloadable_files %}
                                             <div>
-                                                <a href="{{ url_for('download', fileasset=file_asset.slug, _external=true) }}"><span
+                                                <a href="{{ url_for('download', fileasset=file_asset.slug, _external=true, _scheme='') }}"><span
                                                         class="glyphicon glyphicon-download"></span>
                                                     <strong>{{ file_asset.title }}</strong>
                                                 </a>{% if file_asset.description %}:

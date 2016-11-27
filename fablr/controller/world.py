@@ -382,7 +382,7 @@ class ArticlesView(ResourceView):
             feed.add(article.title, current_app.md._instance.convert(article.content),
                      content_type='html',
                      author=str(article.creator) if article.creator else 'System',
-                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True),
+                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=true, _scheme=''),
                      updated=article.created_date,
                      published=article.created_date)
         return feed.get_response()

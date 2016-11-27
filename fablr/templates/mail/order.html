@@ -12,7 +12,7 @@
     {% include "shop/order_address.html" %}
 </table>
 
-<p><em>{%- trans termslink=url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service', _external=true) -%}
+<p><em>{%- trans termslink=url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service', _external=true, _scheme='') -%}
     You received this email as a confirmation of your purchase order at helmgast.se.
     Please read the terms and conditions of purchase <a href="{{ termslink }}">here</a>.{%- endtrans -%}</em></p>
 {% endblock %}
