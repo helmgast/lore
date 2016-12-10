@@ -10,7 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY tools/ tools/
 COPY fablr/ fablr/
 RUN python manage.py lang_compile
-COPY static/ static/
 
 # provide from git or by Docker autobild
 ARG SOURCE_COMMIT=no_ver
