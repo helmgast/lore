@@ -114,10 +114,12 @@ class WorldMeta(object):
     slug = 'meta'
     languages = []
     editors = []
+    title = ''
     creator = None
 
     def __init__(self, publisher):
         self.publisher = publisher
+        self.title = publisher.title
 
     def __unicode__(self):
         return unicode(self.publisher) or u'Meta'

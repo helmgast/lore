@@ -113,10 +113,10 @@ class ProductsView(ResourceView):
 
     def patch(self, id, publisher):
 
-        fa = []
-        for i in request.form.getlist('images'):
-            fa.append(FileAsset.objects(id=i).first())
-        print fa
+        # fa = []
+        # for i in request.form.getlist('images'):
+        #     fa.append(FileAsset.objects(id=i).first())
+        # print fa
 
         publisher = Publisher.objects(slug=publisher).first_or_404()
         product = Product.objects(slug=id).first_or_404()
@@ -124,8 +124,7 @@ class ProductsView(ResourceView):
         r.stock = get_or_create_stock(publisher)
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product, request.form.keys())  # only populate selected keys

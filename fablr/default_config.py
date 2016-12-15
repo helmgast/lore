@@ -23,6 +23,7 @@ class Config(object):
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
+    DATA_PATH = '/data/www/'
 
 class SecretConfig(object):
     # Replace with mongodb://user:pass@host/dbname in config.py file
@@ -50,3 +51,5 @@ class SecretConfig(object):
     # Used for payments
     STRIPE_SECRET_KEY = 'SECRET'
     STRIPE_PUBLIC_KEY = 'SECRET'
+
+    GITHUB_WEBHOOK_KEY = 'SECRET'

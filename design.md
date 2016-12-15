@@ -610,3 +610,120 @@ Run the following command
     mongo <db_name> db/backup_db.js
 
 This will create a backup with todays timestamp.
+
+Localization
+==================================================================
+There are two types of internationalization - interface and content.
+Interface can be automatically changed but content depends on if it's 
+available in that content item. Currently, no content items support multiple
+languages. There is never any reason to intentionally have different interface
+and content language, but may happen if content of specific language is not available.
+
+Language input can be in reverse order of importance:
+
+* In HTTP header (can be multiple)
+* In visitor preference (cookie or user profile)
+* In URL
+
+URL is special - it should give a 404 if the requested language is not available 
+as interface (ignoring content). Otherwise, we shall build a list of languages
+in order of preference, with user preference ordered first. This should be matched
+with the set of languages supported by interface and content respectively.
+
+E.g.: Header says EN, SE. User says DE. Check in order DE, EN, SE vs available
+interface language (EN, SE) and content (SE).
+
+Language output is in form of:
+
+* Displayed interface language
+* Displayed content language
+* Language code in HTML header
+* Preselected language in relevant forms
+
+In addition, location means which country the visitor is likely from. Location 
+can be used to prefill address fields and currency.
+
+Menu / navigation
+==================================================================
+
+Worlds
+- MyWorlds / Home (selection based on followed worlds)
+- Browse
+- WorldA
+- WorldB
+- WorldC
+    - Home
+    - Browse
+    - Random article
+    
+    
+Breadcrumbs
+(Publisher) - (World) - (Category) - (Article)
+(Publisher) - (World) - Blog - (Article)
+(Publisher) - Meta - (Blog)
+(Publisher) - Shop
+(Publisher) - Shop - (Product family) - (Product)
+(Publisher) - Shop - All products - (Product)
+(Publisher) - Shop - My orders - (Order)
+(Publisher) - Shop - All orders - (Order)
+
+Fablr - Social - Users
+    -> (Filter)
+    -> New (invite)
+
+Fablr - Social - Users - (User)
+    -> Edit
+    -> Delete
+
+Fablr - Social - Groups
+    -> (Filter)
+    -> New
+    
+Fablr - Social - Groups - (Group)
+    -> Edit
+    -> Delete
+
+Fablr - Assets
+    -> (Filter)
+    -> New
+    
+Fablr - Assets - (Asset)
+    -> Edit
+    -> Delete
+
+Fablr - Publishers
+    -> (Filter)
+    -> New
+    
+Fablr - Publishers - (Publisher)
+    -> Edit
+    -> Delete
+    
+
+Blog (publisher)
+- Links
+    - Pagination
+    - New article
+
+
+Social (a)
+- Users (a)
+- Invite user (a)
+- Groups (a)
+
+Store
+- All products
+- My orders (u)
+- All orders (a)
+
+Publishers (a)
+- All (a)
+- New (a)
+- Edit (e)
+
+Usermenu (u)
+- Profile (u)
+- Files (a)
+    - New (a)
+    - List (a)
+- Log out (u)

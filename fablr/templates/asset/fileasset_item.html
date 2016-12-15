@@ -63,7 +63,7 @@
                     <tr>
                         <td><strong>{{ _('Description') }}</strong></td>
                         <td>
-                            <small>{{ fileasset.description|markdown }}</small>
+                            <small>{{ fileasset.description|default(_('No data'), true)|markdown }}</small>
                         </td>
                     </tr>
                     <tr>

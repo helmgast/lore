@@ -160,7 +160,7 @@ class Stock(Document):
                 return _("Unlimited stock")
             if self.stock_count[product] == 0:
                 return _("No stock")
-            elif self.stock_count[product] > 0 and self.stock_count[product] < 5:
+            elif 0 < self.stock_count[product] < 5:
                 return _("A few items")
             else:
                 return _("Many items")

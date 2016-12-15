@@ -61,7 +61,7 @@
                         </td>
                         <td>
                             {% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
-                                {{ order_form.order_lines[loop.index0].quantity(type="number", min="1", max="100", style="width: 40px", class="product-quantity") }}
+                                {{ order_form.order_lines[loop.index0].quantity(type="number", min="0", max="100", style="width: 40px", class="product-quantity") }}
                             {% else %}
                                 {{ line.quantity }}
                             {% endif %}

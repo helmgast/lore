@@ -355,7 +355,11 @@ class ListResponse(ResourceResponse):
         else:
             return slug
 
-    def prepare_query(self, paginate=True):  # also filter by authorization, paginate
+    def render(self):
+        self.paginate()
+        return super(ListResponse, self).render()
+
+    def prepare_query(self):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
         if self.args['order_by']:  # is a list
@@ -381,9 +385,6 @@ class ListResponse(ResourceResponse):
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
         # TODO implement search, use textindex and do ".search_text()"
-
-        if paginate:
-            self.paginate()
 
     def paginate(self):
         # TODO max query size 10000 implied here

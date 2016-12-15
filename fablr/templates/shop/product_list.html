@@ -113,28 +113,28 @@
             <div class="cards">
                 {% for product in products %}
                     <div class="card"
-                         {%- if product.get_feature_image -%}
-                            style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
-                         {%- endif -%}>
-                            <a class="card-cover gianticon" href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
-                                {{ product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
-                            </a>
+                            {%- if product.get_feature_image -%}
+                         style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
+                            {%- endif -%}>
+                        <a class="card-cover gianticon"
+                           href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                            {{ product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
+                        </a>
                         <div class="card-text">
-                        <h3 class="card-title dobr">
-                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
-                        </h3>
-                        <div class="card-description">{{ product.description|markdown }}</div>
-                        <ul class="card-details">
-                            <li class="product-type">{{ product.get_field_display('type') }}</li>
-                            <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
-                            <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
-                                   href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
-                            </li>
-                        </ul>
+                            <h3 class="card-title dobr">
+                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                            </h3>
+                            <div class="card-description">{{ product.description|markdown }}</div>
+                            <ul class="card-details">
+                                <li class="product-type">{{ product.get_field_display('type') }}</li>
+                                <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
+                                <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
+                                       href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 {% endfor %}
-            </div>
             </div>
         {% endif %}
         {% include "includes/pagination.html" %}

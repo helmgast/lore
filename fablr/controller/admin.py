@@ -7,6 +7,8 @@ import re
 import ipaddress
 import requests
 import subprocess
+
+import shutil
 from flask import Blueprint
 from flask import abort
 from flask import current_app
@@ -19,14 +21,6 @@ admin = Blueprint('admin', __name__, template_folder='../templates/admin')
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-repos = {
-    "avatarex/rpgen": {
-        "path": "/data/www/other/eongen/beta/",
-        "key": "kasdnasdl987as",
-    },
-}
-
-
 @csrf.exempt
 @admin.route("/git_webhook", methods=['GET', 'POST'])
 def git_webhook(get_json=None):
@@ -34,9 +28,7 @@ def git_webhook(get_json=None):
         return 'OK'
     elif request.method == 'POST':
         # Store the IP address of the requester
-
-        headers_list = request.headers.getlist("X-Real-IP")  # IP before proxy if such exists
-        request_ip = ipaddress.ip_address(u'{0}'.format(headers_list[0] if headers_list else request.remote_addr))
+        request_ip = ipaddress.ip_address(request.remote_addr)
 
         hook_blocks = requests.get('https://api.github.com/meta').json()['hooks']
 
@@ -55,29 +47,27 @@ def git_webhook(get_json=None):
             return json.dumps({'msg': "wrong event type"})
 
         payload = request.get_json()
+        # Replace path components although they shouldn't be here
         repo_meta = {
-            'name': payload['repository']['name'],
-            'owner': payload['repository']['owner']['name'],
+            'name': re.sub(r'[./]', '', payload['repository']['name']),
+            'owner': re.sub(r'[./]', '', payload['repository']['owner']['name']),
+            'commit': payload.get('after', None)
         }
 
-        repo = None
+        if 'name' not in repo_meta or 'owner' not in repo_meta:
+            logger.warn('git_webhook: Malformed request')
+            abort(400, "Missing repo name and owner data, malformed request")
+
         # Try to match on branch as configured in repos.json
         match = re.match(r"refs/heads/(?P<branch>.*)", payload['ref'])
         if match:
-            repo_meta['branch'] = match.groupdict()['branch']
-            repo = repos.get(
-                '{owner}/{name}/branch:{branch}'.format(**repo_meta), None)
+            repo_meta['branch'] = re.sub(r'[./]', '', match.groupdict()['branch'])
+            path = '{owner}/{name}/branch_{branch}'.format(**repo_meta)
+        else:
+            path = '{owner}/{name}'
 
-        # Fallback to plain owner/name lookup
-        if not repo:
-            repo = repos.get('{owner}/{name}'.format(**repo_meta), None)
-
-        if not repo or not repo.get('path', None):
-            logger.warn('git_webhook: No repo %s or repo path' % repo_meta)
-            abort(400, "No repo %s or repo path" % repo_meta)
-
+        key = current_app.config.get('GITHUB_WEBHOOK_KEY', None)
         # Check if POST request signature is valid
-        key = repo.get('key', None)
         if key:
             signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
             # if type(key) == unicode:
@@ -87,13 +77,13 @@ def git_webhook(get_json=None):
                 logger.warn('git_webhook: Incorrect key')
                 abort(403, "Incorrect key")
 
-        cwd = os.path.join(repo.get('path'), '.')
-        rm = subprocess.Popen(('rm', '-r', os.path.join(repo.get('path'), '*')), cwd=cwd)
-        rm.wait()
-        rm = subprocess.Popen(('rm', '-r', os.path.join(repo.get('path'), '.*')), cwd=cwd)
-        rm.wait()
+        # We will create a subdir to /data/www/github and operate on that
+        # It will not be reachable from web unless configured in other webserver
 
+        cwd = os.path.join(current_app.config['DATA_PATH'], 'github', path)
+        shutil.rmtree(cwd)  # Delete directory to get clean copy
+        os.makedirs(cwd)  # Make all dirs necessary for this path
         curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
                                 cwd=cwd, stdout=subprocess.PIPE)
         tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
-        return 'OK'
+        return 'OK commit {commit}'.format(**repo_meta)

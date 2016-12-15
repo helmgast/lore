@@ -1,0 +1,15 @@
+*.pyc
+*.db
+*.log
+*.mo
+*.pot
+*.sublime*
+config.py
+front/
+/.idea
+/.settings
+/.project
+/.pydevproject
+/Raconteur.egg-info
+/venv
+/node_modules

@@ -72,8 +72,7 @@ class UsersView(ResourceView):
         user = User.objects(id=id).first_or_404()
         r = ItemResponse(UsersView, [('user', user)], method='patch')
         r.auth_or_abort()
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(user, request.form.keys())  # only populate selected keys
@@ -129,8 +128,7 @@ class GroupsView(ResourceView):
         group = Group.objects(slug=id).first_or_404()
         r = ItemResponse(GroupsView, [('group', group)], method='patch')
         r.auth_or_abort()
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
+
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(group, request.form.keys())  # only populate selected keys

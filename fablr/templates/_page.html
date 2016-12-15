@@ -6,7 +6,7 @@
 
     <title>{% block title %}{{ self.content_title() }}{% endblock %}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
-    {% if args and args.get('intent',None)=='patch' %}
+    {% if args and args.get('intent',None) %}
         {#            Turn off Pinterest pinning from image galleries on editable pages#}
         <meta name="pinterest" content="nopin"/>
     {% endif %}
@@ -24,8 +24,6 @@
 
     {% block cssimports %}
         <link rel="stylesheet" href="{{ url_for('static', filename=assets['app.css']) }}">
-        {#        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">#}
-        {#        <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">#}
     {% endblock %}
 
     {% block jsimports %}

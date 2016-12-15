@@ -132,10 +132,10 @@ class FileAssetsView(ResourceView):
     def index(self, **kwargs):
         r = ListResponse(FileAssetsView, [('files', FileAsset.objects().order_by('-created_date'))], extra_args=kwargs)
         r.auth_or_abort()
+        r.prepare_query()
 
         # This will re-order so that any selected files are guaranteed to show first
         if r.args['select'] and len(r.args['select']) > 0:
-            r.prepare_query(paginate=False)
             head, tail = [], []
             for item in r.files:
                 if item.slug in r.args['select']:
@@ -143,9 +143,6 @@ class FileAssetsView(ResourceView):
                 else:
                     tail.append(item)
             r.files = head+tail
-            r.paginate()
-        else:
-            r.prepare_query()
 
         return r
 
@@ -162,8 +159,6 @@ class FileAssetsView(ResourceView):
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
         r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')

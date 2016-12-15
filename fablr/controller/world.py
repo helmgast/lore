@@ -103,8 +103,6 @@ class PublishersView(ResourceView):
         publisher = Publisher.objects(slug=id).first_or_404()
 
         r = ItemResponse(PublishersView, [('publisher', publisher)], method='patch')
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
@@ -119,7 +117,9 @@ class PublishersView(ResourceView):
     def delete(self, id):
         abort(501)  # Not implemented
 
+
 domain_slug = re.compile(r'(www.)?([^.]+)')
+
 
 def set_theme(response, theme_type, slug):
     if response and theme_type and slug:
@@ -263,8 +263,6 @@ class WorldsView(ResourceView):
             g.available_locales = lang_options
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
         set_theme(r, 'publisher', publisher.slug)
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
@@ -326,7 +324,8 @@ class ArticlesView(ResourceView):
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
             r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
         else:
-            r = ItemResponse(WorldsView, [('world', World.objects(slug=world_).first_or_404()), ('publisher', publisher)])
+            r = ItemResponse(WorldsView,
+                             [('world', World.objects(slug=world_).first_or_404()), ('publisher', publisher)])
             r.auth_or_abort()
             set_theme(r, 'world', r.world.slug)
         set_theme(r, 'publisher', publisher.slug)
@@ -351,8 +350,9 @@ class ArticlesView(ResourceView):
 
     def blog(self, publisher_, world_):
         r = self.index(publisher_, world_)
+        r.args['per_page'] = 5
         r.args['view'] = 'list'
-        r.articles = r.pagination.iterable.filter(type='blogpost').order_by('-featured', '-created_date')
+        r.query = r.query.filter(type='blogpost').order_by('-featured', '-created_date')
         r.template = 'world/article_blog.html'
         r.prepare_query()
         return r
@@ -382,7 +382,8 @@ class ArticlesView(ResourceView):
             feed.add(article.title, current_app.md._instance.convert(article.content),
                      content_type='html',
                      author=str(article.creator) if article.creator else 'System',
-                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=true, _scheme=''),
+                     url=url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug,
+                                 id=article.slug, _external=True, _scheme=''),
                      updated=article.created_date,
                      published=article.created_date)
         return feed.get_response()
@@ -408,7 +409,6 @@ class ArticlesView(ResourceView):
                               ('publisher', publisher)])
             r.auth_or_abort()
             set_theme(r, 'article', r.article.theme or 'default')
-        # 1/0
 
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
@@ -458,8 +458,6 @@ class ArticlesView(ResourceView):
         set_theme(r, 'world', world.slug)
         set_theme(r, 'article', r.article.theme or 'default')
 
-        if not isinstance(r.form, RacBaseForm):
-            raise ValueError("Edit op requires a form that supports populate_obj(obj, fields_to_populate)")
         if not r.validate():
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
@@ -508,6 +506,7 @@ class ArticleRelationsView(ResourceView):
 def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
+
 
 PublishersView.register_with_access(world_app, 'publisher')
 WorldsView.register_with_access(world_app, 'world')
