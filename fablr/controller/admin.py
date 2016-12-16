@@ -68,14 +68,17 @@ def git_webhook(get_json=None):
 
         key = current_app.config.get('GITHUB_WEBHOOK_KEY', None)
         # Check if POST request signature is valid
-        if key:
-            signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
-            # if type(key) == unicode:
-            #     key = key.encode()
-            mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
-            if not hmac.compare_digest(mac.hexdigest(), signature):
-                logger.warn('git_webhook: Incorrect key')
-                abort(403, "Incorrect key")
+        if not key:
+            logger.warn('git_webhook: No key configured')
+            abort(403, "No key configured")
+
+        signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
+        # if type(key) == unicode:
+        #     key = key.encode()
+        mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
+        if not hmac.compare_digest(mac.hexdigest(), signature):
+            logger.warn('git_webhook: Incorrect key')
+            abort(403, "Incorrect key")
 
         # We will create a subdir to /data/www/github and operate on that
         # It will not be reachable from web unless configured in other webserver
