@@ -84,7 +84,7 @@ def git_webhook(get_json=None):
         # It will not be reachable from web unless configured in other webserver
 
         cwd = os.path.join(current_app.config['DATA_PATH'], 'github', path)
-        shutil.rmtree(cwd)  # Delete directory to get clean copy
+        shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
         curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
                                 cwd=cwd, stdout=subprocess.PIPE)
