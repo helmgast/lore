@@ -170,7 +170,7 @@
                                            href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"
                                     {{ 'target=_blank' if modal else '' }}>
                                 {{ fileasset.slug }}</a>
-                                <br>[{{ fileasset.created_date.strftime("%Y-%m-%d") }} {{ fileasset.width }}x{{ fileasset.height }}
+                                <br>[{{ fileasset.created_date|dateformat(format='short') }} {{ fileasset.width }}x{{ fileasset.height }}
                                 px]
                             </figcaption>
                         </figure>

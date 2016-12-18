@@ -41,7 +41,7 @@
                         {{ publisher.description|markdown }}
                     </div>
                     <ul class="card-details">
-                        <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date.strftime('%Y-%m-%d') }}</li>
+                        <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date|dateformat(format='short') }}</li>
                     </ul>
                 </div>
             </div>

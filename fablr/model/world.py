@@ -13,13 +13,13 @@ from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_babel import lazy_gettext as _
-from misc import Document  # Enhanced document
+from misc import Document, available_locale_tuples  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
                          GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField)
 
 from asset import FileAsset
-from misc import Choices, slugify, Address, Languages, choice_options, datetime_options, reference_options
+from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
 from user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class Publisher(Document):
 
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
+    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
     shop_enabled = BooleanField(default=False, verbose_name=_('Enable shop feature'))
@@ -85,9 +85,9 @@ class World(Document):
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
 
-    preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
+    preferred_license = StringField(choices=available_locale_tuples, default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=Languages.to_tuples()), verbose_name=_('Available Languages'))
+    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
@@ -315,8 +315,8 @@ class Article(Document):
 
 Article.type.filter_options = choice_options('type', Article.type.choices)
 Article.world.filter_options = reference_options('world', Article)
-Article.created_date.filter_options = datetime_options('created_date',
-                                                       [timedelta(days=7),
+Article.created_date.filter_options = datetime_delta_options('created_date',
+                                                             [timedelta(days=7),
                                                         timedelta(days=30),
                                                         timedelta(days=90),
                                                         timedelta(days=365)])

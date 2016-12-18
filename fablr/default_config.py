@@ -13,8 +13,10 @@ class Config(object):
     # Only set new cookie when old expire. This reduce data sent and simplifies caching.
     SESSION_REFRESH_EACH_REQUEST = False
     # Used by i18n translation using Babel
-    BABEL_DEFAULT_LOCALE = 'sv'
-    BABEL_AVAILABLE_LOCALES = ['sv', 'en']
+    BABEL_DEFAULT_LOCALE = 'sv_SE'
+    BABEL_DEFAULT_TIMEZONE = 'Europe/Stockholm'
+    # Locales that can be selected throughout the system
+    BABEL_AVAILABLE_LOCALES = ['sv_SE', 'en_US']  # In order of preference for some cases
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
     ALLOW_DOMAINS = False

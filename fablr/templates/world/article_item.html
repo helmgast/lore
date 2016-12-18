@@ -137,7 +137,7 @@
                         {{ article.creator }}{% endif %}
                 {%- else -%}System{%- endif -%}</li>
             <li class="content-menu-info" title="{{ _('Created') }}"><span
-                    class="glyphicon glyphicon-calendar"></span> {{ article.created_date.strftime('%Y-%m-%d') }}</li>
+                    class="glyphicon glyphicon-calendar"></span> {{ article.created_date|dateformat(format='short') }}</li>
             {% if articlegroups or g.user %}
                 <li class="content-menu-info" title="{{ _('Visibility') }}"><span
                         class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}

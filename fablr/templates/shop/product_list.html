@@ -4,11 +4,6 @@
 {% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 
 
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'
-} %}
-
 {% block sidebar %}{{ super() }}
     {% if not product %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
@@ -64,7 +59,7 @@
                     <h3>{{ product.title }}</h3></a>
                 <ul class="list-inline article-meta" style="margin-bottom: 0">
                     <li title="{{ _('Created') }}"><span
-                            class="glyphicon glyphicon-calendar"></span> {{ product.created.strftime('%Y-%m-%d') }}</li>
+                            class="glyphicon glyphicon-calendar"></span> {{ product.created|dateformat(format='short') }}</li>
                 </ul>
                 <div class="media">
                     {% if product.get_feature_image %}
@@ -102,8 +97,8 @@
                         <td>{{ product.description|markdown }}</td>
                         <td>{{ product.get_field_display('type') }}</td>
                         <td>{{ product.world|default(_('No data'),true) }}</td>
-                        <td class="nobr">{{ product.created.strftime('%Y-%m-%d') }}</td>
-                        <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
+                        <td class="nobr">{{ product.created|dateformat(format='short') }}</td>
+                        <td class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -127,7 +122,7 @@
                             <div class="card-description">{{ product.description|markdown }}</div>
                             <ul class="card-details">
                                 <li class="product-type">{{ product.get_field_display('type') }}</li>
-                                <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
+                                <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
                                 <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
                                        href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
                                 </li>

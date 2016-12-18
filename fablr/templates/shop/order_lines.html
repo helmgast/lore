@@ -1,7 +1,4 @@
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'
-} %}
+
 <!-- Items -->
 <tr>
     <td>
@@ -12,7 +9,6 @@
                 <th colspan=2></th>
                 <th style="text-align:left; vertical-align:bottom">{{ _('Quantity') }}</th>
                 <th style="text-align:left; vertical-align:bottom">{{ _('Price') }}</th>
-                <th style="text-align:left; vertical-align:bottom">{{ _('Total') }}</th>
             </tr>
             {% for line in order.order_lines %}
                 {% if line.product.status != 'hidden' %}
@@ -66,35 +62,34 @@
                                 {{ line.quantity }}
                             {% endif %}
                         </td>
-                        <td class="product-price">{{ currencies[line.product.currency] % line.product.price|currency if order.status=='cart' else currencies[line.product.currency] % line.price|currency }}</td>
-                        <td class="product-price">{{ currencies[line.product.currency] % (line.quantity*line.price)|currency }}</td>
+                        <td class="product-price">{{ (line.product.price if order.status=='cart' else line.price)|currencyformat(order.currency.upper()) }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
             {% if order.status != 'cart' or (args and args['view'] == 'pay') %}
             <tr>
-                <td colspan=3 style="text-align:right">
+                <td colspan=2 style="text-align:right">
                     <small>{{ _('Shipping') if not order.shipping else order.shipping.title }}</small>
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{{ currencies.get(order.currency,'%s') % (order.shipping.price if order.shipping else 0)|currency }}</small>
+                    <small>{{ (order.shipping.price if order.shipping else 0)|currencyformat(order.currency.upper()) }}</small>
                 </td>
             </tr>
             <tr>
-                <td colspan=3 style="text-align:right">
+                <td colspan=2 style="border-top: none; text-align:right">
                     <small>{{ _('Including tax') }}</small>
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{{ currencies.get(order.currency,'%s') % order.total_tax|currency }}</small>
+                    <small>{{ order.total_tax|currencyformat(order.currency.upper()) }}</small>
                 </td>
             </tr>
             {% endif %}
             <tr>
-                <td colspan=3 style="text-align:right">{{ _('Grand Total') }}</td>
+                <td colspan=2 style="border-top: none; text-align:right">{{ _('Total') }}</td>
                 <td></td>
-                <td class="product-price">{{ currencies.get(order.currency,'%s') % order.total_price|currency }}</td>
+                <td class="product-price">{{ order.total_price|currencyformat(order.currency.upper()) }}</td>
             </tr>
         </table>
     </td>

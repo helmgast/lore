@@ -6,6 +6,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from flask.ext.babel import format_date
 
 from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, BooleanField, ListField,
@@ -27,7 +28,7 @@ class Session(EmbeddedDocument):
     present_members = ListField(ReferenceField(User));
 
     def __unicode__(self):
-        return u'Session of %s at %s' % ('self.campaign', self.play_start.strftime('%Y-%m-%d'))
+        return u'Session of %s at %s' % ('self.campaign', self.play_start|format_date(format='short'))
 
 
 # All material related to a certain story by a certain group.

@@ -84,11 +84,11 @@
                 </tr>
                 <tr>
                     <td><strong>{{ _('Joined') }}</strong></td>
-                    <td>{{ user.join_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ user.join_date|datetimeformat(format='short') }}</td>
                 </tr>
                 <tr>
                     <td><strong>{{ _('Last login') }}</strong></td>
-                    <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else _('Not logged in yet') }}</td>
+                    <td>{{ user.last_login|datetimeformat(format='short') if user.last_login else _('Not logged in yet') }}</td>
                 </tr>
 
 
@@ -124,7 +124,7 @@
                 {% for event in events %}
                     <tr>
                         <td>
-                            <small>{{ event.created.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            <small>{{ event.created|datetimeformat(format='medium') }}</small>
                         </td>
                         <td>{{ event.action_string() }}</td>
                         <td>{{ event.xp }}</td>

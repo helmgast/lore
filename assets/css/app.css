@@ -365,6 +365,37 @@ div.sidebar li.active {
     border-top: none;
 }*/
 
+.list-stats {
+    border-radius: 5px;
+    float: right;
+}
+
+.list-stats .table {
+    width: auto;
+    display: inline-block;
+    margin-bottom: 0px;
+}
+
+.list-stats>table>thead>tr>th {
+    color: #999;
+    text-transform: uppercase;
+    font-size: 9px;
+    border-bottom: none;
+    padding-top: 2px;
+    padding-bottom: 2px;
+
+}
+
+.list-stats>table>tbody>tr>td {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2a6496;
+    border-top: none;
+    padding-top: 2px;
+    padding-bottom: 2px;
+
+}
+
 thead {
     font-weight: 700;
 }
@@ -1056,7 +1087,11 @@ important;
 }
 
 .product {
-    height: 200px;
+    max-height: 200px;
+}
+
+.product tr h3 {
+    margin-top: 0px;
 }
 
 .product-type {
@@ -1643,6 +1678,7 @@ li:hover .btn-delete,
     box-shadow: aqua;
     border: 1px solid #ddd;
     margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .privileged:after {

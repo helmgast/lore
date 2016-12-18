@@ -1,10 +1,5 @@
 {% extends "shop/product_list.html" %}
 
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'
-} %}
-
 {% block content_title %}{{ product.title if product else _("New product") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
@@ -109,28 +104,28 @@
                     </tr>
                     <tr>
                         <td><strong>{{ _('Created') }}</strong></td>
-                        <td>{{ product.created.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ product.created|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
                         <td><strong>{{ _('Updated') }}</strong></td>
-                        <td>{{ product.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ product.updated|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
                         <td><strong>{{ _('Type') }}</strong></td>
                         <td>
-                            <small>{{ product.get_type_display() }}</small>
+                            <small>{{ product.get_field_display('type') }}</small>
                         </td>
                     </tr>
                     <tr>
                         <td><strong>{{ _('Price') }}</strong></td>
                         <td>
-                            <small>{{ currencies[product.currency] % product.price|currency }}</small>
+                            <small>{{ product.price|currencyformat(product.currency.upper()) }}</small>
                         </td>
                     </tr>
                     <tr>
                         <td><strong>{{ _('Currency') }}</strong></td>
                         <td>
-                            <small>{{ product.get_currency_display() }}</small>
+                            <small>{{ product.get_field_display('currency') }}</small>
                         </td>
                     </tr>
                     <tr>

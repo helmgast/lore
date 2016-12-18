@@ -50,7 +50,7 @@
                 <tr>
                     <th>{{ _('Country') }}</th>
                     <td colspan=3
-                        style="text-align: left">{{ order.shipping_address.country|default(_('No data'),true) }}</td>
+                        style="text-align: left">{{ get_locale().territories[order.shipping_address.country] }}</td>
                 </tr>
                 <tr>
                     <th>{{ _('Cellphone Number') }}</th>

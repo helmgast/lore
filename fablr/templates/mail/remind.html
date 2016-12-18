@@ -20,7 +20,7 @@ Should have different instructions depending on signup method. #}
             find the right email contact us directly at {{ maillink }}.{% endtrans %}<p>
         {% else %}
 
-        <p>{% trans email=user.email, join=user.join_date.strftime("%Y-%m-%d"), auth %}You registered with the email
+        <p>{% trans email=user.email, join=user.join_date|dateformat(format='medium'), auth %}You registered with the email
             {{ email }} on {{ join }} and your authentication method was:{% endtrans %} <strong>{{ auth }}</strong></p>
 
         {% if user.password %}

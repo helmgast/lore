@@ -1,20 +1,22 @@
 {% extends "shop/_page.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{ _('Orders') }}{% endblock %}
-{% block content_tagline %}{% endblock %}
+{% block content_title %}{{ _('My orders') if method=='my_orders' else _('Orders') }}{% endblock %}
 
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'
-} %}
 
 {% block sidebar %}{{ super() }}
     {% if filter_options %}
-        {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated','status', 'total_price']) }}
+        {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}
 
         <h5>{% trans %}By updated{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['updated'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By created{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
@@ -42,9 +44,30 @@
     {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block content_tagline %}
+    {% if aggregate %}
+    <div class="privileged list-stats">
+        <table class="table">
+            <thead>
+                <th>{{ _('Total value') }}</th>
+                <th>{{ _('First') }}</th>
+                <th>{{ _('Last') }}</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ aggregate['total_value'] }}</td>
+                    <td>{{ aggregate['min_created']|dateformat(format='short') }}</td>
+                    <td>{{ aggregate['max_created']|dateformat(format='short') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}
 
+{% block content %}
     {% if orders %}
+
         {% if args.get('view', none) == 'card' %}
             <div class="cards">
                 {% for order in orders %}
@@ -62,7 +85,7 @@
                             </h3>
                             <ul class="card-details">
                                 <li class="product-type">{{ order.user.username }}</li>
-                                <li class="product-type">{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</li>
+                                <li class="product-type">{{ order.updated|datetimeformat(format='short') }}</li>
                                 <li class="product-price">{{ order.total_price_display() }}</li>
                             </ul>
                         </div>
@@ -88,10 +111,12 @@
                             <a href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">{{ order }}</a>
                         </td>
                         <td>{{ order.user.username }}</td>
-                        <td class="small">{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td>
-                        <td class="small">{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="small">{{ order.created|datetimeformat(format='short') }}</td>
+                        <td class="small">{{ order.updated|datetimeformat(format='short') }}</td>
                         <td>{{ order.get_field_display('status') }}</td>
-                        <td>{{ currencies.get(order.currency,'%s') % order.total_price|currency }}</td>
+                        <td>{{ order.total_price|currencyformat(order.currency.upper()) }}
+{#                            {{ currencies.get(order.currency,'%s') % order.total_price|currency }} #}
+                        </td>
                         <td>{{ order.total_items }}</td>
                     </tr>
                 {% endfor %}
@@ -101,6 +126,8 @@
         {% include "includes/pagination.html" %}
 
     {% else %}
-        <h3>{{ _('You have not made any orders yet!') }}</h3>
+        <div class="jumbotron text-center">
+            <h2>{{ _('No orders found') }}</h2>
+        </div>
     {% endif %}
 {% endblock %}

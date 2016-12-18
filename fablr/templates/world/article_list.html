@@ -96,7 +96,7 @@
                         <h3>{{ article.title }}</h3></a>
                     <ul class="list-inline article-meta" style="margin-bottom: 0">
                         <li title="{{ _('Created') }}"><span
-                                class="glyphicon glyphicon-calendar"></span> {{ article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+                                class="glyphicon glyphicon-calendar"></span> {{ article.created_date|dateformat(format='short') }} {{ _('by') }}
                         </li>
                         <li title="{{ _('Creator') }}">
                             <span class="glyphicon glyphicon-user"></span>
@@ -135,7 +135,7 @@
 
                                 <div class="card-description">{{ desc[0] }}</div>
                                 <ul class="card-details">
-                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date.strftime('%Y-%m-%d') }}</li>
+                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>
                             </ul>
                             </div>
                         </div>
@@ -162,7 +162,7 @@
                             </td>
                             <td>{{ article.creator }}</td>
                             <td>{{ article.get_type_display() }}</td>
-                            <td class="small">{{ article.created_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td class="small">{{ article.created_date|datetimeformat(format='short') }}</td>
                         </tr>
                     {% endfor %}
 
@@ -172,7 +172,7 @@
 
         {% else %}
             <div class="jumbotron text-center">
-                <h2>{{ _('No articles yet!') }}</h2>
+                <h2>{{ _('No articles found') }}</h2>
             </div>
         {% endfor %}
 

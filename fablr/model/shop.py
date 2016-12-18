@@ -5,13 +5,13 @@ from datetime import datetime, timedelta, date
 from flask import g
 from flask import request
 from flask_babel import lazy_gettext as _, gettext
-from misc import Document # Enhanced document
+from misc import Document, datetime_month_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
 from mongoengine.errors import ValidationError
 
 from asset import FileAsset
-from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_options, \
+from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_delta_options, \
     from7to365
 from user import User
 from world import Publisher, World
@@ -29,6 +29,7 @@ ProductStatus = Choices(
     out_of_stock=_('Out of stock'),
     hidden=_('Hidden'))
 
+# TODO replace small letters for currency keys to large, to match babel and common use
 Currencies = Choices(
     eur='EUR',
     sek='SEK'
@@ -119,7 +120,7 @@ class Product(Document):
 Product.world.filter_options = reference_options('world', Product)
 Product.type.filter_options = choice_options('type', Product.type.choices)
 Product.price.filter_options = numerical_options('price', [0, 50, 100, 200])
-Product.created.filter_options = datetime_options('created', from7to365)
+Product.created.filter_options = datetime_delta_options('created', from7to365)
 
 
 class OrderLine(EmbeddedDocument):
@@ -195,10 +196,11 @@ class Order(Document):
             if ol.price > max_price:
                 max_prod, max_price = ol.product, ol.price
         if max_prod:
+            additional_items = self.total_items-1
             s = u'%s%s' % (
                 max_prod.title,
-                ' ' + _('and %(total_items)s more', total_items=self.total_items) if len(self.order_lines) > 1 else '')
-            s += u' [%s]' % self.total_price_display()
+                ' ' + _('and %(additional_items)s more', additional_items=additional_items) if additional_items else '')
+            # s += u' [%s]' % self.total_price_display()
         else:
             s = u'%s' % _('Empty order')
         return s
@@ -303,8 +305,9 @@ class Order(Document):
 Order.total_items.filter_options = numerical_options('total_items', [0, 1, 3, 5])
 Order.total_price.filter_options = numerical_options('total_price', [0, 50, 100, 200])
 Order.status.filter_options = choice_options('status', Order.status.choices)
-Order.updated.filter_options = datetime_options('updated',
-                                                [timedelta(days=1),
+Order.created.filter_options = datetime_month_options('created')
+Order.updated.filter_options = datetime_delta_options('updated',
+                                                      [timedelta(days=1),
                                                  timedelta(days=7),
                                                  timedelta(days=30),
                                                  timedelta(days=90),

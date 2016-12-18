@@ -150,6 +150,7 @@ class ProductsView(ResourceView):
         #     stock.save()
         # return redirect(r.args['next'] or url_for('shop.ProductsView:index', publisher=publisher.slug))
 
+
 ProductsView.register_with_access(shop_app, 'product')
 
 shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
@@ -281,9 +282,21 @@ class OrdersView(ResourceView):
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
         orders = Order.objects().order_by('-updated')  # last updated will show paid highest
+
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)])
+
         r.auth_or_abort()
         r.prepare_query()
+        aggregate = list(r.orders.aggregate({'$group':
+            {
+                '_id': None,
+                'total_value': {'$sum': '$total_price'},
+                'min_created': {'$min': '$created'},
+                'max_created': {'$max': '$created'}
+            }
+        }))
+        r.aggregate = aggregate[0] if aggregate else None
+
         set_theme(r, 'publisher', publisher.slug)
         return r
 
@@ -439,7 +452,8 @@ class OrdersView(ResourceView):
                 r.commit()
                 g.user.log(action='purchase', resource=cart_order, metric=cart_order.total_price_sek())
                 send_mail(recipients=[g.user.email], message_subject=_('Thank you for your order!'), mail_type='order',
-                          cc=[current_app.config['MAIL_DEFAULT_SENDER']], user=g.user, order=cart_order, publisher=publisher)
+                          cc=[current_app.config['MAIL_DEFAULT_SENDER']], user=g.user, order=cart_order,
+                          publisher=publisher)
             except stripe.error.CardError as ce:
                 r.errors = [('danger', ce.json_body['error']['message'])]
                 return r, 400
@@ -491,8 +505,3 @@ def get_cart_order():
 def inject_cart():
     cart_order = get_cart_order()
     return dict(cart_items=cart_order.total_items if cart_order else 0)
-
-
-@current_app.template_filter('currency')
-def currency(value):
-    return ("{:.0f}" if float(value).is_integer() else "{:.2f}").format(value)

@@ -7,21 +7,28 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from datetime import timedelta, date, datetime
+
+from babel import Locale
+from babel.dates import get_month_names
+from dateutil.relativedelta import *
 
 import flask_mongoengine
 import wtforms as wtf
+from flask import g
 from flask_wtf import Form  # secure form
 from slugify import slugify as ext_slugify
 
 from wtforms.compat import iteritems
 from wtforms.widgets import TextArea
-from flask_babel import lazy_gettext as _
+from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
 import logging
 from flask import current_app
 from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
+
+from fablr.extensions import configured_locales
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -124,25 +131,45 @@ def choice_options(field_name, choices):
     return return_function
 
 
-def datetime_options(field_name, time_deltas=None):
-    rv = []
-    # 'Last %(d)s days, %(h)s hours, %(m)s minutes, %(s)s seconds'
-    if not time_deltas:
-        raise ValueError("Need at least one value in time_deltas")
-
-    # We pre-compute the filter choices in a intermediary form, without the dicts
-    # Will be completed in the return_function below
-    for t in time_deltas:
-        if isinstance(t, tuple):
-            rv.append((field_name + '__gte', field_name + '__lt', t[0], t[1]))
-        else:
-            rv.append((field_name + '__gte', field_name + '__lt', t, _('Last %(val)s days', val=t.days)))
-    rv.append((field_name + '__lt', field_name + '__gte', time_deltas[-1],
-               _('Older than %(val)s days', val=time_deltas[-1].days)))
+def datetime_month_options(field_name):
+    """
+    Creates a range of last 12 months starting with current month, e.g. each month is
+    field__gte=year/month/1, field__lt=year/month+1/1
+    :param field_name:
+    :return:
+    """
 
     def return_function(*args):
         # Rebuild above list of tuples to one with dict, and make time - timedelta
-        return [FilterOption(kwargs={x[0]: date.today() - x[2], x[1]: None}, label=x[3]) for x in rv]
+        now = date.today().replace(day=1)  # Reset day to first of month
+        # now = datetime(year=now.year, month=now.month, day=1)
+        rv = []
+        for i in range(0, 11):
+            rv.append(FilterOption(kwargs={
+                field_name + '__gte': now+relativedelta(months=-i),
+                field_name + '__lt': now+relativedelta(months=-i+1)}, label=format_date(now+relativedelta(months=-i), 'MMMM')))
+        return rv
+
+    return return_function
+
+
+def datetime_delta_options(field_name, time_deltas=None, delta_labels=None):
+    if not time_deltas:
+        raise ValueError("Need at least one value in time_deltas")
+    if delta_labels and len(delta_labels) is not len(time_deltas):
+        raise ValueError("Length of delta_labels is not matching length of time_deltas")
+
+    def return_function(*args):
+        rv = []
+        today = date.today()
+        for i in range(0, len(time_deltas)):
+            delta = time_deltas[i]
+            rv.append(FilterOption(kwargs={field_name + '__gte': today-delta, field_name + '__lt': None},
+                                   label=_('Last %(delta)s', delta=delta_labels[i] if delta_labels else format_timedelta(delta))))
+        # Add a last "older than all above" option
+        rv.append(FilterOption(kwargs={field_name + '__lt': today - time_deltas[-1], field_name + '__gte': None},
+                               label=_('Older than %(delta)s', delta=format_timedelta(time_deltas[-1]))))
+        return rv
 
     return return_function
 
@@ -158,254 +185,61 @@ def distinct_options(field_name, model):
 
     return return_function
 
+available_locale_tuples = [(code, Locale.parse(code).language_name.capitalize()) for code in configured_locales]
 
-Languages = Choices(
-    en=u'English',
-    sv=u'Svenska'
-)
+# Enumerates all country codes based on Babel (ISO 3166). Exclude regions (3 letter codes) and special code ZZ
+country_codes = [code for code in Locale('en').territories.iterkeys() if len(code) == 2 and not code == 'ZZ']  # Skip non-2-letter codes
 
-Countries = Choices(
-    AF="Afghanistan",
-    AL="Albania",
-    DZ="Algeria",
-    AS="American Samoa",
-    AD="Andorra",
-    AO="Angola",
-    AI="Anguilla",
-    AQ="Antarctica",
-    AG="Antigua and Barbuda",
-    AR="Argentina",
-    AM="Armenia",
-    AW="Aruba",
-    AU="Australia",
-    AT="Austria",
-    AZ="Azerbaijan",
-    BS="Bahamas",
-    BH="Bahrain",
-    BD="Bangladesh",
-    BB="Barbados",
-    BY="Belarus",
-    BE="Belgium",
-    BZ="Belize",
-    BJ="Benin",
-    BM="Bermuda",
-    BT="Bhutan",
-    BO="Bolivia",
-    BA="Bosnia and Herzegowina",
-    BW="Botswana",
-    BV="Bouvet Island",
-    BR="Brazil",
-    IO="British Indian Ocean Territory",
-    BN="Brunei Darussalam",
-    BG="Bulgaria",
-    BF="Burkina Faso",
-    BI="Burundi",
-    KH="Cambodia",
-    CM="Cameroon",
-    CA="Canada",
-    CV="Cape Verde",
-    KY="Cayman Islands",
-    CF="Central African Republic",
-    TD="Chad",
-    CL="Chile",
-    CN="China",
-    CX="Christmas Island",
-    CC="Cocos (Keeling) Islands",
-    CO="Colombia",
-    KM="Comoros",
-    CG="Congo",
-    CD="Congo, the Democratic Republic of the",
-    CK="Cook Islands",
-    CR="Costa Rica",
-    CI="Cote d'Ivoire",
-    HR="Croatia (Hrvatska)",
-    CU="Cuba",
-    CY="Cyprus",
-    CZ="Czech Republic",
-    DK="Denmark",
-    DJ="Djibouti",
-    DM="Dominica",
-    DO="Dominican Republic",
-    TP="East Timor",
-    EC="Ecuador",
-    EG="Egypt",
-    SV="El Salvador",
-    GQ="Equatorial Guinea",
-    ER="Eritrea",
-    EE="Estonia",
-    ET="Ethiopia",
-    FK="Falkland Islands (Malvinas)",
-    FO="Faroe Islands",
-    FJ="Fiji",
-    FI="Finland",
-    FR="France",
-    FX="France, Metropolitan",
-    GF="French Guiana",
-    PF="French Polynesia",
-    TF="French Southern Territories",
-    GA="Gabon",
-    GM="Gambia",
-    GE="Georgia",
-    DE="Germany",
-    GH="Ghana",
-    GI="Gibraltar",
-    GR="Greece",
-    GL="Greenland",
-    GD="Grenada",
-    GP="Guadeloupe",
-    GU="Guam",
-    GT="Guatemala",
-    GN="Guinea",
-    GW="Guinea-Bissau",
-    GY="Guyana",
-    HT="Haiti",
-    HM="Heard and Mc Donald Islands",
-    VA="Holy See (Vatican City State)",
-    HN="Honduras",
-    HK="Hong Kong",
-    HU="Hungary",
-    IS="Iceland",
-    IN="India",
-    ID="Indonesia",
-    IR="Iran (Islamic Republic of)",
-    IQ="Iraq",
-    IE="Ireland",
-    IL="Israel",
-    IT="Italy",
-    JM="Jamaica",
-    JP="Japan",
-    JO="Jordan",
-    KZ="Kazakhstan",
-    KE="Kenya",
-    KI="Kiribati",
-    KP="Korea, Democratic People's Republic of",
-    KR="Korea, Republic of",
-    KW="Kuwait",
-    KG="Kyrgyzstan",
-    LA="Lao People's Democratic Republic",
-    LV="Latvia",
-    LB="Lebanon",
-    LS="Lesotho",
-    LR="Liberia",
-    LY="Libyan Arab Jamahiriya",
-    LI="Liechtenstein",
-    LT="Lithuania",
-    LU="Luxembourg",
-    MO="Macau",
-    MK="Macedonia, The Former Yugoslav Republic of",
-    MG="Madagascar",
-    MW="Malawi",
-    MY="Malaysia",
-    MV="Maldives",
-    ML="Mali",
-    MT="Malta",
-    MH="Marshall Islands",
-    MQ="Martinique",
-    MR="Mauritania",
-    MU="Mauritius",
-    YT="Mayotte",
-    MX="Mexico",
-    FM="Micronesia, Federated States of",
-    MD="Moldova, Republic of",
-    MC="Monaco",
-    MN="Mongolia",
-    MS="Montserrat",
-    MA="Morocco",
-    MZ="Mozambique",
-    MM="Myanmar",
-    NA="Namibia",
-    NR="Nauru",
-    NP="Nepal",
-    NL="Netherlands",
-    AN="Netherlands Antilles",
-    NC="New Caledonia",
-    NZ="New Zealand",
-    NI="Nicaragua",
-    NE="Niger",
-    NG="Nigeria",
-    NU="Niue",
-    NF="Norfolk Island",
-    MP="Northern Mariana Islands",
-    NO="Norway",
-    OM="Oman",
-    PK="Pakistan",
-    PW="Palau",
-    PA="Panama",
-    PG="Papua New Guinea",
-    PY="Paraguay",
-    PE="Peru",
-    PH="Philippines",
-    PN="Pitcairn",
-    PL="Poland",
-    PT="Portugal",
-    PR="Puerto Rico",
-    QA="Qatar",
-    RE="Reunion",
-    RO="Romania",
-    RU="Russian Federation",
-    RW="Rwanda",
-    KN="Saint Kitts and Nevis",
-    LC="Saint LUCIA",
-    VC="Saint Vincent and the Grenadines",
-    WS="Samoa",
-    SM="San Marino",
-    ST="Sao Tome and Principe",
-    SA="Saudi Arabia",
-    SN="Senegal",
-    SC="Seychelles",
-    SL="Sierra Leone",
-    SG="Singapore",
-    SK="Slovakia (Slovak Republic)",
-    SI="Slovenia",
-    SB="Solomon Islands",
-    SO="Somalia",
-    ZA="South Africa",
-    GS="South Georgia and the South Sandwich Islands",
-    ES="Spain",
-    LK="Sri Lanka",
-    SH="St. Helena",
-    PM="St. Pierre and Miquelon",
-    SD="Sudan",
-    SR="Suriname",
-    SJ="Svalbard and Jan Mayen Islands",
-    SZ="Swaziland",
-    SE="Sweden",
-    CH="Switzerland",
-    SY="Syrian Arab Republic",
-    TW="Taiwan, Province of China",
-    TJ="Tajikistan",
-    TZ="Tanzania, United Republic of",
-    TH="Thailand",
-    TG="Togo",
-    TK="Tokelau",
-    TO="Tonga",
-    TT="Trinidad and Tobago",
-    TN="Tunisia",
-    TR="Turkey",
-    TM="Turkmenistan",
-    TC="Turks and Caicos Islands",
-    TV="Tuvalu",
-    UG="Uganda",
-    UA="Ukraine",
-    AE="United Arab Emirates",
-    GB="United Kingdom",
-    US="United States",
-    UM="United States Minor Outlying Islands",
-    UY="Uruguay",
-    UZ="Uzbekistan",
-    VU="Vanuatu",
-    VE="Venezuela",
-    VN="Viet Nam",
-    VG="Virgin Islands (British)",
-    VI="Virgin Islands (U.S.)",
-    WF="Wallis and Futuna Islands",
-    EH="Western Sahara",
-    YE="Yemen",
-    YU="Yugoslavia",
-    ZM="Zambia",
-    ZW="Zimbabwe",
-)
 
+class CountryChoices:
+    """
+    Lazily build lists of country choices with local translation and sorted alphabetically
+    """
+
+    def __init__(self):
+        # self.i = 0
+        self.dicts = {}
+
+    def refresh(self):
+        new_loc = get_locale()
+        key = str(new_loc)
+        if key not in self.dicts:
+            countries = [(code, new_loc.territories[code]) for code in country_codes]
+            self.dicts[key] = OrderedDict(sorted(countries, key=lambda tup: tup[1]))
+        return self.dicts[key]
+
+    def __iter__(self):
+        """
+        Return an iterator over its tuples of (code, country_name). Called by wtforms.SelectField
+        :return:
+        """
+        d = self.refresh()
+        return d.iteritems()
+
+    # def next(self):  # Python 3: def __next__(self)
+    #     if self.i >= len(self.tuples)-1:  # len=3, if i is 2 then stop
+    #         self.i = 0
+    #         raise StopIteration
+    #     else:
+    #         self.i += 1
+    #         return self.tuples[self.i]
+
+    def __getitem__(self, k):
+        """
+        This is a hack, MongoEngine checks if first object is a list or tuple, this will make it NOT be
+        :param k:
+        :return:
+        """
+        return country_codes[0]
+
+    def __contains__(self, item):
+        """
+        Called by MongoEngine to check if choice exists inside
+        :param item:
+        :return:
+        """
+        d = self.refresh()
+        return item in d
 
 class Address(EmbeddedDocument):
     name = StringField(max_length=60, required=True, verbose_name=_('Name'))
@@ -413,8 +247,8 @@ class Address(EmbeddedDocument):
     zipcode = StringField(max_length=8, required=True, verbose_name=_('ZIP Code'))
     city = StringField(max_length=60, required=True, verbose_name=_('City'))
     # Tuples come unsorted, let's sort first
-    country = StringField(choices=sorted(Countries.to_tuples(), key=lambda tup: tup[1]), required=True,
-                          default=Countries.SE,
+    country = StringField(choices=CountryChoices(), required=True,
+                          default='SE',
                           verbose_name=_('Country'))
     mobile = StringField(max_length=14, verbose_name=_('Cellphone Number'))
 

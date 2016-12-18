@@ -37,7 +37,7 @@
                     <ul class="card-details">
                         <li class="product-type">{{ _('Publisher') }}: {{ world.publisher|default(_('No data'), true) }}</li>
                         <li class="product-type">{{ _('Rule System') }}: {{ world.rule_system|default(_('No data'), true) }}</li>
-                        <li class="product-type">{{ _('Created date') }}: {{ world.created_date.strftime('%Y-%m-%d') }}</li>
+                        <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
                     </ul>
                 </div>
             </div>

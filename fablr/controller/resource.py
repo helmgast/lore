@@ -38,7 +38,8 @@ from wtforms.compat import iteritems, text_type
 from wtforms.utils import unset_value
 from wtforms.widgets import html5, HTMLString, html_params
 
-from fablr.model.misc import METHODS, Languages
+from fablr.extensions import configured_locales
+from fablr.model.misc import METHODS
 from fablr.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -206,7 +207,7 @@ class ResourceResponse(Response):
         'as_user': lambda x: x,
         'render': lambda x: x if x in ['json', 'html'] else None,
         'out': lambda x: x if x in ['modal', 'fragment'] else None,
-        'locale': lambda x: x if x in Languages.keys() else None,
+        'locale': lambda x: x if x in configured_locales else None,
         'intent': lambda x: x if x.upper() in METHODS else None,
     }
 
@@ -280,7 +281,11 @@ class ResourceResponse(Response):
             for k, v in err.errors.items():
                 msg = v.message if hasattr(v, 'message') and v.message else str(v)
                 if k in self.form:  # We have a field, append the error there
-                    self.form[k].errors.append(msg)
+                    errors = self.form[k].errors
+                    if isinstance(errors, dict):
+                        errors = v
+                    else:
+                        errors.append(msg)
                 else:
                     general_errors.append(msg)
         else:

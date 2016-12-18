@@ -113,7 +113,7 @@
                 <hr-d>
                     <ul class="list-inline article-meta" style="margin-bottom: 0;">
                         <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
-                            {{ article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}
+                            {{ article.created_date|dateformat(format='short') }} {{ _('by') }}
                         </li>
                         <li title="{{ _('Creator') }}">
                             <span class="glyphicon glyphicon-user"></span>

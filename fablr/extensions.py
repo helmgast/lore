@@ -12,7 +12,10 @@ import sys
 import urllib
 
 from datetime import datetime
+
+from babel import Locale
 from bson.objectid import ObjectId
+from flask import abort
 from flask_mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
@@ -149,25 +152,51 @@ class MongoJSONEncoder(JSONEncoder):
 
 from flask_babel import Babel
 
+
 babel = Babel()
+configured_locales = set()
 
 from flask import g, request, current_app, session
 
 
-def get_locale():
-    # If a route has set a different locale availability, we will take that from g object
-    if 'available_locales' in g:
-        locale = request.accept_languages.best_match(g.available_locales, current_app.config['BABEL_DEFAULT_LOCALE'])
-        if 'locale' in request.args and request.args['locale'] in g.available_locales:
-            locale = request.args['locale']
-            session['locale'] = locale
-        elif session.get('locale', None) in g.available_locales:
-            locale = session.get('locale', None)  # If user have selected language
+def pick_locale():
+    """
+    Called by Flask Babel on each request to determine which locale to use, subsequently cached during request.
+
+    - There are two types of available locales - the content and the interface.
+    - No content locale means it can be assumed that there is no content to localize (only interface)
+    - Content locales need to be set in g object before any translation happens, or you need to call refresh() on Babel to
+      run this function again
+    - User locale preference is either a single choice from URL or cookie, otherwise from HTTP request lang.
+    - Never allow mismatch of interface and content locale.
+    - If not match can be made, return 404 if the locale was specified in URL, otherwise fallback to default locale
+    (consider always making locale part of URL to have no ambiguity)
+
+    :return:
+    """
+
+    content_locales = g.get('content_locales', None)
+    if not isinstance(content_locales, set):
+        content_locales = None
+    g.available_locales = {k: Locale.parse(k).language_name.capitalize() for k in
+                           (configured_locales & content_locales if content_locales else configured_locales)}
+
+    if 'locale' in request.args:
+        preferred_locale = request.args['locale']
+        if preferred_locale not in g.available_locales:
+            # Hard abort as URL specified an unavailable locale
+            abort(404, u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
+        else:
+            session['locale'] = preferred_locale
+    elif 'locale' in session:
+        preferred_locale = session.get('locale')
     else:
-        locale = current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
-    g.locale = locale
-    # print "Got lang %s, available_locale %s" % (locale, g.available_locales)
-    return locale
+        preferred_locale = request.accept_languages.best_match(g.available_locales.keys())
+    if preferred_locale not in g.available_locales:
+        preferred_locale = current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+
+    # print "Got lang %s, available_locale %s" % (preferred_locale, g.available_locales)
+    return preferred_locale
 
 
 from flask_wtf.csrf import CsrfProtect

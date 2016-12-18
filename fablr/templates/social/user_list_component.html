@@ -16,7 +16,7 @@
                     </h3>
                     <ul class="card-details">
                         <li class="product-type">{{ user.xp }} XP</li>
-                        <li class="product-type">{% trans %}Joined{% endtrans %}: {{ user.join_date.strftime('%Y-%m-%d')}}</li>
+                        <li class="product-type">{% trans %}Joined{% endtrans %}: {{ user.join_date|dateformat(format='short')}}</li>
                     </ul>
                     </div>
 
@@ -43,8 +43,8 @@
                 <td>{{ user.get_field_display('status') }}</td>
                 <td>{{ user.xp|default }}</td>
                 <td>{{ user.location|default }}</td>
-                <td class="small">{{ user.join_date.strftime('%Y-%m-%d %H:%M') if user.join_date}}</td>
-                <td class="small">{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login}}</td>
+                <td class="small">{{ user.join_date|datetimeformat(format='short') if user.join_date}}</td>
+                <td class="small">{{ user.last_login|datetimeformat(format='short') if user.last_login}}</td>
             </tr>
         {% endfor %}
         </tbody>

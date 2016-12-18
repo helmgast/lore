@@ -41,6 +41,7 @@ def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
             raise ValueError("No Mimetype given and none in the gridfile")
         mimetype = gridfile.content_type
 
+    # TODO check that this is in UTC-time
     headers = {'Content-Length': gridfile.length,
                'Last-Modified': gridfile.upload_date.strftime("%a, %d %b %Y %H:%M:%S GMT")}  #
     if as_attachment:

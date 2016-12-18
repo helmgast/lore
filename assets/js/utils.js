@@ -45,7 +45,7 @@ function decompose_url(url) {
     for (var i = 0; i < query_parts.length; i++) {
         var nv = query_parts[i].split('=');
         if (!nv[0] || !nv[1]) continue;
-        params[nv[0]] = nv[1] || true;
+        params[nv[0]] = decodeURIComponent(nv[1].replace(/\+/g, '%20')) || true;
     }
     var i = a.pathname.lastIndexOf("/")
     var parts = {

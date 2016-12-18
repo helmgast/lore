@@ -172,7 +172,13 @@ def configure_extensions(app):
     # Internationalization
     extensions.babel.init_app(app)  # Automatically adds the extension to Jinja as well
     # Register callback that tells which language to serve
-    extensions.babel.localeselector(extensions.get_locale)
+    extensions.babel.localeselector(extensions.pick_locale)
+    extensions.configured_locales = set(app.config.get('BABEL_AVAILABLE_LOCALES'))
+    if not extensions.configured_locales or app.config.get('BABEL_DEFAULT_LOCALE') not in extensions.configured_locales:
+        app.logger.warning('Incorrectly configured: BABEL_DEFAULT_LOCALE %s not in BABEL_AVAILABLE_LOCALES %s' %
+                           app.config.get('BABEL_DEFAULT_LOCALE'), app.config.get('BABEL_AVAILABLE_LOCALES'))
+        extensions.configured_locales = set([app.config.get('BABEL_DEFAULT_LOCALE')])
+
     # Secure forms
     extensions.csrf.init_app(app)
 
@@ -223,16 +229,17 @@ def configure_blueprints(app):
 
 
 def configure_hooks(app):
-    from model.misc import Languages
+    from flask_babel import get_locale
 
-    @app.before_request
-    def load_locale():
-        g.available_locales = app.config['BABEL_AVAILABLE_LOCALES']
+    # @app.before_request
+    # def load_locale():
+    #     g.available_locales = available_locales_tuple
 
     @app.context_processor
     def inject_access():
-        return dict(access_policy=app.access_policy,
-                    locale_dict=Languages, debug=app.debug, assets=app.assets)
+        return dict(access_policy=app.access_policy, debug=app.debug, assets=app.assets)
+
+    app.add_template_global(get_locale)
 
     @app.add_template_global
     def in_current_args(testargs):

@@ -15,7 +15,7 @@ import math
 from flask import flash
 
 from baseuser import BaseUser, create_token
-from misc import Choices, slugify, translate_action, datetime_options, choice_options, from7to365, \
+from misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
     numerical_options
 from flask_babel import lazy_gettext as _
 from misc import Document  # Enhanced document
@@ -138,8 +138,8 @@ class User(Document, BaseUser):
         return self._BaseDocument__get_field_display(self._fields[field])
 
 User.status.filter_options = choice_options('status', User.status.choices)
-User.last_login.filter_options = datetime_options('last_login', from7to365)
-User.join_date.filter_options = datetime_options('join_date', from7to365)
+User.last_login.filter_options = datetime_delta_options('last_login', from7to365)
+User.join_date.filter_options = datetime_delta_options('join_date', from7to365)
 User.xp.filter_options = numerical_options('xp', [0, 50, 100, 200])
 
 class Event(Document):
@@ -254,5 +254,5 @@ class Group(Document):
         return self._BaseDocument__get_field_display(self._fields[field])
 
 Group.type.filter_options = choice_options('type', Group.type.choices)
-Group.created.filter_options = datetime_options('created', from7to365)
-Group.updated.filter_options = datetime_options('updated', from7to365)
+Group.created.filter_options = datetime_delta_options('created', from7to365)
+Group.updated.filter_options = datetime_delta_options('updated', from7to365)

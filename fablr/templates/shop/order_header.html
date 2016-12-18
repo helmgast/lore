@@ -37,11 +37,11 @@
                     </tr>
                     <tr>
                         <th>{{ _('Created') }}</th>
-                        <td>{{ order.created.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ order.created|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Updated') }}</th>
-                        <td>{{ order.updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ order.updated|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Status') }}</th>
@@ -65,9 +65,11 @@
                         <th>{{ _('Address') }}</th>
                         <td>
                             {% if publisher.address %}
+                                <address>
                             {{ publisher.address.street }}<br>
                             {{ publisher.address.zipcode }} {{ publisher.address.city }}<br>
-                            {{ publisher.address.country }}
+                            {{ get_locale().territories[publisher.address.country] }}
+                                </address>
                             {% else %}
                                 {{ _('No data') }}
                             {% endif %}

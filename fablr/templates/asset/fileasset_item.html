@@ -69,7 +69,7 @@
                     <tr>
                         <td><strong>{{ _('Uploaded date') }}</strong></td>
                         <td>
-                            <small>{{ fileasset.created_date.strftime("%Y-%m-%d") }}</small>
+                            <small>{{ fileasset.created_date|dateformat(format='short') }}</small>
                         </td>
                     </tr>
                     <tr>

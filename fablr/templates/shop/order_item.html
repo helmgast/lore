@@ -2,7 +2,7 @@
 
 {% block content_title %}
     {% if order.status!='cart' %}
-        {{ _('Order') }}
+        {{ _('Order: %(o)s', o=order) }}
     {% elif args['view']=='cart' %}
         {{ _('Cart') }}
     {% elif args['view']=='details' %}
@@ -28,6 +28,13 @@
             </ul>
         {% endcall %}
     {% endif %}
+        <ul class="nav nav-pills nav-stacked">
+            <li class="active">
+<a class="" data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
+            from_field=user.email, intent='post', subject=gettext('Regarding order %(order)s', order=order.id)) }}">
+                    {{ _('Contact us about this order') }}</a>
+            </li>
+        </ul>
 {% endblock %}
 
 {#
@@ -129,7 +136,7 @@
                 <div class="col-md-offset-8">
                     <button type="submit" id="checkout" class="btn btn-primary btn-block btn-lg">{{ _('Pay order') }}
                         <span class="glyphicon glyphicon-credit-card"></span></button>
-                    <small>For test, use VISA 4242424242424242, any expiry and CVC</small>
+                    <small>For test, use VISA 4242424242424242, any expiry/CVC</small>
                 </div>
 
             {% endif %}
@@ -137,14 +144,7 @@
         {{ order_form.csrf_token }}
         {{ order_form.stripe_token(type='hidden') if order_form.stripe_token }}
         </form>
-    {% else %}
-        <div class="row">
-            <div class="col-md-offset-8">
-                <a class="btn btn-warning" data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-            from_field=user.email, intent='post', subject=gettext('Regarding order %(order)s', order=order.id)) }}">
-                    {{ _('Contact Us') }}</a>
-            </div>
-        </div>
+
     {% endif %}
     {% endif %}
 {% endblock %}{% endblock %}

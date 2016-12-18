@@ -186,7 +186,7 @@ class WorldsView(ResourceView):
         articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
                          formats=['html'])
         r.template = 'world/home.html'
@@ -199,7 +199,7 @@ class WorldsView(ResourceView):
     def index(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         if publisher.languages:
-            g.available_locales = publisher.languages
+            g.content_locales = set(publisher.languages)
         r = ListResponse(WorldsView, [('worlds', World.objects()), ('publisher', publisher)])
         r.auth_or_abort()
         r.worlds = publish_filter(r.worlds).order_by('title')
@@ -240,7 +240,7 @@ class WorldsView(ResourceView):
     def post(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         if publisher.languages:
-            g.available_locales = publisher.languages
+            g.content_locales = set(publisher.languages)
         r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
@@ -260,7 +260,7 @@ class WorldsView(ResourceView):
         world = World.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
         set_theme(r, 'publisher', publisher.slug)
         if not r.validate():
@@ -319,7 +319,7 @@ class ArticlesView(ResourceView):
     def world_home(self, publisher_, world_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         if publisher.languages:
-            g.available_locales = publisher.languages
+            g.content_locales = set(publisher.languages)
         if world_ == 'post':
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
             r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
@@ -337,7 +337,7 @@ class ArticlesView(ResourceView):
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         articles = Article.objects(world=if_not_meta(world))
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
@@ -394,7 +394,7 @@ class ArticlesView(ResourceView):
 
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
 
         # Special id post means we interpret this as intent=post (to allow simple routing to get)
         if id == 'post':
@@ -420,7 +420,7 @@ class ArticlesView(ResourceView):
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         r = ItemResponse(ArticlesView,
                          [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
@@ -449,7 +449,7 @@ class ArticlesView(ResourceView):
         article = Article.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='patch')
@@ -475,7 +475,7 @@ class ArticlesView(ResourceView):
         article = Article.objects(slug=id).first_or_404()
         lang_options = world.languages or publisher.languages
         if lang_options:
-            g.available_locales = lang_options
+            g.content_locales = set(lang_options)
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='delete')
@@ -552,30 +552,8 @@ def by_articletype(objects):
     return sorted(groups, key=lambda x: x['grouper'])
 
 
-def prettydate(d):
-    diff = datetime.utcnow() - d
-    if diff.days < 1:
-        return _('Today')
-    elif diff.days < 7:
-        return _('Last week')
-    elif diff.days < 31:
-        return _('Last month')
-    elif diff.days < 365:
-        return _('Last year')
-    else:
-        return _('Older')
-
-
-# Template filter, will group a list by creation date, as measure in delta from now
-def by_time(objects):
-    groups = []
-    for s, t in groupby(sorted(objects, key=lambda x: x.created_date), lambda y: prettydate(y.created_date)):
-        groups.append({'grouper': s, 'list': sorted(list(t), key=lambda x: x.title)})
-    return sorted(groups, key=lambda x: x['list'][0].created_date, reverse=True)
-
 
 world_app.add_app_template_filter(dummygrouper)
 world_app.add_app_template_filter(by_initials)
 world_app.add_app_template_filter(by_articletype)
-world_app.add_app_template_filter(by_time)
 world_app.add_app_template_filter(rows)

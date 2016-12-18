@@ -1,5 +1,6 @@
 import logging
 import re
+import urllib
 
 from flask import Blueprint, current_app, render_template, request, flash
 from flask_babel import lazy_gettext as _
@@ -140,7 +141,8 @@ def mail_view(mail_type):
     mail = {'to_field': '', 'from_field': server_mail, 'subject': '', 'message': ''}
 
     if mail_type == 'compose':
-        mailform = UserMailForm(request.form, to_field=server_mail, from_field=user.email if user else '')
+        mailform = UserMailForm(request.form, to_field=server_mail, from_field=user.email if user else '',
+                                subject=request.args.get('subject', None))
     elif mail_type == 'invite':
         mailform = AnyUserSystemMailForm(request.form, subject=_('Invitation to join Helmgast.se'),
                                          from_field=server_mail)
