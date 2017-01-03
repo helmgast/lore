@@ -6,9 +6,12 @@
 *.sublime*
 config.py
 /node_modules
+/front
+/static
 /.idea
 /.settings
 /.project
 /.pydevproject
 /Raconteur.egg-info
 /venv
+

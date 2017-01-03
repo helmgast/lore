@@ -107,6 +107,16 @@ window.onerror = function(err, url, line, col, trace) {
       <ul class="nav navbar-nav navbar-nav-top">
         <li{% block blog_active %}{% endblock %}><a href="{{ url_for('world.article_blog', world='helmgast') }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
 
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="glyphicon glyphicon-globe"></span> {{ _('Products') }} <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="http://helmgast.se/helmgast/eon-iv-material/"> Eon</a></li>
+            <li><a href="http://kultdivinitylost.com"> Kult</a></li>
+            <li><a href="http://helmgast.se/hjaltarnas-tid/"> Hjältarnas Tid</a></li>
+            <li><a href="http://helmgast.se/helmgast/helmgast-ger-ut-jarn/"> Järn</a></li>
+          </ul>
+        </li>
+
         {% call MACRO.IS_ADMIN() %}
         <li{% block social_active %}{% endblock %}><a href="{{ url_for('social.index') }}"><span class="glyphicon glyphicon-bullhorn"></span> {{ _('Social') }}</a></li>
         {% endcall %}

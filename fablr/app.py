@@ -58,7 +58,7 @@ def create_app(no_init=False, **kwargs):
   the_app.config.from_object(default_config.Config) # Default config that applies to all deployments
   the_app.config.from_object(default_config.SecretConfig) # Add dummy secrets
   try:
-      the_app.config.from_pyfile('config.py', silent=False) # Now override with custom settings if exist
+      the_app.config.from_pyfile('../config.py', silent=False) # Now override with custom settings if exist
       config_string += " file config.py, "
   except IOError as err:
       pass
