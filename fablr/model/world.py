@@ -16,7 +16,7 @@ from flask_babel import lazy_gettext as _
 from misc import Document, available_locale_tuples  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
-                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField)
+                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField)
 
 from asset import FileAsset
 from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
@@ -84,6 +84,7 @@ class World(Document):
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
+    product_url = URLField(verbose_name=_('Product URL'))
 
     preferred_license = StringField(choices=available_locale_tuples, default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
@@ -320,6 +321,15 @@ Article.created_date.filter_options = datetime_delta_options('created_date',
                                                         timedelta(days=30),
                                                         timedelta(days=90),
                                                         timedelta(days=365)])
+
+
+class Shortcut(Document):
+    long_url = URLField(verbose_name=_('Long URL'))
+    slug = StringField(unique=True, required=True, max_length=10, verbose_name=_('Slug'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
+    hits = IntField(min_value=0, verbose_name=_('Hits'))
+
+
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 # ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))

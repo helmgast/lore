@@ -56,7 +56,7 @@
             {#      {{ FORM_FIELD_COLS(user_form.email, 'col-sm-3', 'col-sm-9')}} #}
             {{ MACRO.FORM_FIELD_COLS(user_form.realname, 'col-sm-3', 'col-sm-9') }}
             {{ MACRO.FORM_FIELD_COLS(user_form.location, 'col-sm-3', 'col-sm-9') }}
-            {{ MACRO.FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9') }}
+            {{ MACRO.FORM_FIELD_COLS(user_form.description, 'col-sm-3', 'col-sm-9', controlclass=" content-editor", ) }}
         {% else %}
             <table class="table">
                 {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
@@ -111,7 +111,7 @@
       <td><span class="badge">N/A</span></td></tr>
       #}
             </table>
-            <div class="well">{{ user_form.description(style="width:100%") if user_form else user.description|default(_('Empty...'), true) }}</div>
+            <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div>
             {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
 
             <h3>{{ _('History') }}</h3>

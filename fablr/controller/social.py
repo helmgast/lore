@@ -36,8 +36,8 @@ class UserAccessPolicy(ResourceAccessPolicy):
 
 class UsersView(ResourceView):
     access_policy = UserAccessPolicy({
-        'list': 'user',
-        'view': 'user',
+        'list': 'admin',
+        'view': 'owner',
         'edit': 'owner',
         '_default': 'admin'
     })
@@ -94,9 +94,9 @@ UsersView.register_with_access(social, 'user')
 
 class GroupsView(ResourceView):
     access_policy = UserAccessPolicy({
-        'list': 'user',
-        'view': 'user',
-        'edit': 'owner',
+        'list': 'admin',
+        'view': 'admin',
+        'edit': 'admin',
         '_default': 'admin'
     })
     model = Group

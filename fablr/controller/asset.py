@@ -1,7 +1,10 @@
+import io
 import logging
 from time import time
 
+import pyqrcode
 from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
+from flask import send_file
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
@@ -21,6 +24,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
 
+QR_URL_FORMAT = "HTTPS://FABLR.CO/-%s"
 
 def set_cache(rv, cache_timeout):
     if cache_timeout is not None:
@@ -216,6 +220,15 @@ def index():
 @current_app.route('/asset/link/<fileasset>')
 def link(fileasset):
     return authorize_and_return(fileasset)
+
+
+@current_app.route('/asset/qr/<code>')
+def qrcode(code):
+    qr = pyqrcode.create(QR_URL_FORMAT % code.upper(), error='L', mode='alphanumeric')
+    out = io.BytesIO()
+    qr.svg(out, scale=10)
+    out.seek(0)
+    return send_file(out, attachment_filename='qrcode.svg', mimetype='image/svg+xml')
 
 
 @current_app.route('/asset/download/<fileasset>')

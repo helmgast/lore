@@ -8,11 +8,12 @@ Flask-Markdown==0.3
 flask-mongoengine==0.7.5
 Flask-Script
 Flask-WTF==0.12
-Flask==0.11.1
+Flask==0.12
 git+https://github.com/ripperdoc/flask-classy
 google-api-python-client==1.5.3
 gunicorn==19.6.0
 ipaddress==1.0.17
+Jinja2==2.8.1
 Markdown==2.6.7
 mongoengine==0.10.6
 Pillow==3.3.1
@@ -20,6 +21,7 @@ pymongo==3.3.0
 python-dateutil==2.6.0
 python-magic==0.4.11
 python-slugify==1.2.0
+PyQRCode==1.2.1
 rfc6266
 rollbar
 sparkpost==1.1.1

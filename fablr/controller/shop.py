@@ -52,7 +52,7 @@ class ProductsView(ResourceView):
     subdomain = '<publisher>'
     access_policy = ResourceAccessPolicy({
         'view': 'public',
-        'list': 'public',
+        'list': 'admin',
         '_default': 'admin'
     })
     model = Product
@@ -153,7 +153,15 @@ class ProductsView(ResourceView):
 
 ProductsView.register_with_access(shop_app, 'product')
 
-shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
+
+@shop_app.route('/', subdomain='<publisher>')
+def shop_home(publisher):
+    if ProductsView.access_policy.authorize(op='list'):
+        return redirect(url_for('shop.ProductsView:index', publisher=publisher))
+    else:
+        return redirect(url_for('shop.OrdersView:my_orders', publisher=publisher))
+
+# shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
 CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such

@@ -65,18 +65,20 @@
 {% block navbar_left %}
     <li{% block world_active %}{% endblock %}><a
             href="{{ url_for('world.WorldsView:index', publisher_=publisher.slug) }}"><span
-            class="glyphicon glyphicon-globe"></span> {{ _('Worlds') }}</a></li>
+            class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}</a></li>
     <li{% block blog_active %}{% endblock %}><a
             href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}"><span
             class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
     <li{% block ext_shop_active %}{% endblock %}><a href="http://webshop.helmgast.se"
                                                     target="_blank"><span
             class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
-    <li{% block shop_active %}{% endblock %}><a
-            href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"><span
-            class="glyphicon glyphicon-list-alt"></span> {{ _('New') }} {{ _('Shop') }}</a></li>
     <li><a href="http://www.rollspel.nu/forum/neogames" target="_blank"><span
             class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+    <li{% block shop_active %}{% endblock %}><a class="{{ privileged }}"
+            href="{{ url_for('shop.shop_home', publisher=publisher.slug) }}"><span
+            class="glyphicon glyphicon-list-alt"></span> {{ _('New') }} {{ _('Shop') }}</a></li>
+    {% endcall %}
 {% endblock navbar_left %}
 
 {% block home %}
@@ -237,13 +239,13 @@
                 <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}">
                     {% trans %}Blog{% endtrans %}</a></li>
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='about') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='om-helmgast') }}">
                         {% trans %}About{% endtrans %}</a></li>
+{#                <li>#}
+{#                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">#}
+{#                        {% trans %}Media{% endtrans %}</a></li>#}
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">
-                        {% trans %}Media{% endtrans %}</a></li>
-                <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='work_with_us') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='arbeta-med-oss') }}">
                         {% trans %}Work with us{% endtrans %}</a></li>
             </ul>
         </div>
@@ -253,11 +255,11 @@
             <ul class="list-unstyled">
                 {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='terms_of_service') }}">
+                    <a href="http://webshop.helmgast.se/sv/villkor-info.html">
                         {% trans %}Terms of Service{% endtrans %}</a></li>
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='security_policy') }}">
-                        {% trans %}Security policy{% endtrans %}</a></li>
+                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='sakerhet-och-kakor') }}">
+                        {% trans %}Security and cookie policy{% endtrans %}</a></li>
                 <li class="language-chooser">{% include 'includes/language_chooser.html' %}</li>
             </ul>
         </div>

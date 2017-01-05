@@ -1,0 +1,7 @@
+/* This is just so that Webpack will pick up the font URLs */
+
+@font-face {
+  font-family: 'Vinque';
+  src: url('vinque.woff') format('woff'),
+       url('vinque.ttf') format('truetype');
+}

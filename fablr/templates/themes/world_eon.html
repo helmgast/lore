@@ -6,133 +6,38 @@
 <style>
 
 @import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);
-@import url(//db.onlinewebfonts.com/c/49557a3cbd1fb93039b16f864aaa18a8?family=Prince+Valiant);
-@import url(//db.onlinewebfonts.com/c/4a9f8f8496294ddb0dd5fbec4de4f343?family=Vinque);
 
-/* needs !important to overwrite other css classes */
-.container {
-    font-family: 'Goudy Bookletter 1911', serif !important;
+@font-face {
+  font-family: 'Vinque';
+  src: url({{ url_for('static', filename=assets['css/vinque.woff']) }}) format('woff'),
+       url({{ url_for('static', filename=assets['css/vinque.ttf']) }}) format('truetype');
 }
 
-.container a {
+/* needs !important to overwrite other css classes */
+.sidebar a {
+    font-family: Vinque, serif;
     text-decoration: none;
     color: #8f0011;
-    font-weight: bold;
+    font-size: 13px;
+}
+
+.article_text {
+    font-family: 'Goudy Bookletter 1911', serif;
+}
+
+.article_text a {
+    text-decoration: none;
+    color: #8f0011;
+}
+
+.article_header, .page-header h1, .page-header h2 {
+    font-family: Vinque, serif;
 }
 
 .hero-unit {
     background-image: url({{ url_for('static', filename='img/front/main01_cover.jpg') }});
 }
 
-h4 small {
-    color: #8f0011;
-}
-
-.well {
-    background-color: #bda362;
-    border: 1px solid black;
-    color: #8f0011;
-}
-
-/* needs !important to overwrite other css classes */
-.content {
-    background: none !important;
-}
-
-.worldSideBar {
-    background: url('../../../static/img/themes/mundana.png');
-    background-position: top;
-    background-repeat: no-repeat;
-    background-size: 130px;
-}
-
-.worldSideBar > ul {
-    padding: 130px 0 0 15px;
-}
-
-.worldSideBar li a {
-    text-decoration: none;
-    color: #8f0011;
-    font-weight: normal;
-}
-
-.worldSideBar li a:hover {
-    background: #bda362;
-
-}
-
-/* World Title */
-.content .page-header h1 {
-    font-family: Vinque;
-    color: #8f0011;
-}
-
-.content .page-header {
-    border-bottom: 1px solid black;
-}
-
-.pagination a {
-    color: #8f0011 !important;
-}
-
-.pagination li > a {
-    border: 0;
-    background-color: #bda362;
-}
-
-.pagination li > a:hover {
-    background-color: #8f0011;
-    color: white !important;
-}
-
-.pagination li.disabled > a {
-    background-color: #bda362;
-}
-
-.pagination li.disabled > a:hover {
-    background-color: #bda362;
-    color: #8f0011 !important;
-}
-
-.pagination li.active > a {
-    background-color: #8f0011;
-    color: white !important;
-}
-
-.pagination li.active > a:hover {
-    background-color: #8f0011;
-    color: white !important;
-}
-
-/* Browse Articles - article_list.html
----------------------------------------------
-*/
-
-/* Browse Article Title */
-.content .browseArticle {
-
-}
-
-.panel {
-    background: #bda362 !important;
-    padding: 0 0 0 10px;
-}
-
-/* Browse Tabs container*/
-.content .content-menu {
-}
-
-.content .content-menu li a:hover {
-    color: white;
-    background: #8f0011;
-    border: 1px solid black;
-}
-
-.content .content-menu li.active > a {
-    background: #8f0011 !important;
-    border: 1px solid black;
-    color: white;
-}
 </style>
 {% endblock %}
 

@@ -11,6 +11,7 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const ManifestRevisionPlugin = require('manifest-revision-webpack-plugin');
+const ManifestPlugin = require('webpack-manifest-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const SvgStore = require('webpack-svgstore-plugin');
 
@@ -57,7 +58,8 @@ config = {
             },
             { // Loads TTF files into a DataURI if less than 10kb or into a hashed file
                 test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url?limit=10000&mimetype=application/octet-stream&name=[name].[sha512:hash:base64:7].[ext]'
+                // loader: 'url?limit=10000&mimetype=application/octet-stream&name=[name].[sha512:hash:base64:7].[ext]'
+                loader: 'file?name=[name].[sha512:hash:base64:7].[ext]'
             },
             { // Loads EOT files into a hashed file
                 test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
@@ -73,6 +75,7 @@ config = {
         new ManifestRevisionPlugin('./static/manifest.json', {
             rootAssetPath: './assets/',
             ignorePaths: ['gfx'],
+            extensionsRegex: /\.(css|js|eot|ttf|woff2?)$/i
         }),
 
         // new webpack.optimize.CommonsChunkPlugin({
@@ -98,6 +101,7 @@ prod_config = {
         new ManifestRevisionPlugin('./static/manifest.json', {
             rootAssetPath: './assets/',
             ignorePaths: ['gfx'],
+            extensionsRegex: /\.(css|js|eot|ttf|woff2?)$/i
         }),
 
         // Cleans the dist folder when webpack is run from start

@@ -71,7 +71,7 @@
                             </a>
                         </li>
                     {% endcall %}
-                    {% call(privileged) MACRO.IS_USER() %}
+                    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list', user)) %}
                         <li class="dropdown {% block social_active %}{% endblock %}">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
                                aria-haspopup="true" aria-expanded="false"><span
@@ -79,11 +79,11 @@
                                     class="caret"></span></a>
                             <ul class="dropdown-menu">
 
-                                <li><a href="{{ url_for('social.UsersView:index') }}"><span
+                                <li><a class="{{ privileged }}" href="{{ url_for('social.UsersView:index') }}"><span
                                         class="glyphicon glyphicon-bullhorn"></span> {{ _('Browse') }}</a></li>
                                 <li role="separator" class="divider"></li>
 
-                                <li><a href="{{ url_for('social.GroupsView:index') }}"><span
+                                <li><a class="{{ privileged }}" href="{{ url_for('social.GroupsView:index') }}"><span
                                         class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
                                 {% call(privileged) MACRO.IS_ADMIN() %}
                                     <li role="separator" class="divider"></li>
@@ -118,6 +118,12 @@
                                 <li>
                                     <a {% call MACRO.IS_USER() %}href="{{ url_for('social.UsersView:get', id=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a>
                                 </li>
+                                {% if publisher %}
+                                {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
+                                    <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:my_orders', publisher=publisher.slug) }}">{{ _('My orders') }}</a></li>
+                                {% endcall %}
+                                {% endif %}
+
                                 {% call(privileged) MACRO.IS_ADMIN() %}
                                     <li role="separator" class="divider"></li>
                                     <li><a class="privileged"

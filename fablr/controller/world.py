@@ -29,7 +29,7 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                        ListResponse, ItemResponse, Authorization)
-from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
+from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -363,11 +363,11 @@ class ArticlesView(ResourceView):
         # TODO ignores publisher for the moment
         articles = Article.objects(world=if_not_meta(world), status=PublishStatus.published,
                                    created_date__lte=datetime.utcnow())
-        # TODO very inefficient random sample, use mongodb aggregation instead
-        length = len(articles)
-        if length:
+        # Uses efficient MongoDB aggregate. Returns a dict, not a MongoEngine object
+        sample = list(articles.aggregate({'$sample': {'size': 1}}))
+        if sample:
             return redirect(url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug,
-                                    id=articles[random.randrange(length)].slug))
+                                    id=sample[0]['slug']))
         else:
             return redirect(url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug))
 
@@ -501,6 +501,11 @@ class ArticleRelationsView(ResourceView):
     def index(self, world_):
         abort(501)  # Not implemented
 
+
+@world_app.route('/-<code>')
+def shorturl(code):
+
+    return redirect(code)
 
 @world_app.route('/')
 def homepage():

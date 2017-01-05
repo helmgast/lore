@@ -15,11 +15,30 @@ from flask import current_app
 from flask import json
 from flask import request
 
+from fablr.controller.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse
 from fablr.extensions import csrf
+from flask_mongoengine.wtf import model_form
+
+from fablr.model.world import Shortcut
 
 admin = Blueprint('admin', __name__, template_folder='../templates/admin')
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+class ShortcutsView(ResourceView):
+    list_template = 'world/shortcut_list.html'
+    item_template = 'world/shortcut_item.html'
+    form_class = model_form(Shortcut, base_class=RacBaseForm, converter=RacModelConverter())
+    access_policy = ResourceAccessPolicy()
+    model = Shortcut
+
+    def index(self):
+        r = ListResponse(ShortcutsView, [('shortcuts', Shortcut.objects())])
+        r.auth_or_abort()
+        return r
+
+ShortcutsView.register_with_access(admin, 'shortcut')
+
 
 @csrf.exempt
 @admin.route("/git_webhook", methods=['GET', 'POST'])
