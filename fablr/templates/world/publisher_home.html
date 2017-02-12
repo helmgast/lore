@@ -1,0 +1,9 @@
+{% extends "world/_page.html" %}
+
+{% block pre_content %}{% endblock %}
+{% block mainblock %}
+    {# block home is not defined in root, only in a theme, and will only be reflected here if it exists #}
+    {% if self.home %}
+        {{ self.home() }}
+    {% endif %}
+{% endblock %}

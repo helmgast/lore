@@ -2,23 +2,28 @@
 
 {% set members=group.members if group else [] %}
 
-{% block content_title %}{{ group.name if group }}{% endblock %}
+{% block content_title %}{{ group.title if group }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{ super() }}
-    <ul class="nav nav-pills nav-stacked">
-        <li><a href="{{ url_for('social.GroupsView:get', id='post') }}"><span
-                class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-        {% if op!='new' %}
-            <li><a href="{{ url_for('social.GroupsView:get', id=group.slug, intent='patch') }}"><span
-                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-        {% endif %}
-    </ul>
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.homepage'), _('Home')),
+        (url_for('social.GroupsView:index'), _('Groups')),
+        (url_for('social.GroupsView:get', id=group.slug), self.content_title())
+
+    ) }}{% endblock %}
+
+{% block actionbar %}{{ super() }}
+    <li><a class="btn btn-primary" href="{{ url_for('social.GroupsView:get', id='post') }}"><span
+            class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
+    {% if op!='new' %}
+        <li><a class="btn btn-primary" href="{{ url_for('social.GroupsView:get', id=group.slug, intent='patch') }}"><span
+                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    {% endif %}
 {% endblock %}
 
 {% block content %}{% block inline %}
     {% if group_form %}
-        <form method="post" action="{{ action_url }}">
+        <form id="groupform" method="post" action="{{ action_url }}">
     {% endif %}
 <div class="row">
     <div class="col-md-6">
@@ -46,11 +51,11 @@
 
         <table class="table">
             <tr>
-                <td><strong>{{ _('Members') }}</strong></td>
+                <th>{{ _('Members') }}</th>
                 <td></td>
             </tr>
             <tr>
-                <td><strong>{{ _('Meetings') }}</strong></td>
+                <th>{{ _('Meetings') }}</th>
                 <td><span class="badge">0</span></td>
             </tr>
         </table>

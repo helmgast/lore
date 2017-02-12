@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block formtag %}
-    <form method="post" action="{{ mail_url }}" class="form-horizontal">{% endblock %}
+    <form id="mailform" method="post" action="{{ mail_url }}" class="form-horizontal">{% endblock %}
 
 {% block form %}
     {{ mailform.csrf_token }}
@@ -45,7 +45,6 @@
         </div>
     </div>
     {% endif %}
-    <hr>
 {% endblock %}
 
 {% block content %}

@@ -3,24 +3,27 @@
 {% block content_title %}{{ product.title if product else _("New product") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{ super() }}
-
+{% block actionbar %}{{ super() }}
     {% if product %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
-            <ul class="nav nav-pills nav-stacked">
-                <li><a class="{{ privileged }}"
-                       href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span
-                        class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-            </ul>
+            <li><a class="btn btn-primary"
+                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
         {% endcall %}
-        {% include 'includes/social_icons.html' %}
-
     {% endif %}
 {% endblock %}
 
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
+        (url_for('shop.ProductsView:index', publisher=publisher.slug), _('Products')),
+        (url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug if product else 'post'), self.content_title())
+    ) }}{% endblock %}
+
+
 {% block content %}{% block inline %}
     {% if product_form %}
-        <form method="post" action="{{ action_url }}">
+        <form id="productform" method="post" action="{{ action_url }}">
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(product_form.title) }}
@@ -36,7 +39,7 @@
                     {{ MACRO.FORM_FIELD(product_form.currency, required=true) }}
                     {{ MACRO.FORM_FIELD(product_form.tax, required=true) }}
                     {{ MACRO.FORM_FIELD(product_form.status) }}
-                    {{ MACRO.FORM_FIELD(product_form.stock_count) }}
+                    {{ MACRO.FORM_FIELD(product_form.stock_count, min=-1) }}
                     {{ product_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
@@ -65,97 +68,73 @@
             <div class="col-md-8">
                 <table class="table">
                     <tr>
-                        <td><strong>{{ _('Title') }}</strong></td>
-                        <td>
-                            <small>{{ product.title }}</small>
-                        </td>
+                        <th>{{ _('Title') }}</th>
+                        <td>{{ product.title }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Product Number') }}</strong></td>
-                        <td>
-                            <small>{{ product.product_number }}</small>
-                        </td>
+                        <th>{{ _('Product Number') }}</th>
+                        <td>{{ product.product_number }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Project Code') }}</strong></td>
-                        <td>
-                            <small>{{ product.project_code }}</small>
-                        </td>
+                        <th>{{ _('Project Code') }}</th>
+                        <td>{{ product.project_code }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Publisher') }}</strong></td>
-                        <td>
-                            <small>{{ product.publisher }}</small>
-                        </td>
+                        <th>{{ _('Publisher') }}</th>
+                        <td>{{ product.publisher }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('World') }}</strong></td>
+                        <th>{{ _('World') }}</th>
                         <td>
                             {% if product.world %}
-                            <a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=product.world.slug) }}">{{ product.world }}</a>
+                                <a href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=product.world.slug) }}">{{ product.world }}</a>
                             {% else %}
                                 {% trans %}No data{% endtrans %}
                             {% endif %}
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Family') }}</strong></td>
+                        <th>{{ _('Family') }}</th>
                         <td>{{ product.family }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Created') }}</strong></td>
+                        <th>{{ _('Created') }}</th>
                         <td>{{ product.created|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Updated') }}</strong></td>
+                        <th>{{ _('Updated') }}</th>
                         <td>{{ product.updated|datetimeformat(format='short') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Type') }}</strong></td>
-                        <td>
-                            <small>{{ product.get_field_display('type') }}</small>
-                        </td>
+                        <th>{{ _('Type') }}</th>
+                        <td>{{ product.get_field_display('type') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Price') }}</strong></td>
-                        <td>
-                            <small>{{ product.price|currencyformat(product.currency.upper()) }}</small>
-                        </td>
+                        <th>{{ _('Price') }}</th>
+                        <td>{{ product.price|currencyformat(product.currency.upper()) }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Currency') }}</strong></td>
-                        <td>
-                            <small>{{ product.get_field_display('currency') }}</small>
-                        </td>
+                        <th>{{ _('Currency') }}</th>
+                        <td>{{ product.get_field_display('currency') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Tax') }}</strong></td>
-                        <td>
-                            <small>{{ product.tax*100 }}%</small>
-                        </td>
+                        <th>{{ _('Tax') }}</th>
+                        <td>{{ product.tax*100 }}%</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Status') }}</strong></td>
-                        <td>
-                            <small>{{ product.get_field_display('status') }}</small>
-                        </td>
+                        <th>{{ _('Status') }}</th>
+                        <td>{{ product.get_field_display('status') }}</td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Remaining Stock') }}</strong></td>
+                        <th>{{ _('Remaining Stock') }}</th>
                         {% if access_policy['product'].authorize('edit') %}
-                            <td class="privileged">
-                                <small>{{ stock.stock_count.get(product.slug, _('Unknown')) }}</small>
-                            </td></tr>
+                            <td class="privileged">{{ stock.stock_count.get(product.slug, _('Unknown')) }} <small>({{ stock.display_stock(product.slug) if stock }})</small></td></tr>
                         {% else %}
-                            <td>
-                                <small>{{ stock.display_stock(product.slug) if stock else _('Unknown') }}</small>
-                            </td></tr>
+                            <td>{{ stock.display_stock(product.slug) if stock else _('Unknown') }}</td></tr>
                         {% endif %}
                     <tr>
-                        <td><strong>{{ _('Times purchased') }}</strong></td>
-                        <td>
-                            <small>{{ product.in_orders().count() }}</small>
-                        </td>
+                        <th>{{ _('Times purchased') }}</th>
+                        <td>{{ product.in_orders().count() }}</td>
                     </tr>
                 </table>
 

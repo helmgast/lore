@@ -2,7 +2,24 @@
 
 {% block content_title %}{{ _('All gamers') }}{% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.homepage'), _('Home')),
+        (url_for('social.UsersView:index'), _('Users'))
+    ) }}{% endblock %}
+
+{% block actionbar %}
+    {% call(privileged) MACRO.IS_ADMIN() %}
+    <li role="presentation">
+        <a class="btn btn-primary" data-toggle="modal" data-target="#themodal"
+           role="menuitem" tabindex="-1" href=
+                   "{{ url_for('mail.mail_view', mail_type='invite', intent='post') }}">
+            <span class="glyphicon glyphicon-hand-right"></span> {{ _('Invite user') }}
+        </a>
+    </li>
+    {% endcall %}
+{% endblock %}
+
+{% block asides %}{{ super() }}
     {% if filter_options %}
         {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login']) }}
 

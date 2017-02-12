@@ -69,11 +69,13 @@ class MethodRewriteMiddleware(object):
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
 
+import re
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
     allow_domains = False
     default_host = None
+    re_sortkey = re.compile(r'[^\/<]')
 
     def bind(self, map, rebind=False):
         # if self.subdomain:  # Convert subdomain to full host rule
@@ -87,11 +89,14 @@ class FablrRule(Rule):
             self.host = ''
         else:
             self.host = thehost or self.default_host
+        # Will transform rule to string of / and <, to ensure we sort by path with non-variables before variables
+        # That means that /worlds/ab will come before /<pub>/ab
+        self.matchorder = FablrRule.re_sortkey.sub('', self.rule)
         super(FablrRule, self).bind(map, rebind)
 
     def match_compare_key(self):
-        t = (self.rule.startswith('/<'),) + super(FablrRule, self).match_compare_key()
-        return t
+        tup = (self.matchorder,) + super(FablrRule, self).match_compare_key()
+        return tup
 
 
 def db_config_string(app):

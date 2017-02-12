@@ -1,9 +1,0 @@
-{% extends "world/_page.html" %}
-{# will inherit publisher theme, which has special "home" block which overrides all content #}
-{% block mainblock %}
-    {% if self.home %}
-        {{ self.home() }}
-    {% else %}
-        <h1>Missing publisher theme for {{ publisher }}</h1>
-    {% endif %}
-{% endblock mainblock %}

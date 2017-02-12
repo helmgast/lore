@@ -5,18 +5,22 @@
 {% block content_tagline %}{{ _('bringing you closer to other gamers') }}{% endblock %}
 {% block social_active %} active{% endblock %}
 
-{% block sidebar %}
-  <ul class="nav nav-pills nav-stacked">
-    <li class="nav-header">{{ _('Actions') }}</li>
-  </ul>
+{% block subnavbar %}
+
+    <li><a class="{{ privileged }}" href="{{ url_for('social.UsersView:index') }}"><span
+            class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+
+    <li><a class="{{ privileged }}" href="{{ url_for('social.GroupsView:index') }}"><span
+            class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
+    </li>
 {% endblock %}
 
 {% block content %}
-  <p>
-  {% if g.user %}
-  {{ _('Welcome') }} <strong>{{ g.user }}</strong>!
-  {% endif %}
-  {{ _('Here you will be able to interact with other gamers, create and manage your game groups,
+    <p>
+        {% if g.user %}
+            {{ _('Welcome') }} <strong>{{ g.user }}</strong>!
+        {% endif %}
+        {{ _('Here you will be able to interact with other gamers, create and manage your game groups,
   events, etc.') }}</p>
 
 {% endblock %}

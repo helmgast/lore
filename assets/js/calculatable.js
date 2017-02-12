@@ -16,16 +16,22 @@ define(["jquery"], function ($) {
             var $el = $(this)
             var formula = $el.attr('data-formula')  // use attr as it will always come out as a string
             var ancestors = formula.match(pattern) || []
+            var math = false
+            if (formula[0]==='='){
+                var math = true
+                formula = formula.substring(1)
+            }
+            var rep = "";
 
             ancestors.forEach(function (an) {
                 var $an = $(an)
-                if (!$an.length)
-                    console.log(an + ' is not a valid id')
-                if ($an.is('input, textarea')) {
-                    formula = formula.replace(an, "(parseInt(document.getElementById('" + an.substring(1) + "').value) || 0)")
-                } else {
-                    formula = formula.replace(an, "(parseInt(document.getElementById('" + an.substring(1) + "').innerText) || 0)")
+                if (!$an.length) {
+                    console.log(an + ' is not a valid id'); return;
                 }
+                rep = "document.getElementById('" + an.substring(1) + "')." + ($an.is('input, textarea') ? 'value' : 'innerText')
+                if (math) // strictly evaluate all inputs as numbers
+                    rep = "(parseFloat(" + rep + ") || 0)"
+                formula = formula.replace(an, rep)
                 $an.on("click keyup", function (e) {
                     $el.trigger('recalc')
                 })

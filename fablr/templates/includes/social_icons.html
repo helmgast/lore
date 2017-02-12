@@ -1,26 +1,24 @@
-<div class="social">
-  {% if world %}
-  <a class="socialfeed" rel="home" type="application/rss+xml" href="{{url_for('world.ArticlesView:feed', publisher_=publisher.slug, world_=world.slug, _external=true, _scheme='')}}" target="_blank">
-    <svg class="fablr-icon fablr-icon-feed">
-        <use xlink:href="#fablr-rss2"></use>
-    </svg>
-  </a>
-  {% endif %}
+{% if world %}
+<a class="socialfeed" rel="home" type="application/rss+xml" href="{{url_for('world.ArticlesView:feed', publisher_=publisher.slug, world_=world.slug, _external=true, _scheme='')}}" target="_blank">
+<svg class="fablr-icon fablr-icon-feed">
+    <use xlink:href="#fablr-rss2"></use>
+</svg>
+</a>
+{% endif %}
 
-  <a class="socialtw" href="https://twitter.com/share?url={{request.url}}" target="_blank">
-    <svg class="fablr-icon fablr-icon-twitter">
-        <use xlink:href="#fablr-twitter"></use>
-    </svg>
-  </a>
+<a class="socialtw" href="https://twitter.com/share?url={{request.url}}" target="_blank">
+<svg class="fablr-icon fablr-icon-twitter">
+    <use xlink:href="#fablr-twitter"></use>
+</svg>
+</a>
 
-  <a class="socialgoogle" href="https://plus.google.com/share?url={{request.url}}" target="_blank">
-    <svg class="fablr-icon fablr-icon-google-plus">
-        <use xlink:href="#fablr-google-plus2"></use>
-    </svg>
-  </a>
-  <a class="socialfb" href="https://www.facebook.com/sharer.php?u={{request.url}}" target="_blank">
-    <svg class="fablr-icon fablr-icon-facebook">
-        <use xlink:href="#fablr-facebook2"></use>
-    </svg>
-  </a>
-</div>
+<a class="socialgoogle" href="https://plus.google.com/share?url={{request.url}}" target="_blank">
+<svg class="fablr-icon fablr-icon-google-plus">
+    <use xlink:href="#fablr-google-plus2"></use>
+</svg>
+</a>
+<a class="socialfb" href="https://www.facebook.com/sharer.php?u={{request.url}}" target="_blank">
+<svg class="fablr-icon fablr-icon-facebook">
+    <use xlink:href="#fablr-facebook2"></use>
+</svg>
+</a>

@@ -19,6 +19,7 @@
     "upndown": "^2.0.2"
   },
   "devDependencies": {
+    "autoprefixer-loader": "^3.2.0",
     "clean-webpack-plugin": "^0.1.13",
     "css-loader": "^0.25.0",
     "expose-loader": "^0.7.1",

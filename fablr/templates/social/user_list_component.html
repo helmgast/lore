@@ -24,6 +24,7 @@
             {% endfor %}
     </div>
 {% else %}
+    <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead>
         <th>{{ MACRO.ORDER_BY_LINK(model, args, 'username') }}</th>
@@ -35,8 +36,8 @@
         </thead>
         <tbody>
         {% for user in users %}
-            <tr class="user-tablerow m_instance">
-                <td><a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}">
+            <tr>
+                <td style="position: relative"><a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}">
                     <img class="avatar" src="{{ user.gravatar_url() }}"/>
                     <strong class="message_name">{{ user }}</strong>
                 </a></td>
@@ -49,4 +50,5 @@
         {% endfor %}
         </tbody>
     </table>
+    </div>
 {% endif %}

@@ -7,11 +7,14 @@
     {{ self.content() }}
 {% endblock %}
 
+{% block pre_content %}
+{% endblock %}
+
 {% block content %}
-    <div class="jumbotron">
+    <div class="jumbotron" style="background-image: url(//i.imgur.com/9i3wbSZ.jpg); background-size: cover;">
         <h1>{{ _('Welcome to') }} Fablr</h1>
         {% include "newsletter.html" %}
-        <p>{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
+        <p style="background-color: rgba(240,240,240,0.9); padding: 4px; border-radius: 5px;">{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
     </div>
     <h1>{{ _('For game masters') }}</h1>
     <div class="row">
@@ -180,7 +183,7 @@
         {% for publisher in publishers %}
             <div class="col-md-5 world_item">
                 <h3>
-                    <a href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
+                    <a href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
                     <br>
                     <small>{{ publisher.description|markdown }}</small>
                 </h3>

@@ -138,7 +138,7 @@ def configure_logging(app):
 def configure_extensions(app):
     import extensions
 
-    app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jina to run code
+    app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jinja to run code
     if not app.debug:
         # Silence undefined errors in templates if not debug
         app.jinja_env.undefined = extensions.SilentUndefined
@@ -301,27 +301,12 @@ def configure_hooks(app):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-    # @app.route('/')
-    # def homepage():
-    #     return "Homepage"
-
-    # @app.before_request
-    # def before_request():
-    #     g.start = time.time()
     #
-    # @app.teardown_request
-    # def teardown_request(exception=None):
-    #     if 'start' in g:
-    #         diff = time.time() - g.start
-    #         if diff > 500:
-    #             app.logger.warning("Request %s took %i ms to serve" % (request.url, diff))
-    #
-    #
-    #             # Print rules in alphabetic order
-    #             # for rule in app.url_map.iter_rules():
-    #             #     print rule.__repr__(), rule.subdomain
-    #             # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.rule):
-    #             #   print rule.__repr__(), rule.subdomain
+    # Print rules in alphabetic order
+    # for rule in app.url_map.iter_rules():
+    #     print rule.__repr__(), rule.subdomain
+    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
+    #   print rule.__repr__(), rule.subdomain, rule.match_compare_key()
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

@@ -4,21 +4,18 @@
 {% block content_title %}{{ fileasset.slug if fileasset else _("New file") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{ super() }}
-    <ul class="nav nav-pills nav-stacked">
-        <li class="nav-header">{{ _('Actions') }}</li>
-        {% if op != 'new' %}
-            <li><a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}"><span
-                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-            <li><a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"><span
-                    class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
-        {% endif %}
-    </ul>
+{% block actionbar %}{{ super() }}
+    {% if op != 'new' %}
+        <li><a class="btn btn-primary" href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}"><span
+                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+        <li><a class="btn btn-default" href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"><span
+                class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+    {% endif %}
 {% endblock %}
 
 {% block content %}{% block inline %}
     {% if fileasset_form %}
-        <form method="post" action="{{ action_url }}" enctype=multipart/form-data>
+        <form id="fileform" method="post" action="{{ action_url }}" enctype=multipart/form-data>
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(fileasset_form.slug) }}
@@ -55,37 +52,37 @@
             <div class="col-md-8">
                 <table class="table">
                     <tr>
-                        <td><strong>{{ _('File') }}</strong></td>
+                        <th>{{ _('File') }}</th>
                         <td>
                             <small>{{ fileasset.slug }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Description') }}</strong></td>
+                        <th>{{ _('Description') }}</th>
                         <td>
                             <small>{{ fileasset.description|default(_('No data'), true)|markdown }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Uploaded date') }}</strong></td>
+                        <th>{{ _('Uploaded date') }}</th>
                         <td>
                             <small>{{ fileasset.created_date|dateformat(format='short') }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Owner') }}</strong></td>
+                        <th>{{ _('Owner') }}</th>
                         <td>
                             <small>{{ fileasset.owner }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Access type') }}</strong></td>
+                        <th>{{ _('Access type') }}</th>
                         <td>
                             <small>{{ fileasset.get_access_type_display() }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Tags') }}</strong></td>
+                        <th>{{ _('Tags') }}</th>
                         <td>
                             {% for t in fileasset.tags %}
                                 <span class="badge">{{ t }}</span>
@@ -93,31 +90,31 @@
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Source filename') }}</strong></td>
+                        <th>{{ _('Source filename') }}</th>
                         <td>
                             <small>{{ fileasset.source_filename }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Source File URL') }}</strong></td>
+                        <th>{{ _('Source File URL') }}</th>
                         <td>
                             <small>{{ fileasset.source_file_url }}</small>
                         </td>
                     </tr>
                      <tr>
-                        <td><strong>{{ _('Source Page URL') }}</strong></td>
+                        <th>{{ _('Source Page URL') }}</th>
                         <td>
                             <small>{{ fileasset.source_page_url }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Size') }}</strong></td>
+                        <th>{{ _('Size') }}</th>
                         <td>
                             <small>{{ fileasset.length|filesizeformat }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Content Type') }}</strong></td>
+                        <th>{{ _('Content Type') }}</th>
                         <td>
                             <small>{{ fileasset.content_type }}</small>
                         </td>

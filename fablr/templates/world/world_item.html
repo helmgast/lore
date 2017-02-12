@@ -6,13 +6,9 @@
     {% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
 {% endif %}
 
-{% block content_title %}{{ world.title if world else publisher.title}}{% endblock %}
-{% block content_tagline %}{% endblock %}
+{% block content_title %}{{ world.title if world else publisher.title }}{% endblock %}
+{% block content_tagline %} {{ _('by') }} {{ world.publisher if world else world_form.publisher.data }}{% endblock %}
 
-
-{% block hero_box %}{# Hide the hero if we are editing, it's destracting #}
-    {% if not world_form %}{{ super() }}{% endif %}
-{% endblock hero_box %}
 
 {% block cssimports %}
     {{ super() }}
@@ -22,47 +18,42 @@
     {% endif %}
 {% endblock %}
 
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
+        (url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug if world else 'post'), self.content_title())
+    ) }}{% endblock %}
 
-{% block sidebar %}
-    {% if world and world.get_feature_image %}
-        <a class="zoomable" href="{{ url_for('image', slug = world.get_feature_image.slug) }}"><img class="img-responsive"
-                                                                                                src="{{ url_for('image', slug = world.get_feature_image.slug) }}"></a>
+{% block subnavbar %}{{ super() }}
+    {% if world %}
+        <li>
+            <a href="{{ url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug) }}"><span
+                    class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+        <li>
+            <a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug) }}"><span
+                    class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
+        <li>
+            <a href="{{ url_for('world.ArticlesView:random', publisher_=publisher.slug, world_=world.slug) }}"><span
+                    class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
     {% endif %}
-    <div>
-        <ul class="nav nav-pills nav-stacked">
-            <li><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug) }}"><span
-                    class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
-            {% if world %}
-                <li>
-                    <a href="{{ url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug) }}"><span
-                            class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-                <li>
-                    <a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug) }}"><span
-                            class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-                <li>
-                    <a href="{{ url_for('world.ArticlesView:random', publisher_=publisher.slug, world_=world.slug) }}"><span
-                            class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
-                {% include "world/new_article_menu.html" %}
-                {% if world.slug != 'meta' and not article %} {# only show if we have only a world #}
-                    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', instance=world)) %}
-                        <li><a class="{{ privileged }}"
-                               href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, intent='patch', id=world.slug) }}"><span
-                                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }} {{ _('world') }}</a></li>
-                    {% endcall %}
-                {% endif %}
 
-            {% endif %}
-        </ul>
-    </div>
 {% endblock %}
 
-{% block sidebar_end %}
-    {% include 'includes/social_icons.html' %}
+{% block actionbar %}
+    {% include "world/new_article_menu.html" %}
+    {% if world.slug != 'meta' and not article %} {# only show if we have only a world #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', instance=world)) %}
+            <li><a class="btn btn-primary"
+                   href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, intent='patch', id=world.slug) }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }} {{ _('world') }}</a></li>
+        {% endcall %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+    hej
     {% if world_form %}
-        <form method="post" action="{{ action_url }}">
+        <form id="worldform" method="post" action="{{ action_url }}">
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(world_form.title) }}
@@ -73,7 +64,11 @@
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
                     {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
-                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize') }}
+
+                    <div class="form-group">
+                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', formgroup=false)  }}
+                    <span class="help-block">{{ _('Empty means public read access') }}</span>
+                    </div>
                     {{ world_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
@@ -93,36 +88,8 @@
             </div>
         </form>
     {% else %}
-        <div class="row">
-            <div class="col-md-6">
-                <p class="worldDesc">{{ world.description|markdown }}</p>
-            </div>
-            <div class="col-md-4">
-                <p class="text-center"><a class="btn btn-lg btn-info" href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug, world=world.slug) }}">
-                    {% trans %}Buy in shop{% endtrans %}</a></p>
-                <table class="table">
-                    <tr>
-                        <td><strong>{{ _('Publisher') }}</strong></td>
-                        <td>
-                            <small>{{ world.publisher|default(_('No data'), true) }}</small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>{{ _('Rule System') }}</strong></td>
-                        <td>
-                            <small>{{ world.rule_system|default(_('No data'), true) }}</small>
-                        </td>
-                    </tr>
-                    {#
-        <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
-#}
+        <p class="worldDesc">{{ world.description|markdown }}</p>
 
-                </table>
-            </div>
-            <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
-            <!--</div>-->
-        </div>
         <div class="row">
             <div class="col-md-4">
                 <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}
@@ -139,7 +106,7 @@
             </div>
             <div class="col-md-4">
                 {% if focus_articles %}
-                    <h4><span class="glyphicon glyphicon-star"></span> {% trans %}Featured articles{% endtrans %}</h4>
+                    <h4><span class="glyphicon glyphicon-fire"></span> {% trans %}Featured articles{% endtrans %}</h4>
                     {% for a in focus_articles %}
                         <li>
                             <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=a.slug, world_=world.slug) }}"
@@ -160,3 +127,28 @@
         </div>
     {% endif %}
 {% endblock content %}
+
+{% block rightbar %}
+    <p class="text-center"><a class="btn btn-lg btn-info"
+                              href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug, world=world.slug) }}">
+        {% trans %}Buy in shop{% endtrans %}</a></p>
+    <table class="table">
+        <tr>
+            <th>{{ _('Publisher') }}</th>
+            <td>
+                <small>{{ world.publisher|default(_('No data'), true) }}</small>
+            </td>
+        </tr>
+        <tr>
+            <th>{{ _('Rule System') }}</th>
+            <td>
+                <small>{{ world.rule_system|default(_('No data'), true) }}</small>
+            </td>
+        </tr>
+        {#
+        <tr><td><strong>{{ _('Status') }}</strong></td>
+        <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
+#}
+
+    </table>
+{% endblock rightbar %}

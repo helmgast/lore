@@ -3,49 +3,56 @@
 {# Unicode codes representing Bootstrap glyphicons #}
 {% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
+        (url_for('shop.ProductsView:index', publisher=publisher.slug), _('Products'))
+    ) }}{% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block actionbar %}{{ super() }}
     {% if not product %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-            <ul class="nav nav-pills nav-stacked">
-                <li><a class="{{ privileged }}"
-                       href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id='post') }}"><span
-                        class="glyphicon glyphicon-plus-sign"></span> {{ _('New product') }}</a></li>
-            </ul>
+            <li><a class="btn btn-primary"
+                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id='post') }}"><span
+                    class="glyphicon glyphicon-plus-sign"></span> {{ _('New product') }}</a></li>
         {% endcall %}
-
-        {% if filter_options %}
-            {{ MACRO.LIST_CONTROLS(model, args, ['title', 'description', 'type', 'world', 'created', 'price'], set_view=args['view'], default='card') }}
-
-            <h5>{% trans %}By world{% endtrans %}</h5>
-            <div class="btn-set">
-                {% for opt in filter_options['world'] %}
-                    {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
-                {% endfor %}
-            </div>
-            <h5>{% trans %}By time{% endtrans %}</h5>
-            <div class="btn-set">
-                {% for opt in filter_options['created'] %}
-                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-                {% endfor %}
-            </div>
-
-            <h5>{% trans %}By type{% endtrans %}</h5>
-            <div class="btn-set">
-                {% for opt in filter_options['type'] %}
-                    {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
-                {% endfor %}
-            </div>
-
-            <h5>{% trans %}By price{% endtrans %}</h5>
-            <div class="btn-set">
-                {% for opt in filter_options['price'] %}
-                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
-                {% endfor %}
-            </div>
-        {% endif %}
-
     {% endif %}
+
+{% endblock %}
+
+{% block asides %}{{ super() }}
+
+    {% if filter_options %}
+        {{ MACRO.LIST_CONTROLS(model, args, ['title', 'description', 'type', 'world', 'created', 'price'], set_view=args['view'], default='card') }}
+
+        <h5>{% trans %}By world{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['world'] %}
+                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By time{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['type'] %}
+                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By price{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['price'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
 {% endblock %}
 
 {% block content %}
@@ -59,7 +66,8 @@
                     <h3>{{ product.title }}</h3></a>
                 <ul class="list-inline article-meta" style="margin-bottom: 0">
                     <li title="{{ _('Created') }}"><span
-                            class="glyphicon glyphicon-calendar"></span> {{ product.created|dateformat(format='short') }}</li>
+                            class="glyphicon glyphicon-calendar"></span> {{ product.created|dateformat(format='short') }}
+                    </li>
                 </ul>
                 <div class="media">
                     {% if product.get_feature_image %}
@@ -78,7 +86,7 @@
             {% endfor %}
 
         {% elif args['view'] == 'table' %}
-
+            <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                 <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
@@ -103,6 +111,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
 
         {% else %} {# ==table #}
             <div class="cards">
@@ -116,14 +125,14 @@
                             {{ product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
                         </a>
                         <div class="card-text">
-                            <h3 class="card-title dobr">
+                            <h4 class="card-title dobr">
                                 <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
-                            </h3>
+                            </h4>
                             <div class="card-description">{{ product.description|markdown }}</div>
                             <ul class="card-details">
                                 <li class="product-type">{{ product.get_field_display('type') }}</li>
                                 <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
-                                <li><a id="{{ product.slug }}" class="btn btn-sm btn-primary buy-link"
+                                <li><a id="{{ product.slug }}" class="btn btn-xs btn-primary buy-link"
                                        href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
                                 </li>
                             </ul>

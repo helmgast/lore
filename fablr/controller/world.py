@@ -163,7 +163,7 @@ class WorldAccessPolicy(ResourceAccessPolicy):
 
 class WorldsView(ResourceView):
     subdomain = '<publisher_>'
-    route_base = '/'
+    # route_base = '/'
     access_policy = WorldAccessPolicy({
         'view': 'public',
         'list': 'public',
@@ -179,23 +179,7 @@ class WorldsView(ResourceView):
     form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter(),
                             field_args={'readers': {'allow_blank': True}})
 
-    @route('/')
-    def publisher_home(self, publisher_):
-        publisher = Publisher.objects(slug=publisher_).first_or_404()
-        world = WorldMeta(publisher)
-        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
-        r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
-                         formats=['html'])
-        r.template = 'world/home.html'
-        r.auth_or_abort()
-        r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
-        return r
-
-    @route('/worlds/')
+    # @route('/worlds/')
     def index(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         if publisher.languages:
@@ -223,19 +207,22 @@ class WorldsView(ResourceView):
     #     return r
 
     def get(self, publisher_, id):
-        return redirect(url_for('world.ArticlesView:world_home', publisher_=publisher_, world_=id))
-        # publisher = Publisher.objects(slug=publisher_).first_or_404()
-        # if publisher.languages:
-        #     g.available_locales = publisher.languages
-        # if id == 'post':
-        #     r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
-        #     r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+        # if id == 'meta':
+        #     return redirect(url_for('world.WorldsView:publisher_home', publisher_=publisher_))
         # else:
-        #     r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
-        #     r.auth_or_abort()
-        #     set_theme(r, 'world', r.world.slug)
-        # set_theme(r, 'publisher', publisher.slug)
-        # return r
+        #     return redirect(url_for('world.ArticlesView:world_home', publisher_=publisher_, world_=id))
+        publisher = Publisher.objects(slug=publisher_).first_or_404()
+        if publisher.languages:
+            g.available_locales = publisher.languages
+        if id == 'post':
+            r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+        else:
+            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
+            r.auth_or_abort()
+            set_theme(r, 'world', r.world.slug)
+        set_theme(r, 'publisher', publisher.slug)
+        return r
 
     def post(self, publisher_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
@@ -315,7 +302,23 @@ class ArticlesView(ResourceView):
                             exclude=['slug', 'feature_image'],
                             converter=RacModelConverter())
 
-    @route('/')
+    @route('/', route_base='/')
+    def publisher_home(self, publisher_):
+        publisher = Publisher.objects(slug=publisher_).first_or_404()
+        world = WorldMeta(publisher)
+        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
+        lang_options = world.languages or publisher.languages
+        if lang_options:
+            g.content_locales = set(lang_options)
+        r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
+                         formats=['html'])
+        r.template = 'world/publisher_home.html'
+        r.auth_or_abort()
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
+        return r
+
+    @route('/<world_>/', route_base='/')
     def world_home(self, publisher_, world_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()
         if publisher.languages:
@@ -329,6 +332,7 @@ class ArticlesView(ResourceView):
             r.auth_or_abort()
             set_theme(r, 'world', r.world.slug)
         set_theme(r, 'publisher', publisher.slug)
+        r.template = 'world/world_home.html'
         return r
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
@@ -489,18 +493,19 @@ class ArticlesView(ResourceView):
             r.args['next'] or url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug))
 
 
-class ArticleRelationsView(ResourceView):
-    subdomain = '<publisher_>'
-    route_base = '/<world_>/<article>'
-    list_template = 'world/articlerelation_list.html'
-    item_template = 'world/articlerelation_item.html'
-    form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
-    access_policy = ResourceAccessPolicy()
+# class ArticleRelationsView(ResourceView):
+#     subdomain = '<publisher_>'
+#     route_base = '/<world_>/<article>'
+#     list_template = 'world/articlerelation_list.html'
+#     item_template = 'world/articlerelation_item.html'
+#     form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
+#     access_policy = ResourceAccessPolicy()
+#
+#     @route('/relations/')
+#     def index(self, world_):
+#         abort(501)  # Not implemented
 
-    @route('/relations/')
-    def index(self, world_):
-        abort(501)  # Not implemented
-
+world_app.add_url_rule('/abrakadabra', endpoint='homepage')
 
 @world_app.route('/-<code>')
 def shorturl(code):
@@ -512,11 +517,15 @@ def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
 
+@world_app.route('/dummy')
+def dummy():
+    # publishers = Publisher.objects()
+    return render_template('dummypage.html', root_template='_page.html')
 
 PublishersView.register_with_access(world_app, 'publisher')
 WorldsView.register_with_access(world_app, 'world')
 ArticlesView.register_with_access(world_app, 'article')
-ArticleRelationsView.register_with_access(world_app, 'articlerelations')
+# ArticleRelationsView.register_with_access(world_app, 'articlerelations')
 
 
 def rows(objects, char_per_row=40, min_rows=10):

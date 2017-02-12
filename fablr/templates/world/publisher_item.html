@@ -3,22 +3,19 @@
 {% block content_title %}{{ publisher.title if publisher else _("New publisher") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block actionbar %}{{ super() }}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit')) %}
-        <ul class="nav nav-pills nav-stacked">
-            <li class="nav-header">{{ _('Actions') }}</li>
-            {% if op != 'new' %}
-                <li><a class="{{ privileged }}"
-                       href="{{ url_for('world.PublishersView:get', id=publisher.slug, intent='patch') }}"><span
-                        class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-            {% endif %}
-        </ul>
+        {% if op != 'new' %}
+            <li><a class="btn btn-primary"
+                   href="{{ url_for('world.PublishersView:get', id=publisher.slug, intent='patch') }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+        {% endif %}
     {% endcall %}
 {% endblock %}
 
 {% block content %}{% block inline %}
     {% if publisher_form %}
-        <form method="post" action="{{ action_url }}" enctype=multipart/form-data>
+        <form id="publisherform" method="post" action="{{ action_url }}">
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(publisher_form.slug) }}
@@ -33,11 +30,15 @@
                     {{ MACRO.FORM_FIELD(publisher_form.readers, controlclass='selectize') }}
                     {{ publisher_form.csrf_token }}
                     <h3>{{ _('Registered address') }}</h3>
-                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
-                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.street, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
-                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.zipcode, "col-sm-3", "col-sm-3", autocomplete="postal-code") }}
-                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.city, "col-sm-1", "col-sm-5", groupclass="clearfix", autocomplete="address-level2") }}
-                    {{ MACRO.FORM_FIELD_COLS(publisher_form.address.country, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="country") }}
+                    <div class="form-horizontal">
+                    {{ MACRO.FORM_FIELD(publisher_form.address['name'], labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="name") }}
+                    {{ MACRO.FORM_FIELD(publisher_form.address.street, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
+                    <div class="form-group">
+                    {{ MACRO.FORM_FIELD(publisher_form.address.zipcode, labelclass="col-sm-3", controlwrap="col-sm-3", autocomplete="postal-code", formgroup=false) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.address.city, labelclass="col-sm-1", controlwrap="col-sm-5", groupclass="clearfix", autocomplete="address-level2", formgroup=false) }}
+                    </div>
+                    {{ MACRO.FORM_FIELD(publisher_form.address.country, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="country") }}
+                    </div>
                 </div>
                 <div class="col-md-4">
                     {# data_end becomes data-end automatically #}
@@ -57,38 +58,40 @@
     {% else %}
         <div class="row">
             <div class="col-md-8">
+                <div class="table-responsive">
                 <table class="table">
                     <tr>
-                        <td><strong>{{ _('Domain') }}</strong></td>
+                        <th>{{ _('Domain') }}</th>
                         <td>
                             <small>{{ publisher.slug|default(_('No data'), true) }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Title') }}</strong></td>
+                        <th>{{ _('Title') }}</th>
                         <td>
                             <small>{{ publisher.title|default(_('No data'), true) }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Description') }}</strong></td>
+                        <th>{{ _('Description') }}</th>
                         <td>
                             <small>{{ publisher.description|default(_('No data'), true)|markdown }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Owner') }}</strong></td>
+                        <th>{{ _('Owner') }}</th>
                         <td>
                             <small>{{ publisher.owner|default(_('No data'), true) }}</small>
                         </td>
                     </tr>
                     <tr>
-                        <td><strong>{{ _('Publisher Home') }}</strong></td>
+                        <th>{{ _('Publisher Home') }}</th>
                         <td>
-                            <a href="{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}">{{ url_for('world.WorldsView:publisher_home', publisher_=publisher.slug) }}</a>
+                            <a href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}</a>
                         </td>
                     </tr>
                 </table>
+                </div>
             </div>
         </div>
     {% endif %}

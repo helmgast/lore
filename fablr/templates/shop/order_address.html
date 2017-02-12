@@ -2,21 +2,23 @@
 
 <!-- Address -->
 <tr>
-    <td>
+    <td class="form-horizontal">
         {% if order_form %}
             {% if order_form.email %}
                 <h3>{{ _('Order email') }}</h3>
-                {{ MACRO.FORM_FIELD_COLS(order_form.email, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
+                {{ MACRO.FORM_FIELD(order_form.email, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="email") }}
             {% endif %}
             {% if order_form.shipping_address and not order.is_digital() %}
                 <h3>{{ _('Shipping Address') }}</h3>
-                {{ MACRO.FORM_FIELD_COLS(order_form.shipping_address['name'], "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="name") }}
-                {{ MACRO.FORM_FIELD_COLS(order_form.shipping_address.street, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
-                {{ MACRO.FORM_FIELD_COLS(order_form.shipping_address.zipcode, "col-sm-3", "col-sm-3", autocomplete="postal-code") }}
-                {{ MACRO.FORM_FIELD_COLS(order_form.shipping_address.city, "col-sm-1", "col-sm-5", groupclass="clearfix", autocomplete="address-level2") }}
-                {{ MACRO.FORM_FIELD_COLS(order_form.shipping_address.country, "col-sm-3", "col-sm-9", groupclass="clearfix", autocomplete="country") }}
+                {{ MACRO.FORM_FIELD(order_form.shipping_address['name'], labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="name") }}
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.street, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
+                <div class="form-group">
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.zipcode, labelclass="col-sm-3", controlwrap="col-sm-3", autocomplete="postal-code", formgroup=false) }}
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.city, labelclass="col-sm-1", controlwrap="col-sm-5", groupclass="clearfix", autocomplete="address-level2", formgroup=false) }}
+                </div>
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.country, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="country") }}
                 <div class="form-group clearfix">
-                    <label class="control-label  col-sm-3"
+                    <label class="control-label col-sm-3"
                            for="shipping_address-mobile">{{ order_form.shipping_address.mobile.label }}</label>
                     <div class="col-sm-9">
                         {{ order_form.shipping_address.mobile(class="form-control", placeholder="07XXXXXXXX", type="tel", autocomplete="tel", pattern="(\+?\d[- .]*){7,13}") }}

@@ -1,10 +1,11 @@
+
 {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new', instance=world if world else publisher)) %}
   <li class="dropdown">
-    <a class="dropdown-toggle {{privileged}}" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
+    <a class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
     </a>
     <ul class="dropdown-menu">
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Default') }}</a></li>
-      <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
+      <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-comment"></span> {{ _('Blog post') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='material')}}"><span class="glyphicon glyphicon-briefcase"></span> {{ _('Material') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
@@ -13,7 +14,6 @@
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
       <li><a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, id='post', world_=world.slug, type='character')}}"><span class="glyphicon glyphicon-heart"></span> {{ _('Character') }}</a></li>
-
     </ul>
   </li>
 {% endcall %}

@@ -1,11 +1,14 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% if not world %}
-    {% block blog_active %} class="active"{% endblock %}
-    {% block world_active %}{% endblock %}
-{% endif %}
+{% block pub_blog_active %}{% if world and world.slug=='meta' %} class="active"{% endif %}{% endblock %}
+{% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
 
-{% block pre_content %}{% endblock %}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug), world.title),
+        (url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug), _('Blog'))
+    ) }}{% endblock %}
 
 {% block content %}
 	{% for article in articles %}
@@ -14,7 +17,7 @@
     <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date|dateformat(format='short') }} {{ _('by') }}</li>
 	<li title="{{ _('Creator') }}">
 	<span class="glyphicon glyphicon-user"></span>
-	{{article.creator if article.creator else 'System'}}
+	{{article.creator if article.creator else _('Admin')}}
 	</li>
 	</ul>
 	<div class="media">

@@ -202,7 +202,7 @@ class Auth(object):
     # Enter email (or pre-filled from url-arg)
     # If email already exists and is active, send to login with a message
     # If join link came with email token:
-    #   "we know you own this email, and everytime you login we can send you a mail to check"
+    #   "we know you own this email, and every time you login we can send you a mail to check"
     #   "if you want to login faster, add google, fb or password below"
     # If no email token, show options to "prove you have this mail": google, fb, send verification
     #   IF a social service is selected, and it doesn't match the email, give Error
@@ -417,6 +417,7 @@ class Auth(object):
                     flash(_('Incorrect external service supplied'), 'danger')
 
             elif form.validate():
+                # External service not used, let's check password
                 try:
                     user = self.User.objects(email=form.email.data.lower()).get()
                     if user.status == 'active' and check_password(form.password.data, user.password):

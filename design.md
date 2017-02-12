@@ -643,87 +643,46 @@ Language output is in form of:
 In addition, location means which country the visitor is likely from. Location 
 can be used to prefill address fields and currency.
 
-Menu / navigation
+Themes
 ==================================================================
 
-Worlds
-- MyWorlds / Home (selection based on followed worlds)
-- Browse
-- WorldA
-- WorldB
-- WorldC
-    - Home
-    - Browse
-    - Random article
-    
-    
-Breadcrumbs
-(Publisher) - (World) - (Category) - (Article)
-(Publisher) - (World) - Blog - (Article)
-(Publisher) - Meta - (Blog)
-(Publisher) - Shop
-(Publisher) - Shop - (Product family) - (Product)
-(Publisher) - Shop - All products - (Product)
-(Publisher) - Shop - My orders - (Order)
-(Publisher) - Shop - All orders - (Order)
+- What is not themeable (at start):
+    - Navbar (except navbrand)
+    - Footer
+- What can be themed
+    - page-header
+    - page (container)
+    - 3 types of fonts:
+        - Base font (body)
+        - Header font (h1-h7)
+        - Article font (article)
+        
+        
+If no cookie:
+    1) Login as usual
+    2) After successful login, if user don't have newauth=true
+        - Redirect to page that "We have new auth system, you will need to change", confirm email
+        - Continue to auth0 to login
+        - At callback, erase old auth-details and set newauth=true
+If cookie:
+    1) Check if newauth=true on user
+    2) If true, serve auth0 login
+    3) Else, serve old login
+        
+URLs
 
-Fablr - Social - Users
-    -> (Filter)
-    -> New (invite)
-
-Fablr - Social - Users - (User)
-    -> Edit
-    -> Delete
-
-Fablr - Social - Groups
-    -> (Filter)
-    -> New
-    
-Fablr - Social - Groups - (Group)
-    -> Edit
-    -> Delete
-
-Fablr - Assets
-    -> (Filter)
-    -> New
-    
-Fablr - Assets - (Asset)
-    -> Edit
-    -> Delete
-
-Fablr - Publishers
-    -> (Filter)
-    -> New
-    
-Fablr - Publishers - (Publisher)
-    -> Edit
-    -> Delete
-    
-
-Blog (publisher)
-- Links
-    - Pagination
-    - New article
+GET/POST    api|/articles/
+GET/DEL/PAT api|/articles/<article_id>
+GET/POST    api|/worlds/
+GET/DEL/PAT api|/worlds/<world_id>
 
 
-Social (a)
-- Users (a)
-- Invite user (a)
-- Groups (a)
+Human friendly URL
+GET/DEL/PAT     <pub>|/<world or 'meta'>/<article>
+GET/POST        <pub>|/<world or 'meta'>/articles/
+GET             <pub>|/<world or 'meta'>/[home, articles, blog, feed]/ <- specific views, translates to set of args on world/
 
-Store
-- All products
-- My orders (u)
-- All orders (a)
 
-Publishers (a)
-- All (a)
-- New (a)
-- Edit (e)
-
-Usermenu (u)
-- Profile (u)
-- Files (a)
-    - New (a)
-    - List (a)
-- Log out (u)
+GET/DEL/PAT     <pub>|/<world>
+GET/POST        <pub>|/worlds/
+GET             <pub>|/[home, articles, blog, feed]/

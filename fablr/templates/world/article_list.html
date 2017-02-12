@@ -52,7 +52,14 @@
     </style>
 {% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug), world.title),
+        (url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug), _('Articles'))
+    ) }}{% endblock %}
+
+{% block asides %}{{ super() }}
     {% if filter_options %}
         {{ MACRO.LIST_CONTROLS(model, args, ['title', 'creator', 'type', 'created_date']) }}
 
@@ -79,8 +86,6 @@
     {% endif %}
 {% endblock %}
 
-{% block cover %}
-{% endblock %}
 
 {% block content %}
     <div>
@@ -100,7 +105,7 @@
                         </li>
                         <li title="{{ _('Creator') }}">
                             <span class="glyphicon glyphicon-user"></span>
-                            {{ article.creator if article.creator else 'System' }}
+                            {{ article.creator if article.creator else _('Admin') }}
                         </li>
                     </ul>
                     <div class="media">

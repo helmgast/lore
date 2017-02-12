@@ -1,22 +1,11 @@
 {% extends root_template if not publisher_theme else publisher_theme %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block sidebar %}
-    <ul class="nav nav-pills nav-stacked">
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('list')) %}
-            <li><a class="{{ privileged }}" href="{{ url_for('world.WorldsView:index', publisher_=publisher.slug) }}"><span
-                    class="glyphicon glyphicon-globe"></span> {{ _('All worlds') }}</a></li>
-        {% endcall %}
-    </ul>
-
-{% endblock %}
-
 {% block content %}
     <div class="row">
         {% for world in worlds %}
-
             <div class="col-md-6">
-                <h3><a href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug) }}">{{ world.title }}</a></h3>
+                <h3><a href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug) }}">{{ world.title }}</a></h3>
                 <div class="well">{{ world.description|markdown }}</div>
                 <dl class="dl-horizontal">
                     <dt>{{ _('Publisher') }}</dt>

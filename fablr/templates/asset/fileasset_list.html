@@ -7,7 +7,7 @@
     {{ super() }}
 {% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block asides %}{{ super() }}
     {% if filter_options %}
         {{ MACRO.LIST_CONTROLS(model, args, ['slug', 'owner', 'access_type', 'tags']) }}
 
@@ -49,40 +49,43 @@
 {% block content %}
     {% if not args.get('view') or args.get('view') == 'table' %}
         {% if files %}
-            <table class="table">
-                <thead>
-                <tr>
-                    <td>{{ _('File') }}</td>
-                    <td>{{ _('Tags') }}</td>
-                    <td>{{ _('Access type') }}</td>
-                    <td>{{ _('File size') }}</td>
-                    <td>{{ _('Actions') }}</td>
-                </tr>
-                </thead>
-                <tbody>
-                {% for fileasset in files %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
                     <tr>
-                        <td>
-                            <a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}">{{ fileasset.slug }}</a>
-                        </td>
-                        <td>
-                            {% for t in fileasset.tags %}
-                                <span class="badge">{{ t }}</span>
-                            {% endfor %}
-                        </td>
-                        <td>{{ fileasset.get_field_display('access_type') }}</td>
-                        <td>{{ fileasset.file_data.length|filesizeformat }}</td>
-                        <td>
-                            <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
-                               title="{% trans %}Open file{% endtrans %}"><span class="glyphicon glyphicon-link"></span></a>
-                            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
-                               title="{% trans %}Download file{% endtrans %}"><span
-                                    class="glyphicon glyphicon-cloud-download"></span></a>
-                        </td>
+                        <th>{{ _('File') }}</th>
+                        <th>{{ _('Tags') }}</th>
+                        <th>{{ _('Access type') }}</th>
+                        <th>{{ _('File size') }}</th>
+                        <th>{{ _('Actions') }}</th>
                     </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {% for fileasset in files %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}">{{ fileasset.slug }}</a>
+                            </td>
+                            <td>
+                                {% for t in fileasset.tags %}
+                                    <span class="badge">{{ t }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ fileasset.get_field_display('access_type') }}</td>
+                            <td>{{ fileasset.file_data.length|filesizeformat }}</td>
+                            <td>
+                                <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                                   title="{% trans %}Open file{% endtrans %}"><span
+                                        class="glyphicon glyphicon-link"></span></a>
+                                <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                                   title="{% trans %}Download file{% endtrans %}"><span
+                                        class="glyphicon glyphicon-cloud-download"></span></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% include "includes/pagination.html" %}
         {% else %}
             <h3>{{ _('No file assets available!') }}</h3>
@@ -132,7 +135,9 @@
                             {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
                             <label for="file_data"
                                    title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">
-                                    <svg class="fablr-icon-stretch"><use xlink:href="#fablr-upload2-1"/></svg>
+                                <svg class="fablr-icon-stretch">
+                                    <use xlink:href="#fablr-upload2-1"/>
+                                </svg>
                             </label>
                             <input type="text" class="form-control input-sm" id="source_file_url" pattern="https?://.+"
                                    placeholder="{% trans %}Paste file URL here{% endtrans %}">

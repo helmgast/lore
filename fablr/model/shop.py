@@ -240,7 +240,7 @@ class Order(Document):
         if stock:
             order_dict = {}
             for ol in self.order_lines:
-                # Only pick products that are supposed to be available in stock (typically ignoring digital)
+                # Only pick products that are supposed to be available in stock (digital is a different flag)
                 if ol.product.status == ProductStatus.available:
                     order_dict[ol.product.slug] = order_dict.get(ol.product.slug, 0) + ol.quantity
             select_args = {}

@@ -2,8 +2,13 @@
 
 {% block content_title %}{{ _('My orders') if method=='my_orders' else _('Orders') }}{% endblock %}
 
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
+        (url_for('shop.OrdersView:index', publisher=publisher.slug), _('Orders'))
+    ) }}{% endblock %}
 
-{% block sidebar %}{{ super() }}
+{% block asides %}{{ super() }}
     {% if filter_options %}
         {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}
 
@@ -94,6 +99,7 @@
             </div>
 
         {% else %}
+            <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
                 <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
@@ -122,6 +128,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+            </div>
         {% endif %}
         {% include "includes/pagination.html" %}
 

@@ -47,7 +47,7 @@
 
 {%- endmacro -%}
 
-{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", inline=false) -%}
+{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", controlwrap="", inline=false, formgroup=true, labeltext="") -%}
     {% set fieldargs = {'class':'form-control '+controlclass} %}
     {% do fieldargs.update({'required':true}) if field.flags.required %}
     {% do fieldargs.update(kwargs) if kwargs %}
@@ -55,33 +55,24 @@
         {% set labelclass = "sr-only "+labelclass %}
         {% do fieldargs.update({'placeholder':field.label.text}) if field.label %}
     {% endif %}
-    {{ field._name }}
-    <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{ ' '+groupclass if groupclass }}">
-        {{ field.label(class="control-label "+labelclass) if field.label }}
+    {% if formgroup %}<div class="form-group{{ ' has-error has-feedback' if field.errors }}{{ ' '+groupclass if groupclass }}">{% endif %}
+        {% if field.label %}
+            {% if labeltext %}
+                {{ field.label(class="control-label "+labelclass, text=labeltext) }}
+            {% else %}
+                {{ field.label(class="control-label "+labelclass) }}
+            {% endif %}
+        {% endif %}
+        {%- if controlwrap -%}<div class="{{ controlwrap }}">{%- endif -%}
         {{ field(**fieldargs) }}
         {%- if field.errors -%}
             <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
             <span class="help-block">{{ field.errors|join(' ') }}</span>
         {%- endif -%}
-    </div>
+        {%- if controlwrap -%}</div>{%- endif -%}
+    {% if formgroup %}</div>{% endif %}
 {%- endmacro -%}
 
-
-{%- macro FORM_FIELD_COLS(field, labelcol, inputcol, controlclass="", labelclass="", groupclass="") -%}
-    {% set fieldargs = {'class':'form-control '+controlclass} %}
-    {% do fieldargs.update({'required':true}) if field.flags.required %}
-    {% do fieldargs.update(kwargs) if kwargs %}
-    <div class="form-group{{ ' has-error has-feedback' if field.errors }}{{ ' '+groupclass if groupclass }}">
-        {{ field.label(class="control-label "+labelclass+" " ~ labelcol) if field.label }}
-        <div class="{{ inputcol }}">
-            {{ field(**fieldargs) }}
-            {%- if field.errors -%}
-                <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
-                <span class="help-block">{{ field.errors|join(' ') }}</span>
-            {%- endif -%}
-        </div>
-    </div>
-{%- endmacro -%}
 
 {% macro MAKE_INPUT(label, id='', cols=10, labelcols=2, type='text', placeholder='', suffix='', prefix='', rows=3, class="nosubmit") %}
     {% set readonly = true if args.get('intent','')!='patch' else false %}
@@ -181,7 +172,7 @@
                 {% if in_current_args(['order_by']) %}
                     {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
                     <a href="{{ current_url(order_by=none) }}"
-                       title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info  btn-xs">
+                       title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info btn-xs">
                         {% trans %}Order by{% endtrans %}
                         : {{ model_class._fields[clean_order_by].verbose_name }} &times;</a>
                 {% else %}
@@ -274,7 +265,7 @@
                         "{{ title }}"?</h4>
                 </div>
                 <div class="modal-body">
-                    <form id='confirmform' method="post" action="{{ action_url }}">
+                    <form id="confirmform" method="post" action="{{ action_url }}">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
                         <button type="submit" class="btn btn-danger">{{ _('Yes') }}</button>
@@ -296,4 +287,12 @@
     </div>
 {%- endmacro -%}
 
-{%- macro GALLERY_ITEM_STYLE(aspect_ratio, max_aspect=4.0) -%}width: {{ 100.0*aspect_ratio/max_aspect }}%; flex-grow: {{ aspect_ratio }}{%- endmacro -%}
+{%- macro GALLERY_ITEM_STYLE(aspect_ratio, max_aspect=4.0) -%}
+    width: {{ 100.0*aspect_ratio/max_aspect }}%; flex-grow: {{ aspect_ratio }}
+{%- endmacro -%}
+
+{%- macro BREADCRUMBS() -%} {# positional args will be added to varargs, assumed to be tuples of (url, title) #}
+    <a href="{{ varargs[0][0] }}"><span class="glyphicon glyphicon-home"></span></a>
+    {%- for i in range(1, varargs|length-1) -%}<span style="font-family: serif"> &raquo; </span><a href="{{ varargs[i][0] }}">{{ varargs[i][1] }}</a>{%- endfor -%}
+    &nbsp;<span style="font-family: serif"> &raquo; </span><span class="active">{{ varargs[-1][1] }}</span>
+{%- endmacro -%}

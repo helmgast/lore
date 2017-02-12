@@ -30,8 +30,8 @@
         {% if not debug %}
             <script>
                 window.ga = window.ga || function () {
-                            (ga.q = ga.q || []).push(arguments)
-                        };
+                        (ga.q = ga.q || []).push(arguments)
+                    };
                 ga.l = +new Date;
                 ga('create', 'UA-49513153-1', 'none')
                 ga('send', 'pageview');
@@ -44,10 +44,10 @@
 
 {% import 'includes/macros.html' as MACRO %}
 
-<body class="{% block body_class %}admin{% endblock %}">
+<body>
 
 {% block navbar %}
-    <div class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar navbar-default navbar-fixed-top">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="icon-bar"></span>
@@ -56,8 +56,9 @@
             </button>
             {% block navbar_brand %}
                 <a class="navbar-brand" href="{{ url_for('world.homepage') }}">
-                    Fablr
-                    <small>{{ _('a story engine') }}</small>
+                    <svg class="fablr-icon" style="fill: #a00; margin-top: -27px; width: 96px; height: 128px;">
+                        <use xlink:href="#fablr-asterisme"></use>
+                    </svg>
                 </a>
             {% endblock navbar_brand %}
         </div>
@@ -72,37 +73,22 @@
                         </li>
                     {% endcall %}
                     {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list', user)) %}
-                        <li class="dropdown {% block social_active %}{% endblock %}">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
-                               aria-haspopup="true" aria-expanded="false"><span
-                                    class="glyphicon glyphicon-user"></span> {{ _('Users') }} <span
-                                    class="caret"></span></a>
-                            <ul class="dropdown-menu">
-
-                                <li><a class="{{ privileged }}" href="{{ url_for('social.UsersView:index') }}"><span
-                                        class="glyphicon glyphicon-bullhorn"></span> {{ _('Browse') }}</a></li>
-                                <li role="separator" class="divider"></li>
-
-                                <li><a class="{{ privileged }}" href="{{ url_for('social.GroupsView:index') }}"><span
-                                        class="glyphicon glyphicon-globe"></span> {{ _('Groups') }}</a></li>
-                                {% call(privileged) MACRO.IS_ADMIN() %}
-                                    <li role="separator" class="divider"></li>
-                                    <li role="presentation">
-                                        <a class="{{ privileged }}" data-toggle="modal" data-target="#themodal"
-                                           role="menuitem" tabindex="-1" href=
-                                                   "{{ url_for('mail.mail_view', mail_type='invite', intent='post') }}">
-                                            <span class="glyphicon glyphicon-hand-right"></span> {{ _('Invite user') }}
-                                        </a>
-                                    </li>
-                                {% endcall %}
-                            </ul>
+                        <li{% block social_active %}{% endblock %}>
+                            <a href="{{ url_for('social.UsersView:index') }}">
+                                <span class="glyphicon glyphicon-user"></span> {{ _('Users') }} </a>
                         </li>
                     {% endcall %}
                 {% endblock navbar_left %}
             </ul>
-            <ul class="nav navbar-nav navbar-right">
 
+            <ul class="nav navbar-nav navbar-nav-top navbar-right">
+                {#                <form class="navbar-form navbar-left" role="search">#}
+                {#                    <div class="form-group">#}
+                {#                        <input class="form-control input-sm" type="text" class="form-control" placeholder="Search">#}
+                {#                    </div>#}
+                {#                </form>#}
                 {% block navbar_right %}
+
                     {% if not session.logged_in %}
                         <li><a href="{{ url_for('auth.login', next=request.path) }}">{{ _('Log In') }}</a></li>
                         {% call MACRO.IS_ENABLED("join") %}
@@ -119,9 +105,11 @@
                                     <a {% call MACRO.IS_USER() %}href="{{ url_for('social.UsersView:get', id=g.user.identifier()) }}"{% endcall %}> {{ _('Profile') }}</a>
                                 </li>
                                 {% if publisher %}
-                                {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
-                                    <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:my_orders', publisher=publisher.slug) }}">{{ _('My orders') }}</a></li>
-                                {% endcall %}
+                                    {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
+                                        <li><a class="{{ privileged }}"
+                                               href="{{ url_for('shop.OrdersView:my_orders', publisher=publisher.slug) }}">{{ _('My orders') }}</a>
+                                        </li>
+                                    {% endcall %}
                                 {% endif %}
 
                                 {% call(privileged) MACRO.IS_ADMIN() %}
@@ -138,7 +126,29 @@
                 {% endblock navbar_right %}
             </ul>
         </div>
-    </div>
+        <div class="collapse navbar-collapse navbar-sub">
+            <ul class="nav navbar-nav">
+                {% block subnavbar %}
+
+                {% endblock %}
+                {% block subnavbar_end %}
+                {% endblock %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="breadcrumb-item nobr">{% block breadcrumbs %}{% endblock %}
+                </li>
+                {#                <li><p class="privileged">&nbsp;</p></li>#}
+                <li>
+                    <ul class="action-buttons">
+                        {% block actionbar %}
+                        {% endblock actionbar %}
+                    </ul>
+                </li>
+
+            </ul>
+        </div>
+
+    </nav>
     <button class="betaribbon" data-toggle="modal" data-target="#feedback-modal">
         <span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Give feedback{% endtrans %}!<br><span
             style="font-variant: small-caps">Beta</span>
@@ -147,46 +157,53 @@
 
 {% endblock navbar %}
 
-{% block cover %}
-{% endblock %}
-
-<div class="{% block container_class %}container main{% endblock %}">
-    {% block mainblock %}
-        <div class="col-md-3 sidebar">
-            {% block sidebar %}
-                &nbsp;
-            {% endblock %}
-            {% block sidebar_end %}
-            {% endblock %}
+{% block pre_content %}
+    <div class="page-header {% block header_class %}{% endblock %}">
+        <div class="container">
+            <div class="row">
+                {% block page_header %}
+                    <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">{% block content_title %}{% endblock %}
+                        <small class="nobr">{% block content_tagline %}{% endblock %}</small>
+                    </h1>
+                {% endblock page_header %}
+            </div>
         </div>
-        <!-- /sidebar -->
+    </div>
+{% endblock pre_content %}
 
-        <div class="col-md-9 content">
-            {% block middle %}
-                {% block pre_content %}
-                    {% block hero_box %}{% endblock %}
-                    <div class="page-header">
-                        <h1>{% block content_title %}{% endblock %}
-                            <small>{% block content_tagline %}{% endblock %}</small>
-                        </h1>
-                        {% block content_subheader %}{% endblock %}
-                    </div>
-                {% endblock pre_content %}
+
+<div class="container">
+    {% block mainblock %}
+        <div class="row">
+            <aside class="col-lg-2 col-md-12 col-sm-10 intro-aside">
+                {% block intro %}
+                {% endblock intro %}
+            </aside>
+
+            <div class="col-lg-7 col-md-8 col-sm-10 content">
                 {% block content %}{% endblock content %}
-            {% endblock middle %}
-            <!-- /content -->
+            </div>
+
+            <aside class="col-lg-3 col-md-4 col-sm-10 article-aside">
+                {% block asides %}
+                {% endblock asides %}
+                {% block asides_end %}
+                {% endblock asides_end %}
+            </aside>
         </div>
     {% endblock mainblock %}
 </div>
+
+{% block post_content %}
+{% endblock post_content %}
+
 <footer>
     <div class="container">
         {% block footer %}{% endblock %}
-        <div class="row">
-            <p>
-                {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
-                Version {{ config['VERSION'] }}
-            </p>
-        </div>
+        <p>
+            {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
+            Version {{ config['VERSION'] }}
+        </p>
     </div>
 </footer>
 {% include "includes/feedback_modal.html" %}

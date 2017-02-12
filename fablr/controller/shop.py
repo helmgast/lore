@@ -64,7 +64,8 @@ class ProductsView(ResourceView):
                             base_class=RacBaseForm,
                             exclude=['slug'],
                             converter=RacModelConverter())
-    form_class.stock_count = IntegerField(validators=[DataRequired(), NumberRange(min=-1)])
+    # Add stock count as a faux input field of the ProductForm
+    form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[DataRequired(), NumberRange(min=-1)])
 
     def index(self, publisher):
         publisher = Publisher.objects(slug=publisher).first_or_404()
@@ -443,7 +444,7 @@ class OrdersView(ResourceView):
             # If failed, the product has no more stock, we have to abort purchase
             stock_available = cart_order.deduct_stock(publisher)
             if not stock_available:
-                r.errors = [('danger', 'Out of stock for a product in this order, purchase cancelled')]
+                r.errors = [('danger', 'A product in this order is out of stock, purchase cancelled')]
                 return r, 400
             try:
                 # Will raise CardError if not succeeded

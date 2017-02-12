@@ -21,7 +21,7 @@ var utils = require('utils');
 
 
 // Styles. Always load for simplicity.
-require('bootstrap/dist/css/bootstrap.css')
+require('../css/custom_bootstrap.less')
 require('selectize/dist/css/selectize.bootstrap3.css');
 require('flatpickr/dist/flatpickr.min.css');
 require('trumbowyg/dist/ui/trumbowyg.css');

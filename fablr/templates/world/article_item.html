@@ -7,21 +7,51 @@
 
 {% if not article %}
     {% set tagline = world.title %}
-    {% set title = 'New '+article_type+' article' %}
+    {% set title = _('New %(type)s article', type=''+article_type) %}
 {% else %}
     {% set tagline = article.get_type_display() %}
     {% set title = article.title %}
 {% endif %}
 
 
-{% block content_title %}{{ article.long_title() if article else (world or publisher) ~ ' - ' ~ title }}{% endblock %}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug), world.title),
+        ('', title)
+    ) }}{% endblock %}
 
-
-{% block sidebar %}
-    {{ super() }}
-    {% if article %}
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        <li>
+            <button type="submit" form="articleform" class="btn btn-primary">
+                <span class="glyphicon glyphicon-cloud-upload"></span> {{ _('Save') }}
+            </button>
+        </li>
+        <li><a class="btn btn-danger" href="#confirm-modal" data-toggle="modal"><span
+                class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+        <li><a class="btn btn-default"
+               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}"><span
+                class="glyphicon glyphicon-circle-arrow-left"></span> {{ _('Cancel') }}</a></li>
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        <li>
+            <button type="submit" form="articleform" class="btn btn-primary"><span
+                    class="glyphicon glyphicon-cloud-upload"></span> {{ _('Save') }}</button>
+        </li>
+        <li><a class="btn btn-danger"
+               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}"><span
+                class="glyphicon glyphicon-circle-arrow-left"></span> {{ _('Cancel') }}</a></li>
+    {% else %}
+        {# We are viewing #}
+        {% include "world/new_article_menu.html" %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-            {% include 'world/article_action_menu.html' %}
+            <li><a class="btn btn-primary"
+                   href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug, intent='patch') }}"><span
+                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+            <li><a class="btn btn-danger" href="#confirm-modal" data-toggle="modal"><span
+                    class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
         {% endcall %}
     {% endif %}
 {% endblock %}
@@ -36,127 +66,144 @@
     {{ MACRO.OG_ARTICLE(article) }}
 {% endblock %}
 
-{% block middle %}
+{% block pre_content %}
+    {% if args.get('intent', None) %}
+        <form id="articleform" method="post" action="{{ action_url }}">
+        {{ article_form.csrf_token }}
+    {% endif %}
+    {{ super() }}
+{% endblock %}
 
-    {#### FORM ####}
-    {% if article_form %}
-
-        <form role="form" id='articleform' method="post" action="{{ action_url }}">
-            {{ article_form.csrf_token }}
-
-            {#
-<div class="tab-content content-panel">
-  <div class="tab-pane fade" id="focus"></div>
-
-  <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
-  {% for field in type_form %}
-    {{ MACRO.FORM_FIELD_COLS(field, "col-sm-2", "col-sm-2") }}
-  {% endfor %}
-  </div>
-
-  <div class="tab-pane panel panel-default fade row" id="relations">
-  {% if article %}
-    <div class="col-xs-7">
-    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.ArticleRelationsView:index', world=world.slug, article=article.slug, intent='post')}}">
-      {% for articlerelation_form in article_form.relations %}
-        {% include "world/articlerelation_item.html" %}
-      {% endfor %}
-    </ul>
-    </div>
-  {% endif %}
-  </div>
-
-  <div class="tab-pane panel panel-default fade row" id="details">
-    <div class="col-xs-6">
-    </div>
-    <div class="col-xs-6">
-    </div>
-  </div>
-</div>#}
-            <div class="row">
-                <div class="col-md-9 article_text">
-                    <h1 class="article_header">
-                        {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
-                        <small>{{ tagline }}</small>
-                    </h1>
-                    {% if article_form.title.errors %}
-                        <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
-                    {% endif %}
-                    {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
-                    <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
-
-                </div>
-                <div class="col-md-3 article_comment form-horizontal">
-                    {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
-      <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
-      <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
-      <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
-    #}
-                    {% if not article or not article.is_published() %}
-                        <button type="submit" name="status" value="published"
-                                class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>
-                    {% endif %}
-
-                    <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>
-
-                    {{ MACRO.FORM_FIELD(article_form.featured, groupclass='oneline-checkbox') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.status, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.created_date, 'col-sm-3', 'col-sm-9', controlclass=' input-sm flatpickr-datetime',
-                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
-
-                    {{ MACRO.FORM_FIELD_COLS(article_form.type, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.world, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.license, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD_COLS(article_form.theme, 'col-sm-3', 'col-sm-9', controlclass=' input-sm') }}
-                    {{ MACRO.FORM_FIELD(article_form.editors,controlclass=' input-sm selectize') }}
-                    {{ MACRO.FORM_FIELD(article_form.readers,controlclass=' input-sm selectize') }}
-
-                    {{ article_form.images(class='hide') }}
-
-
-                    {% if g.user.id %}
-                        <input type="hidden" name="creator" value="{{ g.user.id }}"/>
-                    {% endif %}
-
-                </div>
-            </div>
+{% block post_content %}
+    {% if args.get('intent', None) %}
         </form>
+    {% endif %}
+{% endblock %}
 
-        {#### PAGE ####}
-    {%- else -%}
-        <h1 class="article_header">{{ title }}
-            <small class="article_tagline">{{ tagline }}</small>
+{% block page_header %}
+    {% if args.get('intent', None) %}
+        <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article_header">
+            {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
         </h1>
-        <ul class="nav nav-tabs content-menu margin-below">
-            {% set articlegroups = article.articlegroups|list %}
-            <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
+        {% if article_form.title.errors %}
+            <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
+        {% endif %}
+    {%- else -%}
+        {{ super() }}
+    {% endif %}
+{% endblock %}
+
+{#### PAGE ####}
+
+{% block content_title %}{{ title }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block intro %}
+    {% if not args.get('intent', None) %}
+        {% set types = {
+    'default': 'record',
+    'blogpost': 'comment',
+    'material': 'briefcase',
+    'person': 'eye-open',
+    'fraction': 'certificate',
+    'place': 'map-marker',
+    'event': 'exclamation-sign',
+    'campaign': 'flag',
+    'chronicle': 'bookmark',
+    'character': 'heart'
+}
+%}
+        <ul class="nav imprint">
+            <li title="{{ _('Article type') }}"><span class="glyphicon glyphicon-{{ types[article.type] }}"></span>
+                <a>{{ article.get_type_display() }}</a>
+            </li>
+
+            {% set articlegroups = article.readers %}
+            <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
                 {%- if article.creator %}
                     {% if access_policy['user'].authorize('view') %}
                         <a href="{{ url_for('social.UsersView:get', id=article.creator.identifier()) }}">{{ article.creator }}</a>
                     {% else %}
-                        {{ article.creator }}{% endif %}
-                {%- else -%}System{%- endif -%}</li>
-            <li class="content-menu-info" title="{{ _('Created') }}"><span
-                    class="glyphicon glyphicon-calendar"></span> {{ article.created_date|dateformat(format='short') }}</li>
+                        <a>{{ article.creator }}</a>
+                    {% endif %}
+                {%- else -%}<a>{{ _('Admin') }}</a>
+                {%- endif -%}</li>
+            <li title="{{ _('Created') }}"><span
+                    class="glyphicon glyphicon-calendar"></span> <a>{{ article.created_date|dateformat(format='short') }}</a>
+            </li>
             {% if articlegroups or g.user %}
-                <li class="content-menu-info" title="{{ _('Visibility') }}"><span
-                        class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}
+                <li title="{{ _('Visibility') }}"><span
+                        class="glyphicon glyphicon-lock"></span> <a>{{ article.get_status_display() }}</a><small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
                 </li>
             {% endif %}
-            {% if g.user %}
-                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i
-                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i
-                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
-            {% endif %}
-            {% if not article.is_published() %}
-                <li class="content-menu-info" title="{{ _('Unpublished') }}"><span
-                        class="glyphicon glyphicon-pencil"></span> {{ _('Print') }}</li>
-            {% endif %}
-            <li class="content-menu-info" title=""><a href="javascript:window.print()"><span
-                    class="glyphicon glyphicon-print"></span></a></li>
+{#            {% if g.user %}#}
+{#                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i#}
+{#                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>#}
+{#                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i#}
+{#                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>#}
+{#            {% endif %}#}
+            <li title=""><span
+                    class="glyphicon glyphicon-print"></span> <a href="javascript:window.print()">{{ _('Print') }}</a></li>
+            <li title="{{ _('Share') }}" class="social"><span
+                    class="glyphicon glyphicon-share"></span> {% include "includes/social_icons.html" %}</li>
         </ul>
+    {% endif %}
+{% endblock %}
 
+{% block content %}
+    <article>
+    {% if args.get('intent', None) %}
+        {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
+        <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a
+                href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
+    {% else %}
+        {{ article.content|markdown if article.content else _("Content") }}
+        {% if article.type == 'blogpost' %}
+            {% include 'includes/disqus.html' %}
+        {% endif %}
+    {% endif %}
+    </article>
+{% endblock %}
+
+{% block asides %}
+    {% if args.get('intent', None) %}
+        <div class="article_comment form-horizontal">
+            {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
+      <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
+      <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
+      <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
+    #}
+            {#            {% if not article or not article.is_published() %}#}
+            {#                <button type="submit" name="status" value="published"#}
+            {#                        class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>#}
+            {#            {% endif %}#}
+            {##}
+            {#            <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>#}
+
+            {{ MACRO.FORM_FIELD(article_form.type, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+
+
+            {{ MACRO.FORM_FIELD(article_form.status, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+
+            {{ MACRO.FORM_FIELD(article_form.created_date, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm flatpickr-datetime',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
+
+            {{ MACRO.FORM_FIELD(article_form.world, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.editors, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.featured, labelclass='col-sm-3 dobr', controlwrap='col-sm-9',
+                labeltext=_('Focus')+'<span class="glyphicon glyphicon-fire"></span>'|safe) }}
+
+            {{ article_form.images(class='hide') }}
+
+            {% if g.user.id %}
+                <input type="hidden" name="creator" value="{{ g.user.id }}"/>
+            {% endif %}
+
+        </div>
+    {% else %}
         <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
             {%- if article.type=='place' -%}
                 <li><span class="nav-header"
@@ -186,22 +233,10 @@
                           style="display:inline">{{ _('Occupation') }}</span>{{ article.persondata.occupation }}</li>
             {%- endif -%}
         </ul>
-        </div>
+    {% endif %}
+{% endblock %}
 
-        <div class="row">
-            <div class="col-md-9 article_text">
-                {{ article.content|markdown if article.content else _("Content") }}
-            </div>
-            {#            <div class="col-md-3 article_comment">#}
-            {#                <!--Example comment-->#}
-            {#            </div>#}
-        </div>
 
-        {% if article.type == 'blogpost' %}
-            {% include 'includes/disqus.html' %}
-        {% endif %}
-
-    {% endif %} {% endblock %}
 
 {% block final %}
     {% if article %}

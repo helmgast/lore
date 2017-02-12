@@ -33,6 +33,11 @@ config = {
                 test: /\.css$/,
                 loader: ExtractTextPlugin.extract("style-loader", "css-loader")
             },
+
+            {  // Loads all CSS files and puts in style tag
+                test: /\.less$/,
+                loader: ExtractTextPlugin.extract("style-loader", "css-loader!less-loader")
+            },
             // {test: /\.less$/, loader: ExtractTextPlugin.extract("style-loader", "css-loader!less-loader")},
             { // Loads all JSON files, we may encounter these in node_modules
                 test: /\.json$/,
