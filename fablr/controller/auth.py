@@ -3,478 +3,399 @@
     ~~~~~~~~~~~~~~~~
 
    Authentication module that provides login and logout features on top of
-   User model. Adapted from flask-peewee.
+   User model, uses Auth0.com as authentication backend.
 
-    :copyright: (c) 2014 by Helmgast AB
+    :copyright: (c) 2016 by Helmgast AB
 """
 
 import functools
-import os
+import json
 from datetime import datetime
 
 import facebook
 import httplib2
-from apiclient.discovery import build
-from flask import Blueprint, render_template, request, session, flash
+import requests
+
+from flask import Blueprint, request, session, flash
+from flask import abort
+from flask import current_app
+from flask import logging
 from flask import redirect, url_for, g
+from flask import render_template
+from flask.ext.mongoengine.wtf import model_form
 from flask_babel import lazy_gettext as _
-from flask_mongoengine.wtf import model_form
+from googleapiclient.discovery import build
 from oauth2client.client import OAuth2WebServerFlow
 from wtforms import HiddenField
 
-from fablr.model.baseuser import check_password, create_token
+from fablr.controller.resource import re_next, RacModelConverter
+from fablr.model.baseuser import check_password
+from fablr.model.user import User
 
-current_dir = os.path.dirname(__file__)
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
+auth_app = Blueprint('auth', __name__, template_folder='../templates/auth')
+
+COOKIE_VERSION = 1  # Update to automatically invalidate all previous cookies
+
+# single signon
+# set cookie on fablr.co (also works for dev.fablr.co, helmgast.fablr.co, etc
+# set cookie on custom domains (helmgast.se, kultdivinitylost.com)
+#  method 1 - redirect to them in turn
+#  method 2 - embed image requests to a script endpoint
+#  method 3 - use AJAX with correct CORS headers on server
+# For any of above methods, we need to verify that the request two set the custom domain
+# cookies are related to the signon that was just completed, e.g. it needs to be authenticated
+# When we visit first custom domain, it wont receive the secure cookie already set on .fablr.co,
+# so it needs to be provided in an URL arg. But that URL arg has to be temporary, unguessable and only work
+# once, to avoid security holes. CSRF tokens may be one way.
+# with this setup there is no subdomain for assets that will not receive cookies
 
 
-def get_next():
-    if not request.query_string:
-        return request.path
-    return '%s?%s' % (request.path, request.query_string)
+@auth_app.record_once
+def on_load(state):
+    state.app.before_request(load_user)
+    state.app.template_context_processors[None].append(get_context_user)
+    state.app.login_required = login_required
+    state.app.admin_required = admin_required
 
 
-class Auth(object):
-    def __init__(self, app, db, user_model=None, ext_auth_model=None, prefix='/auth', name='auth',
-                 clear_session=False):
-        self.app = app
-        self.db = db
+def populate_user(user, user_info):
+    # One time transfer of info from social profile, if any
+    if not user.realname:
+        user.realname = user_info.get('name', None)
+    if not user.username:
+        user.username = user_info.get('nickname', None)
+    if not user.images:
+        picture_url = user_info.get('picture_large', None) or user_info.get('picture', None)
+        if picture_url and 'gravatar.com' not in picture_url:
+            from fablr.model.asset import FileAsset
+            img = FileAsset(owner=user, access_type='hidden', tags=['user'],
+                            source_file_url=picture_url)
+            try:
+                img.save()
+                user.images = [img]
+            except Exception as e:
+                logger.warning(
+                    u"Unable to load profile image at sign-in for user %s, due to %s" % (user, e))
 
-        self.User = user_model
-        if not ext_auth_model:
-            raise ValueError("Current version cannot work without access to ExternalAuth")
-        self.ExternalAuth = ext_auth_model
-        self.blueprint = self.get_blueprint(name)
-        self.url_prefix = prefix
-        self.google_api = None
-        if 'GOOGLE_CLIENT_ID' in app.config and 'GOOGLE_CLIENT_SECRET' in app.config:
-            self.google_client = [app.config['GOOGLE_CLIENT_ID'], app.config['GOOGLE_CLIENT_SECRET'], '']
-        if 'FACEBOOK_APP_ID' in app.config and 'FACEBOOK_APP_SECRET' in app.config:
-            self.facebook_client = {'app_id': app.config['FACEBOOK_APP_ID'],
-                                    'app_secret': app.config['FACEBOOK_APP_SECRET']}
-        self.clear_session = clear_session
-        self.logger = app.logger
-        app.login_required = self.login_required
-        app.admin_required = self.admin_required
-        app.access_policy = {}  # Set up dict for access policies to be stored in
+def get_next_url():
+    rv = request.args.get('next', '/')
+    if not re_next.match(rv):
+        rv = '/'
+    return rv
 
-        from fablr.controller.resource import RacModelConverter
-        self.JoinForm = model_form(self.User, only=['password', 'email', 'username',
-                                                    'email', 'realname', 'location', 'newsletter'],
-                                   field_args={'password': {'password': True}}, converter=RacModelConverter())
-        # More and more sites skip this one now.
-        # self.JoinForm.confirm_password = PasswordField(label=_('Confirm Password'),
-        #     validators=[validators.Required(), validators.EqualTo('password',
-        #     message=_('Passwords must match'))])
-        self.JoinForm.auth_code = HiddenField(_('Auth Code'))
-        self.JoinForm.email_token = HiddenField(_('Email Token'))
-        # We add these manually, because model_form will render them differently
-        self.JoinForm.external_service = HiddenField(_('External Service'))
+@auth_app.route('/callback')
+def callback():
+    support_email = current_app.config['MAIL_DEFAULT_SENDER']
+    code = request.args.get('code', None)
+    if not code:
+        abort(401)
 
-        self.LoginForm = model_form(self.User, only=['email', 'password'], field_args={'password': {'password': True}},
-                                    converter=RacModelConverter())
-        self.LoginForm.auth_code = HiddenField(_('Auth Code'))
-        self.LoginForm.external_service = HiddenField(_('External Service'))
+    token_url = "https://{domain}/oauth/token".format(domain=current_app.config['AUTH0_DOMAIN'])
 
-        self.RemindForm = model_form(self.User, only=['email'])
+    token_payload = {
+        'client_id': current_app.config['AUTH0_CLIENT_ID'],
+        'client_secret': current_app.config['AUTH0_CLIENT_SECRET'],
+        'redirect_uri': '{server}auth/callback'.format(server=request.host_url),
+        'code': code,
+        'grant_type': 'authorization_code'
+    }
+    # Verify the token
+    token_info = requests.post(token_url, data=json.dumps(token_payload),
+                               headers={'content-type': 'application/json'}).json()
+    # Fetch user info
+    user_url = "https://{domain}/userinfo?access_token={access_token}" \
+        .format(domain=current_app.config['AUTH0_DOMAIN'], access_token=token_info['access_token'])
 
-        self.configure_routes()
-        self.register_blueprint()
-        self.register_handlers()
-        self.register_context_processors()
+    user_info = requests.get(user_url).json()
+    # print token_info, user_info
 
-    def get_context_user(self):
-        return {'user': self.get_logged_in_user()}
+    # Make sure next is a relative URL
+    next_url = get_next_url()
 
-    def get_blueprint(self, blueprint_name):
-        return Blueprint(
-            blueprint_name,
-            __name__,
-            template_folder=os.path.join(current_dir, 'templates'),
-        )
+    if not user_info or 'email' not in user_info:
+        logger.error("Unknown user denied login due to missing from backend {info}".format(info=user_info))
+        flash(_('Error logging in, contact %(email)s for support', email=support_email), 'danger')
+        return redirect(next)  # RETURN IN ERROR
 
-    def get_urls(self):
-        return (
-            ('/logout/', self.logout),
-            ('/login/', self.login),
-            ('/join/', self.join),
-            ('/remind/', self.remind)
-        )
+    if not user_info.get('email_verified', False):
+        logger.warning("{user} denied login due to lacking verification".format(user=user_info))
+        flash(_('Check your email inbox for verification link before you can login'), 'warning')
+        return redirect(next)  # RETURN IN ERROR
 
-    def test_user(self, test_fn):
-        def decorator(fn):
-            @functools.wraps(fn)
-            def inner(*args, **kwargs):
-                user = self.get_logged_in_user()
-                if not user:
-                    return redirect(url_for('%s.login' % self.blueprint.name, next=get_next()))
+    try:
+        user = User.objects(email=user_info['email']).get()
+    except User.DoesNotExist:
+        # Create new user to sign-in
+        user = User(email=user_info['email'])
+        logger.info("New user {user} created using {identities}".format(
+            user=user_info['email'],
+            identities=user_info['identities']))
+        populate_user(user, user_info)
+        # Send to user profile to check updated profile
+        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier())
+        flash(_('Your new user have been created.'), 'info')
 
-                if not test_fn(user):
-                    return redirect(url_for('%s.login' % self.blueprint.name, next=get_next()))
+    if user.status == 'deleted':
+        flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email), 'error')
+        logger.error('{user} tried to login but the user is deleted'.format(user=user_info['email']))
+        return redirect(next)  # RETURN IN ERROR
 
-                return fn(*args, **kwargs)
+    # TODO only while we are migrating
+    if user.password or user.google_auth or user.facebook_auth:
+        user.password, user.google_auth, user.facebook_aut = None, None, None  # Delete old auth data
+        populate_user(user, user_info)
+        flash(_('Your user have been migrated to new login system.'), 'info')
+        # Send to user profile to check updated profile
+        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier())
 
-            return inner
+    user.status = 'active'  # We are verified
+    user.last_login = datetime.utcnow()
+    user.save()
+    login_user(user)
+    return redirect(next_url)
 
-        return decorator
 
-    def login_required(self, func):
-        return self.test_user(lambda u: True)(func)
+@auth_app.route('/logout')
+def logout():
+    logout_user()
+    auth0_url = 'https://{domain}/v2/logout?returnTo={host}'.format(domain=current_app.config['AUTH0_DOMAIN'],
+                                                                              host=request.host_url)
+    return redirect(auth0_url)
 
-    def admin_required(self, func):
-        return self.test_user(lambda u: u.admin)(func)
 
-    def login_user(self, user):
-        session['logged_in'] = True
-        session['user_pk'] = str(user.id)
-        session.permanent = True
-        if user.admin:
-            session['clean'] = True
-        g.user = user
-        flash(u"%s %s" % (_('You are logged in as'), user), 'success')
+@auth_app.route('/login')
+def login():
+    # TODO redirect to the Auth0 screen?
+    abort(404)
 
-    def logout_user(self):
-        if self.clear_session:
-            session.clear()
+
+@auth_app.route('/join')
+def join():
+    # TODO redirect to the Auth0 screen?
+    abort(404)
+
+
+def get_context_user():
+    return {'user': get_logged_in_user()}
+
+
+def load_user():
+    g.user = get_logged_in_user()
+    # TODO remove when all users migrated
+    if not session.get('v') and not getattr(g, 'user_to_migrate', None):
+        # We have an old session, try to fetch a user profile to migrate
+        if g.user:
+            g.user_to_migrate = g.user
         else:
-            session.pop('logged_in', None)
-        g.user = None
-        flash(u"%s" % _('You are now logged out'), 'success')
-
-    def get_logged_in_user(self):
-        u = None
-        if session.get('logged_in'):
-            if getattr(g, 'user', None):
-                u = g.user
-            try:
-                u = self.User.objects(
-                    status='active', id=session.get('user_pk')
-                ).get()
-            except self.User.DoesNotExist:
-                session.pop('logged_in', None)
-                pass
-        if u and u.admin and 'clean' not in session:
-            session.pop('logged_in', None)
-            self.logger.warn("Forced admin out")
-            return None
-        if "as_user" in request.args and u.admin:
-            as_user = request.args['as_user']
-            if as_user == 'none':
-                return None
-            try:
-                u2 = self.User.objects(username=as_user).get()
-                self.logger.debug("User %s masquerading as %s" % (u, u2))
-                return u2
-            except self.User.DoesNotExist:
-                pass
-        return u
-
-    def connect_google(self, one_time_code):
-        if not self.google_client:
-            raise Exception('No Google client configured')
-        if not self.google_api:  # load if not already
-            self.google_api = build('plus', 'v1')
-
-        # Upgrade the authorization code into a credentials object
-        # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
-        oauth_flow = OAuth2WebServerFlow(*self.google_client)
-        oauth_flow.redirect_uri = 'postmessage'
-        credentials = oauth_flow.step2_exchange(one_time_code)
-        http = httplib2.Http()
-        http = credentials.authorize(http)
-        google_request = self.google_api.people().get(userId='me')
-        profile = google_request.execute(http=http)
-        return credentials, profile
-
-    def connect_facebook(self, short_access_token):
-        if not self.facebook_client:
-            raise Exception('No Facebook client configured')
-        graph = facebook.GraphAPI(short_access_token)
-        resp1 = graph.extend_access_token(self.facebook_client['app_id'], self.facebook_client['app_secret'])
-        resp2 = graph.get_object('me')
-        return resp1['access_token'], resp2['id'], resp2['email']
-
-    def get_next_url(self):
-        n = request.args.get('next', None)
-        # Avoid going next to other auth-pages, will just be confusing!
-        return n if (n and '/auth/' not in n) else url_for('world.homepage')
-
-    # Join
-    # Enter email (or pre-filled from url-arg)
-    # If email already exists and is active, send to login with a message
-    # If join link came with email token:
-    #   "we know you own this email, and every time you login we can send you a mail to check"
-    #   "if you want to login faster, add google, fb or password below"
-    # If no email token, show options to "prove you have this mail": google, fb, send verification
-    #   IF a social service is selected, and it doesn't match the email, give Error
-    #
-    # Login
-    # Enter email, or prefill based on Google / FB cookie
-    # If prefilled, also show the basic user info. If no password registered, don't ask for it.
-
-    # 4 methods to authenticate
-    # an email token
-    # a password
-    # an auth_code from Google
-    # an auth code from FB
-
-    def join(self):
-        # This function does joining in several steps.
-        # Join-step: no user (should) exist
-        # Verify-step: a user exists, and we are amending details
-        # bb@bb.com, 9db26ad4ea2469e547f45b873c19ff99
-
-        # TODO Don't like importing this here but can't find another way to
-        # avoid import errors
-        from mailer import send_mail
-
-        print request.form
-        # if g.feature and not g.feature['join']:
-        #   raise ResourceError(403)
-
-        form = self.JoinForm()
-        op = 'join'
-        if request.method == 'GET':
-            if 'email' in request.args and 'email_token' in request.args:
-                op = 'verify'
-                form.process(request.args)  # add email and email_token to the form
-        if request.method == 'POST':
-            form.process(request.form)
-
-            # Need to deal with email and password specifically here.
-            # If we are coming from here with external auth or email token, we shouldn't
-            # change any existing password, so remove from form
-            if form.auth_code.data and form.external_service.data:
-                # User is either using external auth or verifying an email, no need for
-                # password so remove to make sure nothing can be changed
-                del form.password
-            if form.validate():
-                verified_email = create_token(form.email.data) == form.email_token.data
-                reset = request.args.get('reset', '').lower() == 'true'
-
-                # Check if using external auth
-                if form.auth_code.data:
-                    if form.external_service.data in ['google', 'facebook']:
-                        # User is trying to create data from external auth (can come here both
-                        # with an email_token as well or without)
-                        try:
-                            user = self.User.objects(email=form.email.data.lower()).get()
-                        except self.User.DoesNotExist:
-                            user = self.User()  # New user
-
-                        if verified_email and reset and user.status == 'active':
-                            # We are resetting an existing user, so delete existing login info
-                            # We will only save this change if all works through
-                            del user.facebook_auth  # Clear any previous authentications
-                            del user.google_auth  # Clear any previous authentications
-                            del user.password
-
-                        # If user exists - only continue if user lacks all auth methods
-                        # or if the reset flag is on. If user doesn't exist, we are ok to go.
-                        if reset or not (user.facebook_auth or user.google_auth or user.password):
-                            emails = []
-                            if form.external_service.data == 'google':
-                                credentials, profile = self.connect_google(form.auth_code.data)
-                                external_id, external_access_token = credentials.id_token[
-                                                                         'sub'], credentials.access_token
-                                emails = [line['value'] for line in profile['emails']]
-                                # print "Google email", emails, profile['emails']
-                                if not (external_id or external_access_token):
-                                    raise ValueError('Error connecting to Google')
-                                user.google_auth = self.ExternalAuth(
-                                    id=external_id,
-                                    long_token=external_access_token,
-                                    emails=emails)
-                            elif form.external_service.data == 'facebook':
-                                external_access_token, external_id, email = self.connect_facebook(form.auth_code.data)
-                                emails = [email]
-                                # print "Facebook email", emails
-                                if not (external_id or external_access_token):
-                                    raise ValueError('Error connecting to Facebook')
-                                user.facebook_auth = self.ExternalAuth(
-                                    id=external_id,
-                                    long_token=external_access_token,
-                                    emails=emails)
-                            if not reset:
-                                form.populate_obj(user)  # Will not save any data on external service!
-
-                            if form.email.data in emails or verified_email:
-                                # This user has a verified email
-                                user.status = 'active'
-                                user.last_login = datetime.utcnow()
-                                user.save()
-                                self.login_user(user)
-                                return redirect(self.get_next_url())
-                            else:
-                                user.save()
-                                send_mail(
-                                    [user.email],
-                                    _('Verify your email to complete registration on helmgast.se'),
-                                    mail_type='verify',
-                                    user=user
-                                )
-                                flash(_("You have registered, but as your preferred email didn't \
-                  match the ones in external auth, you have to verify it manually, \
-                  please check your inbox"), 'success')
-                        else:
-
-                            # print user.status, user.facebook_auth, user.google_auth, user.password
-                            # we can't create on a user which has already been create in some way or another
-                            flash(_('Someone has already created this user!'), 'warning')
-                    else:
-                        flash(_('Form data has been manipulated, unsupported external auth service'), 'warning')
-
-                elif form.email_token.data:
-                    # User is not using external auth but came here with email token, so
-                    # account already exists and is verified to belong to user
-                    if verified_email:
-                        # Email has been verified, so we set to active and populate the user
-                        try:
-                            user = self.User.objects(email=form.email.data.lower()).get()
-                            print user.status
-                            if request.args.get('reset', '').lower() == 'true' and user.status == 'active':
-                                del user.facebook_auth  # Clear any previous authentications
-                                del user.google_auth  # Clear any previous authentications
-                                user.password = form.password.data  # will be hashed when user is autosaved
-                                user.last_login = datetime.utcnow()
-                                user.save()
-                                self.login_user(user)
-                                flash(_('Password successfully changed'), 'success')
-                                return redirect(self.get_next_url())
-                            elif user.status == 'invited':
-                                user.status = 'active'
-                                form.populate_obj(user)  # any optional data that has been added
-                                user.last_login = datetime.utcnow()
-                                user.save()
-                                self.login_user(user)
-                                return redirect(self.get_next_url())
-                            else:
-                                flash(_('This user is already verified!'), 'warning')
-                        except:
-                            flash(_('No invitation for this email and token exists'), 'warning')
-                            raise
-                    else:
-                        # Something wrong with the token
-                        flash(_('Incorrect email or email token, did you use the right link?'), 'danger')
-
-                else:
-                    flash(_('Registration without invite link is not yet open, please come back later!'), 'danger')
-
-                    # User is submitting a "vanilla" user registration without external auth
-                    # try:
-                    #   user = self.User.objects(email=form.email.data).get()
-                    #   # we shouldn't get here if no user existed, so it means we are joining
-                    #   # with an existing email!
-                    #   flash( _('A user with this email already exists'), 'warning')
-                    # except self.User.DoesNotExist:
-                    #   # No user above was found with the provided email
-                    #   user = self.User()
-                    #   form.populate_obj(user)
-                    #   user.save()
-                    #   #send_verification_email()
-                    #   print "Sending verification email" #TODO
-                    #   flash( u'%s %s (%s)' % (_('A verification email have been sent out to'), form.email.data,
-                    #       create_token(form.email.data)), 'success')
-            else:
-                flash(u"%s: %s" % (_('Error in form'), form.errors), 'warning')
-
-        return render_template('auth/join.html', form=form, op=op)
-
-    def login(self):
-        form = self.LoginForm()
-        if request.method == 'POST':
-            form.process(request.form)
-            if form.auth_code.data and form.external_service.data:
-                # We have been authorized through external service
-                if form.external_service.data in ['google', 'facebook']:
-                    try:
-                        if form.external_service.data == 'google':
-                            credentials, profile = self.connect_google(form.auth_code.data)
-                            provided_external_id = credentials.id_token['sub']
-                            external_access_token = credentials.access_token
-                            # Update the token, as it may have expired and been renewed
-                            user = self.User.objects(google_auth__id=provided_external_id).get()
-                            user.google_auth.long_token = external_access_token
-                        elif form.external_service.data == 'facebook':
-                            external_access_token, provided_external_id, email = self.connect_facebook(
-                                form.auth_code.data)
-                            user = self.User.objects(facebook_auth__id=provided_external_id).get()
-                            # Update the token, as it may have expired and been renewed
-                            user.facebook_auth.long_token = external_access_token
-                        if user.status == 'active':
-                            user.last_login = datetime.utcnow()
-                            user.save()
-                            self.login_user(user)
-                            return redirect(self.get_next_url())
-                        else:
-                            flash(_('This user account is not active or verified'), 'danger')
-                    except self.User.DoesNotExist:
-                        flash(_('No matching external authentication, are you sure you signed up with this method?'),
-                              'danger')
-                    except Exception as e:
-                        self.logger.exception('Error contacting external service')
-                        flash(u"%s %s" % (_('Error contacting external service'), e), 'danger')
-                else:
-                    flash(_('Incorrect external service supplied'), 'danger')
-
-            elif form.validate():
-                # External service not used, let's check password
+            u2m = session.get('user_pk', None) or request.args.get('user_to_migrate', None)
+            if u2m:
                 try:
-                    user = self.User.objects(email=form.email.data.lower()).get()
-                    if user.status == 'active' and check_password(form.password.data, user.password):
+                    g.user_to_migrate = User.objects(status='active', id=u2m).get()
+                except User.DoesNotExist:
+                    pass
+
+
+def check_user(test_fn):
+    def decorator(fn):
+        @functools.wraps(fn)
+        def inner(*args, **kwargs):
+            user = get_logged_in_user()
+            if not user:
+                return redirect(url_for('auth.login'))
+
+            if not test_fn(user):
+                return redirect(url_for('auth.login'))
+
+            return fn(*args, **kwargs)
+
+        return inner
+
+    return decorator
+
+
+def login_required(func):
+    return check_user(lambda u: True)(func)
+
+
+def admin_required(func):
+    return check_user(lambda u: u.admin)(func)
+
+
+def login_user(user):
+    cart_id = session.get('cid', None)
+    session.clear()
+    # Puts a version to this cookie so we can invalidate it if needed
+    # We could also update SECRET but then we can't read previous cookies.
+    # 'v' allows us to read them but still force a new one
+    session['v'] = COOKIE_VERSION
+    session['ok'] = True  # Consider valid and logged in
+    session['uid'] = str(user.id)  # The user ID to associate with
+    if cart_id:
+        session['cid'] = cart_id  # A cart id from the shop that could come from before we login
+    session.permanent = True
+    g.user = user
+    flash(_('You are logged in as %(user)s with %(email)s', user=user, email=user.email), 'success')
+
+
+def logout_user():
+    # TODO consider clearing the full session to leave no trace
+    session.pop('ok', None)
+    g.user = None
+    flash(u"%s" % _('You are now logged out'), 'success')
+
+
+def get_logged_in_user():
+    # print session
+
+    u = getattr(g, 'user', None)  # See if we already fetched it in this request
+    if not u and session.get('ok') and session.get('v') == COOKIE_VERSION:
+        try:
+            u = User.objects(status='active', id=session.get('uid')).get()
+        except User.DoesNotExist:
+            logout_user()
+            pass
+
+    if "as_user" in request.args and u and u.admin:
+        as_user = request.args['as_user']
+        if as_user == 'none':
+            return None  # Simulate no logged in user
+        try:
+            u2 = User.objects(username=as_user).get()
+            logger.debug("User %s masquerading as %s" % (u, u2))
+            return u2
+        except User.DoesNotExist:
+            pass
+    return u  # Might be None if all failed above
+
+
+# ---------- Old auth, for migration purposes only ----------- #
+
+google_client = None
+google_api = None
+facebook_client = None
+
+if 'GOOGLE_CLIENT_ID' in current_app.config and 'GOOGLE_CLIENT_SECRET' in current_app.config:
+    google_client = [current_app.config['GOOGLE_CLIENT_ID'], current_app.config['GOOGLE_CLIENT_SECRET'], '']
+    google_api = build('plus', 'v1')
+if 'FACEBOOK_APP_ID' in current_app.config and 'FACEBOOK_APP_SECRET' in current_app.config:
+    facebook_client = {'app_id': current_app.config['FACEBOOK_APP_ID'],
+                            'app_secret': current_app.config['FACEBOOK_APP_SECRET']}
+
+LoginForm = model_form(User, only=['email', 'password'], field_args={'password': {'password': True}},
+                        converter=RacModelConverter())
+LoginForm.auth_code = HiddenField(_('Auth Code'))
+LoginForm.external_service = HiddenField(_('External Service'))
+
+RemindForm = model_form(User, only=['email'])
+
+
+def connect_google(one_time_code):
+    if not google_client:
+        raise Exception('No Google client configured')
+
+    # Upgrade the authorization code into a credentials object
+    # oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+    oauth_flow = OAuth2WebServerFlow(*google_client)
+    oauth_flow.redirect_uri = 'postmessage'
+    credentials = oauth_flow.step2_exchange(one_time_code)
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+    google_request = google_api.people().get(userId='me')
+    profile = google_request.execute(http=http)
+    return credentials, profile
+
+
+def connect_facebook(short_access_token):
+    if not facebook_client:
+        raise Exception('No Facebook client configured')
+    graph = facebook.GraphAPI(short_access_token)
+    resp1 = graph.extend_access_token(facebook_client['app_id'], facebook_client['app_secret'])
+    resp2 = graph.get_object('me')
+    return resp1['access_token'], resp2['id'], resp2['email']
+
+
+@auth_app.route('/migrate')
+def migrate():
+    form = LoginForm()
+    if request.method == 'POST':
+        form.process(request.form)
+        if form.auth_code.data and form.external_service.data:
+            # We have been authorized through external service
+            if form.external_service.data in ['google', 'facebook']:
+                try:
+                    if form.external_service.data == 'google':
+                        credentials, profile = connect_google(form.auth_code.data)
+                        provided_external_id = credentials.id_token['sub']
+                        external_access_token = credentials.access_token
+                        # Update the token, as it may have expired and been renewed
+                        user = User.objects(google_auth__id=provided_external_id).get()
+                        user.google_auth.long_token = external_access_token
+                    elif form.external_service.data == 'facebook':
+                        external_access_token, provided_external_id, email = connect_facebook(
+                            form.auth_code.data)
+                        user = User.objects(facebook_auth__id=provided_external_id).get()
+                        # Update the token, as it may have expired and been renewed
+                        user.facebook_auth.long_token = external_access_token
+                    if user.status == 'active':
                         user.last_login = datetime.utcnow()
                         user.save()
-                        self.login_user(user)
-                        return redirect(self.get_next_url())
+                        login_user(user)
+                        # ---- SUCCESS --- #
+                        return redirect(get_next_url())
                     else:
-                        flash(_('Incorrect username or password'), 'danger')
-                except self.User.DoesNotExist:
-                    flash(_('No such user exist, are you sure you registered first?'), 'danger')
+                        flash(_('This user account is not active or verified'), 'danger')
+                except User.DoesNotExist:
+                    flash(_('No matching external authentication, are you sure you signed up with this method?'),
+                          'danger')
+                except Exception as e:
+                    logger.exception('Error contacting external service')
+                    flash(u"%s %s" % (_('Error contacting external service'), e), 'danger')
             else:
-                self.logger.error(form.errors)
-                flash(_('Error in form'), 'danger')
-        return render_template('auth/login.html', form=form, op='login')
+                flash(_('Incorrect external service supplied'), 'danger')
 
-    def logout(self):
-        # TODO if user is logged in via google, send token revoke
-        self.logout_user()
-        return redirect(self.get_next_url())
+        elif form.validate():
+            # External service not used, let's check password
+            try:
+                user = User.objects(email=form.email.data.lower()).get()
+                if user.status == 'active' and check_password(form.password.data, user.password):
+                    user.last_login = datetime.utcnow()
+                    user.save()
+                    login_user(user)
+                    # ---- SUCCESS --- #
+                    return redirect(get_next_url())
+                else:
+                    flash(_('Incorrect username or password'), 'danger')
+            except User.DoesNotExist:
+                flash(_('No such user exist, are you sure you registered first?'), 'danger')
+        else:
+            logger.error(form.errors)
+            flash(_('Error in form'), 'danger')
+    return render_template('auth/migrate.html', form=form, op='login')
 
-    def remind(self):
-        # TODO Don't like importing this here but can't find another way to
-        # avoid import errors
-        from mailer import send_mail
 
-        form = self.RemindForm()
-        if request.method == 'POST':
-            form.process(request.form)
-            if form.validate():
-                try:
-                    user = self.User.objects(email=form.email.data.lower()).get()
-                    send_mail(
-                        [user.email],
-                        _('Reminder on how to login to Helmgast.se'),
-                        mail_type='remind_login',
-                        user=user
-                    )
-                    flash(_('Reminder email sent to your address'), 'success')
-                except self.User.DoesNotExist:
-                    flash(_('No such user exist, are you sure you registered first?'), 'danger')
-            else:
-                flash(_('Errors in form'), 'danger')
-        return render_template('auth/remind.html', form=form)
+@auth_app.route('/remind')
+def remind():
+    # TODO Don't like importing this here but can't find another way to
+    # avoid import errors
+    from mailer import send_mail
 
-    def configure_routes(self):
-        for url, callback in self.get_urls():
-            self.blueprint.route(url, methods=['GET', 'POST'])(callback)
-
-    def register_blueprint(self, **kwargs):
-        self.app.register_blueprint(self.blueprint, url_prefix=self.url_prefix, **kwargs)
-
-    def load_user(self):
-        g.user = self.get_logged_in_user()
-
-    def register_handlers(self):
-        self.app.before_request(self.load_user)
-
-    def register_context_processors(self):
-        self.app.template_context_processors[None].append(self.get_context_user)
+    form = RemindForm()
+    if request.method == 'POST':
+        form.process(request.form)
+        if form.validate():
+            try:
+                user = User.objects(email=form.email.data.lower()).get()
+                send_mail(
+                    [user.email],
+                    _('Reminder on how to login to Helmgast.se'),
+                    mail_type='remind_login',
+                    user=user
+                )
+                flash(_('Reminder email sent to your address'), 'success')
+            except User.DoesNotExist:
+                flash(_('No such user exist, are you sure you registered first?'), 'danger')
+        else:
+            flash(_('Errors in form'), 'danger')
+    return render_template('auth/remind.html', form=form)

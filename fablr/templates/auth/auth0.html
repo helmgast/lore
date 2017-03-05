@@ -1,0 +1,82 @@
+<script src="https://cdn.auth0.com/js/lock/10.11.0/lock.min.js"></script>
+<script type="text/javascript">
+    {% if not session.get('v') %}
+        {% set note = _('We\\\'ve changed login system, you need to sign up again using same method or email. <a href="/">See info</a> or email <a href="mailto:info@helmgast.se">info@helmgast.se</a> for help.') %}
+    {% else %}
+        {% set note = '' %}
+    {% endif %}
+    var opts = {
+        auth: {
+            redirectUrl: "{{ url_for('auth.login', _external=true) }}",
+            responseType: 'code',
+            params: {
+                scope: 'openid email'
+            }
+        },
+        {# TODO update list to current supported auth0 locales #}
+        flashMessage: {type: 'success', text: 'Flash!'},
+
+        language: "{{ g.locale if g.locale in ['en','sv'] else 'sv' }}",
+        theme: {
+            logo: "http://helmgast.se/static/img/helmgast_512px.png",
+            primaryColor: "#a00"
+        },
+        languageDictionary: {
+            title: _("Fablr by Helmgast"),
+            socialSignUpInstructions: '{{ note }}',
+        },
+    }
+    opts.languageDictionary.socialLoginInstructions = opts.languageDictionary.socialSignUpInstructions
+    {% if g.user_to_migrate %}
+        opts.initialScreen= "signUp"
+        opts.allowLogin = false
+        opts.languageDictionary.databaseAlternativeSignUpInstructions = ''
+        opts.avatar = {
+                url: function (email, cb) {
+                    cb(null, '{{ g.user_to_migrate.gravatar_url() }}');
+                },
+                displayName: function (email, cb) {
+                    cb(null, '{{ g.user_to_migrate.display_name() }}');
+                }
+            }
+        opts.prefill =  {email: "{{ g.user_to_migrate.email }}"}
+    {% endif %}
+    var lock = new Auth0Lock('{{ config["AUTH0_CLIENT_ID"] }}', '{{ config["AUTH0_DOMAIN"] }}', opts);
+</script>
+<style>
+    {% if g.user_to_migrate %}
+        .auth0-lock-social-button {
+            height: auto !important;
+        }
+        .auth0-lock-social-button-icon {
+            top: auto !important;
+        }
+        {%- if g.user_to_migrate.facebook_auth -%}
+            {% set selector = 'button[data-provider="facebook"]'|safe %}
+        {%- elif g.user_to_migrate.google_auth -%}
+            {% set selector = 'button[data-provider="google-oauth2"]'|safe %}
+        {%- elif g.user_to_migrate.password -%}
+            {% set selector = '.auth0-lock-form > div > div:last-child'|safe %}
+        {%- endif -%}
+
+        {{ selector }}:before {
+            content: '{{ _("Your previous choice") }}';
+            background-color: white;
+            display: block;
+            color: red;
+            font-size: 18px;
+            height: 25px;
+            line-height: 20px;
+            padding: 4px;
+            text-align: center;
+        }
+
+        {{ selector }}
+        {
+        border: 3px solid red !important
+        ;
+        }
+    {% endif %}
+</style>
+<button onclick="lock.show()">Auth0</button>
+Debug: User to migrate: {{ g.user_to_migrate }}
