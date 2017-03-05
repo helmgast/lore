@@ -54,6 +54,7 @@ def create_app(no_init=False, **kwargs):
     the_app.config.update(kwargs)  # add any overrides from startup command
     the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
 
+
     # If in production, make sure we don't have any dummy secrets
     if not the_app.debug:
         for key in dir(default_config.SecretConfig):
@@ -156,6 +157,7 @@ def configure_extensions(app):
             app.url_map = Map(host_matching=True)
             # Re-add the static rule
             app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
+            app.logger.info('Doing host matching and default host is {host}'.format(host=app.url_rule_class.default_host))
     else:
         app.logger.warning('Running in local dev mode without hostnames')
 
@@ -202,10 +204,9 @@ def identity(ob):
 
 def configure_blueprints(app):
     with app.app_context():
-        from model.user import User, ExternalAuth
-        from controller.auth import Auth
-        from extensions import db
-        auth = Auth(app, db, user_model=User, ext_auth_model=ExternalAuth)
+        from controller.auth import auth_app
+        app.register_blueprint(auth_app, url_prefix='/auth')
+        app.access_policy = {}
 
         from controller.asset import asset_app as asset_app
         from controller.world import world_app as world
@@ -225,7 +226,7 @@ def configure_blueprints(app):
         from sparkpost import SparkPost
         mail.sparkpost_client = SparkPost(app.config['SPARKPOST_API_KEY'])
 
-    return auth
+    return auth_app
 
 
 def configure_hooks(app):

@@ -247,9 +247,25 @@ function init_dom(e) {
     require('calculatable.js')
     scope.find('.calc[data-formula]').calculatable();
 
+    // TODO too complicated to add, do later
+    // scope.find('.auth0-lock').each(function (el) {
+    //     require.ensure(['auth0-lock-passwordless'], function (require) {
+    //         var lock_module = require('auth0-lock-passwordless')
+    //         var options = {
+    //             icon: "//helmgast.se/static/img/helmgast_512px.png",
+    //             closable: false,
+    //             focusInput: true,
+    //             primaryColor: "#a00",
+    //             socialBigButtons: true,
+    //             connections: ["facebook","google-oauth2"],
+    //         }
+    //         var lock = new lock_module.default(AUTH0_CLIENT_ID, AUTH0_DOMAIN);
+    //         $(el).data(lock, lock)
+    //     })
+    // })
 
     scope.find('.content-editor').each(function (e) {
-        // Loads these dependencies asynchrounously if we find this scope on the current page
+        // Loads these dependencies asynchronously if we find this scope on the current page
         require.ensure(['trumbowyg', 'fileselect.js', 'trumbowyg.fileselect.js', 'trumbowyg.markdown.js'], function (require) {
             // Trumbowyg plugin for textareas
             require('trumbowyg')

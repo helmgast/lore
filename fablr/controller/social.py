@@ -18,6 +18,7 @@ from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
 
+from fablr.controller.auth import get_logged_in_user
 from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from fablr.model.user import User, Group, Event
@@ -65,12 +66,18 @@ class UsersView(ResourceView):
             user = User.objects(id=id).first_or_404()
             r = ItemResponse(UsersView, [('user', user)])
         r.events = Event.objects(user=user) if user else []
+        if not getattr(g, 'user', None):
+            # Allow invited only user to see this page
+            g.user = get_logged_in_user(invited_ok=True)
         r.auth_or_abort()
         return r
 
     def patch(self, id):
         user = User.objects(id=id).first_or_404()
         r = ItemResponse(UsersView, [('user', user)], method='patch')
+        if not getattr(g, 'user', None):
+            # Allow invited only user to see this page
+            g.user = get_logged_in_user(invited_ok=True)
         r.auth_or_abort()
 
         if not r.validate():

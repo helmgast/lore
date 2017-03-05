@@ -407,7 +407,7 @@ class OrdersView(ResourceView):
                 # An existing user has this email, force login or different email
                 flash(Markup(_(
                     'Email belongs to existing user, please <a href="%(loginurl)s">login</a> first or change email',
-                    loginurl=url_for('auth.login', next=request.url))),
+                    loginurl=url_for('auth.login', host=request.host, next=request.url))),
                     'danger')
                 return r, 400
             if not cart_order.is_digital():

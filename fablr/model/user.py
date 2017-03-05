@@ -20,7 +20,8 @@ from misc import Choices, slugify, translate_action, datetime_delta_options, cho
 from flask_babel import lazy_gettext as _
 from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
-                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField)
+                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
+                         ValidationError)
 
 import logging
 from flask import current_app
@@ -32,11 +33,12 @@ UserStatus = Choices(
     active=_('Active'),
     deleted=_('Deleted'))
 
-# TODO deprecate
-AuthServices = Choices(
-    google='Google',
-    facebook='Facebook')
-
+auth_services = {
+    'google-oauth2': 'Google',
+    'google': 'Google',
+    'facebook': 'Facebook',
+    'email': 'Email'
+}
 
 # TODO deprecate
 class ExternalAuth(EmbeddedDocument):
@@ -56,14 +58,23 @@ class UserEvent(EmbeddedDocument):
     def action_string(self):
         return translate_action(self.action, self.instance)
 
+class AuthKey(EmbeddedDocument):
+    auth_token = StringField()
+    email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
+
 
 # A user in the system
 class User(Document, BaseUser):
+    meta = {
+        'indexes': ['email', 'auth_keys.email']
+    }
+
     # We want to set username unique, but then it cannot be empty,
     # but in case where username is created, we want to allow empty values
     # Currently it's only a display name, not used for URLs!
     username = StringField(max_length=60, verbose_name=_('Username'))
-    email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
+    email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Contact Email'))
+    auth_keys = ListField(EmbeddedDocumentField(AuthKey), verbose_name=_('Authentication sources'))
     realname = StringField(max_length=60, verbose_name=_('Real name'))
     location = StringField(max_length=60, verbose_name=_('Location'))
     description = StringField(max_length=500, verbose_name=_('Description'))
@@ -91,7 +102,11 @@ class User(Document, BaseUser):
         # if self.username and self.location and self.description and self.images:
         #     # Profile is completed
         #     self.log(action='completed_profile', resource=self)  # metric is 1
-        self.recalculate_xp()
+        try:
+            self.recalculate_xp()
+        except ValidationError as ve:
+            # May come if we try to count objects referring to this user, while the user hasn't been created yet
+            pass
 
     def recalculate_xp(self):
         xp = Event.objects(user=self).sum('xp')
@@ -99,6 +114,13 @@ class User(Document, BaseUser):
             self.xp = xp
             return True
         return False
+
+    def split_auth_token(self, auth_token):
+        # Assumes a Auth0 auth_id looking like email|58ba793c0bdcab0a0ec46cf7
+        if not auth_token or '|' not in auth_token:
+            raise ValidationError('Not a valid auth_token {token}'.format(token=auth_token))
+        service = auth_token.split('|')[0]
+        return service, auth_services[service]
 
     def display_name(self):
         return self.__unicode__()

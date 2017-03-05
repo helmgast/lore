@@ -657,17 +657,64 @@ Themes
         - Header font (h1-h7)
         - Article font (article)
         
-        
-If no cookie:
-    1) Login as usual
-    2) After successful login, if user don't have newauth=true
-        - Redirect to page that "We have new auth system, you will need to change", confirm email
-        - Continue to auth0 to login
-        - At callback, erase old auth-details and set newauth=true
-If cookie:
-    1) Check if newauth=true on user
-    2) If true, serve auth0 login
-    3) Else, serve old login
+       
+Social users: 60%
+Password: 40%
+Different emails on social and pass? 30%
+Login on multiple devices: 50%
+
+Will see migration screen but already migrated:
+50%
+
+Will end up with different accounts if not migrating:
+
+
+    
+Migration procedure1:
+1) Invalidate all previous sessions
+2) If no "auth0_migrated" cookie AND no uid in session, redirect to migrate at login
+3) When authenticated, store u2m (user to migrate) in session, then show signup form and avatar
+4) At callback,
+    a) if u2m exist in session, merge auth to that user and remove old auths, set auth0_migrated cookie and remove u2m
+    b) if uid does not exist in session, but we have verified email in auth, merge with that account if it exists
+    c) if uid does not exist and no email match, create new user
+    Complete login and session.
+   
+Migration procedure2:
+0) Invalidate all previous sessions
+1a) If no session, show login screen as usual
+1b) If session, do not link to login, but if accessed, show current user and message that we will add an auth
+2) Login using email or social.
+3a) If current session:
+    If new auth doesn't match session user, add it and show profile with updated data.
+    If new auth does match session user, and 
+    If new auth does match session user, and user is invited, delete that user and merge to current user.
+    If new auth does match session user, and user is active or deleted, report an unresolvable error and contact info@
+3b) If no current session
+    If new auth matches existing user and auth is same, just login.
+    If new auth matches existing user, and auth is new, add it and show profile with updated data.
+    If existing user, and new auth, show a message that we added a new profile.
+4c) If existing user, and old auth, show profile and a message that user have been migrated.
+4d) If not existing user, send user to "post user" page.
+
+
+If press Cancel, 
+
+Cookie includes:
+email: authenticated email from auth0
+
+
+Show instructions if to merge if this was unintended.
+
+Need to always check that a user is active when verifying a logged in user, in order to be able to lock out users centrally.
+
+How to merge:
+1) We just created b@b.com (uid234) but old user is a@a.com (uid123).
+2) User requests to add email a@a.com. Email verification is sent.
+3) When code is entered, we will go to login but find that login for a@a.com maps to different uid123 than current session (uid234).
+But it means user controls both accounts. 
+
+    
         
 URLs
 

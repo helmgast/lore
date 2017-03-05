@@ -19,8 +19,7 @@ class Config(object):
     BABEL_AVAILABLE_LOCALES = ['sv_SE', 'en_US']  # In order of preference for some cases
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
-    ALLOW_DOMAINS = False
-    DEFAULT_HOST = None  # Needed if ALLOW domains
+    DEFAULT_HOST = 'fablr.dev'  # Default host when not using flask dev server
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
@@ -42,13 +41,13 @@ class SecretConfig(object):
     AUTH0_CLIENT_ID = 'SECRET'
     AUTH0_DOMAIN = 'SECRET'
 
-    # Used by social login with Google
-    GOOGLE_CLIENT_ID = 'SECRET'
-    GOOGLE_CLIENT_SECRET = 'SECRET'
-
-    # Used by social login with Facebook
-    FACEBOOK_APP_ID = 'SECRET'
-    FACEBOOK_APP_SECRET = 'SECRET'
+    # # Used by social login with Google
+    # GOOGLE_CLIENT_ID = 'SECRET'
+    # GOOGLE_CLIENT_SECRET = 'SECRET'
+    #
+    # # Used by social login with Facebook
+    # FACEBOOK_APP_ID = 'SECRET'
+    # FACEBOOK_APP_SECRET = 'SECRET'
 
     # Used for payments
     STRIPE_SECRET_KEY = 'SECRET'

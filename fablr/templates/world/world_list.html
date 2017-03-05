@@ -23,14 +23,16 @@
     <div class="cards">
         {% for world in worlds %}
             <div class="card"
-                    {%- if world.get_feature_image -%}
-                 style="background: url({{ url_for('image_thumb', slug=world.get_feature_image.slug) }}) center top/cover;"
+                    {%- if world.images -%}
+                 style="background: url({{ url_for('image_thumb', slug=world.images[0].slug) }}) center top/cover;"
                     {%- endif -%}>
                 <a class="card-cover gianticon"
                    href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug) }}">
+                    {% if not world.images %}
                     <svg class="fablr-icon fablr-icon-stretch">
                         <use xlink:href="#fablr-earth"></use>
                     </svg>
+                    {% endif %}
                 </a>
                 <div class="card-text">
                     <h3 class="card-title dobr">

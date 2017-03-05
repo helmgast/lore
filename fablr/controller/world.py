@@ -505,8 +505,6 @@ class ArticlesView(ResourceView):
 #     def index(self, world_):
 #         abort(501)  # Not implemented
 
-world_app.add_url_rule('/abrakadabra', endpoint='homepage')
-
 @world_app.route('/-<code>')
 def shorturl(code):
 

@@ -17,7 +17,7 @@
             font-weight: 400;
             font-size: 14px;
         }
-    .hero-unit {
+    .page-header-hero {
     background-image: url({{ url_for('static', filename='img/themes/jarn_cover_wide.jpeg') }});
 }
     </style>
@@ -27,3 +27,5 @@
     <div class="row hero-unit">
     </div>
 {% endblock cover %}
+
+{% block header_class %}page-header-hero{% endblock %}

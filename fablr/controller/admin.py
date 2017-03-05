@@ -14,6 +14,7 @@ from flask import abort
 from flask import current_app
 from flask import json
 from flask import request
+from flask import safe_join
 
 from fablr.controller.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse
 from fablr.extensions import csrf
@@ -102,7 +103,7 @@ def git_webhook(get_json=None):
         # We will create a subdir to /data/www/github and operate on that
         # It will not be reachable from web unless configured in other webserver
 
-        cwd = os.path.join(current_app.config['DATA_PATH'], 'github', path)
+        cwd = safe_join(current_app.config['DATA_PATH'], 'github', path)
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
         curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
