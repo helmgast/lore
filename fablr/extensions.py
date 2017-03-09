@@ -51,9 +51,27 @@ toolbar = DebugToolbarExtension()
 #   return _dbs[alias]
 
 
+class PrefixMiddleware(object):
+    def __init__(self, app, prefix):
+        self.app = app
+        self.prefix = prefix
+        if not self.prefix.startswith("/"):
+            raise ValueError("Incorrect URL prefix value {prefix}".format(prefix=self.prefix))
+
+    def __call__(self, environ, start_response):
+        # Adds a prefix before all URLs consumed and produced
+        if environ['PATH_INFO'].startswith(self.prefix):
+            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
+            environ['SCRIPT_NAME'] = self.prefix
+            return self.app(environ, start_response)
+        else:
+            start_response('404', [('Content-Type', 'text/plain')])
+            return ["This url does not belong to the app.".encode()]
+
+
 class MethodRewriteMiddleware(object):
     """Rewrites POST with ending url /patch /put /delete into a proper PUT, PATCH, DELETE.
-    Also removes the ending part of the url within flask, while user will see same URL"""
+    Also has potential to add a prefix"""
 
     applied_methods = ['PUT', 'PATCH', 'DELETE']
 

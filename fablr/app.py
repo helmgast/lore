@@ -151,13 +151,17 @@ def configure_extensions(app):
     if 'FLASK_APP' not in os.environ:  # If not set, we are not in local dev server, so we can apply hostname routing
         # Assume we are in a proxy setup and fix headers for that
         app.wsgi_app = ProxyFix(app.wsgi_app)
+        prefix = app.config.get('URL_PREFIX', '')
+        if prefix:
+            app.wsgi_app = extensions.PrefixMiddleware(app.wsgi_app, prefix)
         app.url_rule_class.allow_domains = True
         app.url_rule_class.default_host = app.config['DEFAULT_HOST']
         if app.url_rule_class.default_host:  # Need to have default host to enable host_matching
             app.url_map = Map(host_matching=True)
             # Re-add the static rule
             app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
-            app.logger.info('Doing host matching and default host is {host}'.format(host=app.url_rule_class.default_host))
+            app.logger.info('Doing host matching and default host is {host}{prefix}'.format(
+                host=app.url_rule_class.default_host, prefix=prefix))
     else:
         app.logger.warning('Running in local dev mode without hostnames')
 
