@@ -43,7 +43,7 @@
 
   <div class="row">
   {% if world_article %}
-      <div class="content">
+      <div class="content article_text">
        {{ world_article.content|markdown if world_article.content else _("Content")}}
       </div>
     {% else %}
