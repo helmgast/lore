@@ -215,6 +215,9 @@ msgstr "Du måste logga in för att fylla din kundvagn"
 msgid "Recent Articles in "
 msgstr "Nya artiklar på "
 
+msgid "Articles"
+msgstr "Artiklar"
+
 #: fablr/controller/world.py:156
 msgid "Today"
 msgstr "Idag"

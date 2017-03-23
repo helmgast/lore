@@ -54,7 +54,7 @@ class WorldHandler(ResourceHandler):
   def view(self, r):
     r = super(WorldHandler, self).view(r)
     try:
-      r['template'] = current_app.jinja_env.get_template('themes/%s-static-theme.html' % r['world'].slug)
+      r['parent_template'] = current_app.jinja_env.get_template('themes/%s-static-theme.html' % r['world'].slug)
     except TemplateNotFound:
       pass  # proceed as usual
     return r

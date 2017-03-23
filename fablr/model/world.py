@@ -47,7 +47,7 @@ class World(db.Document):
     return super(World, self).save(*args, **kwargs)
 
   def __unicode__(self):
-    return self.title+(_(' by ')+self.publisher) if self.publisher else ''
+    return self.title + ((_(' by ')+self.publisher) if self.publisher else '')
 
   def articles(self):
     return Article.objects(world=self)

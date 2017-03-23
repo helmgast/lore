@@ -10,6 +10,7 @@
 {% block content_tagline %}{% endblock %}
 
 {% block sidebar %}
+{{super()}}
 
 <div class="worldSideBar">
   <ul class="nav nav-pills nav-stacked">
@@ -37,15 +38,24 @@
 {% endblock %}
 
 {% block content %}
+    {% set world_article = world.articles().clone().filter(slug=world.slug).first() %}
+
 
   <div class="row">
+  {% if world_article %}
+      <div class="content">
+       {{ world_article.content|markdown if world_article.content else _("Content")}}
+      </div>
+    {% else %}
     <div class="col-md-6">
       <p class="well worldDesc">{{ world.description }}</p>
     </div>
+    {% endif %}
     <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
     <!--</div>-->
   </div>
   <div class="row worldArticles">
+  <h3>{{ _('Articles') }}</h3>
   {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
   <ul>
     {% for article in world.articles() %}
