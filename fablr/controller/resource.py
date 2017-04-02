@@ -27,7 +27,7 @@ from flask_mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
 from flask.views import View
-from mongoengine import ReferenceField, DateTimeField, Q
+from mongoengine import ReferenceField, DateTimeField, Q, OperationError
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import CombinedMultiDict, MultiDict
@@ -329,7 +329,8 @@ class ListResponse(ResourceResponse):
         'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
         'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 15,
         'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
-        'order_by': lambda x: ''
+        'order_by': lambda x: '',
+        'q': lambda x: x
     })
     method = 'list'
 
@@ -383,18 +384,29 @@ class ListResponse(ResourceResponse):
                 else:
                     built_query = built_query._combine(q, QNode.AND)
             self.query = self.query.filter(built_query)
+        if self.args['q']:
+            # Doing this twice will throw error, but we cannot guarantee we won't runt prepare_query twice
+            try:
+                self.query = self.query.search_text(self.args['q']).order_by('$text_score')
+            except OperationError:
+                pass
 
         self.filter_options = {}
         for f in self.model._fields.keys():
             field = self.model._fields[f]
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
-        # TODO implement search, use textindex and do ".search_text()"
+
+
 
     def paginate(self):
         # TODO max query size 10000 implied here
         per_page = self.args['per_page'] if self.args['per_page'] > 0 else 10000
-        self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
+        # TODO, this is a fix for an issue in MongoEngine https://github.com/MongoEngine/mongoengine/issues/1522
+        try:
+            self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
+        except TypeError:  # Try again, as a race condition might stop first one
+            self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
         self.query = self.pagination.items  # set default query as the paginated one
 
 

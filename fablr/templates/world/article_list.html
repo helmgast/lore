@@ -83,6 +83,18 @@
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
+
+        <h5>{% trans %}Search text{% endtrans %}</h5>
+        <form method="get">
+            {# This will erase all other query parameters when submitted by HTML design #}
+            <div class="input-group">
+                <input class="form-control input-sm{{ ' btn-info' if args['q'] }}" type="search" id='q' name='q'
+                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
+            </div>
+        </form>
+        </span>
     {% endif %}
 {% endblock %}
 
@@ -93,7 +105,11 @@
             {% if group.grouper %}
                 <h3>{{ _(group.grouper|capitalize) }}</h3>
             {% endif %}
-            {% if args['view'] == 'list' %}
+            {% if not group.list %}
+                <div class="jumbotron text-center">
+                    <h2>{{ _('No articles found') }}</h2>
+                </div>
+            {% elif args['view'] == 'list' %}
 
                 {% for article in group.list %}
                     <a class="blog_header"
@@ -129,9 +145,9 @@
                 <div class="cards">
                     {% for article in group.list %}
                         <div class="card"
-                            {%- if article.get_feature_image -%}
-                                style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
-                            {%- endif -%}>
+                                {%- if article.get_feature_image -%}
+                             style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
+                                {%- endif -%}>
                             <div class="card-text">
                                 <h3 class="card-title">
                                     <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">{{ article.title }}</a>
@@ -140,8 +156,8 @@
 
                                 <div class="card-description">{{ desc[0] }}</div>
                                 <ul class="card-details">
-                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>
-                            </ul>
+                                    <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>
+                                </ul>
                             </div>
                         </div>
                         {% if loop.index is divisibleby 9 %}</div>
@@ -175,10 +191,6 @@
                 </table>
             {% endif %}
 
-        {% else %}
-            <div class="jumbotron text-center">
-                <h2>{{ _('No articles found') }}</h2>
-            </div>
         {% endfor %}
 
     </div>

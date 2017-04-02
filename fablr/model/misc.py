@@ -36,7 +36,7 @@ METHODS = frozenset(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 Document = flask_mongoengine.Document
 # Turns off automatic index creation because if DB errors out, it would happen at import time
-Document._meta['auto_create_index'] = False
+# Document._meta['auto_create_index'] = True
 
 def slugify(title):
     slug = ext_slugify(title)

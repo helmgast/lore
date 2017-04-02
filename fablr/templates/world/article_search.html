@@ -1,0 +1,26 @@
+{% extends "world/article_list.html" if not parent_template else parent_template %}
+
+{% block pub_blog_active %}{% if world and world.slug=='meta' %} class="active"{% endif %}{% endblock %}
+{% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
+
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
+        (url_for('world.ArticlesView:search', publisher_=publisher.slug), _('Search'))
+    ) }}{% endblock %}
+
+{% block content_title %}{{ _('Search results:') }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block content %}
+    <form method="get" class="margin-below">
+        {# This will erase all other query parameters when submitted by HTML design #}
+        <div class="input-group">
+            <input class="form-control input-lg" type="search" id='q' name='q'
+                   placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+            <span class="input-group-btn">
+            <button class="btn btn-default btn-lg" type="submit">{% trans %}Search{% endtrans %}</button>
+            </span>
+        </div>
+    </form>
+    {{ super() }}
+{% endblock %}

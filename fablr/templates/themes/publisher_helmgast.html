@@ -49,6 +49,16 @@
             href="{{ url_for('shop.shop_home', publisher=publisher.slug) }}"><span
             class="glyphicon glyphicon-list-alt"></span> {{ _('New') }} {{ _('Shop') }}</a></li>
     {% endcall %}
+        <form method="get" action="{{ url_for('world.ArticlesView:search', publisher_=publisher.slug) }}" class="navbar-form navbar-left" style="margin-bottom: 0px">
+        {# This will erase all other query parameters when submitted by HTML design #}
+        <div class="input-group">
+            <input class="form-control input" type="search" id='q' name='q'
+                   placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">
+            <span class="input-group-btn">
+            <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+            </span>
+        </div>
+    </form>
 {% endblock navbar_left %}
 
 

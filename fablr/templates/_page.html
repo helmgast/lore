@@ -128,16 +128,14 @@
         </div>
         <div class="collapse navbar-collapse navbar-sub">
             <ul class="nav navbar-nav">
+                <li class="breadcrumb-item nobr">{% block breadcrumbs %}{% endblock %}</li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                {#                <li><p class="privileged">&nbsp;</p></li>#}
                 {% block subnavbar %}
 
                 {% endblock %}
-                {% block subnavbar_end %}
-                {% endblock %}
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li class="breadcrumb-item nobr">{% block breadcrumbs %}{% endblock %}
-                </li>
-                {#                <li><p class="privileged">&nbsp;</p></li>#}
+
                 <li>
                     <ul class="action-buttons">
                         {% block actionbar %}

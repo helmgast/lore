@@ -335,6 +335,22 @@ class ArticlesView(ResourceView):
         r.template = 'world/world_home.html'
         return r
 
+    @route('/search', route_base='/')
+    def search(self, publisher_):
+        publisher = Publisher.objects(slug=publisher_).first_or_404()
+        world = WorldMeta(publisher)
+        articles = Article.objects(publisher=publisher)
+
+        r = ListResponse(ArticlesView,
+                         [('articles', articles), ('world', world), ('publisher', publisher)])
+        r.auth_or_abort()
+        r.query = publish_filter(r.query)
+        r.prepare_query()
+        set_theme(r, 'publisher', publisher.slug)
+        r.template = 'world/article_search.html'
+        return r
+
+
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
     def index(self, publisher_, world_):
         publisher = Publisher.objects(slug=publisher_).first_or_404()

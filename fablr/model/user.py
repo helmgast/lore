@@ -62,6 +62,8 @@ class AuthKey(EmbeddedDocument):
     auth_token = StringField()
     email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
 
+    def __repr__(self):
+        return "{auth} : {email}".format(auth=self.auth_token, email=self.email)
 
 # A user in the system
 class User(Document, BaseUser):

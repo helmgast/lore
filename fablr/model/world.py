@@ -235,7 +235,13 @@ EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campa
 
 
 class Article(Document):
-    meta = {'indexes': ['slug']}
+    meta = {
+        'indexes': [
+            'slug',
+            {'fields': ['$title', "$content"]}
+        ],
+        'auto_create_index': True
+    }
     slug = StringField(unique=True, required=False, max_length=62)
     type = StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))
     world = ReferenceField(World, verbose_name=_('World'))
@@ -318,9 +324,9 @@ Article.type.filter_options = choice_options('type', Article.type.choices)
 Article.world.filter_options = reference_options('world', Article)
 Article.created_date.filter_options = datetime_delta_options('created_date',
                                                              [timedelta(days=7),
-                                                        timedelta(days=30),
-                                                        timedelta(days=90),
-                                                        timedelta(days=365)])
+                                                              timedelta(days=30),
+                                                              timedelta(days=90),
+                                                              timedelta(days=365)])
 
 
 class Shortcut(Document):
@@ -328,8 +334,6 @@ class Shortcut(Document):
     slug = StringField(unique=True, required=True, max_length=10, verbose_name=_('Slug'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     hits = IntField(min_value=0, verbose_name=_('Hits'))
-
-
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 # ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
