@@ -954,8 +954,7 @@ li:hover .btn-delete,
 }
 
 .article_text img {
-    max-width: 600px;
-    width: 100%;
+    max-width: 100%;
 }
 
 .article_text .lightbox {
@@ -1002,7 +1001,7 @@ li:hover .btn-delete,
 	margin: 0 .25rem;
 }*/
 
-.gallery figure {
+.gallery figure, .gallery li {
 	margin: 0;
   display: block;
 	overflow: hidden;
@@ -1056,7 +1055,7 @@ background-size: 70% 70%;
 	transform: translateY(0);
 }
 
-.gallery figure img {
+.gallery figure img, .gallery li img, {
 	max-width: 100%;
   height: auto;
 	/*transition: all .25s ease-in-out;*/

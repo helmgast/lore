@@ -10,6 +10,7 @@
 
 from flask.json import JSONEncoder
 from bson.objectid import ObjectId
+from markdown.treeprocessors import Treeprocessor
 from mongoengine import Document, QuerySet, ConnectionError
 from flask.ext.mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask_debugtoolbar import DebugToolbarExtension
@@ -113,14 +114,24 @@ class NewImagePattern(ImagePattern):
     a_el.set('href', src)
     return a_el
 
+class GalleryList(Treeprocessor):
+    def run(self, root):
+        for ul in root.findall('ul'):
+            if len(ul):
+              imgs = list(ul.iterfind('.//img'))
+              txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+              if len(imgs) > 0 and ''.join(txts).strip() == '':
+                ul.set('class', 'gallery')
+
 class AutolinkedImage(Extension):
   def extendMarkdown(self, md, md_globals):
     # Insert instance of 'mypattern' before 'references' pattern
     md.inlinePatterns["image_link"] = NewImagePattern(IMAGE_LINK_RE, md)
+    md.treeprocessors['gallery'] = GalleryList()
 
 from jinja2 import Undefined
 
 class SilentUndefined(Undefined):
   def _fail_with_undefined_error(self, *args, **kwargs):
-    print 'JINJA2: something was undefined!' #TODO, should print correct log error
+    print >> sys.stderr, 'JINJA2: something was undefined!' #TODO, should print correct log error
     return None
