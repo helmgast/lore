@@ -954,7 +954,12 @@ li:hover .btn-delete,
 }
 
 .article_text img {
-  max-width: 100%;
+    max-width: 600px;
+    width: 100%;
+}
+
+.article_text .lightbox {
+	display: block;
 }
 
 #content-editor {
