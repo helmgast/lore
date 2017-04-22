@@ -9,14 +9,16 @@
 """
 from collections import namedtuple, OrderedDict
 from datetime import timedelta, date, datetime
+from urlparse import urlparse
 
+import unicodedata
 from babel import Locale
 from babel.dates import get_month_names
 from dateutil.relativedelta import *
 
 import flask_mongoengine
 import wtforms as wtf
-from flask import g
+from flask import g, request
 from flask_wtf import Form  # secure form
 from slugify import slugify as ext_slugify
 
@@ -25,7 +27,6 @@ from wtforms.widgets import TextArea
 from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
 import logging
 from flask import current_app
-from flask_mongoengine import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
 
 from fablr.extensions import configured_locales
@@ -272,3 +273,49 @@ class StringGenerator(Document):
 
     def __unicode__(self):
         return self.name
+
+# From Django https://github.com/django/django/blob/master/django/utils/http.py
+# Note, changed url_info = _urlparse(url) to urlparse(url), e.g. use stdlib urlparse instead of django's
+def _is_safe_url(url, allowed_hosts, require_https=False):
+    # Chrome considers any URL with more than two slashes to be absolute, but
+    # urlparse is not so flexible. Treat any url with three slashes as unsafe.
+    if url.startswith('///'):
+        return False
+    url_info = urlparse(url)
+    # Forbid URLs like http:///example.com - with a scheme, but without a hostname.
+    # In that URL, example.com is not the hostname but, a path component. However,
+    # Chrome will still consider example.com to be the hostname, so we must not
+    # allow this syntax.
+    if not url_info.netloc and url_info.scheme:
+        return False
+    # Forbid URLs that start with control characters. Some browsers (like
+    # Chrome) ignore quite a few control characters at the start of a
+    # URL and might consider the URL as scheme relative.
+    if unicodedata.category(url[0])[0] == 'C':
+        return False
+    scheme = url_info.scheme
+    # Consider URLs without a scheme (e.g. //example.com/p) to be http.
+    if not url_info.scheme and url_info.netloc:
+        scheme = 'http'
+    valid_schemes = ['https'] if require_https else ['http', 'https']
+    return ((not url_info.netloc or url_info.netloc in allowed_hosts) and
+            (not scheme or scheme in valid_schemes))
+
+
+def safe_next_url(default_url=None):
+    rv = request.args.get('next', None)
+    if rv:
+        allowed_hosts = [request.host]
+        if 'DEFAULT_URL' in current_app.config:
+            allowed_hosts.append(current_app.config['DEFAULT_URL'])
+        if _is_safe_url(rv, allowed_hosts):
+            return rv
+        else:
+            # Do this check only if previous failed as we will need to query DB for all hosts
+            from fablr.model.world import Publisher
+            q = Publisher.objects().only('slug')
+            if len(q):
+                allowed_hosts.extend(pub.slug for pub in q)
+                if _is_safe_url(rv, allowed_hosts):
+                    return rv
+    return default_url

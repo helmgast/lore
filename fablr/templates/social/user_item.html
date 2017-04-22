@@ -48,10 +48,10 @@
         <div>
             <h4>{% trans %}Authentication sources{% endtrans %}</h4>
 
-            {% for auth in user.auth_keys %}
+            {% for email, service, key in user.enumerate_auth_keys() %}
                 <p>
-                    <span class="badge">{{ user.split_auth_token(auth.auth_token)[1] }}</span>
-                <small>{{ auth.email }}</small>
+                    <span class="badge">{{ service }}</span>
+                <small>{{ email }}</small>
                 </p>
             {% endfor %}
             {% if user_form %}

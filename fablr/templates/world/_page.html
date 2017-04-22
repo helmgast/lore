@@ -1,6 +1,20 @@
 {% extends root_template if not publisher_theme else publisher_theme %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block navbar_right %}
+        <form method="get" action="{{ url_for('world.ArticlesView:search', publisher_=publisher.slug) }}" class="navbar-form navbar-left" style="margin-bottom: 0px">
+        {# This will erase all other query parameters when submitted by HTML design #}
+        <div class="input-group">
+            <input class="form-control input" type="search" id='q' name='q'
+                   placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">
+            <span class="input-group-btn">
+            <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+            </span>
+        </div>
+    </form>
+    {{ super() }}
+{% endblock %}
+
 {% block content %}
     <div class="row">
         {% for world in worlds %}

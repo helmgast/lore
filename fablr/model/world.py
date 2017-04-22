@@ -66,10 +66,10 @@ class Publisher(Document):
     shop_enabled = BooleanField(default=False, verbose_name=_('Enable shop feature'))
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return self.__unicode__().encode('utf-8')
 
     def __unicode__(self):
-        return self.title
+        return self.title or self.slug
 
 
 class World(Document):

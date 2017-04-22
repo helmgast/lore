@@ -11,7 +11,11 @@
         socialBigButtons: true,
         connections: ["facebook","google-oauth2"],
         title: '{{ _("Fablr by Helmgast") }}',
-        callbackURL: "{{ url_for('auth.callback', host=request.host, _external=true, _scheme=request.url.split(':')[0]) }}"
+        callbackURL: "{{ url_for('auth.callback',
+            host=request.host,
+            _external=true,
+            _scheme=request.url.split(':')[0],
+            next=request.args.get('next','/')) }}"
     };
 
 var lock = new Auth0LockPasswordless(clientID, domain);

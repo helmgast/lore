@@ -25,7 +25,7 @@ from fablr.controller.resource import ResourceError, get_root_template
 
 
 def create_app(no_init=False, **kwargs):
-    # Creates new flask instance, also keeps static at
+    # Creates new flask instance
     the_app = Flask('fablr', static_folder='../static')
     config_string = "config from:"
     import default_config
@@ -72,22 +72,15 @@ def create_app(no_init=False, **kwargs):
                             % (the_app.name, the_app.config.get('VERSION', None),
                                "Debug" if the_app.debug else "Prod", config_string))
 
-    if not no_init:
-        init_app(the_app)
+    # Configure all extensions
+    configure_extensions(the_app)
+
+    # Configure all blueprints
+    configure_blueprints(the_app)
+
+    configure_hooks(the_app)
+
     return the_app
-
-
-def init_app(app):
-    if 'initiated' not in app.config:
-        # Configure all extensions
-        configure_extensions(app)
-
-        # Configure all blueprints
-        auth = configure_blueprints(app)
-
-        configure_hooks(app)
-
-        app.config['initiated'] = True
 
 
 def my_report_exception(app, exception):

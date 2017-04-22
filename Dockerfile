@@ -18,4 +18,5 @@ ARG SOURCE_COMMIT=no_ver
 ARG SOURCE_BRANCH=no_branch
 ENV FABLR_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
 RUN echo \$FABLR_VERSION=${FABLR_VERSION}
-CMD ["python","run.py"] # This format runs executable without bash/shell, faster
+# This format runs executable without bash/shell, faster
+CMD ["python","run.py"]

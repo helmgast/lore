@@ -58,25 +58,20 @@ class UserEvent(EmbeddedDocument):
     def action_string(self):
         return translate_action(self.action, self.instance)
 
-class AuthKey(EmbeddedDocument):
-    auth_token = StringField()
-    email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Email'))
-
-    def __repr__(self):
-        return "{auth} : {email}".format(auth=self.auth_token, email=self.email)
-
 # A user in the system
 class User(Document, BaseUser):
-    meta = {
-        'indexes': ['email', 'auth_keys.email']
-    }
-
+    # meta = {
+    #     'indexes': ['email', 'auth_keys']
+    #
+    #     # 'indexes': ['email', 'auth_keys.email']
+    # }
+    # ripperdoc@gmail.com|facebook|507316539704
     # We want to set username unique, but then it cannot be empty,
     # but in case where username is created, we want to allow empty values
     # Currently it's only a display name, not used for URLs!
     username = StringField(max_length=60, verbose_name=_('Username'))
     email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Contact Email'))
-    auth_keys = ListField(EmbeddedDocumentField(AuthKey), verbose_name=_('Authentication sources'))
+    auth_keys = ListField(StringField(max_length=100, unique=True), verbose_name=_('Authentication sources'))
     realname = StringField(max_length=60, verbose_name=_('Real name'))
     location = StringField(max_length=60, verbose_name=_('Location'))
     description = StringField(max_length=500, verbose_name=_('Description'))
@@ -117,12 +112,17 @@ class User(Document, BaseUser):
             return True
         return False
 
-    def split_auth_token(self, auth_token):
-        # Assumes a Auth0 auth_id looking like email|58ba793c0bdcab0a0ec46cf7
-        if not auth_token or '|' not in auth_token:
-            raise ValidationError('Not a valid auth_token {token}'.format(token=auth_token))
-        service = auth_token.split('|')[0]
-        return service, auth_services[service]
+    def enumerate_auth_keys(self):
+        # Assumes a Auth0 auth_id prepended with an email, e.g email@domain.com|email|58ba793c0bdcab0a0ec46cf7
+        if not self.auth_keys:
+            return
+        else:
+            for key in self.auth_keys:
+                split_key = key.split('|')
+                if not len(split_key) == 3 or any(not k for k in split_key):
+                    raise ValidationError("Auth key {key} is not valid".format(key=key))
+                else:
+                    yield split_key
 
     def display_name(self):
         return self.__unicode__()

@@ -16,7 +16,7 @@ import re
 import sys
 
 import flask
-from flask import request, render_template, flash, redirect, url_for, abort, g, current_app
+from flask import request, render_template, flash, url_for, abort, g, current_app
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
 from flask_mongoengine import Pagination
@@ -39,7 +39,7 @@ from wtforms.utils import unset_value
 from wtforms.widgets import html5, HTMLString, html_params
 
 from fablr.extensions import configured_locales
-from fablr.model.misc import METHODS
+from fablr.model.misc import METHODS, safe_next_url
 from fablr.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -153,7 +153,6 @@ re_operators = re.compile(
     'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
     'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
     'not__endswith|not__iendswith)$')
-re_next = re.compile(r'^[/?].+')
 re_order_by = re.compile(r'^[+-]')
 
 
@@ -416,7 +415,7 @@ class ItemResponse(ResourceResponse):
     json_fields = frozenset(['instance'])
     arg_parser = dict(ResourceResponse.arg_parser, **{
         'view': lambda x: x.lower() if x.lower() in ['markdown', 'pay', 'cart', 'details'] else None,
-        'next': lambda x: x if re_next.match(x) else None
+        'next': lambda x: safe_next_url(x)
     })
 
     def __init__(self, resource_view, queries, method='get', formats=None, extra_args=None,

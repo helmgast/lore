@@ -102,7 +102,7 @@ class FablrRule(Rule):
         thehost = self.subdomain or None
 
         if thehost and not self.allow_domains:
-            self.rule = "/_" + thehost + "/" + self.rule.lstrip("/")
+            self.rule = "/host_" + thehost + "/" + self.rule.lstrip("/")
             self.subdomain = ''  # Hack, parent bind will check if None, '' will be read as having one
             self.host = ''
         else:

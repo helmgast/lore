@@ -22,8 +22,8 @@ from flask import render_template
 from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
 
-from fablr.controller.resource import re_next
-from fablr.model.user import User, AuthKey
+from fablr.model.misc import safe_next_url
+from fablr.model.user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -54,13 +54,6 @@ def on_load(state):
     state.app.admin_required = admin_required
 
 
-def get_next_url():
-    rv = request.args.get('next', '/')
-    if not re_next.match(rv):
-        rv = '/'
-    return rv
-
-
 def get_user(**kwargs):
     u = User.objects(**kwargs).get()
 
@@ -69,7 +62,7 @@ def add_auth(user, user_info, next_url):
     if not user.auth_keys:
         user.auth_keys = []
 
-    ak = AuthKey(auth_token=user_info['sub'], email=user_info['email'])
+    ak = "{email}|{sub}".format(email=user_info['email'], sub=user_info['sub'])
     # Go through user profile change if we have a new auth method
     new_auth = ak not in user.auth_keys
 
@@ -85,7 +78,7 @@ def add_auth(user, user_info, next_url):
         else:
             # We have migrated before but are now adding an additional auth method
             flash(_("We added %(provider)s authentication using %(email)s to your user, and updated your profile data",
-                    provider=user.split_auth_token(ak.auth_token), email=user_info['email']), 'info')
+                    provider=user_info['sub'], email=user_info['email']), 'info')
 
         if not user.realname:
             user.realname = user_info.get('name', None)
@@ -141,7 +134,7 @@ def callback(host):
     user_info = requests.get(user_url).json()
 
     # Make sure next is a relative URL
-    next_url = get_next_url()
+    next_url = safe_next_url('/')
 
     if not user_info or 'email' not in user_info or 'sub' not in user_info:
         logger.error(u"Unknown user denied login due to missing from backend {info}".format(info=user_info))
@@ -159,7 +152,7 @@ def callback(host):
 
     # Find user that matches the provided auth email
     try:
-        auth_user = User.objects(auth_keys__email=user_info['email']).get()
+        auth_user = User.objects(auth_keys__startswith=user_info['email']+'|').get()
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
@@ -299,9 +292,9 @@ def get_logged_in_user(invited_ok=False):
         if auth:
             try:
                 if invited_ok:  # Normally not counted as logged in
-                    u = User.objects(Q(status='active') | Q(status='invited'), auth_keys__email=auth).get()
+                    u = User.objects(Q(status='active') | Q(status='invited'), auth_keys__startswith=auth+"|").get()
                 else:
-                    u = User.objects(status='active', auth_keys__email=auth).get()
+                    u = User.objects(status='active', auth_keys__startswith=auth+"|").get()
             except User.DoesNotExist:
                 pass  # u stays as None
             except MultipleObjectsReturned:
