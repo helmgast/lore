@@ -7,9 +7,8 @@
 #   return False
 
 # mongoengine.connection.get_connection = new_get_connection
-
 import sys
-import urllib
+import types
 
 from datetime import datetime
 
@@ -28,6 +27,12 @@ from werkzeug.urls import url_decode
 import time
 
 toolbar = DebugToolbarExtension()
+def new_show_toolbar(self):
+    if 'debug' in request.args:
+        return True
+    return False
+
+toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
 
 # class MyMongoEngine(MongoEngine):
@@ -255,15 +260,18 @@ class GalleryList(Treeprocessor):
                     ul[0].set('class', 'hide')
                     for li in list(ul)[1:]:
                         li.set('class', 'gallery-item')
-                        a_el = etree.Element('a')
-                        a_el.set('href', '#')
-                        a_el.set('class', 'zoomable')
-                        a_el.extend(list(li))  # list(li) enumerates all children of li
-                        for e in li:
-                            # Image to set its aspect once loaded, we dont know width/height here
-                            e.set('onload', 'set_aspect(this)')
-                            li.remove(e)
-                        li.append(a_el)
+                        img = li.find('.//img')
+                        if img is not None:
+                            alt = img.get('alt', None)
+                            if alt:
+                                li.set('title', alt)
+                        # a_el = etree.Element('a')
+                        # a_el.set('href', '#')
+                        # a_el.set('class', 'zoomable')
+                        # a_el.extend(list(li))  # list(li) enumerates all children of li
+                        # # for e in li:
+                        # #     li.remove(e)
+                        # li.append(a_el)
                         # imgs = list(ul.iterfind('.//img'))
                         # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
                         # # if there are same amount of images as text items, and the text is zero, we have only images in the list
