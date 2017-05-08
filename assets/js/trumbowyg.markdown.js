@@ -23,8 +23,8 @@ define(["jquery", "utils", "upndown", "marked"], function ($, utils, upndown_dep
                             // Render special gallery lists into a gallery
                             renderer.list = function (body, ordered) {
                                 if (!ordered && /^<li>gallery-(center|wide|side)/.test(body)) {
-                                    body = body.replace(/^<li>(gallery-(center|wide|side))/, '<ul class="gallery $1"><li class="hide">$1') + '</ul>'
-                                    body = body.replace(/<li><img([^<]+)</g, '<li class="gallery-item"><img onload="set_aspect(this)"$1</a><')
+                                    body = body.replace(/^<li>(gallery-(center|wide|side))/, '<ul contenteditable="false" class="gallery $1"><li class="hide">$1') + '</ul>'
+                                    body = body.replace(/<li>/g, '<li class="gallery-item">')
                                 }
                                 return body
                             }

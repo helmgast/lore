@@ -24,7 +24,7 @@ from werkzeug.routing import Map
 from fablr.controller.resource import ResourceError, get_root_template
 
 
-def create_app(no_init=False, **kwargs):
+def create_app(**kwargs):
     # Creates new flask instance
     the_app = Flask('fablr', static_folder='../static')
     config_string = "config from:"

@@ -9,14 +9,10 @@
         (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds'))
     ) }}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    {% if not world %}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new')) %}
-            <li><a class="btn btn-primary"
-                   href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, id='post') }}"><span
-                    class="glyphicon glyphicon-plus-sign"></span> {{ _('New world') }}</a></li>
-        {% endcall %}
-    {% endif %}
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new')) %}
+        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', publisher_=publisher.slug, id='post'), 'New world') }}
+    {% endcall %}
 {% endblock %}
 
 {% block content %}

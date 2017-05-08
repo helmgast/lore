@@ -733,3 +733,100 @@ GET             <pub>|/<world or 'meta'>/[home, articles, blog, feed]/ <- specif
 GET/DEL/PAT     <pub>|/<world>
 GET/POST        <pub>|/worlds/
 GET             <pub>|/[home, articles, blog, feed]/
+
+
+#Markdown
+
+----
+```
+![Alt](/link/image.jpg)
+```
+is rendered as:
+```
+<img src="/link/image.jpg" data-caption="Alt" alt="Alt">
+```
+CSS renders it to a full width image without visible caption, converted back as-is.
+
+----
+```
+- ![Alt](/link/image.jpg)
+```
+is rendered as:
+```
+<ul>
+<li><img src="/link/image.jpg" data-caption="Alt" alt="Alt"></li>
+</ul>
+```
+and is converted back as:
+```
+- ![Alt](/link/image.jpg)
+```
+
+----
+```
+- ![Alt](/thumb/image.jpg)
+```
+Is rendered as a link to original with a thumbnail image.
+```
+<ul>
+<li><a href="/orig/image.jpg" title="Alt"><img src="/thumb/image.jpg" alt="Alt"></a></li>
+</ul>
+```
+Converted back as:
+```
+- [![Alt](/thumb/image.jpg)](/link/image.jpg)
+```
+----
+```
+- Some text ![Alt](/link/image.jpg) more text
+- ![Alt](/thumb/image.jpg)
+```
+A list that contains any text outside an element should be treated as a normal list,
+e.g. no management of images.
+----
+
+```
+[Embed](http://oembedsupported-url.com/asd)
+```
+Rendered as:
+
+```
+<iframe ...><a href="http://oembedsupported-video.com/asd">Embed</a></iframe>
+```
+Rendered back as:
+```
+[Embed](http://oembedsupported-url.com/asd)
+```
+----
+```
+[File](/link/file.ext)
+```
+Rendered as:
+```
+<a href="/link/file.ext">File</a>
+```
+Based on ext, CSS will show this as a file icon.
+
+----
+
+```
+![Alt](/link/image.jpg#center|wide|side)
+```
+Rendered as a normal image, but the center|wide|side (one of) is a hint on where to position it on
+the page. center is default and refers to an image that spans the full column width. 
+Wide is an image that covers the full page width, but is limited in height for a narrow
+aspect ratio. Side is a right aligned box that the text flows around.
+If the hint is applied direct to an image it will affect the image. If it's in a list,
+the list will be positioned instead. The list will follow the first hint it finds.
+
+
+In the UI, any inserted file or image becomes a list, and any list that is clicked 
+opens a modal to pick which items on that list. So gallery lists cannot be edited directly
+
+## Asset linking
+
+Types of assets to link to:
+- Raw images ```[domain]/asset/image/filename.ext```. Returns an original image asset.
+- Resized images ```[domain]/asset/thumb/size-filename.ext```. Returns a resized image asset. Size is a variable that the backend determines dimensions of, e.g. wide|center|side|logo
+- File link ```[domain]/asset/link/filename.ext```
+- File download ```[domain]/asset/file/filename.ext```

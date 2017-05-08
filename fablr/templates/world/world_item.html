@@ -40,18 +40,26 @@
 {% endblock %}
 
 {% block actionbar %}
-    {% include "world/new_article_menu.html" %}
-    {% if world.slug != 'meta' and not article %} {# only show if we have only a world #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', instance=world)) %}
-            <li><a class="btn btn-primary"
-                   href="{{ url_for('world.WorldsView:get', publisher_=publisher.slug, intent='patch', id=world.slug) }}"><span
-                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }} {{ _('world') }}</a></li>
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('worldform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('worldform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', publisher_=publisher.slug, id=world.slug)) }}
+    {% else %}
+        {# We are viewing #}
+        {% include "world/new_article_menu.html" %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
+            {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', publisher_=publisher.slug, intent='patch', id=world.slug)) }}
+            {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    hej
     {% if world_form %}
         <form id="worldform" method="post" action="{{ action_url }}">
             <div class="row">
@@ -64,11 +72,8 @@
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
                     {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}
 
-                    <div class="form-group">
-                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', formgroup=false)  }}
-                    <span class="help-block">{{ _('Empty means public read access') }}</span>
-                    </div>
                     {{ world_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
@@ -78,13 +83,13 @@
                 </div>
             </div>
             <div class="row form-actions">
-                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-                <a href="{{ url_for('world.WorldsView:index', publisher_=publisher.slug) }}"
-                   class="btn btn-default">{{ _('Cancel') }}</a>
-                {% if world %}
-                    <a href="{{ url_for('world.WorldsView:delete', publisher_=publisher.slug, id=world.slug, method='DELETE') }}"
-                       class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+                <div class="col-sm-12">
+                {% if args.get('intent', None) %}
+                    <ul class="action-buttons action-buttons-footer">
+                        {{ self.actionbar() }}
+                    </ul>
                 {% endif %}
+                </div>
             </div>
         </form>
     {% else %}

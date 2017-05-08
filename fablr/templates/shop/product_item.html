@@ -3,12 +3,21 @@
 {% block content_title %}{{ product.title if product else _("New product") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    {% if product %}
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('productform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug)) }}
+        {#        {{ MACRO.DELETE_BUTTON() }}#}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('productform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug)) }}
+    {% else %}
+        {# We are viewing #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
-            <li><a class="btn btn-primary"
-                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch') }}"><span
-                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+            {{ MACRO.EDIT_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch')) }}
+            {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
     {% endif %}
 {% endblock %}
@@ -51,14 +60,11 @@
                         url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document feature-images') }}
                 </div>
             </div>
-            <div class="row form-actions">
-                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-                <a href="{{ url_for('shop.ProductsView:index', publisher=publisher.slug) }}"
-                   class="btn btn-default">{{ _('Cancel') }}</a>
-                {% if product %}
-                    <a class="btn btn-danger pull-right" href="#confirm-modal" data-toggle="modal">{{ _('Delete') }}</a>
-                {% endif %}
-            </div>
+            {% if args.get('intent', None) %}
+                <ul class="action-buttons action-buttons-footer">
+                    {{ self.actionbar() }}
+                </ul>
+            {% endif %}
         </form>
         {% if product %}
             {{ MACRO.CONFIRM_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE"), _('delete') ) }}
@@ -128,7 +134,9 @@
                     <tr>
                         <th>{{ _('Remaining Stock') }}</th>
                         {% if access_policy['product'].authorize('edit') %}
-                            <td class="privileged">{{ stock.stock_count.get(product.slug, _('Unknown')) }} <small>({{ stock.display_stock(product.slug) if stock }})</small></td></tr>
+                            <td class="privileged">{{ stock.stock_count.get(product.slug, _('Unknown')) }}
+                                <small>({{ stock.display_stock(product.slug) if stock }})</small>
+                            </td></tr>
                         {% else %}
                             <td>{{ stock.display_stock(product.slug) if stock else _('Unknown') }}</td></tr>
                         {% endif %}

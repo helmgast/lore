@@ -34,7 +34,7 @@ config = {
                 loader: ExtractTextPlugin.extract("style-loader", "css-loader")
             },
 
-            {  // Loads all CSS files and puts in style tag
+            {  // Loads all less files and puts in style tag, include auto-prefix
                 test: /\.less$/,
                 loader: ExtractTextPlugin.extract("style-loader", "css-loader!less-loader")
             },

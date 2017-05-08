@@ -1,11 +1,13 @@
 {% extends "world/world_list.html" %}
 
+{% block fonts %}{{ super() }}|Goudy+Bookletter+1911{% endblock %}
+
 {% block cssimports %}
 {{super()}}
 <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
 <style>
 
-@import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);
+{#@import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);#}
 
 @font-face {
   font-family: 'Vinque';
@@ -21,16 +23,16 @@
     font-size: 13px;
 }
 
-.article_text {
+.article-text {
     font-family: 'Goudy Bookletter 1911', serif;
 }
 
-.article_text a {
+.article-text a {
     text-decoration: none;
     color: #8f0011;
 }
 
-.article_header, .page-header h1, .page-header h2 {
+.article-header, .page-header h1, .page-header h2 {
     font-family: Vinque, serif;
 }
 

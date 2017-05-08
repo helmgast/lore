@@ -47,7 +47,7 @@
 
 {%- endmacro -%}
 
-{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", controlwrap="", inline=false, formgroup=true, labeltext="") -%}
+{%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", controlwrap="", inline=false, formgroup=true, labeltext="", helptext="") -%}
     {% set fieldargs = {'class':'form-control '+controlclass} %}
     {% do fieldargs.update({'required':true}) if field.flags.required %}
     {% do fieldargs.update(kwargs) if kwargs %}
@@ -68,6 +68,8 @@
         {%- if field.errors -%}
             <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
             <span class="help-block">{{ field.errors|join(' ') }}</span>
+        {%- elif helptext -%}
+            <span class="help-block">{{ helptext }}</span>
         {%- endif -%}
         {%- if controlwrap -%}</div>{%- endif -%}
     {% if formgroup %}</div>{% endif %}
@@ -276,6 +278,45 @@
     </div>
 {%- endmacro -%}
 
+{%- macro EDIT_BUTTON(patch_url) -%}
+    <li>
+        <a class="btn btn-success" href="{{ patch_url }}">
+            <span class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}
+        </a>
+    </li>
+{%- endmacro -%}
+
+{%- macro SAVE_BUTTON(form) -%}
+    <li>
+        <button type="submit" form="{{ form }}" class="btn btn-success">
+            <span class="glyphicon glyphicon-cloud-upload"></span> {{ _('Save') }}
+        </button>
+    </li>
+{%- endmacro -%}
+
+{%- macro CANCEL_BUTTON(cancel_url) -%}
+    <li>
+        <a class="btn btn-default" href="{{ cancel_url }}">
+            <span class="glyphicon glyphicon-circle-arrow-left"></span> {{ _('Cancel') }}
+        </a>
+    </li>
+{%- endmacro -%}
+
+{%- macro DELETE_BUTTON() -%}
+    <li>
+        <a class="btn btn-danger" href="#confirm-modal" data-toggle="modal">
+            <span class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}
+        </a>
+    </li>
+{%- endmacro -%}
+
+{%- macro NEW_BUTTON(new_url, title='New') -%}
+    <li>
+        <a class="btn btn-info" href="{{ new_url }}"><span
+            class="glyphicon glyphicon-plus-sign"></span> {{ _(title) }}
+        </a>
+    </li>
+{%- endmacro -%}
 
 {%- macro CARD(title, text, image) -%}
     <div class="card">

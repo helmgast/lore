@@ -106,6 +106,9 @@ class FileAsset(Document):
             self.file_data = None
         super(FileAsset, self).delete()
 
+    def is_image(self):
+        return self.content_type.startswith('image/')
+
     @classmethod
     def create_md5(cls, file_obj):
         block_size = 256*128

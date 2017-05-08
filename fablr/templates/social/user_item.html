@@ -11,12 +11,24 @@
         (url_for('social.UsersView:get', id=user.id), self.content_title())
     ) }}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
-        <li><a class="btn btn-primary"
-               href="{{ url_for('social.UsersView:get', intent='patch', id=user.identifier()) }}"><span
-                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-    {% endcall %}
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('userform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('social.UsersView:get', id=user.id)) }}
+{#        {{ MACRO.DELETE_BUTTON() }}#}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('userform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('social.UsersView:get', id=user.id)) }}
+    {% else %}
+        {# We are viewing #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit')) %}
+            {{ MACRO.EDIT_BUTTON(url_for('social.UsersView:get', intent='patch', id=user.identifier())) }}
+{#            {{ MACRO.DELETE_BUTTON() }}#}
+        {% endcall %}
+    {% endif %}
+
     {#    {% call(privileged) MACRO.IS_ADMIN() %}#}
     {#    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='verify', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Send reset link')}}</a></li>#}
     {#    <li role="presentation"><a class="{{privileged}}" href="{{url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true, _scheme='')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Copy reset link')}}</a></li>#}
@@ -51,21 +63,21 @@
             {% for email, service, key in user.enumerate_auth_keys() %}
                 <p>
                     <span class="badge">{{ service }}</span>
-                <small>{{ email }}</small>
+                    <small>{{ email }}</small>
                 </p>
             {% endfor %}
             {% if user_form %}
 
-            {% if user.status == 'invited' %}
-                <button type="button" class="btn btn-small btn-primary" id="lock-mail">
-                    {% trans %}Merge with existing user{% endtrans %}</button>
+                {% if user.status == 'invited' %}
+                    <button type="button" class="btn btn-small btn-primary" id="lock-mail">
+                        {% trans %}Merge with existing user{% endtrans %}</button>
 
-            {% else %}
+                {% else %}
 
-                <button type="button" class="btn btn-small btn-primary" id="lock-activate">
-                    {% trans %}Add authentication method{% endtrans %}</button>
+                    <button type="button" class="btn btn-small btn-primary" id="lock-activate">
+                        {% trans %}Add authentication method{% endtrans %}</button>
+                {% endif %}
             {% endif %}
-        {% endif %}
         </div>
         <div class="btn-toolbar">
             {#        {% if resouxrce.op == 'view' %}
@@ -173,13 +185,14 @@
 
 {% if user_form %}
     <div class="row form-actions">
-        {{ user_form.csrf_token }}
-        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-        <a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}"
-           class="btn btn-default">{{ _('Cancel') }}</a>
-        {#{% if op!='new' %}
-  <a href="{{url_for('.user_delete', user=user.identifier())}}" class="btn btn-danger pull-right">{{ _('Delete') }}</a>
-  {% endif %}#}
+        <div class="col-sm-12">
+            {{ user_form.csrf_token }}
+            {% if args.get('intent', None) %}
+                <ul class="action-buttons action-buttons-footer">
+                    {{ self.actionbar() }}
+                </ul>
+            {% endif %}
+        </div>
     </div></form>{% endif %}
     {#
 <div class="row">
@@ -223,8 +236,8 @@
 #}
 {% endblock %}
 
-{% block final %}
-    {{ super() }}
+{% block js_bottom %}
+    {{ super() }} {# Execute main js first #}
     <script src="//cdn.auth0.com/js/lock-passwordless-2.2.3.min.js"></script>
     <script type="text/javascript">
         var clientID = "{{ config["AUTH0_CLIENT_ID"] }}";
@@ -245,19 +258,22 @@
         $('#lock-activate').click(function (e) {
             lock.socialOrEmailcode($.extend(options, {
                 dict: {
-                    title: '{{ _("Add to %(account)s", account=user.display_name()) }}'},
-                    email: {
-                        headerText: '{{ _("Enter a new email to add by verification") }}'
-                    }
+                    title: '{{ _("Add to %(account)s", account=user.display_name()) }}'
+                },
+                email: {
+                    headerText: '{{ _("Enter a new email to add by verification") }}'
+                }
             }));
         })
         $('#lock-mail').click(function (e) {
-            lock.emailcode($.extend(options, {dict: {
-                title: '{{ _("Merge this account") }}',
-                email: {
-                    headerText: '{{ _("Enter the email you signed up your previous account to.") }}'
+            lock.emailcode($.extend(options, {
+                dict: {
+                    title: '{{ _("Merge this account") }}',
+                    email: {
+                        headerText: '{{ _("Enter the email you signed up your previous account to.") }}'
+                    }
                 }
-            }}));
+            }));
         })
     </script>
 {% endblock %}

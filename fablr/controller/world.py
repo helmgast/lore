@@ -314,6 +314,7 @@ class ArticlesView(ResourceView):
                          formats=['html'])
         r.template = 'world/publisher_home.html'
         r.auth_or_abort()
+        r.query = publish_filter(r.query).limit(8)
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         return r
@@ -523,7 +524,6 @@ class ArticlesView(ResourceView):
 
 @world_app.route('/-<code>')
 def shorturl(code):
-
     return redirect(code)
 
 @world_app.route('/')
@@ -531,10 +531,10 @@ def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
 
-@world_app.route('/dummy')
-def dummy():
+@world_app.route('/styleguide')
+def styleguide():
     # publishers = Publisher.objects()
-    return render_template('dummypage.html', root_template='_page.html')
+    return render_template('styleguide.html', root_template='_page.html')
 
 PublishersView.register_with_access(world_app, 'publisher')
 WorldsView.register_with_access(world_app, 'world')

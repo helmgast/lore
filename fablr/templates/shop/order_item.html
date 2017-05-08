@@ -155,8 +155,8 @@
     {% endif %}
 {% endblock %}{% endblock %}
 
-{% block final %}
-    {{ super() }}
+{% block js_bottom %}
+    {{ super() }} {# Execute main js first #}
     {% if order_form and order.status=='cart' %}
         {% if args['view'] == 'cart' %}
             <script>

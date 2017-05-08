@@ -87,8 +87,8 @@
         <h5>{% trans %}Search text{% endtrans %}</h5>
         <form method="get">
             {# This will erase all other query parameters when submitted by HTML design #}
-            <div class="input-group">
-                <input class="form-control input-sm{{ ' btn-info' if args['q'] }}" type="search" id='q' name='q'
+            <div class="input-group{{ ' has-success' if args['q'] }}">
+                <input class="form-control input-sm" type="search" id='q' name='q'
                        placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
                 <span class="input-group-btn">
             <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
@@ -112,7 +112,7 @@
             {% elif args['view'] == 'list' %}
 
                 {% for article in group.list %}
-                    <a class="blog_header"
+                    <a class="blog-header"
                        href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">
                         <h3>{{ article.title }}</h3></a>
                     <ul class="list-inline article-meta" style="margin-bottom: 0">

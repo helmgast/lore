@@ -1,9 +1,11 @@
 {% extends root_template %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block fonts %}{{ super() }}|Enriqueta{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
-    <link href='//fonts.googleapis.com/css?family=Enriqueta' rel='stylesheet' type='text/css'>
+{#    <link href='//fonts.googleapis.com/css?family=Enriqueta' rel='stylesheet' type='text/css'>#}
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <style type="text/css">
 
@@ -60,7 +62,7 @@
             color: #d00;
         }
 
-        .content-editor p:hover {
+        .trumbowyg-editor p:hover {
             background-color: #333;
         }
 

@@ -73,7 +73,6 @@ define(["jquery", "utils"], function ($, utils) {
                     var img = $fig.find('img')
                     reader.addEventListener("load", function () {
                         img.attr('src', reader.result);
-                        set_aspect(img[0])
                         that.$el.after($fig)
                     }, false);
                     // Read into a data URL for inline display
@@ -81,14 +80,14 @@ define(["jquery", "utils"], function ($, utils) {
                     formData.append('file_data', file)
                 } else if (file.type) { // It's an uploaded file
                     var icon_url = that.options.static_url.replace('replace', 'img/icon/' + file.type.replace('/', '_') + '-icon.svg')
-                    $fig = $('<figure class="gallery-item selectable loading loading-large"><img onload="set_aspect(this)" src="' + icon_url + '"></figure>')
+                    $fig = $('<figure class="gallery-item selectable loading loading-large"><img src="' + icon_url + '"></figure>')
                     that.$el.after($fig)
                     formData.append('file_data', file)
                 } else if (file.src) { // It's an Image object from an URL
                     formData.append('source_file_url', file.src)
                     $fig = $('<figure class="gallery-item selectable loading loading-large"></figure>')
                     $fig.append(file)  // is a direct img node
-                    set_aspect(file)
+                    // set_aspect(file)
                     that.$el.after($fig)
                 }
 

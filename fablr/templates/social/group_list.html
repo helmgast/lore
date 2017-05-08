@@ -7,9 +7,10 @@
         (url_for('social.GroupsView:index'), _('Groups'))
     ) }}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    <li><a class="btn btn-primary" href="{{ url_for('social.GroupsView:get', id='post') }}"><span
-            class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('new')) %}
+        {{ MACRO.NEW_BUTTON(url_for('social.GroupsView:get', id='post'), 'New group') }}
+    {% endcall %}
 {% endblock %}
 
 {% block asides %}{{ super() }}

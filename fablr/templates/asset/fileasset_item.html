@@ -4,12 +4,22 @@
 {% block content_title %}{{ fileasset.slug if fileasset else _("New file") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    {% if op != 'new' %}
-        <li><a class="btn btn-primary" href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}"><span
-                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-        <li><a class="btn btn-default" href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"><span
-                class="glyphicon glyphicon-align-justify"></span> {{ _('View') }}</a></li>
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('fileform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('assets.FileAssetsView:index')) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('fileform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('assets.FileAssetsView:index')) }}
+    {% else %}
+        {# We are viewing #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('edit')) %}
+            {{ MACRO.EDIT_BUTTON(url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch')) }}
+            {{ MACRO.DELETE_BUTTON() }}
+        {% endcall %}
     {% endif %}
 {% endblock %}
 
@@ -33,15 +43,18 @@
                     {{ fileasset_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
-                    <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive" src="{{ url_for('image', slug = fileasset.slug) }}"></a>
+                    <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive"
+                                                                                                  src="{{ url_for('image', slug = fileasset.slug) }}"></a>
                 </div>
             </div>
             <div class="row form-actions">
-                <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-                <a href="{{ url_for('assets.FileAssetsView:index') }}" class="btn btn-default">{{ _('Cancel') }}</a>
-                {% if op != 'new' %}
-                    <a class="btn btn-danger pull-right" href="#confirm-modal" data-toggle="modal">{{ _('Delete') }}</a>
-                {% endif %}
+                <div class="col-sm-12">
+                    {% if args.get('intent', None) %}
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
+                    {% endif %}
+                </div>
             </div>
         </form>
         {% if  op != 'new' %}
@@ -55,6 +68,17 @@
                         <th>{{ _('File') }}</th>
                         <td>
                             <small>{{ fileasset.slug }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('URLs') }}</th>
+                        <td>
+                            <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Open file{% endtrans %}"><span
+                                    class="glyphicon glyphicon-link"></span></a>
+                            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Download file{% endtrans %}"><span
+                                    class="glyphicon glyphicon-cloud-download"></span></a>
                         </td>
                     </tr>
                     <tr>
@@ -101,7 +125,7 @@
                             <small>{{ fileasset.source_file_url }}</small>
                         </td>
                     </tr>
-                     <tr>
+                    <tr>
                         <th>{{ _('Source Page URL') }}</th>
                         <td>
                             <small>{{ fileasset.source_page_url }}</small>
@@ -122,7 +146,8 @@
                 </table>
             </div>
             <div class="col-md-4">
-                <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive" src="{{ url_for('image', slug = fileasset.slug) }}"></a>
+                <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive"
+                                                                                              src="{{ url_for('image', slug = fileasset.slug) }}"></a>
             </div>
         </div>
     {% endif %}

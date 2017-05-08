@@ -100,7 +100,7 @@
                 {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}, full_url=true) }}
                 {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}, full_url=true) }}
                 <small>Insert position:</small>
-                <div id="insert-position" class="btn-group" data-toggle="buttons">
+                <div id="insert-position" class="btn-group" style="background-color: #fff" data-toggle="buttons">
                     <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-center' }}">
                         <input type="radio" name="gallery-class" id="gallery-center"
                                autocomplete="off" {{ 'checked' if args.get('position')=='gallery-center' }}>
@@ -161,24 +161,38 @@
                         {% else %}
                             {% set selection='' %}
                         {% endif %}
-                        <figure class="gallery-item{{ ' selectable' if patch }}"
-                                style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}"
-                                {{ selection }} id="{{ fileasset.id }}">
-                            {% if not patch %}
-                                <a class="zoomable" href="#">
-                            {% endif %}
-                            <img src="{{ url_for('image', slug = fileasset.slug, _external=true, _scheme='') }}">
-                            {% if not patch %}
-                                </a>
-                            {% endif %}
-                            <figcaption><a class="slug"
-                                           href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}"
-                                    {{ 'target=_blank' if modal else '' }}>
-                                {{ fileasset.slug }}</a>
-                                <br>[{{ fileasset.created_date|dateformat(format='short') }} {{ fileasset.width }}x{{ fileasset.height }}
-                                px]
-                            </figcaption>
-                        </figure>
+                        {% if fileasset.is_image() %}
+                            <figure class="gallery-item{{ ' selectable' if patch }}"
+                                    style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}"
+                                    {{ selection }} id="{{ fileasset.id }}">
+{#                                {% if not patch %}#}
+{#                                    <a class="zoomable" href="#">#}
+{#                                {% endif %}#}
+                                <img class="{{ ' zoomable' if not patch }}" src="{{ url_for('image', slug = fileasset.slug, _external=true, _scheme='') }}">
+{#                                {% if not patch %}#}
+{#                                    </a>#}
+{#                                {% endif %}#}
+                                <figcaption><a class="slug"
+                                               href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}" {{ 'target=_blank' if modal else '' }}>
+                                    {{ fileasset.slug }}</a><br>
+                                    [{{ fileasset.created_date|dateformat(format='short') }} {{ fileasset.width }}x{{ fileasset.height }}px]
+                                </figcaption>
+                            </figure>
+                        {% else %}
+                            <figure class="gallery-item file-item{{ ' selectable' if patch }}" {{ selection }}
+                                    id="{{ fileasset.id }}">
+                                <a href="{{ url_for('link', fileasset=fileasset.slug) }}">{{ fileasset.slug }}</a>
+                                <figcaption><a class="link" href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                                       title="{% trans %}Open file{% endtrans %}"><span
+                                            class="glyphicon glyphicon-link"></span></a>
+                                    <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                                       title="{% trans %}Download file{% endtrans %}"><span
+                                            class="glyphicon glyphicon-cloud-download"></span></a><br>
+                                    [{{ fileasset.created_date|dateformat(format='short') }}]
+                                </figcaption>
+                            </figure>
+                        {% endif %}
+
                     {% endfor %}
                     {% if pagination and pagination.has_next %}
                         <a class="btn btn-primary pagination loadlink" target="#show-more-link"

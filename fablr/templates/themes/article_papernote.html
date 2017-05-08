@@ -1,10 +1,12 @@
 {% extends "world/article_list.html" %}
 
+{% block fonts %}{{ super() }}|Annie+Use+Your+Telescope{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
     <style>
-        @import url('https://fonts.googleapis.com/css?family=Annie+Use+Your+Telescope');
-        .article_text {
+{#        @import url('https://fonts.googleapis.com/css?family=Annie+Use+Your+Telescope');#}
+        .article-text {
             line-height: 1;
             margin-top: 40px;
             margin-left: 90px;

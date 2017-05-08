@@ -1,6 +1,8 @@
 {% extends "world/world_list.html" %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block fonts %}{{ super() }}|Oswald:300,400,700|Electrolize{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
 
@@ -114,15 +116,6 @@
             background-color: rgba(120, 115, 115, 0.54);
         }
     </style>
-
-    <script src="//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
-    <script>
-        WebFont.load({
-            google: {
-                families: ["Oswald:300,400,700", "Electrolize:regular"]
-            }
-        });
-    </script>
 {% endblock cssimports %}
 
 {% block cover %}

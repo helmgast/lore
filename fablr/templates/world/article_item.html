@@ -24,37 +24,25 @@
 {% block actionbar %}
     {% if args.get('intent', None) == 'patch' %}
         {# We are editing #}
-        <li>
-            <button type="submit" form="articleform" class="btn btn-primary">
-                <span class="glyphicon glyphicon-cloud-upload"></span> {{ _('Save') }}
-            </button>
-        </li>
-        <li><a class="btn btn-danger" href="#confirm-modal" data-toggle="modal"><span
-                class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
-        <li><a class="btn btn-default"
-               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}"><span
-                class="glyphicon glyphicon-circle-arrow-left"></span> {{ _('Cancel') }}</a></li>
+        {{ MACRO.SAVE_BUTTON('articleform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug)) }}
+        {{ MACRO.DELETE_BUTTON() }}
     {% elif args.get('intent', None) == 'post' %}
         {# We are creating new resource #}
-        <li>
-            <button type="submit" form="articleform" class="btn btn-primary"><span
-                    class="glyphicon glyphicon-cloud-upload"></span> {{ _('Save') }}</button>
-        </li>
-        <li><a class="btn btn-danger"
-               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}"><span
-                class="glyphicon glyphicon-circle-arrow-left"></span> {{ _('Cancel') }}</a></li>
+        {{ MACRO.SAVE_BUTTON('articleform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug)) }}
     {% else %}
         {# We are viewing #}
         {% include "world/new_article_menu.html" %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-            <li><a class="btn btn-primary"
-                   href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug, intent='patch') }}"><span
-                    class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
-            <li><a class="btn btn-danger" href="#confirm-modal" data-toggle="modal"><span
-                    class="glyphicon glyphicon-trash"></span> {{ _('Delete') }}</a></li>
+            {{ MACRO.EDIT_BUTTON(url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug,
+            world_=world.slug, intent='patch')) }}
+            {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}
     {% endif %}
 {% endblock %}
+
+
 
 {% block cssimports %}
     {{ super() }}
@@ -82,7 +70,7 @@
 
 {% block page_header %}
     {% if args.get('intent', None) %}
-        <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article_header">
+        <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article-header">
             {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
         </h1>
         {% if article_form.title.errors %}
@@ -111,8 +99,7 @@
     'campaign': 'flag',
     'chronicle': 'bookmark',
     'character': 'heart'
-}
-%}
+} %}
         <ul class="nav imprint">
             <li title="{{ _('Article type') }}"><span class="glyphicon glyphicon-{{ types[article.type] }}"></span>
                 <a>{{ article.get_type_display() }}</a>
@@ -129,21 +116,24 @@
                 {%- else -%}<a>{{ _('Admin') }}</a>
                 {%- endif -%}</li>
             <li title="{{ _('Created') }}"><span
-                    class="glyphicon glyphicon-calendar"></span> <a>{{ article.created_date|dateformat(format='short') }}</a>
+                    class="glyphicon glyphicon-calendar"></span>
+                <a>{{ article.created_date|dateformat(format='short') }}</a>
             </li>
             {% if articlegroups or g.user %}
                 <li title="{{ _('Visibility') }}"><span
-                        class="glyphicon glyphicon-lock"></span> <a>{{ article.get_status_display() }}</a><small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
+                        class="glyphicon glyphicon-lock"></span> <a>{{ article.get_status_display() }}</a>
+                    <small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
                 </li>
             {% endif %}
-{#            {% if g.user %}#}
-{#                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i#}
-{#                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>#}
-{#                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i#}
-{#                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>#}
-{#            {% endif %}#}
+            {#            {% if g.user %}#}
+            {#                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i#}
+            {#                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>#}
+            {#                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i#}
+            {#                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>#}
+            {#            {% endif %}#}
             <li title=""><span
-                    class="glyphicon glyphicon-print"></span> <a href="javascript:window.print()">{{ _('Print') }}</a></li>
+                    class="glyphicon glyphicon-print"></span> <a href="javascript:window.print()">{{ _('Print') }}</a>
+            </li>
             <li title="{{ _('Share') }}" class="social"><span
                     class="glyphicon glyphicon-share"></span> {% include "includes/social_icons.html" %}</li>
         </ul>
@@ -151,23 +141,31 @@
 {% endblock %}
 
 {% block content %}
-    <article>
-    {% if args.get('intent', None) %}
-        {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
-        <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a
-                href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
-    {% else %}
-        {{ article.content|markdown if article.content else _("Content") }}
-        {% if article.type == 'blogpost' %}
-            {% include 'includes/disqus.html' %}
+        {% if args.get('intent', None) %}
+        <article>
+            {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
+            <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a
+                    href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
+        </article>
+        {% else %}
+            <article class="article-text">
+            {{ article.content|markdown if article.content else _("Content") }}
+            {% if article.type == 'blogpost' %}
+                {% include 'includes/disqus.html' %}
+            {% endif %}
+            </article>
+
         {% endif %}
+    {% if args.get('intent', None) %}
+    <ul class="action-buttons action-buttons-footer">
+        {{ self.actionbar() }}
+    </ul>
     {% endif %}
-    </article>
 {% endblock %}
 
 {% block asides %}
     {% if args.get('intent', None) %}
-        <div class="article_comment form-horizontal">
+        <div class="article-aside form-horizontal">
             {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
       <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
       <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
@@ -192,11 +190,14 @@
             {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.editors, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
-            {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12',
+                controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}
+
             {{ MACRO.FORM_FIELD(article_form.featured, labelclass='col-sm-3 dobr', controlwrap='col-sm-9',
                 labeltext=_('Focus')+'<span class="glyphicon glyphicon-fire"></span>'|safe) }}
 
-            {{ article_form.images(class='hide') }}
+            {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
+               url_for('assets.FileAssetsView:file_selector', type='image', choice='single'), data_class='image feature-images') }}
 
             {% if g.user.id %}
                 <input type="hidden" name="creator" value="{{ g.user.id }}"/>
@@ -236,11 +237,9 @@
     {% endif %}
 {% endblock %}
 
-
-
-{% block final %}
+{% block final_html %}
+    {{ super() }}
     {% if article %}
         {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', publisher_=publisher.slug, world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
     {% endif %}
-    {{ super() }}
 {% endblock %}

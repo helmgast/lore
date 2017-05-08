@@ -13,11 +13,21 @@
     ) }}{% endblock %}
 
 {% block actionbar %}{{ super() }}
-    <li><a class="btn btn-primary" href="{{ url_for('social.GroupsView:get', id='post') }}"><span
-            class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-    {% if op!='new' %}
-        <li><a class="btn btn-primary" href="{{ url_for('social.GroupsView:get', id=group.slug, intent='patch') }}"><span
-                class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('groupform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('social.GroupsView:get', id=group.slug)) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('groupform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('social.GroupsView:get', id=group.slug)) }}
+    {% else %}
+        {# We are viewing #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('edit')) %}
+            {{ MACRO.EDIT_BUTTON(url_for('social.GroupsView:get', id=group.slug, intent='patch')) }}
+            {{ MACRO.DELETE_BUTTON() }}
+        {% endcall %}
     {% endif %}
 {% endblock %}
 
@@ -65,11 +75,12 @@
 {% if group_form %}
     {{ group_form.csrf_token }}
     <div class="row form-actions">
-        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-        <a href="{{ url_for('social.GroupsView:index') }}" class="btn btn-default">{{ _('Cancel') }}</a>
-        {% if op!='new' %}
-            <a href="{{ url_for('social.GroupsView:delete', id=group.slug) }}"
-               class="btn btn-danger pull-right">{{ _('Delete') }}</a>
+        <div class="col-sm-12">
+        {% if args.get('intent', None) %}
+            <ul class="action-buttons action-buttons-footer">
+                {{ self.actionbar() }}
+            </ul>
         {% endif %}
+        </div>
     </div></form>{% endif %}
 {% endblock %}{% endblock %}

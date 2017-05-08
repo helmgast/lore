@@ -14,10 +14,9 @@
 {% endblock %}
 
 {% block actionbar %}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
-            <li><a class="btn btn-primary" href="{{ url_for('world.PublishersView:get', id='post') }}"><span
-                    class="glyphicon glyphicon-plus-sign"></span> {{ _('New') }}</a></li>
-        {% endcall %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new')) %}
+        {{ MACRO.NEW_BUTTON(url_for('world.PublishersView:get', id='post'), 'New publisher') }}
+    {% endcall %}
 {% endblock %}
 
 

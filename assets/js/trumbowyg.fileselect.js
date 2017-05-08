@@ -27,13 +27,15 @@ define(["jquery", "utils"], function ($, utils) {
 
                     // trumbowyg.o.plugins.fileselect = $.extend(true, {}, defaultOptions, trumbowyg.o.plugins.fileselect || {fs_obj: new FileSelect('')});
                     trumbowyg.o.imgDblClickHandler = function (e) {
-                        var $figure = $(e.target).closest('.gallery');
-                        select_image($figure)
+                        load_gallery($(e.target))
                         return false
                     }
+                    // Also apply when not on an image
+                    trumbowyg.$c.parent().on('dblclick', '.trumbowyg .gallery', trumbowyg.o.imgDblClickHandler)
+
                     // trumbowyg.$c.on('click', '.gallery', function (e) {
                     //     var $figure = $(this).closest('.gallery');
-                    //     select_image($figure)
+                    //     load_gallery($figure)
                     //     return false
                     // })
                     // Below is hack to avoid exception on focusnode being null
@@ -43,19 +45,30 @@ define(["jquery", "utils"], function ($, utils) {
                     document.getSelection().addRange(r)
                     console.log(document.getSelection().focusNode)
 
-                    var select_image = function ($elem) {
+                    var load_gallery = function ($elem) {
                         trumbowyg.saveRange();
                         var select_params = [], insert_position = 'gallery-center';
                         if ($elem instanceof jQuery) {
-                            $elem.find('img').each(function (i, el) {
-                                select_params.push(utils.decompose_url(el.src).file) // take filename part of URL
-                            });
-                            if ($elem.hasClass('gallery-wide')) {
-                                insert_position = 'gallery-wide'
-                            } else if ($elem.hasClass('gallery-side')) {
-                                insert_position = 'gallery-side'
+                            var $gallery = $elem.closest('.gallery')
+                            // We can find a gallery as parent to this element, or it is a gallery
+                            if ($gallery.length) {
+                                $elem = $gallery // so that we replace the full gallery
+                                $gallery.find('li').each(function (i, el) {
+                                    if (el.children.length)
+                                    // take filename part of URL either as image src or as a href
+                                        select_params.push(utils.decompose_url(el.children[0].src || el.children[0].href).file);
+                                });
+                                if ($elem.hasClass('gallery-wide')) {
+                                    insert_position = 'gallery-wide'
+                                } else if ($elem.hasClass('gallery-side')) {
+                                    insert_position = 'gallery-side'
+                                }
+                            // We clicked an image without a gallery parent, use it as input (and replace with gallery)
+                            } else if ($elem.is("img")) {
+                                select_params.push(utils.decompose_url($elem[0].src).file);
                             }
                         } else {
+                            // We have come here clicking the button, no element is selected, find location through editor
                             // Select closest element which is a direct child of the editor, will not select text nodes
                             $elem = $(trumbowyg.range && trumbowyg.range.startContainer).closest('.trumbowyg-editor > *')
                             $elem = $('<p>').insertBefore($elem)
@@ -69,10 +82,12 @@ define(["jquery", "utils"], function ($, utils) {
                             })
                         })
                             .one('hide.bs.modal', {t: trumbowyg, $elem: $elem}, function (e) {
+                                // Re-create the gallery and insert
                                 var $newelem, selected = $('#themodal').find("[data-selection]").sort(function (a, b) {
                                     return $(a).data('selection') > $(b).data('selection')
                                 });
-                                var insert_choice = $('#insert-position .active input'), insert_position = 'gallery-center'
+                                var insert_choice = $('#insert-position .active input'),
+                                    insert_position = 'gallery-center'
                                 if (insert_choice.length) {
                                     insert_position = insert_choice[0].id
                                 }
@@ -80,7 +95,11 @@ define(["jquery", "utils"], function ($, utils) {
                                     $newelem = $('<ul contenteditable="false" class="gallery ' + insert_position + '"><li class="hide">' + insert_position + '</li></ul>')
                                     selected.each(function (i, el) {
                                         var $el = $(el)
-                                        $newelem.append('<li class="gallery-item"><img onload="set_aspect(this)" src="' + $el.find('img')[0].src + '"></li>')
+                                        if ($el.children().first().is('a')) {
+                                            $newelem.append('<li class="gallery-item"><a href="' + $el.children().first().attr('href') + '">' + $el.children().first().text().trim() + '</a></li>')
+                                        } else {
+                                            $newelem.append('<li class="gallery-item"><img src="' + $el.find('img')[0].src + '"></li>')
+                                        }
                                     })
                                     $(e.data.$elem).replaceWith($newelem)
                                     //e.data.t.restoreRange()
@@ -96,25 +115,12 @@ define(["jquery", "utils"], function ($, utils) {
                     }
 
                     trumbowyg.addBtnDef('fileselect', {
-                        fn: select_image,
+                        fn: load_gallery,
                         ico: 'insert-image',
                         tag: 'gallery'
                     });
 
                 },
-                //tagHandler: function(element, t) {
-                //    if (element.className.indexOf('gallery') > -1) {
-                //        if (element.className.indexOf('wide') > -1) {
-                //            return ['GALLERY', 'WIDE'];
-                //        } else if (element.className.indexOf('portrait') > -1) {
-                //            return ['GALLERY', 'PORTRAIT'];
-                //        } else {
-                //            return ['GALLERY', 'CENTER']; // fake tag, but will activate the gallery button
-                //        }
-                //    } else {
-                //        return '';
-                //    }
-                //}
             }
         }
     });

@@ -12,7 +12,7 @@
 
 {% block content %}
 	{% for article in articles %}
-	<a class="blog_header" href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}"><h2>{{ article. title}}</h2></a>
+	<a class="blog-header" href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}"><h2>{{ article. title}}</h2></a>
 	<ul class="list-inline article-meta" style="margin-bottom: 0">
     <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date|dateformat(format='short') }} {{ _('by') }}</li>
 	<li title="{{ _('Creator') }}">

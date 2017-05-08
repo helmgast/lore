@@ -9,15 +9,10 @@
         (url_for('shop.ProductsView:index', publisher=publisher.slug), _('Products'))
     ) }}{% endblock %}
 
-{% block actionbar %}{{ super() }}
-    {% if not product %}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-            <li><a class="btn btn-primary"
-                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id='post') }}"><span
-                    class="glyphicon glyphicon-plus-sign"></span> {{ _('New product') }}</a></li>
-        {% endcall %}
-    {% endif %}
-
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
+        {{ MACRO.NEW_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id='post'), 'New product') }}
+    {% endcall %}
 {% endblock %}
 
 {% block asides %}{{ super() }}
@@ -61,7 +56,7 @@
         {% if args['view'] == 'list' %}
 
             {% for product in products %}
-                <a class="blog_header"
+                <a class="blog-header"
                    href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
                     <h3>{{ product.title }}</h3></a>
                 <ul class="list-inline article-meta" style="margin-bottom: 0">
@@ -149,9 +144,7 @@
     {% endif %}
 {% endblock %}
 
-{% block final %}
-    <script>
-        var SHOP_URL = "{{ url_for('shop.OrdersView:buy', publisher=publisher.slug)}}"
-    </script>
+{% block js_globalvars %}
     {{ super() }}
+    var SHOP_URL = "{{ url_for('shop.OrdersView:buy', publisher=publisher.slug)}}"
 {% endblock %}

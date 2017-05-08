@@ -1,7 +1,7 @@
 {% extends "_page.html" %} {# Doesn't use root_template object as this will never be served as modal or fragment #}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block final %}
+{% block js_bottom %}
     {{ super() }}
     {% include "auth/auth0.html" %}
 {% endblock %}

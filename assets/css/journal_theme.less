@@ -4,11 +4,11 @@
 
 @import "journal_variables.less";
 
-.web-font(@path) {
-  @import url("@{path}");
-}
-.web-font('//fonts.googleapis.com/css?family=News+Cycle:400,700');
-.web-font('//fonts.googleapis.com/css?family=Raleway:400,700');
+//.web-font(@path) {
+//  @import url("@{path}");
+//}
+//.web-font('//fonts.googleapis.com/css?family=News+Cycle:400,700');
+//.web-font('//fonts.googleapis.com/css?family=Raleway:400,700');
 
 // Navbar =====================================================================
 
@@ -172,4 +172,8 @@ footer {
   }
 
 
+}
+
+.page-header h1 {
+  font-size: floor((@font-size-base * 3.2));
 }

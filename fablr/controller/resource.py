@@ -16,6 +16,7 @@ import re
 import sys
 
 import flask
+import math
 from flask import request, render_template, flash, url_for, abort, g, current_app
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
@@ -400,12 +401,21 @@ class ListResponse(ResourceResponse):
 
     def paginate(self):
         # TODO max query size 10000 implied here
-        per_page = self.args['per_page'] if self.args['per_page'] > 0 else 10000
+        per_page = int(self.args['per_page'])
+        page = int(self.args['page'])
+        if per_page < 0:
+            per_page = 10000
+        # TODO, a fix because pagination will otherwise reset any previous .limit() set on the query.
+        # https://github.com/MongoEngine/flask-mongoengine/issues/310
+        if getattr(self.query, '_limit', None):
+            per_page = min(per_page, self.query._limit)
+            page = min(page, math.ceil(self.query._limit/per_page))
+
         # TODO, this is a fix for an issue in MongoEngine https://github.com/MongoEngine/mongoengine/issues/1522
         try:
-            self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
+            self.pagination = Pagination(iterable=self.query, page=page, per_page=per_page)
         except TypeError:  # Try again, as a race condition might stop first one
-            self.pagination = Pagination(iterable=self.query, page=self.args['page'], per_page=per_page)
+            self.pagination = Pagination(iterable=self.query, page=page, per_page=per_page)
         self.query = self.pagination.items  # set default query as the paginated one
 
 

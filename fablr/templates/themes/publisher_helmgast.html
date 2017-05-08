@@ -1,11 +1,12 @@
 {% extends root_template %}
 {% import 'includes/macros.html' as MACRO %}
 
+{% block fonts %}{{ super() }}|Eczar:700|Gentium+Basic:400,400italic,700,700italic{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
     <style>
-        @import url(//fonts.googleapis.com/css?family=Gentium+Basic:400,400italic,700,700italic);
-        @import url(//fonts.googleapis.com/css?family=Eczar:700);
+{#        @import url(//fonts.googleapis.com/css?family=Eczar:700);#}
 
         .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
         .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
@@ -14,9 +15,10 @@
             color: #333;
         }
 
-        article {
-            font-family: 'Gentium Basic', 'Georgia', sans-serif;
-            font-size: 16px;
+        .helmgast-header {
+            font-size: 50px;
+            text-align: center;
+            width: 100%;
         }
 
     </style>
@@ -26,9 +28,10 @@
 {% block container_class %}container{% endblock %}
 
 {% block navbar_brand %}
-    <a class="navbar-brand" href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">
-        <img class="img-responsive" src="{{ url_for('static', filename='img/helmgast_512px_bw.png', _external=true, _scheme='') }}"
-             style="margin-top: -18px;">
+    <a class="navbar-brand navbar-collapse"
+       href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">
+        <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
+             src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
 {% endblock navbar_brand %}
 
@@ -44,13 +47,134 @@
             class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}</a></li>
     <li><a href="http://www.rollspel.nu/forum/neogames" target="_blank"><span
             class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}</a></li>
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
-    <li{% block shop_active %}{% endblock %}><a class="{{ privileged }}"
-            href="{{ url_for('shop.shop_home', publisher=publisher.slug) }}"><span
-            class="glyphicon glyphicon-list-alt"></span> {{ _('New') }} {{ _('Shop') }}</a></li>
-    {% endcall %}
 {% endblock navbar_left %}
 
+
+{% block home %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 page-header">
+                <div class="" id="brand-target">
+                    <h1 class="helmgast-header">HELMGAST<br><small>Vi tar spel på allvar</small></h1>
+                </div>
+
+            </div>
+            <div class="col-md-8 col-sm-12">
+                {#                {% include "newsletter.html" %}#}
+                <div id="homepage-carousel" class="carousel slide" data-ride="carousel">
+                    <!-- Indicators -->
+                    <ol class="carousel-indicators">
+                        <li data-target="#homepage-carousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#homepage-carousel" data-slide-to="1"></li>
+                        <li data-target="#homepage-carousel" data-slide-to="2"></li>
+                        <li data-target="#homepage-carousel" data-slide-to="3"></li>
+                        <li data-target="#homepage-carousel" data-slide-to="4"></li>
+                    </ol>
+
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item active">
+                            <img src="{{ url_for('static', filename='img/themes/eon-wide-1200x600.jpg') }}" alt="Eon">
+                            <div class="carousel-caption">
+                                ...
+                            </div>
+                        </div>
+                        <div class="item">
+                            <img src="{{ url_for('static', filename='img/themes/ht-wide-1200x600.jpg') }}"
+                                 alt="Hjältarnas Tid">
+                            <div class="carousel-caption">
+                                ...
+                            </div>
+                        </div>
+                        <div class="item">
+                            <img src="{{ url_for('static', filename='img/themes/kult-wide-1200x600.jpg') }}" alt="Kult">
+                            <div class="carousel-caption">
+                                ...
+                            </div>
+                        </div>
+                        <div class="item">
+                            <img src="{{ url_for('static', filename='img/themes/neotech-wide-1200x600.jpg') }}"
+                                 alt="Neotech">
+                            <div class="carousel-caption">
+                                ...
+                            </div>
+                        </div>
+                        <div class="item">
+                            <img src="{{ url_for('static', filename='img/themes/jarn-wide-1200x600.jpg') }}" alt="Järn">
+                            <div class="carousel-caption">
+                                ...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <a class="left carousel-control" href="#homepage-carousel" role="button" data-slide="prev">
+                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                        <span class="sr-only">}{% trans %}Previous{% endtrans %}</span>
+                    </a>
+                    <a class="right carousel-control" href="#homepage-carousel" role="button" data-slide="next">
+                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                        <span class="sr-only">{% trans %}Next{% endtrans %}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 cards margin-above">
+                {% for article in articles %}
+                    <div class="card"
+                            {%- if article.get_feature_image -%}
+                         style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
+                            {%- endif -%}>
+                        <div class="card-text">
+                            <h3 class="card-title">
+                                <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
+                            </h3>
+                            {% set desc =  (article.content[0:250]|markdown|striptags|truncate|replace('gallery-center','')).split('. R') %}
+                            <div class="card-description">{{ desc[0] }}</div>
+                            <ul class="card-details">
+                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {#                <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">#}
+                    {#                    <a class="blog-header"#}
+                    {#                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">#}
+                    {#                        <h3>{{ article.title }}</h3></a>#}
+                    {#                    {% if article.get_feature_image %}#}
+                    {#                        <a class="pull-left"#}
+                    {#                           href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">#}
+                    {#                            <img class="media-object"#}
+                    {#                                 src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">#}
+                    {#                        </a>#}
+                    {#                    {% endif %}#}
+                    {#                    <p>{% if article.description %}{{ article.description|markdown }}{% else %}#}
+                    {#                        {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}#}
+                    {#                        <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em#}
+                    {#                                style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>#}
+                    {#                    <hr-d>#}
+                    {#                        <ul class="list-inline article-meta" style="margin-bottom: 0;">#}
+                    {#                            <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>#}
+                    {#                                {{ article.created_date|dateformat(format='short') }} {{ _('by') }}#}
+                    {#                            </li>#}
+                    {#                            <li title="{{ _('Creator') }}">#}
+                    {#                                <span class="glyphicon glyphicon-user"></span>#}
+                    {#                                {{ article.creator if article.creator else _('Admin') }}#}
+                    {#                            </li>#}
+                    {#                        </ul>#}
+                    {#                    </hr-d>#}
+                    {#                </div>#}
+                {% else %}
+                    <div class="jumbotron text-center">
+                        <h2>{{ _('No articles yet!') }}</h2>
+                    </div>
+                    <!-- col-lg-4 -->
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
 
 {% block footer %}
     <div class="row">
@@ -83,9 +207,9 @@
                 <li>
                     <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='om-helmgast') }}">
                         {% trans %}About{% endtrans %}</a></li>
-{#                <li>#}
-{#                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">#}
-{#                        {% trans %}Media{% endtrans %}</a></li>#}
+                {#                <li>#}
+                {#                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">#}
+                {#                        {% trans %}Media{% endtrans %}</a></li>#}
                 <li>
                     <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='arbeta-med-oss') }}">
                         {% trans %}Work with us{% endtrans %}</a></li>
@@ -107,136 +231,4 @@
         <!-- --/col-lg-3 ---->
     </div>
     <!-- --/row ---->
-{% endblock %}
-
-
-{% block home %}
-    <div class="container">
-    <div class="jumbotron helmgast-header">
-        <h1>HELMGAST</h1>
-        <h2>Vi tar spel på allvar</h2>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <h1>{{ _('Welcome to') }} Helmgast</h1>
-            <h4><i>Ny utgivare av klassiska rollspelen Eon, Neotech <br> med många fler i pipelinen!</i></h4>
-        </div>
-        <div class="col-md-6">
-            {% include "newsletter.html" %}
-        </div>
-    </div>
-    <div class="row">
-        {% for article in articles %}
-            <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">
-                <a class="blog_header"
-                   href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
-                    <h3>{{ article.title }}</h3></a>
-                {% if article.get_feature_image %}
-                    <a class="pull-left"
-                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">
-                        <img class="media-object"
-                             src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
-                    </a>
-                {% endif %}
-                <p>{% if article.description %}{{ article.description|markdown }}{% else %}
-                    {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em
-                            style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>
-                <hr-d>
-                    <ul class="list-inline article-meta" style="margin-bottom: 0;">
-                        <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span>
-                            {{ article.created_date|dateformat(format='short') }} {{ _('by') }}
-                        </li>
-                        <li title="{{ _('Creator') }}">
-                            <span class="glyphicon glyphicon-user"></span>
-                            {{ article.creator if article.creator else _('Admin') }}
-                        </li>
-                    </ul>
-                </hr-d>
-            </div>
-        {% else %}
-            <div class="jumbotron text-center">
-                <h2>{{ _('No articles yet!') }}</h2>
-            </div>
-            <!-- col-lg-4 -->
-        {% endfor %}
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <h2>Visioner av våra spel</h2>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port01.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port01.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>RUINERNA</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port02.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port02.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>FÅNGARNA</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port03.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port03.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>SLAGFÄLTET</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port04.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port04.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>ARKETYPEN LÄRD</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port05.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port05.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>ARKETYPEN MYSTIKER</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port06.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port06.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>ARKETYPEN KRIGARE</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port07.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port07.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>PSYCHO TRIBE</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port08.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port08.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>NATURAL CHILD</p>
-        </div>
-        <div class="col-lg-4 col-sm-6 col-xs-12 desc">
-            <a class="zoomable" href="{{ url_for('static', filename='img/front/port09.jpg') }}"><img
-                    class="img-responsive" width="350" src="{{ url_for('static', filename='img/front/port09.jpg') }}"
-                    alt="">
-            </a>
-
-            <p>LIVET I MING ESTATES</p>
-        </div>
-    </div>
-    </div>
 {% endblock %}

@@ -1,11 +1,13 @@
 {% extends "world/article_list.html" %}
 
+{% block fonts %}{{ super() }}|Playfair+Display{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
     <style>
-    @import url('https://fonts.googleapis.com/css?family=Playfair+Display');
+{#    @import url('https://fonts.googleapis.com/css?family=Playfair+Display');#}
 
-    .article_header {
+    .article-header {
         font-family: 'Playfair Display', serif;
         font-weight: 900;
         font-size: 80px;
@@ -28,7 +30,7 @@
         background-color: #f9f7f1;
     }
 
-{#        .article_text {#}
+{#        .article-text {#}
 {#            line-height: 1;#}
 {#            margin-top: 40px;#}
 {#            margin-left: 90px;#}

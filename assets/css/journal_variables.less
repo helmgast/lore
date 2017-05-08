@@ -7,6 +7,31 @@
 //
 //## Gray and brand colors for use across Bootstrap.
 
+// Colormind
+//@light-shade:           #F3F3EE;
+//@light-accent:          #93A7A2;
+//@primary:               #B88536;
+//@dark-accent:           #A76C3B;
+//@dark-shade:            #000000;
+//
+//@brand-primary:         @primary;
+//@brand-success:         #6da249;
+//@brand-info:            #232f2b;
+//@brand-warning:         #ea9211;
+//@brand-danger:          #f44336;
+
+@light-shade:           #F9F9F9;
+@light-accent:          #D0995A;
+@primary:               #AA0000;
+@dark-accent:           #7B7798;
+@dark-shade:            #000000;
+
+@brand-primary:         @primary;
+@brand-success:         #6f833f;
+@brand-info:            #14141b;
+@brand-warning:         #ec7307;
+@brand-danger:          #f44336;
+
 @gray-base:              #000;
 @gray-darker:            lighten(@gray-base, 13.5%); // #222
 @gray-dark:              lighten(@gray-base, 20%);   // #333
@@ -14,21 +39,26 @@
 @gray-light:             lighten(@gray-base, 60%);   // #999
 @gray-lighter:           lighten(@gray-base, 93.5%); // #eee
 
-@brand-primary:         #a00;
-@brand-success:         #22B24C;
-@brand-info:            #369;
-@brand-warning:         #F5E625;
-@brand-danger:          #F57A00;
+@text-color:            #0e1110;
+@inverted-text-color:   #fff;
+@headings-color:        #232f2b;
+@footer-color:          @dark-shade;
 
+// text-primary
+// accennt-bg
+// #a76c3b
+// icon-color: text-primary
+// text-light #93A7A2
+//
 
 //== Scaffolding
 //
 //## Settings for some of the most global styles.
 
 //** Background color for `<body>`.
-@body-bg:               #fff;
+@body-bg:               @light-shade;
 //** Global text color on `<body>`.
-@text-color:            @gray;
+//@text-color:            @gray;
 
 //** Global textual link color.
 @link-color:            @brand-primary;
@@ -70,7 +100,7 @@
 @headings-font-family:    @font-family-sans-serif;
 @headings-font-weight:    700;
 @headings-line-height:    1.1;
-@headings-color:          #000;
+//@headings-color:          #000;
 
 
 //== Iconography
@@ -131,9 +161,9 @@
 //** Default background color used for all tables.
 @table-bg:                      transparent;
 //** Background color used for `.table-striped`.
-@table-bg-accent:               #f9f9f9;
+@table-bg-accent:               #fff;//#f9f9f9;
 //** Background color used for `.table-hover`.
-@table-bg-hover:                #f5f5f5;
+@table-bg-hover:                @light-accent;//#f5f5f5;
 @table-bg-active:               @table-bg-hover;
 
 //** Border color for table and cell borders.
@@ -183,7 +213,7 @@
 //##
 
 //** `<input>` background color
-@input-bg:                       #fff;
+@input-bg:                       #fff;//@light-shade;//#fff;
 //** `<input disabled>` background color
 @input-bg-disabled:              @gray-lighter;
 
@@ -366,8 +396,8 @@
 @navbar-padding-vertical:          ((@navbar-height - @line-height-computed) / 2);
 @navbar-collapse-max-height:       340px;
 
-@navbar-default-color:             #000;
-@navbar-default-bg:                #fff;
+@navbar-default-color:             @text-color;
+@navbar-default-bg:                @light-shade;//#fff;
 @navbar-default-border:            darken(@navbar-default-bg, 6.5%);
 
 // Navbar links
@@ -488,7 +518,7 @@
 
 @jumbotron-padding:              30px;
 @jumbotron-color:                inherit;
-@jumbotron-bg:                   @gray-lighter;
+@jumbotron-bg:                   @light-accent;//@gray-lighter;
 @jumbotron-heading-color:        inherit;
 @jumbotron-font-size:            ceil((@font-size-base * 1.5));
 @jumbotron-heading-font-size:    ceil((@font-size-base * 4.5));
@@ -858,9 +888,9 @@
 //** Blockquote small color
 @blockquote-small-color:      @gray-light;
 //** Blockquote font size
-@blockquote-font-size:        (@font-size-base * 1.25);
+@blockquote-font-size:        (@font-size-base * 2);
 //** Blockquote border color
-@blockquote-border-color:     @gray-lighter;
+@blockquote-border-color:     @primary;
 //** Page header border color
 @page-header-border-color:    @gray-lighter;
 //** Width of horizontal description list titles

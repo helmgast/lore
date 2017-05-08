@@ -131,9 +131,36 @@ function load_content(href, target, base_href, append) {
     }
 }
 
+
+function vector_add(v1, v2) {
+    return [v1[0]+v2[0], v1[1]+v2[1]]
+}
+
+function vector_sub(v1, v2) {
+   return [v1[0]-v2[0], v1[1]-v2[1]]
+}
+
+function vector_unit(v) {
+    var len = vector_len(v)
+    return [v[0]/len, v[1]/len]
+}
+
+function vector_len(v) {
+    return Math.sqrt(v[0]^2+v[1]^2)
+}
+
+function vector_scale(v, d) {
+    return [v[0]*d, v[1]*d]
+}
+
 module.exports.flash_error = flash_error;
 module.exports.decompose_url = decompose_url;
 module.exports.modify_url = modify_url;
 module.exports.serializeObject = serializeObject;
 module.exports.dictreplace = dictreplace;
 module.exports.load_content = load_content;
+module.exports.vector_add = vector_add;
+module.exports.vector_sub = vector_sub;
+module.exports.vector_unit = vector_unit;
+module.exports.vector_len = vector_len;
+module.exports.vector_scale = vector_scale;

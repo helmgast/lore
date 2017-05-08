@@ -25,19 +25,13 @@ require('../css/custom_bootstrap.less')
 require('selectize/dist/css/selectize.bootstrap3.css');
 require('flatpickr/dist/flatpickr.min.css');
 require('trumbowyg/dist/ui/trumbowyg.css');
-require('../css/app.css');
+require('../css/app.less');
 
 
 /* ========================================================================
  * Event management (Dependencies: jQuery and utils)
  * ========================================================================
  */
-
-// Globally availale functions
-window.set_aspect = function (img) {
-    var aspect = img.width / img.height;
-    $(img).closest('.gallery-item').css({'width': 100 * aspect / 4.0 + '%', 'flex-grow': aspect})
-}
 
 $('#themodal').on('show.bs.modal', function (event) {
     if (event.relatedTarget && event.relatedTarget.href) {
@@ -94,7 +88,7 @@ $(document).on('click', '.buy-link', function (e) {
     e.preventDefault();
 });
 
-$(document).on('click', '.content-editor a', function (e) {
+$(document).on('click', '.trumbowyg-editor a', function (e) {
     return false; // Ignore clicks on links in editor so we dont leave page
 });
 
@@ -113,6 +107,16 @@ $(document).on('click', '.loadlink', function (e) {
     $a.remove()
     return false;
 });
+
+
+// Hide and show the debug toolbar with the betaribbon
+$('#feedback-modal').on('show.bs.modal', function (e) {
+    $('#flDebugToolbar').show();
+})
+
+$('#feedback-modal').on('hide.bs.modal', function (e) {
+    $('#flDebugToolbar').hide();
+})
 
 // Send feedback to Slack
 $('#feedback-modal').on('submit', 'form', function (e) {
@@ -167,15 +171,19 @@ $(document).on('click', '.selectable', function (e) {
 });
 
 $(document).on('click', '.zoomable', function (e) {
-    var $el = $(this), $img = $el.find('img')
-    var screenAspect = document.documentElement.clientWidth / document.documentElement.clientHeight;
-    var img_aspect = $img.width() / $img.height()
-    $el.toggleClass('zoomed')
-    if (img_aspect > screenAspect) { // wider than screen
-        $img.toggleClass('fill-width')
+    var $el = $(this)//, $img = $el.find('img')
+    // var screenAspect = document.documentElement.clientWidth / document.documentElement.clientHeight;
+    // var img_aspect = $img.width() / $img.height()
+    if ($el.hasClass('zoomed')) {
+        $el.removeClass('zoomed')
     } else {
-        $img.toggleClass('fill-height')
+        $el.addClass('zoomed')
     }
+    // if (img_aspect > screenAspect) { // wider than screen
+    //     $img.toggleClass('fill-width')
+    // } else {
+    //     $img.toggleClass('fill-height')
+    // }
     return false;
 });
 
@@ -185,7 +193,7 @@ $(document).on('click', '.zoomable', function (e) {
  */
 function init_dom(e) {
     // e will be the jquery object if called at DOMLoaded, otherwise the e.target is the node that triggered
-    var scope = e===$ ? $(document) : $(e.target)
+    var scope = e === $ ? $(document) : $(e.target)
 
     // Bootstrap plugins
     // Loads themselves. Load at all pages!
@@ -194,10 +202,14 @@ function init_dom(e) {
     require('bootstrap/js/alert');
     require('bootstrap/js/collapse');
     require('bootstrap/js/button');
+    require('bootstrap/js/transition');
+    require('bootstrap/js/carousel');
 
     // Bootstrap tooltip
     require('bootstrap/js/tooltip');
     scope.find("a[data-toggle='tooltip']").tooltip(); // Need to activate manually
+
+    // scope.find(".carousel").carousel(); // Need to activate manually
 
 
     // Selectize plugin for SELECTS in forms
@@ -241,11 +253,41 @@ function init_dom(e) {
 
     // File select plugin (activates the jquery part, the trumbowyg part loads with trumbowyg later)
     require('fileselect.js')
-    scope.find('.fileselect').fileselect({image_url: IMAGE_URL, image_select_url: IMAGE_SELECT_URL});
+    scope.find('.fileselect').fileselect({image_url: IMAGE_URL});
 
     // Calculatable plugin
     require('calculatable.js')
     scope.find('.calc[data-formula]').calculatable();
+
+
+    // Zoombrand plugin
+    var snabbt = require('snabbt.js')
+    var zoombrand = scope.find('#zoombrand');
+    if (zoombrand.length) {
+        var from = $(zoombrand.data('from')).get(0), to = $(zoombrand.data('to')).get(0)
+        if (from && to) {
+            var control = snabbt(zoombrand, {
+                valueFeeder: function (i, matrix) {
+                    var f = from.getBoundingClientRect(), t = to.getBoundingClientRect(),
+                        p_start = [f.left, f.top + window.scrollY],
+                        v = utils.vector_sub(p_start, [t.left, t.top]),
+                        len = utils.vector_len(v),
+                        new_v = utils.vector_sub(p_start, utils.vector_scale(utils.vector_unit(v), i * len)),
+                        max_scale = Math.min(f.width / t.width, f.height / t.height),
+                        sc = max_scale - i * (max_scale - 1);
+                    return matrix.scale(sc, sc)
+                        .translate(new_v[0] + t.width * (sc - 1) * 0.5, new_v[1] + t.height * (sc - 1) * 0.5, 0);
+                },
+                easing: 'ease',
+                manual: true
+            });
+            var scroll_f = function () {
+                control.setValue(Math.min(1, $(window).scrollTop() / 285));
+            }
+            scroll_f();
+            $(window).scroll(scroll_f);
+        }
+    }
 
     // TODO too complicated to add, do later
     // scope.find('.auth0-lock').each(function (el) {
@@ -275,10 +317,7 @@ function init_dom(e) {
             // Set path to SVG, will be fetched by trumbowyg using XHR
             $.trumbowyg.svgPath = require('trumbowyg/dist/ui/icons.svg')
             var $textarea = $('.content-editor')
-            var options = {}
-            $.each($('#images').find('option'), function (i, el) {
-                options[el.text.trim()] = el.value;
-            })
+
             $textarea.trumbowyg({
                 btns: ['strong', 'em', '|', 'formatting', 'unorderedList', 'orderedList', 'link',
                     ['fileselect', 'wide', 'center', 'portrait'], 'viewHTML', 'fullscreen'],
@@ -289,7 +328,6 @@ function init_dom(e) {
         });
 
     })
-
 
 
 }

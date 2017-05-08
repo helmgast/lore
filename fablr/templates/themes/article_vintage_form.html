@@ -7,17 +7,19 @@
     {% set article_form = resource_view.form_class(obj=article) %}
 {% endif %}
 
+{% block fonts %}{{ super() }}|Playfair+Display|Special+Elite{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
     <style>
-        @import url(//fonts.googleapis.com/css?family=Special+Elite);
-        @import url(//fonts.googleapis.com/css?family=Playfair+Display);
+{#        @import url(//fonts.googleapis.com/css?family=Special+Elite);#}
+{#        @import url(//fonts.googleapis.com/css?family=Playfair+Display);#}
 
         .content textarea {
             resize: none;
         }
 
-        .article_header {
+        .article-header {
             font-family: 'Playfair Display', serif;
             font-weight: 900;
             font-size: 50px;
@@ -115,7 +117,7 @@
                     or your changes will not be saved.{% endtrans %}</p>
             </div>
         {% endif %}
-        <h1 class="center article_header">
+        <h1 class="center article-header">
             <small>Personakt:</small>
             <span class="calc" data-formula="#title">{{ article.title }}</span></h1>
         {{ article_form.characterdata.stats(class='hide') }}
@@ -485,7 +487,7 @@
 {% endblock %}
 
 
-{% block final %}
+{% block js_bottom %}
     {{ super() }}
     <script>
         $(document).ready(function (e) {
@@ -509,4 +511,4 @@
             $inputs.prop('disabled', true); // will remove from form submission
         })
     </script>
-{% endblock final %}
+{% endblock js_bottom %}
