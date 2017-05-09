@@ -4,8 +4,8 @@
 {% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('world.ArticlesView:search', publisher_=publisher.slug), _('Search'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('world.ArticlesView:search', pub_host=publisher.slug), _('Search'))
     ) }}{% endblock %}
 
 {% block content_title %}{{ _('Search results:') }}{% endblock %}

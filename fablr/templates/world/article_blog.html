@@ -4,15 +4,15 @@
 {% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
-        (url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug), world.title),
-        (url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_=world.slug), _('Blog'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', pub_host=publisher.slug), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=world.slug), world.title),
+        (url_for('world.ArticlesView:blog', pub_host=publisher.slug, world_=world.slug), _('Blog'))
     ) }}{% endblock %}
 
 {% block content %}
 	{% for article in articles %}
-	<a class="blog-header" href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}"><h2>{{ article. title}}</h2></a>
+	<a class="blog-header" href="{{url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug)}}"><h2>{{ article. title}}</h2></a>
 	<ul class="list-inline article-meta" style="margin-bottom: 0">
     <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date|dateformat(format='short') }} {{ _('by') }}</li>
 	<li title="{{ _('Creator') }}">
@@ -22,13 +22,13 @@
 	</ul>
 	<div class="media">
 	{% if article.get_feature_image %}
-  	<a class="pull-left" href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}">
+  	<a class="pull-left" href="{{url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug)}}">
   	<img class="media-object" src="{{url_for('image_thumb', slug=article.get_feature_image.slug)}}">
 		</a>
 	{% endif %}
 		<div class="media-body">
 			{% if article.description %}{{article.description|markdown}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-			<a href="{{url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
+			<a href="{{url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
 		</div>
 	</div>
 	{% else %}

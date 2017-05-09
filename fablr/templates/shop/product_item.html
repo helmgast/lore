@@ -7,26 +7,26 @@
     {% if args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {{ MACRO.SAVE_BUTTON('productform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug)) }}
         {#        {{ MACRO.DELETE_BUTTON() }}#}
     {% elif args.get('intent', None) == 'post' %}
         {# We are creating new resource #}
         {{ MACRO.SAVE_BUTTON('productform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug)) }}
     {% else %}
         {# We are viewing #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
-            {{ MACRO.EDIT_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug, intent='patch')) }}
+            {{ MACRO.EDIT_BUTTON(url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug, intent='patch')) }}
             {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
     {% endif %}
 {% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
-        (url_for('shop.ProductsView:index', publisher=publisher.slug), _('Products')),
-        (url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug if product else 'post'), self.content_title())
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', pub_host=publisher.slug), _('Shop')),
+        (url_for('shop.ProductsView:index', pub_host=publisher.slug), _('Products')),
+        (url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug if product else 'post'), self.content_title())
     ) }}{% endblock %}
 
 
@@ -67,7 +67,7 @@
             {% endif %}
         </form>
         {% if product %}
-            {{ MACRO.CONFIRM_MODAL(product.title, url_for('shop.ProductsView:delete', publisher=publisher.slug, id=product.slug, method="DELETE"), _('delete') ) }}
+            {{ MACRO.CONFIRM_MODAL(product.title, url_for('shop.ProductsView:delete', pub_host=publisher.slug, id=product.slug, method="DELETE"), _('delete') ) }}
         {% endif %}
     {% else %}
         <div class="row">
@@ -93,7 +93,7 @@
                         <th>{{ _('World') }}</th>
                         <td>
                             {% if product.world %}
-                                <a href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=product.world.slug) }}">{{ product.world }}</a>
+                                <a href="{{ url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=product.world.slug) }}">{{ product.world }}</a>
                             {% else %}
                                 {% trans %}No data{% endtrans %}
                             {% endif %}
@@ -161,7 +161,7 @@
             </div>
             <div class="col-md-4">
                 <a id="{{ product.slug }}" class="btn btn-block btn-primary buy-link"
-                   href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                   href="{{ url_for('shop.OrdersView:cart', pub_host=publisher.slug) }}">{{ _('Add to cart') }}</a>
                 <br>
                 <div class="gallery feature-images">
                     {% for img in product.images %}
@@ -173,7 +173,7 @@
                     {% endfor %}
                 </div>
 
-                <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
+                <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart', pub_host=publisher.slug)}}">{{ _('Add to cart') }}</a>-->
             </div>
         </div>
         {% if product.status != 'hidden' %}

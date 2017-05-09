@@ -3,9 +3,9 @@
 {% block content_title %}{{ _('My orders') if method=='my_orders' else _('Orders') }}{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
-        (url_for('shop.OrdersView:index', publisher=publisher.slug), _('Orders'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', pub_host=publisher.slug), _('Shop')),
+        (url_for('shop.OrdersView:index', pub_host=publisher.slug), _('Orders'))
     ) }}{% endblock %}
 
 {% block asides %}{{ super() }}
@@ -81,12 +81,12 @@
                          style="background: url({{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}) center top/cover;"
                             {%- endif -%}>
                         <a class="card-cover gianticon"
-                           href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">
+                           href="{{ url_for('shop.OrdersView:get', pub_host=publisher.slug, id=order.id) }}">
                             {{ "\uE032" if not (order.order_lines|length and order.order_lines[0].product.get_feature_image) else "&nbsp;"|safe }}
                         </a>
                         <div class="card-text">
                             <h3 class="card-title dobr">
-                                <a href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">{{ order }}</a>
+                                <a href="{{ url_for('shop.OrdersView:get', pub_host=publisher.slug, id=order.id) }}">{{ order }}</a>
                             </h3>
                             <ul class="card-details">
                                 <li class="product-type">{{ order.user.username }}</li>
@@ -114,7 +114,7 @@
                 {% for order in orders %}
                     <tr>
                         <td>
-                            <a href="{{ url_for('shop.OrdersView:get', publisher=publisher.slug, id=order.id) }}">{{ order }}</a>
+                            <a href="{{ url_for('shop.OrdersView:get', pub_host=publisher.slug, id=order.id) }}">{{ order }}</a>
                         </td>
                         <td>{{ order.user.username }}</td>
                         <td class="small">{{ order.created|datetimeformat(format='short') }}</td>

@@ -98,7 +98,7 @@
                         <tr>
                             <th>{{ _('Publisher Home') }}</th>
                             <td>
-                                <a href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}</a>
+                                <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}">{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}</a>
                             </td>
                         </tr>
                     </table>

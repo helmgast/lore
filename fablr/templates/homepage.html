@@ -183,7 +183,7 @@
         {% for publisher in publishers %}
             <div class="col-md-5 world_item">
                 <h3>
-                    <a href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">{{ publisher.title }}</a>
+                    <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}">{{ publisher.title }}</a>
                     <br>
                     <small>{{ publisher.description|markdown }}</small>
                 </h3>

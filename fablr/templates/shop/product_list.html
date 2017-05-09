@@ -4,14 +4,14 @@
 {% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('shop.shop_home', publisher=publisher.slug), _('Shop')),
-        (url_for('shop.ProductsView:index', publisher=publisher.slug), _('Products'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('shop.shop_home', pub_host=publisher.slug), _('Shop')),
+        (url_for('shop.ProductsView:index', pub_host=publisher.slug), _('Products'))
     ) }}{% endblock %}
 
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-        {{ MACRO.NEW_BUTTON(url_for('shop.ProductsView:get', publisher=publisher.slug, id='post'), 'New product') }}
+        {{ MACRO.NEW_BUTTON(url_for('shop.ProductsView:get', pub_host=publisher.slug, id='post'), 'New product') }}
     {% endcall %}
 {% endblock %}
 
@@ -57,7 +57,7 @@
 
             {% for product in products %}
                 <a class="blog-header"
-                   href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                   href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}">
                     <h3>{{ product.title }}</h3></a>
                 <ul class="list-inline article-meta" style="margin-bottom: 0">
                     <li title="{{ _('Created') }}"><span
@@ -67,14 +67,14 @@
                 <div class="media">
                     {% if product.get_feature_image %}
                         <a class="pull-left"
-                           href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                           href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}">
                             <img class="media-object"
                                  src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
                         </a>
                     {% endif %}
                     <div class="media-body">
                         {{ product.description|markdown }}
-                        <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}"><em
+                        <a href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}"><em
                                 style="white-space: nowrap;">{{ _('Read more') }}</em></a>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                 {% for product in products %}
                     <tr>
                         <td>
-                            <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                            <a href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
                         </td>
                         <td>{{ product.description|markdown }}</td>
                         <td>{{ product.get_field_display('type') }}</td>
@@ -116,19 +116,19 @@
                          style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
                             {%- endif -%}>
                         <a class="card-cover gianticon"
-                           href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">
+                           href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}">
                             {{ product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
                         </a>
                         <div class="card-text">
                             <h4 class="card-title dobr">
-                                <a href="{{ url_for('shop.ProductsView:get', publisher=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
+                                <a href="{{ url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug) }}">{{ product.title }}</a>
                             </h4>
                             <div class="card-description">{{ product.description|markdown }}</div>
                             <ul class="card-details">
                                 <li class="product-type">{{ product.get_field_display('type') }}</li>
                                 <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
                                 <li><a id="{{ product.slug }}" class="btn btn-xs btn-primary buy-link"
-                                       href="{{ url_for('shop.OrdersView:cart', publisher=publisher.slug) }}">{{ _('Add to cart') }}</a>
+                                       href="{{ url_for('shop.OrdersView:cart', pub_host=publisher.slug) }}">{{ _('Add to cart') }}</a>
                                 </li>
                             </ul>
                         </div>
@@ -146,5 +146,5 @@
 
 {% block js_globalvars %}
     {{ super() }}
-    var SHOP_URL = "{{ url_for('shop.OrdersView:buy', publisher=publisher.slug)}}"
+    var SHOP_URL = "{{ url_for('shop.OrdersView:buy', pub_host=publisher.slug)}}"
 {% endblock %}

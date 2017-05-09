@@ -106,8 +106,8 @@ def add_auth(user, user_info, next_url):
     return next_url
 
 
-@auth_app.route('/callback', subdomain='<host>')
-def callback(host):
+@auth_app.route('/callback', subdomain='<pub_host>')
+def callback(pub_host):
     # Note: This callback applies both to login and signup, there is no difference.
 
     support_email = current_app.config['MAIL_DEFAULT_SENDER']
@@ -120,7 +120,7 @@ def callback(host):
     token_payload = {
         'client_id': current_app.config['AUTH0_CLIENT_ID'],
         'client_secret': current_app.config['AUTH0_CLIENT_SECRET'],
-        'redirect_uri': '{server}auth/callback'.format(server=request.host_url),
+        'redirect_uri': url_for('auth.callback', pub_host=pub_host,  _external=True, _scheme=request.scheme),
         'code': code,
         'grant_type': 'authorization_code'
     }
@@ -211,18 +211,28 @@ def callback(host):
     login_user(user, user_info['email'])
     return redirect(next_url)
 
+@auth_app.route('/sso', subdomain='<pub_host>')
+def sso(pub_host):
+    next_url = safe_next_url()
+    callback_url = url_for('auth.callback', pub_host=pub_host, next=next_url, _external=True, _scheme=request.scheme)
+    auth0_url = 'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={callback}'.format(
+        domain=current_app.config['AUTH0_DOMAIN'],
+        client_id=current_app.config['AUTH0_CLIENT_ID'],
+        callback=callback_url)
+    print auth0_url
+    return redirect(auth0_url)
 
-@auth_app.route('/logout', subdomain='<host>')
-def logout(host):
+@auth_app.route('/logout', subdomain='<pub_host>')
+def logout(pub_host):
     logout_user()
     flash(_('You are now logged out'), 'success')
-    auth0_url = 'https://{domain}/v2/logout?returnTo={host}'.format(domain=current_app.config['AUTH0_DOMAIN'],
-                                                                    host=request.host_url)
+    auth0_url = 'https://{domain}/v2/logout?returnTo={pub_host}'.format(domain=current_app.config['AUTH0_DOMAIN'],
+                                                                        pub_host=pub_host)
     return redirect(auth0_url)
 
 
-@auth_app.route('/login', subdomain='<host>')
-def login(host):
+@auth_app.route('/login', subdomain='<pub_host>')
+def login(pub_host):
     # if not session.get('uid') and not request.cookies.get('auth0_migrated'):
     #     # We have an old or no session, redirect to migrate
     #     return redirect(url_for('auth.migrate'))
@@ -250,10 +260,10 @@ def check_user(test_fn):
         def inner(*args, **kwargs):
             user = get_logged_in_user()
             if not user:
-                return redirect(url_for('auth.login', host=request.host))
+                return redirect(url_for('auth.login', pub_host=request.host))
 
             if not test_fn(user):
-                return redirect(url_for('auth.login', host=request.host))
+                return redirect(url_for('auth.login', pub_host=request.host))
 
             return fn(*args, **kwargs)
 

@@ -881,9 +881,9 @@ class ResourceAccessPolicy(object):
             return self.is_user(op, instance)  # if we have a user, doesnt matter if admin
 
         auth = self.is_user(op, instance)
-        if not auth:
+        if not auth or level == 'user': # if we have a user, doesnt matter if admin
             return auth
-        if level == 'reader':
+        elif level == 'reader':
             return (self.is_reader(op, instance) or
                     self.is_editor(op, instance) or
                     self.is_owner(op, instance) or
@@ -924,19 +924,19 @@ class ResourceAccessPolicy(object):
             return Authorization(False, msg, error_code=401)  # Denoted that the user should log in first
 
     def is_reader(self, op, instance):
-        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+        return Authorization(False, _("Access rules for readers is undefined and therefore denied"), error_code=403)
 
     def is_editor(self, op, instance):
-        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+        return Authorization(False, _("Access rules for editors is undefined and therefore denied"), error_code=403)
 
     def is_owner(self, op, instance):
-        return Authorization(False, _("Undefined access status given for this instance"), error_code=401)
+        return Authorization(False, _("Access rules for owners is undefined and therefore denied"), error_code=403)
 
     def is_admin(self, op, instance):
         if g.user.admin:
             return Authorization(True, _("%(user)s is an admin", user=g.user), privileged=True)
         else:
-            return Authorization(False, _("Need to be logged in with admin access"))
+            return Authorization(False, _("Need to be logged in with admin access"), error_code=403)
 
 
 class DisabledField(StringField):

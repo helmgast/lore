@@ -29,7 +29,7 @@
 
 {% block navbar_brand %}
     <a class="navbar-brand navbar-collapse"
-       href="{{ url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug) }}">
+       href="{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
              src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
@@ -37,10 +37,10 @@
 
 {% block navbar_left %}
     <li{% block world_active %}{% endblock %}><a
-            href="{{ url_for('world.WorldsView:index', publisher_=publisher.slug) }}"><span
+            href="{{ url_for('world.WorldsView:index', pub_host=publisher.slug) }}"><span
             class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}</a></li>
     <li{% block pub_blog_active %}{% endblock %}><a
-            href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}"><span
+            href="{{ url_for('world.ArticlesView:blog', pub_host=publisher.slug, world_='meta') }}"><span
             class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
     <li{% block ext_shop_active %}{% endblock %}><a href="http://webshop.helmgast.se"
                                                     target="_blank"><span
@@ -128,7 +128,7 @@
                             {%- endif -%}>
                         <div class="card-text">
                             <h3 class="card-title">
-                                <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
+                                <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
                             </h3>
                             {% set desc =  (article.content[0:250]|markdown|striptags|truncate|replace('gallery-center','')).split('. R') %}
                             <div class="card-description">{{ desc[0] }}</div>
@@ -139,18 +139,18 @@
                     </div>
                     {#                <div class="col-lg-4 col-sm-6 col-xs-12" style="padding-bottom: 20px;">#}
                     {#                    <a class="blog-header"#}
-                    {#                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">#}
+                    {#                       href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug) }}">#}
                     {#                        <h3>{{ article.title }}</h3></a>#}
                     {#                    {% if article.get_feature_image %}#}
                     {#                        <a class="pull-left"#}
-                    {#                           href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}">#}
+                    {#                           href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug) }}">#}
                     {#                            <img class="media-object"#}
                     {#                                 src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">#}
                     {#                        </a>#}
                     {#                    {% endif %}#}
                     {#                    <p>{% if article.description %}{{ article.description|markdown }}{% else %}#}
                     {#                        {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}#}
-                    {#                        <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em#}
+                    {#                        <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug) }}"><em#}
                     {#                                style="white-space: nowrap;">{{ _('Read more') }}</em></a></p>#}
                     {#                    <hr-d>#}
                     {#                        <ul class="list-inline article-meta" style="margin-bottom: 0;">#}
@@ -202,16 +202,16 @@
         </div>
         <div class="col-xs-4">
             <ul class="list-unstyled">
-                <li><a href="{{ url_for('world.ArticlesView:blog', publisher_=publisher.slug, world_='meta') }}">
+                <li><a href="{{ url_for('world.ArticlesView:blog', pub_host=publisher.slug, world_='meta') }}">
                     {% trans %}Blog{% endtrans %}</a></li>
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='om-helmgast') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_='meta', id='om-helmgast') }}">
                         {% trans %}About{% endtrans %}</a></li>
                 {#                <li>#}
-                {#                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='media') }}">#}
+                {#                    <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_='meta', id='media') }}">#}
                 {#                        {% trans %}Media{% endtrans %}</a></li>#}
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='arbeta-med-oss') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_='meta', id='arbeta-med-oss') }}">
                         {% trans %}Work with us{% endtrans %}</a></li>
             </ul>
         </div>
@@ -224,7 +224,7 @@
                     <a href="http://webshop.helmgast.se/sv/villkor-info.html">
                         {% trans %}Terms of Service{% endtrans %}</a></li>
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_='meta', id='sakerhet-och-kakor') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_='meta', id='sakerhet-och-kakor') }}">
                         {% trans %}Security and cookie policy{% endtrans %}</a></li>
             </ul>
         </div>

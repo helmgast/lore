@@ -5,13 +5,13 @@
 {% block world_active %} class="active"{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', pub_host=publisher.slug), _('Game Worlds'))
     ) }}{% endblock %}
 
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new')) %}
-        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', publisher_=publisher.slug, id='post'), 'New world') }}
+        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', pub_host=publisher.slug, id='post'), 'New world') }}
     {% endcall %}
 {% endblock %}
 
@@ -23,7 +23,7 @@
                  style="background: url({{ url_for('image_thumb', slug=world.images[0].slug) }}) center top/cover;"
                     {%- endif -%}>
                 <a class="card-cover gianticon"
-                   href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug) }}">
+                   href="{{ url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=world.slug) }}">
                     {% if not world.images %}
                     <svg class="fablr-icon fablr-icon-stretch">
                         <use xlink:href="#fablr-earth"></use>
@@ -32,7 +32,7 @@
                 </a>
                 <div class="card-text">
                     <h3 class="card-title dobr">
-                        <a href="{{ url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug) }}">{{ world.title }}</a>
+                        <a href="{{ url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=world.slug) }}">{{ world.title }}</a>
                     </h3>
                     <div class="card-description">
                         {{ world.description|markdown }}

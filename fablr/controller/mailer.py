@@ -131,9 +131,9 @@ def mail_view(mail_type):
         order = request.args.get('order', None)
         if order:
             order = Order.objects(id=order).get()  # May throw DoesNotExist
-        publisher = request.args.get('publisher', None)
-        if publisher:
-            publisher = Publisher.objects(slug=publisher).get()  # May throw DoesNotExist
+            pub_host = request.args.get('pub_host', None)
+        if pub_host:
+            publisher = Publisher.objects(slug=pub_host).get()  # May throw DoesNotExist
     except Exception as e:
         raise ResourceError(404, message=e.message)
 

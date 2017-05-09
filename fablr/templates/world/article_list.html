@@ -53,10 +53,10 @@
 {% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', publisher_=publisher.slug), _('Home')),
-        (url_for('world.WorldsView:index', publisher_=publisher.slug), _('Game Worlds')),
-        (url_for('world.ArticlesView:world_home', publisher_=publisher.slug, world_=world.slug), world.title),
-        (url_for('world.ArticlesView:index', publisher_=publisher.slug, world_=world.slug), _('Articles'))
+    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
+        (url_for('world.WorldsView:index', pub_host=publisher.slug), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=world.slug), world.title),
+        (url_for('world.ArticlesView:index', pub_host=publisher.slug, world_=world.slug), _('Articles'))
     ) }}{% endblock %}
 
 {% block asides %}{{ super() }}
@@ -113,7 +113,7 @@
 
                 {% for article in group.list %}
                     <a class="blog-header"
-                       href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">
+                       href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">
                         <h3>{{ article.title }}</h3></a>
                     <ul class="list-inline article-meta" style="margin-bottom: 0">
                         <li title="{{ _('Created') }}"><span
@@ -127,7 +127,7 @@
                     <div class="media">
                         {% if article.get_feature_image %}
                             <a class="pull-left"
-                               href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">
+                               href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">
                                 <img class="media-object"
                                      src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
                             </a>
@@ -135,7 +135,7 @@
                         <div class="media-body">
                             {% if article.description %}{{ article.description|markdown }}{% else %}
                                 {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
-                            <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug) }}"><em
+                            <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug) }}"><em
                                     style="white-space: nowrap;">{{ _('Read more') }}</em></a>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                                 {%- endif -%}>
                             <div class="card-text">
                                 <h3 class="card-title">
-                                    <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">{{ article.title }}</a>
+                                    <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug, id=article.slug, intent='patch') }}">{{ article.title }}</a>
                                 </h3>
                                 {% set desc =  (article.content|markdown|striptags|replace('gallery-center','')).split('. R') %}
 
@@ -179,7 +179,7 @@
                     {% for article in group.list %}
                         <tr>
                             <td>
-                                <a href="{{ url_for('world.ArticlesView:get', publisher_=publisher.slug, id=article.slug, world_=world.slug) }}">{{ article.title }}</a>
+                                <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, id=article.slug, world_=world.slug) }}">{{ article.title }}</a>
                             </td>
                             <td>{{ article.creator }}</td>
                             <td>{{ article.get_type_display() }}</td>

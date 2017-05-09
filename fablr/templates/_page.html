@@ -134,7 +134,7 @@
 
                     {% if not g.user %}
                         <li>
-                            <a href="{{ url_for('auth.login', host=request.host, next=request.url) }}">{{ _('Log In') }}</a>
+                            <a href="{{ url_for('auth.login', pub_host=request.host, next=request.url) }}">{{ _('Log In') }}</a>
                         </li>
                         {% call MACRO.IS_ENABLED("join") %}
                             <li><a href="{{ url_for('auth.join') }}">{{ _('Join') }}</a></li>
@@ -152,7 +152,7 @@
                                 {% if publisher %}
                                     {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
                                         <li><a class="{{ privileged }}"
-                                               href="{{ url_for('shop.OrdersView:my_orders', publisher=publisher.slug) }}">{{ _('My orders') }}</a>
+                                               href="{{ url_for('shop.OrdersView:my_orders', pub_host=publisher.slug) }}">{{ _('My orders') }}</a>
                                         </li>
                                     {% endcall %}
                                 {% endif %}
@@ -165,7 +165,7 @@
                                 {% endcall %}
                                 <li role="separator" class="divider"></li>
                                 <li>
-                                    <a href="{{ url_for('auth.logout', host=request.host, next='/') }}">{{ _('Log Out') }}</a>
+                                    <a href="{{ url_for('auth.logout', pub_host=request.host, next='/') }}">{{ _('Log Out') }}</a>
                                 </li>
                             </ul>
                         </li>

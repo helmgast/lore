@@ -14,7 +14,7 @@ import urllib
 import sys
 
 import rollbar
-from flask import Flask, render_template, request, url_for, flash, g
+from flask import Flask, render_template, request, url_for, flash, g, redirect
 from flask import got_request_exception
 from flaskext.markdown import Markdown
 from pymongo.errors import ConnectionFailure
@@ -275,6 +275,13 @@ def configure_hooks(app):
             u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
             return u
             # We are just changing url parameters, we can do a quicker way
+
+    @app.errorhandler(401)  # Unauthorized, e.g. not logged in
+    def unauthorized(e):
+        if request.method == 'GET':  # Only do sso on GET requests
+            return redirect(url_for('auth.sso', pub_host=request.host, next=request.url))
+        else:
+            return e, 401
 
     # @app.errorhandler(404)
     # def not_found(err):
