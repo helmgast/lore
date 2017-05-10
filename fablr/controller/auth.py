@@ -219,7 +219,6 @@ def sso(pub_host):
         domain=current_app.config['AUTH0_DOMAIN'],
         client_id=current_app.config['AUTH0_CLIENT_ID'],
         callback=callback_url)
-    print auth0_url
     return redirect(auth0_url)
 
 @auth_app.route('/logout', subdomain='<pub_host>')

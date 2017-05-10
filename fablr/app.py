@@ -154,7 +154,7 @@ def configure_extensions(app):
             # Re-add the static rule
             app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
             app.logger.info('Doing host matching and default host is {host}{prefix}'.format(
-                host=app.url_rule_class.default_host, prefix=prefix))
+                host=app.url_rule_class.default_host, prefix=prefix or ''))
     else:
         app.logger.warning('Running in local dev mode without hostnames')
 

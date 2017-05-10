@@ -19,8 +19,7 @@ from flask_mongoengine import Pagination, MongoEngine, DynamicDocument
 from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
 from markdown.treeprocessors import Treeprocessor
-from mongoengine import Document, QuerySet, ConnectionError
-from pymongo.errors import ConnectionFailure
+from mongoengine import Document, QuerySet
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
@@ -197,9 +196,9 @@ def pick_locale():
     return preferred_locale
 
 
-from flask_wtf.csrf import CsrfProtect
+from flask_wtf.csrf import CSRFProtect
 
-csrf = CsrfProtect()
+csrf = CSRFProtect()
 
 
 # Inspired by flask webpack but without any cruft

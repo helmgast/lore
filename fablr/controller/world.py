@@ -129,7 +129,7 @@ def set_theme(response, theme_type, slug):
                     current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
             # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
         except TemplateNotFound:
-            logger.warning("Not finding theme %s_%s.html" % (theme_type, slug))
+            logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
 
 
 class WorldAccessPolicy(ResourceAccessPolicy):
