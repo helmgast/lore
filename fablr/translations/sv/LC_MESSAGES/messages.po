@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-08 23:51+0200\n"
+"POT-Creation-Date: 2017-05-10 20:44+0200\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -67,7 +67,7 @@ msgstr ""
 "Denna användare är borttagen och kan ej användas. Kontakta %(email)s för "
 "support."
 
-#: fablr/controller/auth.py:164 fablr/controller/auth.py:303
+#: fablr/controller/auth.py:164 fablr/controller/auth.py:313
 #, python-format
 msgid "Multiple users with same email, contact %(email)s for support"
 msgstr "Flera använder har samma email, kontakta %(email)s för support"
@@ -85,7 +85,7 @@ msgstr ""
 msgid "Your new user have been created."
 msgstr "Din nya användare har skapats."
 
-#: fablr/controller/auth.py:218
+#: fablr/controller/auth.py:228
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
@@ -233,10 +233,17 @@ msgstr ""
 msgid "%(op)s requires a logged in user"
 msgstr "%(op)s kräver en inloggad användare"
 
-#: fablr/controller/resource.py:927 fablr/controller/resource.py:930
+#: fablr/controller/resource.py:927
+msgid "Access rules for readers is undefined and therefore denied"
+msgstr ""
+
+#: fablr/controller/resource.py:930
+msgid "Access rules for editors is undefined and therefore denied"
+msgstr ""
+
 #: fablr/controller/resource.py:933
-msgid "Undefined access status given for this instance"
-msgstr "Odefinierad rättighetsstatus för denna instansen"
+msgid "Access rules for owners is undefined and therefore denied"
+msgstr ""
 
 #: fablr/controller/resource.py:937
 #, python-format
@@ -1102,20 +1109,20 @@ msgstr "Logga in"
 msgid "Join"
 msgstr "Registrera"
 
-#: fablr/templates/_page.html:150 fablr/templates/styleguide.html:36
+#: fablr/templates/_page.html:150 fablr/templates/styleguide.html:37
 msgid "Profile"
 msgstr "Profil"
 
 #: fablr/templates/_page.html:155 fablr/templates/shop/_page.html:31
-#: fablr/templates/shop/order_list.html:3 fablr/templates/styleguide.html:39
+#: fablr/templates/shop/order_list.html:3 fablr/templates/styleguide.html:40
 msgid "My orders"
 msgstr "Mina ordrar"
 
-#: fablr/templates/_page.html:163 fablr/templates/styleguide.html:44
+#: fablr/templates/_page.html:163 fablr/templates/styleguide.html:45
 msgid "Files"
 msgstr "Filer"
 
-#: fablr/templates/_page.html:168 fablr/templates/styleguide.html:47
+#: fablr/templates/_page.html:168 fablr/templates/styleguide.html:48
 msgid "Log Out"
 msgstr "Logga ut"
 
@@ -3055,4 +3062,7 @@ msgstr "rollspelsvärldar bara ett klick bort"
 
 #~ msgid "New world"
 #~ msgstr "Ny värld"
+
+#~ msgid "Undefined access status given for this instance"
+#~ msgstr "Odefinierad rättighetsstatus för denna instansen"
 

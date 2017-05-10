@@ -26,6 +26,7 @@ from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
 import time
 
+
 toolbar = DebugToolbarExtension()
 def new_show_toolbar(self):
     if 'debug' in request.args:
@@ -132,37 +133,6 @@ def is_db_empty(db):
 
 
 db = MongoEngine()
-# TODO this is a hack to turn of schema validation, as it reacts when database contains fields
-# not in model, which can happen if we have a database that is used for branches with both new and old schema
-# db.Document = DynamicDocument
-
-# db.Document._meta['auto_create_index'] = False
-
-
-def start_db(app):
-    # while True:
-    dbstring = db_config_string(app)
-    # db_config = {
-    #     'MONGODB_SETTINGS': {
-    #         'host': app.config['MONGODB_HOST'],
-    #         'connectTimeoutMS': 1000,
-    #         'serverSelectionTimeoutMS': 1000
-    #     }
-    # }
-    db.init_app(app)
-    # try:
-    with app.app_context():
-        num_collections = len(db.connection.get_default_database().collection_names(False))
-        if not app.debug and num_collections == 0:
-            print >> sys.stderr, "Database %s is empty, run python manage.py db_setup" % dbstring
-    # except ConnectionFailure as e:
-    #     print >> sys.stderr, "Database connection failure %s: %s" % (e.__class__, e)
-    #     exit(1)
-
-        # break
-        # except None:
-        #     print >> sys.stderr, "Cannot connect to database: %s [waiting 20s]" % dbstring
-        #     time.sleep(20)
 
 
 class MongoJSONEncoder(JSONEncoder):
@@ -245,8 +215,6 @@ def init_assets(app):
 
 
 from markdown.extensions import Extension
-from markdown.inlinepatterns import ImagePattern, IMAGE_LINK_RE
-from markdown.util import etree
 import re
 
 

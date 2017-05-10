@@ -592,8 +592,8 @@ class MultiCheckboxField(f.SelectMultipleField):
 
 class TagField(SelectMultipleField):
 
-    def __init__(self, queryset, **kwargs):
-        self.queryset = queryset
+    def __init__(self, model, **kwargs):
+        self.model = model
         super(TagField, self).__init__(**kwargs)
 
     @classmethod
@@ -607,7 +607,7 @@ class TagField(SelectMultipleField):
 
     def iter_choices(self):
         # Selects distinct values for the field tags in the queryset that represents all documents for this model
-        for value in self.queryset.distinct('tags'):
+        for value in self.model.objects().distinct('tags'):
             selected = self.data is not None and self.coerce(value) in self.data
             yield (value, value, selected)
 
@@ -717,7 +717,7 @@ class RacModelConverter(ModelConverter):
     @converts('ListField')
     def conv_List(self, model, field, kwargs):
         if field.name == 'tags':
-            return TagField(queryset=model.objects(), **kwargs)
+            return TagField(model=model, **kwargs)
         elif isinstance(field.field, ReferenceField):
             kwargs[
                 'allow_blank'] = not field.required  # Added line, to make reference fields inslide listfields to allow blanks

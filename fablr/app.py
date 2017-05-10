@@ -141,7 +141,7 @@ def configure_extensions(app):
     app.json_encoder = extensions.MongoJSONEncoder
 
     app.url_rule_class = extensions.FablrRule
-    if 'FLASK_APP' not in os.environ:  # If not set, we are not in local dev server, so we can apply hostname routing
+    if not app.debug:  # Only assume proxy and host matching if not running debug
         # Assume we are in a proxy setup and fix headers for that
         app.wsgi_app = ProxyFix(app.wsgi_app)
         prefix = app.config.get('URL_PREFIX', '')
@@ -161,7 +161,7 @@ def configure_extensions(app):
     # Rewrites POSTs with specific methods into the real method, to allow HTML forms to send PUT, DELETE, etc
     app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
 
-    extensions.start_db(app)
+    # extensions.start_db(app)
 
     # TODO this is a hack to allow authentication via source db admin,
     # will likely break if connection is recreated later
@@ -232,6 +232,12 @@ def configure_hooks(app):
     # @app.before_request
     # def load_locale():
     #     g.available_locales = available_locales_tuple
+
+    @app.before_first_request
+    def start_db():
+        # Lazily start the database connection at first request.
+        from fablr import extensions
+        extensions.db.init_app(app)
 
     @app.context_processor
     def inject_access():

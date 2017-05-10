@@ -5,12 +5,14 @@ MAINTAINER Ripperdoc
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-COPY requirements.txt manage.py run.py /usr/src/app/
+COPY requirements.txt run.py /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY tools/ tools/
 COPY fablr/ fablr/
-RUN python manage.py lang_compile
 COPY static/ static/
+
+ENV FLASK_APP=run.py
+RUN flask lang_compile
 
 # provide from git or by Docker autobild
 ARG SOURCE_COMMIT=no_ver
