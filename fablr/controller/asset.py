@@ -7,7 +7,7 @@ from flask import Blueprint, current_app, redirect, url_for, g, request, Respons
 from flask import send_file
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
-from mongoengine import NotUniqueError, ValidationError
+from mongoengine import NotUniqueError, ValidationError, Q
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
@@ -19,6 +19,7 @@ from fablr.controller.resource import RacModelConverter, \
 
 from fablr.model.asset import FileAsset, FileAccessType
 from fablr.model.shop import products_owned_by_user
+from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -108,6 +109,7 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
 
 
 class FileAssetsView(ResourceView):
+    subdomain = '<pub_host>'
     route_base = '/media/'
     access_policy = ResourceAccessPolicy({
         'view': 'user',
@@ -135,7 +137,10 @@ class FileAssetsView(ResourceView):
         ['slug', 'owner', 'access_type', 'tags', 'length'])
 
     def index(self, **kwargs):
-        r = ListResponse(FileAssetsView, [('files', FileAsset.objects().order_by('-created_date'))], extra_args=kwargs)
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        r = ListResponse(FileAssetsView, [
+            ('files', FileAsset.objects(Q(publisher=publisher) | Q(publisher=None)).order_by('-created_date')),
+            ('publisher', publisher)], extra_args=kwargs)
         r.auth_or_abort()
         r.prepare_query()
 
@@ -206,13 +211,13 @@ class FileAssetsView(ResourceView):
         r = self.index(**kwargs)
         return r
 
-    def delete(self, id):
+    def delete(self, pub_host, id):
         abort(501)
 
 FileAssetsView.register_with_access(asset_app, 'files')
 
 
-@asset_app.route('/')
+@asset_app.route('/', subdomain='<pub_host>')
 def index():
     return redirect(url_for('assets.FileAssetsView:index'))
 

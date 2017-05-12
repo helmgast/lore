@@ -253,7 +253,7 @@
             connections: ["facebook", "google-oauth2"],
 
             rememberLastLogin: false,
-            callbackURL: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0]) }}"
+            callbackURL: "{{ url_for('auth.callback', _external=true, _scheme=request.url.split(':')[0]) }}"
         };
         $('#lock-activate').click(function (e) {
             lock.socialOrEmailcode($.extend(options, {

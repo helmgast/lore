@@ -259,10 +259,10 @@ def check_user(test_fn):
         def inner(*args, **kwargs):
             user = get_logged_in_user()
             if not user:
-                return redirect(url_for('auth.login', pub_host=request.host))
+                return redirect(url_for('auth.login'))
 
             if not test_fn(user):
-                return redirect(url_for('auth.login', pub_host=request.host))
+                return redirect(url_for('auth.login'))
 
             return fn(*args, **kwargs)
 

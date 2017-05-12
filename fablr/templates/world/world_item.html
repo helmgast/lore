@@ -14,26 +14,26 @@
     {{ super() }}
     {% if world %}
         <link rel="home" type="application/rss+xml"
-              href="{{ url_for('world.ArticlesView:feed', pub_host=publisher.slug, world_=world.slug, _external=true, _scheme='') }}"/>
+              href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
     {% endif %}
 {% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
-        (url_for('world.WorldsView:index', pub_host=publisher.slug), _('Game Worlds')),
-        (url_for('world.WorldsView:get', pub_host=publisher.slug, id=world.slug if world else 'post'), self.content_title())
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds')),
+        (url_for('world.WorldsView:get', id=world.slug if world else 'post'), self.content_title())
     ) }}{% endblock %}
 
 {% block subnavbar %}{{ super() }}
     {% if world %}
         <li>
-            <a href="{{ url_for('world.ArticlesView:index', pub_host=publisher.slug, world_=world.slug) }}"><span
+            <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
                     class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
         <li>
-            <a href="{{ url_for('world.ArticlesView:blog', pub_host=publisher.slug, world_=world.slug) }}"><span
+            <a href="{{ url_for('world.ArticlesView:blog', world_=world.slug) }}"><span
                     class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
         <li>
-            <a href="{{ url_for('world.ArticlesView:random', pub_host=publisher.slug, world_=world.slug) }}"><span
+            <a href="{{ url_for('world.ArticlesView:random', world_=world.slug) }}"><span
                     class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
     {% endif %}
 
@@ -43,17 +43,17 @@
     {% if args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {{ MACRO.SAVE_BUTTON('worldform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', pub_host=publisher.slug, id=world.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', id=world.slug)) }}
         {{ MACRO.DELETE_BUTTON() }}
     {% elif args.get('intent', None) == 'post' %}
         {# We are creating new resource #}
         {{ MACRO.SAVE_BUTTON('worldform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', pub_host=publisher.slug, id=world.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', id=world.slug)) }}
     {% else %}
         {# We are viewing #}
         {% include "world/new_article_menu.html" %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
-            {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', pub_host=publisher.slug, intent='patch', id=world.slug)) }}
+            {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug)) }}
             {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}
     {% endif %}
@@ -102,7 +102,7 @@
                 <ul>
                     {% for a in recent_articles %}
                         <li>
-                            <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, id=a.slug, world_=world.slug) }}"
+                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
                                alt="{{ a.title }}">{{ a.title }}</a></li>
                     {% else %}
                         {% trans %}No data{% endtrans %}
@@ -114,7 +114,7 @@
                     <h4><span class="glyphicon glyphicon-fire"></span> {% trans %}Featured articles{% endtrans %}</h4>
                     {% for a in focus_articles %}
                         <li>
-                            <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, id=a.slug, world_=world.slug) }}"
+                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
                                alt="{{ a.title }}">{{ a.title }}</a></li>
                     {% endfor %}
                 {% endif %}
@@ -124,7 +124,7 @@
                     <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
                     {% for a in top_material %}
                         <li>
-                            <a href="{{ url_for('world.ArticlesView:get', pub_host=publisher.slug, id=a.slug, world_=world.slug) }}"
+                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
                                alt="{{ a.title }}">{{ a.title }}</a></li>
                     {% endfor %}
                 {% endif %}
@@ -135,7 +135,7 @@
 
 {% block rightbar %}
     <p class="text-center"><a class="btn btn-lg btn-info"
-                              href="{{ url_for('shop.ProductsView:index', pub_host=publisher.slug, world=world.slug) }}">
+                              href="{{ url_for('shop.ProductsView:index', world=world.slug) }}">
         {% trans %}Buy in shop{% endtrans %}</a></p>
     <table class="table">
         <tr>

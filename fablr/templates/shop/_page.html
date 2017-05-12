@@ -9,7 +9,7 @@
 {% block navbar_right %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
     <li><a id="cart-counter" {{ 'class=highlight'if cart_items and cart_items > 0 }}
-           href="{{ url_for('shop.OrdersView:cart', pub_host=publisher.slug) }}" title="{{ _('Cart') }}">
+           href="{{ url_for('shop.OrdersView:cart') }}" title="{{ _('Cart') }}">
         <span style="font-size: 20px" class="glyphicon glyphicon-shopping-cart"></span><span
             class="badge">{{ cart_items if cart_items else 0 }}</span>
     </a></li>
@@ -19,15 +19,15 @@
 
 {% block subnavbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
-        <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:index', pub_host=publisher.slug) }}"><span
+        <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:index') }}"><span
                 class="glyphicon glyphicon-certificate"></span> {{ _('Products') }}</a></li>
     {% endcall %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
-        <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:index', pub_host=publisher.slug) }}"><span
+        <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:index') }}"><span
                 class="glyphicon glyphicon-list-alt"></span> {{ _('Orders') }}</a></li>
     {% endcall %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
-        <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:my_orders', pub_host=publisher.slug) }}"><span
+        <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:my_orders') }}"><span
                 class="glyphicon glyphicon-gift"></span> {{ _('My orders') }}</a></li>
     {% endcall %}
 {% endblock %}
@@ -36,7 +36,7 @@
     <div class="row">
         {% for f in product_families %}
             <div class="col-md-5 col-xs-12 world_item">
-                <h3><a href="{{ url_for('shop.ProductsView:index', pub_host=publisher.slug, family=f) }}">{{ f }}</a>
+                <h3><a href="{{ url_for('shop.ProductsView:index', family=f) }}">{{ f }}</a>
             </div>
             {% if loop.index is divisibleby 2 %}</div>
                 <div class="row">{% endif %}

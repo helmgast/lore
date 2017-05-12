@@ -131,7 +131,7 @@ def mail_view(mail_type):
         order = request.args.get('order', None)
         if order:
             order = Order.objects(id=order).get()  # May throw DoesNotExist
-        publisher = request.args.get('pub_host', None)
+        publisher = g.pub_host
         if publisher:
             publisher = Publisher.objects(slug=publisher).get()  # May throw DoesNotExist
     except Exception as e:

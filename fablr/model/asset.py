@@ -16,6 +16,7 @@ import os.path
 from bson import ObjectId
 from flask import request, current_app, g
 from flask_babel import gettext, lazy_gettext as _
+
 from misc import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
@@ -78,6 +79,7 @@ class FileAsset(Document):
     file_data = FileField(verbose_name=_('File data'))
     access_type = StringField(choices=FileAccessType.to_tuples(), default=FileAccessType.public, verbose_name=_('Access type'))
     tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
+    publisher = ReferenceField('Publisher', verbose_name=_('Publisher'))
 
     # Variables reflecting the underlying file object, updates on clean
     source_filename = StringField(max_length=60, verbose_name=_('Filename'))

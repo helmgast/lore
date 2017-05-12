@@ -44,7 +44,7 @@ Should have different instructions depending on signup method. #}
                 <tr>
                     <td class="padding">
                         <p><a class="btn btn-primary " title="{% trans %}Login again{% endtrans %}"
-                              href="{{ url_for('auth.login', pub_host=request.host, _external=true, _scheme='') }}"
+                              href="{{ url_for('auth.login', _external=true, _scheme='') }}"
                               target="_blank">{% trans %}Login again{% endtrans %}</a></p>
                     </td>
                 </tr>

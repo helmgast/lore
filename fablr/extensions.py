@@ -1,59 +1,34 @@
-# import mongoengine.connection
-# mongoengine.connection.old_get_connection = mongoengine.connection.get_connection
-
-# def new_get_connection(alias='default', reconnect=False):
-#   conn = mongoengine.connection.old_get_connection(alias, reconnect)
-#   conn =
-#   return False
-
-# mongoengine.connection.get_connection = new_get_connection
-import sys
+import re
 import types
 
 from datetime import datetime
 
 from babel import Locale
 from bson.objectid import ObjectId
-from flask import abort
-from flask_mongoengine import Pagination, MongoEngine, DynamicDocument
+from flask import abort, request, session, current_app, g
+from flask_babel import Babel
+from flask_mongoengine import Pagination, MongoEngine
 from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_wtf import CSRFProtect
+from jinja2 import Undefined
+from markdown import Extension
 from markdown.treeprocessors import Treeprocessor
 from mongoengine import Document, QuerySet
 from speaklater import _LazyString
 from werkzeug.routing import Rule
 from werkzeug.urls import url_decode
-import time
 
 
 toolbar = DebugToolbarExtension()
+
+
 def new_show_toolbar(self):
     if 'debug' in request.args:
         return True
     return False
 
 toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
-
-
-# class MyMongoEngine(MongoEngine):
-# def
-
-# def get_db(alias='default', reconnect=False):
-#   global _dbs
-#   if reconnect:
-#     disconnect(alias)
-
-#   if alias not in _dbs:
-#     conn = get_connection(alias)
-#     conn_settings = _connection_settings[alias]
-#     db = conn[conn_settings['name']]
-#     # Authenticate if necessary
-#     if conn_settings['username'] and conn_settings['password']:
-#       db.authenticate(conn_settings['username'], conn_settings['password'],
-#         source=conn_settings['auth_source'])
-#     _dbs[alias] = db
-#   print "Using get_db"
-#   return _dbs[alias]
 
 
 class PrefixMiddleware(object):
@@ -92,7 +67,6 @@ class MethodRewriteMiddleware(object):
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
 
-import re
 
 class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
@@ -127,8 +101,8 @@ def db_config_string(app):
     return re.sub(r':([^/]+?)@', ':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])
 
 
-def is_db_empty(db):
-    print db.collection_names(False)
+def is_db_empty(the_db):
+    print the_db.collection_names(False)
 
 
 db = MongoEngine()
@@ -137,8 +111,8 @@ db = MongoEngine()
 class MongoJSONEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, Document) or isinstance(o, QuerySet):
-            return o.to_mongo()
-        elif isinstance(o, ObjectId) or isinstance(o, QuerySet):
+            return o.to_json()
+        elif isinstance(o, ObjectId):
             return str(o)
         elif isinstance(o, Pagination):
             return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
@@ -147,13 +121,8 @@ class MongoJSONEncoder(JSONEncoder):
         return JSONEncoder.default(self, o)
 
 
-from flask_babel import Babel
-
-
 babel = Babel()
 configured_locales = set()
-
-from flask import g, request, current_app, session
 
 
 def pick_locale():
@@ -171,6 +140,9 @@ def pick_locale():
 
     :return:
     """
+
+    if not request or not g:
+        return current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
 
     content_locales = g.get('content_locales', None)
     if not isinstance(content_locales, set):
@@ -196,8 +168,6 @@ def pick_locale():
     return preferred_locale
 
 
-from flask_wtf.csrf import CSRFProtect
-
 csrf = CSRFProtect()
 
 
@@ -211,10 +181,6 @@ def init_assets(app):
         raise RuntimeError(
             "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
             "it must point to a valid json file. It was %s. %s" % (app.config.get('WEBPACK_MANIFEST_PATH'), io))
-
-
-from markdown.extensions import Extension
-import re
 
 
 class GalleryList(Treeprocessor):
@@ -249,9 +215,6 @@ class GalleryList(Treeprocessor):
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
         md.treeprocessors['gallery'] = GalleryList()
-
-
-from jinja2 import Undefined
 
 
 class SilentUndefined(Undefined):

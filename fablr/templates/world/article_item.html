@@ -15,9 +15,9 @@
 
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug), _('Home')),
-        (url_for('world.WorldsView:index', pub_host=publisher.slug), _('Game Worlds')),
-        (url_for('world.ArticlesView:world_home', pub_host=publisher.slug, world_=world.slug), world.title),
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
         ('', title)
     ) }}{% endblock %}
 
@@ -25,17 +25,17 @@
     {% if args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {{ MACRO.SAVE_BUTTON('articleform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', pub_host=publisher.slug, id=article.slug, world_=world.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', id=article.slug, world_=world.slug)) }}
         {{ MACRO.DELETE_BUTTON() }}
     {% elif args.get('intent', None) == 'post' %}
         {# We are creating new resource #}
         {{ MACRO.SAVE_BUTTON('articleform') }}
-        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', pub_host=publisher.slug, id=article.slug, world_=world.slug)) }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', id=article.slug, world_=world.slug)) }}
     {% else %}
         {# We are viewing #}
         {% include "world/new_article_menu.html" %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-            {{ MACRO.EDIT_BUTTON(url_for('world.ArticlesView:get', pub_host=publisher.slug, id=article.slug,
+            {{ MACRO.EDIT_BUTTON(url_for('world.ArticlesView:get', id=article.slug,
             world_=world.slug, intent='patch')) }}
             {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}
@@ -240,6 +240,6 @@
 {% block final_html %}
     {{ super() }}
     {% if article %}
-        {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', pub_host=publisher.slug, world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
+        {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
     {% endif %}
 {% endblock %}

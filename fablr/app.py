@@ -21,8 +21,6 @@ from pymongo.errors import ConnectionFailure
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.routing import Map
 
-from fablr.controller.resource import ResourceError, get_root_template
-
 
 def create_app(**kwargs):
     # Creates new flask instance
@@ -171,7 +169,12 @@ def configure_extensions(app):
     # Internationalization
     extensions.babel.init_app(app)  # Automatically adds the extension to Jinja as well
     # Register callback that tells which language to serve
-    extensions.babel.localeselector(extensions.pick_locale)
+
+    try:
+        extensions.babel.localeselector(extensions.pick_locale)
+    except AssertionError as ae:
+        app.logger.warning(ae)
+
     extensions.configured_locales = set(app.config.get('BABEL_AVAILABLE_LOCALES'))
     if not extensions.configured_locales or app.config.get('BABEL_DEFAULT_LOCALE') not in extensions.configured_locales:
         app.logger.warning('Incorrectly configured: BABEL_DEFAULT_LOCALE %s not in BABEL_AVAILABLE_LOCALES %s' %
@@ -205,8 +208,8 @@ def configure_blueprints(app):
         app.register_blueprint(auth_app, url_prefix='/auth')
         app.access_policy = {}
 
-        from controller.asset import asset_app as asset_app
         from controller.world import world_app as world
+        from controller.asset import asset_app as asset_app
         from controller.social import social
         from controller.generator import generator
         from controller.admin import admin
@@ -238,6 +241,19 @@ def configure_hooks(app):
         # Lazily start the database connection at first request.
         from fablr import extensions
         extensions.db.init_app(app)
+
+    # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
+    @app.url_value_preprocessor
+    def get_pub_host(endpoint, values):
+        g.pub_host = values.pop('pub_host', request.host)
+
+    # Adds pub_host when building URL if it was not provided and expected by the route
+    @app.url_defaults
+    def set_pub_host(endpoint, values):
+        if 'pub_host' in values or not g.pub_host:
+            return
+        if app.url_map.is_endpoint_expecting(endpoint, 'pub_host'):
+            values['pub_host'] = g.pub_host
 
     @app.context_processor
     def inject_access():
@@ -285,7 +301,7 @@ def configure_hooks(app):
     @app.errorhandler(401)  # Unauthorized, e.g. not logged in
     def unauthorized(e):
         if request.method == 'GET':  # Only do sso on GET requests
-            return redirect(url_for('auth.sso', pub_host=request.host, next=request.url))
+            return redirect(url_for('auth.sso', next=request.url))
         else:
             return e, 401
 
@@ -299,6 +315,8 @@ def configure_hooks(app):
         print err
         raise err
         return "<body>No database</body>", 500
+
+    from fablr.controller.resource import ResourceError, get_root_template
 
     @app.errorhandler(ResourceError)
     def resource_error(err):

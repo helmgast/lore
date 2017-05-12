@@ -49,7 +49,7 @@ def get_or_create_stock(publisher):
 
 
 class ProductsView(ResourceView):
-    subdomain = '<publisher>'
+    subdomain = '<pub_host>'
     access_policy = ResourceAccessPolicy({
         'view': 'public',
         'list': 'admin',
@@ -67,8 +67,8 @@ class ProductsView(ResourceView):
     # Add stock count as a faux input field of the ProductForm
     form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[DataRequired(), NumberRange(min=-1)])
 
-    def index(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def index(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         products = Product.objects(status__ne='hidden').order_by('type', '-price')
         r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
         r.auth_or_abort()
@@ -77,8 +77,8 @@ class ProductsView(ResourceView):
 
         return r
 
-    def get(self, id, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def get(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         if id == 'post':
             r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
         else:
@@ -95,8 +95,8 @@ class ProductsView(ResourceView):
 
         return r
 
-    def post(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def post(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
         r.stock = get_or_create_stock(publisher)
         product = Product()
@@ -110,16 +110,16 @@ class ProductsView(ResourceView):
             return r.error_response(err)
         r.stock.stock_count[product.slug] = r.form.stock_count.data
         r.stock.save()
-        return redirect(r.args['next'] or url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug))
+        return redirect(r.args['next'] or url_for('shop.ProductsView:get', id=product.slug))
 
-    def patch(self, id, pub_host):
+    def patch(self, id):
 
         # fa = []
         # for i in request.form.getlist('images'):
         #     fa.append(FileAsset.objects(id=i).first())
         # print fa
 
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
         r.stock = get_or_create_stock(publisher)
@@ -135,9 +135,9 @@ class ProductsView(ResourceView):
             r.stock.save()
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
-        return redirect(r.args['next'] or url_for('shop.ProductsView:get', pub_host=publisher.slug, id=product.slug))
+        return redirect(r.args['next'] or url_for('shop.ProductsView:get', id=product.slug))
 
-    def delete(self, id, pub_host):
+    def delete(self, id):
         abort(503)  # Unsafe to delete products as they are referred to in orders
         # publisher = Publisher.objects(slug=publisher).first_or_404()
         # product = Product.objects(slug=id).first_or_404()
@@ -156,11 +156,11 @@ ProductsView.register_with_access(shop_app, 'product')
 
 
 @shop_app.route('/', subdomain='<pub_host>')
-def shop_home(pub_host):
+def shop_home():
     if ProductsView.access_policy.authorize(op='list'):
-        return redirect(url_for('shop.ProductsView:index', pub_host=pub_host))
+        return redirect(url_for('shop.ProductsView:index'))
     else:
-        return redirect(url_for('shop.OrdersView:my_orders', pub_host=pub_host))
+        return redirect(url_for('shop.OrdersView:my_orders'))
 
 # shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
@@ -288,8 +288,8 @@ class OrdersView(ResourceView):
                                          only=['order_lines', 'shipping_address', 'shipping_mobile'],
                                          converter=RacModelConverter())
 
-    def index(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def index(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         orders = Order.objects().order_by('-updated')  # last updated will show paid highest
 
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)])
@@ -309,8 +309,8 @@ class OrdersView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         return r
 
-    def my_orders(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def my_orders(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
         r.auth_or_abort()
@@ -318,8 +318,8 @@ class OrdersView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         return r
 
-    def get(self, id, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def get(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         # TODO we dont support new order creation outside of cart yet
         # if id == 'post':
         #     r = ItemResponse(OrdersView, [('order', None), ('publisher', publisher)], extra_args={'intent': 'post'})
@@ -333,8 +333,8 @@ class OrdersView(ResourceView):
         abort(501)  # Not implemented
 
     @route('/buy', methods=['PATCH'])
-    def buy(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def buy(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=BuyForm,
                          method='patch')
@@ -367,8 +367,8 @@ class OrdersView(ResourceView):
 
     # Post means go to next step, patch means to stay
     @route('/cart', methods=['GET', 'PATCH', 'POST'])
-    def cart(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def cart(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=CartForm,
                          extra_args={'view': 'cart', 'intent': 'post'})
@@ -389,11 +389,11 @@ class OrdersView(ResourceView):
         return r  # we got here if it's a get
 
     @route('/details', methods=['GET', 'POST'])
-    def details(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def details(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         cart_order = get_cart_order()
         if not cart_order or cart_order.total_items < 1:
-            return redirect(url_for('shop.OrdersView:cart', pub_host=publisher.slug))
+            return redirect(url_for('shop.OrdersView:cart'))
 
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=DetailsForm,
                          extra_args={'view': 'details', 'intent': 'post'})
@@ -407,7 +407,7 @@ class OrdersView(ResourceView):
                 # An existing user has this email, force login or different email
                 flash(Markup(_(
                     'Email belongs to existing user, please <a href="%(loginurl)s">login</a> first or change email',
-                    loginurl=url_for('auth.login', pub_host=request.host, next=request.url))),
+                    loginurl=url_for('auth.login', next=request.url))),
                     'danger')
                 return r, 400
             if not cart_order.is_digital():
@@ -426,11 +426,11 @@ class OrdersView(ResourceView):
         return r  # we got here if it's a get
 
     @route('/pay', methods=['GET', 'POST'])
-    def pay(self, pub_host):
-        publisher = Publisher.objects(slug=pub_host).first_or_404()
+    def pay(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         cart_order = get_cart_order()
         if not cart_order or not cart_order.shipping_address or not cart_order.user:
-            return redirect(url_for('shop.OrdersView:cart', pub_host=publisher.slug))
+            return redirect(url_for('shop.OrdersView:cart'))
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=PaymentForm,
                          extra_args={'view': 'pay', 'intent': 'post'})
         set_theme(r, 'publisher', publisher.slug)
