@@ -304,9 +304,10 @@ class ArticlesView(ResourceView):
 
     @route('/', route_base='/')
     def publisher_home(self):
+        # Explicitly take pub_host as argument, not g variable
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = WorldMeta(publisher)
-        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-featured', '-created_date')
+        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-sort_priority', '-created_date')
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.content_locales = set(lang_options)
@@ -327,6 +328,8 @@ class ArticlesView(ResourceView):
         if world_ == 'post':
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
             r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+        if world_ == 'meta':
+            return redirect(url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug))
         else:
             r = ItemResponse(WorldsView,
                              [('world', World.objects(slug=world_).first_or_404()), ('publisher', publisher)])
@@ -373,7 +376,7 @@ class ArticlesView(ResourceView):
         r = self.index(world_)
         r.args['per_page'] = 5
         r.args['view'] = 'list'
-        r.query = r.query.filter(type='blogpost').order_by('-featured', '-created_date')
+        r.query = r.query.filter(type='blogpost').order_by('-created_date')
         r.template = 'world/article_blog.html'
         r.prepare_query()
         return r

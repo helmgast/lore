@@ -245,7 +245,8 @@ def configure_hooks(app):
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
     @app.url_value_preprocessor
     def get_pub_host(endpoint, values):
-        g.pub_host = values.pop('pub_host', request.host)
+        if values:
+            g.pub_host = values.pop('pub_host', request.host)
 
     # Adds pub_host when building URL if it was not provided and expected by the route
     @app.url_defaults

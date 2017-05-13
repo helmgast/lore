@@ -81,6 +81,8 @@ class World(Document):
     rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+    shared = BooleanField(default=False, verbose_name=_('Shared world'))
+
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
@@ -252,11 +254,15 @@ class Article(Document):
     description = StringField(max_length=500, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    featured = BooleanField(default=False, verbose_name=_('Featured article'))
-    # TODO DEPRECATE in DB version 3
-    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
-    images = ListField(ReferenceField(FileAsset), verbose_name=_('Images'))
 
+    # Sort higher numbers first, lower later. Top 5 highest numbers used to
+    sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
+
+    # TODO DEPRECATE in DB version 3
+    featured = BooleanField(default=False, verbose_name=_('Featured article'))
+    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+
+    images = ListField(ReferenceField(FileAsset), verbose_name=_('Images'))
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
     theme = StringField(choices=ArticleThemes.to_tuples(),
                         default=ArticleThemes.default,

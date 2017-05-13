@@ -14,12 +14,39 @@
 {% endif %}
 
 
-{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home'), _('Home')),
-        (url_for('world.WorldsView:index'), _('Game Worlds')),
-        (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
-        ('', title)
-    ) }}{% endblock %}
+{% block breadcrumbs %}
+    {% if world.slug=='meta' %}
+        {% if article_type=='blogpost' %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
+            ('', title)
+            )}}
+        {% else %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            ('', title)
+            )}}
+        {% endif %}
+    {% else %}
+        {% if article_type=='blogpost' %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.WorldsView:index'), _('Game Worlds')),
+            (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+            (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
+            ('', title)
+            )}}
+        {% else %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.WorldsView:index'), _('Game Worlds')),
+            (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+            ('', title)
+            )}}
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
 {% block actionbar %}
     {% if args.get('intent', None) == 'patch' %}
@@ -193,8 +220,7 @@
             {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12',
                 controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}
 
-            {{ MACRO.FORM_FIELD(article_form.featured, labelclass='col-sm-3 dobr', controlwrap='col-sm-9',
-                labeltext=_('Focus')+'<span class="glyphicon glyphicon-fire"></span>'|safe) }}
+            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-6', controlwrap='col-sm-6') }}
 
             {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
                url_for('assets.FileAssetsView:file_selector', type='image', choice='single'), data_class='image feature-images') }}

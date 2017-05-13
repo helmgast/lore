@@ -52,12 +52,21 @@
     </style>
 {% endblock %}
 
-{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+{% block breadcrumbs %}
+    {% if world.slug=='meta' %}
+    {{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.ArticlesView:index', world_=world.slug), _('Articles'))
+    ) }}
+    {% else %}
+    {{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.WorldsView:index'), _('Game Worlds')),
         (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
         (url_for('world.ArticlesView:index', world_=world.slug), _('Articles'))
-    ) }}{% endblock %}
+    ) }}
+    {% endif %}
+{% endblock %}
 
 {% block asides %}{{ super() }}
     {% if filter_options %}

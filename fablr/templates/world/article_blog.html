@@ -3,16 +3,28 @@
 {% block pub_blog_active %}{% if world and world.slug=='meta' %} class="active"{% endif %}{% endblock %}
 {% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
 
-{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+{% block breadcrumbs %}
+    {% if world.slug=='meta' %}
+    {{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog'))
+    ) }}
+    {% else %}
+    {{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.WorldsView:index'), _('Game Worlds')),
         (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
         (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog'))
-    ) }}{% endblock %}
+    ) }}
+    {% endif %}
+{% endblock %}
+
+{% block content_title %}{{ _('The %(world)s blog', world=world.title) }}{% endblock %}
+{% block content_tagline %} {{ _('by') }} {{ world.publisher if world else world_form.publisher.data }}{% endblock %}
 
 {% block content %}
 	{% for article in articles %}
-	<a class="blog-header" href="{{url_for('world.ArticlesView:get', world_=world.slug, id=article.slug)}}"><h2>{{ article. title}}</h2></a>
+	<a class="blog-header" href="{{url_for('world.ArticlesView:get', world_=world.slug, id=article.slug)}}"><h2>{{ article.title}}</h2></a>
 	<ul class="list-inline article-meta" style="margin-bottom: 0">
     <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date|dateformat(format='short') }} {{ _('by') }}</li>
 	<li title="{{ _('Creator') }}">
