@@ -1,7 +1,12 @@
-{% extends root_template %}
+{% extends root_template %} {# Need to be first line to work in template chain  #}
 
+{# Add the block fonts to add to list of Google Fonts to download. Ensure {{ super() }} is start of block
+Format of Google fonts are |FontName:weight1,weight2|FontName2:weight1,weight2 etc.
+#}
 {% block fonts %}{{ super() }}|Eczar:700|Gentium+Basic:400,400italic,700,700italic{% endblock %}
 
+
+{# Adds some custom CSS style in the header. Ensure it starts with {{ super() }} #}
 {% block cssimports %}
     {{ super() }}
     <style>
@@ -20,15 +25,18 @@
     </style>
 {% endblock %}
 
+{# Replaces default content-title on frontpage #}
 {% block content_title %}Helmgast{% endblock %}
 
+{# Replaces the brand logo on top left corner (navbar) #}
 {% block navbar_brand %}
     <a class="navbar-brand navbar-collapse" href="{{ url_for('world.ArticlesView:publisher_home') }}">
-        <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive" src="{{
-                url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
+        <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
+             src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
 {% endblock navbar_brand %}
 
+{# Defines the menu shown in the left side of the navbar #}
 {% block navbar_left %}
     <li><a href="{{ url_for('world.WorldsView:index') }}">
         <span class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}
@@ -44,14 +52,14 @@
     </a></li>
 {% endblock navbar_left %}
 
-
+{# Defines the main static content of the home page of the publisher #}
 {% block home %}
     <div class="container">
         <div class="row">
             <div class="col-md-4 page-header">
                 <div class="" id="brand-target">
                     <h1 class="helmgast-header">HELMGAST<br>
-                        <small>Vi tar spel på allvar {{ MACRO.VISIBILITY(true) }}</small>
+                        <small>Vi tar spel på allvar</small>
                     </h1>
                 </div>
 
@@ -146,6 +154,7 @@
     </div>
 {% endblock %}
 
+{# Defines the main static content of the footer that is shown on each page from the publisher #}
 {% block footer %}
     <div class="row">
         <div class="col-xs-4">
@@ -177,7 +186,7 @@
             <ul class="list-unstyled">
                 <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
                     {% trans %}Blog{% endtrans %}
-                    </a></li>
+                </a></li>
                 <li>
                     <a href="{{ url_for('world.ArticlesView:get', world_='meta', id='om-helmgast') }}">
                         {% trans %}About{% endtrans %}

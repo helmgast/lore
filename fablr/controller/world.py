@@ -362,7 +362,10 @@ class ArticlesView(ResourceView):
         lang_options = world.languages or publisher.languages
         if lang_options:
             g.content_locales = set(lang_options)
-        articles = Article.objects(world=if_not_meta(world))
+        if world_ == 'meta':
+            articles = Article.objects(publisher=publisher)  # All articles from publisher
+        else:
+            articles = Article.objects(world=world)
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
         r.auth_or_abort()

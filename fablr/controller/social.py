@@ -68,7 +68,7 @@ class UsersView(ResourceView):
         r.events = Event.objects(user=user) if user else []
         if not getattr(g, 'user', None):
             # Allow invited only user to see this page
-            g.user = get_logged_in_user(invited_ok=True)
+            g.user = get_logged_in_user(require_active=False)
         r.auth_or_abort()
         return r
 
@@ -77,7 +77,7 @@ class UsersView(ResourceView):
         r = ItemResponse(UsersView, [('user', user)], method='patch')
         if not getattr(g, 'user', None):
             # Allow invited only user to see this page
-            g.user = get_logged_in_user(invited_ok=True)
+            g.user = get_logged_in_user(require_active=False)
         r.auth_or_abort()
 
         if not r.validate():

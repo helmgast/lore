@@ -23,7 +23,7 @@ from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
 
 from fablr.model.misc import safe_next_url
-from fablr.model.user import User
+from fablr.model.user import User, UserStatus
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -45,17 +45,13 @@ auth_app = Blueprint('auth', __name__, template_folder='../templates/auth')
 # https://helmgast.eu.auth0.com/authorize?client_id=JAwGB3WgQFDHqQCjRNo0Ij3MPbIEGB1N&response_type=code&redirect_uri=http://*.fablr.co/auth/callback
 # https://helmgast.eu.auth0.com/login?client=JAwGB3WgQFDHqQCjRNo0Ij3MPbIEGB1N
 
-
+# Attach hooks at blueprint init time, instead of at import time
 @auth_app.record_once
 def on_load(state):
     state.app.before_request(load_user)
     state.app.template_context_processors[None].append(get_context_user)
     state.app.login_required = login_required
     state.app.admin_required = admin_required
-
-
-def get_user(**kwargs):
-    u = User.objects(**kwargs).get()
 
 
 def add_auth(user, user_info, next_url):
@@ -107,7 +103,7 @@ def add_auth(user, user_info, next_url):
 
 
 @auth_app.route('/callback', subdomain='<pub_host>')
-def callback(pub_host):
+def callback():
     # Note: This callback applies both to login and signup, there is no difference.
 
     support_email = current_app.config['MAIL_DEFAULT_SENDER']
@@ -120,7 +116,7 @@ def callback(pub_host):
     token_payload = {
         'client_id': current_app.config['AUTH0_CLIENT_ID'],
         'client_secret': current_app.config['AUTH0_CLIENT_SECRET'],
-        'redirect_uri': url_for('auth.callback', pub_host=pub_host,  _external=True, _scheme=request.scheme),
+        'redirect_uri': url_for('auth.callback', pub_host=g.pub_host,  _external=True, _scheme=request.scheme),
         'code': code,
         'grant_type': 'authorization_code'
     }
@@ -134,7 +130,7 @@ def callback(pub_host):
     user_info = requests.get(user_url).json()
 
     # Make sure next is a relative URL
-    next_url = safe_next_url('/')
+    next_url = safe_next_url(default_url='/')
 
     if not user_info or 'email' not in user_info or 'sub' not in user_info:
         logger.error(u"Unknown user denied login due to missing from backend {info}".format(info=user_info))
@@ -148,7 +144,7 @@ def callback(pub_host):
         flash(_('Check your email inbox for verification link before you can login'), 'warning')
         return redirect(next_url)  # RETURN IN ERROR
 
-    session_user = get_logged_in_user(invited_ok=True)
+    session_user = get_logged_in_user(require_active=False)
 
     # Find user that matches the provided auth email
     try:
@@ -205,37 +201,39 @@ def callback(pub_host):
         next_url = add_auth(user, user_info, next_url)
 
     user.last_login = datetime.utcnow()
+    user.logged_in = True
     # user.status = 'active'
     user.save()
 
-    login_user(user, user_info['email'])
+    login_user(user)
     return redirect(next_url)
 
+
 @auth_app.route('/sso', subdomain='<pub_host>')
-def sso(pub_host):
+def sso():
     next_url = safe_next_url()
-    callback_url = url_for('auth.callback', pub_host=pub_host, next=next_url, _external=True, _scheme=request.scheme)
+    callback_url = url_for('auth.callback', pub_host=g.pub_host, next=next_url, _external=True, _scheme=request.scheme)
     auth0_url = 'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={callback}'.format(
         domain=current_app.config['AUTH0_DOMAIN'],
         client_id=current_app.config['AUTH0_CLIENT_ID'],
         callback=callback_url)
     return redirect(auth0_url)
 
+
 @auth_app.route('/logout', subdomain='<pub_host>')
-def logout(pub_host):
+def logout():
+    # Clears logged in flag to effectively log out from all domains, even if session is only cleared in current domain.
     logout_user()
     flash(_('You are now logged out'), 'success')
-    auth0_url = 'https://{domain}/v2/logout?returnTo={pub_host}'.format(domain=current_app.config['AUTH0_DOMAIN'],
-                                                                        pub_host=pub_host)
+    auth0_url = 'https://{domain}/v2/logout?returnTo={home}'.format(
+        domain=current_app.config['AUTH0_DOMAIN'],
+        home=url_for('world.ArticlesView:publisher_home', _external=True, _scheme=request.scheme))
+
     return redirect(auth0_url)
 
 
 @auth_app.route('/login', subdomain='<pub_host>')
-def login(pub_host):
-    # if not session.get('uid') and not request.cookies.get('auth0_migrated'):
-    #     # We have an old or no session, redirect to migrate
-    #     return redirect(url_for('auth.migrate'))
-    # else:
+def login():
     return render_template('auth/login.html')
 
 
@@ -253,6 +251,7 @@ def load_user():
     g.user = get_logged_in_user()
 
 
+# TODO update or depcrecate
 def check_user(test_fn):
     def decorator(fn):
         @functools.wraps(fn)
@@ -279,9 +278,9 @@ def admin_required(func):
     return check_user(lambda u: u.admin)(func)
 
 
-def login_user(user, auth):
+def login_user(user):
     # cart_id = session.get('cid', None)
-    session['auth'] = str(auth)  # The auth ID to save for longer, e.g auth0 email
+    session['uid'] = str(user.id)  # The user ID to save for longer
     # if cart_id:
     #     session['cid'] = cart_id  # A cart id from the shop that could come from before we login
     session.permanent = True  # Default 30 days
@@ -290,37 +289,33 @@ def login_user(user, auth):
 
 def logout_user():
     session.clear()
-    g.user = None
+    if getattr(g, 'user', None):
+        g.user.logged_in = False
+        g.user.save()
+        g.user = None
 
 
-def get_logged_in_user(invited_ok=False):
-
+def get_logged_in_user(require_active=True):
     u = getattr(g, 'user', None)  # See if we already fetched it in this request
     if not u:
-        auth = session.get('auth')
-        if auth:
+        uid = session.get('uid', None)
+        if uid:
             try:
-                if invited_ok:  # Normally not counted as logged in
-                    u = User.objects(Q(status='active') | Q(status='invited'), auth_keys__startswith=auth+"|").get()
-                else:
-                    u = User.objects(status='active', auth_keys__startswith=auth+"|").get()
-            except User.DoesNotExist:
-                pass  # u stays as None
-            except MultipleObjectsReturned:
-                logger.error(u"Multiple users found with same email {email}, shouldn't happen".format(email=auth))
-                logout_user()
-                flash(_('Multiple users with same email, contact %(email)s for support',
-                        email=current_app.config['MAIL_DEFAULT_SENDER']), 'danger')
-                pass  # u stays as None
+                u = User.objects(id=uid).first()
+                if u:
+                    if not u.logged_in or (require_active and u.status != UserStatus.active):
+                        # We are logged out or user has become other than active
+                        return None
 
-            if "as_user" in request.args and u and u.admin:
-                as_user = request.args['as_user']
-                if as_user == 'none':
-                    return None  # Simulate no logged in user
-                try:
-                    u2 = User.objects(username=as_user).get()
-                    logger.debug("User %s masquerading as %s" % (u, u2))
-                    return u2
-                except User.DoesNotExist:
-                    pass
+                    if "as_user" in request.args and u and u.admin:
+                        as_user = request.args['as_user']
+                        if as_user == 'none':
+                            return None  # Simulate no logged in user
+                        u2 = User.objects(username=as_user).first()
+                        if u2:
+                            logger.debug("User %s masquerading as %s" % (u, u2))
+                            return u2
+            except Exception as e:
+                logger.error(e)
+                logout_user()
     return u  # Might be None if all failed above

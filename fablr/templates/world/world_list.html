@@ -2,7 +2,6 @@
 
 {% block content_title %}{{ _('World') }}{% endblock %}
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
-{% block world_active %} class="active"{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),

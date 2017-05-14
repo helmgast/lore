@@ -26,6 +26,7 @@ admin = Blueprint('admin', __name__, template_folder='../templates/admin')
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
+
 class ShortcutsView(ResourceView):
     list_template = 'world/shortcut_list.html'
     item_template = 'world/shortcut_item.html'
@@ -101,9 +102,9 @@ def git_webhook(get_json=None):
             abort(403, "Incorrect key")
 
         # We will create a subdir to /data/www/github and operate on that
-        # It will not be reachable from web unless configured in other webserver
+        # It will not be reachable from web unless configured in other web server
 
-        cwd = safe_join(current_app.config['DATA_PATH'], 'github', path)
+        cwd = safe_join(current_app.config['PLUGIN_PATH'], path)
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
         curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),

@@ -245,16 +245,16 @@ def configure_hooks(app):
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
     @app.url_value_preprocessor
     def get_pub_host(endpoint, values):
-        if values:
-            g.pub_host = values.pop('pub_host', request.host)
+        ph = values.pop('pub_host', None) if values else None
+        if not ph:
+            ph = request.host
+        g.pub_host = ph
 
     # Adds pub_host when building URL if it was not provided and expected by the route
     @app.url_defaults
     def set_pub_host(endpoint, values):
-        if 'pub_host' in values or not g.pub_host:
-            return
         if app.url_map.is_endpoint_expecting(endpoint, 'pub_host'):
-            values['pub_host'] = g.pub_host
+            values.setdefault('pub_host', g.pub_host)
 
     @app.context_processor
     def inject_access():

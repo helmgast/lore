@@ -24,7 +24,7 @@ class Config(object):
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
-    DATA_PATH = '/data/www/'
+    PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
 
 class SecretConfig(object):

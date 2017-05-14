@@ -81,6 +81,7 @@ class User(Document, BaseUser):
     status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
     hidden = BooleanField(default=False)
     admin = BooleanField(default=False)
+    logged_in = BooleanField(default=False)
 
     # Uses string instead of Class to avoid circular import
     publishers_newsletters = ListField(ReferenceField('Publisher'))

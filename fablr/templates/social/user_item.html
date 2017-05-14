@@ -16,7 +16,7 @@
         {# We are editing #}
         {{ MACRO.SAVE_BUTTON('userform') }}
         {{ MACRO.CANCEL_BUTTON(url_for('social.UsersView:get', id=user.id)) }}
-{#        {{ MACRO.DELETE_BUTTON() }}#}
+        {#        {{ MACRO.DELETE_BUTTON() }}#}
     {% elif args.get('intent', None) == 'post' %}
         {# We are creating new resource #}
         {{ MACRO.SAVE_BUTTON('userform') }}
@@ -25,7 +25,7 @@
         {# We are viewing #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit')) %}
             {{ MACRO.EDIT_BUTTON(url_for('social.UsersView:get', intent='patch', id=user.identifier())) }}
-{#            {{ MACRO.DELETE_BUTTON() }}#}
+            {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
     {% endif %}
 
@@ -38,16 +38,20 @@
 
 {% block content %}
     {% if user_form %}
-        <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">{% endif %}
-{% if user_form and user.status == 'invited' %}
-    <div class="well">
-        <strong>{% trans %}This user is not yet active!{% endtrans %}</strong><br>
-        {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
-        {% trans %}If you had an existing user and made this new user by error, click merge button below:{% endtrans %}
-    </div>
-{% endif %}
+        <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
+    {% endif %}
+    {% if user_form and user.status == 'invited' %}
+        <div class="well">
+            <strong>{% trans %}This user is not yet active!{% endtrans %}</strong><br>
+            {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
+            {% trans %}If you had an existing user and made this new user by error, click merge button below:{% endtrans %}
+        </div>
+    {% endif %}
 <div class="row">
     <div class="col-md-4">
+            {% if user.admin %}
+            <div class="alert alert-info">User is an admin</div>
+        {% endif %}
         {% if user.images %}
             <img src="{{ url_for('image', slug=user.images[0].slug) }}" class="img-polaroid img-responsive"/>
         {% else %}

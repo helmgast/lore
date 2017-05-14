@@ -1,8 +1,5 @@
 {% extends "world/article_list.html" if not parent_template else parent_template %}
 
-{% block pub_blog_active %}{% if world and world.slug=='meta' %} class="active"{% endif %}{% endblock %}
-{% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
-
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.ArticlesView:search'), _('Search'))

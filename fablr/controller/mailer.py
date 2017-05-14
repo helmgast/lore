@@ -2,7 +2,7 @@ import logging
 import re
 import urllib
 
-from flask import Blueprint, current_app, render_template, request, flash
+from flask import Blueprint, current_app, render_template, request, flash, g
 from flask_babel import lazy_gettext as _
 from mongoengine.errors import NotUniqueError
 from werkzeug.utils import secure_filename
@@ -14,7 +14,6 @@ from fablr.controller.resource import parse_out_arg, ResourceError, DisabledFiel
 from fablr.model.baseuser import create_token
 from fablr.model.shop import Order
 from fablr.model.user import User
-from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -131,9 +130,6 @@ def mail_view(mail_type):
         order = request.args.get('order', None)
         if order:
             order = Order.objects(id=order).get()  # May throw DoesNotExist
-        publisher = g.pub_host
-        if publisher:
-            publisher = Publisher.objects(slug=publisher).get()  # May throw DoesNotExist
     except Exception as e:
         # Catch and re-raise as a 404 because incorrect parameter to mail_view
         raise ResourceError(404, message=e.message)
@@ -157,8 +153,7 @@ def mail_view(mail_type):
         mailform = SystemMailForm(request.form, subject=_('Reminder on how to login to Helmgast.se'),
                                   to_field=user.email, from_field=server_mail)
 
-    template_vars = {'mail_type': mail_type, 'user': user, 'order': order,
-                     'publisher': publisher, 'mailform': mailform}
+    template_vars = {'mail_type': mail_type, 'user': user, 'order': order, 'mailform': mailform}
     if mail_type == 'invite':
         template_vars['token'] = create_token(mailform.to_field.data)
 

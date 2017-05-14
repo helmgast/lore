@@ -211,7 +211,7 @@ class FileAssetsView(ResourceView):
         r = self.index(**kwargs)
         return r
 
-    def delete(self, pub_host, id):
+    def delete(self, id):
         abort(501)
 
 FileAssetsView.register_with_access(asset_app, 'files')

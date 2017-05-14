@@ -52,7 +52,7 @@ class ProductsView(ResourceView):
     subdomain = '<pub_host>'
     access_policy = ResourceAccessPolicy({
         'view': 'public',
-        'list': 'admin',
+        'list': 'public',
         '_default': 'admin'
     })
     model = Product

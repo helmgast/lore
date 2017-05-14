@@ -44,7 +44,7 @@ GenderTypes = Choices(
 
 
 class Publisher(Document):
-    slug = StringField(unique=True, max_length=62)  # URL-friendly name
+    slug = StringField(unique=True, max_length=62, verbose_name=_('Publisher Domain'))  # URL-friendly name
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
@@ -58,12 +58,13 @@ class Publisher(Document):
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('Publisher Images'))
 
-    preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
-                                    verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
-    shop_enabled = BooleanField(default=False, verbose_name=_('Enable shop feature'))
+
+    # Settings per publisher
+    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
+    preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
+                                    verbose_name=_('Preferred License'))
 
     def __str__(self):
         return self.__unicode__().encode('utf-8')

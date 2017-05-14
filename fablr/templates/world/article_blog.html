@@ -1,8 +1,5 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% block pub_blog_active %}{% if world and world.slug=='meta' %} class="active"{% endif %}{% endblock %}
-{% block world_active %}{% if world and world.slug!='meta' %} class="active"{% endif %}{% endblock %}
-
 {% block breadcrumbs %}
     {% if world.slug=='meta' %}
     {{ MACRO.BREADCRUMBS(
