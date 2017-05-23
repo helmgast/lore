@@ -4,7 +4,7 @@
     var domain = "{{ config["AUTH0_DOMAIN"] }}";
 
     var options = {
-        icon: "//helmgast.se/static/img/helmgast_512px.png",
+        icon: "{{ url_for('static', filename='img/helmgast_512px.png', _external=true, _scheme='') }}",
         closable: false,
         focusInput: true,
         primaryColor: "#a00",

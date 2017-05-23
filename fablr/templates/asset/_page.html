@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block actionbar %}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('new')) %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('new', res=None)) %}
         {{ MACRO.NEW_BUTTON(url_for('assets.FileAssetsView:get', id='post')) }}
     {% endcall %}
 {% endblock %}

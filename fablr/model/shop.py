@@ -59,6 +59,7 @@ FX_IN_SEK = {
 # type = one of ProductTypes except shipping
 # country = 2-letter country code
 
+
 class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     product_number = StringField(max_length=10, sparse=True, verbose_name=_('Product Number'))
@@ -167,6 +168,7 @@ class Stock(Document):
                 return _("Many items")
         else:
            return _("Unknown")
+
 
 class Order(Document):
     user = ReferenceField(User, verbose_name=_('User'))

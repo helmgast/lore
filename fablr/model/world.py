@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_babel import lazy_gettext as _
-from misc import Document, available_locale_tuples  # Enhanced document
+from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
                          GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField)
@@ -47,16 +47,22 @@ class Publisher(Document):
     slug = StringField(unique=True, max_length=62, verbose_name=_('Publisher Domain'))  # URL-friendly name
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
+    tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
-    owner = ReferenceField(User, verbose_name=_('Owner'))  # TODO pick one of owner, creator
     creator = ReferenceField(User, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+    contribution = BooleanField(default=False, verbose_name=_('Publisher accepts contributions'))
+
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('Publisher Images'))
+
+    webshop_url = URLField(verbose_name=_('Webshop URL'))
+    facebook_url = URLField(verbose_name=_('Facebook URL'))
+    webshop_activated = BooleanField(default=False, verbose_name=_('Activate webshop'))
 
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
@@ -65,6 +71,12 @@ class Publisher(Document):
     languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
+
+    def worlds(self):
+        return World.objects(publisher=self).order_by('-created_date')
+
+    def is_published(self):
+        return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
 
     def __str__(self):
         return self.__unicode__().encode('utf-8')
@@ -77,19 +89,21 @@ class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
+    tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))  # TODO set to required
     creator = ReferenceField(User, verbose_name=_('Creator'))
     rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    shared = BooleanField(default=False, verbose_name=_('Shared world'))
+    contribution = BooleanField(default=False, verbose_name=_('World accepts contributions'))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
     images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
     product_url = URLField(verbose_name=_('Product URL'))
+    facebook_url = URLField(verbose_name=_('Facebook URL'))
 
-    preferred_license = StringField(choices=available_locale_tuples, default=Licenses.ccby4,
+    preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
     languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
@@ -97,6 +111,8 @@ class World(Document):
 
     def clean(self):
         self.slug = slugify(self.title)
+        if self.creator and self.creator not in self.editors:
+            self.editors.append(self.creator)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -106,6 +122,13 @@ class World(Document):
 
     def articles(self):
         return Article.objects(world=self).order_by('-created_date')
+
+    def is_published(self):
+        return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
+
+    @property  # For convenience
+    def get_feature_image(self):
+        return self.images[0] if self.images else None
 
         # startyear = 0
         # daysperyear = 360
@@ -127,6 +150,9 @@ class WorldMeta(object):
 
     def __unicode__(self):
         return unicode(self.publisher) or u'Meta'
+
+    def __nonzero__(self):
+        return False  # Behave as false
 
     def articles(self):
         return Article.objects(publisher=self.publisher, world=None).order_by('-created_date')
@@ -255,6 +281,7 @@ class Article(Document):
     description = StringField(max_length=500, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
+    tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
     sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
@@ -296,9 +323,8 @@ class Article(Document):
     # Executes before saving
     def clean(self):
         self.slug = slugify(self.title)
-
-    def is_public(self):
-        return self.is_published()
+        if self.creator and self.creator not in self.editors:
+            self.editors.append(self.creator)
 
     def is_published(self):
         return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
@@ -328,7 +354,9 @@ class Article(Document):
 
 
 Article.type.filter_options = choice_options('type', Article.type.choices)
+Article.status.filter_options = choice_options('status', Article.status.choices)
 Article.world.filter_options = reference_options('world', Article)
+Article.tags.filter_options = distinct_options('tags', Article)
 Article.created_date.filter_options = datetime_delta_options('created_date',
                                                              [timedelta(days=7),
                                                               timedelta(days=30),

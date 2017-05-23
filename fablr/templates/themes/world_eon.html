@@ -1,10 +1,9 @@
 {% extends "world/world_list.html" %}
 
-{% block fonts %}{{ super() }}|Goudy+Bookletter+1911{% endblock %}
+{% block googlefonts %}{{ super() }}|Goudy+Bookletter+1911{% endblock %}
 
 {% block cssimports %}
 {{super()}}
-<!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
 <style>
 
 {#@import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);#}
@@ -15,16 +14,12 @@
        url({{ url_for('static', filename=assets['css/vinque.ttf']) }}) format('truetype');
 }
 
-/* needs !important to overwrite other css classes */
-.sidebar a {
-    font-family: Vinque, serif;
-    text-decoration: none;
-    color: #8f0011;
-    font-size: 13px;
+.content {
+    font-family: 'Goudy Bookletter 1911', serif;
 }
 
-.article-text {
-    font-family: 'Goudy Bookletter 1911', serif;
+.article-text > p:first-of-type:first-letter {
+   font-family: Vinque, serif;
 }
 
 .article-text a {
@@ -32,7 +27,8 @@
     color: #8f0011;
 }
 
-.article-header, .page-header h1, .page-header h2 {
+.page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
     font-family: Vinque, serif;
 }
 

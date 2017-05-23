@@ -68,7 +68,7 @@
                             </td>
                             <td>
                                 {% for t in fileasset.tags %}
-                                    <span class="badge">{{ t }}</span>
+                                    <a href="{{ url_for('assets.FileAssetsView:index', tags=t) }}"><span class="badge">{{ t }}</span></a>
                                 {% endfor %}
                             </td>
                             <td>{{ fileasset.get_field_display('access_type') }}</td>

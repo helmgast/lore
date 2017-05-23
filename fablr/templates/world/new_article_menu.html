@@ -1,5 +1,9 @@
 
-{% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new', instance=world if world else publisher)) %}
+{% call(privileged) MACRO.AUTHORIZED(
+    access_policy['article'].authorize('new') and
+    (access_policy['world'].is_contribution_allowed('new', world) or access_policy['world'].authorize('edit', res=world)
+    if world else
+    access_policy['publisher'].is_contribution_allowed('new', publisher) or access_policy['publisher'].authorize('edit', res=publisher))) %}
   <li class="dropdown">
     <a class="dropdown-toggle btn btn-info" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-plus-sign"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
     </a>

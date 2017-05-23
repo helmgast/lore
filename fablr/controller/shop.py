@@ -9,6 +9,7 @@
   :copyright: (c) 2014 by Helmgast AB
 """
 import logging
+from datetime import datetime
 from itertools import izip
 
 import stripe
@@ -16,7 +17,7 @@ from flask import Blueprint, current_app, g, request, url_for, redirect, abort, 
 from flask_babel import lazy_gettext as _
 from flask_classy import route
 from flask_mongoengine.wtf import model_form
-from mongoengine import NotUniqueError, ValidationError
+from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms.fields import FormField, FieldList, StringField
 from wtforms.fields.html5 import EmailField, IntegerField
 from wtforms.utils import unset_value
@@ -29,7 +30,8 @@ from fablr.controller.resource import (ResourceAccessPolicy,
                                        Authorization, route_subdomain)
 from fablr.controller.world import set_theme
 from fablr.model.asset import FileAsset
-from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock
+from fablr.model.misc import EMPTY_ID
+from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
 from fablr.model.user import User
 from fablr.model.world import Publisher
 
@@ -48,13 +50,52 @@ def get_or_create_stock(publisher):
     return stock
 
 
+def filter_product_published():
+    return Q(status__ne=ProductStatus.hidden, created__lte=datetime.utcnow())
+
+
+def filter_order_authorized():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(user=g.user)
+
+
+def filter_authorized_by_publisher(publisher=None):
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    if not publisher:
+        # Check all publishers
+        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
+    elif g.user in publisher.editors or g.user in publisher.readers:
+        # Save some time and only check given publisher
+        return Q(publisher__in=[publisher])
+    else:
+        return Q(id=EMPTY_ID)
+
+
+class ProductAccessPolicy(ResourceAccessPolicy):
+    def is_editor(self, op, user, res):
+        if res.publisher and user in res.publisher.editors:
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res),
+                                 privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+
+    def is_reader(self, op, user, res):
+        if res.publisher and user in res.publisher.readers:
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res),
+                                 privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+
+    def is_resource_public(self, op, res):
+        return Authorization(True, _("Public resource")) if res.status != 'hidden' else \
+            Authorization(False, _("Not a public resource"))
+
+
 class ProductsView(ResourceView):
     subdomain = '<pub_host>'
-    access_policy = ResourceAccessPolicy({
-        'view': 'public',
-        'list': 'public',
-        '_default': 'admin'
-    })
+    access_policy = ProductAccessPolicy()
     model = Product
     list_template = 'shop/product_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
@@ -69,9 +110,13 @@ class ProductsView(ResourceView):
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        products = Product.objects(status__ne='hidden').order_by('type', '-price')
+        products = Product.objects().order_by('type', '-price')
         r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
-        r.auth_or_abort()
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_product_published() |
+                filter_authorized_by_publisher(publisher))
+        r.auth_or_abort(res=publisher)
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
 
@@ -81,6 +126,7 @@ class ProductsView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         if id == 'post':
             r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=publisher)
         else:
             product = Product.objects(slug=id).first_or_404()
             # We will load the stock count from the publisher specific Stock object
@@ -90,7 +136,7 @@ class ProductsView(ResourceView):
             r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)],
                              extra_form_args=extra_form_args)
             r.stock = stock
-        r.auth_or_abort()
+            r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
 
         return r
@@ -98,6 +144,7 @@ class ProductsView(ResourceView):
     def post(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
+        r.auth_or_abort(res=publisher)
         r.stock = get_or_create_stock(publisher)
         product = Product()
         set_theme(r, 'publisher', publisher.slug)
@@ -122,8 +169,8 @@ class ProductsView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
-        r.stock = get_or_create_stock(publisher)
         r.auth_or_abort()
+        r.stock = get_or_create_stock(publisher)
         set_theme(r, 'publisher', publisher.slug)
 
         if not r.validate():
@@ -255,27 +302,20 @@ class PostPaymentForm(RacBaseForm):
 
 
 class OrdersAccessPolicy(ResourceAccessPolicy):
-    def is_owner(self, op, instance):
-        if instance:
-            if g.user == instance.user:
-                return Authorization(True, _("Allowed access to %(instance)s as it's own order", instance=instance),
-                                     privileged=True)
-            else:
-                return Authorization(False, _("Not allowed access to %(instance)s as not own order"))
+    def is_editor(self, op, user, res):
+        return Authorization(False, _("No editor access to orders"))
+
+    def is_reader(self, op, user, res):
+        if user and user == res.user:
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as owner of order", op=op, res=res),
+                                 privileged=True)
         else:
-            return Authorization(False, _("No instance to test for access on"))
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not owner of order", op=op, res=res))
 
 
 class OrdersView(ResourceView):
     subdomain = '<pub_host>'
-    access_policy = OrdersAccessPolicy({
-        'my_orders': 'user',
-        'view': 'owner',
-        'list': 'admin',
-        'edit': 'admin',
-        'form_edit': 'admin',
-        '_default': 'admin'
-    })
+    access_policy = OrdersAccessPolicy()
     model = Order
     list_template = 'shop/order_list.html'
     list_arg_parser = filterable_fields_parser(
@@ -294,7 +334,9 @@ class OrdersView(ResourceView):
 
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)])
 
-        r.auth_or_abort()
+        r.auth_or_abort(res=publisher)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(filter_order_authorized())
         r.prepare_query()
         aggregate = list(r.orders.aggregate({'$group':
             {
@@ -313,7 +355,7 @@ class OrdersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
-        r.auth_or_abort()
+        r.auth_or_abort(res=publisher)
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         return r

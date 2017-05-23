@@ -29,6 +29,7 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                        ListResponse, ItemResponse, Authorization)
+from fablr.model.misc import EMPTY_ID
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -50,19 +51,107 @@ world_app = Blueprint('world', __name__, template_folder='../templates/world')
 
 # WorldHandler.register_urls(world_app, world_strategy)
 
-def publish_filter(qr):
+
+# TODO doesn't catch the case where an article is published but it's world or Publisher is not.
+# Useful filter generators below here
+def filter_published():
+    return Q(status=PublishStatus.published, created_date__lte=datetime.utcnow())
+
+
+def filter_authorized():
     if not g.user:
-        return qr.filter(status=PublishStatus.published, created_date__lte=datetime.utcnow())
-    elif g.user.admin:
-        return qr
+        return Q(id=EMPTY_ID)
+    return Q(editors__in=[g.user]) | Q(readers__in=[g.user])
+
+
+def filter_authorized_by_world(world=None):
+    if not g.user:
+        return Q(id=EMPTY_ID)  # Empty
+    elif not world:
+        # Check all worlds
+        return Q(world__in=World.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
+    elif g.user in world.editors or g.user in world.readers:
+        # Save some time and only check given world
+        return Q(world__in=[world])
     else:
-        return qr.filter(Q(status=PublishStatus.published, created_date__lte=datetime.utcnow()) | Q(creator=g.user))
+        return Q(id=EMPTY_ID)
+
+
+def filter_authorized_by_publisher(publisher=None):
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    if not publisher:
+        # Check all publishers
+        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
+    elif g.user in publisher.editors or g.user in publisher.readers:
+        # Save some time and only check given publisher
+        return Q(publisher__in=[publisher])
+    else:
+        return Q(id=EMPTY_ID)
+
+
+class PublisherAccessPolicy(ResourceAccessPolicy):
+
+    def is_editor(self, op, user, res):
+        if user in res.editors:
+            return Authorization(True, _("Allowed access to %(res)s as editor", res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(res)s as not an editor", res=res))
+
+    def is_reader(self, op, user, res):
+        if user in res.readers:
+            return Authorization(True, _("Allowed access to %(res)s as reader", res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(res)s as not a reader", res=res))
+
+    def is_resource_public(self, op, res):
+        return Authorization(True, _("Public resource")) if res.status == 'published' else \
+            Authorization(False, _("Not a public resource"))
+
+    def is_contribution_allowed(self, op, res):
+        return Authorization(True, _("Publisher flagged as open for contribution")) if res.contribution else \
+            Authorization(False, _("Publisher not open for contribution"))
+
+
+class WorldAccessPolicy(PublisherAccessPolicy):
+
+    def is_editor(self, op, user, res):
+        if user in res.editors or (res.publisher and user in res.publisher.editors):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+
+    def is_reader(self, op, user, res):
+        if user in res.readers or (res.publisher and user in res.publisher.readers):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+
+    def is_contribution_allowed(self, op, res):
+        return Authorization(True, _("World flagged as open for contribution")) if res.contribution else \
+            Authorization(False, _("World not open for contribution"))
+
+
+class ArticleAccessPolicy(PublisherAccessPolicy):
+    new_allowed = Authorization(True, _('Creating new resource is allowed'))
+
+    def is_editor(self, op, user, res):
+        if user in res.editors or (res.publisher and user in res.publisher.editors) or (res.world and user in res.world.editors):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res),
+                                 privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+
+    def is_reader(self, op, user, res):
+        if user in res.readers or (res.publisher and user in res.publisher.readers) or (res.world and user in res.world.readers):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res),
+                                 privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
 
 
 class PublishersView(ResourceView):
-    access_policy = ResourceAccessPolicy({
-        '_default': 'admin'
-    })
+    access_policy = PublisherAccessPolicy()
     model = Publisher
     list_template = 'world/publisher_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'owner', 'created_date'])
@@ -72,22 +161,26 @@ class PublishersView(ResourceView):
 
     def index(self):
         r = ListResponse(PublishersView, [('publishers', Publisher.objects())])
-        r.auth_or_abort()
+        r.auth_or_abort(res=None)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published() |
+                filter_authorized())
         return r
 
     def get(self, id):
-
         if id == 'post':
             r = ItemResponse(PublishersView, [('publisher', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
         else:
             publisher = Publisher.objects(slug=id).first_or_404()
             r = ItemResponse(PublishersView, [('publisher', publisher)])
-        r.auth_or_abort()
+            r.auth_or_abort()
         return r
 
     def post(self):
         r = ItemResponse(PublishersView, [('publisher', None)], method='post')
-        r.auth_or_abort()
+        r.auth_or_abort(res=None)
         publisher = Publisher()
         if not r.validate():
             flash(_("Error in form"), 'danger')
@@ -103,6 +196,7 @@ class PublishersView(ResourceView):
         publisher = Publisher.objects(slug=id).first_or_404()
 
         r = ItemResponse(PublishersView, [('publisher', publisher)], method='patch')
+        r.auth_or_abort()
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
@@ -132,91 +226,42 @@ def set_theme(response, theme_type, slug):
             logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
 
 
-class WorldAccessPolicy(ResourceAccessPolicy):
-    def is_editor(self, op, instance):
-        if instance:
-            if g.user in instance.editors:
-                return Authorization(True, _("Allowed access to %(instance)s as editor", instance=instance),
-                                     privileged=True)
-            else:
-                return Authorization(False, _("Not allowed access to %(instance)s as not an editor"))
-        else:
-            return Authorization(False, _("No instance to test for access on"))
-
-    def is_owner(self, op, instance):
-        if instance:
-            if g.user == instance.creator:
-                return Authorization(True, _("Allowed access to %(instance)s as creator", instance=instance),
-                                     privileged=True)
-            else:
-                return Authorization(False, _("Not allowed access to %(instance)s as not an creator"))
-        else:
-            return Authorization(False, _("No instance to test for access on"))
-
-    def get_access_level(self, op, instance):
-        """Normally viewing a resource is public, unless status is private, draft or archived"""
-        if instance:
-            if op == 'view' and instance.status in (PublishStatus.private, PublishStatus.archived, PublishStatus.draft):
-                return 'reader'
-        return None  # means we will default to access level set in the policy
-
-
 class WorldsView(ResourceView):
     subdomain = '<pub_host>'
     # route_base = '/'
-    access_policy = WorldAccessPolicy({
-        'view': 'public',
-        'list': 'public',
-        'edit': 'editor',
-        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
-        '_default': 'admin'
-    })
+    access_policy = WorldAccessPolicy()
     model = World
     list_template = 'world/world_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     item_template = 'world/world_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter(),
-                            field_args={'readers': {'allow_blank': True}})
+    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
 
     # @route('/worlds/')
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         if publisher.languages:
             g.content_locales = set(publisher.languages)
-        r = ListResponse(WorldsView, [('worlds', World.objects()), ('publisher', publisher)])
-        r.auth_or_abort()
-        r.worlds = publish_filter(r.worlds).order_by('title')
+        r = ListResponse(WorldsView, [('worlds', World.objects().order_by('title')), ('publisher', publisher)])
+
+        r.auth_or_abort(res=publisher)
+
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published() |
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher))
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         return r
 
-    # # Lists all blogposts under a publisher, not world...
-    # def blog(self, publisher):
-    #     publisher = Publisher.objects(slug=publisher).first_or_404()
-    #     articles = Article.objects(publisher=publisher, type='blogpost')
-    #     if publisher.languages:
-    #         g.available_locales = publisher.languages
-    #     r = ListResponse(ArticlesView,
-    #                      [('articles', articles), ('publisher', publisher)])
-    #     r.auth_or_abort()
-    #     r.template = ArticlesView.list_template
-    #     r.query = publish_filter(r.query).order_by('-created_date')
-    #     r.prepare_query()
-    #     set_theme(r, 'publisher', publisher)
-    #     return r
-
     def get(self, id):
-        # if id == 'meta':
-        #     return redirect(url_for('world.WorldsView:publisher_home', pub_host=pub_host))
-        # else:
-        #     return redirect(url_for('world.ArticlesView:world_home', pub_host=pub_host, world_=id))
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         if publisher.languages:
             g.available_locales = publisher.languages
         if id == 'post':
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
-            r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+            r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         else:
             r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
             r.auth_or_abort()
@@ -229,7 +274,7 @@ class WorldsView(ResourceView):
         if publisher.languages:
             g.content_locales = set(publisher.languages)
         r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
-        r.auth_or_abort()
+        r.auth_or_abort(res=publisher)
         set_theme(r, 'publisher', publisher.slug)
         world = World()
         if not r.validate():
@@ -249,6 +294,7 @@ class WorldsView(ResourceView):
         if lang_options:
             g.content_locales = set(lang_options)
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
+        r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
         if not r.validate():
             # return same page but with form errors?
@@ -265,15 +311,6 @@ class WorldsView(ResourceView):
         abort(501)  # Not implemented
 
 
-def safeget(object, attr):
-    if not object:
-        if attr == 'slug':
-            return 'meta'
-        else:
-            return None
-    else:
-        return getattr(object, attr, None)
-
 
 def if_not_meta(doc):
     if isinstance(doc, WorldMeta):
@@ -285,21 +322,15 @@ def if_not_meta(doc):
 class ArticlesView(ResourceView):
     subdomain = '<pub_host>'
     route_base = '/<world_>'
-    access_policy = WorldAccessPolicy({
-        'view': 'public',
-        'list': 'public',
-        'edit': 'editor',
-        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
-        '_default': 'admin'
-    })
+    access_policy = ArticleAccessPolicy()
     model = Article
     list_template = 'world/article_list.html'
-    list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date'])
+    list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date', 'tags', 'status'])
     item_template = 'world/article_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
-                            exclude=['slug', 'feature_image'],
+                            exclude=['slug', 'feature_image', 'featured'],
                             converter=RacModelConverter())
 
     @route('/', route_base='/')
@@ -313,9 +344,15 @@ class ArticlesView(ResourceView):
             g.content_locales = set(lang_options)
         r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
                          formats=['html'])
+        r.auth_or_abort(res=publisher)
         r.template = 'world/publisher_home.html'
-        r.auth_or_abort()
-        r.query = publish_filter(r.query).limit(8)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published() |
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher) |
+                filter_authorized_by_world())
+        r.query = r.query.limit(8)
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         return r
@@ -327,14 +364,20 @@ class ArticlesView(ResourceView):
             g.content_locales = set(publisher.languages)
         if world_ == 'post':
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
-            r.auth_or_abort(instance=publisher)  # check auth scoped to publisher, as we want to create new
+            r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         if world_ == 'meta':
             return redirect(url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug))
         else:
+            world = World.objects(slug=world_).first_or_404()
             r = ItemResponse(WorldsView,
-                             [('world', World.objects(slug=world_).first_or_404()), ('publisher', publisher)])
+                             [('world', world), ('publisher', publisher)])
             r.auth_or_abort()
             set_theme(r, 'world', r.world.slug)
+            r.articles = Article.objects(world=world).filter(
+                filter_published() |
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher) |
+                filter_authorized_by_world(world))
         set_theme(r, 'publisher', publisher.slug)
         r.template = 'world/world_home.html'
         return r
@@ -347,8 +390,13 @@ class ArticlesView(ResourceView):
 
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
-        r.auth_or_abort()
-        r.query = publish_filter(r.query)
+        r.auth_or_abort(res=publisher)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published() |
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher) |
+                filter_authorized_by_world())
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         r.template = 'world/article_search.html'
@@ -360,16 +408,25 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         lang_options = world.languages or publisher.languages
+
         if lang_options:
             g.content_locales = set(lang_options)
+
         if world_ == 'meta':
-            articles = Article.objects(publisher=publisher)  # All articles from publisher
+            articles = Article.objects(publisher=publisher).order_by('-created_date')  # All articles from publisher
         else:
-            articles = Article.objects(world=world)
+            articles = Article.objects(world=world).order_by('-created_date')
+
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
-        r.auth_or_abort()
-        r.query = publish_filter(r.query).order_by('-created_date')
+        r.auth_or_abort(res=(world if world_ != 'meta' else publisher))
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published() |
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher) |
+                filter_authorized_by_world(world))  # If world is meta will count as None
+
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
@@ -400,19 +457,25 @@ class ArticlesView(ResourceView):
 
     def feed(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
+        query = filter_published()
+        if world_ == 'meta':
+            world = WorldMeta(publisher)
+            query = Q(publisher=publisher) | query
+        else:
+            world = World.objects(slug=world_).first_or_404()
+            query = Q(world=world) | query
+
         feed = AtomFeed(_('Recent Articles in ') + world.title,
                         feed_url=request.url, url=request.url_root)
-        articles = Article.objects(status=PublishStatus.published,
-                                   created_date__lte=datetime.utcnow()).order_by('-created_date')[:10]
+        articles = Article.objects(query).order_by('-created_date')[:10]
         for article in articles:
             feed.add(article.title, current_app.md._instance.convert(article.content),
                      content_type='html',
-                     author=str(article.creator) if article.creator else 'System',
-                     url=url_for('world.ArticlesView:get', pub_host=publisher.slug, world_=world.slug,
-                                 id=article.slug, _external=True, _scheme=''),
+                     author=unicode(article.creator) if article.creator else 'System',
+                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True, _scheme=''),
                      updated=article.created_date,
-                     published=article.created_date)
+                     published=article.created_date,
+                     categories=[{'term': getattr(article.world or article.publisher, 'title', 'None')}])
         return feed.get_response()
 
     def get(self, world_, id):
@@ -429,7 +492,7 @@ class ArticlesView(ResourceView):
                              [('article', None), ('world', world), ('publisher', publisher)],
                              extra_args={'intent': 'post'})
             # check auth scoped to world or publisher, as we want to create new and use them as parent
-            r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
+            r.auth_or_abort(res=world if world_ != 'meta' else publisher)
         else:
             r = ItemResponse(ArticlesView,
                              [('article', Article.objects(slug=id).first_or_404()), ('world', world),
@@ -452,7 +515,7 @@ class ArticlesView(ResourceView):
                          [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
         # Check auth scoped to world or publisher, as we want to create new and use them as parent
-        r.auth_or_abort(instance=world if world_ != 'meta' else publisher)
+        r.auth_or_abort(res=world if world_ != 'meta' else publisher)
         set_theme(r, 'publisher', publisher.slug)
         set_theme(r, 'world', world.slug)
 

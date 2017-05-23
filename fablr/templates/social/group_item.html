@@ -24,7 +24,7 @@
         {{ MACRO.CANCEL_BUTTON(url_for('social.GroupsView:get', id=group.slug)) }}
     {% else %}
         {# We are viewing #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('edit', res=group)) %}
             {{ MACRO.EDIT_BUTTON(url_for('social.GroupsView:get', id=group.slug, intent='patch')) }}
             {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}

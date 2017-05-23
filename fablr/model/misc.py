@@ -14,6 +14,7 @@ from urlparse import urlparse
 import unicodedata
 from babel import Locale
 from babel.dates import get_month_names
+from bson import ObjectId
 from dateutil.relativedelta import *
 
 import flask_mongoengine
@@ -38,6 +39,9 @@ METHODS = frozenset(['POST', 'PUT', 'PATCH', 'DELETE'])
 Document = flask_mongoengine.Document
 # Turns off automatic index creation because if DB errors out, it would happen at import time
 # Document._meta['auto_create_index'] = True
+
+EMPTY_ID = ObjectId('000000000000000000000000')  # Needed to make empty non-matching Query objects
+
 
 def slugify(title):
     slug = ext_slugify(title)

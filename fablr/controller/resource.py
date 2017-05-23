@@ -55,6 +55,7 @@ def generate_flash(action, name, model_identifiers, dest=''):
     flash(s, 'success')
     return s
 
+
 mime_types = {
     'html': 'text/html',
     'json': 'application/json',
@@ -166,7 +167,8 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 def filterable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
-    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields], 'fields': fields}
+    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields],
+              'fields': fields}
     extend.update(kwargs)
     return dict(ListResponse.arg_parser, **extend)
 
@@ -231,22 +233,27 @@ class ResourceResponse(Response):
         # To be set from from route
         self.formats = formats or frozenset(['html', 'json'])
         self.args = self.parse_args(self.arg_parser, extra_args or {})
+        self.auth = None
         super(ResourceResponse, self).__init__()  # init a blank flask Response
 
-    def auth_or_abort(self, instance=None):
-        instance = instance or getattr(self, 'instance', None)
-        auth = self.access.authorize(self.method, instance=instance)
-        if auth:
-            # if there's an intent, we also need to check that it's allowed
+    def auth_or_abort(self, res=None):
+        res = res or getattr(self, 'instance', None)
+        auth = self.access.authorize(self.method, res=res)
+        if auth and res:
+            # if there's an intent and a resource, we also should check that it's an allowed operation
             intent = self.args.get('intent', None)
             if intent:
-                auth = self.access.authorize(intent, instance=instance)
+                auth = self.access.authorize(intent, res=res)
         if not auth:
+            logger.debug(auth)
             abort(auth.error_code, auth.message)
         else:
+            logger.debug(auth)
             self.auth = auth
 
     def render(self):
+        if not self.auth:
+            abort(403, _('Authorization not performed'))
         if self.args['render']:
             best_type = mime_types[self.args['render']]
         else:
@@ -269,12 +276,19 @@ class ResourceResponse(Response):
     def error_response(self, err, status=0):
         general_errors = []
         if isinstance(err, NotUniqueError):
-            if 'title' in self.form:
-                self.form['title'].errors.append('Duplicate title already exists, try renaming')
-            elif 'slug' in self.form:
-                self.form['slug'].errors.append('Duplicate slug already exists, try renaming')
-            else:
-                general_errors.append('Duplicate title already exists, try renaming')
+            # This error comes from PyMongo with only a text message denoting which field was not unique
+            # We need to parse it to allocate it back to the right field
+            found = False
+            for key in self.form._fields.keys():
+                if '${key}'.format(key=key) in err.message:
+                    if key == 'slug':
+                        key == 'title'
+                    self.form[key].errors.append(
+                        _('This field needs to be unique and another resource already have this value'))
+                    found = True
+                    break
+            if not found:
+                general_errors.append(err.message)
 
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
@@ -292,7 +306,6 @@ class ResourceResponse(Response):
             general_errors.append(str(err))
         flash(_("Errors in form, %(errors)s", errors=u",".join(general_errors)), 'danger')
         return self, status or 400
-
 
     @staticmethod
     def parse_args(arg_parser, extra_args):
@@ -397,8 +410,6 @@ class ListResponse(ResourceResponse):
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
 
-
-
     def paginate(self):
         # TODO max query size 10000 implied here
         per_page = int(self.args['per_page'])
@@ -409,7 +420,7 @@ class ListResponse(ResourceResponse):
         # https://github.com/MongoEngine/flask-mongoengine/issues/310
         if getattr(self.query, '_limit', None):
             per_page = min(per_page, self.query._limit)
-            page = min(page, math.ceil(self.query._limit/per_page))
+            page = min(page, math.ceil(self.query._limit / per_page))
 
         # TODO, this is a fix for an issue in MongoEngine https://github.com/MongoEngine/mongoengine/issues/1522
         try:
@@ -452,6 +463,9 @@ class ItemResponse(ResourceResponse):
                 else:
                     # Will take current endpoint (a get) and returns same url but with method from intent
                     self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args)
+            else:
+                # Set intent to method if we are post/put/patch as it is used in template to decide
+                self.args['intent'] = self.method
             form_class = form_class or self.resource_view.form_class
             self.form = form_class(formdata=request.form, obj=self.instance, **form_args)
 
@@ -459,6 +473,8 @@ class ItemResponse(ResourceResponse):
         return self.form.validate()
 
     def commit(self, new_instance=None, flash=True):
+        if not self.auth:
+            abort(403, _('Authorization not performed'))
         new_args = dict(request.view_args)
         new_args.pop('id', None)
         if self.method == 'delete':
@@ -548,22 +564,26 @@ class RacBaseForm(ModelForm):
     # TODO if fields_to_populate are set to use form keys, a deleted field may mean
     # no form key is left in the submitted form, ignoring that delete
     def populate_obj(self, obj, fields_to_populate=None):
-        if fields_to_populate:
-            # FormFields in form args will have '-' do denote it's subfields. We
-            # only want the first part, or it won't match the field names
-            new_fields_to_populate = set([fld.split('__', 1)[0] for fld in fields_to_populate])
-            # print "In populate, fields_to_populate before \n%s\nand after\n%s\n" % (
-            #     fields_to_populate, new_fields_to_populate)
-            newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in new_fields_to_populate]
-        else:
-            newfields = iteritems(self._fields)
-        for name, field in newfields:
-            if isinstance(field, f.FormField) and getattr(obj, name, None) is None and field._obj is None:
-                field._obj = field.model_class()  # new instance created
-            if isinstance(field, f.FileField) and field.data == '':
-                # Don't try to write empty FileField
-                continue
-            field.populate_obj(obj, name)
+        super(RacBaseForm, self).populate_obj(obj)
+
+    # field.populate_obj(obj, name)
+
+    #     if fields_to_populate:
+    #         # FormFields in form args will have '-' do denote it's subfields. We
+    #         # only want the first part, or it won't match the field names
+    #         new_fields_to_populate = set([fld.split('__', 1)[0] for fld in fields_to_populate])
+    #         # print "In populate, fields_to_populate before \n%s\nand after\n%s\n" % (
+    #         #     fields_to_populate, new_fields_to_populate)
+    #         newfields = [(name, fld) for (name, fld) in iteritems(self._fields) if name in new_fields_to_populate]
+    #     else:
+    #         newfields = iteritems(self._fields)
+    #     for name, field in newfields:
+    #         if isinstance(field, f.FormField) and getattr(obj, name, None) is None and field._obj is None:
+    #             field._obj = field.model_class()  # new instance created
+    #         if isinstance(field, f.FileField) and field.data == '':
+    #             # Don't try to write empty FileField
+    #             continue
+    #         field.populate_obj(obj, name)
 
 
 class ArticleBaseForm(RacBaseForm):
@@ -591,7 +611,6 @@ class MultiCheckboxField(f.SelectMultipleField):
 
 
 class TagField(SelectMultipleField):
-
     def __init__(self, model, **kwargs):
         self.model = model
         super(TagField, self).__init__(**kwargs)
@@ -622,8 +641,8 @@ class TagField(SelectMultipleField):
         except ValueError:
             raise ValueError(self.gettext('Invalid choice(s): one or more data inputs could not be coerced'))
 
-class SelectizeWidget(object):
 
+class SelectizeWidget(object):
     def __init__(self, html_tag='ul', prefix_label=True):
         self.html_tag = 'input type="text"'  # ignore
         self.prefix_label = prefix_label
@@ -637,14 +656,9 @@ class SelectizeWidget(object):
         return HTMLString('<%s %s value="%s">' % (self.html_tag, html_params(**kwargs),
                                                   ', '.join([item.slug for item in field.data])))
 
-class FablrModelSelectMultipleField(ModelSelectMultipleField):
-    """
-    A variant of ModelSelectMultipleField that keeps order of selected items between saves, which is otherwise thrown away.
-    """
 
-    def __init__(self, **kwargs):
-        super(FablrModelSelectMultipleField, self).__init__(**kwargs)
-
+class OrderedModelSelectMultipleField(ModelSelectMultipleField):
+    # Replaces inherited iter_choices with one that yields selected items first in right order
     def iter_choices(self):
         if self.allow_blank:
             yield (u'__None', self.blank_text, self.data is None)
@@ -669,29 +683,22 @@ class FablrModelSelectMultipleField(ModelSelectMultipleField):
                 yield (obj.id, label, False)
 
     def process_formdata(self, valuelist):
-        if valuelist:
-            if valuelist[0] == '__None':
-                self.data = None
-            else:
-                if not self.queryset:
-                    self.data = None
-                    return
-
-                self.queryset.rewind()
-                tmp = dict()
-                for obj in self.queryset:
-                    try:
-                        i = valuelist.index(str(obj.id))
-                        tmp[i] = obj
-                    except ValueError:
-                        pass
-                self.data = [tmp[k] for k in sorted(tmp)]
-                if not len(self.data):
-                    self.data = None
+        super(OrderedModelSelectMultipleField, self).process_formdata(valuelist)
+        if self.data and len(self.data) > 1:
+            # Sort based on the order of the valuelist given
+            self.data.sort(key=lambda obj: valuelist.index(str(obj.id)))
 
 
-class FablrModelSelectField(ModelSelectField):
-    pass
+class DisabledField(StringField):
+    """A disabled field assumes it has default data that should be displayed when rendered but will ignore
+    input from forms"""
+
+    def process(self, formdata, data=unset_value):
+        # Ignore formdata input, otherwise proceed as normal
+        if data == unset_value:
+            raise ValueError("DisabledField needs to be explicitly set to a default value")
+        self.flags.disabled = True
+        super(StringField, self).process(None, data)
 
 
 class RacModelConverter(ModelConverter):
@@ -720,8 +727,8 @@ class RacModelConverter(ModelConverter):
             return TagField(model=model, **kwargs)
         elif isinstance(field.field, ReferenceField):
             kwargs[
-                'allow_blank'] = not field.required  # Added line, to make reference fields inslide listfields to allow blanks
-            return FablrModelSelectMultipleField(model=field.field.document_type, **kwargs)
+                'allow_blank'] = not field.required  # Make reference fields inside listfields to allow blanks
+            return OrderedModelSelectMultipleField(model=field.field.document_type, **kwargs)
         if field.field.choices:
             kwargs['multiple'] = True
             return self.convert(model, field.field, kwargs)
@@ -847,105 +854,61 @@ class Authorization:
         return self.is_authorized
 
 
-# Checks if user is logged in and authorized
+# Checks if user is authorized to access this resource
 class ResourceAccessPolicy(object):
-    model_class = None
-    levels = ['public', 'user', 'reader', 'editor', 'owner', 'admin']
     translate = {'post': 'new', 'patch': 'edit', 'put': 'edit', 'index': 'list', 'delete': 'edit', 'get': 'view'}
+    new_allowed = Authorization(False, _('Creating new resource is not allowed'), error_code=403)
 
-    def __init__(self, ops_levels=None):
-        if not ops_levels:
-            self.ops_levels = {
-                'view': 'public',
-                'list': 'public',
-                '_default': 'admin'
-            }
-        else:
-            self.ops_levels = ops_levels
+    def authorize(self, op, user=None, res=None):
+        op = self.translate.get(op, op)  # TODO temporary translation between old and new op words, e.g. patch vs edit
+        if not user:
+            user = g.user
 
-    def authorize(self, op, instance=None):
-        if op in self.translate:  # TODO temporary translation between old and new op words, e.g. patch vs edit
-            op = self.translate[op]
-        if op not in self.ops_levels:
-            level = self.ops_levels['_default']
-        else:
-            level = self.ops_levels[op]
+        if op is 'list':
+            return Authorization(True, _("List is allowed"))
 
-        changed_level = self.get_access_level(op, instance)
-        if changed_level:
-            level = changed_level
+        if op is 'new':
+            return self.is_admin(op, user, res) or (self.is_user(op, user, res) and self.new_allowed)
 
-        if level == 'public':
-            return Authorization(True, _("%(op)s is a publicly allowed operation", op=op))
-        elif level == 'user':
-            return self.is_user(op, instance)  # if we have a user, doesnt matter if admin
+        if op is 'view':  # If list, resource refers to a parent resource
+            if not res:
+                return Authorization(False, _("Can't view a None resource"), error_code=403)
+            return self.is_resource_public(op, res) or \
+                   self.is_admin(op, user, res) or \
+                   self.is_editor(op, user, res) or \
+                   self.is_reader(op, user, res)
 
-        auth = self.is_user(op, instance)
-        if not auth or level == 'user': # if we have a user, doesnt matter if admin
-            return auth
-        elif level == 'reader':
-            return (self.is_reader(op, instance) or
-                    self.is_editor(op, instance) or
-                    self.is_owner(op, instance) or
-                    self.is_admin(op, instance))
-        elif level == 'editor':
-            return (
-                self.is_editor(op, instance) or
-                self.is_owner(op, instance) or
-                self.is_admin(op, instance))
-        elif level == 'owner':
-            return (
-                self.is_owner(op, instance) or
-                self.is_admin(op, instance))
-        elif level == 'admin':
-            return self.is_admin(op, instance)
-        return Authorization(False, _("This is catch all denied authorization, should not be here"))
+        if op is 'edit' or op is 'delete':
+            if not res:
+                return Authorization(False, _("Can't edit/delete a None resource"), error_code=403)
+            return self.is_admin(op, user, res) or self.is_editor(op, user, res)
 
-    def auth_or_abort(self, response, instance=None):
-        # if 'args' not in response or 'intent' not in response['args']:
-        #     raise KeyError('Expects an intent arg, even if empty. Make sure to parse_args before auth')
-        action = response['action']  # choose intent before action
-        # print "Auth for %s, intent %s action %s" % (action, response['args']['intent'], response['action'])
-        auth = self.authorize(action, instance)
-        if not auth:
-            raise ResourceError(auth.error_code, r={'TBD': 'TBD'}, message=auth.message)
-        else:
-            response['auth'] = auth
-            return response
+        return self.custom_auth(op, user, res)
 
-    def get_access_level(self, op, instance):
-        return None
-
-    def is_user(self, op, instance):
+    def is_user(self, op, user, res):
         msg = _("%(op)s requires a logged in user", op=op)
-        if g.user:
+        if user:
             return Authorization(True, msg)
         else:
-            return Authorization(False, msg, error_code=401)  # Denoted that the user should log in first
+            return Authorization(False, msg, error_code=401)  # 401 means unauthenticated, should log in first
 
-    def is_reader(self, op, instance):
-        return Authorization(False, _("Access rules for readers is undefined and therefore denied"), error_code=403)
-
-    def is_editor(self, op, instance):
-        return Authorization(False, _("Access rules for editors is undefined and therefore denied"), error_code=403)
-
-    def is_owner(self, op, instance):
-        return Authorization(False, _("Access rules for owners is undefined and therefore denied"), error_code=403)
-
-    def is_admin(self, op, instance):
-        if g.user.admin:
-            return Authorization(True, _("%(user)s is an admin", user=g.user), privileged=True)
+    def is_admin(self, op, user, res):
+        if user and user.admin:
+            return Authorization(True, _("%(user)s is an admin", user=user), privileged=True)
         else:
             return Authorization(False, _("Need to be logged in with admin access"), error_code=403)
 
+    def is_resource_public(self, op, res):
+        return Authorization(False, _("This resource does not support to be public"), error_code=403)
 
-class DisabledField(StringField):
-    """A disabled field assumes it has default data that should be displayed when rendered but will ignore
-    input from forms"""
+    def is_contribution_allowed(self, op, res):
+        return Authorization(False, _("This resource does not support contributions"), error_code=403)
 
-    def process(self, formdata, data=unset_value):
-        # Ignore formdata input, otherwise proceed as normal
-        if data == unset_value:
-            raise ValueError("DisabledField needs to be explicitly set to a default value")
-        self.flags.disabled = True
-        super(StringField, self).process(None, data)
+    def is_reader(self, op, user, res):
+        return Authorization(False, _("Access rules for readers are undefined and therefore denied"), error_code=403)
+
+    def is_editor(self, op, user, res):
+        return Authorization(False, _("Access rules for editors are undefined and therefore denied"), error_code=403)
+
+    def custom_auth(self, op, user, res):
+        return Authorization(False, _("No authorization implemented for %(op)s", op=op), error_code=403)

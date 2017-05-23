@@ -1,0 +1,24 @@
+<div class="card{{ ' status-unpublished' if product.status == 'hidden' }}"
+        {%- if product.get_feature_image -%}
+     style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
+        {%- endif -%}>
+    <a class="card-cover icon150px"
+       href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
+        {{ MACRO.product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
+    </a>
+    <div class="card-text">
+        <h4 class="card-title dobr">
+            <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">{{ product.title }}</a>
+        </h4>
+        <div class="card-description">{{ product.description|markdown }}</div>
+        <ul class="card-details">
+            <li class="product-type">{{ product.get_field_display('type') }}</li>
+            {% if product.publisher and product.publisher.webshop_activated and product.status != 'hidden' %}
+                <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
+                <li><a id="{{ product.slug }}" class="btn btn-xs btn-primary buy-link"
+                       href="{{ url_for('shop.OrdersView:cart') }}">{{ _('Add to cart') }}</a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

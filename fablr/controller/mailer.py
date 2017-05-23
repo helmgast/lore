@@ -2,7 +2,7 @@ import logging
 import re
 import urllib
 
-from flask import Blueprint, current_app, render_template, request, flash, g
+from flask import Blueprint, current_app, render_template, request, flash, g, abort
 from flask_babel import lazy_gettext as _
 from mongoengine.errors import NotUniqueError
 from werkzeug.utils import secure_filename
@@ -115,7 +115,6 @@ class UserMailForm(Form):
 # 4) Populate object
 
 @mail_app.route('/<any(compose, remind, order, verify, invite):mail_type>', methods=['GET', 'POST'])
-@current_app.admin_required
 def mail_view(mail_type):
     intent = request.args.get('intent', None)
     if intent == 'post':
@@ -137,21 +136,30 @@ def mail_view(mail_type):
     # parent_template = parse_out_arg(request.args.get('out', None))
     mail = {'to_field': '', 'from_field': server_mail, 'subject': '', 'message': ''}
 
+
     if mail_type == 'compose':
         mailform = UserMailForm(request.form, to_field=server_mail, from_field=user.email if user else '',
                                 subject=request.args.get('subject', None))
-    elif mail_type == 'invite':
-        mailform = AnyUserSystemMailForm(request.form, subject=_('Invitation to join Helmgast.se'),
-                                         from_field=server_mail)
     elif mail_type == 'verify':
+        if not g.user:
+            abort(403)
         mailform = SystemMailForm(request.form, subject=_('%(user)s, welcome to Helmgast!', user=user.display_name()),
                                   to_field=user.email, from_field=server_mail)
     elif mail_type == 'order':
+        if not g.user:
+            abort(403)
         mailform = SystemMailForm(request.form, subject=_('Order confirmation on helmgast.se'),
                                   to_field=user.email, from_field=server_mail)
     elif mail_type == 'remind':
+        if not g.user:
+            abort(403)
         mailform = SystemMailForm(request.form, subject=_('Reminder on how to login to Helmgast.se'),
                                   to_field=user.email, from_field=server_mail)
+    elif mail_type == 'invite':
+        if not g.user.admin:
+            abort(403)
+        mailform = AnyUserSystemMailForm(request.form, subject=_('Invitation to join Helmgast.se'),
+                                         from_field=server_mail)
 
     template_vars = {'mail_type': mail_type, 'user': user, 'order': order, 'mailform': mailform}
     if mail_type == 'invite':

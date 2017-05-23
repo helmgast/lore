@@ -3,11 +3,13 @@
 {% block content_title %}{{ _('Home') }}{% endblock %}
 {% block container_class %}container{% endblock %}
 
-{% block mainblock %}
+{% block main %}
+    <div class="container">
     {{ self.content() }}
+    </div>
 {% endblock %}
 
-{% block pre_content %}
+{% block header %}
 {% endblock %}
 
 {% block content %}

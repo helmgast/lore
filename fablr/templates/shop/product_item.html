@@ -15,7 +15,7 @@
         {{ MACRO.CANCEL_BUTTON(url_for('shop.ProductsView:get', id=product.slug)) }}
     {% else %}
         {# We are viewing #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('edit', res=product)) %}
             {{ MACRO.EDIT_BUTTON(url_for('shop.ProductsView:get', id=product.slug, intent='patch')) }}
             {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
@@ -116,6 +116,12 @@
                         <td>{{ product.get_field_display('type') }}</td>
                     </tr>
                     <tr>
+                        <th>{{ _('Status') }}</th>
+                        <td>{{ product.get_field_display('status') }}</td>
+                    </tr>
+                    {% if product.publisher and product.publisher.webshop_activated %}
+
+                    <tr>
                         <th>{{ _('Price') }}</th>
                         <td>{{ product.price|currencyformat(product.currency.upper()) }}</td>
                     </tr>
@@ -127,13 +133,10 @@
                         <th>{{ _('Tax') }}</th>
                         <td>{{ product.tax*100 }}%</td>
                     </tr>
-                    <tr>
-                        <th>{{ _('Status') }}</th>
-                        <td>{{ product.get_field_display('status') }}</td>
-                    </tr>
+
                     <tr>
                         <th>{{ _('Remaining Stock') }}</th>
-                        {% if access_policy['product'].authorize('edit') %}
+                        {% if access_policy['product'].authorize('edit', res=product) %}
                             <td class="privileged">{{ stock.stock_count.get(product.slug, _('Unknown')) }}
                                 <small>({{ stock.display_stock(product.slug) if stock }})</small>
                             </td></tr>
@@ -144,6 +147,7 @@
                         <th>{{ _('Times purchased') }}</th>
                         <td>{{ product.in_orders().count() }}</td>
                     </tr>
+                    {% endif %}
                 </table>
 
                 <div class="well">{{ product.description|markdown }}</div>
@@ -160,8 +164,10 @@
                 {% endif %}
             </div>
             <div class="col-md-4">
+                {% if product.publisher and product.publisher.webshop_activated and product.status != 'hidden' %}
                 <a id="{{ product.slug }}" class="btn btn-block btn-primary buy-link"
                    href="{{ url_for('shop.OrdersView:cart') }}">{{ _('Add to cart') }}</a>
+                {% endif %}
                 <br>
                 <div class="gallery feature-images">
                     {% for img in product.images %}
@@ -169,11 +175,9 @@
                            href="{{ url_for('image', slug = img.slug) }}"><img
                                 src="{{ url_for('image', slug = img.slug) }}"></a>
                     {% else %}
-                        <span class="glyphicon glyphicon-{{ product_icons[product.type] }} gianticon"></span>
+                        <span class="glyphicon glyphicon-{{ MACRO.product_icons[product.type] }} icon150px"></span>
                     {% endfor %}
                 </div>
-
-                <!--<a id="{{product.slug}}" class="btn btn-buy btn-primary buy-link" href="{{ url_for('shop.OrdersView:cart')}}">{{ _('Add to cart') }}</a>-->
             </div>
         </div>
         {% if product.status != 'hidden' %}

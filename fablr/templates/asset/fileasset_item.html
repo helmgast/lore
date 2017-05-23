@@ -16,7 +16,7 @@
         {{ MACRO.CANCEL_BUTTON(url_for('assets.FileAssetsView:index')) }}
     {% else %}
         {# We are viewing #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('edit', res=filasset)) %}
             {{ MACRO.EDIT_BUTTON(url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch')) }}
             {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}

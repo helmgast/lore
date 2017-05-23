@@ -16,32 +16,35 @@ from flask import redirect
 from flask import url_for
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
-from mongoengine import NotUniqueError, ValidationError
+from mongoengine import NotUniqueError, ValidationError, Q
 
 from fablr.controller.auth import get_logged_in_user
 from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
+from fablr.model.misc import EMPTY_ID
 from fablr.model.user import User, Group, Event
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 
+def filter_authorized():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(id=g.user.id)
 
 class UserAccessPolicy(ResourceAccessPolicy):
-    def is_owner(self, op, instance):
-        if g.user == instance:
-            return Authorization(True, _("User %(user)s allowed to %(op)s on own user profile", user=g.user, op=op),
+    def is_editor(self, op, user, res):
+        if user == res:
+            return Authorization(True, _("Allowed access to %(op)s %(res)s own user profile", op=op, res=res),
                                  privileged=True)
         else:
             return Authorization(False, _("Cannot access other user's user profile"))
 
+    def is_reader(self, op, user, res):
+        return self.is_editor(op, user, res)
+
 
 class UsersView(ResourceView):
-    access_policy = UserAccessPolicy({
-        'list': 'admin',
-        'view': 'owner',
-        'edit': 'owner',
-        '_default': 'admin'
-    })
+    access_policy = UserAccessPolicy()
     model = User
     list_template = 'social/user_list.html'
     list_arg_parser = filterable_fields_parser(['username', 'status', 'xp', 'location', 'join_date', 'last_login'])
@@ -49,27 +52,30 @@ class UsersView(ResourceView):
     item_arg_parser = prefillable_fields_parser(['username', 'realname', 'location', 'description'])
     form_class = model_form(User,
                             base_class=RacBaseForm,
-                            only=['username', 'realname', 'location', 'description'],
+                            only=['username', 'realname', 'location', 'description', 'images'],
                             converter=RacModelConverter())
 
     def index(self):
-        users = User.objects(status='active').order_by('-username')
+        users = User.objects().order_by('-username')
         r = ListResponse(UsersView, [('users', users)])
         r.auth_or_abort()
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(filter_authorized())
         r.prepare_query()
         return r
 
     def get(self, id):
         if id == 'post':
             r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
         else:
             user = User.objects(id=id).first_or_404()
             r = ItemResponse(UsersView, [('user', user)])
+            if not getattr(g, 'user', None):
+                # Allow invited only user to see this page
+                g.user = get_logged_in_user(require_active=False)
+            r.auth_or_abort()
         r.events = Event.objects(user=user) if user else []
-        if not getattr(g, 'user', None):
-            # Allow invited only user to see this page
-            g.user = get_logged_in_user(require_active=False)
-        r.auth_or_abort()
         return r
 
     def patch(self, id):
@@ -100,12 +106,7 @@ UsersView.register_with_access(social, 'user')
 
 
 class GroupsView(ResourceView):
-    access_policy = UserAccessPolicy({
-        'list': 'admin',
-        'view': 'admin',
-        'edit': 'admin',
-        '_default': 'admin'
-    })
+    access_policy = UserAccessPolicy()
     model = Group
     list_template = 'social/group_list.html'
     list_arg_parser = filterable_fields_parser(['type', 'location', 'created', 'updated'])
@@ -118,17 +119,19 @@ class GroupsView(ResourceView):
     def index(self):
         groups = Group.objects().order_by('-updated')
         r = ListResponse(GroupsView, [('groups', groups)])
-        r.auth_or_abort()
+        r.auth_or_abort(res=None)
         r.prepare_query()
         return r
 
     def get(self, id):
         if id == 'post':
             r = ItemResponse(GroupsView, [('group', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
         else:
             group = Group.objects(slug=id).first_or_404()
             r = ItemResponse(GroupsView, [('group', group)])
-        r.auth_or_abort()
+            r.auth_or_abort()
+
         return r
 
     def patch(self, id):

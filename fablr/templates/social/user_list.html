@@ -21,7 +21,8 @@
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
-        {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login']) }}
+        {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login'],
+        show=['card','table', 'order','page'])}}
 
         <h5>{% trans %}By username{% endtrans %}</h5>
         <div class="btn-set">

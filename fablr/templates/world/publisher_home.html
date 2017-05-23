@@ -1,9 +1,72 @@
 {% extends "world/_page.html" %}
 
-{% block pre_content %}{% endblock %}
-{% block mainblock %}
-    {# block home is not defined in root, only in a theme, and will only be reflected here if it exists #}
+{% block header %}{% endblock %}
+{% block main %}
+    {# block home is not defined in root, only in a theme, and allows theme to override the main #}
     {% if self.home %}
         {{ self.home() }}
+    {% else %}
+    <div class="container content">
+        <div class="row">
+            <div class="col-md-4 page-header">
+                <div class="" id="brand-target">
+                    <h1 class="publisher-header">{{ publisher.title }}<br>
+                        <small>{{ publisher.tagline }}</small>
+                    </h1>
+                </div>
+
+            </div>
+            <div class="col-md-8 col-sm-12">
+                {#                {% include "newsletter.html" %}#}
+                <div id="homepage-carousel" class="carousel slide" data-ride="carousel">
+                    <!-- Indicators -->
+                    {% set worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}) %}
+                    <ol class="carousel-indicators">
+                        {% for world in worlds %}
+                            <li data-target="#homepage-carousel" data-slide-to="{{ loop.index0 }}" {{ 'class="active"' if loop.first}}></li>
+                        {% endfor %}
+                    </ol>
+
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner" role="listbox">
+                        {% for world in worlds %}
+
+                        <div class="item {{ 'active' if loop.first}}">
+                            <img src="{{ url_for('image_thumb', slug=world.get_feature_image.slug)}}" alt="{{ world.title }}">
+                            <div class="carousel-caption">
+                                <h1><a href="{{ url_for("world.WorldsView:get", id=world.slug) }}">{{ world.title }}</a></h1><br>
+                                {{ world.tagline if world.tagline}}
+                            </div>
+                        </div>
+
+                        {% endfor %}
+                    </div>
+
+                    <!-- Controls -->
+                    <a class="left carousel-control" href="#homepage-carousel" role="button" data-slide="prev">
+                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                        <span class="sr-only">}{% trans %}Previous{% endtrans %}</span>
+                    </a>
+                    <a class="right carousel-control" href="#homepage-carousel" role="button" data-slide="next">
+                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                        <span class="sr-only">{% trans %}Next{% endtrans %}</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 cards margin-above">
+                {% for article in articles %}
+                    {% include "world/article_card_view.html" %}
+                {% else %}
+                    <div class="jumbotron text-center">
+                        <h2>{{ _('No articles yet!') }}</h2>
+                    </div>
+                    <!-- col-lg-4 -->
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
     {% endif %}
 {% endblock %}

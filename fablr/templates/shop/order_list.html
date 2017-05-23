@@ -68,6 +68,7 @@
         </table>
     </div>
     {% endif %}
+    <div>{% trans %}Currently only shows Eon crowdfunder orders{% endtrans %}</div>
 {% endblock %}
 
 {% block content %}
@@ -80,7 +81,7 @@
                             {%- if order.order_lines|length and order.order_lines[0].product.get_feature_image -%}
                          style="background: url({{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}) center top/cover;"
                             {%- endif -%}>
-                        <a class="card-cover gianticon"
+                        <a class="card-cover icon150px"
                            href="{{ url_for('shop.OrdersView:get', id=order.id) }}">
                             {{ "\uE032" if not (order.order_lines|length and order.order_lines[0].product.get_feature_image) else "&nbsp;"|safe }}
                         </a>
@@ -120,7 +121,7 @@
                         <td class="small">{{ order.created|datetimeformat(format='short') }}</td>
                         <td class="small">{{ order.updated|datetimeformat(format='short') }}</td>
                         <td>{{ order.get_field_display('status') }}</td>
-                        <td>{{ order.total_price|currencyformat(order.currency.upper()) }}
+                        <td>{{ order.total_price|currencyformat(order.currency.upper()) if order.currency }}
 {#                            {{ currencies.get(order.currency,'%s') % order.total_price|currency }} #}
                         </td>
                         <td>{{ order.total_items }}</td>

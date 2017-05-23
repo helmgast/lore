@@ -1,3 +1,26 @@
+{# Unicode codes representing Bootstrap glyphicons #}
+
+{% set article_icons = {'default':"\ue165",'blogpost':"\ue111",'material':"\ue139",'person':"\ue105",
+    'place':"\ue062", 'event':"\ue101", 'campaign':"\ue034", 'chronicle':"\ue044", 'character':"\ue005"} %}
+{% set article_glyphicons = {
+    'default': 'record',
+    'blogpost': 'comment',
+    'material': 'briefcase',
+    'person': 'eye-open',
+    'fraction': 'certificate',
+    'place': 'map-marker',
+    'event': 'exclamation-sign',
+    'campaign': 'flag',
+    'chronicle': 'bookmark',
+    'character': 'heart'
+} %}
+
+{% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
+
+{% set status_glyphicons = {'draft':"inbox",'revision':"retweet",'published':"eye-open",'private':"lock",'archived':"folder-close"} %}
+{% set status_icons = {'draft':"\ue028",'revision':"\ue115",'published':"\ue105",'private':"\ue033",'archived':"\ue117"} %}
+
+
 {%- macro OG_ARTICLE(article) -%}
     {% if article %}
         <meta name="twitter:card" content="summary">
@@ -77,7 +100,7 @@
 
 
 {% macro MAKE_INPUT(label, id='', cols=10, labelcols=2, type='text', placeholder='', suffix='', prefix='', rows=3, class="nosubmit") %}
-    {% set readonly = true if args.get('intent','')!='patch' else false %}
+    {% set readonly = not form %}
     {% if not id %}
         {% set id = label.lower() %}
     {% endif %}
@@ -107,7 +130,7 @@
 {% endmacro %}
 
 {% macro MAKE_TD_INPUT(label, id='', placeholder='', class="nosubmit", min=0, max=12) %}
-    {% set readonly = true if args.get('intent','')!='patch' else false %}
+    {% set readonly = not form %}
     {% if not id %}
         {% set id = label.lower() %}
     {% endif %}
@@ -151,21 +174,27 @@
 {%- endmacro -%}
 
 
-{%- macro LIST_CONTROLS(model_class, args, fields, show=['view','order','page'], set_view=None, default='table') -%}
+{%- macro LIST_CONTROLS(model_class, args, fields, show=['card','table', 'list', 'order','page'], set_view=None, default='table') -%}
     <div class="btn-set">
-        {% if 'view' in show %}
+        {% if 'view' in show or 'table' in show or 'list' in show %}
             <h5>{% trans %}View{% endtrans %}</h5>
             {% set view = set_view or request.args.get('view', default) %}
             <div class="btn-group">
+                {% if 'card' in show %}
                 <a href="{{ current_url(view='card') }}" title="{% trans %}Card view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='card' }}"><span
                         class="glyphicon glyphicon-th-large"></span></a>
+                {% endif %}
+                {% if 'table' in show %}
                 <a href="{{ current_url(view='table') }}" title="{% trans %}Table view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='table' }}"><span
                         class="glyphicon glyphicon-list-alt"></span></a>
+                {% endif %}
+                {% if 'list' in show %}
                 <a href="{{ current_url(view='list') }}" title="{% trans %}List view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='list' }}"><span
                         class="glyphicon glyphicon-align-justify"></span></a>
+                {% endif %}
             </div></br>
         {% endif %}
 

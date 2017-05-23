@@ -1,10 +1,42 @@
 {% extends root_template %} {# Need to be first line to work in template chain  #}
 
-{# Add the block fonts to add to list of Google Fonts to download. Ensure {{ super() }} is start of block
+{# Add the block googlefonts to add to list of Google Fonts to download. Ensure {{ super() }} is start of block
 Format of Google fonts are |FontName:weight1,weight2|FontName2:weight1,weight2 etc.
 #}
-{% block fonts %}{{ super() }}|Eczar:700|Gentium+Basic:400,400italic,700,700italic{% endblock %}
+{% block googlefonts %}{{ super() }}|Eczar:700|Gentium+Book+Basic:400,400italic,700,700italic{% endblock %}
 
+
+{#
+navbar
+    navbar_brand
+    navbar_left
+    navbar_right
+    breadcrumbs
+    subnavbar
+    actionbar
+header
+    header_class
+    header_title
+        content_title
+        content_tagline
+main
+    header
+    intro
+    content
+    asides
+    post_content
+footer
+final_html
+
+A child can replace parent block with anything. For a child to remove a block, just replace it with empty.
+However, themes are parent templates. If they empty something, it may just be replaced by a child. To remove it,
+needs to instead replace the parent block and remove the child block. E.g. to remove header_title, replace header block
+with content that does not list header_title.
+
+To make a theme that fully replaces the page, replace the root blocks navbar, header, main and footer with content that
+doesn't have child blocks. However, a page without content block will effectively be static regardless of URL visited...
+
+#}
 
 {# Adds some custom CSS style in the header. Ensure it starts with {{ super() }} #}
 {% block cssimports %}
@@ -12,7 +44,7 @@ Format of Google fonts are |FontName:weight1,weight2|FontName2:weight1,weight2 e
     <style>
         .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
         .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
-            font-family: 'Eczar', 'Gentium Basic', sans-serif;
+            font-family: 'Eczar', 'Gentium Book Basic', sans-serif;
             font-weight: 700;
             color: #333;
         }

@@ -1,4 +1,4 @@
-{% extends "world/world_item.html" if world else "world/_page.html" %}
+{% extends "world/_page.html" %}
 
 {% set groups = articles|dummygrouper %}
 
@@ -53,13 +53,13 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-    {% if world.slug=='meta' %}
-    {{ MACRO.BREADCRUMBS(
-    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+    {% if world.slug == 'meta' %}
+        {{ MACRO.BREADCRUMBS(
+        (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.ArticlesView:index', world_=world.slug), _('Articles'))
     ) }}
     {% else %}
-    {{ MACRO.BREADCRUMBS(
+        {{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.WorldsView:index'), _('Game Worlds')),
         (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
@@ -89,9 +89,23 @@
             {% endfor %}
         </div>
 
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
         <h5>{% trans %}By created date{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['created_date'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By tag{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['tags'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
@@ -114,64 +128,24 @@
 {% block content %}
     <div>
         {% for group in groups %}
+            {% set articles = group.list %}
             {% if group.grouper %}
                 <h3>{{ _(group.grouper|capitalize) }}</h3>
             {% endif %}
-            {% if not group.list %}
+            {% if not articles %}
                 <div class="jumbotron text-center">
                     <h2>{{ _('No articles found') }}</h2>
                 </div>
             {% elif args['view'] == 'list' %}
 
-                {% for article in group.list %}
-                    <a class="blog-header"
-                       href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, intent='patch') }}">
-                        <h3>{{ article.title }}</h3></a>
-                    <ul class="list-inline article-meta" style="margin-bottom: 0">
-                        <li title="{{ _('Created') }}"><span
-                                class="glyphicon glyphicon-calendar"></span> {{ article.created_date|dateformat(format='short') }} {{ _('by') }}
-                        </li>
-                        <li title="{{ _('Creator') }}">
-                            <span class="glyphicon glyphicon-user"></span>
-                            {{ article.creator if article.creator else _('Admin') }}
-                        </li>
-                    </ul>
-                    <div class="media">
-                        {% if article.get_feature_image %}
-                            <a class="pull-left"
-                               href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, intent='patch') }}">
-                                <img class="media-object"
-                                     src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
-                            </a>
-                        {% endif %}
-                        <div class="media-body">
-                            {% if article.description %}{{ article.description|markdown }}{% else %}
-                                {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
-                            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}"><em
-                                    style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-                        </div>
-                    </div>
+                {% for article in articles %}
+                    {% include "world/article_list_view.html" %}
                 {% endfor %}
 
             {% elif args['view'] == 'card' %}
                 <div class="cards">
-                    {% for article in group.list %}
-                        <div class="card"
-                                {%- if article.get_feature_image -%}
-                             style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
-                                {%- endif -%}>
-                            <div class="card-text">
-                                <h3 class="card-title">
-                                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, intent='patch') }}">{{ article.title }}</a>
-                                </h3>
-                                {% set desc =  (article.content|markdown|striptags|replace('gallery-center','')).split('. R') %}
-
-                                <div class="card-description">{{ desc[0] }}</div>
-                                <ul class="card-details">
-                                    <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>
-                                </ul>
-                            </div>
-                        </div>
+                    {% for article in articles %}
+                        {% include "world/article_card_view.html" %}
                         {% if loop.index is divisibleby 9 %}</div>
                             <div class="pagebreak"></div>
                             <div class="cards">{% endif %}
@@ -179,32 +153,8 @@
                     </div>
 
             {% else %} {# ==table #}
-                <table class="table table-hover">
-                    <thead>
-                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
-                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
-                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
-                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'creator') }}</th>
-                    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created_date') }}</th>
-                    </thead>
-                    <tbody>
-
-                    {% for article in group.list %}
-                        <tr>
-                            <td>
-                                <a href="{{ url_for('world.ArticlesView:get', id=article.slug, world_=world.slug) }}">{{ article.title }}</a>
-                            </td>
-                            <td>{{ article.get_type_display() }}</td>
-                            <td>{{ article.world|default('Meta', true) }}</td>
-                            <td>{{ article.creator }}</td>
-                            <td class="small">{{ article.created_date|datetimeformat(format='short') }}</td>
-                        </tr>
-                    {% endfor %}
-
-                    </tbody>
-                </table>
+                {% include "world/article_table_view.html" %}
             {% endif %}
-
         {% endfor %}
 
     </div>

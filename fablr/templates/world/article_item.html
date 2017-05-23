@@ -61,7 +61,7 @@
     {% else %}
         {# We are viewing #}
         {% include "world/new_article_menu.html" %}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit', res=article)) %}
             {{ MACRO.EDIT_BUTTON(url_for('world.ArticlesView:get', id=article.slug,
             world_=world.slug, intent='patch')) }}
             {{ MACRO.DELETE_BUTTON() }}
@@ -81,7 +81,7 @@
     {{ MACRO.OG_ARTICLE(article) }}
 {% endblock %}
 
-{% block pre_content %}
+{% block header %}
     {% if args.get('intent', None) %}
         <form id="articleform" method="post" action="{{ action_url }}">
         {{ article_form.csrf_token }}
@@ -95,7 +95,7 @@
     {% endif %}
 {% endblock %}
 
-{% block page_header %}
+{% block header_title %}
     {% if args.get('intent', None) %}
         <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article-header">
             {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
@@ -115,27 +115,15 @@
 
 {% block intro %}
     {% if not args.get('intent', None) %}
-        {% set types = {
-    'default': 'record',
-    'blogpost': 'comment',
-    'material': 'briefcase',
-    'person': 'eye-open',
-    'fraction': 'certificate',
-    'place': 'map-marker',
-    'event': 'exclamation-sign',
-    'campaign': 'flag',
-    'chronicle': 'bookmark',
-    'character': 'heart'
-} %}
         <ul class="nav imprint">
-            <li title="{{ _('Article type') }}"><span class="glyphicon glyphicon-{{ types[article.type] }}"></span>
+            <li title="{{ _('Article type') }}"><span class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
                 <a>{{ article.get_type_display() }}</a>
             </li>
 
-            {% set articlegroups = article.readers %}
+            {% set articlegroups = article.editors + article.readers %}
             <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
                 {%- if article.creator %}
-                    {% if access_policy['user'].authorize('view') %}
+                    {% if access_policy['user'].authorize('view', res=article.creator) %}
                         <a href="{{ url_for('social.UsersView:get', id=article.creator.identifier()) }}">{{ article.creator }}</a>
                     {% else %}
                         <a>{{ article.creator }}</a>
@@ -148,21 +136,17 @@
             </li>
             {% if articlegroups or g.user %}
                 <li title="{{ _('Visibility') }}"><span
-                        class="glyphicon glyphicon-lock"></span> <a>{{ article.get_status_display() }}</a>
+                        class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span> <a>{{ article.get_status_display() }}</a>
                     <small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
                 </li>
             {% endif %}
-            {#            {% if g.user %}#}
-            {#                <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i#}
-            {#                        class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>#}
-            {#                <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i#}
-            {#                        class="glyphicon glyphicon-import"></i> {{ 0 }}</li>#}
-            {#            {% endif %}#}
-            <li title=""><span
-                    class="glyphicon glyphicon-print"></span> <a href="javascript:window.print()">{{ _('Print') }}</a>
-            </li>
-            <li title="{{ _('Share') }}" class="social"><span
-                    class="glyphicon glyphicon-share"></span> {% include "includes/social_icons.html" %}</li>
+            {% if article.tags %}
+            <li title="{{ _('Tags') }}"><span
+                    class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
+                <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}"><span class="badge">{{ t }}</span></a>
+                {%- endfor -%}</li>
+            {% endif %}
+            <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
         </ul>
     {% endif %}
 {% endblock %}
@@ -213,9 +197,12 @@
             {{ MACRO.FORM_FIELD(article_form.created_date, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
+            {{ MACRO.FORM_FIELD(article_form.publisher, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.world, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.tags, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize-tags col-sm-12') }}
+
             {{ MACRO.FORM_FIELD(article_form.editors, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
             {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12',
                 controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}

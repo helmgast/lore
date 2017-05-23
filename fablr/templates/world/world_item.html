@@ -1,13 +1,17 @@
 {% extends "world/world_list.html" if not world_theme else world_theme %}
 
-{% if world %}
-    {% set recent_articles=world.articles().order_by('-created_date')[:5] if world %}
-    {% set focus_articles=world.articles().filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:5] %}
-    {% set top_material=world.articles().order_by('-created_date').filter(type='material')[:5] %}
-{% endif %}
-
-{% block content_title %}{{ world.title if world else publisher.title }}{% endblock %}
-{% block content_tagline %} {{ _('by') }} {{ world.publisher if world else world_form.publisher.data }}{% endblock %}
+{% block content_title %}{{ world.title if world else _("New world") }}{% endblock %}
+{% block content_tagline -%}
+    {% if world %}
+        {% if world.tagline %}
+            {{ world.tagline }}
+        {% else %}
+            {{ _('by %(publisher)s', publisher=world.publisher) }}
+        {% endif %}
+    {% else %}
+        {{ _('by %(publisher)s', publisher=world_form.publisher.data) }}
+    {% endif %}
+{%- endblock %}
 
 
 {% block cssimports %}
@@ -52,7 +56,7 @@
     {% else %}
         {# We are viewing #}
         {% include "world/new_article_menu.html" %}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
             {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug)) }}
             {{ MACRO.DELETE_BUTTON() }}
         {% endcall %}
@@ -65,12 +69,14 @@
             <div class="row">
                 <div class="col-md-8">
                     {{ MACRO.FORM_FIELD(world_form.title) }}
+                    {{ MACRO.FORM_FIELD(world_form.tagline) }}
                     {{ MACRO.FORM_FIELD(world_form.description, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
-                    {{ MACRO.FORM_FIELD(world_form.shared) }}
+                    {{ MACRO.FORM_FIELD(world_form.facebook_url) }}
+                    {{ MACRO.FORM_FIELD(world_form.contribution) }}
                     {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}
@@ -94,21 +100,30 @@
             </div>
         </form>
     {% else %}
-        <p class="worldDesc">{{ world.description|markdown }}</p>
+        <article class="article-text">
+            {{ world.description|markdown }}
+        </article>
 
         <div class="row">
+            {% if world and articles %}
+                {% set recent_articles=articles[:5] %}
+                {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:5] %}
+                {% set top_material=articles.filter(type='material')[:5] %}
+            {% endif %}
             <div class="col-md-4">
+                {% if recent_articles %}
                 <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}
                 </h4>
                 <ul>
                     {% for a in recent_articles %}
                         <li>
                             <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
-                               alt="{{ a.title }}">{{ a.title }}</a></li>
+                               alt="{{ a.title }}">{{ a.title }}</a> <small class="nobr">[{{ a.created_date|dateformat("short") }}]</small></li>
                     {% else %}
                         {% trans %}No data{% endtrans %}
                     {% endfor %}
                 </ul>
+                {% endif %}
             </div>
             <div class="col-md-4">
                 {% if focus_articles %}
@@ -134,10 +149,14 @@
     {% endif %}
 {% endblock content %}
 
-{% block rightbar %}
-    <p class="text-center"><a class="btn btn-lg btn-info"
-                              href="{{ url_for('shop.ProductsView:index', world=world.slug) }}">
-        {% trans %}Buy in shop{% endtrans %}</a></p>
+{% block intro %}
+    {% if world and world.slug!='meta' and not world_form %}
+    <hr>
+    <p class="text-center">
+        <a class="btn btn-lg btn-info" href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
+        {% trans %}Buy in shop{% endtrans %}
+        </a>
+    </p>
     <table class="table">
         <tr>
             <th>{{ _('Publisher') }}</th>
@@ -151,10 +170,41 @@
                 <small>{{ world.rule_system|default(_('No data'), true) }}</small>
             </td>
         </tr>
-        {#
-        <tr><td><strong>{{ _('Status') }}</strong></td>
-        <td><small>{{ world.get_status_display()|default(_('No data'), true) }}</small></td></tr>
-#}
-
+        <tr>
+            <th>{{ _('Created') }}</th>
+            <td>
+                <small class="nobr">{{ world.created_date|dateformat("short") }}</small>
+            </td>
+        </tr>
+        <tr>
+            <th>{{ _('Status') }}</th>
+            <td>
+                <small>{{ world.get_status_display() }}</small>
+            </td>
+        </tr>
+        <tr>
+            <th>{{ _('Allows contributions') }}</th>
+            <td>
+                <small>{{ _('Yes') if world.contribution else _('No') }}</small>
+            </td>
+        </tr>
     </table>
-{% endblock rightbar %}
+        {% if world.facebook_url %}
+            <a href="{{ world.facebook_url }}">
+                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
+            </a>
+        {% endif %}
+    {% endif %}
+    {% include "includes/social_icons.html" %}
+{% endblock intro %}
+
+{% block asides %}
+    {% if world and not world_form and world.editors %}
+    <h4>{% trans %}Editors{% endtrans %}</h4>
+    <ul>
+        {% for editor in world.editors %}
+            <li>{{editor}}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+{% endblock %}

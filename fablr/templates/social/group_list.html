@@ -8,7 +8,7 @@
     ) }}{% endblock %}
 
 {% block actionbar %}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('new')) %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('new', res=publisher)) %}
         {{ MACRO.NEW_BUTTON(url_for('social.GroupsView:get', id='post'), 'New group') }}
     {% endcall %}
 {% endblock %}
@@ -57,7 +57,7 @@
                             {%- if group.get_feature_image -%}
                          style="background: url({{ url_for('image_thumb', slug=group.get_feature_image.slug) }}) center top/cover;"
                             {%- endif -%}>
-                        <a class="card-cover gianticon"
+                        <a class="card-cover icon150px"
                            href="{{ url_for('social.GroupsView:get', id=group.slug) }}"
                         >
                             <svg class="fablr-icon fablr-icon-stretch">

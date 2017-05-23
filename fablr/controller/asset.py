@@ -3,6 +3,7 @@ import logging
 from time import time
 
 import pyqrcode
+from bson import ObjectId
 from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
 from flask import send_file
 from flask_babel import lazy_gettext as _
@@ -15,9 +16,10 @@ from fablr.controller.pdf import fingerprint_pdf
 from fablr.controller.resource import RacModelConverter, \
     ResourceAccessPolicy, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
     filterable_fields_parser, \
-    prefillable_fields_parser
+    prefillable_fields_parser, Authorization
 
 from fablr.model.asset import FileAsset, FileAccessType
+from fablr.model.misc import EMPTY_ID
 from fablr.model.shop import products_owned_by_user
 from fablr.model.world import Publisher
 
@@ -108,21 +110,48 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
     abort(403)
 
 
+def filter_authorized():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(owner=g.user)
+
+
+def filter_authorized_by_publisher(publisher=None):
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    if not publisher:
+        # Check all publishers
+        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
+    elif g.user in publisher.editors or g.user in publisher.readers:
+        # Save some time and only check given publisher
+        return Q(publisher__in=[publisher])
+    else:
+        return Q(id=EMPTY_ID)
+
+
+class AssetAccessPolicy(ResourceAccessPolicy):
+
+    def is_editor(self, op, user, res):
+        if user == res.owner or (res.publisher and user in res.publisher.editors):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+
+    def is_reader(self, op, user, res):
+        if user == res.owner or (res.publisher and user in res.publisher.readers):
+            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res), privileged=True)
+        else:
+            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+
+
 class FileAssetsView(ResourceView):
     subdomain = '<pub_host>'
     route_base = '/media/'
-    access_policy = ResourceAccessPolicy({
-        'view': 'user',
-        'list': 'user',
-        'edit': 'editor',
-        'new': 'editor',  # refers to editor of parent world/publisher passed to authorize() as instance
-        '_default': 'admin'
-    })
+    access_policy = AssetAccessPolicy()
     model = FileAsset
     list_template = 'fileasset_list.html'
     item_template = 'fileasset_item.html'
     form_class = model_form(FileAsset,
-                            # Allows editing slug, not normally done
                             exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width', 'height'],
                             base_class=RacBaseForm,
                             converter=RacModelConverter())
@@ -137,11 +166,16 @@ class FileAssetsView(ResourceView):
         ['slug', 'owner', 'access_type', 'tags', 'length'])
 
     def index(self, **kwargs):
-        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        publisher = Publisher.objects(slug=g.pub_host).first()
         r = ListResponse(FileAssetsView, [
             ('files', FileAsset.objects(Q(publisher=publisher) | Q(publisher=None)).order_by('-created_date')),
             ('publisher', publisher)], extra_args=kwargs)
         r.auth_or_abort()
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_authorized() |
+                filter_authorized_by_publisher(publisher))
+
         r.prepare_query()
 
         # This will re-order so that any selected files are guaranteed to show first
@@ -159,16 +193,18 @@ class FileAssetsView(ResourceView):
     def get(self, id):
         if id == 'post':
             r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
         else:
             fileasset = FileAsset.objects(slug=id).first_or_404()
             r = ItemResponse(FileAssetsView, [('fileasset', fileasset)])
-        r.auth_or_abort()
+            r.auth_or_abort()
         return r
 
     def patch(self, id):
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
         r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
+        r.auth_or_abort()
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')

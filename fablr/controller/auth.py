@@ -311,7 +311,7 @@ def get_logged_in_user(require_active=True):
                         as_user = request.args['as_user']
                         if as_user == 'none':
                             return None  # Simulate no logged in user
-                        u2 = User.objects(username=as_user).first()
+                        u2 = User.objects(email=as_user).first()
                         if u2:
                             logger.debug("User %s masquerading as %s" % (u, u2))
                             return u2

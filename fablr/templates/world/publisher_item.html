@@ -15,7 +15,7 @@
         {{ MACRO.CANCEL_BUTTON(url_for('world.PublishersView:get', id=publisher.slug)) }}
     {% else %}
         {# We are viewing #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('edit', res=publisher)) %}
             {{ MACRO.EDIT_BUTTON(url_for('world.PublishersView:get', id=publisher.slug, intent='patch')) }}
 {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
@@ -32,8 +32,15 @@
                     {{ MACRO.FORM_FIELD(publisher_form.publisher_code, helptext=_('2 letter code')) }}
                     {{ MACRO.FORM_FIELD(publisher_form.email) }}
                     {{ MACRO.FORM_FIELD(publisher_form.title) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.tagline) }}
                     {{ MACRO.FORM_FIELD(publisher_form.description, controlclass='content-editor') }}
                     {{ MACRO.FORM_FIELD(publisher_form.status) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.contribution) }}
+
+                    {{ MACRO.FORM_FIELD(publisher_form.webshop_url) }}
+                    {{ MACRO.FORM_FIELD(publisher_form.webshop_activated) }}
+
+                    {{ MACRO.FORM_FIELD(publisher_form.facebook_url) }}
                     {{ MACRO.FORM_FIELD(publisher_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(publisher_form.editors, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(publisher_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}

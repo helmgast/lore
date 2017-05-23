@@ -1,28 +1,28 @@
 {% extends root_template if not publisher_theme else publisher_theme %}
 {% import 'includes/macros.html' as MACRO %}
 
-
 {% block content_title %}{{ _('Shop') }}{% endblock %}
 {% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
-{% block shop_active %} class="active"{% endblock %}
 
 {% block navbar_right %}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
+    {% if publisher.webshop_activated %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list', res=publisher)) %}
     <li><a id="cart-counter" {{ 'class=highlight'if cart_items and cart_items > 0 }}
            href="{{ url_for('shop.OrdersView:cart') }}" title="{{ _('Cart') }}">
         <span style="font-size: 20px" class="glyphicon glyphicon-shopping-cart"></span><span
             class="badge">{{ cart_items if cart_items else 0 }}</span>
     </a></li>
     {% endcall %}
+    {% endif %}
     {{ super() }}
 {% endblock %}
 
 {% block subnavbar %}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list')) %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('list', res=publisher)) %}
         <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:index') }}"><span
                 class="glyphicon glyphicon-certificate"></span> {{ _('Products') }}</a></li>
     {% endcall %}
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('new')) %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('list', res=publisher)) %}
         <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:index') }}"><span
                 class="glyphicon glyphicon-list-alt"></span> {{ _('Orders') }}</a></li>
     {% endcall %}

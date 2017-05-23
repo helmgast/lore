@@ -17,29 +17,11 @@
 {% endblock %}
 
 {% block content_title %}{{ _('The %(world)s blog', world=world.title) }}{% endblock %}
-{% block content_tagline %} {{ _('by') }} {{ world.publisher if world else world_form.publisher.data }}{% endblock %}
+{% block content_tagline %} {{ _('by') }} {{ world.publisher }}{% endblock %}
 
 {% block content %}
 	{% for article in articles %}
-	<a class="blog-header" href="{{url_for('world.ArticlesView:get', world_=world.slug, id=article.slug)}}"><h2>{{ article.title}}</h2></a>
-	<ul class="list-inline article-meta" style="margin-bottom: 0">
-    <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date|dateformat(format='short') }} {{ _('by') }}</li>
-	<li title="{{ _('Creator') }}">
-	<span class="glyphicon glyphicon-user"></span>
-	{{article.creator if article.creator else _('Admin')}}
-	</li>
-	</ul>
-	<div class="media">
-	{% if article.get_feature_image %}
-  	<a class="pull-left" href="{{url_for('world.ArticlesView:get', world_=world.slug, id=article.slug)}}">
-  	<img class="media-object" src="{{url_for('image_thumb', slug=article.get_feature_image.slug)}}">
-		</a>
-	{% endif %}å
-		<div class="media-body">
-			{% if article.description %}{{article.description|markdown}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-			<a href="{{url_for('world.ArticlesView:get', world_=world.slug, id=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-		</div>
-	</div>
+        {% include "world/article_list_view.html" %}
 	{% else %}
     <div class="jumbotron text-center">
       <h2>{{ _('No articles yet!') }}</h2>

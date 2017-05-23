@@ -5,6 +5,17 @@
 {% block content_title %}{{ user }}{% endblock %}
 {% block content_tagline %}{{ user.xp }} XP{% endblock %}
 
+{% block cssimports %}
+    {{ super() }}
+    {# Makes the avatar have the background image specific to the current user's gravatar #}
+    <style>
+        .avatar:empty {
+            background-image: url({{ user.gravatar_url(256)|safe }});
+        }
+    </style>
+{% endblock %}
+
+
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.homepage'), _('Home')),
         (url_for('social.UsersView:index'), _('Users')),
@@ -23,7 +34,7 @@
         {{ MACRO.CANCEL_BUTTON(url_for('social.UsersView:get', id=user.id)) }}
     {% else %}
         {# We are viewing #}
-        {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit')) %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
             {{ MACRO.EDIT_BUTTON(url_for('social.UsersView:get', intent='patch', id=user.identifier())) }}
             {#            {{ MACRO.DELETE_BUTTON() }}#}
         {% endcall %}
@@ -49,16 +60,13 @@
     {% endif %}
 <div class="row">
     <div class="col-md-4">
-            {% if user.admin %}
-            <div class="alert alert-info">User is an admin</div>
-        {% endif %}
-        {% if user.images %}
-            <img src="{{ url_for('image', slug=user.images[0].slug) }}" class="img-polaroid img-responsive"/>
+        {% if user_form %}
+            {{ MACRO.FORM_FIELD(user_form.images, controlclass='fileselect',
+            data_endpoint=url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'),
+            data_class='avatar feature-images') }}
+            <small>{{ _('Click to upload your avatar, by default we will use your <a href="https://en.gravatar.com/site/signup/">Gravatar</a>') }}</small>
         {% else %}
-            <img src="{{ user.gravatar_url(256) }}" class="img-polaroid img-responsive"/>
-            {% if user_form or g.user==user %}
-                {{ _('Pick your avatar at') }} <a href="https://en.gravatar.com/site/signup/">Gravatar</a>
-            {% endif %}
+            <img src="{{ url_for('image', slug=user.images[0].slug) if user.images else user.gravatar_url(256)}}" class="img-polaroid img-responsive">
         {% endif %}
 
         <div>
@@ -100,6 +108,9 @@
         </div>
     </div>
     <div class="col-md-8">
+        {% if user.admin %}
+            <div class="alert alert-info">User is an admin</div>
+        {% endif %}
         {% if user_form %}
             {% if user and user==g.user %}
                 {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
@@ -109,7 +120,7 @@
             {{ MACRO.FORM_FIELD(user_form.description, labelclass="col-sm-3", controlwrap="col-sm-9", controlclass="content-editor") }}
         {% else %}
             <table class="table">
-                {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+                {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
                     <tr>
                         <th>{{ _('Email') }}</th>
                         <td>
@@ -141,19 +152,6 @@
                     <td>{{ user.last_login|datetimeformat(format='short') if user.last_login else _('Not logged in yet') }}</td>
                 </tr>
 
-
-                {% call(privileged) MACRO.IS_ADMIN() %}
-                    <tr>
-                        <th>{{ _('Authentication') }}</th>
-                        <td>{{ user.auth_type() }}
-                        </td>
-                    </tr>
-                    {#<tr><th>{{ _('Join link') }}</th>
-        <td style="max-width: 200px; word-wrap: break-word;"><a
-        href="{{ url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('social.UsersView:get', id=user.id), reset=true) }}">{{
-          url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname) }}</a></td>
-      </tr>#}
-                {% endcall %}
                 {#
       <tr><th>{{ _('Following') }}</th>
       <td><span class="badge">N/A</span></td></tr>
@@ -162,7 +160,7 @@
       #}
             </table>
             <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div>
-            {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', user)) %}
+            {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
 
                 <h3>{{ _('History') }}</h3>
                 <table class="table">
