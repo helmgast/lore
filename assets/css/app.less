@@ -425,6 +425,10 @@ footer a {
   margin-top: 3px;
 }
 
+.fablr-icon-printer:hover {
+  color: #222;
+}
+
 .fablr-icon-feed:hover {
   color: #FF6600;
 }
@@ -453,7 +457,7 @@ footer a {
   border-top: none;
 }
 
-.gianticon {
+.icon150px {
   position: relative;
   top: 1px;
   display: inline-block;
@@ -471,6 +475,20 @@ footer a {
   width: 100%;
   display: table-cell;
   vertical-align: middle;
+}
+
+.icon64px {
+  .icon150px;
+  font-size: 64px;
+}
+
+.icon64px:hover, .icon150px:hover {
+  text-decoration: none;
+}
+
+.media-object {
+  width: 80px;
+  display: block;
 }
 
 /* ------------------- Forms --------------------- */
@@ -660,10 +678,14 @@ a.highlight {
   margin-top: 150px;
   color: white !important;
   font-size: 60px;
+  text-shadow: 0px 0px 6px #000;
 }
 
 .page-header-hero small {
-  color: #bbb;
+  color: #eee;
+  display: block;
+  margin-top: 20px;
+  margin-left: 10px;
 }
 
 @media ( max-width: 767px) {
@@ -722,8 +744,6 @@ important;
 
 /* For all article text regardless of being edited or not */
 article {
-  font-family: 'Gentium Basic', 'Georgia', sans-serif;
-  font-size: 18px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.625; /* To be aligned with other line heights for rhythm*/
@@ -737,10 +757,6 @@ article {
   font-weight: 300;
   padding-right: .1em;
   text-transform: uppercase;
-}
-
-.blog-header:hover {
-  text-decoration: none;
 }
 
 article a[href*=".pdf"], article a[href*=".rtf"], article a[href*=".zip"], article a[href*=".txt"] {
@@ -766,13 +782,6 @@ article, .gallery {
   }
 }
 
-.article-meta {
-  color: #999;
-  margin-bottom: 20px;
-  border-top: dashed 1px #999;
-  padding-top: 5px;
-}
-
 .imprint {
   /*width: 100%;*/
   border-bottom: 1px #eee solid;
@@ -790,6 +799,27 @@ article, .gallery {
 
 .nav.imprint a {
   display: inline-block;
+  padding-left: 0px;
+  padding-right: 2px;
+}
+
+.nav.imprint > li > a:hover {
+  background-color: inherit;
+}
+
+.status-unpublished, .status-unpublished a, .status-unpublished a > .blog-header {
+  color: #ccc !important;
+  filter: grayscale(100%);
+}
+
+.status-unpublished:hover, .status-unpublished a:hover {
+  color: #aaa;
+}
+
+.card.status-unpublished, .media.status-unpublished {
+  box-shadow: none;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
 }
 
 /* ------------------- Helpers --------------------- */
@@ -806,8 +836,16 @@ article, .gallery {
   margin-bottom: 15px;
 }
 
+.margin-below-large {
+  margin-bottom: 30px;
+}
+
 .margin-above {
   margin-top: 15px;
+}
+
+.fullwidth {
+  width: 100%;
 }
 
 .nobr {
@@ -1231,7 +1269,6 @@ article {
   pointer-events: none;
 }
 
-
 .gallery-side {
   max-width: 50%;
   float: right;
@@ -1300,6 +1337,10 @@ article {
   content: "\e022";
 }
 
+.fileselect:empty.avatar {
+  background-size: contain;
+}
+
 .zoomable {
   /*-webkit-transition: width 1s, height 1s, background-color 2s, -webkit-transform 2s;*/
   //transition: opacity 1s;
@@ -1364,11 +1405,6 @@ img.zoomable.zoomed {
 .loadlink {
   // Makes this behave as a full row button at end of the flexbox
   flex-basis: 100%;
-}
-
-.media-object {
-  max-height: 80px;
-  margin-right: 10px;
 }
 
 .loading {

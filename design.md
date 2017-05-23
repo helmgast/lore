@@ -361,25 +361,105 @@ the user who created the resource, if this is a field existing in the resource.
     Verify: Complete registration of a previously created but incomplete user.
     Same as join more or less, but assumes user exists but needs additional info. If email and token are given, verify user.
 
-Some access patterns
+Some authorization patterns
 ------------------------------------------------------------------
 
-- User. Read by all (if system-activated), write by user or admin.
-- Group. Read by all, write by group master or admin.
-- ImageAsset. Read by all, write by creator or admin.
-- Article. Read by those in Readgroup, Write by those in write groups.
-- World. Read by all, write by world creator group or admin.
+All instances can be operated by CRUD (Create, Read, Update, Delete). For some assets,
+Read is split into subvarieties, e.g. Read Published, Read Unpublished.
 
-Login-flow
-------------------------------------------------------------------
-A user can currently be either Invited, Active or Deleted. The definitions:
-- Invited: user exists in the database but has not verified its email, meaning it cannot be considered secure (someone can send up with another persons email). No communication can happen with an invited user, except to verify the email.
-- Active: A normal user. Must have at least one authentication method.
-- Deleted: A user that has been removed but is kept in database to keep consistency. Can theoretically be re-activated.
+There are 5 types of roles:
+- Admin: Have full rights to modify all resources.
+- Editor: Have full rights on a specific resource, and all child resources (what is a child depends)
+- Reader: Have access to read specific resources regardless of their state, and to read all child resources.
+- User: Have access to create new resources and read published resources. 
+(When a new resource is created, that user counts as Editor of the new instance)
+- Visitor: Un unauthenticated user, can only read published resources.
 
-1) Join: A visitor goes to /auth/join to create a new user. He/she provides
-an email (required) and then chooses to authenticate with Google, Facebook or
-Password.
+Subsequently, most instances have the following states:
+- Draft: not published, but in various stages of edit. glyphicon glyphicon-inbox
+- Revision: not used but reserved to denote older revisions of a resource glyphicon glyphicon-retweet
+- Published: Published to all with general access (typically visitors) glyphicon glyphicon-eye-open
+- Private: not used but reserved to mean published to selected readers only glyphicon glyphicon-eye-close
+- Archived: passed published, and now hidden from general access. glyphicon glyphicon-folder-close
+
+Public listing:
+- Public listings means to show resources with Published state, created_at an earlier time (e.g. not future dated).
+- An admin/editor would see all resources regardless of state and created_at.
+- A reader would see Draft, Private and Published resources.
+
+Listing: A visitor can list a resource if the Model (not resource) allows it, e.g. if it's public or not.
+If the listing can be considered listing subresources of another Model, this can also be checked.
+
+Creation: A user can by default create new resources if the Model (not resource) allows it. In addition, if the creation
+of the resource creates a link to another resource, we can check that this is allowed.
+
+Example scenarios for authorization
+---------
+
+/thepublisher (editor: NF, reader: PN)
+    /worlds
+    /theworld (editor: MB, reader: AW)
+        /articles
+        /thearticle (editor: PF, reader: PD)
+    /products
+    /theproduct
+        
+/thearticle can be read by PD, PF, FJ, MB, NF and MF but no one else regardless of status.
+/thearticle can be updated/deleted by PF, MB, MF
+/anewarticle can be created by MF, MB if closed, otherwise by any user
+/theotherarticle can be read by anyone if published, otherwise by PF, FJ, MB, NF and MF.
+For /theworld/articles:
+All users, incl PD and PF, will see only published articles.
+FJ, MB, NF and MF will see all articles.
+
+For /thepublisher/articles:
+All users, incl PD, PF, FJ, MB will see only published articles without worlds. However, 
+for articles with theworld visibility will be as previous example.
+MF, NF will see all articles.
+
+/theworld can be read by FJ, MB, NF, MF if not published, otherwise by all
+/theworld can be updated/deleted by MB, MF
+/anewworld can be created by MF
+
+NF = Niklas Fröjd = niklas@helmgast.se
+PN = petter@helmgast.se
+MB = marco@helmgast.se
+AW = anton@helmgast.se
+PF = per.frojdh@gmail.com
+PD = paul@helmgast.se
+user = niasd@as.com
+
+
+Roles: Admin, Editor, Reader, User, Visitor
+Actions: Create, Read Published, Read Unpublished, Update, Delete
+
+new: user
+list: is_visitor
+
+read: reader (also checks admin, editor)
+edit: editor (also checks admin)
+delete: editor
+
+
+
+
+REST Gotchas
+--------------
+Things that needs some implementation thought or should be covered by frameworks used:
+
+- Nice URLs do not match REST urls, as may want to see parent resources and no "articles" verb in the URL
+- Human users have two kinds of GET - get to read, and get to edit, e.g. a form. Thereby "intent="
+- Some fields need to be sent to client but not editable, eg. slug
+- Some fields need some form of serialization to fit into a FORM and back into an object
+- Some fields can be editable but not sent to client, e.g. password
+- Creating a reference in a field to another resource may depend on permissions from that other resource (e.g. to make
+an article inside a world needs permissions on that world)
+- There are multiple "Schemas": one for database models, one for forms, one for URL arguments, and potentially one for auth. 
+They should be kept as close/same but also have different behaviour. The DB model needs all fields while a form maybe SHOULDN'T
+contain all fields.
+- REST says that POST for new resources should happen on the list route e.g /articles/. It means the function that deals with that 
+list route has to also deal with the logic for posting. Especially as the form for creating a new resource needs to come from the GET route.
+I solved it with having the special id "post" so that the GET route can be re-used.
 
 
 

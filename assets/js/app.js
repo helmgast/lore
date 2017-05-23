@@ -226,12 +226,6 @@ function init_dom(e) {
             }
         }
     });
-    scope.find('.selectize').on('selectize:unselect', function (e) {
-        // TODO this is a hack to select the __None item, residing at index 0, to correctly empty the field
-        if (e.currentTarget.selectedIndex == -1) {
-            e.currentTarget.selectedIndex = 0;
-        }
-    })
 
     // Flatpickr for date-felds in forms
     var flatpickr = require('flatpickr');
