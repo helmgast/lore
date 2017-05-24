@@ -48,7 +48,7 @@ class Publisher(Document):
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
     tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
-    description = StringField(max_length=500, verbose_name=_('Description'))
+    description = StringField(max_length=350, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     creator = ReferenceField(User, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
@@ -88,7 +88,8 @@ class Publisher(Document):
 class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     title = StringField(min_length=3, max_length=60, required=True, verbose_name=_('Title'))
-    description = StringField(max_length=500, verbose_name=_('Description'))
+    description = StringField(max_length=350, verbose_name=_('Description'))
+    content = StringField(verbose_name=_('Content'))
     tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
     publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))  # TODO set to required
     creator = ReferenceField(User, verbose_name=_('Creator'))
@@ -278,7 +279,7 @@ class Article(Document):
     creator = ReferenceField(User, verbose_name=_('Creator'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     title = StringField(min_length=1, max_length=60, required=True, verbose_name=_('Title'))
-    description = StringField(max_length=500, verbose_name=_('Description'))
+    description = StringField(max_length=350, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))

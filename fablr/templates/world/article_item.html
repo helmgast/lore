@@ -14,6 +14,9 @@
 {% endif %}
 
 
+{% block header_class %}{% endblock %}
+
+
 {% block breadcrumbs %}
     {% if world.slug=='meta' %}
         {% if article_type=='blogpost' %}
@@ -160,7 +163,7 @@
         </article>
         {% else %}
             <article class="article-text">
-            {{ article.content|markdown if article.content else _("Content") }}
+            {{ article.content|default(_('No data'), true)|markdown }}
             {% if article.type == 'blogpost' %}
                 {% include 'includes/disqus.html' %}
             {% endif %}

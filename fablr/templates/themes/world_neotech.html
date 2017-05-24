@@ -1,6 +1,6 @@
 {% extends "world/world_list.html" %}
 
-{% block googlefonts %}{{ super() }}|Oswald:300,400,700|Electrolize{% endblock %}
+{% block googlefonts %}{{ super() }}|Electrolize{% endblock %}
 
 {% block cssimports %}
     {{ super() }}
@@ -8,79 +8,32 @@
     <style>
         body, .content {
             background-color: #2b2b2b;
-            color: #333;
+            color: #d9d9d9;
         }
 
-        h1 {
+        .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6, label, th {
             font-family: Electrolize, sans-serif;
             color: #0fc;
-            font-size: 42px;
-            line-height: 44px;
             font-weight: 800;
             text-shadow: #000 0px 0px 15px;
         }
 
-        .container a {
+        .page-header-hero {
+            background-image: url({{ url_for('static', filename='img/themes/johan_hero_image_2x.jpg') }});
+
+        }
+
+        .content a {
             color: #0fc !important;
         }
 
-        .herotext {
-            max-width: 550px;
-            margin-left: 50px;
-            font-family: Oswald, sans-serif;
-            font-size: 59px;
-            line-height: 60px;
-            text-shadow: #0fc 0px 0px 15px;
-        }
-
-        h2 {
-            font-family: Electrolize, sans-serif;
-            color: #0fc;
-            font-size: 32px;
-            line-height: 36px;
-            font-weight: 700;
-            text-shadow: #0fc 0px 0px 5px;
-        }
-
-        h3 {
-            font-size: 24px;
-            line-height: 30px;
-            font-weight: 700;
-        }
-
-        p {
-            padding-right: 20px;
-            padding-left: 20px;
-            color: #d9d9d9;
-            font-size: 18px;
-            line-height: 30px;
-            text-shadow: black 1px 1px 5px;
-        }
-
-        .hero-unit {
-            background-image: url({{ url_for('static', filename='img/themes/johan_hero_image_2x.jpg') }});
-        }
-
-        .rightp {
-            font-size: 20px;
-            font-style: italic;
-            text-shadow: black 1px 1px 5px;
-        }
-
-        .leftimg {
-            float: left;
-        }
 
         .altsection {
             padding-right: 20px;
             padding-left: 20px;
             border-top: 1px solid black;
             background-color: #006363;
-        }
-
-        .rightimg {
-            float: right;
-            box-shadow: none;
         }
 
         .pattern_section {
@@ -93,183 +46,17 @@
             box-shadow: black 0px 0px 3px 0px;
         }
 
-        .preview_img {
-            position: absolute;
-            right: 0px;
-            top: 0px;
-        }
-
-        .herowidget {
-            display: block;
-            width: 33%;
-            text-align: center;
-            max-width: 150px;
-            float: right;
-        }
-
-        .buttons {
-            width: 100%;
-            padding-top: 3px;
-            float: right;
-            border-radius: 50px;
-            background-color: rgba(120, 115, 115, 0.54);
-        }
     </style>
 {% endblock cssimports %}
 
-{% block cover %}
-    <div class="row hero-unit">
-        <img class="preview_img" src="{{ url_for('static', filename='img/themes/preview_tag.png') }}" width="207"
-             alt="preview_tag.png">
-        <div class="col-sm-6">
-            <img class="img-responsive" src="{{ url_for('static', filename='img/themes/logo_nx.png') }}" alt="logo_nx.png">
-        </div>
-        <div class="col-sm-6">
-            <h1 class="herotext">A neopunk game on the verge of singularity</h1>
-            <div class="buttons">
-                <div class="herowidget">
-                    <iframe frameborder="0" border="0" scrolling="no" allowtransparency="true" height="25"
-                            width="116"
-                            src="//platform.tumblr.com/v1/follow_button.html?button_type=2&amp;tumblelog=ripperdoc&amp;color_scheme=dark"></iframe>
-                </div>
-                <div class="herowidget">
-                    <iframe src="https://www.facebook.com/plugins/like.php?href=http%3A%2F%2Ffacebook.com%2Fneogames.neotech&amp;layout=button_count&amp;action=like&amp;show_faces=false&amp;share=false"
-                            scrolling="no" frameborder="0" allowtransparency="true"
-                            style="border: none; overflow: hidden; width: 90px; height: 20px;"></iframe>
-                </div>
-                <div class="herowidget">
-                    <iframe src="https://platform.twitter.com/widgets/follow_button.html#screen_name=neotechx&amp;show_count=false&amp;size=m&amp;show_screen_name=true&amp;dnt=true"
-                            scrolling="no" frameborder="0" allowtransparency="true"
-                            style="border: none; overflow: hidden; width: 100%; height: 20px;"></iframe>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endblock cover %}
-
-{% block hero_box %}
-    <div class="row grey_section">
-        <div class="col-sm-6">
-            <img class="leftimg" src="{{ url_for('static', filename='img/themes/nomad_web.jpg') }}" width="400"
-                 alt="nomad_web.jpg">
-        </div>
-        <div class="col-sm-6">
-            <p class="rightp">Monde has gone ultra. It's all fucked up. They say we're heading into singularity,
-                that there will be atta floods of E filling our accounts, that the fucking drones and bots will do
-                it all for us. Well, it for sure won't come to those norms that
-                just follow the gray gooey flows towards the metro. It will come to the neopunkers, the hackers, the
-                netheads and the taktikals that aren't afraid to get ahead of the System.</p>
-        </div>
-    </div>
-    <div class="row altsection">
-            <h2>NX - the sequel to Neotech 2</h2>
-            <img class="rightimg" src="{{ url_for('static', filename='img/themes/alla_neotech.jpg') }}" width="200"
-                 alt="alla_neotech.jpg">
-            <p>NX is a Swedish table-top roleplaying game that was first published 1994 as Neotech, and it has been
-                Sweden's response to the classical Cyberpunk from Talsorian Games. Neotech began as a pure cyberpunk
-                game, a child of the 80's and 90's, very much
-                like the genre as a whole. But now, 2013, we are already partly into the cyberpunk future. A lot of the
-                technology, fears and attributes have either been fulfilled or replaced with something new. So for 7
-                years, a diverse team of freelancers have
-                re-written Neotech from scratch to a game that captures what cyberpunk would be if it was first created
-                today. We call it <strong>neopunk</strong>.</p>
-            <h2>Neopunk</h2>
-            <p>What people fear today is what people are used to in 2070. Sea levels have risen and the climate has
-                collapsed, WW3 have torn many countries apart, corporations challenge nation states to stay above the
-                ups-and-downs of the markets. Augmented reality
-                is standard for almost all, internet is referred to as "the layers", drones and bots are everywhere.
-                People use cybernetics and biotech to modify themselves to be prettier, stronger and live longer. But
-                the world is on the verge to something.
-                The famed singularity have seemingly not happened, even as big corps are ruled by superhuman AIs. But
-                they say it's impossible to see the change when one is right in the middle, and the world is on the
-                brink to singularity - but not necessarily
-                the utopia envisioned. Around the world, a movement called "neopunk" is trying to embrace the new,
-                transhuman future, saying that humanity is a "medieval" concept, but others are worried things are going
-                too far.
-                <br>
-                <br>Neopunkers differs from cyberpunkers. They embrace the new. They know that the only way to beat the
-                System is to be part of it - and use it to one's advantage. Neopunkers are hyper-social and transhuman
-                and come from all backgrounds. They think
-                further than having a fully loaded auto-shotgun. They gather around the belief that the AIs could be the
-                new gods. They obsess over obscure brands, dress either minimalistic or over-the-top.</p>
-    </div>
-    <div class="row pattern_section">
-            <h1>Inspiration</h1>
-            <p><em>NX is still being created, in form of both text, images, multimedia and interactive features. We draw
-                immense amount of inspiration from the tsunami of cyberpunk and scifi-related material that is being
-                produced. Movies like Minority Report, Elysium, Oblivion, Blade Runner, Robocop, Judge Dredd and Total
-                Recall as well as games like Watch Dogs, Mirror's Edge, Remember Me, Syndicate, Deus Ex. We also collect
-                a lot of images, and below is a snapshot of how we'd like to visualize </em><em>the world we are trying
-                to create:</em>
-            </p>
-            <style>.w-embed span {
-                margin-left: 20px !important;
-            }</style>
-            <div class="w-embed w-script">
-                <a data-pin-do="embedBoard" href="//www.pinterest.com/ripperdoc/nx/" data-pin-scale-width="200"
-                   data-pin-scale-height="900" data-    private=_('Draft'),  # published, but only visible to those with explicit access
-pin-board-width="900">
-                    Follow ripperdoc's board NX on Pinterest.</a>
-                <script type="text/javascript" async src="https://assets.pinterest.com/js/pinit.js"></script>
-            </div>
-    </div>
-{% endblock hero_box %}
+{% block header_class %}page-header-hero{% endblock %}
 
 
-{#                <div class="w-embed">#}
-{#                    <style type="text/css">#}
-{#                        #mc_embed_signup {#}
-{#                            padding: 20px 20px 0px 20px;#}
-{#                            clear: left;#}
-{#                            font: 18px 'Lato', Calibri, Arial, sans-serif;#}
-{#                            color: #0fc;#}
-{#                            text-transform: uppercase;#}
-{#                            width: 100%;#}
-{#                        }#}
-{##}
-{#                        #mc_embed_signup label {#}
-{#                            font: 24px;#}
-{#                            cursor: pointer;#}
-{#                        }#}
-{##}
-{#                        #mc_embed_signup .email {#}
-{#                            border: 3px solid #0fc;#}
-{#                            font: 18px 'Lato', Calibri, Arial, sans-serif;#}
-{#                            line-height: 1.5;#}
-{#                            width: 66%;#}
-{#                        }#}
-{##}
-{#                        .mailchimp_button {#}
-{#                            border: 3px solid #0fc;#}
-{#                            text-transform: uppercase;#}
-{#                            font-weight: 700;#}
-{#                            line-height: 1.8;#}
-{#                            color: #d9d9d9;#}
-{#                            background: #555;#}
-{#                            text-shadow: black 1px 1px 5px;#}
-{#                            -webkit-transition: all 0.3s;#}
-{#                            -moz-transition: all 0.3s;#}
-{#                            transition: all 0.3s;#}
-{#                        }#}
-{##}
-{#                        .mailchimp_button:hover, .mailchimp_button:active {#}
-{#                            color: #000;#}
-{#                            background: #0fc;#}
-{#                            text-shadow: none;#}
-{#                        }#}
-{#                    </style>#}
-{#                    <div id="mc_embed_signup">#}
-{#                        <form action="http://twitter.us7.list-manage1.com/subscribe/post?u=0993186c4e19059ba036bbdac&amp;id=f73ac638da"#}
-{#                              method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form"#}
-{#                              class="validate" target="_blank" novalidate="">#}
-{#                            <label for="mce-EMAIL">Get updates</label>#}
-{#                            <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL"#}
-{#                                   placeholder="email address" required="">#}
-{#                            <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->#}
-{#                            <div style="position: absolute; left: -5000px;">#}
-{#                                <input type="text" name="b_0993186c4e19059ba036bbdac_f73ac638da" value="">#}
-{#                            </div>#}
-{#                            <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe"#}
-{#                                   class="mailchimp_button">#}
-{#                        </form>#}
-{#                    </div>#}
+{% block post_content %}
+ <div>
+    <a data-pin-do="embedBoard" href="//www.pinterest.com/ripperdoc/nx/" data-pin-scale-width="200"
+       data-pin-scale-height="900" pin-board-width="900">
+        Follow ripperdoc's board NX on Pinterest.</a>
+    <script type="text/javascript" async src="https://assets.pinterest.com/js/pinit.js"></script>
+</div>
+{% endblock %}
