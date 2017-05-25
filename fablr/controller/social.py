@@ -9,22 +9,27 @@
 
     :copyright: (c) 2016 by Helmgast AB
 """
-
-from flask import abort, request, Blueprint, g
+import logging
+from flask import abort, request, Blueprint, g, current_app
 from flask import flash
 from flask import redirect
 from flask import url_for
 from flask_babel import lazy_gettext as _
+from flask_classy import route
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError, Q
+from wtforms import Form
 
 from fablr.controller.auth import get_logged_in_user
 from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
+from fablr.extensions import csrf
 from fablr.model.misc import EMPTY_ID
 from fablr.model.user import User, Group, Event
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
 
 def filter_authorized():
     if not g.user:
@@ -42,6 +47,10 @@ class UserAccessPolicy(ResourceAccessPolicy):
     def is_reader(self, op, user, res):
         return self.is_editor(op, user, res)
 
+FinishTourForm = model_form(User,
+                            base_class=Form,  # No CSRF on this one
+                            only=['tourdone'],
+                            converter=RacModelConverter())
 
 class UsersView(ResourceView):
     access_policy = UserAccessPolicy()
@@ -94,6 +103,21 @@ class UsersView(ResourceView):
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('social.UsersView:get', id=user.id))
+
+    @route('/finish_tour', methods=['PATCH', 'GET'])
+    @csrf.exempt
+    def finish_tour(self):
+        user = g.user
+        if not user:
+            logger.warning(_("No user to finish tour for"))
+            abort(404)
+
+        r = ItemResponse(UsersView, [('user', user)], method='patch', form_class=FinishTourForm)
+        r.auth_or_abort()
+
+        user.tourdone = True
+        user.save()
+        return r
 
     def post(self, id):
         abort(501)  # Not implemented

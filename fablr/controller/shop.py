@@ -380,6 +380,7 @@ class OrdersView(ResourceView):
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=BuyForm,
                          method='patch')
+        r.auth = Authorization(True, _('Always allowed'))
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         p = Product.objects(slug=r.form.product.data).first()
@@ -414,6 +415,8 @@ class OrdersView(ResourceView):
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=CartForm,
                          extra_args={'view': 'cart', 'intent': 'post'})
+        r.auth = Authorization(True, _('Always allowed'))
+
         set_theme(r, 'publisher', publisher.slug)
         if request.method in ['PATCH', 'POST']:
             r.method = request.method.lower()
@@ -439,6 +442,8 @@ class OrdersView(ResourceView):
 
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=DetailsForm,
                          extra_args={'view': 'details', 'intent': 'post'})
+        r.auth = Authorization(True, _('Always allowed'))
+
         set_theme(r, 'publisher', publisher.slug)
         if request.method == 'POST':
             r.method = 'post'
@@ -475,6 +480,8 @@ class OrdersView(ResourceView):
             return redirect(url_for('shop.OrdersView:cart'))
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=PaymentForm,
                          extra_args={'view': 'pay', 'intent': 'post'})
+        r.auth = Authorization(True, _('Always allowed'))
+
         set_theme(r, 'publisher', publisher.slug)
         r.stripe_key = current_app.config['STRIPE_PUBLIC_KEY']
         if request.method == 'POST':

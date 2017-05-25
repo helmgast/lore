@@ -181,7 +181,7 @@
                 {% endblock %}
 
                 <li>
-                    <ul class="action-buttons">
+                    <ul id="tour-actionbar" class="action-buttons">
                         {% block actionbar %}
                         {% endblock actionbar %}
                     </ul>
@@ -267,5 +267,9 @@
 {% block js_bottom %}
     <script src="{{ url_for('static', filename=assets['app.js'], _external=true, _scheme='') }}"></script>
 {% endblock %}
+
+{% block tour %}
+{% endblock %}
+
 </body>
 </html>

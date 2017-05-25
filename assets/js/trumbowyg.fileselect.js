@@ -43,7 +43,7 @@ define(["jquery", "utils"], function ($, utils) {
                     r.setStart(trumbowyg.$ta[0], 0)
                     r.setEnd(trumbowyg.$ta[0], 0)
                     document.getSelection().addRange(r)
-                    console.log(document.getSelection().focusNode)
+                    // console.log(document.getSelection().focusNode)
 
                     var load_gallery = function ($elem) {
                         trumbowyg.saveRange();

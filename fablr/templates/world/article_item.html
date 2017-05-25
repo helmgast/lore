@@ -24,12 +24,12 @@
             (url_for('world.ArticlesView:publisher_home'), _('Home')),
             (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
             ('', title)
-            )}}
+            ) }}
         {% else %}
             {{ MACRO.BREADCRUMBS(
             (url_for('world.ArticlesView:publisher_home'), _('Home')),
             ('', title)
-            )}}
+            ) }}
         {% endif %}
     {% else %}
         {% if article_type=='blogpost' %}
@@ -39,14 +39,14 @@
             (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
             (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
             ('', title)
-            )}}
+            ) }}
         {% else %}
             {{ MACRO.BREADCRUMBS(
             (url_for('world.ArticlesView:publisher_home'), _('Home')),
             (url_for('world.WorldsView:index'), _('Game Worlds')),
             (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
             ('', title)
-            )}}
+            ) }}
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -119,7 +119,8 @@
 {% block intro %}
     {% if not args.get('intent', None) %}
         <ul class="nav imprint">
-            <li title="{{ _('Article type') }}"><span class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
+            <li title="{{ _('Article type') }}"><span
+                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
                 <a>{{ article.get_type_display() }}</a>
             </li>
 
@@ -139,14 +140,16 @@
             </li>
             {% if articlegroups or g.user %}
                 <li title="{{ _('Visibility') }}"><span
-                        class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span> <a>{{ article.get_status_display() }}</a>
+                        class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
+                    <a>{{ article.get_status_display() }}</a>
                     <small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
                 </li>
             {% endif %}
             {% if article.tags %}
-            <li title="{{ _('Tags') }}"><span
-                    class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
-                <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}"><span class="badge">{{ t }}</span></a>
+                <li title="{{ _('Tags') }}"><span
+                        class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}"><span
+                            class="badge">{{ t }}</span></a>
                 {%- endfor -%}</li>
             {% endif %}
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
@@ -155,25 +158,25 @@
 {% endblock %}
 
 {% block content %}
-        {% if args.get('intent', None) %}
+    {% if args.get('intent', None) %}
         <article>
             {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
             <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a
                     href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
         </article>
-        {% else %}
-            <article class="article-text">
+    {% else %}
+        <article class="article-text">
             {{ article.content|default(_('No data'), true)|markdown }}
             {% if article.type == 'blogpost' %}
                 {% include 'includes/disqus.html' %}
             {% endif %}
-            </article>
+        </article>
 
-        {% endif %}
+    {% endif %}
     {% if args.get('intent', None) %}
-    <ul class="action-buttons action-buttons-footer">
-        {{ self.actionbar() }}
-    </ul>
+        <ul class="action-buttons action-buttons-footer">
+            {{ self.actionbar() }}
+        </ul>
     {% endif %}
 {% endblock %}
 

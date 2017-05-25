@@ -55,10 +55,6 @@ from werkzeug.datastructures import ImmutableMultiDict
 # - upload with weird (Unicode) file name
 # - upload with same name as previous
 
-class CSRFDisabledModelForm(ModelForm):
-    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
-        super(CSRFDisabledModelForm, self).__init__(formdata, obj, prefix, csrf_enabled=False, **kwargs)
-
 
 class TestObject(Document):
     name = StringField(max_length=60)

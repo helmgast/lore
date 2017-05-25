@@ -265,6 +265,7 @@ class ResourceResponse(Response):
             return self
         elif best_type == 'application/json':
             # TODO this will create a new response, which is a bit of waste
+            # TODO this will not properly filter instances exposing secret data!
             # Need to at least keep the status from before
             if hasattr(self, 'form') and self.form and self.form.errors:
                 return jsonify(errors=self.form.errors), self.status
@@ -337,7 +338,6 @@ class ResourceResponse(Response):
 class ListResponse(ResourceResponse):
     """index, listing of resources"""
 
-    json_fields = frozenset(['query', 'pagination'])
     arg_parser = dict(ResourceResponse.arg_parser, **{
         'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
         'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 15,
@@ -561,6 +561,7 @@ def route_subdomain(app, rule, **options):
 # when using a fieldlist or formfield we are just encapsulating forms that work as usual.
 
 class RacBaseForm(ModelForm):
+
     # TODO if fields_to_populate are set to use form keys, a deleted field may mean
     # no form key is left in the submitted form, ignoring that delete
     def populate_obj(self, obj, fields_to_populate=None):

@@ -82,6 +82,7 @@ class User(Document, BaseUser):
     hidden = BooleanField(default=False)
     admin = BooleanField(default=False)
     logged_in = BooleanField(default=False)
+    tourdone = BooleanField(default=False)
 
     # Uses string instead of Class to avoid circular import
     publishers_newsletters = ListField(ReferenceField('Publisher'))

@@ -2,7 +2,8 @@
 {% import 'includes/macros.html' as MACRO %}
 
 {% block navbar_right %}
-        <form method="get" action="{{ url_for('world.ArticlesView:search') }}" class="navbar-form navbar-left">
+    <form method="get" action="{{ url_for('world.ArticlesView:search') }}" class="navbar-form navbar-left"
+          id="tour-search">
         {# This will erase all other query parameters when submitted by HTML design #}
         <div class="input-group">
             <input class="form-control input" type="search" id='q' name='q'
@@ -19,7 +20,8 @@
     <div class="row">
         {% for world in worlds %}
             <div class="col-md-6">
-                <h3><a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a></h3>
+                <h3><a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
+                </h3>
                 <div class="well">{{ world.description|markdown }}</div>
                 <dl class="dl-horizontal">
                     <dt>{{ _('Publisher') }}</dt>
@@ -30,4 +32,100 @@
                 <div class="row">{% endif %}
         {% endfor %}
         </div>
+{% endblock %}
+
+
+{% block tour %}
+    {% if g.user and (g.user.admin or g.user in publisher.editors) and not g.user.tourdone %}
+        <script>
+            var TOUR_OPTIONS = [
+                    {
+                        doneLabel: 'Next page',
+                        nextUrl: "{{ url_for('world.ArticlesView:world_home', world_='eon', step=2)|safe }}",
+                        steps: [
+                            {
+                                intro: "{% trans %}Welcome as an editor to Helmgast, please take the tour!{% endtrans %}"
+                            },
+                            {
+                                element: '#tour-gameworlds',
+                                intro: "{% trans %}Here you will find a page for each world and all the content{% endtrans %}",
+                            },
+                        ]
+                    },
+                    {
+                        doneLabel: 'Next page',
+                        nextUrl: "{{ url_for('world.WorldsView:get', id='eon', intent='patch', step=3)|safe }}",
+
+                        steps: [
+                            {
+                                intro: "{% trans %}Here is the home for a game world.{% endtrans %}"
+                            },
+                            {
+                                element: '#tour-worlddetails',
+                                intro: "{% trans %}Visitors see some of the world facts{% endtrans %}"
+                            },
+                            {
+                                element: '#tour-actionbar',
+                                intro: "{% trans %}On every page you can edit, you see the see action buttons. Let's try to edit the world.{% endtrans %}",
+                            },
+                        ]
+                    },
+                    {
+                        doneLabel: 'Next page',
+                        nextUrl: "{{ url_for('world.ArticlesView:index', world_='eon', step=4)|safe }}",
+
+                        steps: [
+                            {
+                                element: '#tour-editworld',
+                                intro: "{% trans %}Edit the details of the world including it's full start page.{% endtrans %}"
+                            },
+                            {
+                                element: '#tour-worldimage',
+                                intro: "{% trans %}... or it's thumbnail{% endtrans %}",
+                            },
+                            {
+                                element: '#tour-browse',
+                                intro: "{% trans %}You can also browse all articles in the world{% endtrans %}",
+
+                            },
+                        ]
+                    },
+                    {
+                        doneLabel: 'Next page',
+                        nextUrl: "{{ url_for('world.ArticlesView:get', id='testing', world_='eon', step=5, intent='patch')|safe }}",
+
+                        steps: [
+                            {
+                                element: '#tour-filter',
+                                intro: "{% trans %}Here you can filter articles in all kinds of ways...{% endtrans %}"
+                            },
+                            {
+                                element: '.status-unpublished',
+                                intro: "{% trans %}... and greyed out articles are those that only editors can see. Let's click one!{% endtrans %}",
+
+                            },
+                        ]
+                    },
+                    {
+                        doneLabel: 'Finish!',
+                        steps: [
+                            {
+                                element: 'article',
+                                intro: "{% trans %}Here we can edit the article.{% endtrans %}"
+                            },
+                            {
+                                element: '.article-aside',
+                                intro: "{% trans %}... and it's details, including who can read it{% endtrans %}",
+                                hintPosition: 'top-left'
+                            },
+                            {
+                                intro: "{% trans %}Now we are done! Good luck!{% endtrans %}",
+                            }
+                        ]
+                    }
+                ]
+            ;
+            var FINISH_TOUR_URL = "{{ url_for('social.UsersView:finish_tour') }}"
+        </script>
+    {% endif %}
 {% endblock %}

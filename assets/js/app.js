@@ -13,7 +13,6 @@ if (ROLLBAR_CONFIG) {
     var Rollbar = require('rollbar-browser').init(ROLLBAR_CONFIG);
 }
 
-
 // Own plugins
 var utils = require('utils');
 // require('editablelist.js'); // currently not used
@@ -26,6 +25,7 @@ require('selectize/dist/css/selectize.bootstrap3.css');
 require('flatpickr/dist/flatpickr.min.css');
 require('trumbowyg/dist/ui/trumbowyg.css');
 require('../css/app.less');
+require('intro.js/introjs.css')
 
 
 /* ========================================================================
@@ -71,7 +71,7 @@ $(document).on('click', '.buy-link', function (e) {
         url: SHOP_URL,
         type: 'patch',
         data: {product: this.id},
-        headers: {'X-CSRFToken': CSRF_TOKEN},
+        headers: {'X-CSRFToken': CSRF_TOKEN },
         dataType: 'json',
         success: function (data) {
             $c = $('#cart-counter')
@@ -209,9 +209,35 @@ function init_dom(e) {
     require('bootstrap/js/tooltip');
     scope.find("a[data-toggle='tooltip']").tooltip(); // Need to activate manually
 
-    // scope.find(".carousel").carousel(); // Need to activate manually
+    if (typeof TOUR_OPTIONS !== "undefined" && TOUR_OPTIONS) {
+        var params = utils.decompose_url(window.location.href).params
+        var step = parseInt(params['step'] || 1) - 1
+        var introJs = require('intro.js').introJs();
+        introJs.setOptions(TOUR_OPTIONS[step])
+        introJs.start().oncomplete(function (e) {
+            if (TOUR_OPTIONS[step]['nextUrl']) {
+                window.location = TOUR_OPTIONS[step]['nextUrl'];
+            } else {
+                var jqxhr = $.ajax({
+                    url: FINISH_TOUR_URL,
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    type: 'patch',
+                    data: {},
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log('Finished')
+                    }
+                })
+                    .fail(function (jqXHR, textStatus, errorThrown) {
+                        utils.flash_error(jqXHR.responseText)
+                    });
+            }
+        })
 
 
+    }
     // Selectize plugin for SELECTS in forms
     require('selectize');
 

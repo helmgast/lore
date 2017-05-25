@@ -30,7 +30,7 @@
 
 {% block subnavbar %}{{ super() }}
     {% if world %}
-        <li>
+        <li id="tour-browse">
             <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
                     class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
         <li>
@@ -68,9 +68,11 @@
         <form id="worldform" method="post" action="{{ action_url }}">
             <div class="row">
                 <div class="col-md-8">
+                    <div id="tour-editworld">
                     {{ MACRO.FORM_FIELD(world_form.title) }}
                     {{ MACRO.FORM_FIELD(world_form.tagline) }}
                     {{ MACRO.FORM_FIELD(world_form.description) }}
+                </div>
                     {{ MACRO.FORM_FIELD(world_form.content, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
@@ -84,7 +86,7 @@
 
                     {{ world_form.csrf_token }}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4" id="tour-worldimage">
                     {# data_end becomes data-end automatically #}
                     {{ MACRO.FORM_FIELD(world_form.images, controlclass="fileselect", data_endpoint=
                         url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
@@ -160,7 +162,7 @@
         {% trans %}Buy in shop{% endtrans %}
         </a>
     </p>
-    <table class="table">
+    <table class="table" id="tour-worlddetails">
         <tr>
             <th>{{ _('Publisher') }}</th>
             <td>

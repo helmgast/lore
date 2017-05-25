@@ -25,6 +25,7 @@
     </style>
 {% endblock %}
 
+
 {% block navbar_brand %}
     <a class="navbar-brand navbar-collapse" href="{{ url_for('world.ArticlesView:publisher_home') }}">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive" src="{{
@@ -33,7 +34,7 @@
 {% endblock navbar_brand %}
 
 {% block navbar_left %}
-    <li><a href="{{ url_for('world.WorldsView:index') }}">
+    <li id="tour-gameworlds"><a href="{{ url_for('world.WorldsView:index') }}">
         <span class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}
     </a></li>
     <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
