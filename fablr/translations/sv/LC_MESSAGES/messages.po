@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-25 12:17+0200\n"
+"POT-Creation-Date: 2017-05-25 23:01+0200\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -109,7 +109,7 @@ msgstr ""
 msgid "Your new user have been created."
 msgstr "Din nya användare har skapats."
 
-#: fablr/controller/auth.py:227
+#: fablr/controller/auth.py:228
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
@@ -355,16 +355,16 @@ msgstr ""
 msgid "Thank you for your order!"
 msgstr "Tack för din beställning!"
 
-#: fablr/controller/social.py:42
+#: fablr/controller/social.py:43
 #, python-format
 msgid "Allowed access to %(op)s %(res)s own user profile"
 msgstr ""
 
-#: fablr/controller/social.py:45
+#: fablr/controller/social.py:46
 msgid "Cannot access other user's user profile"
 msgstr "Kan ej accessa en annan användares profil"
 
-#: fablr/controller/social.py:112
+#: fablr/controller/social.py:114
 msgid "No user to finish tour for"
 msgstr ""
 
@@ -1271,8 +1271,8 @@ msgid "Home"
 msgstr "Hem"
 
 #: fablr/templates/homepage.html:17
-msgid "Welcome to"
-msgstr "Välkommen till"
+msgid "Soon opening:"
+msgstr "Öppnar snart:"
 
 #: fablr/templates/homepage.html:19
 msgid ""
@@ -1439,13 +1439,9 @@ msgstr ""
 "\n"
 "på andra sociala nätverk."
 
-#: fablr/templates/homepage.html:183
-msgid "Our publishers"
-msgstr "Våra utgivare"
-
-#: fablr/templates/homepage.html:197
-msgid "No publishers setup yet"
-msgstr "Inga utvigare har skapats ännu"
+#: fablr/templates/homepage.html:189
+msgid "Check out the first publisher on the platform:"
+msgstr "Kolla in den första utgivaren på plattformen:"
 
 #: fablr/templates/newsletter.html:3
 msgid "Subscribe to our mailing list"
@@ -2133,13 +2129,6 @@ msgstr "tar dig närmare andra spelare"
 msgid "Browse"
 msgstr "Bläddra"
 
-#: fablr/templates/social/_page.html:14
-#: fablr/templates/social/group_item.html:10
-#: fablr/templates/social/group_list.html:3
-#: fablr/templates/social/group_list.html:7
-msgid "Groups"
-msgstr "Grupper"
-
 #: fablr/templates/social/_page.html:21
 msgid "Welcome"
 msgstr "Välkommen"
@@ -2153,6 +2142,12 @@ msgstr ""
 "Här kommer du kunna interagera med andra spelare, skapa och hantera dina "
 "spelgrupper, \n"
 "möten, etc."
+
+#: fablr/templates/social/group_item.html:10
+#: fablr/templates/social/group_list.html:3
+#: fablr/templates/social/group_list.html:7
+msgid "Groups"
+msgstr "Grupper"
 
 #: fablr/templates/social/group_item.html:45
 msgid "Role"
@@ -3383,4 +3378,13 @@ msgstr "rollspelsvärldar bara ett klick bort"
 
 #~ msgid "\"Now we are done! Good luck!"
 #~ msgstr ""
+
+#~ msgid "Welcome to"
+#~ msgstr "Välkommen till"
+
+#~ msgid "Our publishers"
+#~ msgstr "Våra utgivare"
+
+#~ msgid "No publishers setup yet"
+#~ msgstr "Inga utvigare har skapats ännu"
 

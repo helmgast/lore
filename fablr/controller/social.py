@@ -36,6 +36,7 @@ def filter_authorized():
         return Q(id=EMPTY_ID)
     return Q(id=g.user.id)
 
+
 class UserAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
         if user == res:
@@ -51,6 +52,7 @@ FinishTourForm = model_form(User,
                             base_class=Form,  # No CSRF on this one
                             only=['tourdone'],
                             converter=RacModelConverter())
+
 
 class UsersView(ResourceView):
     access_policy = UserAccessPolicy()
@@ -178,6 +180,6 @@ class GroupsView(ResourceView):
     def delete(self, id):
         abort(501)  # Not implemented
 
-GroupsView.register_with_access(social, 'group')
+# GroupsView.register_with_access(social, 'group')
 
 social.add_url_rule('/', endpoint='social_home', redirect_to='/social/users/')

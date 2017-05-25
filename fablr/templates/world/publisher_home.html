@@ -31,10 +31,10 @@
                     <div class="carousel-inner" role="listbox">
                         {% for world in worlds %}
 
-                        <div class="item {{ 'active' if loop.first}}">
+                        <div class="page-header item {{ 'active' if loop.first}}">
                             <img src="{{ url_for('image_thumb', slug=world.get_feature_image.slug)}}" alt="{{ world.title }}">
                             <div class="carousel-caption">
-                                <h1><a href="{{ url_for("world.WorldsView:get", id=world.slug) }}">{{ world.title }}</a></h1><br>
+                                <h1><a style="color: #fff" href="{{ url_for("world.WorldsView:get", id=world.slug) }}">{{ world.title }}</a></h1><br>
                                 {{ world.tagline if world.tagline}}
                             </div>
                         </div>

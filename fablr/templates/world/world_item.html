@@ -195,8 +195,8 @@
         </tr>
     </table>
         {% if world.facebook_url %}
-            <a href="{{ world.facebook_url }}">
-                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
+            <a class="center-block margin-below" href="{{ world.facebook_url }}">
+                <img src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
             </a>
         {% endif %}
     {% endif %}

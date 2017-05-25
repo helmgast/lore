@@ -1,7 +1,7 @@
 <div class="media margin-below-large{{ ' status-unpublished' if not article.is_published() }}">
     <div class="media-left media-top">
         {% if article.get_feature_image %}
-            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, intent='patch') }}">
+            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
                 <img class="media-object"
                      src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
             </a>

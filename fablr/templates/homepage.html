@@ -14,8 +14,8 @@
 
 {% block content %}
     <div class="jumbotron" style="background-image: url(//i.imgur.com/9i3wbSZ.jpg); background-size: cover;">
-        <h1>{{ _('Welcome to') }} Fablr</h1>
-        {% include "newsletter.html" %}
+        <h1>{{ _('Soon opening:') }} Fablr</h1>
+{#        {% include "newsletter.html" %}#}
         <p style="background-color: rgba(240,240,240,0.9); padding: 4px; border-radius: 5px;">{{ _('This is the digital engine to keep stories going - role-playing, fiction, TV-series.') }}</p>
     </div>
     <h1>{{ _('For game masters') }}</h1>
@@ -179,24 +179,36 @@
 
         </div>
     </div>
-
-    <h1>{{ _('Our publishers') }}</h1>
     <div class="row">
-        {% for publisher in publishers %}
-            <div class="col-md-5 world_item">
-                <h3>
-                    <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}">{{ publisher.title }}</a>
-                    <br>
-                    <small>{{ publisher.description|markdown }}</small>
-                </h3>
-            </div>
-            {% if loop.index is divisibleby 2 %}</div>
-                <div class="row">{% endif %}
-        {% else %}
-            <div class="jumbotron text-center">
-                <h2>{{ _('No publishers setup yet') }}</h2>
-            </div>
-        {% endfor %}
+    <hr>
+        <div class="col-md-6">
+        <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host='helmgast.se') }}"><img class="img-responsive" src="{{
+                url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}"></a>
         </div>
-    {% include "includes/pagination.html" %}
+        <div class="col-md-6">
+         <h2>{{ _('Check out the first publisher on the platform:') }}</h2>
+{#        {% include "newsletter.html" %}#}
+            <h1><a href="{{ url_for('world.ArticlesView:publisher_home', pub_host='helmgast.se') }}">Helmgast</a></h1>
+        </div>
+    </div>
+{##}
+{#    <h1>{{ _('Our publishers') }}</h1>#}
+{#    <div class="row">#}
+{#        {% for publisher in publishers %}#}
+{#            <div class="col-md-5 world_item">#}
+{#                <h3>#}
+{#                    <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug) }}">{{ publisher.title }}</a>#}
+{#                    <br>#}
+{#                    <small>{{ publisher.description|markdown }}</small>#}
+{#                </h3>#}
+{#            </div>#}
+{#            {% if loop.index is divisibleby 2 %}</div>#}
+{#                <div class="row">{% endif %}#}
+{#        {% else %}#}
+{#            <div class="jumbotron text-center">#}
+{#                <h2>{{ _('No publishers setup yet') }}</h2>#}
+{#            </div>#}
+{#        {% endfor %}#}
+{#        </div>#}
+{#    {% include "includes/pagination.html" %}#}
 {% endblock %}

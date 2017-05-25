@@ -869,20 +869,20 @@ class ResourceAccessPolicy(object):
             return Authorization(True, _("List is allowed"))
 
         if op is 'new':
-            return self.is_admin(op, user, res) or (self.is_user(op, user, res) and self.new_allowed)
+            return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.new_allowed)
 
         if op is 'view':  # If list, resource refers to a parent resource
             if not res:
                 return Authorization(False, _("Can't view a None resource"), error_code=403)
-            return self.is_resource_public(op, res) or \
-                   self.is_admin(op, user, res) or \
-                   self.is_editor(op, user, res) or \
-                   self.is_reader(op, user, res)
+            return self.is_resource_public(op, res) or self.is_user(op, user, res) and (
+                   self.is_admin(op, user, res) or
+                   self.is_editor(op, user, res) or
+                   self.is_reader(op, user, res))
 
         if op is 'edit' or op is 'delete':
             if not res:
                 return Authorization(False, _("Can't edit/delete a None resource"), error_code=403)
-            return self.is_admin(op, user, res) or self.is_editor(op, user, res)
+            return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.is_editor(op, user, res))
 
         return self.custom_auth(op, user, res)
 

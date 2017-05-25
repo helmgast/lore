@@ -304,6 +304,7 @@ def configure_hooks(app):
         if request.method == 'GET':  # Only do sso on GET requests
             return redirect(url_for('auth.sso', next=request.url))
         else:
+            app.logger.warning("Could not handle 401 Unauthorized for {url} as it was not a GET".format(url=request.url))
             return e, 401
 
     # @app.errorhandler(404)

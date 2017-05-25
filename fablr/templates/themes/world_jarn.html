@@ -4,7 +4,10 @@
     {{ super() }}
     <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
     <style>
-        @import url(https://db.onlinewebfonts.com/c/bec1dc061960782df16e73f9881c9829?family=Ringbearer);
+        @font-face {font-family: "Ringbearer";
+            url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.woff2") format("woff2"),
+            url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.woff") format("woff"),
+            url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.ttf") format("truetype");}
 
         .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
         .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
@@ -12,8 +15,6 @@
             font-weight: 900;
             color: #333;
         }
-
-
 
     .page-header-hero {
     background-image: url({{ url_for('static', filename='img/themes/jarn_cover_wide.jpeg') }});
