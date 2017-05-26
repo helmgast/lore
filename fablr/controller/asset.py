@@ -8,7 +8,8 @@ from flask import Blueprint, current_app, redirect, url_for, g, request, Respons
 from flask import send_file
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
-from mongoengine import NotUniqueError, ValidationError, Q
+from mongoengine import NotUniqueError, ValidationError
+from mongoengine.queryset import Q
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
@@ -21,6 +22,7 @@ from fablr.controller.resource import RacModelConverter, \
 from fablr.model.asset import FileAsset, FileAccessType
 from fablr.model.misc import EMPTY_ID
 from fablr.model.shop import products_owned_by_user
+from fablr.model.user import User
 from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -177,6 +179,7 @@ class FileAssetsView(ResourceView):
                 filter_authorized_by_publisher(publisher))
 
         r.prepare_query()
+        test = User.objects(Q(email='jbaeckman@yahoo.se') | Q(facebook_auth__emails='jbaeckman@yahoo.se') | Q(google_auth__emails='jbaeckman@yahoo.se'))
 
         # This will re-order so that any selected files are guaranteed to show first
         if r.args['select'] and len(r.args['select']) > 0:

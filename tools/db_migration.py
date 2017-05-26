@@ -18,7 +18,6 @@ from fablr.model.world import Publisher, Article, World
 
 # All migration functions needs to be idempotent, e.g. create same result every time run, even if database already has this version.
 
-
 def migrate_2to3():
     succeeded = []
     failed = []
@@ -50,7 +49,6 @@ def migrate_2to3():
                 succeeded.append(msg)
         u.save()  # Save to re-calc XP etc
 
-
     return succeeded, failed
 
 
@@ -58,8 +56,10 @@ def migrate_1to2():
     succeeded = []
     failed = []
 
-    default_publisher = Publisher.objects(slug='helmgast').first()
-    assert default_publisher
+    default_publisher = Publisher.objects(slug='helmgast.se').first()
+    if not default_publisher:
+        default_publisher = Publisher(slug='helmgast.se', title='Helmgast')
+        default_publisher.save()
     print "Using %s as default publisher" % default_publisher
 
     hg = World.objects(slug='helmgast').first()
@@ -69,18 +69,6 @@ def migrate_1to2():
             a.publisher = default_publisher
             a.save()
         hg.delete()
-
-    for a in Article.objects():
-        print "Replacing image references in article %s" % a
-        for match in re.finditer(r'/asset/image/(.+)\)', a.content):
-            name, ext = os.path.splitext(match.group(1).lower())
-            slug = slugify(name.strip('.')) + '.' + ext.strip('.')
-            a.content = a.content[:match.start(1)] + slug + a.content[match.end(1):]
-        # Also clean up content
-        a.content = re.sub(r' *&nbsp; *', ' ', a.content)
-        a.content = re.sub(r'&amp;', u'&', a.content)
-        a.content = a.content.strip()
-        a.save()
 
     for w in World.objects():
         w.feature_image = None  # Don't bother migrating, there are few of them and probably wrong anyway
@@ -95,44 +83,11 @@ def migrate_1to2():
             file_obj = fa.file_data.get()
             fa.set_file(file_obj, file_obj.filename, update_file=False)
             fa.title = None  # Don't use title again
+            fa.publisher = default_publisher
             fa.save()
             succeeded.append(fa)
         except Exception as e:
             failed.append((e.message, fa))
-
-    for p in Product.objects():
-        if not p.publisher or isinstance(p.publisher, DBRef):
-            p.publisher = default_publisher
-
-        img = p.feature_image
-        # If images have been deleted already, they may show up as DBRef, not as an asset
-        if not img:
-            slug = None
-        elif isinstance(img, DBRef):
-            slug = img.id
-        elif isinstance(img, ImageAsset):
-            slug = img.slug
-        print "Migrating image of product %s from ImageAsset (feature_image) to FileAsset (images[])" % p
-        try:
-            if slug:
-                if not p.images:
-
-                    name, ext = os.path.splitext(slug.lower())
-                    slug = slugify(name) + '.' + ext
-                    fa = FileAsset.objects(slug=slug).first()
-                    if fa:
-                        p.images = [fa]
-                    p.feature_image = None
-
-                else:
-                    failed.append(
-                        ("Will not move image from product %s as it already have images (FileAsset) list" % p, p))
-                    continue
-            p.save()
-            succeeded.append(p)
-        except Exception as e:
-            failed.append((e.message, p))
-            continue
 
     images = ImageAsset.objects()
     for ia in images:
@@ -154,6 +109,52 @@ def migrate_1to2():
             succeeded.append(fileasset)
         except Exception as e:
             failed.append((e.message, fs.filename))
+
+    for p in Product.objects().no_dereference():
+        p.publisher = default_publisher
+
+        img = p.feature_image
+        # If images have been deleted already, they may show up as DBRef, not as an asset
+        if not img:
+            slug = None
+        elif isinstance(img, DBRef):
+            slug = img.id
+        elif isinstance(img, ImageAsset):
+            slug = img.slug
+        elif isinstance(img, basestring):
+            slug = img
+        print "Migrating image of product %s from ImageAsset (feature_image) to FileAsset (images[])" % p
+        try:
+            if slug:
+                if not p.images:
+                    name, ext = os.path.splitext(slug.lower())
+                    slug = slugify(name) + ext  # Includes the .
+                    fa = FileAsset.objects(slug=slug).first()
+                    if fa:
+                        p.images = [fa]
+                    p.feature_image = None
+
+                else:
+                    failed.append(
+                        ("Will not move image from product %s as it already have images (FileAsset) list" % p, p))
+                    continue
+            p.save()
+            succeeded.append(p)
+        except Exception as e:
+            failed.append((e.message, p))
+            continue
+
+    for a in Article.objects():
+        print "Replacing image references in article %s" % a
+        for match in re.finditer(r'/asset/image/([^)].+)\)', a.content):
+            name, ext = os.path.splitext(match.group(1).lower())
+            slug = slugify(name.strip('.')) + '.' + ext.strip('.')
+            a.content = a.content[:match.start(1)] + slug + a.content[match.end(1):]
+        # Also clean up content
+        a.content = re.sub(r' *&nbsp; *', ' ', a.content)
+        a.content = re.sub(r'&amp;', u'&', a.content)
+        a.content = a.content.strip()
+        a.save()
 
     # Remove images
     # Remove title from fileasset
@@ -206,8 +207,6 @@ def db_migrate(db, to_version=latest_version):
                 print "Stopping migration until above failure handled manually"
                 return False
     return True
-
-
 
 
 def get_version(db):

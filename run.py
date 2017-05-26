@@ -123,9 +123,13 @@ def import_csv():
 def db_migrate():
     from tools import db_migration
     from mongoengine.connection import get_db
+    from fablr import extensions
+    extensions.db.init_app(app)
     db = get_db()
+    # Ensure we have both app context and a (dummy) request context
     with app.app_context():
-        db_migration.db_migrate(db)
+        with app.test_request_context('/'):
+            db_migration.db_migrate(db)
 
 
 @app.cli.command()

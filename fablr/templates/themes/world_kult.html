@@ -1,4 +1,4 @@
-{% extends root_template %}
+{% extends "world/world_list.html" %}
 
 {% block googlefonts %}{{ super() }}|Enriqueta{% endblock %}
 
@@ -18,6 +18,7 @@
         .page-header-hero {
             background-image: url({{ url_for('static', filename='img/themes/kultlogo2-min.png') }});
             background-size: 90%;
+            background-position: center 100px;
         }
 
         .page-header-hero h1 {

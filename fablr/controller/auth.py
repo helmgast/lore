@@ -67,14 +67,24 @@ def add_auth(user, user_info, next_url):
 
         user.auth_keys.append(ak)
 
-        if user.password or user.google_auth or user.facebook_auth:
-            user.password, user.google_auth, user.facebook_aut = None, None, None  # Delete old auth data
+        # Only delete old info when we have confirmed it using a new login
+        migrated = False
+        if user.password:
+            user.password = None
+            migrated = True
+        if user.google_auth and user.google_auth.emails and user_info['email'] in user.google_auth.emails:
+            user.google_auth = None
+            migrated = True
+        if user.facebook_auth and user.facebook_auth.emails and user_info['email'] in user.facebook_auth.emails:
+            user.facebook_auth = None
+            migrated = True
+        if migrated:
             flash(_("Your user have been migrated to the new login system, contact us if something doesn't look ok"),
                   'info')
         else:
             # We have migrated before but are now adding an additional auth method
             flash(_("We added %(provider)s authentication using %(email)s to your user, and updated your profile data",
-                    provider=user_info['sub'], email=user_info['email']), 'info')
+                    provider=user_info['sub'].split('|')[0], email=user_info['email']), 'info')
 
         if not user.realname:
             user.realname = user_info.get('name', None)
@@ -161,7 +171,9 @@ def callback():
         return redirect(next_url)  # RETURN IN ERROR
     except DoesNotExist:
         # TODO while we are migrating, also match just email field
-        auth_user = User.objects(email=user_info['email']).first()  # Returns None if not found
+        auth_user = User.objects(Q(email=user_info['email']) |
+                                 Q(facebook_auth__emails=user_info['email']) |
+                                 Q(google_auth__emails=user_info['email'])).first()  # Returns None if not found
 
     if session_user:
         # Someone already logged in, means they are trying to add more auths to current account

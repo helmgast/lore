@@ -29,18 +29,15 @@
     ) }}{% endblock %}
 
 {% block subnavbar %}{{ super() }}
-    {% if world %}
-        <li id="tour-browse">
-            <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
-                    class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-        <li>
-            <a href="{{ url_for('world.ArticlesView:blog', world_=world.slug) }}"><span
-                    class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
-        <li>
-            <a href="{{ url_for('world.ArticlesView:random', world_=world.slug) }}"><span
-                    class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
-    {% endif %}
-
+    <li id="tour-browse">
+        <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:blog', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:random', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
 {% endblock %}
 
 {% block actionbar %}

@@ -33,7 +33,7 @@
                     <h3 class="card-title">
                         <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
                     </h3>
-                    {% set desc =  (world.description|markdown|striptags|replace('gallery-center','')).split('. R') %}
+                    {% set desc =  (world.description|default(_('No description'), true)|markdown|striptags|replace('gallery-center','')).split('. R') %}
 
                     <div class="card-description">{{ desc[0] }}</div>
                     <ul class="card-details">
