@@ -106,6 +106,7 @@ define(["jquery", "utils"], function ($, utils) {
                                 $fig.remove()
                             } else {
                                 // Trigger all plugins on added content
+
                                 if ($fig.find('img').attr('src').match(/^data:/)) {
                                     console.log('TODO: replace this with original url')
                                 }
@@ -118,6 +119,10 @@ define(["jquery", "utils"], function ($, utils) {
                 }
 
             })
+            // Hack to let us reload the modal by pretending it was initiated from it's target again
+            var $modal = $('#themodal')
+            var e = jQuery.Event('show.bs.modal', {relatedTarget: {href: $modal.data('bs.modal').options['href']}})
+            $modal.trigger(e)
         }
         return false;
     }

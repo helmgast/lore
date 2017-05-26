@@ -38,6 +38,7 @@ $('#themodal').on('show.bs.modal', function (event) {
         var $modal = $(this)
         // This is hack, normally remote would be populated but when launched manually from trumbowyg it isn't
         //$modal.data('bs.modal').options.remote = event.relatedTarget.href;
+        $modal.data('bs.modal').options['href'] = event.relatedTarget.href
         utils.load_content(event.relatedTarget.href, $modal.find('.modal-content'));
     }
     $(document).one('hide.bs.modal', '#themodal', function (e) {

@@ -1,13 +1,11 @@
 import logging
 import re
-import urllib
 
 from flask import Blueprint, current_app, render_template, request, flash, g, abort
 from flask_babel import lazy_gettext as _
+from flask_wtf import FlaskForm
 from mongoengine.errors import NotUniqueError
-from werkzeug.utils import secure_filename
 import wtforms as wtf
-from flask_wtf import Form  # secure form
 from wtforms.widgets import TextArea
 
 from fablr.controller.resource import parse_out_arg, ResourceError, DisabledField
@@ -55,21 +53,21 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
     logger.info(u"Sent email %s to %s" % (message_subject, recipients))
 
 
-class SystemMailForm(Form):
+class SystemMailForm(FlaskForm):
     """No field in this form can actually be set, as we know who to send to already"""
     to_field = DisabledField(_('To'))
     from_field = DisabledField(_('From'))
     subject = DisabledField(_('Subject'))
 
 
-class AnyUserSystemMailForm(Form):
+class AnyUserSystemMailForm(FlaskForm):
     """Here we only ask for the to_field, others are preset"""
     to_field = wtf.StringField(_('To'), [wtf.validators.Email(), wtf.validators.Required()])
     from_field = DisabledField(_('From'))
     subject = DisabledField(_('Subject'))
 
 
-class UserMailForm(Form):
+class UserMailForm(FlaskForm):
     """To field is preset as it goes to the publisher, others are open for formdata"""
     from_field = wtf.StringField(_('From'), [wtf.validators.Email(), wtf.validators.Required()])
     to_field = DisabledField(_('To'))
