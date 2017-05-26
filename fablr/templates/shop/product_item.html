@@ -57,7 +57,8 @@
                         url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
                     {{ MACRO.FORM_FIELD(product_form.downloadable_files, controlclass='fileselect', data_endpoint=
-                        url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document feature-images') }}
+                        url_for('assets.FileAssetsView:file_selector', type='document', choice='multiple'), data_class='document') }}
+                    <span class="help-block">{% trans %}Access to download file depends on per-file settings{% endtrans %}</span>
                 </div>
             </div>
             {% if args.get('intent', None) %}
@@ -156,10 +157,12 @@
                         {% for file_asset in product.downloadable_files %}
                             <div>{% if product.is_owned_by_current_user() %}<a
                                     href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
-                                    class="glyphicon glyphicon-download"></span> <strong>{{ file_asset.title }}</strong></a>{% else %}
+                                    class="glyphicon glyphicon-download"></span> <strong>{{ file_asset }}</strong></a>{% else %}
                                 <strong>{{ file_asset.slug }}</strong>{% endif %}{% if file_asset.description %}:
                                 {{ file_asset.description|markdown }}{% endif %}</div>
                         {% endfor %}
+                        <span class="help-block">{% trans %}Access to download file depends on per-file settings{% endtrans %}</span>
+
                     </div>
                 {% endif %}
             </div>
@@ -171,9 +174,9 @@
                 <br>
                 <div class="gallery feature-images">
                     {% for img in product.images %}
-                        <a class="gallery-item zoomable" style="{{ MACRO.GALLERY_ITEM_STYLE(img.aspect_ratio()) }}"
-                           href="{{ url_for('image', slug = img.slug) }}"><img
-                                src="{{ url_for('image', slug = img.slug) }}"></a>
+                        <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(img.aspect_ratio()) }}" href="{{ url_for('image', slug = img.slug) }}">
+                            <img class="zoomable" src="{{ url_for('image', slug = img.slug) }}">
+                        </a>
                     {% else %}
                         <span class="glyphicon glyphicon-{{ MACRO.product_icons[product.type] }} icon150px"></span>
                     {% endfor %}

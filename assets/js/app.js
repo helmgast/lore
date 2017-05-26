@@ -273,7 +273,7 @@ function init_dom(e) {
 
     // File select plugin (activates the jquery part, the trumbowyg part loads with trumbowyg later)
     require('fileselect.js')
-    scope.find('.fileselect').fileselect({image_url: IMAGE_URL});
+    scope.find('.fileselect').fileselect({image_url: IMAGE_URL, link_url: LINK_URL});
 
     // Calculatable plugin
     require('calculatable.js')

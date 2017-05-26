@@ -90,7 +90,7 @@
                                 <a href="{{ url_for('shop.OrdersView:get', id=order.id) }}">{{ order }}</a>
                             </h3>
                             <ul class="card-details">
-                                <li class="product-type">{{ order.user.username }}</li>
+                                <li class="product-type">{{ order.user }} </li>
                                 <li class="product-type">{{ order.updated|datetimeformat(format='short') }}</li>
                                 <li class="product-price">{{ order.total_price_display() }}</li>
                             </ul>
@@ -117,7 +117,7 @@
                         <td>
                             <a href="{{ url_for('shop.OrdersView:get', id=order.id) }}">{{ order }}</a>
                         </td>
-                        <td>{{ order.user.username }}</td>
+                        <td>{{ order.user }}</td>
                         <td class="small">{{ order.created|datetimeformat(format='short') }}</td>
                         <td class="small">{{ order.updated|datetimeformat(format='short') }}</td>
                         <td>{{ order.get_field_display('status') }}</td>

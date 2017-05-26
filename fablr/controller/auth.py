@@ -204,7 +204,6 @@ def callback():
     user.logged_in = True
     # user.status = 'active'
     user.save()
-    next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
 
     login_user(user)
     return redirect(next_url)

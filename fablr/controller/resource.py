@@ -40,7 +40,7 @@ from wtforms.utils import unset_value
 from wtforms.widgets import html5, HTMLString, html_params
 
 from fablr.extensions import configured_locales
-from fablr.model.misc import METHODS, safe_next_url
+from fablr.model.misc import METHODS, safe_next_url, current_url
 from fablr.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -454,15 +454,16 @@ class ItemResponse(ResourceResponse):
                 # we want to serve a form, pre-filled with field values and parent queries
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
                 form_args.update(self.args['fields'].iteritems())
+                action_args = dict(request.view_args)
+                action_args.update({k: v for k, v in self.args.items() if v})  # Reflect args used in request
+                del action_args['intent']
                 if self.args['intent'] == 'post':
-                    # Will a post will not go to same URL, but a different on (e.g. a list
-                    # endpoint without an id parameter
-                    new_args = dict(request.view_args)
-                    new_args.pop('id', None)
-                    self.action_url = url_for(request.endpoint.replace(':get', ':post'), **new_args)
+                    # A post will not go to same URL, but a different on (e.g. a list endpoint without an id parameter)
+                    action_args.pop('id', None)
+                    self.action_url = url_for(request.endpoint.replace(':get', ':post'), **action_args)
                 else:
                     # Will take current endpoint (a get) and returns same url but with method from intent
-                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args)
+                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **action_args)
             else:
                 # Set intent to method if we are post/put/patch as it is used in template to decide
                 self.args['intent'] = self.method

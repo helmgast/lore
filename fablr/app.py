@@ -273,31 +273,8 @@ def configure_hooks(app):
         else:
             return bool(not [x for x in testargs if x not in request.query_string])
 
-    url_for_args = {'_external', '_anchor', '_method', '_scheme'}
-
-    @app.add_template_global
-    def current_url(_multi=False, **kwargs):
-        """Returns the current request URL with selected modifications. Set an argument to
-        None when calling this to remove it from the current URL"""
-        copy_args = request.args.copy()
-        non_param_args = kwargs.pop('full_url', False)
-        for k, v in kwargs.iteritems():
-            if v is None:
-                copy_args.poplist(k)
-            elif _multi:
-                copy_args.setlistdefault(k).append(v)
-            else:
-                copy_args[k] = v
-            non_param_args = non_param_args or (k in request.view_args or k in url_for_args)
-        if non_param_args:
-            # We have args that will need url_for to build full url
-            copy_args.update(request.view_args)  # View args are not including query parameters
-            u = url_for(request.endpoint, **copy_args.to_dict())
-            return u
-        else:
-            u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
-            return u
-            # We are just changing url parameters, we can do a quicker way
+    from fablr.model.misc import current_url
+    app.add_template_global(current_url)
 
     @app.errorhandler(401)  # Unauthorized, e.g. not logged in
     def unauthorized(e):

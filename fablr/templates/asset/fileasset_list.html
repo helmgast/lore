@@ -91,7 +91,7 @@
             <h3>{{ _('No file assets available!') }}</h3>
         {% endif %}
     {% else %}
-        {% set patch = args.get('intent',None)=='patch' %}
+        {% set patch = args.get('intent', None) == 'patch' %}
         {% if modal %}  {# Modal buttons for quick filtering #}
             <div class="btn-set margin-below">
                 {% for opt in filter_options['tags'] %}
@@ -181,7 +181,7 @@
                         {% else %}
                             <figure class="gallery-item file-item{{ ' selectable' if patch }}" {{ selection }}
                                     id="{{ fileasset.id }}">
-                                <a href="{{ url_for('link', fileasset=fileasset.slug) }}">{{ fileasset.slug }}</a>
+                                <a class="slug" href="{{ url_for('link', fileasset=fileasset.slug) }}">{{ fileasset.slug }}</a>
                                 <figcaption><a class="link" href="{{ url_for('link', fileasset=fileasset.slug) }}"
                                        title="{% trans %}Open file{% endtrans %}"><span
                                             class="glyphicon glyphicon-link"></span></a>

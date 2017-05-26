@@ -74,7 +74,7 @@ class Product(Document):
     type = StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_('Type'))
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
-    price = FloatField(min_value=0, default=0, verbose_name=_('Price'))
+    price = FloatField(min_value=0, default=0, required=True, verbose_name=_('Price'))
     tax = FloatField(min_value=0, default=0.25, choices=[(0.25, '25%'), (0.06, '6%'), (0, '0% (Auto)')], verbose_name=_('Tax'))
     currency = StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek,
                            verbose_name=_('Currency'))

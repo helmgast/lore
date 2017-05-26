@@ -233,7 +233,7 @@ class FileAsset(Document):
         return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u'%s' % self.slug
+        return u'%s' % (self.title or self.slug)
 
 
 FileAsset.owner.filter_options = reference_options('owner', User)

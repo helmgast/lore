@@ -31,7 +31,7 @@
                                             <div>
                                                 <a href="{{ url_for('download', fileasset=file_asset.slug, _external=true, _scheme='') }}"><span
                                                         class="glyphicon glyphicon-download"></span>
-                                                    <strong>{{ file_asset.title }}</strong>
+                                                    <strong>{{ file_asset }}</strong>
                                                 </a>{% if file_asset.description %}:
                                                 {{ file_asset.description|markdown }}{% endif %}
                                             </div>

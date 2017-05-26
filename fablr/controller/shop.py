@@ -312,6 +312,22 @@ class OrdersAccessPolicy(ResourceAccessPolicy):
         else:
             return Authorization(False, _("Not allowed access to %(op)s %(res)s as not owner of order", op=op, res=res))
 
+    def authorize(self, op, user=None, res=None):
+        auth = super(OrdersAccessPolicy, self).authorize(op, user, res)
+        if not user:
+            user = g.user
+        # Need to add requirement to be user to list orders
+        if op == 'list':
+            return auth and self.is_user(op, user, res)
+        else:
+            return auth
+
+    def custom_auth(self, op, user, res):
+        if op == 'my_orders':
+            return self.is_user(op, user, res)
+        else:
+            return Authorization(False, _("No authorization implemented for %(op)s", op=op), error_code=403)
+
 
 class OrdersView(ResourceView):
     subdomain = '<pub_host>'

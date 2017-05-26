@@ -152,7 +152,7 @@ class FileAssetsView(ResourceView):
     list_template = 'fileasset_list.html'
     item_template = 'fileasset_item.html'
     form_class = model_form(FileAsset,
-                            exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width', 'height'],
+                            exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width', 'height', 'file_data'],
                             base_class=RacBaseForm,
                             converter=RacModelConverter())
     list_arg_parser = filterable_fields_parser(
