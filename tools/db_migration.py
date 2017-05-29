@@ -10,6 +10,7 @@ import tempfile
 import pymongo
 from bson import DBRef
 from flask import g
+from mongoengine import NotUniqueError, DoesNotExist
 from pymongo.errors import InvalidName
 
 from fablr.model.asset import FileAsset, ImageAsset
@@ -21,6 +22,14 @@ from fablr.model.world import Publisher, Article, World
 
 # All migration functions needs to be idempotent, e.g. create same result every time run, even if database already has this version.
 
+def set_default_reference(obj, attr, default_value):
+    try:
+        ref = getattr(obj, attr, None)
+    except DoesNotExist as dne:
+        ref = None
+    if not ref or isinstance(ref, DBRef) or isinstance(ref, basestring):
+        setattr(obj, attr, default_value)
+
 def migrate_2to3():
     succeeded = []
     failed = []
@@ -31,6 +40,8 @@ def migrate_2to3():
         msg = u"%s" % o
         try:
             ev2.save()
+        except NotUniqueError as nue:
+            pass
         except Exception as e:
             failed.append((e.message, msg))
             continue
@@ -46,6 +57,8 @@ def migrate_2to3():
                 try:
                     ev2.save()  # Only save if same event doesn't already exist
                     u.event_log = None
+                except NotUniqueError as nue:
+                    pass
                 except Exception as e:
                     failed.append((e.message, msg))
                     continue
@@ -67,15 +80,11 @@ def migrate_1to2():
 
     hg = World.objects(slug='helmgast').first()
     if hg:
-        for a in Article.objects(world=hg):
-            a.world = None
-            a.publisher = default_publisher
-            a.save()
         hg.delete()
 
     for w in World.objects():
         w.feature_image = None  # Don't bother migrating, there are few of them and probably wrong anyway
-        if not w.publisher:
+        if not w.publisher or isinstance(w.publisher, DBRef):
             w.publisher = default_publisher
         w.save()
 
@@ -118,6 +127,7 @@ def migrate_1to2():
 
         img = p.feature_image
         # If images have been deleted already, they may show up as DBRef, not as an asset
+
         if not img:
             slug = None
         elif isinstance(img, DBRef):
@@ -153,15 +163,17 @@ def migrate_1to2():
 
     for a in Article.objects():
         print "Replacing image references in article %s" % a
-        a.content = re.sub(r'\[([^a]*)\]\((http(s)?://helmgast.se)?/asset/(image|download|link)/([^)]+)\)',
+        a.content = re.sub(r'\[([^]]*)\]\((http(s)?://helmgast.se)?/asset/(image|download|link)/([^)]+)\)',
                            asset_repl, a.content)
-        a.content = re.sub(r'http://helmgast', u'https://helmgast', a.content)
+        a.content = re.sub(r'http://helmgast', 'https://helmgast', a.content)
 
         # Also clean up content
-        a.content = re.sub('\xe4', u'*', a.content)
+        a.content = re.sub('\xe2\x80\xa2', '*', a.content)
         a.content = re.sub(r' *&nbsp; *', ' ', a.content)
-        a.content = re.sub(r'&amp;', u'&', a.content)
+        a.content = re.sub(r'&amp;', '&', a.content)
         a.content = a.content.strip()
+        set_default_reference(a, 'publisher', default_publisher)
+        set_default_reference(a, 'world', None)
         a.save()
 
     # Remove images
