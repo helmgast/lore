@@ -415,7 +415,7 @@ class ArticlesView(ResourceView):
         if world_ == 'meta':
             articles = Article.objects(publisher=publisher).order_by('-created_date')  # All articles from publisher
         else:
-            article_s = Article.objects(world=world).order_by('-created_date')
+            articles = Article.objects(world=world).order_by('-created_date')
 
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])

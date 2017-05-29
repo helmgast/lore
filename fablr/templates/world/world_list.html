@@ -38,9 +38,11 @@
                     <div class="card-description">{{ desc[0] }}</div>
                     <ul class="card-details">
                         <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
+                        {% if not world.is_published() %}
                         <li><span
                                 class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
             </div>
