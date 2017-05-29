@@ -28,13 +28,16 @@
         <form id="fileform" method="post" action="{{ action_url }}" enctype=multipart/form-data>
             <div class="row">
                 <div class="col-md-8">
+                    {% if args.get('intent', None) != 'post' %}
                     {{ MACRO.FORM_FIELD(fileasset_form.slug) }}
+                    {% endif %}
                     {{ MACRO.FORM_FIELD(fileasset_form.description, controlclass=" content-editor") }}
                     {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
 
                     <div class="form-group">
                         <strong>{{ _('Current file') }}</strong>: {{ fileasset.source_filename if fileasset and fileasset.file_data_exists() else _('No file') }}
-                        {{ fileasset_form.file_data }}
+                        {% set upload_accept = 'image/*,.pdf,.rtf,.zip,.doc,.xls,.txt' %}
+                        <input multiple type="file" name="file_data" id="file_data" accept="{{ upload_accept }}">
                     </div>
                     {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
                     {{ MACRO.FORM_FIELD(fileasset_form.source_file_url) }}
@@ -43,8 +46,11 @@
                     {{ fileasset_form.csrf_token }}
                 </div>
                 <div class="col-md-4">
-                    <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive"
-                                                                                                  src="{{ url_for('image', slug = fileasset.slug) }}"></a>
+                    {% if fileasset %}
+                    <a class="gallery-item" href="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             <div class="row form-actions">
@@ -146,8 +152,11 @@
                 </table>
             </div>
             <div class="col-md-4">
-                <a class="zoomable" href="{{ url_for('image', slug = fileasset.slug) }}"><img class="img-responsive"
-                                                                                              src="{{ url_for('image', slug = fileasset.slug) }}"></a>
+                <div class="gallery">
+                    <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}" href="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                    </a>
+                </div>
             </div>
         </div>
     {% endif %}

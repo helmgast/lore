@@ -179,7 +179,6 @@ class FileAssetsView(ResourceView):
                 filter_authorized_by_publisher(publisher))
 
         r.prepare_query()
-        test = User.objects(Q(email='jbaeckman@yahoo.se') | Q(facebook_auth__emails='jbaeckman@yahoo.se') | Q(google_auth__emails='jbaeckman@yahoo.se'))
 
         # This will re-order so that any selected files are guaranteed to show first
         if r.args['select'] and len(r.args['select']) > 0:

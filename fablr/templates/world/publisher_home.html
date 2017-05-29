@@ -1,6 +1,9 @@
 {% extends "world/_page.html" %}
 
+{% block content_title %}{{ publisher.title }} - {{ _('Home') }}{% endblock %}
+
 {% block header %}{% endblock %}
+
 {% block main %}
     {# block home is not defined in root, only in a theme, and allows theme to override the main #}
     {% if self.home %}

@@ -40,7 +40,7 @@
                     </h3>
                     <div class="card-description">
 
-                        {{ publisher.description|markdown }}
+                        {{ description|default(_('No data'), true)|markdown }}
                     </div>
                     <ul class="card-details">
                         <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date|dateformat(format='short') }}</li>

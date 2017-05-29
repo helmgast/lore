@@ -268,9 +268,9 @@ class Article(Document):
     meta = {
         'indexes': [
             'slug',
-            {'fields': ['$title', "$content"]}
+            {'fields': ['$title', "$content", "$tags"]}
         ],
-        'auto_create_index': True
+        # 'auto_create_index': True
     }
     slug = StringField(unique=True, required=False, max_length=62)
     type = StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))

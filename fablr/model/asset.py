@@ -72,7 +72,15 @@ FileType = Choices(
 
 class FileAsset(Document):
     slug = StringField(max_length=62, unique=True)
-    meta = {'indexes': ['slug', 'md5']}
+    meta = {
+        'indexes': [
+            'slug',
+            'md5',
+            {'fields': ["$slug", '$title', "$description", "$tags"]}
+        ],
+        # 'auto_create_index': True
+    }
+
     title = StringField(max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
     owner = ReferenceField(User, verbose_name=_('User'))

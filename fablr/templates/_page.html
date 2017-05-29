@@ -36,9 +36,7 @@
 {% block topjs %}
     {% if not debug %}
         <script>
-            window.ga = window.ga || function () {
-                    (ga.q = ga.q || []).push(arguments)
-                };
+            window.ga = window.ga || function () {(ga.q = ga.q || []).push(arguments)};
             ga.l = +new Date;
             ga('create', 'UA-49513153-1', 'none')
             ga('send', 'pageview');
@@ -244,7 +242,7 @@
             </div>
             <div class="col-sm-6"><p class="pull-right">
                 {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
-                {% trans %}Built using {% endtrans %}<a href="http://fablr.co">Fablr</a>,
+                {% trans %}Built using {% endtrans %}<a href="{{ url_for('world.homepage', _external=true, _scheme='') }}">Fablr</a>,
                 version {{ config['VERSION'] }}
             </p>
             </div>

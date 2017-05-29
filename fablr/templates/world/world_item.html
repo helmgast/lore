@@ -72,6 +72,8 @@
                 </div>
                     {{ MACRO.FORM_FIELD(world_form.content, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
+                    {{ MACRO.FORM_FIELD(world_form.created_date, controlclass='input-sm flatpickr-datetime',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}

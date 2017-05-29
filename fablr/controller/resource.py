@@ -874,7 +874,7 @@ class ResourceAccessPolicy(object):
 
         if op is 'view':  # If list, resource refers to a parent resource
             if not res:
-                return Authorization(False, _("Can't view a None resource"), error_code=403)
+                return Authorization(True, _("Viewing an empty form is allowed"))
             return self.is_resource_public(op, res) or self.is_user(op, user, res) and (
                    self.is_admin(op, user, res) or
                    self.is_editor(op, user, res) or

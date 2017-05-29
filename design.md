@@ -925,3 +925,24 @@ The intro tour shows new users what they can do.
 9) Show markdown
 10) Show details aside
 11) 
+
+Domains:
+
+- All static resources are served from fablr.co (core domain). Later they might be served from a static top domain to
+avoid using same credentials. With HTTP2 the need to do this is less or even counter productive however.
+- All asset links (e.g. semi-static resources) are also served from fablr.co for simplicity. Note however that these might
+need credentials to be served.
+- fablr.co is the landing page about the platform
+- fablr.co/auth
+- api.fablr.co is where the common API (will be) hosted
+- fablr.co/mailer is used for sending email
+- publisher.com or publisher.fablr.co is a complete subset of pages. All data served with such a domain will be bound
+to either come from that publisher, or where it's not relevant, served anyway. Such routes are:
+-- worlds/ (public)
+-- articles/ (public)
+-- products/ (public)
+-- orders/ (login)
+-- fileassets/ (login, refers to the upload and editing, serving is from separate)
+-- users/ (public)
+-- 
+If a route above is visited with the core domain (fablr.co) no filtering per publisher is made.

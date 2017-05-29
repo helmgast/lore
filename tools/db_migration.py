@@ -133,24 +133,29 @@ def migrate_1to2():
                     if fa:
                         p.images = [fa]
                     p.feature_image = None
-
+                    p.save()
+                    succeeded.append(p)
                 else:
                     failed.append(
                         ("Will not move image from product %s as it already have images (FileAsset) list" % p, p))
                     continue
-            p.save()
-            succeeded.append(p)
         except Exception as e:
             failed.append((e.message, p))
             continue
 
+    def asset_repl(match):
+        name, ext = os.path.splitext(match.group(5).lower())
+        slug = slugify(name.strip('.')) + '.' + ext.strip('.')
+        return "[{alt}](https://fablr.co/asset/{type}/{slug})".format(alt=match.group(1), type=match.group(4), slug=slug)
+
     for a in Article.objects():
         print "Replacing image references in article %s" % a
-        for match in re.finditer(r'/asset/image/([^)].+)\)', a.content):
-            name, ext = os.path.splitext(match.group(1).lower())
-            slug = slugify(name.strip('.')) + '.' + ext.strip('.')
-            a.content = a.content[:match.start(1)] + slug + a.content[match.end(1):]
+        a.content = re.sub(r'\[([^a]*)\]\((http(s)?://helmgast.se)?/asset/(image|download|link)/([^)]+)\)',
+                           asset_repl, a.content)
+        a.content = re.sub(r'http://helmgast', 'https://helmgast', a.content)
+
         # Also clean up content
+        a.content = re.sub('•', '*', a.content)
         a.content = re.sub(r' *&nbsp; *', ' ', a.content)
         a.content = re.sub(r'&amp;', u'&', a.content)
         a.content = a.content.strip()

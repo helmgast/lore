@@ -43,6 +43,17 @@
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
         </div>
+
+        <h5>{% trans %}Search text{% endtrans %}</h5>
+        <form method="get">
+            {# This will erase all other query parameters when submitted by HTML design #}
+            <div class="input-group{{ ' has-success' if args['q'] }}">
+                <input class="form-control input-sm" type="search" id='q' name='q'
+                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
+            </div>
+        </form>
     {% endif %}
 {% endblock %}
 
@@ -141,9 +152,9 @@
                             </label>
                             <input type="text" class="form-control input-sm" id="source_file_url" pattern="https?://.+"
                                    placeholder="{% trans %}Paste file URL here{% endtrans %}">
-                            {% if args['fields'].get('content_type__startswith', '')=='image/' %}
+                            {% if args['fields'].get('content_type__startswith', '') == 'image/' %}
                                 {% set upload_accept = 'image/*' %}
-                            {% elif args['fields'].get('content_type__not__startswith', '')=='image/' %}
+                            {% elif args['fields'].get('content_type__not__startswith', '') == 'image/' %}
                                 {% set upload_accept = '.pdf,.rtf,.zip,.doc,.xls,.txt' %}
                             {% endif %}
 
