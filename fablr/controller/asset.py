@@ -20,7 +20,7 @@ from fablr.controller.resource import RacModelConverter, \
     prefillable_fields_parser, Authorization
 
 from fablr.model.asset import FileAsset, FileAccessType
-from fablr.model.misc import EMPTY_ID
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.shop import products_owned_by_user
 from fablr.model.user import User
 from fablr.model.world import Publisher
@@ -169,6 +169,9 @@ class FileAssetsView(ResourceView):
 
     def index(self, **kwargs):
         publisher = Publisher.objects(slug=g.pub_host).first()
+        if publisher:
+            set_lang_options(publisher.languages)
+
         r = ListResponse(FileAssetsView, [
             ('files', FileAsset.objects(Q(publisher=publisher) | Q(publisher=None)).order_by('-created_date')),
             ('publisher', publisher)], extra_args=kwargs)
@@ -193,6 +196,10 @@ class FileAssetsView(ResourceView):
         return r
 
     def get(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        if publisher:
+            set_lang_options(publisher.languages)
+
         if id == 'post':
             r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=None)
@@ -203,6 +210,10 @@ class FileAssetsView(ResourceView):
         return r
 
     def patch(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        if publisher:
+            set_lang_options(publisher.languages)
+
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
         r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
@@ -219,6 +230,10 @@ class FileAssetsView(ResourceView):
         return redirect(r.args['next'] or url_for('assets.FileAssetsView:get', id=fileasset.slug))
 
     def post(self):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        if publisher:
+            set_lang_options(publisher.languages)
+
         r = ItemResponse(FileAssetsView, [('fileasset', None)], method='post')
         r.auth_or_abort()
         fileasset = FileAsset()

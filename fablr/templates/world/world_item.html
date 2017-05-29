@@ -13,6 +13,10 @@
     {% endif %}
 {%- endblock %}
 
+{% block header_class -%}{% if world and world.get_header_image %}
+    page-header-hero" style="background-image: url({{ url_for('image', slug = world.get_header_image.slug) }});"
+{% endif %}
+{%- endblock %}
 
 {% block cssimports %}
     {{ super() }}

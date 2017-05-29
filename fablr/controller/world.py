@@ -29,7 +29,7 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                        ListResponse, ItemResponse, Authorization)
-from fablr.model.misc import EMPTY_ID
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -240,8 +240,7 @@ class WorldsView(ResourceView):
     # @route('/worlds/')
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        if publisher.languages:
-            g.content_locales = set(publisher.languages)
+        set_lang_options(publisher.languages)
         r = ListResponse(WorldsView, [('worlds', World.objects().order_by('title')), ('publisher', publisher)])
 
         r.auth_or_abort(res=publisher)
@@ -257,22 +256,28 @@ class WorldsView(ResourceView):
 
     def get(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        if publisher.languages:
-            g.available_locales = publisher.languages
+
         if id == 'post':
+            set_lang_options(publisher.languages)
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         else:
-            r = ItemResponse(WorldsView, [('world', World.objects(slug=id).first_or_404()), ('publisher', publisher)])
+            world = World.objects(slug=id).first_or_404()
+            if 'intent' not in request.args:
+                # Redirect to home if we are just doing a get
+                redirect(url_for('world.ArticlesView:world_home', world_=world.slug))
+
+            set_lang_options(world.languages, publisher.languages)
+            r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)])
             r.auth_or_abort()
-            set_theme(r, 'world', r.world.slug)
+            set_theme(r, 'world', world.slug)
         set_theme(r, 'publisher', publisher.slug)
         return r
 
     def post(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        if publisher.languages:
-            g.content_locales = set(publisher.languages)
+        set_lang_options(publisher.languages)
+
         r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
         r.auth_or_abort(res=publisher)
         set_theme(r, 'publisher', publisher.slug)
@@ -290,9 +295,8 @@ class WorldsView(ResourceView):
     def patch(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=id).first_or_404()
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
+
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)
@@ -339,9 +343,7 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = WorldMeta(publisher)
         articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-sort_priority', '-created_date')
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(publisher.languages)
         r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
                          formats=['html'])
         r.auth_or_abort(res=publisher)
@@ -360,15 +362,16 @@ class ArticlesView(ResourceView):
     @route('/<world_>/', route_base='/')
     def world_home(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        if publisher.languages:
-            g.content_locales = set(publisher.languages)
         if world_ == 'post':
+            set_lang_options(publisher.languages)
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         if world_ == 'meta':
             return redirect(url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug))
         else:
             world = World.objects(slug=world_).first_or_404()
+            set_lang_options(world.languages, publisher.languages)
+
             r = ItemResponse(WorldsView,
                              [('world', world), ('publisher', publisher)])
             r.auth_or_abort()
@@ -387,7 +390,7 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = WorldMeta(publisher)
         articles = Article.objects(publisher=publisher)
-
+        set_lang_options(publisher.languages)
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
         r.auth_or_abort(res=publisher)
@@ -407,15 +410,12 @@ class ArticlesView(ResourceView):
     def index(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
-        lang_options = world.languages or publisher.languages
-
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
 
         if world_ == 'meta':
             articles = Article.objects(publisher=publisher).order_by('-created_date')  # All articles from publisher
         else:
-            articles = Article.objects(world=world).order_by('-created_date')
+            article_s = Article.objects(world=world).order_by('-created_date')
 
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
@@ -482,9 +482,7 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
 
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
 
         # Special id post means we interpret this as intent=post (to allow simple routing to get)
         if id == 'post':
@@ -508,9 +506,8 @@ class ArticlesView(ResourceView):
     def post(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
+
         r = ItemResponse(ArticlesView,
                          [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
@@ -537,9 +534,8 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
+
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='patch')
@@ -563,9 +559,9 @@ class ArticlesView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
-        lang_options = world.languages or publisher.languages
-        if lang_options:
-            g.content_locales = set(lang_options)
+        set_lang_options(world.languages, publisher.languages)
+
+
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='delete')

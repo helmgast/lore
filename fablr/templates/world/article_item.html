@@ -14,7 +14,7 @@
 {% endif %}
 
 
-{% block header_class %}{% endblock %}
+{#{% block header_class %}{% endblock %}#}
 
 
 {% block breadcrumbs %}
@@ -72,7 +72,10 @@
     {% endif %}
 {% endblock %}
 
-
+{% block header_class -%}{% if article and article.get_header_image %}
+    page-header-hero" style="background-image: url({{ url_for('image', slug = article.get_header_image.slug) }});"
+{% endif %}
+{%- endblock %}
 
 {% block cssimports %}
     {{ super() }}
@@ -158,6 +161,8 @@
 {% endblock %}
 
 {% block content %}
+
+
     {% if args.get('intent', None) %}
         <article>
             {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
@@ -216,7 +221,7 @@
             {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-6', controlwrap='col-sm-6') }}
 
             {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
-               url_for('assets.FileAssetsView:file_selector', type='image', choice='single'), data_class='image feature-images') }}
+               url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
             {% if g.user.id %}
                 <input type="hidden" name="creator" value="{{ g.user.id }}"/>

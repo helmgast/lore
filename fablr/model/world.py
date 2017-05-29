@@ -129,7 +129,15 @@ class World(Document):
 
     @property  # For convenience
     def get_feature_image(self):
-        return self.images[0] if self.images else None
+        # Smallest aspect
+        newlist = sorted(self.images, key=lambda x: x.aspect_ratio())
+        return newlist[0] if newlist else None
+
+    @property  # For convenience
+    def get_header_image(self):
+        # Largest aspect
+        newlist = sorted(self.images, key=lambda x: x.aspect_ratio(), reverse=True)
+        return newlist[0] if newlist and newlist[0].aspect_ratio() > 1 else None
 
         # startyear = 0
         # daysperyear = 360
@@ -319,7 +327,15 @@ class Article(Document):
 
     @property  # For convenience
     def get_feature_image(self):
-        return self.images[0] if self.images else None
+        # Smallest aspect
+        newlist = sorted(self.images, key=lambda x: x.aspect_ratio())
+        return newlist[0] if newlist else None
+
+    @property  # For convenience
+    def get_header_image(self):
+        # Largest aspect
+        newlist = sorted(self.images, key=lambda x: x.aspect_ratio(), reverse=True)
+        return newlist[0] if newlist and newlist[0].aspect_ratio() > 1 else None
 
     # Executes before saving
     def clean(self):
