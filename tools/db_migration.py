@@ -149,16 +149,16 @@ def migrate_1to2():
     def asset_repl(match):
         name, ext = os.path.splitext(match.group(5).lower())
         slug = slugify(name.strip('.')) + '.' + ext.strip('.')
-        return "[{alt}](https://fablr.co/asset/{type}/{slug})".format(alt=match.group(1), type=match.group(4), slug=slug)
+        return u"[{alt}](https://fablr.co/asset/{type}/{slug})".format(alt=match.group(1), type=match.group(4), slug=slug)
 
     for a in Article.objects():
         print "Replacing image references in article %s" % a
         a.content = re.sub(r'\[([^a]*)\]\((http(s)?://helmgast.se)?/asset/(image|download|link)/([^)]+)\)',
                            asset_repl, a.content)
-        a.content = re.sub(r'http://helmgast', 'https://helmgast', a.content)
+        a.content = re.sub(r'http://helmgast', u'https://helmgast', a.content)
 
         # Also clean up content
-        a.content = re.sub(u'•', u'*', a.content)
+        a.content = re.sub('\xe4', u'*', a.content)
         a.content = re.sub(r' *&nbsp; *', ' ', a.content)
         a.content = re.sub(r'&amp;', u'&', a.content)
         a.content = a.content.strip()
