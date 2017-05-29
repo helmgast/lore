@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#  -*- coding: utf-8 -*-
+
 import os
 import re
 import traceback
@@ -155,7 +158,7 @@ def migrate_1to2():
         a.content = re.sub(r'http://helmgast', 'https://helmgast', a.content)
 
         # Also clean up content
-        a.content = re.sub('•', '*', a.content)
+        a.content = re.sub(u'•', u'*', a.content)
         a.content = re.sub(r' *&nbsp; *', ' ', a.content)
         a.content = re.sub(r'&amp;', u'&', a.content)
         a.content = a.content.strip()
