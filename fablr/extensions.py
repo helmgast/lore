@@ -145,8 +145,6 @@ def pick_locale():
         return current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
 
     content_locales = g.get('content_locales', None)
-    if not isinstance(content_locales, set):
-        content_locales = None
     g.available_locales = {k: Locale.parse(k).language_name.capitalize() for k in
                            (configured_locales & content_locales if content_locales else configured_locales)}
 
@@ -162,7 +160,7 @@ def pick_locale():
     else:
         preferred_locale = request.accept_languages.best_match(g.available_locales.keys())
     if preferred_locale not in g.available_locales:
-        preferred_locale = current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+        return None  # Babel will go to its default
 
     # print "Got lang %s, available_locale %s" % (preferred_locale, g.available_locales)
     return preferred_locale

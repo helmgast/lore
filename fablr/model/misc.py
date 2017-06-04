@@ -55,7 +55,7 @@ def slugify(title):
 def set_lang_options(*args):
     for lang_set in args:
         if lang_set:
-            g.content_locales = lang_set
+            g.content_locales = set(lang_set)
             return
 
 url_for_args = {'_external', '_anchor', '_method', '_scheme'}

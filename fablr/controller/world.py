@@ -265,7 +265,7 @@ class WorldsView(ResourceView):
             world = World.objects(slug=id).first_or_404()
             if 'intent' not in request.args:
                 # Redirect to home if we are just doing a get
-                redirect(url_for('world.ArticlesView:world_home', world_=world.slug))
+                return redirect(url_for('world.ArticlesView:world_home', world_=world.slug))
 
             set_lang_options(world.languages, publisher.languages)
             r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)])
