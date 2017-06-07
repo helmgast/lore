@@ -21,7 +21,7 @@ from flask_babel import lazy_gettext as _
 from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
-                         ValidationError)
+                         ValidationError, DoesNotExist)
 
 import logging
 from flask import current_app
@@ -56,7 +56,10 @@ class UserEvent(EmbeddedDocument):
     xp = IntField()
 
     def action_string(self):
-        return translate_action(self.action, self.instance)
+        try:
+            return translate_action(self.action, self.instance)
+        except DoesNotExist as dne:
+            return self.action
 
 # A user in the system
 class User(Document, BaseUser):
@@ -185,7 +188,10 @@ class Event(Document):
         self.xp = Event.calculate_xp(self)
 
     def action_string(self):
-        return translate_action(self.action, self.resource)
+        try:
+            return translate_action(self.action, self.resource)
+        except DoesNotExist as dne:
+            return self.action
 
     @staticmethod
     def calculate_xp(event):

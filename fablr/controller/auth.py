@@ -22,8 +22,9 @@ from flask import render_template
 from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
 
-from fablr.model.misc import safe_next_url
+from fablr.model.misc import safe_next_url, set_lang_options
 from fablr.model.user import User, UserStatus
+from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -235,6 +236,9 @@ def sso():
 @auth_app.route('/logout', subdomain='<pub_host>')
 def logout():
     # Clears logged in flag to effectively log out from all domains, even if session is only cleared in current domain.
+    publisher = Publisher.objects(slug=g.pub_host).first()
+    set_lang_options(publisher)
+
     logout_user()
     flash(_('You are now logged out'), 'success')
     auth0_url = 'https://{domain}/v2/logout?returnTo={home}'.format(
@@ -246,6 +250,8 @@ def logout():
 
 @auth_app.route('/login', subdomain='<pub_host>')
 def login():
+    publisher = Publisher.objects(slug=g.pub_host).first()
+    set_lang_options(publisher)
     return render_template('auth/login.html')
 
 

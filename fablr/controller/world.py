@@ -29,7 +29,7 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                        ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                        ListResponse, ItemResponse, Authorization)
-from fablr.model.misc import EMPTY_ID, set_lang_options
+from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -210,20 +210,6 @@ class PublishersView(ResourceView):
 
     def delete(self, id):
         abort(501)  # Not implemented
-
-
-domain_slug = re.compile(r'(www.)?([^.]+)')
-
-
-def set_theme(response, theme_type, slug):
-    if response and theme_type and slug:
-        slug = domain_slug.search(slug).group(2)  # www.domain.tld --> domain
-        try:
-            setattr(response, '%s_theme' % theme_type,
-                    current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
-            # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
-        except TemplateNotFound:
-            logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
 
 
 class WorldsView(ResourceView):

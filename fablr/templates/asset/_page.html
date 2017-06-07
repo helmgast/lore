@@ -1,4 +1,4 @@
-{% extends root_template %}
+{% extends root_template if not publisher_theme else publisher_theme %}
 {% import 'includes/macros.html' as MACRO %}
 
 

@@ -28,9 +28,8 @@ from fablr.controller.resource import (ResourceAccessPolicy,
                                        RacModelConverter, RacBaseForm, ResourceView,
                                        filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                        Authorization, route_subdomain)
-from fablr.controller.world import set_theme
 from fablr.model.asset import FileAsset
-from fablr.model.misc import EMPTY_ID, set_lang_options
+from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
 from fablr.model.user import User
 from fablr.model.world import Publisher
@@ -110,7 +109,7 @@ class ProductsView(ResourceView):
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
         products = Product.objects().order_by('type', '-price')
         r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
         if not (g.user and g.user.admin):
@@ -125,7 +124,7 @@ class ProductsView(ResourceView):
 
     def get(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         if id == 'post':
             r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
@@ -146,7 +145,7 @@ class ProductsView(ResourceView):
 
     def post(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
         r.auth_or_abort(res=publisher)
@@ -172,7 +171,7 @@ class ProductsView(ResourceView):
         # print fa
 
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
@@ -353,7 +352,7 @@ class OrdersView(ResourceView):
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         orders = Order.objects().order_by('-updated')  # last updated will show paid highest
 
@@ -378,7 +377,7 @@ class OrdersView(ResourceView):
 
     def my_orders(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
@@ -389,7 +388,7 @@ class OrdersView(ResourceView):
 
     def get(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         # TODO we dont support new order creation outside of cart yet
         # if id == 'post':
@@ -406,7 +405,7 @@ class OrdersView(ResourceView):
     @route('/buy', methods=['PATCH'])
     def buy(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=BuyForm,
@@ -443,7 +442,7 @@ class OrdersView(ResourceView):
     @route('/cart', methods=['GET', 'PATCH', 'POST'])
     def cart(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         cart_order = get_cart_order()
         r = ItemResponse(OrdersView, [('order', cart_order), ('publisher', publisher)], form_class=CartForm,
@@ -469,7 +468,7 @@ class OrdersView(ResourceView):
     @route('/details', methods=['GET', 'POST'])
     def details(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         cart_order = get_cart_order()
         if not cart_order or cart_order.total_items < 1:
@@ -510,7 +509,7 @@ class OrdersView(ResourceView):
     @route('/pay', methods=['GET', 'POST'])
     def pay(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         cart_order = get_cart_order()
         if not cart_order or not cart_order.shipping_address or not cart_order.user:

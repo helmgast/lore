@@ -7,6 +7,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+import re
 import urllib
 from collections import namedtuple, OrderedDict
 from datetime import timedelta, date, datetime
@@ -22,6 +23,7 @@ import flask_mongoengine
 import wtforms as wtf
 from flask import g, request, url_for
 from flask_wtf import Form  # secure form
+from jinja2 import TemplateNotFound
 from slugify import slugify as ext_slugify
 
 from wtforms.compat import iteritems
@@ -53,12 +55,27 @@ def slugify(title):
 
 
 def set_lang_options(*args):
-    for lang_set in args:
-        if lang_set:
-            g.content_locales = set(lang_set)
+    for resource in args:
+        if resource and getattr(resource, 'languages', None):
+            g.content_locales = set(getattr(resource, 'languages', None))
             return
 
+domain_slug = re.compile(r'(www.)?([^.]+)')
+
+
+def set_theme(response, theme_type, slug):
+    if response and theme_type and slug:
+        slug = domain_slug.search(slug).group(2)  # www.domain.tld --> domain
+        try:
+            setattr(response, '%s_theme' % theme_type,
+                    current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
+            # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
+        except TemplateNotFound:
+            logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
+
+
 url_for_args = {'_external', '_anchor', '_method', '_scheme'}
+
 
 def current_url(_multi=False, **kwargs):
     """Returns the current request URL with selected modifications. Set an argument to

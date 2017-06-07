@@ -11,7 +11,6 @@
 """
 import logging
 from flask import abort, request, Blueprint, g, current_app
-from flask import flash
 from flask import redirect
 from flask import url_for
 from flask_babel import lazy_gettext as _
@@ -24,8 +23,9 @@ from fablr.controller.auth import get_logged_in_user
 from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from fablr.extensions import csrf
-from fablr.model.misc import EMPTY_ID
+from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.user import User, Group, Event
+from fablr.model.world import Publisher
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -56,6 +56,7 @@ FinishTourForm = model_form(User,
 
 class UsersView(ResourceView):
     access_policy = UserAccessPolicy()
+    subdomain = '<pub_host>'
     model = User
     list_template = 'social/user_list.html'
     list_arg_parser = filterable_fields_parser(['username', 'status', 'xp', 'location', 'join_date', 'last_login'])
@@ -67,15 +68,23 @@ class UsersView(ResourceView):
                             converter=RacModelConverter())
 
     def index(self):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
+
         users = User.objects().order_by('-username')
         r = ListResponse(UsersView, [('users', users)])
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
+
         if not (g.user and g.user.admin):
             r.query = r.query.filter(filter_authorized())
         r.prepare_query()
         return r
 
     def get(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
+
         if id == 'post':
             r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=None)
@@ -86,16 +95,23 @@ class UsersView(ResourceView):
                 # Allow invited only user to see this page
                 g.user = get_logged_in_user(require_active=False)
             r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
+
         r.events = Event.objects(user=user) if user else []
         return r
 
     def patch(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
+
         user = User.objects(id=id).first_or_404()
         r = ItemResponse(UsersView, [('user', user)], method='patch')
+
         if not getattr(g, 'user', None):
             # Allow invited only user to see this page
             g.user = get_logged_in_user(require_active=False)
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted

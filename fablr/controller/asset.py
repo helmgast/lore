@@ -20,7 +20,7 @@ from fablr.controller.resource import RacModelConverter, \
     prefillable_fields_parser, Authorization
 
 from fablr.model.asset import FileAsset, FileAccessType
-from fablr.model.misc import EMPTY_ID, set_lang_options
+from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.shop import products_owned_by_user
 from fablr.model.user import User
 from fablr.model.world import Publisher
@@ -169,13 +169,14 @@ class FileAssetsView(ResourceView):
 
     def index(self, **kwargs):
         publisher = Publisher.objects(slug=g.pub_host).first()
-        if publisher:
-            set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         r = ListResponse(FileAssetsView, [
             ('files', FileAsset.objects(Q(publisher=publisher) | Q(publisher=None)).order_by('-created_date')),
             ('publisher', publisher)], extra_args=kwargs)
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
+
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
                 filter_authorized() |
@@ -197,8 +198,7 @@ class FileAssetsView(ResourceView):
 
     def get(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first()
-        if publisher:
-            set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         if id == 'post':
             r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={'intent': 'post'})
@@ -207,17 +207,19 @@ class FileAssetsView(ResourceView):
             fileasset = FileAsset.objects(slug=id).first_or_404()
             r = ItemResponse(FileAssetsView, [('fileasset', fileasset)])
             r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
         return r
 
     def patch(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first()
-        if publisher:
-            set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
         r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
+
         if not r.validate():
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
@@ -231,11 +233,12 @@ class FileAssetsView(ResourceView):
 
     def post(self):
         publisher = Publisher.objects(slug=g.pub_host).first()
-        if publisher:
-            set_lang_options(publisher.languages)
+        set_lang_options(publisher)
 
         r = ItemResponse(FileAssetsView, [('fileasset', None)], method='post')
         r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
+
         fileasset = FileAsset()
         if not r.validate():
             flash(_("Error in form"), 'danger')

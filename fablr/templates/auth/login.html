@@ -4,4 +4,8 @@
 {% block js_bottom %}
     {{ super() }}
     {% include "auth/auth0.html" %}
+    <script>
+        lock.socialOrEmailcode(options)
+    </script>
+
 {% endblock %}

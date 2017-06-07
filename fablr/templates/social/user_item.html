@@ -239,36 +239,25 @@
 {% endblock %}
 
 {% block js_bottom %}
-    {{ super() }} {# Execute main js first #}
-    <script src="//cdn.auth0.com/js/lock-passwordless-2.2.3.min.js"></script>
-    <script type="text/javascript">
-        var clientID = "{{ config["AUTH0_CLIENT_ID"] }}";
-        var domain = "{{ config["AUTH0_DOMAIN"] }}";
-        var lock = new Auth0LockPasswordless(clientID, domain);
-
-        var options = {
-            icon: "//helmgast.se/static/img/helmgast_512px.png",
-            closable: true,
-            focusInput: true,
-            primaryColor: "#a00",
-            socialBigButtons: true,
-            connections: ["facebook", "google-oauth2"],
-
-            rememberLastLogin: false,
-            callbackURL: "{{ url_for('auth.callback', _external=true, _scheme=request.url.split(':')[0]) }}"
-        };
+    {{ super() }}
+    {% include "auth/auth0.html" %}
+    <script>
         $('#lock-activate').click(function (e) {
-            lock.socialOrEmailcode($.extend(options, {
+            lock.socialOrEmailcode($.extend(true, options, {
+                closable: true,
+                rememberLastLogin: false,
                 dict: {
-                    title: '{{ _("Add to %(account)s", account=user.display_name()) }}'
-                },
-                email: {
-                    headerText: '{{ _("Enter a new email to add by verification") }}'
+                    title: '{{ _("Add to %(account)s", account=user.display_name()) }}',
+                    networkOrEmail: {
+                        headerText: '{{ _("Enter a new email to add by verification") }}'
+                    }
                 }
             }));
         })
         $('#lock-mail').click(function (e) {
-            lock.emailcode($.extend(options, {
+            lock.emailcode($.extend(true, options, {
+                closable: true,
+                rememberLastLogin: false,
                 dict: {
                     title: '{{ _("Merge this account") }}',
                     email: {
@@ -278,4 +267,5 @@
             }));
         })
     </script>
+
 {% endblock %}
