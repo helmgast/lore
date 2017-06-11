@@ -17,17 +17,17 @@
             color: #333;
         }
 
-        .publisher-header {
-            font-size: 50px;
-            text-align: center;
-            width: 100%;
+        .page-header .publisher-header {
+            font-family: 'Gentium Book Basic', sans-serif !important;
+            font-weight: 400;
+            text-transform: uppercase;
         }
     </style>
 {% endblock %}
 
 
 {% block navbar_brand %}
-    <a class="navbar-brand navbar-collapse" href="{{ url_for('world.ArticlesView:publisher_home') }}">
+    <a class="navbar-brand" href="{{ url_for('world.ArticlesView:publisher_home') }}">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive" src="{{
                 url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>

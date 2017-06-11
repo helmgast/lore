@@ -1,5 +1,20 @@
 @import "journal_variables.less";
 
+.fluid-type(@property, @min-vw, @max-vw, @min-size, @max-size) {
+
+	@{property}: @min-size;
+
+	@media screen and (min-width: @min-vw) {
+		@{property}: calc( @min-size ~" + " unit(@max-size - @min-size) ~" * ((100vw - " @min-vw ~") /" unit(@max-vw - @min-vw) ~")" ) !important;
+	}
+
+	@media screen and (min-width: @max-vw) {
+		@{property}: @max-size !important;
+	}
+
+}
+
+
 /* ------------------- BODY --------------------- */
 
 html {
@@ -49,10 +64,8 @@ footer a {
 }
 
 .navbar-form {
-  margin-bottom: 0px;
-  padding-left: 0px;
-  padding-right: 0px;
-  width: 190px;
+  margin-left: 0px;
+  margin-right: 0px;
 }
 
 .navbar-brand {
@@ -76,19 +89,39 @@ footer a {
 }
 
 #brand-target {
-  //border: 1px solid grey;
-  height: 350px;
-  margin: 0 auto;
-  float: none;
-  max-width: 400px;
-  position: relative;
+  height: 400px;
+    margin: 0 auto;
+    float: none;
+    width: 400px;
+    position: relative;
+    top: 100px;
+    margin-top: -100px;
 }
 
-// Position the H1 inside brand target towards the bottom
-#brand-target h1 {
-  position: absolute;
-  bottom: 0;
+.page-header .publisher-header {
+      text-align: center;
+      width: 100%;
 }
+
+.page-header .publisher-tagline {
+      text-align: center;
+      width: 100%;
+      color: #bbb;
+}
+
+.page-header .publisher-header {
+  	.fluid-type(font-size, 400px, 1200px, 60px, 100px);
+}
+
+.page-header .publisher-tagline {
+  	.fluid-type(font-size, 400px, 1200px, 20px, 40px);
+}
+
+//// Position the H1 inside brand target towards the bottom
+//#brand-target h1 {
+//  position: absolute;
+//  bottom: 0;
+//}
 
 .navbar-sub {
   border-top: 4px solid @primary !important;
@@ -105,6 +138,39 @@ footer a {
   padding-bottom: 5px;
   font-size: 12px;
   margin: 0px;
+}
+
+.navbar-sub > .navbar-nav > li > .btn {
+  color: @btn-default-color;
+  border: none;
+  border-radius: 0px;
+  font-size: 12px;
+  line-height: 21px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  width: 100%;
+}
+
+.navbar-search {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+@media (min-width: 768px) {
+  .navbar-search {
+    padding-top: 17.5px;
+    padding-bottom: 17.5px;
+  }
+}
+
+.navbar-search form {
+  color: inherit;
+}
+
+.navbar-search input {
+  border: none;
+  border-bottom: 1px solid grey;
+  background: transparent;
 }
 
 .nav .breadcrumb-item {
@@ -151,6 +217,7 @@ footer a {
   padding: 5px 10px 5px 10px;
 }
 
+
 .navbar-nav-top > li:after {
   content: "";
   display: block;
@@ -166,19 +233,21 @@ footer a {
   transition: all 0.5s ease-out;
 }
 
-.navbar-nav-top > li:hover:after, .navbar-nav-top > li.active:after {
-  content: "";
-  display: block;
-  position: absolute;
-  bottom: 0;
-  left: ~"calc(50% - 25px)";
-  width: 0px;
-  z-index: 10;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 7px solid @primary;
-  height: 0px;
-  transition: all 1s ease-out;
+@media (min-width: 768px) {
+  .navbar-nav-top > li:hover:after, .navbar-nav-top > li.active:after {
+    //content: "";
+    //display: block;
+    //position: absolute;
+    //bottom: 0;
+    //left: ~"calc(50% - 25px)";
+    //width: 0px;
+    //z-index: 10;
+    //border-left: 25px solid transparent;
+    //border-right: 25px solid transparent;
+    border-bottom: 7px solid @primary;
+    //height: 0px;
+    //transition: all 1s ease-out;
+  }
 }
 
 /* ------------------- Alerts, ribbons and cart --------------------- */
@@ -665,13 +734,10 @@ a.highlight {
   min-height: 400px;
   background-image: url(//placehold.it/1200x600);
   background-repeat: no-repeat;
-  margin-bottom: 25px;
-  background-position: 50% 50%;
-  background-attachment: fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
+background-position: 0 60px;
+    background-attachment: fixed;
+    background-size: 100%;
+    background-color: black;
 }
 
 .page-header-hero h1 {
@@ -742,11 +808,14 @@ important;
   border-right-color: #fcf8e3 !important;
 }
 
+@article-line-height:  floor((@font-size-base * 1.625)); // ~20px
+/* To be aligned with other line heights for rhythm*/
+
 /* For all article text regardless of being edited or not */
 article {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.625; /* To be aligned with other line heights for rhythm*/
+  line-height: @article-line-height;
 }
 
 .article-text > p:first-of-type:first-letter {
@@ -764,7 +833,8 @@ article a[href*=".pdf"], article a[href*=".rtf"], article a[href*=".zip"], artic
   display: inline-block;
   background-repeat: no-repeat;
   background-position: left;
-  background-size: contain;
+  background-size: @article-line-height;
+
 }
 
 article, .gallery {
@@ -853,17 +923,20 @@ article, .gallery {
 }
 
 .dobr {
-  /* These are technically the same, but use both */
+  /* Will break only words that can't fit in full width. Will not add hyphens */
   overflow-wrap: break-word;
   word-wrap: break-word;
 
-  -ms-word-break: break-all;
-  /* This is the dangerous one in WebKit, as it breaks things wherever */
-  word-break: break-all;
-  /* Instead use this non-standard one: */
-  word-break: break-word;
+  /* Adds a hyphen only when the word contains a where the word breaks, and also breaks words even if not wider than screen.
+  Use characters U+2010 (HYPHEN) or U+00AD (SHY) */
+  -ms-hyphens: manual;
+  -moz-hyphens: manual;
+  -webkit-hyphens: manual;
+  hyphens: manual;
+}
 
-  /* Adds a hyphen where the word breaks, if supported (No Blink) */
+.hyphenate {
+  /* Adds hyphens automatically if html lang is specified */
   -ms-hyphens: auto;
   -moz-hyphens: auto;
   -webkit-hyphens: auto;
@@ -874,6 +947,14 @@ article, .gallery {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.top-shadow {
+     box-shadow: 0 -8px 8px -8px #696868;
+}
+
+.top-line {
+  border-top: 1px solid grey;
 }
 
 .cards {
@@ -1074,6 +1155,10 @@ article, .gallery {
   background-color: unset;
 }
 
+.intro-aside a:hover {
+  text-decoration: none; // Removes underlines between icons when hovered
+}
+
 .article-aside {
   /* should look similar as .privileged */
   //background-color: rgba(252, 252, 252, 0.8);
@@ -1183,21 +1268,21 @@ article {
 
 .feature-images .gallery-item:first-child {
   /* Highlights the first choice of a set as the feature image */
-    border: 2px dashed #999;
-      padding: 2px;
+  border: 2px dashed #999;
+  padding: 2px;
 
   flex-basis: 100% !important;
 }
 
 .feature-images .gallery-item:first-child:before {
-    content: "Feature image";
-    position: absolute;
-    font-size: 10px;
-    font-family: @font-family-sans-serif;
-    background: @light-shade;
-    margin-top: -12px;
-    margin-left: 2px;
-    padding: 1px;
+  content: "Feature image";
+  position: absolute;
+  font-size: 10px;
+  font-family: @font-family-sans-serif;
+  background: @light-shade;
+  margin-top: -12px;
+  margin-left: 2px;
+  padding: 1px;
 }
 
 .gallery-item {
@@ -1266,25 +1351,24 @@ article {
 }
 
 .gallery .gallery-item > a {
-    background-size: contain;
-    text-align: center;
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 150px;
-    display: flex;
-    align-items: flex-end;
-    font-size: 12px;
-    width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  background-size: contain;
+  text-align: center;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 150px;
+  display: flex;
+  align-items: flex-end;
+  font-size: 12px;
+  width: 100px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 // Avoid clicking links when the gallery-item is selectable
 .selectable {
   cursor: pointer;
 }
-
 
 .selectable > a {
   pointer-events: none;
@@ -1637,6 +1721,11 @@ img.zoomable.zoomed {
   }
 }
 
+// https://stackoverflow.com/questions/28660494/media-list-and-text-overflow-in-bootstrap-3-3-2
+.media-heading, .media-body > p, .media-body > span {
+    word-break: break-word;
+}
+
 .content {
   padding-top: 1px; /* Some bug that affects article_vintage */
 }
@@ -1655,6 +1744,7 @@ img.zoomable.zoomed {
   font-weight: 400;
   font-size: 16px;
 }
+
 //
 //.introjs-helperNumberLayer {
 //  right: -16px;
@@ -1664,5 +1754,5 @@ img.zoomable.zoomed {
 //}
 
 .introjs-helperLayer {
-  background-color: rgba(255,255,255,.7) !important;
+  background-color: rgba(255, 255, 255, .7) !important;
 }

@@ -14,10 +14,8 @@
 {% endblock %}
 </div>
 <div class="modal-footer">
-  {% block footer %}
   <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
   <button type="submit" class="btn btn-primary modal-submit" data-loading-text="Loading...">{% block submit_title %}{{ _('Insert') }}{% endblock %}</button>
-  {% endblock %}
 </div>
 {% if self.formtag() %}</form>{% endif %}
 {% block final_html %}{% endblock %}{# empty any final html #}

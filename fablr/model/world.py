@@ -111,6 +111,7 @@ class World(Document):
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
 
     def clean(self):
+        self.title = self.title.replace(u'&shy;', u'\u00AD')  # Replaces soft hyphens with the real unicode
         self.slug = slugify(self.title)
         if self.creator and self.creator not in self.editors:
             self.editors.append(self.creator)
@@ -339,6 +340,7 @@ class Article(Document):
 
     # Executes before saving
     def clean(self):
+        self.title = self.title.replace(u'&shy;', u'\u00AD')  # Replaces soft hyphens with the real unicode
         self.slug = slugify(self.title)
         if self.creator and self.creator not in self.editors:
             self.editors.append(self.creator)

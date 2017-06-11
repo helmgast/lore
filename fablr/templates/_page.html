@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ get_locale().language }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,7 +36,9 @@
 {% block topjs %}
     {% if not debug %}
         <script>
-            window.ga = window.ga || function () {(ga.q = ga.q || []).push(arguments)};
+            window.ga = window.ga || function () {
+                    (ga.q = ga.q || []).push(arguments)
+                };
             ga.l = +new Date;
             ga('create', 'UA-49513153-1', 'none')
             ga('send', 'pageview');
@@ -44,24 +46,24 @@
         <script async src='https://www.google-analytics.com/analytics.js'></script>
     {% endif %}
     <script>
-    var set_aspect = function (el) {
-        var a = el.width / el.height;
-        while ((el = el.parentElement) && !el.classList.contains('gallery-item'));
-        if (el) {
-            el.style.width = 100 * a / 4.0 + '%';
-            el.style["flex-grow"] = a;
+        var set_aspect = function (el) {
+            var a = el.width / el.height;
+            while ((el = el.parentElement) && !el.classList.contains('gallery-item'));
+            if (el) {
+                el.style.width = 100 * a / 4.0 + '%';
+                el.style["flex-grow"] = a;
+            }
         }
-    }
-    // Polyfill for "matches" function
-    // https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
-    if (!Element.prototype.matches)
-        Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
-    // Important to set listener on body and using useCapture = true
-    document.body.addEventListener('load', function (e) {
-        if (e.target.matches('.gallery img'))
-            set_aspect(e.target);
-    }, true)
-</script>
+        // Polyfill for "matches" function
+        // https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
+        if (!Element.prototype.matches)
+            Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+        // Important to set listener on body and using useCapture = true
+        document.body.addEventListener('load', function (e) {
+            if (e.target.matches('.gallery img'))
+                set_aspect(e.target);
+        }, true)
+    </script>
 {% endblock topjs %}
 
 <script>
@@ -173,19 +175,11 @@
             <ul class="nav navbar-nav">
                 <li class="breadcrumb-item nobr">{% block breadcrumbs %}{% endblock %}</li>
             </ul>
-            <ul class="nav navbar-nav navbar-right">
-                {#                <li><p class="privileged">&nbsp;</p></li>#}
+            <ul class="nav navbar-nav navbar-right actionbar">
                 {% block subnavbar %}
-
-                {% endblock %}
-
-                <li>
-                    <ul id="tour-actionbar" class="action-buttons">
-                        {% block actionbar %}
-                        {% endblock actionbar %}
-                    </ul>
-                </li>
-
+                {% endblock subnavbar %}
+                {% block actionbar %}
+                {% endblock actionbar %}
             </ul>
         </div>
 
@@ -199,12 +193,12 @@
 {% endblock navbar %}
 
 {% block header %}
-    <div class="page-header {% block header_class %}{% endblock %}">
+    <div class="page-header margin-below-large {% block header_class %}{% endblock %}">
         <div class="container">
             <div class="row">
                 {% block header_title %}
                     <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">{% block content_title %}{% endblock %}
-                        <small class="nobr">{% block content_tagline %}{% endblock %}</small>
+                        <small>{% block content_tagline %}{% endblock %}</small>
                     </h1>
                 {% endblock header_title %}
             </div>
@@ -242,7 +236,8 @@
             </div>
             <div class="col-sm-6"><p class="pull-right">
                 {% trans %}Design and code{% endtrans %} © {% filter currentyear %}{% endfilter %} Helmgast AB<br>
-                {% trans %}Built using {% endtrans %}<a href="{{ url_for('world.homepage', _external=true, _scheme='') }}">Fablr</a>,
+                {% trans %}Built using {% endtrans %}<a
+                    href="{{ url_for('world.homepage', _external=true, _scheme='') }}">Fablr</a>,
                 version {{ config['VERSION'] }}
             </p>
             </div>

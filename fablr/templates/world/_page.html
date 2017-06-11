@@ -1,19 +1,23 @@
 {% extends root_template if not publisher_theme else publisher_theme %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block navbar_right %}
-    <form method="get" action="{{ url_for('world.ArticlesView:search') }}" class="navbar-form navbar-left"
-          id="tour-search">
-        {# This will erase all other query parameters when submitted by HTML design #}
-        <div class="input-group">
-            <input class="form-control input" type="search" id='q' name='q'
-                   placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">
-            <span class="input-group-btn">
-            <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search"></span></button>
-            </span>
-        </div>
-    </form>
+
+{% block navbar_left %}
     {{ super() }}
+    <li class="navbar-search">
+    <form class="autopost" method="get" action="{{ url_for('world.ArticlesView:search') }}"
+          id="tour-search">
+        <span class="glyphicon glyphicon-search"></span> <input type="search" id='q' name='q' placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">
+    </form>
+{##}
+{#        <div class="input-group">#}
+{#            <input class="form-control input" type="search" id='q' name='q'#}
+{#                   placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">#}
+{#            <span class="input-group-btn">#}
+{#            <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search"></span></button>#}
+{#            </span>#}
+{#        </div>#}
+    </li>
 {% endblock %}
 
 {% block content %}
