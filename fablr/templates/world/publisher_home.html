@@ -27,7 +27,7 @@
             </div>
         </div>
         {% for world in worlds %}
-            <div class="page-header page-header-hero"
+            <div class="page-header page-header-hero parallax-border"
                  style="background-image: url({{ url_for('image', slug=world.get_header_image.slug) }})">
                 <div class="container">
                     <div class="row">
@@ -79,7 +79,7 @@
 {#        </div>#}
 
         <div class="container content">
-            <div class="row top-line">
+            <div class="row">
                 <h3>{% trans %}Latest news{% endtrans %}</h3>
                 <div class="col-md-12 cards margin-above">
                     {% for article in articles %}

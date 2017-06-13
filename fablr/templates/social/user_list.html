@@ -19,8 +19,13 @@
     {% endcall %}
 {% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
 {% block asides %}{{ super() }}
     {% if filter_options %}
+        <div class="filter-options">
+
         {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login'],
         show=['card','table', 'order','page'])}}
 
@@ -62,6 +67,7 @@
             {% for opt in filter_options['last_login'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
             {% endfor %}
+        </div>
         </div>
     {% endif %}
 {% endblock %}

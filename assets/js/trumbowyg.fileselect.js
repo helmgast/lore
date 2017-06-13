@@ -60,8 +60,8 @@ define(["jquery", "utils"], function ($, utils) {
                                 });
                                 if ($elem.hasClass('gallery-wide')) {
                                     insert_position = 'gallery-wide'
-                                } else if ($elem.hasClass('gallery-side')) {
-                                    insert_position = 'gallery-side'
+                                } else if ($elem.hasClass('gallery-card')) {
+                                    insert_position = 'gallery-card'
                                 }
                             // We clicked an image without a gallery parent, use it as input (and replace with gallery)
                             } else if ($elem.is("img")) {

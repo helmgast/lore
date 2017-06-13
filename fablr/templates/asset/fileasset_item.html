@@ -23,6 +23,9 @@
     {% endif %}
 {% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
 {% block content %}{% block inline %}
     {% if fileasset_form %}
         <form id="fileform" method="post" action="{{ action_url }}" enctype=multipart/form-data>

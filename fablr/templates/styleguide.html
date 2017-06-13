@@ -52,6 +52,8 @@
 
 {#{% endblock navbar %}#}
 
+{% block header_class %}page-header-hero{% endblock %}
+
 {#{% block header %}#}
 {% block content_title %}Content title {% endblock %}
 {% block content_tagline %}Content tagline, as it may be {% endblock %}
@@ -90,101 +92,114 @@
 {% endblock %}
 
 {% block content %}
-<article class="article_text">
-
+<article class="article-text">
 {% filter markdown %}
-"On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
 the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are
 bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same
 as saying through shrinking from toil and pain.
-
-# Heading 1
-## Heading 2
-### Heading 3
-#### Heading 4
-
-> These cases are perfectly simple and easy to distinguish.
 
 In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best,
 every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of
 duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances
 accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures
-to secure other greater pleasures, or else he endures pains to avoid worse pains."
+to secure other greater pleasures, or else he endures pains to avoid worse pains.
+{% endfilter %}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+{%- endcall -%}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+> These cases are perfectly simple and easy to distinguish.
+{%- endcall -%}
 
 
+{%- call MACRO.RENDER_MD_EXAMPLE("Linking") -%}
 [Link to something](http://google.com)
+{%- endcall -%}
 
+{%- call MACRO.RENDER_MD_EXAMPLE("Lists") -%}
 - A
 - B
 - C
+{%- endcall -%}
 
-Normal image
-----
+<h2 class="anchor" id="images">Images</h2>
+{% filter markdown %}
+There are four typical ways an image can be shown on Fablr.
 
-    ![This the first image](http://placehold.it/350x150.png)
+### Wide
+An image that covers the full page width. Used for page headers and eye catching images in the middle
+of long articles. Text may be superimposed on these images in e.g. page headers, so avoid using images with text
+or control the display of text on top using custom CSS.
 
+Best uploaded in sizes of 2400px wide, 400px height (or more). By default, wide images are not scaled.
+It means that if the viewport is less than 2400px, the left and right edges will start to be hidden. The height of the
+viewport will be 500px or less. If the image is higher than 400px, it will create a parallax effect revealing
+more of the top and bottom edges as you scroll. The only area guaranteed to be visible on all devices therefore is in a
+square of roughly 400px wide and 400px high in the center.
+{% endfilter %}
 
-should be rendered as:
-
-    <img src="http://placehold.it/350x150.png" alt="This the first image">
-
-![This the first image](http://placehold.it/350x150.png)
-
-
-Gallery Center
-----
-
-    - gallery-center
-    - ![This the 2nd image](/link/image.jpg)
-    - ![This the 3rd image](http://placehold.it/200x400.png)
-
-is rendered as:
-
-    <ul>
-    <li class="hide">gallery-center</li>
-    <li title="This the 2nd image"><img src="http://placehold.it/350x150.png" alt="This the 2nd image"></li>
-    <li title="This the 3rd image"><img src="http://placehold.it/200x400.png" alt="This the 3rd image"></li>
-    </ul>
-
-- gallery-center
-- ![This the 2nd image](http://placehold.it/350x150.png)
-- ![This the 3rd image](http://placehold.it/200x400.png)
-
-Gallery Wide
-----
-
-    - gallery-wide
-    - ![This is the 4th image](http://placehold.it/1200x600.png)
-
-is rendered as:
-
-    <ul>
-    <li class="hide">gallery-center</li>
-    <li title="This is the 4th image"><img src="http://placehold.it/1200x600.png" alt="This is the 4th image"></li>
-    </ul>
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
 
 - gallery-wide
-- ![This is the 4th image](http://placehold.it/1200x600.png)
+- ![This is the a wide image](http://placehold.it/2400x600.png)
 
-Gallery Side
-----
+{%- endcall -%}
 
-    - gallery-side
-    - ![This is a file](/link/file.pdf)
-    - ![This is the 6th image](http://placehold.it/200x400.png)
+{% filter markdown %}
+### Center
+An image that will be shown inline with text paragraphs, and will therefore be scaled up or down
+to whatever the width of the text paragraph is. The best original size is 1600px wide, and any height.
+{% endfilter %}
 
-is rendered as:
 
-    <ul>
-    <li class="hide">gallery-center</li>
-    <li title="This is the 5th image"><a href="/link/file.pdf" title="This is a file">file.pdf</a></li>
-    <li title="This is the 6th image"><img src="http://placehold.it/200x400.png" alt="This is the 6th image"></li>
-    </ul>
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+- gallery-center
+- ![This is centered image](http://placehold.it/1600x1200.png)
+{%- endcall -%}
 
-- gallery-side
-- [This is a file](/link/file.pdf)
-- ![This is the 6th image](http://placehold.it/200x400.png)
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+- gallery-card
+- ![This is the card image, a good place to have a longer description here](http://placehold.it/800x800.png)
+{%- endcall -%}
+{% filter markdown %}
+### Card
+An image that will be shown as a playing card or portrait, either on the side of an article (with text
+flowing around it) or in listings using the card view. The image will be scaled to fit within the card size, which is
+usually 250px wide. However, the best original size for images intended for cards is 800px wide, and between 800px to
+1120px high, to ensure that the aspect ratio is between 1:1 and 2.5:3.5. Currently, a playing card is fixed to the
+container size of width: 258px and height: 363px.
+{% endfilter %}
 
+
+{% filter markdown %}
+
+### Icon
+An image used for small displays. The best original size is 200px wide and high or more, and aspect ratio should be 1:1.
+
+#### Notes about images
+
+* An article with attached images will automatically use the widest one for header image, and the tallest one for card image.
+It means you don't have to create all these different images, you could use the same image for all, but it would look less
+nice.
+* An upcoming feature will resize images in sizes from 2400px down to 400px wide in steps of 400px, so that
+we only need to send the image with the right amount of pixels to the device. This will be handled automatically and you
+don't need to worry.
+* Image formats should be PNG or JPG when uploaded.
+* In articles images can be grouped together in lists to form a gallery. The gallery will still be in the format of wide,
+center or card, but the images will be scaled to fit as a masonry within.
+
+
+{% endfilter %}
+
+<hr>
+
+{% filter markdown %}
 "On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
 the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are
 bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same
@@ -192,14 +207,21 @@ as saying through shrinking from toil and pain. These cases are perfectly simple
 hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best,
 every pleasure is to be welcomed and every pain avoided."
 
-[video](http://www.youtube.com/watch?v=zqnh_YJBvOI)
+[Link to video](http://www.youtube.com/watch?v=zqnh_YJBvOI)
 
-Here is a file: [File to download](https://www.dropbox.com/s/khiaz7obybc1cfp/Att%20r%C3%A4dda%20en%20kotte%2020170427.pdf?dl=0)
+File links will automatically add an icon showing what type file it is:
 
-And another: [File to download](http://ler.letras.up.pt/uploads/ficheiros/6089.zip)
+Here is a file: [File to download](http://test.com/nosuchfile.pdf)
 
+And another: [File to download](http://test.com/nosuchfile.zip)
 {% endfilter %}
+
 </article>
+
+<hr>
+
+
+
 {% endblock content %}
 
 {% block asides %}

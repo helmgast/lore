@@ -13,9 +13,8 @@
     {% endif %}
 {%- endblock %}
 
-{% block header_class -%}{% if world and world.get_header_image %}
-    page-header-hero" style="background-image: url({{ url_for('image', slug = world.get_header_image.slug) }});"
-{% endif %}
+{% block header_class -%}
+    {% if world and world.get_header_image %}page-header-hero{% endif %}
 {%- endblock %}
 
 {% block cssimports %}
@@ -23,6 +22,18 @@
     {% if world %}
         <link rel="home" type="application/rss+xml"
               href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
+    {% endif %}
+    {% if world and world.get_header_image %}
+    <style>
+        .page-header-hero {
+            background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
+        }
+        @media (min-width: {{ world.get_header_image.width }}px) {
+            .page-header-hero {
+                background-size: 100%;
+            }
+        }
+    </style>
     {% endif %}
 {% endblock %}
 
@@ -63,6 +74,10 @@
         {% endcall %}
     {% endif %}
 {% endblock %}
+
+{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
+{% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-10{% endblock %}
 
 {% block content %}
     {% if world_form %}

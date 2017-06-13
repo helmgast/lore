@@ -7,8 +7,12 @@
     {{ super() }}
 {% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
 {% block asides %}{{ super() }}
     {% if filter_options %}
+        <div class="filter-options">
         {{ MACRO.LIST_CONTROLS(model, args, ['slug', 'owner', 'access_type', 'tags']) }}
 
         <h5>{% trans %}By owner{% endtrans %}</h5>
@@ -54,11 +58,12 @@
             <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
             </div>
         </form>
+        </div>
     {% endif %}
 {% endblock %}
 
 {% block content %}
-    {% if not args.get('view') or args.get('view') == 'table' %}
+        {% if not args.get('view') or args.get('view') == 'table' %}
         {% if files %}
             <div class="table-responsive">
                 <table class="table">
@@ -69,6 +74,7 @@
                         <th>{{ _('Access type') }}</th>
                         <th>{{ _('File size') }}</th>
                         <th>{{ _('Actions') }}</th>
+                        <th>{{ _('Publisher') }}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -92,6 +98,7 @@
                                    title="{% trans %}Download file{% endtrans %}"><span
                                         class="glyphicon glyphicon-cloud-download"></span></a>
                             </td>
+                            <td>{{ fileasset.publisher }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -126,11 +133,11 @@
                             <use xlink:href="#fablr-gallery-wide"></use>
                         </svg>
                     </label>
-                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-side' }}">
-                        <input type="radio" name="gallery-class" id="gallery-side"
-                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-side' }}>
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-card' }}">
+                        <input type="radio" name="gallery-class" id="gallery-card"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-card' }}>
                         <svg class="fablr-icon-btn">
-                            <use xlink:href="#fablr-gallery-side"></use>
+                            <use xlink:href="#fablr-gallery-card"></use>
                         </svg>
                     </label>
                 </div>

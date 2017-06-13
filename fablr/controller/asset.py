@@ -161,7 +161,7 @@ class FileAssetsView(ResourceView):
         ['slug', 'owner', 'access_type', 'content_type', 'tags', 'length'],
         choice=lambda x: x if x in ['single', 'multiple'] else 'multiple',
         select=lambda x: x.split(','),
-        position=lambda x: x if x in ['gallery-center', 'gallery-side', 'gallery-wide'] else 'gallery-center'
+        position=lambda x: x if x in ['gallery-center', 'gallery-card', 'gallery-wide'] else 'gallery-center'
     )
 
     item_arg_parser = prefillable_fields_parser(
@@ -172,7 +172,7 @@ class FileAssetsView(ResourceView):
         set_lang_options(publisher)
 
         r = ListResponse(FileAssetsView, [
-            ('files', FileAsset.objects(Q(publisher=publisher) | Q(publisher=None)).order_by('-created_date')),
+            ('files', FileAsset.objects().order_by('-created_date')),
             ('publisher', publisher)], extra_args=kwargs)
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug if publisher else None)

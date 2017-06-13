@@ -72,14 +72,24 @@
     {% endif %}
 {% endblock %}
 
-{% block header_class -%}{% if article and article.get_header_image %}
-    page-header-hero" style="background-image: url({{ url_for('image', slug = article.get_header_image.slug) }});"
-{% endif %}
+{% block header_class -%}
+    {% if article and article.get_header_image %}page-header-hero{% endif %}
 {%- endblock %}
 
 {% block cssimports %}
     {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" type="text/css" media="print"/>
+    {% if article and article.get_header_image %}
+    <style>
+        .page-header-hero {
+            background-image: url({{ url_for('image', slug = article.get_header_image.slug)}})
+        }
+        @media (min-width: {{ article.get_header_image.width }}px) {
+            .page-header-hero {
+                background-size: 100%;
+            }
+        }
+    </style>
+    {% endif %}
 {% endblock %}
 
 
@@ -118,6 +128,9 @@
 
 {% block content_title %}{{ title }}{% endblock %}
 {% block content_tagline %}{% endblock %}
+
+{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
+{% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}
 
 {% block intro %}
     {% if not args.get('intent', None) %}
@@ -222,6 +235,7 @@
             {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
                url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
+            <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">Help on format and image sizes</a></em></small>
             {% if g.user.id %}
                 <input type="hidden" name="creator" value="{{ g.user.id }}"/>
             {% endif %}

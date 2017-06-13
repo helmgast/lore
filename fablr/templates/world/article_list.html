@@ -2,56 +2,6 @@
 
 {% set groups = articles|dummygrouper %}
 
-{% block cssimports %}
-    {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" type="text/css" media="print"/>
-    <style media="print">
-        .product {
-            border-radius: 0;
-            box-shadow: none;
-            border: 1px solid gray;
-            width: 230px;
-            height: 324px;
-            font-size: 11px;
-        }
-
-        .product-cover {
-            max-height: 220px;
-        }
-
-        .product h3 {
-            font-size: 14px;
-            margin-bottom: 1px;
-            margin-top: 3px;
-        }
-
-        .container, .content {
-            padding: 0;
-            margin: 0;
-            float: none;
-            width: 100%;
-        }
-
-        a {
-            color: inherit;
-        }
-
-        .product:nth-child(9) {
-            page-break-after: always;
-        }
-
-        .pagebreak {
-
-            page-break-after: always;
-        }
-
-        .product-details, .page-header {
-            display: none;
-        }
-
-    </style>
-{% endblock %}
-
 {% block breadcrumbs %}
     {% if world.slug == 'meta' %}
         {{ MACRO.BREADCRUMBS(
@@ -73,6 +23,7 @@
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
+        <div class="filter-options">
         {{ MACRO.LIST_CONTROLS(model, args, ['title', 'creator', 'type', 'created_date']) }}
 
         <h5>{% trans %}By world{% endtrans %}</h5>
@@ -121,12 +72,14 @@
             </div>
         </form>
         </span>
+        </div>
     {% endif %}
 {% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
 
 {% block content %}
-    <div>
         {% for group in groups %}
             {% set articles = group.list %}
             {% if group.grouper %}
@@ -146,9 +99,9 @@
                 <div class="cards">
                     {% for article in articles %}
                         {% include "world/article_card_view.html" %}
-                        {% if loop.index is divisibleby 9 %}</div>
-                            <div class="pagebreak"></div>
-                            <div class="cards">{% endif %}
+{#                        {% if loop.index is divisibleby 9 %}#}
+{#                            <div class="pagebreak"></div>#}
+{#                            {% endif %}#}
                     {% endfor %}
                     </div>
 
@@ -156,7 +109,5 @@
                 {% include "world/article_table_view.html" %}
             {% endif %}
         {% endfor %}
-
-    </div>
     {% include "includes/pagination.html" %}
 {% endblock %}

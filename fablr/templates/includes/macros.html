@@ -366,3 +366,12 @@
     {%- for i in range(1, varargs|length-1) -%}<span style="font-family: serif"> &raquo; </span><a href="{{ varargs[i][0] }}">{{ varargs[i][1] }}</a>{%- endfor -%}
     &nbsp;<span style="font-family: serif"> &raquo; </span><span class="active">{{ varargs[-1][1] }}</span>
 {%- endmacro -%}
+
+{%- macro RENDER_MD_EXAMPLE(title) -%}
+<h3>{{ title }}</h3>
+<pre class="markdown-hint">
+{{ caller() }}
+</pre>
+{% filter markdown %}{{ caller() }}{% endfilter %}
+<hr>
+{%- endmacro -%}

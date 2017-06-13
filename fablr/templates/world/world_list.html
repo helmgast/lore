@@ -14,6 +14,11 @@
     {% endcall %}
 {% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-12 col-md-12 col-sm-12 content{% endblock %}
+{% block asides_class %}hide{% endblock %}
+
+
 {% block content %}
     <div class="cards">
         {% for world in worlds %}

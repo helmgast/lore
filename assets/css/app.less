@@ -2,18 +2,19 @@
 
 .fluid-type(@property, @min-vw, @max-vw, @min-size, @max-size) {
 
-	@{property}: @min-size;
+    @{property}: @min-size;
 
-	@media screen and (min-width: @min-vw) {
-		@{property}: calc( @min-size ~" + " unit(@max-size - @min-size) ~" * ((100vw - " @min-vw ~") /" unit(@max-vw - @min-vw) ~")" ) !important;
-	}
+  @media screen and (min-width: @min-vw) {
+      @{property}: calc(@min-size ~" + " unit(@max-size - @min-size) ~" * ((100vw - " @min-vw ~") /" unit(@max-vw - @min-vw) ~")") !important;
+  }
 
-	@media screen and (min-width: @max-vw) {
-		@{property}: @max-size !important;
-	}
+  @media screen and (min-width: @max-vw) {
+      @{property}: @max-size !important;
+  }
 
 }
 
+@navbar-height: 95px;
 
 /* ------------------- BODY --------------------- */
 
@@ -25,7 +26,7 @@ html {
 
 body {
   //background-color: #fff;
-  padding-top: 86px; /* enough to let navbar be fixed on top */
+  padding-top: @navbar-height; /* enough to let navbar be fixed on top */
   display: flex;
   min-height: 100vh;
   flex-direction: column;
@@ -90,31 +91,31 @@ footer a {
 
 #brand-target {
   height: 400px;
-    margin: 0 auto;
-    float: none;
-    width: 400px;
-    position: relative;
-    top: 100px;
-    margin-top: -100px;
+  margin: 0 auto;
+  float: none;
+  width: 400px;
+  position: relative;
+  top: 100px;
+  margin-top: -100px;
 }
 
 .page-header .publisher-header {
-      text-align: center;
-      width: 100%;
+  text-align: center;
+  width: 100%;
 }
 
 .page-header .publisher-tagline {
-      text-align: center;
-      width: 100%;
-      color: #bbb;
+  text-align: center;
+  width: 100%;
+  color: #bbb;
 }
 
 .page-header .publisher-header {
-  	.fluid-type(font-size, 400px, 1200px, 60px, 100px);
+  .fluid-type(font-size, 400px, 1200px, 60px, 100px);
 }
 
 .page-header .publisher-tagline {
-  	.fluid-type(font-size, 400px, 1200px, 20px, 40px);
+  .fluid-type(font-size, 400px, 1200px, 20px, 40px);
 }
 
 //// Position the H1 inside brand target towards the bottom
@@ -217,7 +218,6 @@ footer a {
   padding: 5px 10px 5px 10px;
 }
 
-
 .navbar-nav-top > li:after {
   content: "";
   display: block;
@@ -257,8 +257,7 @@ footer a {
   position: fixed;
   z-index: 30;
   right: 30px;
-  margin-top: 20px;
-  width: 30vw;
+  max-width: 300px;
 }
 
 @keyframes slideDown {
@@ -304,8 +303,6 @@ footer a {
 }
 
 .alert {
-  //width: 30vw;
-  min-width: 200px;
   margin-bottom: 10px;
   animation-name: slideDown;
   -webkit-animation-name: slideDown;
@@ -731,13 +728,14 @@ a.highlight {
 }
 
 .page-header-hero {
-  min-height: 400px;
-  background-image: url(//placehold.it/1200x600);
+  height: 400px;
+  background-image: url(//placehold.it/2400x600);
   background-repeat: no-repeat;
-background-position: 0 60px;
-    background-attachment: fixed;
-    background-size: 100%;
-    background-color: black;
+  background-position-x: 50%;
+  /* Makes its Y position centered but accounting for the navbar height */
+  background-position-y: calc(50%~"+"@navbar-height / 2);
+  background-attachment: fixed;
+  //background-size: 100%;
 }
 
 .page-header-hero h1 {
@@ -808,7 +806,7 @@ important;
   border-right-color: #fcf8e3 !important;
 }
 
-@article-line-height:  floor((@font-size-base * 1.625)); // ~20px
+@article-line-height: floor((@font-size-base * 1.625)); // ~20px
 /* To be aligned with other line heights for rhythm*/
 
 /* For all article text regardless of being edited or not */
@@ -918,6 +916,12 @@ article, .gallery {
   width: 100%;
 }
 
+.anchor {
+  /* This will offset the anchor links by the height of the fixed navbar, so that they come in view just below the navbar */
+  padding-top: @navbar-height;
+  margin-top: -@navbar-height;
+}
+
 .nobr {
   white-space: nowrap;
 }
@@ -949,8 +953,13 @@ article, .gallery {
   text-overflow: ellipsis;
 }
 
-.top-shadow {
-     box-shadow: 0 -8px 8px -8px #696868;
+top-shadow {
+  box-shadow: 0 -8px 8px -8px #696868;
+}
+
+.parallax-border {
+  border-top: 4px solid black;
+  border-bottom: 4px solid black;
 }
 
 .top-line {
@@ -963,7 +972,7 @@ article, .gallery {
   justify-content: space-around;
 }
 
-.card {
+.card-mixin {
   /* Made to be same aspect as a game card, and to fit 3 inside one large row in Bootstrap,
   so max 275px wide incl margins*/
   height: 363px;
@@ -973,13 +982,17 @@ article, .gallery {
   border-radius: 5px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+}
+
+.card {
+  .card-mixin;
   display: flex;
   flex-direction: column;
   page-break-after: always;
   justify-content: flex-end;
 }
 
-.card:hover {
+.card:hover, .gallery-card:hover {
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
 
@@ -988,7 +1001,7 @@ article, .gallery {
 }
 
 .card-text {
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 0 0 5px 5px;
   padding: 6px;
   display: flex;
@@ -1319,14 +1332,14 @@ article {
   padding: .5rem;
   position: absolute;
   width: 100%;
-  height: 0%;
+  height: 0;
   opacity: 0;
   bottom: 0;
   left: 0;
-  transition: height 100ms ease;
+  transition: opacity 100ms ease;
   overflow: hidden;
-  text-overflow: ellipsis; /* Will put an ellipsis when text can't fit on one row */
-  white-space: nowrap;
+  //text-overflow: ellipsis; /* Will put an ellipsis when text can't fit on one row */
+  //white-space: nowrap;
 }
 
 .gallery-item[title]:after {
@@ -1341,7 +1354,7 @@ article {
 
 .gallery-item[title]:hover:after {
   opacity: 1;
-  height: 30px;
+  height: auto;
 }
 
 .gallery img, article img {
@@ -1374,13 +1387,24 @@ article {
   pointer-events: none;
 }
 
-.gallery-side {
-  max-width: 50%;
+.gallery-card {
+  .card-mixin;
   float: right;
   //border: 1px solid;
-  margin-right: -100px;
   margin-left: 5px;
   margin-bottom: 5px;
+  padding: 4px 0px 4px 4px;
+}
+
+.gallery-card > .gallery-item[title]:after {
+  opacity: 1;
+  height: auto;
+}
+
+@media (min-width: 768px) {
+  .gallery-card {
+    margin-right: -100px;
+  }
 }
 
 .gallery-wide {
@@ -1723,7 +1747,7 @@ img.zoomable.zoomed {
 
 // https://stackoverflow.com/questions/28660494/media-list-and-text-overflow-in-bootstrap-3-3-2
 .media-heading, .media-body > p, .media-body > span {
-    word-break: break-word;
+  word-break: break-word;
 }
 
 .content {
@@ -1755,4 +1779,98 @@ img.zoomable.zoomed {
 
 .introjs-helperLayer {
   background-color: rgba(255, 255, 255, .7) !important;
+}
+
+/* ------------------- Print --------------------- */
+
+@media print {
+
+  // We have turned off Bootstraps own print resets which are a bit too brutal
+  @page {
+    size: A4 portrait;
+    margin: 70pt 60pt 70pt;
+  }
+
+  @page :right {
+    @bottom-left {
+      margin: 10pt 0 30pt 0;
+      border-top: .25pt solid #666;
+      content: "Our Cats";
+      font-size: 9pt;
+      color: #333;
+    }
+
+    @bottom-right {
+      margin: 10pt 0 30pt 0;
+      border-top: .25pt solid #666;
+      content: counter(page);
+      font-size: 9pt;
+    }
+
+    @top-right {
+      content: string(doctitle);
+      margin: 30pt 0 10pt 0;
+      font-size: 9pt;
+      color: #333;
+    }
+  }
+
+  // Don't show links that are fragment identifiers,
+  // or use the `javascript:` pseudo protocol
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after {
+    content: "";
+  }
+
+  footer, .navbar, .betaribbon, .pagination, .filter-options, .social {
+    display: none !important;
+  }
+
+  .content {
+    width: 100%;
+    float: none;
+  }
+
+  body {
+    padding-top: 0px;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    background: #fff !important;
+    text-rendering: optimizeLegibility;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  a[href]:after {
+    content: "";
+  }
+
+  .cards {
+    justify-content: flex-start;
+    display: block;
+  }
+
+  .status-unpublished, .status-unpublished a, .status-unpublished a > .blog-header {
+    filter: unset !important; // Filters will blur the print results
+  }
+
+  .card {
+    border: 1px dashed #ccc;
+    display: inline-flex;
+    page-break-inside: avoid;
+  }
+
+  .media {
+    page-break-inside: avoid;
+
+  }
+
+  h1, h2, h3, h4, h5, p, tr,
+  img {
+    page-break-inside: avoid;
+  }
+
+  h1, h2, h3, h4, h5 {
+    page-break-after: avoid;
+  }
 }

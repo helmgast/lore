@@ -186,7 +186,7 @@ class GalleryList(Treeprocessor):
         for ul in root.findall('ul'):
             if len(ul) and ul[0].text:
                 h_text = ul[0].text.strip()
-                if h_text in ['gallery-center', 'gallery-wide', 'gallery-side']:
+                if h_text in ['gallery-center', 'gallery-wide', 'gallery-card']:
                     ul.set('class', 'gallery %s' % h_text)
                     ul[0].set('class', 'hide')
                     for li in list(ul)[1:]:

@@ -585,6 +585,7 @@ def homepage():
 @world_app.route('/styleguide')
 def styleguide():
     # publishers = Publisher.objects()
+    flash(_('This page is a rendered style guide and example of how to write an article'), 'info')
     return render_template('styleguide.html', root_template='_page.html')
 
 PublishersView.register_with_access(world_app, 'publisher')
