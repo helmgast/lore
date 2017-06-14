@@ -48,6 +48,11 @@
                                 class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span>
                         </li>
                         {% endif %}
+                        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
+                            <li>
+                                {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug), btnclass='btn-sm') }}
+                            </li>
+                        {% endcall %}
                     </ul>
                 </div>
             </div>

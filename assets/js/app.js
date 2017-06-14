@@ -50,7 +50,7 @@ $('#themodal').on('show.bs.modal', function (event) {
 // Catches clicks on the modal submit button and submits the form using AJAX
 var $modal = $('#themodal')
 $modal.on('click', 'button[type="submit"]', function (e) {
-    var form = $modal.find('form')[0]
+    var form = $modal.find('form:not(.notmodal)')[0]
     if (form && form.action) {
         e.preventDefault()
         var jqxhr = $.post(form.action, $(form).serialize())
@@ -186,6 +186,12 @@ $(document).on('click', '.zoomable', function (e) {
     //     $img.toggleClass('fill-height')
     // }
     return false;
+});
+
+// Smooth scroll for anchor links
+$(document).on('click', 'a[href*=\\#]', function(event){
+    event.preventDefault();
+    $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
 });
 
 /* ========================================================================

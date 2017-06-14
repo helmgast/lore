@@ -28,11 +28,9 @@
         .page-header-hero {
             background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
         }
-        @media (min-width: {{ world.get_header_image.width }}px) {
-            .page-header-hero {
-                background-size: 100%;
-            }
-        }
+        {% if world.custom_css %}
+            {{ world.custom_css|safe|replace('style>','') }}
+        {% endif %}
     </style>
     {% endif %}
 {% endblock %}
@@ -95,12 +93,15 @@
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
+                    {{ MACRO.FORM_FIELD(world_form.external_host, helptext=_('If your world home page is hosted externally, enter it here')) }}
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
                     {{ MACRO.FORM_FIELD(world_form.facebook_url) }}
                     {{ MACRO.FORM_FIELD(world_form.contribution) }}
                     {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}
+                    {{ MACRO.FORM_FIELD(world_form.custom_css) }}
+
 
                     {{ world_form.csrf_token }}
                 </div>

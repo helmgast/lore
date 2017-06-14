@@ -361,6 +361,8 @@ class ArticlesView(ResourceView):
             r = ItemResponse(WorldsView,
                              [('world', world), ('publisher', publisher)])
             r.auth_or_abort()
+            if world.external_host:
+                return redirect(world.external_host)
             set_theme(r, 'world', r.world.slug)
             r.articles = Article.objects(world=world).filter(
                 filter_published() |

@@ -83,11 +83,6 @@
         .page-header-hero {
             background-image: url({{ url_for('image', slug = article.get_header_image.slug)}})
         }
-        @media (min-width: {{ article.get_header_image.width }}px) {
-            .page-header-hero {
-                background-size: 100%;
-            }
-        }
     </style>
     {% endif %}
 {% endblock %}

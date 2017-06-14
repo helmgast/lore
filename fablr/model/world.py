@@ -97,6 +97,7 @@ class World(Document):
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     contribution = BooleanField(default=False, verbose_name=_('World accepts contributions'))
+    external_host = URLField(verbose_name=_('External host URL'))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
@@ -109,6 +110,9 @@ class World(Document):
     languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+
+    custom_css = StringField(verbose_name=_('Custom CSS'))
+
 
     def clean(self):
         self.title = self.title.replace(u'&shy;', u'\u00AD')  # Replaces soft hyphens with the real unicode
@@ -307,6 +311,7 @@ class Article(Document):
                         verbose_name=_('Theme'))
     editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+    custom_css = StringField(verbose_name=_('Custom CSS'))
 
     # modified_date = DateTimeField()
 

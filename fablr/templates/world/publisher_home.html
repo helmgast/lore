@@ -25,19 +25,18 @@
                     <h2 class="publisher-tagline">{{ publisher.tagline }}</h2>
                 </div>
             </div>
+            <a href="#latestnews" class="pull-right news-link"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span> {{ _('Latest news') }}</a>
         </div>
         {% for world in worlds %}
             <div class="page-header page-header-hero parallax-border"
                  style="background-image: url({{ url_for('image', slug=world.get_header_image.slug) }})">
                 <div class="container">
-                    <div class="row">
-                        <a href="{{ url_for("world.ArticlesView:world_home", world_=world.slug) }}">
-                            <h1 class="col-lg-offset-6 col-lg-6 col-md-12 col-sm-12">
-                                {{ world.title }}
-                                <small>{{ world.tagline if world.tagline }}</small>
-                            </h1>
-                        </a>
-                    </div>
+                        <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">
+                            <a href="{{ url_for("world.ArticlesView:world_home", world_=world.slug) }}">
+                            {{ world.title }}
+                            <small>{{ world.tagline if world.tagline }}</small>
+                            </a>
+                        </h1>
                 </div>
             </div>
         {% endfor %}
@@ -80,7 +79,7 @@
 
         <div class="container content">
             <div class="row">
-                <h3>{% trans %}Latest news{% endtrans %}</h3>
+                <h3 id="latestnews" class="anchor">{% trans %}Latest news{% endtrans %}</h3>
                 <div class="col-md-12 cards margin-above">
                     {% for article in articles %}
                         {% include "world/article_card_view.html" %}

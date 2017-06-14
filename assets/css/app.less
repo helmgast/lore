@@ -14,7 +14,7 @@
 
 }
 
-@navbar-height: 95px;
+@navbar-height: 61px;
 
 /* ------------------- BODY --------------------- */
 
@@ -116,6 +116,14 @@ footer a {
 
 .page-header .publisher-tagline {
   .fluid-type(font-size, 400px, 1200px, 20px, 40px);
+}
+
+.page-header a {
+  color: #fff;
+}
+
+.page-header a:hover {
+  text-decoration: none;
 }
 
 //// Position the H1 inside brand target towards the bottom
@@ -729,20 +737,21 @@ a.highlight {
 
 .page-header-hero {
   height: 400px;
-  background-image: url(//placehold.it/2400x600);
+  background-image: url(//placehold.it/2400x400);
   background-repeat: no-repeat;
-  background-position-x: 50%;
-  /* Makes its Y position centered but accounting for the navbar height */
-  background-position-y: calc(50%~"+"@navbar-height / 2);
-  background-attachment: fixed;
-  //background-size: 100%;
+  background-position: center center;
+  background-size: cover;
 }
 
 .page-header-hero h1 {
   margin-top: 150px;
   color: white !important;
   font-size: 60px;
-  text-shadow: 0px 0px 6px #000;
+  text-shadow: 3px 3px 6px #000;
+  background-color: rgba(0,0,0,0.5);
+  width: auto;
+  padding: 15px;
+  border-radius: 8px;
 }
 
 .page-header-hero small {
@@ -922,6 +931,17 @@ article, .gallery {
   margin-top: -@navbar-height;
 }
 
+/* Headers have top margins that gets erased by anchor, so add it back */
+h1.anchor, h2.anchor, h3.anchor {
+  padding-top: @navbar-height;
+  margin-top: -@navbar-height + @line-height-computed;
+}
+
+h4.anchor, h5.anchor, h6.anchor {
+  padding-top: @navbar-height;
+  margin-top: -@navbar-height + (@line-height-computed / 2);
+}
+
 .nobr {
   white-space: nowrap;
 }
@@ -959,7 +979,6 @@ top-shadow {
 
 .parallax-border {
   border-top: 4px solid black;
-  border-bottom: 4px solid black;
 }
 
 .top-line {
