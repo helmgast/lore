@@ -7,7 +7,7 @@ from flask import request
 from flask_babel import lazy_gettext as _, gettext
 from misc import Document, datetime_month_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
-                         ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField)
+                         ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField, NULLIFY, DENY, CASCADE)
 from mongoengine.errors import ValidationError
 
 from asset import FileAsset
@@ -66,8 +66,8 @@ class Product(Document):
     project_code = StringField(max_length=10, sparse=True, verbose_name=_('Project Code'))
     title = StringField(max_length=60, required=True, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
-    publisher = ReferenceField(Publisher, required=True, verbose_name=_('Publisher'))
-    world = ReferenceField(World, verbose_name=_('World'))
+    publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, required=True, verbose_name=_('Publisher'))
+    world = ReferenceField(World, reverse_delete_rule=DENY, verbose_name=_('World'))
     family = StringField(max_length=60, verbose_name=_('Product Family'))
     created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
@@ -80,11 +80,11 @@ class Product(Document):
                            verbose_name=_('Currency'))
     status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_('Status'))
     # TODO DEPRECATE in DB version 3
-    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
-    images = ListField(ReferenceField(FileAsset), verbose_name=_('Product Images'))
+    feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Product Images'))
     acknowledgement = BooleanField(default=False, verbose_name=_('Name in book'))
     comment_instruction = StringField(max_length=20, verbose_name=_('Instructions for comments in order'))
-    downloadable_files = ListField(ReferenceField(FileAsset), verbose_name=_('Downloadable files'))
+    downloadable_files = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Downloadable files'))
 
     # Executes before saving
     def clean(self):
@@ -149,7 +149,7 @@ class Stock(Document):
     using mongodb, without too much trouble. E.g. we can update the stock status of a full OrderList
     with one command and one lock.
     """
-    publisher = ReferenceField(Publisher, unique=True, verbose_name=_('Publisher'))
+    publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, unique=True, verbose_name=_('Publisher'))
     updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     stock_count = MapField(field=IntField(min_value=-1, default=0))
 
@@ -171,7 +171,7 @@ class Stock(Document):
 
 
 class Order(Document):
-    user = ReferenceField(User, verbose_name=_('User'))
+    user = ReferenceField(User, reverse_delete_rule=DENY, verbose_name=_('User'))
     session = StringField(verbose_name=_('Session ID'))
     email = EmailField(max_length=60, verbose_name=_('Email'))
     order_lines = ListField(EmbeddedDocumentField(OrderLine))
@@ -183,7 +183,7 @@ class Order(Document):
     created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     status = StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
-    shipping = ReferenceField(Product, verbose_name=_('Shipping'))
+    shipping = ReferenceField(Product, reverse_delete_rule=DENY, verbose_name=_('Shipping'))
     charge_id = StringField()  # Stores the Stripe charge id
     internal_comment = StringField(verbose_name=_('Internal Comment'))
     shipping_address = EmbeddedDocumentField(Address)

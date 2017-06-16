@@ -229,12 +229,18 @@ class ResourceResponse(Response):
         self.method = method
         self.access = resource_view.access_policy
         self.model = resource_view.model
+        self.general_errors = []
 
         # To be set from from route
         self.formats = formats or frozenset(['html', 'json'])
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         self.auth = None
         super(ResourceResponse, self).__init__()  # init a blank flask Response
+
+    @property  # For convenience
+    def errors(self):
+        form_errors = self.form.errors if hasattr(self, 'form') and self.form and self.form.errors else []
+        return self.general_errors + form_errors
 
     def auth_or_abort(self, res=None):
         res = res or getattr(self, 'instance', None)
@@ -267,8 +273,8 @@ class ResourceResponse(Response):
             # TODO this will create a new response, which is a bit of waste
             # TODO this will not properly filter instances exposing secret data!
             # Need to at least keep the status from before
-            if hasattr(self, 'form') and self.form and self.form.errors:
-                return jsonify(errors=self.form.errors), self.status
+            if self.errors:
+                return jsonify(errors=self.errors), self.status
             else:
                 return jsonify({k: getattr(self, k) for k in self.json_fields}), self.status
         else:  # csv
@@ -305,6 +311,7 @@ class ResourceResponse(Response):
                     general_errors.append(msg)
         else:
             general_errors.append(str(err))
+        self.general_errors = general_errors
         flash(_("Errors in form, %(errors)s", errors=u",".join(general_errors)), 'danger')
         return self, status or 400
 

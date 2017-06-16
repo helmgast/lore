@@ -268,7 +268,14 @@ class FileAssetsView(ResourceView):
         return r
 
     def delete(self, id):
-        abort(501)
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
+        fileasset = FileAsset.objects(slug=id).first_or_404()
+        r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='delete')
+        r.auth_or_abort()
+        r.commit()
+        return redirect(
+            r.args['next'] or url_for('assets.FileAssetsView:index', pub_host=publisher.slug))
 
 FileAssetsView.register_with_access(asset_app, 'files')
 

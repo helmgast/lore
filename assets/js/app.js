@@ -190,8 +190,11 @@ $(document).on('click', '.zoomable', function (e) {
 
 // Smooth scroll for anchor links
 $(document).on('click', 'a[href*=\\#]', function(event){
-    event.preventDefault();
-    $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+    if (this.hash) {
+        event.preventDefault();
+        $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+    }
+
 });
 
 /* ========================================================================
@@ -262,7 +265,7 @@ function init_dom(e) {
 
     // Flatpickr for date-felds in forms
     var flatpickr = require('flatpickr');
-    $('.flatpickr-datetime').flatpickr({
+    scope.find('.flatpickr-datetime').flatpickr({
         "enableTime": true,
         "mode": "single",
         "enableSeconds": true,
@@ -272,7 +275,7 @@ function init_dom(e) {
 
     // Autosize plugin
     var autosize = require('autosize')
-    autosize($('textarea')); // Activate on textareas
+    autosize(scope.find('textarea')); // Activate on textareas
 
     // File upload plugin for file upload forms
     require('fileuploader.js')

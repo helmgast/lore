@@ -340,6 +340,7 @@ class ArticlesView(ResourceView):
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world())
+        r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published())
         r.query = r.query.limit(8)
         r.prepare_query()
         set_theme(r, 'publisher', publisher.slug)

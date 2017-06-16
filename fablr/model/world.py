@@ -9,6 +9,7 @@
 """
 
 import logging
+import re
 from datetime import datetime, timedelta
 
 from flask import current_app
@@ -16,7 +17,7 @@ from flask_babel import lazy_gettext as _
 from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
-                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField)
+                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField, NULLIFY, DENY, CASCADE)
 
 from asset import FileAsset
 from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
@@ -43,6 +44,14 @@ GenderTypes = Choices(
     unknown=_('Unknown'))
 
 
+def secure_css(css):
+    css = re.sub(r'<.*', '', css, flags=re.IGNORECASE)
+    css = re.sub(r'expression\(', '', css, flags=re.IGNORECASE)
+    css = re.sub(r'javascript:', '', css, flags=re.IGNORECASE)
+    css = re.sub(r'\.htc:', '', css, flags=re.IGNORECASE)
+    return css
+
+
 class Publisher(Document):
     slug = StringField(unique=True, max_length=62, verbose_name=_('Publisher Domain'))  # URL-friendly name
     publisher_code = StringField(min_length=2, max_length=2, verbose_name=_('Publisher Code'))
@@ -50,22 +59,22 @@ class Publisher(Document):
     tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
     description = StringField(max_length=350, verbose_name=_('Description'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
-    creator = ReferenceField(User, verbose_name=_('Owner'))
+    creator = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('Owner'))
     address = EmbeddedDocumentField(Address, verbose_name=_('Registered address'))
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     contribution = BooleanField(default=False, verbose_name=_('Publisher accepts contributions'))
 
     # TODO DEPRECATE in DB version 3
-    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
-    images = ListField(ReferenceField(FileAsset), verbose_name=_('Publisher Images'))
+    feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_('Feature Image'))
+    images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Publisher Images'))
 
     webshop_url = URLField(verbose_name=_('Webshop URL'))
     facebook_url = URLField(verbose_name=_('Facebook URL'))
     webshop_activated = BooleanField(default=False, verbose_name=_('Activate webshop'))
 
-    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
-    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+    editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
 
     # Settings per publisher
     languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
@@ -84,6 +93,8 @@ class Publisher(Document):
     def __unicode__(self):
         return self.title or self.slug
 
+# Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
+Publisher.register_delete_rule(User, 'publishers_newsletters', NULLIFY)
 
 class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -91,8 +102,8 @@ class World(Document):
     description = StringField(max_length=350, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     tagline = StringField(min_length=0, max_length=100, verbose_name=_('Tagline'))
-    publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))  # TODO set to required
-    creator = ReferenceField(User, verbose_name=_('Creator'))
+    publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, verbose_name=_('Publisher'))  # TODO set to required
+    creator = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('Creator'))
     rule_system = StringField(max_length=60, verbose_name=_('Rule System'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
@@ -101,15 +112,15 @@ class World(Document):
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
-    images = ListField(ReferenceField(FileAsset), verbose_name=_('World Images'))
+    images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('World Images'))
     product_url = URLField(verbose_name=_('Product URL'))
     facebook_url = URLField(verbose_name=_('Facebook URL'))
 
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
     languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
-    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
-    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+    editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
 
     custom_css = StringField(verbose_name=_('Custom CSS'))
 
@@ -119,6 +130,7 @@ class World(Document):
         self.slug = slugify(self.title)
         if self.creator and self.creator not in self.editors:
             self.editors.append(self.creator)
+        self.custom_css = secure_css(self.custom_css)
 
     def __str__(self):
         return unicode(self).encode('utf-8')
@@ -149,6 +161,8 @@ class World(Document):
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+# Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
+Publisher.register_delete_rule(User, 'world_newsletters', NULLIFY)
 
 class WorldMeta(object):
     """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
@@ -287,8 +301,8 @@ class Article(Document):
     }
     slug = StringField(unique=True, required=False, max_length=62)
     type = StringField(choices=ArticleTypes.to_tuples(), default=ArticleTypes.default, verbose_name=_('Type'))
-    world = ReferenceField(World, verbose_name=_('World'))
-    publisher = ReferenceField(Publisher, verbose_name=_('Publisher'))
+    world = ReferenceField(World, reverse_delete_rule=DENY, verbose_name=_('World'))
+    publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, verbose_name=_('Publisher'))
     creator = ReferenceField(User, verbose_name=_('Creator'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     title = StringField(min_length=1, max_length=60, required=True, verbose_name=_('Title'))
@@ -302,15 +316,15 @@ class Article(Document):
 
     # TODO DEPRECATE in DB version 3
     featured = BooleanField(default=False, verbose_name=_('Featured article'))
-    feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
+    feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_('Feature Image'))
 
-    images = ListField(ReferenceField(FileAsset), verbose_name=_('Images'))
+    images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Images'))
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
     theme = StringField(choices=ArticleThemes.to_tuples(),
                         default=ArticleThemes.default,
                         verbose_name=_('Theme'))
-    editors = ListField(ReferenceField(User), verbose_name=_('Editors'))
-    readers = ListField(ReferenceField(User), verbose_name=_('Readers'))
+    editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
+    readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
     custom_css = StringField(verbose_name=_('Custom CSS'))
 
     # modified_date = DateTimeField()

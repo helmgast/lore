@@ -2,9 +2,6 @@
 
 {% block content_title %}{{ publisher.title }} - {{ _('Home') }}{% endblock %}
 
-{% set worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}) %}
-{% set world = worlds[0] %}
-
 
 {% block header %}{% endblock header %}
 
@@ -28,17 +25,19 @@
             <a href="#latestnews" class="pull-right news-link"><span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span> {{ _('Latest news') }}</a>
         </div>
         {% for world in worlds %}
+            <a href="{{ url_for("world.ArticlesView:world_home", world_=world.slug) }}">
+
             <div class="page-header page-header-hero parallax-border"
                  style="background-image: url({{ url_for('image', slug=world.get_header_image.slug) }})">
                 <div class="container">
                         <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">
-                            <a href="{{ url_for("world.ArticlesView:world_home", world_=world.slug) }}">
                             {{ world.title }}
                             <small>{{ world.tagline if world.tagline }}</small>
-                            </a>
                         </h1>
                 </div>
             </div>
+            </a>
+
         {% endfor %}
 {#        <div id="homepage-carousel" class="carousel slide" data-ride="carousel">#}
 {#            <ol class="carousel-indicators">#}

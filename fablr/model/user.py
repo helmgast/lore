@@ -21,7 +21,7 @@ from flask_babel import lazy_gettext as _
 from misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
-                         ValidationError, DoesNotExist)
+                         ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)
 
 import logging
 from flask import current_app
@@ -88,10 +88,10 @@ class User(Document, BaseUser):
     tourdone = BooleanField(default=False)
 
     # Uses string instead of Class to avoid circular import
-    publishers_newsletters = ListField(ReferenceField('Publisher'))
-    world_newsletters = ListField(ReferenceField('World'))
-    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))
-    following = ListField(ReferenceField('self'), verbose_name=_('Following'))
+    publishers_newsletters = ListField(ReferenceField('Publisher'))  #Reverse delete rule in world.py
+    world_newsletters = ListField(ReferenceField('World'))  #Reverse delete rule in world.py
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
+    following = ListField(ReferenceField('self', reverse_delete_rule=NULLIFY), verbose_name=_('Following'))
 
     # TODO deprecate
     password = StringField(max_length=60, verbose_name=_('Password'))
@@ -178,7 +178,7 @@ class Event(Document):
 
     action = StringField(required=True, max_length=62, unique_with=(['created', 'user']))  # URL-friendly name
     created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
-    user = ReferenceField(User, verbose_name=_('User'))
+    user = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('User'))
     resource = GenericReferenceField(verbose_name=_('Resource'))
     message = StringField(max_length=500, verbose_name=_('Message'))
     metric = FloatField(default=1.0, verbose_name=_('Metric'))
@@ -262,7 +262,7 @@ class Group(Document):
     location = StringField(max_length=60)
     type = StringField(choices=GroupTypes.to_tuples(), default=GroupTypes.gamegroup)
 
-    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
     members = ListField(EmbeddedDocumentField(Member))
 
     def __unicode__(self):

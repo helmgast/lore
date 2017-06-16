@@ -20,7 +20,7 @@ from flask_babel import gettext, lazy_gettext as _
 from misc import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
-                         ReferenceField, ListField, FileField, IntField)
+                         ReferenceField, ListField, FileField, IntField, NULLIFY, DENY, CASCADE)
 from mongoengine import ValidationError
 from mongoengine.queryset import Q
 from rfc6266 import parse_requests_response, ContentDisposition
@@ -28,7 +28,7 @@ from werkzeug.utils import secure_filename
 
 from misc import Choices, reference_options, choice_options, numerical_options, distinct_options
 from misc import slugify
-from user import User
+from user import User, Group
 import magic
 
 try:
@@ -83,7 +83,7 @@ class FileAsset(Document):
 
     title = StringField(max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
-    owner = ReferenceField(User, verbose_name=_('User'))
+    owner = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('User'))
     file_data = FileField(verbose_name=_('File data'))
     access_type = StringField(choices=FileAccessType.to_tuples(), default=FileAccessType.public, verbose_name=_('Access type'))
     tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
@@ -110,11 +110,11 @@ class FileAsset(Document):
     def get_field_display(self, field):
         return self._BaseDocument__get_field_display(self._fields[field])
 
-    def delete(self):
-        if self.file_data:
-            self.file_data.delete()
-            self.file_data = None
-        super(FileAsset, self).delete()
+    # def delete(self):
+    #     if self.file_data:
+    #         self.file_data.delete()
+    #         self.file_data = None
+    #     super(FileAsset, self).delete(clean=False)
 
     def is_image(self):
         return self.content_type.startswith('image/')
@@ -218,9 +218,18 @@ class FileAsset(Document):
             self.tmp_file_obj = None
 
         fs = self.file_data.get()
-        self.length = fs.length
-        self.created_date = fs.upload_date
-        self.md5 = fs.md5
+        if fs:
+            self.length = fs.length
+            self.created_date = fs.upload_date
+            self.md5 = fs.md5
+        else:
+            self.length = 0
+            self.created_date = None
+            self.md5 = ''
+
+        if FileAsset.objects(slug=self.slug, id__ne=(self.id or ObjectId(b'notaobjectid'))).count() > 0:
+            self.slug = "{md5}-{slug}".format(md5=fs.md5, slug=self.slug)
+
         if not self.owner:  # Don't overwrite owner as it may mean admins overwrite original uploader
             self.owner = g.user
 
@@ -242,6 +251,10 @@ class FileAsset(Document):
 
     def __unicode__(self):
         return u'%s' % (self.title or self.slug)
+
+# Regsister delete rule here becaue in User, we haven't imported FileAsset so won't work from there
+FileAsset.register_delete_rule(User, 'images', NULLIFY)
+FileAsset.register_delete_rule(Group, 'images', NULLIFY)
 
 
 FileAsset.owner.filter_options = reference_options('owner', User)
@@ -270,7 +283,7 @@ class ImageAsset(Document):
     source_page_url = URLField()
     tags = ListField(StringField(max_length=30))
     mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
-    creator = ReferenceField(User, verbose_name=_('Creator'))
+    creator = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('Creator'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created date'))
     title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))

@@ -8,23 +8,25 @@
  * (c) Helmgast AB
  */
 function flash_error(message, level, target) {
-    message = message || 'Unknown error'
+    message = message
     target = $(target)
     if (!target.length)
         target = $('#alerts')
 
-    if (message instanceof Object) {
+    if (message instanceof Object && message.errors) {
         var new_message = ''
         Object.keys(message.errors).forEach(function (key, index) {
             new_message += key + ': ' + message.errors[key] + ', '
         });
         message = new_message
-    } else if (message.indexOf('__debugger__') > 0) {
+    } else if (message.length && message.indexOf('__debugger__') > 0) {
         // Response is a Flask Debugger response, overwrite whole page
         document.open();
         document.write(message);
         document.close();
         return false
+    } else {
+        message = 'Unknown error'
     }
 
     var $error = $('<div class="alert alert-' + (level || 'warning') +

@@ -51,7 +51,7 @@
                 <div class="col-md-4">
                     {% if fileasset %}
                     <a class="gallery-item" href="{{ url_for('image', slug = fileasset.slug) }}">
-                        <img class="zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="img-responsive zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
                     </a>
                     {% endif %}
                 </div>
@@ -67,7 +67,7 @@
             </div>
         </form>
         {% if  op != 'new' %}
-            {{ MACRO.CONFIRM_MODAL(fileasset.slug, url_for('assets.FileAssetsView:delete', id=fileasset.id, method="DELETE"), _('delete') ) }}
+            {{ MACRO.CONFIRM_MODAL(fileasset.slug, url_for('assets.FileAssetsView:delete', id=fileasset.slug, method="DELETE"), _('delete') ) }}
         {% endif %}
     {% else %}
         <div class="row">
@@ -157,7 +157,7 @@
             <div class="col-md-4">
                 <div class="gallery">
                     <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}" href="{{ url_for('image', slug = fileasset.slug) }}">
-                        <img class="zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="img-responsive zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
                     </a>
                 </div>
             </div>
