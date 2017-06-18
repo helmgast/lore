@@ -133,26 +133,58 @@ function load_content(href, target, base_href, append) {
     }
 }
 
+var snabbt = require('snabbt.js');
+
+function print_rect(rect) {
+    return "top: " + rect.top + " left: " + rect.left + " height: " + rect.height + " width:" + rect.width
+}
+
+function match_pos(el, match_el, extra_args, add_scroll) {
+    var $el = $(match_el)
+    if ($el && $el.get(0)) {
+        var box = $el.get(0).getBoundingClientRect(), args = {
+            top: (box.top + (add_scroll ? window.scrollY : 0)) + 'px',
+            left: (box.left + (add_scroll ? window.scrollX : 0)) + "px",
+            width: box.width + 'px',
+            height: box.height + 'px'
+        }
+        $.extend(args, extra_args)
+        // console.log("Brand " + el + " is at " + print_rect(el.get(0).getBoundingClientRect()) + ", and " + match_el + " is at " + print_rect(box) + ". Scroll at " + window.scrollY)
+        el.css(args)
+    }
+
+}
+
+function match_pos_snabb(el, match_el, extra_args) {
+    var box_from = $(el).get(0).getBoundingClientRect(), box_to = $(match_el).get(0).getBoundingClientRect()
+    snabbt(el, {
+        position: [box_to.left - box_from.left, box_to.top - box_from.top, 0],
+        scale: [box_to.width / box_from.width, box_to.height / box_from.height],
+        transformOrigin: [0, 0, 0]
+    })
+    el.css(extra_args)
+}
+
 
 function vector_add(v1, v2) {
-    return [v1[0]+v2[0], v1[1]+v2[1]]
+    return [v1[0] + v2[0], v1[1] + v2[1]]
 }
 
 function vector_sub(v1, v2) {
-   return [v1[0]-v2[0], v1[1]-v2[1]]
+    return [v1[0] - v2[0], v1[1] - v2[1]]
 }
 
 function vector_unit(v) {
     var len = vector_len(v)
-    return [v[0]/len, v[1]/len]
+    return [v[0] / len, v[1] / len]
 }
 
 function vector_len(v) {
-    return Math.sqrt(v[0]^2+v[1]^2)
+    return Math.sqrt(v[0] ^ 2 + v[1] ^ 2)
 }
 
 function vector_scale(v, d) {
-    return [v[0]*d, v[1]*d]
+    return [v[0] * d, v[1] * d]
 }
 
 module.exports.flash_error = flash_error;
@@ -161,6 +193,7 @@ module.exports.modify_url = modify_url;
 module.exports.serializeObject = serializeObject;
 module.exports.dictreplace = dictreplace;
 module.exports.load_content = load_content;
+module.exports.match_pos = match_pos;
 module.exports.vector_add = vector_add;
 module.exports.vector_sub = vector_sub;
 module.exports.vector_unit = vector_unit;

@@ -26,6 +26,11 @@
                 <span class="glyphicon glyphicon-user"></span>
                 {{ article.creator if article.creator else _('Admin') }}
             </li>
+            {% if article.world %}
+            <li title="{{ _('World') }}">
+                <span class="glyphicon glyphicon-globe"></span> {{ article.world }}
+            </li>
+            {% endif %}
             {% if not article.is_published() %}
             <li><span
                     class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span> {{ article.get_status_display() }}

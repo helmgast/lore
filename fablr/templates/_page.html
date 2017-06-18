@@ -96,20 +96,22 @@
 {% block navbar %}
     <nav class="navbar navbar-default navbar-fixed-top">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".my-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            {% block navbar_brand %}
-                <a class="navbar-brand" href="{{ url_for('world.homepage') }}">
+            <div class="navbar-brand my-collapse collapse in">
+            {% block publisher_brand %}
+                <a href="{{ url_for('world.homepage') }}">
                     <svg class="fablr-icon" style="fill: #a00; margin-top: -27px; width: 96px; height: 128px;">
                         <use xlink:href="#fablr-asterisme"></use>
                     </svg>
                 </a>
-            {% endblock navbar_brand %}
+            {% endblock publisher_brand %}
+            </div>
         </div>
-        <div class="collapse navbar-collapse">
+        <div class="collapse navbar-collapse my-collapse">
             <ul class="nav navbar-nav navbar-nav-top">
                 {% block navbar_left %}
                     {% call(privileged) MACRO.IS_ADMIN() %}
@@ -171,7 +173,7 @@
                 {% endblock navbar_right %}
             </ul>
         </div>
-        <div class="collapse navbar-collapse navbar-sub">
+        <div class="collapse navbar-collapse my-collapse navbar-sub">
             <ul class="nav navbar-nav">
                 <li class="breadcrumb-item nobr">{% block breadcrumbs %}{% endblock %}</li>
             </ul>

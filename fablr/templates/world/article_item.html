@@ -230,7 +230,7 @@
             {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
                url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
-            <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">Help on format and image sizes</a></em></small>
+            <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">{{_('Help on format and image sizes')}}</a></em></small>
             {% if g.user.id %}
                 <input type="hidden" name="creator" value="{{ g.user.id }}"/>
             {% endif %}

@@ -84,7 +84,8 @@ class Product(Document):
     images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Product Images'))
     acknowledgement = BooleanField(default=False, verbose_name=_('Name in book'))
     comment_instruction = StringField(max_length=20, verbose_name=_('Instructions for comments in order'))
-    downloadable_files = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Downloadable files'))
+    # Deny removal of downloadable files as people will lose access
+    downloadable_files = ListField(ReferenceField(FileAsset, reverse_delete_rule=DENY), verbose_name=_('Downloadable files'))
 
     # Executes before saving
     def clean(self):

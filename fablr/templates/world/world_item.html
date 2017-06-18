@@ -24,14 +24,15 @@
               href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
     {% endif %}
     {% if world and world.get_header_image %}
-    <style>
-        .page-header-hero {
-            background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
-        }
-        {% if world.custom_css %}
-            {{ world.custom_css|safe|replace('style>','') }}
-        {% endif %}
-    </style>
+        <style>
+            .page-header-hero {
+                background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
+            }
+
+            {% if world.custom_css %}
+                {{ world.custom_css|safe|replace('style>','') }}
+            {% endif %}
+        </style>
     {% endif %}
 {% endblock %}
 
@@ -74,8 +75,8 @@
 {% endblock %}
 
 {% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
-{% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}
-{% block asides_class %}col-lg-3 col-md-4 col-sm-10{% endblock %}
+{% block content_class %}col-lg-10 col-md-12 col-sm-10 content{% endblock %}
+{% block asides_class %}hide{% endblock %}
 
 {% block content %}
     {% if world_form %}
@@ -83,14 +84,15 @@
             <div class="row">
                 <div class="col-md-8">
                     <div id="tour-editworld">
-                    {{ MACRO.FORM_FIELD(world_form.title) }}
-                    {{ MACRO.FORM_FIELD(world_form.tagline) }}
-                    {{ MACRO.FORM_FIELD(world_form.description) }}
-                </div>
+                        {{ MACRO.FORM_FIELD(world_form.title) }}
+                        {{ MACRO.FORM_FIELD(world_form.tagline) }}
+                        {{ MACRO.FORM_FIELD(world_form.description) }}
+                    </div>
                     {{ MACRO.FORM_FIELD(world_form.content, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.created_date, controlclass='input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
+                    {{ MACRO.FORM_FIELD(world_form.publishing_year) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
                     {{ MACRO.FORM_FIELD(world_form.external_host, helptext=_('If your world home page is hosted externally, enter it here')) }}
@@ -113,122 +115,148 @@
             </div>
             <div class="row form-actions">
                 <div class="col-sm-12">
-                {% if args.get('intent', None) %}
-                    <ul class="action-buttons action-buttons-footer">
-                        {{ self.actionbar() }}
-                    </ul>
-                {% endif %}
+                    {% if args.get('intent', None) %}
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
+                    {% endif %}
                 </div>
             </div>
         </form>
     {% else %}
         <article class="article-text">
-            {{ world.description|default(_('No description'), true)|markdown }}
+            {{ world.description|markdown }}
 
-            {{ world.content|default(_('No content'), true)|markdown }}
+            {{ world.content|markdown }}
         </article>
 
-        <div class="row">
-            {% if world and articles %}
-                {% set recent_articles=articles[:5] %}
-                {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:5] %}
-                {% set top_material=articles.filter(type='material')[:5] %}
+        {% set recent_articles=articles[:6] %}
+        {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:6] %}
+        {% set top_material=articles.filter(type='material')[:6] %}
+
+            {% if recent_articles %}
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span class="glyphicon glyphicon-exclamation-sign"></span>
+                        {% trans %}Latest news{% endtrans %}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in recent_articles %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+
+                <hr>
             {% endif %}
-            <div class="col-md-4">
-                {% if recent_articles %}
-                <h4><span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Recent updates{% endtrans %}
-                </h4>
-                <ul>
-                    {% for a in recent_articles %}
-                        <li>
-                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
-                               alt="{{ a.title }}">{{ a.title }}</a> <small class="nobr">[{{ a.created_date|dateformat("short") }}]</small></li>
-                    {% else %}
-                        {% trans %}No data{% endtrans %}
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </div>
-            <div class="col-md-4">
-                {% if focus_articles %}
-                    <h4><span class="glyphicon glyphicon-fire"></span> {% trans %}Featured articles{% endtrans %}</h4>
-                    {% for a in focus_articles %}
-                        <li>
-                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
-                               alt="{{ a.title }}">{{ a.title }}</a></li>
-                    {% endfor %}
-                {% endif %}
-            </div>
-            <div class="col-md-4">
-                {% if top_material %}
-                    <h4><span class="glyphicon glyphicon-briefcase"></span> {% trans %}Top material{% endtrans %}</h4>
-                    {% for a in top_material %}
-                        <li>
-                            <a href="{{ url_for('world.ArticlesView:get', id=a.slug, world_=world.slug) }}"
-                               alt="{{ a.title }}">{{ a.title }}</a></li>
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </div>
+
+            {% if focus_articles %}
+
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span
+                            class="glyphicon glyphicon-fire"></span> {{ _('Featured articles') }}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in focus_articles %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+
+                <hr>
+            {% endif %}
+
+            {% if top_material %}
+
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span
+                            class="glyphicon glyphicon-briefcase"></span> {{ _('Top material') }}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in top_material %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+            {% endif %}
+
     {% endif %}
 {% endblock content %}
 
 {% block intro %}
     {% if world and world.slug!='meta' and not world_form %}
-    <hr>
-    <p class="text-center">
-        <a class="btn btn-lg btn-info" href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
-        {% trans %}Buy in shop{% endtrans %}
-        </a>
-    </p>
-    <table class="table" id="tour-worlddetails">
-        <tr>
-            <th>{{ _('Publisher') }}</th>
-            <td>
-                <small>{{ world.publisher|default(_('No data'), true) }}</small>
-            </td>
-        </tr>
-        <tr>
-            <th>{{ _('Rule System') }}</th>
-            <td>
-                <small>{{ world.rule_system|default(_('No data'), true) }}</small>
-            </td>
-        </tr>
-        <tr>
-            <th>{{ _('Created') }}</th>
-            <td>
-                <small class="nobr">{{ world.created_date|dateformat("short") }}</small>
-            </td>
-        </tr>
-        <tr>
-            <th>{{ _('Status') }}</th>
-            <td>
-                <small>{{ world.get_status_display() }}</small>
-            </td>
-        </tr>
-        <tr>
-            <th>{{ _('Allows contributions') }}</th>
-            <td>
-                <small>{{ _('Yes') if world.contribution else _('No') }}</small>
-            </td>
-        </tr>
-    </table>
+        <hr>
+        <p class="text-center">
+            <a class="btn btn-lg btn-info"
+               href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
+                {% trans %}Buy in shop{% endtrans %}
+            </a>
+        </p>
+        <table class="table" id="tour-worlddetails">
+            <tr>
+                <th>{{ _('Publisher') }}</th>
+                <td>
+                    <small>{{ world.publisher|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Rule System') }}</th>
+                <td>
+                    <small>{{ world.rule_system|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Published') }}</th>
+                <td>
+                    <small class="nobr">{{ world.publishing_year|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Status') }}</th>
+                <td>
+                    <small>{{ world.get_status_display() }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Allows contributions') }}</th>
+                <td>
+                    <small>{{ _('Yes') if world.contribution else _('No') }}</small>
+                </td>
+            </tr>
+        </table>
         {% if world.facebook_url %}
             <a class="center-block margin-below" href="{{ world.facebook_url }}">
-                <img src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
+                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
             </a>
         {% endif %}
     {% endif %}
     {% include "includes/social_icons.html" %}
 {% endblock intro %}
 
-{% block asides %}
-    {% if world and not world_form and world.editors %}
-    <h4>{% trans %}Editors{% endtrans %}</h4>
-    <ul>
-        {% for editor in world.editors %}
-            <li>{{editor}}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-{% endblock %}
+{#{% block asides %}#}
+{#    {% if world and not world_form and world.editors %}#}
+{#        <h4>{% trans %}Editors{% endtrans %}</h4>#}
+{#        <ul>#}
+{#            {% for editor in world.editors %}#}
+{#                <li>{{ editor }}</li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    {% endif %}#}
+{#{% endblock %}#}

@@ -8,7 +8,7 @@ Format of Google fonts are |FontName:weight1,weight2|FontName2:weight1,weight2 e
 
 {#
 navbar
-    navbar_brand
+    publisher_brand
     navbar_left
     navbar_right
     breadcrumbs
@@ -61,12 +61,12 @@ doesn't have child blocks. However, a page without content block will effectivel
 {% block content_title %}Helmgast{% endblock %}
 
 {# Replaces the brand logo on top left corner (navbar) #}
-{% block navbar_brand %}
+{% block publisher_brand %}
     <a class="navbar-brand navbar-collapse" href="{{ url_for('world.ArticlesView:publisher_home') }}">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
              src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
-{% endblock navbar_brand %}
+{% endblock publisher_brand %}
 
 {# Defines the menu shown in the left side of the navbar #}
 {% block navbar_left %}

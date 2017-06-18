@@ -89,7 +89,12 @@ footer a {
   padding-right: 10px;
 }
 
-#brand-target {
+.animated-move {
+  transition: all 0.5s ease-out;
+  display: block;
+}
+
+#zoombrand-from {
   height: 400px;
   margin: 0 auto;
   float: none;
@@ -97,6 +102,10 @@ footer a {
   position: relative;
   top: 100px;
   margin-top: -100px;
+}
+
+.publisher-brand {
+  display: block;
 }
 
 .page-header .publisher-header {
@@ -994,8 +1003,9 @@ top-shadow {
 .cards {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: flex-start;
 }
+
 
 .card-mixin {
   /* Made to be same aspect as a game card, and to fit 3 inside one large row in Bootstrap,

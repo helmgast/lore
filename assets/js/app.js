@@ -72,7 +72,7 @@ $(document).on('click', '.buy-link', function (e) {
         url: SHOP_URL,
         type: 'patch',
         data: {product: this.id},
-        headers: {'X-CSRFToken': CSRF_TOKEN },
+        headers: {'X-CSRFToken': CSRF_TOKEN},
         dataType: 'json',
         success: function (data) {
             $c = $('#cart-counter')
@@ -189,10 +189,10 @@ $(document).on('click', '.zoomable', function (e) {
 });
 
 // Smooth scroll for anchor links
-$(document).on('click', 'a[href*=\\#]', function(event){
+$(document).on('click', 'a[href*=\\#]', function (event) {
     if (this.hash) {
         event.preventDefault();
-        $('html,body').animate({scrollTop:$(this.hash).offset().top}, 500);
+        $('html,body').animate({scrollTop: $(this.hash).offset().top}, 500);
     }
 
 });
@@ -289,52 +289,62 @@ function init_dom(e) {
     require('calculatable.js')
     scope.find('.calc[data-formula]').calculatable();
 
+    var throttle = require('lodash/throttle')
 
     // Zoombrand plugin
-    var snabbt = require('snabbt.js')
-    var zoombrand = scope.find('#zoombrand');
+    var zoombrand = scope.find('.animated-move');
     if (zoombrand.length) {
-        var from = $(zoombrand.data('from')).get(0), to = $(zoombrand.data('to')).get(0)
-        if (from && to) {
-            var control = snabbt(zoombrand, {
-                valueFeeder: function (i, matrix) {
-                    var f = from.getBoundingClientRect(), t = to.getBoundingClientRect(),
-                        p_start = [f.left, f.top + window.scrollY],
-                        v = utils.vector_sub(p_start, [t.left, t.top]),
-                        len = utils.vector_len(v),
-                        new_v = utils.vector_sub(p_start, utils.vector_scale(utils.vector_unit(v), i * len)),
-                        max_scale = Math.min(f.width / t.width, f.height / t.height),
-                        sc = max_scale - i * (max_scale - 1);
-                    return matrix.scale(sc, sc)
-                        .translate(new_v[0] + t.width * (sc - 1) * 0.5, new_v[1] + t.height * (sc - 1) * 0.5, 0);
-                },
-                easing: 'ease',
-                manual: true
-            });
-            var scroll_f = function () {
-                control.setValue(Math.min(1, $(window).scrollTop() / 285));
+        // var frombox = $('#zoombrand-from').get(0).getBoundingClientRect()
+        utils.match_pos(zoombrand, '#zoombrand-from', {opacity: '1', position: 'absolute'})
+        // zoombrand.css({opacity: '1', top: frombox.top+"px", left: frombox.left+"px", width: frombox.width+"px", height: frombox.height+"px"})
+
+        // var from = zoombrand.get(0), to = $(zoombrand.data('to')).get(0)
+        // if (from && to) {
+        //     var valueFeeder = function (i, matrix) {
+        //         var f = from.getBoundingClientRect(), t = to.getBoundingClientRect(),
+        //             p_start = [f.left, f.top + window.scrollY],
+        //             v = utils.vector_sub(p_start, [t.left, t.top]),
+        //             len = utils.vector_len(v),
+        //             new_v = utils.vector_sub(p_start, utils.vector_scale(utils.vector_unit(v), i * len)),
+        //             max_scale = Math.min(f.width / t.width, f.height / t.height),
+        //             sc = max_scale - i * (max_scale - 1);
+        //         return matrix.scale(sc, sc).translate(new_v[0] + t.width * (sc - 1) * 0.5, new_v[1] + t.height * (sc - 1) * 0.5, 0);
+        //     }
+        toggled = false;
+        var scroll_f = function () {
+            // console.log('scrolled')
+            if ($(window).scrollTop() > 50) {
+                if (!toggled) {
+                    utils.match_pos(zoombrand, '.navbar-brand')
+                    toggled = true;
+                }
+            } else {
+                if (toggled) {
+                    utils.match_pos(zoombrand, '#zoombrand-from', {}, add_scroll=true)
+                    toggled = false;
+                }
             }
-            scroll_f();
-            $(window).scroll(scroll_f);
         }
+        $(window).on('scroll', throttle(scroll_f, 100));
     }
 
-    // TODO too complicated to add, do later
-    // scope.find('.auth0-lock').each(function (el) {
-    //     require.ensure(['auth0-lock-passwordless'], function (require) {
-    //         var lock_module = require('auth0-lock-passwordless')
-    //         var options = {
-    //             icon: "//helmgast.se/static/img/helmgast_512px.png",
-    //             closable: false,
-    //             focusInput: true,
-    //             primaryColor: "#a00",
-    //             socialBigButtons: true,
-    //             connections: ["facebook","google-oauth2"],
-    //         }
-    //         var lock = new lock_module.default(AUTH0_CLIENT_ID, AUTH0_DOMAIN);
-    //         $(el).data(lock, lock)
-    //     })
-    // })
+
+// TODO too complicated to add, do later
+// scope.find('.auth0-lock').each(function (el) {
+//     require.ensure(['auth0-lock-passwordless'], function (require) {
+//         var lock_module = require('auth0-lock-passwordless')
+//         var options = {
+//             icon: "//helmgast.se/static/img/helmgast_512px.png",
+//             closable: false,
+//             focusInput: true,
+//             primaryColor: "#a00",
+//             socialBigButtons: true,
+//             connections: ["facebook","google-oauth2"],
+//         }
+//         var lock = new lock_module.default(AUTH0_CLIENT_ID, AUTH0_DOMAIN);
+//         $(el).data(lock, lock)
+//     })
+// })
 
     scope.find('.content-editor').each(function (e) {
         // Loads these dependencies asynchronously if we find this scope on the current page

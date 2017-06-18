@@ -2,13 +2,13 @@
 {% import 'includes/macros.html' as MACRO %}
 
 {#{% block navbar %}#}
-{% block navbar_brand %}
+{% block publisher_brand %}
     <a class="navbar-brand navbar-collapse"
        href="#">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
              src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
-{% endblock navbar_brand %}
+{% endblock publisher_brand %}
 
 {% block navbar_left %}
     <li>

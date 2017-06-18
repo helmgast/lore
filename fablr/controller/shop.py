@@ -105,7 +105,7 @@ class ProductsView(ResourceView):
                             exclude=['slug'],
                             converter=RacModelConverter())
     # Add stock count as a faux input field of the ProductForm
-    form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[DataRequired(), NumberRange(min=-1)])
+    form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[InputRequired(), NumberRange(min=-1)])
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()

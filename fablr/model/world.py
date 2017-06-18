@@ -109,6 +109,7 @@ class World(Document):
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     contribution = BooleanField(default=False, verbose_name=_('World accepts contributions'))
     external_host = URLField(verbose_name=_('External host URL'))
+    publishing_year = StringField(max_length=4, verbose_name=_('Publishing year'))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))

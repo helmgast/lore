@@ -25,12 +25,12 @@
     </style>
 {% endblock %}
 
-{% block navbar_brand %}
-    <a class="navbar-brand" href="{{ url_for('world.ArticlesView:publisher_home') }}">
-        <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive" src="{{
+{% block publisher_brand %}
+    <a class="animated-move" href="{{ url_for('world.ArticlesView:publisher_home') }}">
+        <img class="img-responsive" src="{{
                 url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
-{% endblock navbar_brand %}
+{% endblock publisher_brand %}
 
 {% block navbar_left %}
     <li id="tour-gameworlds"><a href="{{ url_for('world.WorldsView:index') }}">

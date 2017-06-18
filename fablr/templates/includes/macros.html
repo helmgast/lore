@@ -339,10 +339,10 @@
     </li>
 {%- endmacro -%}
 
-{%- macro NEW_BUTTON(new_url, title='New') -%}
+{%- macro NEW_BUTTON(new_url, title) -%}
     <li>
         <a class="btn btn-info" href="{{ new_url }}"><span
-            class="glyphicon glyphicon-plus-sign"></span> {{ _(title) }}
+            class="glyphicon glyphicon-plus-sign"></span> {{ title if title else _('New') }}
         </a>
     </li>
 {%- endmacro -%}
