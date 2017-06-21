@@ -82,12 +82,12 @@ def git_webhook(get_json=None):
             return json.dumps({'msg': "Malformed JSON for git_webhook"}), 400
 
         # Try to match on branch as configured in repos.json
-        match = re.match(r"refs/heads/(?P<branch>.*)", payload['ref'])
-        if match and 'branch' in repo_meta:
+        match = re.match(r"refs/heads/(?P<branch>.+)", payload['ref'])
+        if match:
             repo_meta['branch'] = re.sub(r'[./]', '', match.groupdict()['branch'])
             path = '{owner}/{name}/branch_{branch}'.format(**repo_meta)
         else:
-            path = '{owner}/{name}'
+            path = '{owner}/{name}'.format(**repo_meta)
 
         key = current_app.config.get('GITHUB_WEBHOOK_KEY', None)
         # Check if POST request signature is valid
@@ -112,4 +112,4 @@ def git_webhook(get_json=None):
         curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
                                 cwd=cwd, stdout=subprocess.PIPE)
         tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
-        return 'OK commit {commit}'.format(**repo_meta)
+        return 'OK commit {commit} to {path}'.format(path=path, **repo_meta)
