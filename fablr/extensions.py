@@ -3,6 +3,7 @@ import types
 
 from datetime import datetime
 
+import jinja2
 from babel import Locale
 from bson.objectid import ObjectId
 from flask import abort, request, session, current_app, g
@@ -11,9 +12,10 @@ from flask_mongoengine import Pagination, MongoEngine
 from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_wtf import CSRFProtect
-from jinja2 import Undefined
+from jinja2 import Undefined, evalcontextfilter
 from markdown import Extension
 from markdown.treeprocessors import Treeprocessor
+from markupsafe import Markup
 from mongoengine import Document, QuerySet
 from speaklater import _LazyString
 from werkzeug.routing import Rule
@@ -214,6 +216,18 @@ class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
         md.treeprocessors['gallery'] = GalleryList()
 
+
+def build_md_filter(md_instance):
+    @evalcontextfilter
+    def markdown_filter(eval_ctx, stream):
+        if not stream:
+            return Markup('')
+        elif eval_ctx.autoescape:
+            return Markup(md_instance.convert(jinja2.escape(stream)))
+        else:
+            return Markup(md_instance.convert(stream))
+
+    return markdown_filter
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):

@@ -78,7 +78,7 @@ def git_webhook(get_json=None):
             if 'name' not in repo_meta or 'owner' not in repo_meta:
                 raise TypeError("No name or owner in repo_meta")
         except TypeError as te:
-            logger.error("Malformed JSON for git_webhook: {json}".format(payload))
+            logger.error("Malformed JSON for git_webhook: {payload}".format(payload=payload))
             return json.dumps({'msg': "Malformed JSON for git_webhook"}), 400
 
         # Try to match on branch as configured in repos.json

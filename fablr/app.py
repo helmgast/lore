@@ -16,7 +16,7 @@ import sys
 import rollbar
 from flask import Flask, render_template, request, url_for, flash, g, redirect
 from flask import got_request_exception
-from flaskext.markdown import Markdown
+from markdown import Markdown
 from pymongo.errors import ConnectionFailure
 from werkzeug.contrib.fixers import ProxyFix
 from werkzeug.routing import Map
@@ -186,9 +186,15 @@ def configure_extensions(app):
 
     extensions.init_assets(app)
 
-    app.md = Markdown(app, extensions=['attr_list'])
-    app.md.register_extension(extensions.AutolinkedImage)
+    # app.md = FlaskMarkdown(app, extensions=['attr_list'])
+    # app.md.register_extension(extensions.AutolinkedImage)
 
+    app.md2 = Markdown(extensions=['markdown.extensions.attr_list',
+                                   'markdown.extensions.smarty',
+                                   'markdown.extensions.tables',
+                                   extensions.AutolinkedImage()])
+
+    app.jinja_env.filters['markdown'] = extensions.build_md_filter(app.md2)
     app.jinja_env.filters['dict_with'] = extensions.dict_with
     app.jinja_env.filters['dict_without'] = extensions.dict_without
     app.jinja_env.filters['currentyear'] = extensions.currentyear

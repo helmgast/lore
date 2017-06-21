@@ -38,7 +38,7 @@
             {% endif %}
         </ul>
         <p class="dobr">
-        {% if article.description %}{{ article.description|markdown }}{% else %}
+        {% if article.description %}{{ article.description|markdown }}{% elif article.content %}
             {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
         </p>
         <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
