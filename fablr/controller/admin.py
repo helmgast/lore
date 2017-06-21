@@ -65,23 +65,25 @@ def git_webhook(get_json=None):
             return json.dumps({'msg': 'Hi!'})
         if request.headers.get('X-GitHub-Event') != "push":
             logger.warn('git_webhook: Wrong event type')
-            return json.dumps({'msg': "wrong event type"})
+            return json.dumps({'msg': "wrong event type"}), 400
 
         payload = request.get_json()
-        # Replace path components although they shouldn't be here
-        repo_meta = {
-            'name': re.sub(r'[./]', '', payload['repository']['name']),
-            'owner': re.sub(r'[./]', '', payload['repository']['owner']['name']),
-            'commit': payload.get('after', None)
-        }
-
-        if 'name' not in repo_meta or 'owner' not in repo_meta:
-            logger.warn('git_webhook: Malformed request')
-            abort(400, "Missing repo name and owner data, malformed request")
+        try:
+            # Replace path components although they shouldn't be here
+            repo_meta = {
+                'name': re.sub(r'[./]', '', payload['repository']['name']),
+                'owner': re.sub(r'[./]', '', payload['repository']['owner']['name']),
+                'commit': payload.get('after', None)
+            }
+            if 'name' not in repo_meta or 'owner' not in repo_meta:
+                raise TypeError("No name or owner in repo_meta")
+        except TypeError as te:
+            logger.error("Malformed JSON for git_webhook: {json}".format(payload))
+            return json.dumps({'msg': "Malformed JSON for git_webhook"}), 400
 
         # Try to match on branch as configured in repos.json
         match = re.match(r"refs/heads/(?P<branch>.*)", payload['ref'])
-        if match:
+        if match and 'branch' in repo_meta:
             repo_meta['branch'] = re.sub(r'[./]', '', match.groupdict()['branch'])
             path = '{owner}/{name}/branch_{branch}'.format(**repo_meta)
         else:
@@ -91,7 +93,7 @@ def git_webhook(get_json=None):
         # Check if POST request signature is valid
         if not key:
             logger.warn('git_webhook: No key configured')
-            abort(403, "No key configured")
+            return json.dumps({'msg': "No key configured"}), 403
 
         signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
         # if type(key) == unicode:
@@ -99,7 +101,7 @@ def git_webhook(get_json=None):
         mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
         if not hmac.compare_digest(mac.hexdigest(), signature):
             logger.warn('git_webhook: Incorrect key')
-            abort(403, "Incorrect key")
+            return json.dumps({'msg': "Incorrect key"}), 403
 
         # We will create a subdir to /data/www/github and operate on that
         # It will not be reachable from web unless configured in other web server
@@ -107,7 +109,7 @@ def git_webhook(get_json=None):
         cwd = safe_join(current_app.config['PLUGIN_PATH'], path)
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
-        curl = subprocess.Popen(('curl', '-L', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
+        curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
                                 cwd=cwd, stdout=subprocess.PIPE)
         tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
         return 'OK commit {commit}'.format(**repo_meta)
