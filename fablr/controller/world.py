@@ -458,7 +458,7 @@ class ArticlesView(ResourceView):
                         feed_url=request.url, url=request.url_root)
         articles = Article.objects(query).order_by('-created_date')[:10]
         for article in articles:
-            feed.add(article.title, current_app.md._instance.convert(article.content),
+            feed.add(article.title, current_app.md.convert(article.content),
                      content_type='html',
                      author=unicode(article.creator) if article.creator else 'System',
                      url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True, _scheme=''),

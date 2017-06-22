@@ -189,12 +189,12 @@ def configure_extensions(app):
     # app.md = FlaskMarkdown(app, extensions=['attr_list'])
     # app.md.register_extension(extensions.AutolinkedImage)
 
-    app.md2 = Markdown(extensions=['markdown.extensions.attr_list',
+    app.md = Markdown(extensions=['markdown.extensions.attr_list',
                                    'markdown.extensions.smarty',
                                    'markdown.extensions.tables',
                                    extensions.AutolinkedImage()])
 
-    app.jinja_env.filters['markdown'] = extensions.build_md_filter(app.md2)
+    app.jinja_env.filters['markdown'] = extensions.build_md_filter(app.md)
     app.jinja_env.filters['dict_with'] = extensions.dict_with
     app.jinja_env.filters['dict_without'] = extensions.dict_without
     app.jinja_env.filters['currentyear'] = extensions.currentyear

@@ -109,7 +109,11 @@ def git_webhook(get_json=None):
         cwd = safe_join(current_app.config['PLUGIN_PATH'], path)
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
-        curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
-                                cwd=cwd, stdout=subprocess.PIPE)
-        tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
+        try:
+            curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
+                                    cwd=cwd, stdout=subprocess.PIPE)
+            tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
+        except subprocess.CalledProcessError as cpe:
+            logger.warn('Error fetching repo for {data}, got {out}'.format(data=repo_meta, out=cpe.output))
+            return json.dumps({'msg': "Error fetching repo"}), 403
         return 'OK commit {commit} to {path}'.format(path=path, **repo_meta)
