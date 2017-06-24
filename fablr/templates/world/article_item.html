@@ -134,7 +134,11 @@
                     class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
                 <a>{{ article.get_type_display() }}</a>
             </li>
-
+            {% if article.world %}
+            <li title="{{ _('World') }}"><span class="glyphicon glyphicon-globe }}"></span>
+                <a>{{ article.world }}</a>
+            </li>
+            {% endif %}
             {% set articlegroups = article.editors + article.readers %}
             <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
                 {%- if article.creator %}

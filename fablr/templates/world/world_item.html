@@ -203,12 +203,14 @@
 {% block intro %}
     {% if world and world.slug!='meta' and not world_form %}
         <hr>
+        {% if world.product_url or world.publisher.webshop_activated %}
         <p class="text-center">
             <a class="btn btn-lg btn-info"
                href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
                 {% trans %}Buy in shop{% endtrans %}
             </a>
         </p>
+        {% endif %}
         <table class="table" id="tour-worlddetails">
             <tr>
                 <th>{{ _('Publisher') }}</th>

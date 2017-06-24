@@ -449,10 +449,10 @@ class ArticlesView(ResourceView):
         query = filter_published()
         if world_ == 'meta':
             world = WorldMeta(publisher)
-            query = Q(publisher=publisher) | query
+            query = Q(publisher=publisher) & query
         else:
             world = World.objects(slug=world_).first_or_404()
-            query = Q(world=world) | query
+            query = Q(world=world) & query
 
         feed = AtomFeed(_('Recent Articles in ') + world.title,
                         feed_url=request.url, url=request.url_root)

@@ -91,7 +91,7 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
     # If we come this far the file is private to a user and should not be cached
     # by any proxies
     if not g.user:
-        abort(403)
+        abort(401)  # Should be caught by error handler in app.py that does SSO redirect if applicable
 
     if g.user.admin or asset in [a for p in products_owned_by_user(g.user) for a in p.downloadable_files]:
         # List comprehensions are hard - here is how above row would look as for loop
