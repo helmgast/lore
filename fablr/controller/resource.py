@@ -232,7 +232,7 @@ class ResourceResponse(Response):
         self.general_errors = []
 
         # To be set from from route
-        self.formats = formats or frozenset(['html', 'json'])
+        self.formats = formats or ['html', 'json']
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         self.auth = None
         super(ResourceResponse, self).__init__()  # init a blank flask Response
