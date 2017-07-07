@@ -273,7 +273,8 @@ def configure_hooks(app):
         if isinstance(testargs, dict):
             for kv in testargs.iteritems():
                 # Ignore None-values, they shouldn't be in URL anyway
-                if kv[1] is not None and urllib.urlencode([kv]) not in request.query_string:
+                # Values may be unicode, or non string object, so make it become unicode and then encode it properly
+                if kv[1] is not None and urllib.urlencode({kv[0]: unicode(kv[1]).encode('utf8')}) not in request.query_string:
                     return False
             return True
         else:
