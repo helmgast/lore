@@ -1,36 +1,31 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
-{% block cssimports %}
-{{ super() }}
-<link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
+{% block breadcrumbs %}
+    {% if world.slug=='meta' %}
+    {{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog'))
+    ) }}
+    {% else %}
+    {{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+        (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog'))
+    ) }}
+    {% endif %}
 {% endblock %}
 
-{% block pre_content %}{% endblock %}
+{% block content_title %}{{ _('The %(world)s blog', world=world.title) }}{% endblock %}
+{% block content_tagline %} {{ _('by') }} {{ world.publisher }}{% endblock %}
 
 {% block content %}
 	{% for article in articles %}
-	<a class="blog_header" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><h2>{{ article. title}}</h2></a>
-	<ul class="list-inline article-meta" style="margin-bottom: 0px">
-    <li title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }} {{ _('by') }}</li>
-	<li title="{{ _('Creator') }}">
-	<span class="glyphicon glyphicon-user"></span>
-	{{article.creator if article.creator else 'System'}}
-	</li>
-	</ul>
-	<div class="media">
-	{% if article.feature_image %}
-  	<a class="pull-left" href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}">
-  	<img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
-		</a>
-	{% endif %}
-		<div class="media-body">
-			{% if article.description %}{{article.description}}{% else %}{{article.content[0:500]|markdown|striptags|truncate}}{% endif %}
-			<a href="{{url_for('world.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-		</div>
-	</div>
+        {% include "world/article_list_view.html" %}
 	{% else %}
     <div class="jumbotron text-center">
       <h2>{{ _('No articles yet!') }}</h2>
     </div>
 	{% endfor %}
+{% include "includes/pagination.html" %}
 {% endblock %}

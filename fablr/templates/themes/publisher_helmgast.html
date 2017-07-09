@@ -1,0 +1,210 @@
+{% extends root_template %}
+
+{% block googlefonts %}{{ super() }}|Eczar:700|Gentium+Book+Basic:400,400italic,700,700italic{% endblock %}
+
+{% block cssimports %}
+    {{ super() }}
+    <style>
+        .content {
+            font-family: 'Gentium Book Basic', 'Georgia', sans-serif;
+            font-size: 18px;
+        }
+
+        .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+            font-family: 'Eczar', 'Gentium Book Basic', sans-serif;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .page-header .publisher-header {
+            font-family: 'Gentium Book Basic', sans-serif !important;
+            font-weight: 400;
+            text-transform: uppercase;
+        }
+    </style>
+{% endblock %}
+
+{% block publisher_brand %}
+    <a class="animated-move" href="{{ url_for('world.ArticlesView:publisher_home') }}">
+        <img class="img-responsive" src="{{
+                url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
+    </a>
+{% endblock publisher_brand %}
+
+{% block navbar_left %}
+    <li id="tour-gameworlds"><a href="{{ url_for('world.WorldsView:index') }}">
+        <span class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}
+    </a></li>
+    <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
+        <span class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}
+    </a></li>
+    <li><a href="http://webshop.helmgast.se" target="_blank">
+        <span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}
+    </a></li>
+    <li><a href="http://www.rollspel.nu/forum/neogames" target="_blank">
+        <span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}
+    </a></li>
+{% endblock navbar_left %}
+
+
+{#{% block home %}#}
+{#    <div class="container">#}
+{#        <div class="row">#}
+{#            <div class="col-md-4 page-header">#}
+{#                <div class="" id="brand-target">#}
+{#                    <h1 class="helmgast-header">HELMGAST<br>#}
+{#                        <small>Vi tar spel på allvar</small>#}
+{#                    </h1>#}
+{#                </div>#}
+{##}
+{#            </div>#}
+{#            <div class="col-md-8 col-sm-12">#}
+                {#                {% include "newsletter.html" %}#}
+{#                <div id="homepage-carousel" class="carousel slide" data-ride="carousel">#}
+{#                    <!-- Indicators -->#}
+{#                    <ol class="carousel-indicators">#}
+{#                        <li data-target="#homepage-carousel" data-slide-to="0" class="active"></li>#}
+{#                        <li data-target="#homepage-carousel" data-slide-to="1"></li>#}
+{#                        <li data-target="#homepage-carousel" data-slide-to="2"></li>#}
+{#                        <li data-target="#homepage-carousel" data-slide-to="3"></li>#}
+{#                        <li data-target="#homepage-carousel" data-slide-to="4"></li>#}
+{#                    </ol>#}
+{##}
+{#                    <!-- Wrapper for slides -->#}
+{#                    <div class="carousel-inner" role="listbox">#}
+{#                        <div class="item active">#}
+{#                            <img src="{{ url_for('static', filename='img/themes/eon-wide-1200x600.jpg') }}" alt="Eon">#}
+{#                            <div class="carousel-caption">#}
+{#                                ...#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <img src="{{ url_for('static', filename='img/themes/ht-wide-1200x600.jpg') }}"#}
+{#                                 alt="Hjältarnas Tid">#}
+{#                            <div class="carousel-caption">#}
+{#                                ...#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <img src="{{ url_for('static', filename='img/themes/kult-wide-1200x600.jpg') }}" alt="Kult">#}
+{#                            <div class="carousel-caption">#}
+{#                                ...#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <img src="{{ url_for('static', filename='img/themes/neotech-wide-1200x600.jpg') }}"#}
+{#                                 alt="Neotech">#}
+{#                            <div class="carousel-caption">#}
+{#                                ...#}
+{#                            </div>#}
+{#                        </div>#}
+{#                        <div class="item">#}
+{#                            <img src="{{ url_for('static', filename='img/themes/jarn-wide-1200x600.jpg') }}" alt="Järn">#}
+{#                            <div class="carousel-caption">#}
+{#                                ...#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{##}
+{#                    <!-- Controls -->#}
+{#                    <a class="left carousel-control" href="#homepage-carousel" role="button" data-slide="prev">#}
+{#                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>#}
+{#                        <span class="sr-only">}{% trans %}Previous{% endtrans %}</span>#}
+{#                    </a>#}
+{#                    <a class="right carousel-control" href="#homepage-carousel" role="button" data-slide="next">#}
+{#                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>#}
+{#                        <span class="sr-only">{% trans %}Next{% endtrans %}</span>#}
+{#                    </a>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="row">#}
+{#            <div class="col-md-12 cards margin-above">#}
+{#                {% for article in articles %}#}
+{#                    <div class="card"#}
+{#                            {%- if article.get_feature_image -%}#}
+{#                         style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"#}
+{#                            {%- endif -%}>#}
+{#                        <div class="card-text">#}
+{#                            <h3 class="card-title">#}
+{#                                <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">{{ article.title }}</a>#}
+{#                            </h3>#}
+{#                            {% set desc =  (article.content[0:250]|markdown|striptags|truncate|replace('gallery-center','')).split('. R') %}#}
+{#                            <div class="card-description">{{ desc[0] }}</div>#}
+{#                            <ul class="card-details">#}
+{#                                <li class="product-type">{{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}</li>#}
+{#                            </ul>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                {% else %}#}
+{#                    <div class="jumbotron text-center">#}
+{#                        <h2>{{ _('No articles yet!') }}</h2>#}
+{#                    </div>#}
+{#                    <!-- col-lg-4 -->#}
+{#                {% endfor %}#}
+{#            </div>#}
+{##}
+{#        </div>#}
+{#    </div>#}
+{#{% endblock %}#}
+
+{% block footer %}
+    <div class="row">
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                <li>
+                    <a data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose',
+                user=user.id, from_field=user.email, subject=gettext('Question'), intent='post') }}">
+                        {% trans %}Contact Us{% endtrans %}
+                    </a>
+                </li>
+                <li><a href="http://eepurl.com/RuMH1">{% trans %}Newsletter{% endtrans %}</a></li>
+                <li class="margin-above">
+                    <div class="social">
+                        <a class="socialtw" href="https://twitter.com/helmgast" target="_blank">
+                            <svg class="fablr-icon fablr-icon-twitter">
+                                <use xlink:href="#fablr-twitter"></use>
+                            </svg>
+                        </a>
+                        <a class="socialfb" href="https://www.facebook.com/helmgast" target="_blank">
+                            <svg class="fablr-icon fablr-icon-facebook">
+                                <use xlink:href="#fablr-facebook2"></use>
+                            </svg>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
+                    {% trans %}Blog{% endtrans %}
+                    </a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:get', world_='meta', id='om-helmgast') }}">
+                        {% trans %}About{% endtrans %}
+                    </a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:get', world_='meta', id='arbeta-med-oss') }}">
+                        {% trans %}Work with us{% endtrans %}
+                    </a></li>
+            </ul>
+        </div>
+        <!-- --/col-lg-3 ---->
+
+        <div class="col-xs-4">
+            <ul class="list-unstyled">
+                {#                    <li><a href="">{% trans %}Tour{% endtrans %}</a></li>#}
+                <li>
+                    <a href="http://webshop.helmgast.se/sv/villkor-info.html">
+                        {% trans %}Terms of Service{% endtrans %}</a></li>
+                <li>
+                    <a href="{{ url_for('world.ArticlesView:get', world_='meta', id='sakerhet-och-kakor') }}">
+                        {% trans %}Security and cookie policy{% endtrans %}</a></li>
+            </ul>
+        </div>
+        <!-- --/col-lg-3 ---->
+    </div>
+    <!-- --/row ---->
+{% endblock %}

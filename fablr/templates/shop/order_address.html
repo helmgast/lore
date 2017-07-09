@@ -1,0 +1,66 @@
+{% import 'includes/macros.html' as MACRO %}
+
+<!-- Address -->
+<tr>
+    <td class="form-horizontal">
+        {% if order_form %}
+            {% if order_form.email %}
+                <h3>{{ _('Order email') }}</h3>
+                {{ MACRO.FORM_FIELD(order_form.email, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="email") }}
+            {% endif %}
+            {% if order_form.shipping_address and not order.is_digital() %}
+                <h3>{{ _('Shipping Address') }}</h3>
+                {{ MACRO.FORM_FIELD(order_form.shipping_address['name'], labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="name") }}
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.street, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="street-address") }}
+                <div class="form-group">
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.zipcode, labelclass="col-sm-3", controlwrap="col-sm-3", autocomplete="postal-code", formgroup=false) }}
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.city, labelclass="col-sm-1", controlwrap="col-sm-5", groupclass="clearfix", autocomplete="address-level2", formgroup=false) }}
+                </div>
+                {{ MACRO.FORM_FIELD(order_form.shipping_address.country, labelclass="col-sm-3", controlwrap="col-sm-9", groupclass="clearfix", autocomplete="country") }}
+                <div class="form-group clearfix">
+                    <label class="control-label col-sm-3"
+                           for="shipping_address-mobile">{{ order_form.shipping_address.mobile.label }}</label>
+                    <div class="col-sm-9">
+                        {{ order_form.shipping_address.mobile(class="form-control", placeholder="07XXXXXXXX", type="tel", autocomplete="tel", pattern="(\+?\d[- .]*){7,13}") }}
+                        <span class="help-block">{{ _('For SMS notification') }}</span>
+                    </div>
+                </div>
+            {% endif %}
+        {% else %}
+            <table class="table">
+                <tr>
+                    <th width="30%">{{ _('Email') }}</th>
+                    <td colspan=3
+                        style="text-align: left">{{ order.email|default(_('No data'),true) }}</td>
+                </tr>
+                <tr>
+                    <th width="30%">{{ _('Name') }}</th>
+                    <td colspan=3
+                        style="text-align: left">{{ order.shipping_address.name|default(_('No data'),true) }}</td>
+                </tr>
+                <tr>
+                    <th>{{ _('Street') }}</th>
+                    <td colspan=3
+                        style="text-align: left">{{ order.shipping_address.street|default(_('No data'),true) }}</td>
+                </tr>
+                <tr>
+                    <th>{{ _('ZIP Code') }}</th>
+                    <td>{{ order.shipping_address.zipcode|default(_('No data'),true) }}</td>
+                    <th>{{ _('City') }}</th>
+                    <td>{{ order.shipping_address.city|default(_('No data'),true) }}</td>
+                </tr>
+                <tr>
+                    <th>{{ _('Country') }}</th>
+                    <td colspan=3
+                        style="text-align: left">{{ get_locale().territories[order.shipping_address.country] }}</td>
+                </tr>
+                <tr>
+                    <th>{{ _('Cellphone Number') }}</th>
+                    <td colspan=3
+                        style="text-align: left">{{ order.shipping_address.mobile|default(_('No data'),true) }}</td>
+                </tr>
+            </table>
+        {% endif %}
+
+    </td>
+</tr>

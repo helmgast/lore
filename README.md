@@ -2,7 +2,7 @@
 Fablr is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.
 
 ## LICENSE
-This is not open source, it is proprietary. All rights reserved.
+This is proprietary software. All rights reserved.
 
 ## FRAMEWORKS
 Fablr backend is built in Python, and we use the following frameworks (plus more):
@@ -43,6 +43,13 @@ First do `git clone git@github.com:per-frojdh/raconteur.git` and cd into that di
 
 Then, decide if you want to run locally using virtualenv for python or if you want to use Docker to run a containerized application.
 
+### Frontend
+Run `npm install` to install all frontend (JS, CSS) dependencies. You need [npm](https://www.npmjs.com/) installed.
+
+Run `npm run build` to do one-time production build (which will create new versioned assets in /static/ that needs to be commited to repo)
+
+Run `npm run watch` when developing, will continuously re-build frontend assets as they change.
+
 ### Virtualenv
 *Running virtualenv manages your python dependencies in isolation from your development machine, but still needs you to manage other parts like database yourself*
 
@@ -72,4 +79,11 @@ added. If you add or change new messages to translate, see below:
 3. Run `python manage.py lang_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
 
 ### Deployment in production
-For deployment on a production server, it's recommended to use a Docker setup with `gunicon` as WSGI server and potentially `nginx` as reverse proxy and cache. This repository contain no deployment details or settings for security, see separate repository.
+For deployment on a production server, it's recommended to use a Docker setup with `gunicorn` as WSGI server and potentially `nginx` as reverse proxy and cache. This repository contain no deployment details or settings for security, see separate repository.
+
+#### Static assets
+
+To keep it simple, static assets will be served either by flasks `static` route or by `FileAssets`. To work well in production,
+ you need to have a cache in front of these - we use nginx. Setup nginx as proxy cache, and it will serve files much more efficiently (except at first request).
+ 
+ If you do not use a cache in front, you could move/copy the static assets from /static folder to a place where a more efficient web server can serve them. But this would not cover the `FileAsset` case as they need to be served from Fablr as it uses Mongonegine as the file backend, not a file system.

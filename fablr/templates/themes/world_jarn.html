@@ -1,0 +1,25 @@
+{% extends "world/world_list.html" %}
+
+{% block cssimports %}
+    {{ super() }}
+    <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/mundana.ico') }}"> -->
+    <style>
+        @font-face {
+            font-family: "Ringbearer";
+            src: url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.woff2") format("woff2"),
+            url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.woff") format("woff"),
+            url("//db.onlinewebfonts.com/t/15e72b71378aa4a8813f00f621063108.ttf") format("truetype");
+        }
+
+        .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+            font-family: 'Ringbearer', sans-serif;
+            font-weight: 900;
+            color: #333;
+        }
+
+        .page-header-hero {
+            background-size: auto;
+        }
+    </style>
+{% endblock %}

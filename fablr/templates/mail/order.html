@@ -1,14 +1,18 @@
-
 {% extends "mail/one_column_mail.html" %}
 
 {% block preview %}{% trans %}Order confirmation on helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
 
-{% trans user=user.display_name() %}<p>Thank you {{user}} for your order at helmgast.se! Please see your receipt below:</p>{% endtrans %}
+<p>{% trans user=user.display_name() %}Thank you {{user}} for your order at helmgast.se! Please see your receipt below:{% endtrans %}</p>
 
-{% include "shop/order_table.html" %}
+<table style="width: 100%">
+    {% include "shop/order_header.html" %}
+    {% include "shop/order_lines.html" %}
+    {% include "shop/order_address.html" %}
+</table>
 
-{% trans %}<p><em>You received this email as a confirmation of your purchase order at helmgast.se.
-Please read the terms and conditions of purchase here.</em></p>{% endtrans %}
+<p><em>{%- trans termslink=url_for('world.ArticlesView:get', world_='meta', id='terms_of_service', _external=true, _scheme='') -%}
+    You received this email as a confirmation of your purchase order at helmgast.se.
+    Please read the terms and conditions of purchase <a href="{{ termslink }}">here</a>.{%- endtrans -%}</em></p>
 {% endblock %}

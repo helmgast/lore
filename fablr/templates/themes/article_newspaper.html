@@ -1,0 +1,59 @@
+{% extends "world/article_list.html" %}
+
+{% block googlefonts %}{{ super() }}|Playfair+Display{% endblock %}
+
+{% block cssimports %}
+    {{ super() }}
+    <style>
+{#    @import url('https://fonts.googleapis.com/css?family=Playfair+Display');#}
+
+    .article-header {
+        font-family: 'Playfair Display', serif;
+        font-weight: 900;
+        font-size: 80px;
+        text-transform: uppercase;
+        display: inline-block;
+        line-height: 72px;
+        margin-bottom: 20px;
+    }
+
+    .article_tagline {
+        display: none;
+    }
+
+    .nav.content-menu {
+        border-color: #000;
+    }
+
+    body {
+        color: #2f2f2f;
+        background-color: #f9f7f1;
+    }
+
+{#        .article-text {#}
+{#            line-height: 1;#}
+{#            margin-top: 40px;#}
+{#            margin-left: 90px;#}
+{#            width: 50%;#}
+{#            padding: 20px 10px 20px 65px;#}
+{#            background-color: #fff;#}
+{#            background-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 59px, #abced4 59px, #abced4 61px, rgba(0, 0, 0, 0) 61px), linear-gradient(#e1e1e1 0.1em, rgba(0, 0, 0, 0) 0.1em);#}
+{#            background-size: 100% 1em;#}
+{#            font-size: 18px;#}
+{#            -moz-transform: rotate(10deg);#}
+{#            -ms-transform: rotate(10deg);#}
+{#            -webkit-transform: rotate(10deg);#}
+{#            transform: rotate(5deg);#}
+{#            -moz-box-shadow: #ccc 3px 3px 6px;#}
+{#            -webkit-box-shadow: #ccc 3px 3px 6px;#}
+{#            box-shadow: #ccc 3px 3px 6px;#}
+{#            font-family: "Annie Use Your Telescope";#}
+{#            font-weight: normal;#}
+{#            color: #777;#}
+{#        }#}
+    </style>
+{% endblock %}
+
+
+{% block content_tagline %}
+{% endblock %}

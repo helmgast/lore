@@ -1,333 +1,281 @@
-{% extends "world/world_item.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
+{% extends "world/article_list.html" if not article_theme else article_theme %}
 
-{% set article_type = article.type if article else prefill.get('type',none) %}
+{% set article_type = article.type if article else args['fields'].get('type','default') %}
 {% if article_form %}
-  {% set type_form = article_form[article_type+'data'] %}
+    {% set type_form = article_form[article_type+'data'] %}
 {% endif %}
 
-{% if op=='new' or op=='form_new' %}
-  {% set tagline = world.title %} {% set title = 'New '+article_type+' article' %}
+{% if not article %}
+    {% set tagline = world.title %}
+    {% set title = _('New %(type)s article', type=''+article_type) %}
 {% else %}
-  {% set tagline = article.type_name() %} {% set title = article.title %}
+    {% set tagline = article.get_type_display() %}
+    {% set title = article.title %}
 {% endif %}
 
-{% if request.args.has_key('markdown') %}
- {% set markdown=true %}
-{% endif %}
 
-{% block sidebar %}
-{{super()}}
-{% include 'includes/social_icons.html' %}
+{#{% block header_class %}{% endblock %}#}
+
+
+{% block breadcrumbs %}
+    {% if world.slug=='meta' %}
+        {% if article_type=='blogpost' %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
+            ('', title)
+            ) }}
+        {% else %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            ('', title)
+            ) }}
+        {% endif %}
+    {% else %}
+        {% if article_type=='blogpost' %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.WorldsView:index'), _('Game Worlds')),
+            (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+            (url_for('world.ArticlesView:blog', world_=world.slug), _('Blog')),
+            ('', title)
+            ) }}
+        {% else %}
+            {{ MACRO.BREADCRUMBS(
+            (url_for('world.ArticlesView:publisher_home'), _('Home')),
+            (url_for('world.WorldsView:index'), _('Game Worlds')),
+            (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+            ('', title)
+            ) }}
+        {% endif %}
+    {% endif %}
 {% endblock %}
+
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('articleform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', id=article.slug, world_=world.slug)) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('articleform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.ArticlesView:get', id=article.slug, world_=world.slug)) }}
+    {% else %}
+        {# We are viewing #}
+        {% include "world/new_article_menu.html" %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit', res=article)) %}
+            {{ MACRO.EDIT_BUTTON(url_for('world.ArticlesView:get', id=article.slug,
+            world_=world.slug, intent='patch')) }}
+            {{ MACRO.DELETE_BUTTON() }}
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block header_class -%}
+    {% if article and article.get_header_image %}page-header-hero{% endif %}
+{%- endblock %}
 
 {% block cssimports %}
-{{ super() }}
-<link href="http://fonts.googleapis.com/css?family=Gentium+Book+Basic:400,400italic,700,700italic" rel="stylesheet" type="text/css">
-<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5/leaflet.css" />
-{% endblock %}
-
-{% block jsimports %}{{super()}}
-<script src="http://cdn.leafletjs.com/leaflet-0.5/leaflet.js"></script>
-{% endblock %}
-
-{% block middle %}
-
-{#### FORM ####}
-{% if article_form %}
-
-<form role="form" id='articleform' method="post" action="{{ article_form.action_url }}">
-  {{ article_form.csrf_token }}
-  {{ article_form.title(style="display:none;") }}
-  <h1 class="article_header">
-    <span id="header" class="contenteditable" contenteditable="true">{{ title }}</span>
-        <small>{{ tagline }}</small>
-  </h1>
-<ul class="nav nav-tabs content-menu">
-  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
-  <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
-  <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
-  <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
-  {% include 'world/article_action_menu.html' %}
-  {% if not article or not article.is_published() %}
-  <li class="articlesave"><button type="submit" name="status" value="published" class="btn btn-sm btn-primary">{{ _('Save and publish') }}</button></li>
-  {% endif %}
-  <li class="articlesave"><button type="submit" class="btn btn-sm btn-primary">{{ _('Save changes') }}</button></li>
-</ul>
-
-<div class="tab-content content-panel">
-  <div class="tab-pane fade" id="focus"></div>
-
-  <div class="tab-pane panel panel-default fade form-horizontal" id="metadata">
-  {% for field in type_form %}
-    {{ MACRO.FORM_FIELD_COLS(field, "col-sm-2", "col-sm-2") }}
-  {% endfor %}
-  </div>
-
-  <div class="tab-pane panel panel-default fade row" id="relations">
-  {% if article %}
-    <div class="col-xs-7">
-    <ul data-editable="relations" class="list-group relations" data-remote="{{url_for('.articlerelation_form_new', world=world.slug, article=article.slug)}}">
-      {% for articlerelation_form in article_form.relations %}
-        {% include "world/articlerelation_item.html" %}
-      {% endfor %}
-    </ul>
-    </div>
-  {% endif %}
-  </div>
-
-  <div class="tab-pane panel panel-default fade row" id="details">
-    <div class="col-xs-6">
-      {{ MACRO.FORM_FIELD(article_form.description, controlclass=' fixed-width')}}
-      {{ MACRO.FORM_FIELD(article_form.featured) }}
-    </div>
-    <div class="col-xs-6">
-      {{ MACRO.FORM_FIELD(article_form.status) }}
-      {{ MACRO.FORM_FIELD(article_form.created_date) }}
-      {{ MACRO.FORM_FIELD(article_form.type) }}
-      {{ MACRO.FORM_FIELD(article_form.world) }}
-      <input type="hidden" name="feature_image" id="feature_image" value="" />
-      {% if g.user.id %}
-        <input type="hidden" name="creator" value="{{g.user.id}}" />
-      {% endif %}
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col-md-9 article_text">
-    {{ article_form.content(**{'rows':article_form.content.data|rows, 'class':'hide' if not markdown else '' }) }}
-    {% if not markdown %}
-    <div id="content-editor" class="content{{' '}}" contenteditable="true"><p class="hide" contenteditable="false"></p>
-    {{ article_form.content.data|markdown if article_form.content.data else '<p><br></p>'|safe}}
-    </div>
+    {{ super() }}
+    {% if article and article.get_header_image %}
+    <style>
+        .page-header-hero {
+            background-image: url({{ url_for('image', slug = article.get_header_image.slug)}})
+        }
+    </style>
     {% endif %}
-    <span id="hinter"></span>
-    <div class="bubble-bar" id="text-options">
-      <div class="options">
-        <span class="no-overflow">
-          <span class="lengthen ui-inputs">
-            <button type="button" class="url"><span class="glyphicon glyphicon-link"></span></button>
-            <input class="url-input" type="text" placeholder="{{ _('Type or Paste URL here') }}"/>
-            <button type="button" class="bold">b</button>
-            <button type="button" class="italic">i</button>
-            <button type="button" class="quote">&rdquo;</button>
-          </span>
-        </span>
-      </div>
-    </div>
-    <div class="bubble-bar" id="margin-options">
-      <div class="options ui-inputs">
-            <a href="#" data-target=""><span class="glyphicon glyphicon-picture"></span></a>
-      </div>
-    </div>
+{% endblock %}
 
-   </div>
-  <div class="col-md-3 article_comment">
-    <!--Example comment-->
-  </div>
-</div>
-</form>
+
+{% block opengraph %}
+    {{ MACRO.OG_ARTICLE(article) }}
+{% endblock %}
+
+{% block header %}
+    {% if args.get('intent', None) %}
+        <form id="articleform" method="post" action="{{ action_url }}">
+        {{ article_form.csrf_token }}
+    {% endif %}
+    {{ super() }}
+{% endblock %}
+
+{% block post_content %}
+    {% if args.get('intent', None) %}
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block header_title %}
+    {% if args.get('intent', None) %}
+        <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article-header">
+            {{ article_form.title(autocomplete='off', class="form-control", placeholder=title) }}
+        </h1>
+        {% if article_form.title.errors %}
+            <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
+        {% endif %}
+    {%- else -%}
+        {{ super() }}
+    {% endif %}
+{% endblock %}
 
 {#### PAGE ####}
-{%- else -%}
-<h1 class="article_header">{{ title }}
-    <small>{{ tagline }}</small>
-</h1>
-<ul class="nav nav-tabs content-menu">
-  {% set articlegroups = article.articlegroups|list %}
-  <li class="content-menu-info" title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span> {% if article.creator %}{% if g.feature and g.feature["social"] %}<a href="{{url_for('social.user_view', user=article.creator.identifier())}}">{{article.creator}}</a>{% else %}{{article.creator}}{%endif%}{% else %}System{%endif%}</li>
-  <li class="content-menu-info" title="{{ _('Created') }}"><span class="glyphicon glyphicon-calendar"></span> {{article.created_date.strftime('%Y-%m-%d') }}</li>
-  {% if articlegroups or g.user %}
-  <li class="content-menu-info" title="{{ _('Visibility') }}"><span class="glyphicon glyphicon-lock"></span> {{ articlegroups|join(',') if articlegroups else 'All' }}</li>
-  {% endif %}
-  {% if g.user %}
-  <li class="content-menu-info" title="{{ _('Relations to other articles') }}"><i class="glyphicon glyphicon-export"></i> {{ article.relations|length }}</li>
-  <li class="content-menu-info" title="{{ _('Other articles relation to this article') }}"><i class="glyphicon glyphicon-import"></i> {{ 0 }}</li>
-  {% endif %}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit')) %}
-  {% include 'world/article_action_menu.html' %}
-  {% endcall %}
-  {% if not article.is_published() %}
-  <li class="content-menu-info" title="{{ _('Unpublished') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('Unpublished') }}</li>
-  {% endif %}
-</ul>
 
-<ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
-{%- if article.type=='place' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Lon') }}</span>{{article.placedata.coordinate_x}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Lat') }}</span>{{article.placedata.coordinate_y}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.placedata.location_type }}</li>
-{%- elif article.type=='image' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Type') }}</span>{{article.imagedata.mime_type}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a href="{{article.imagedata.url}}">{{article.imagedata.url|truncate(30, true)}}</a></li>
-{%- elif article.type=='event' -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Started') }}</span>{{article.eventdata.from_date}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Ended') }}</span>{{article.eventdata.to_date}}</li>
-{%- elif article.type=='person' and article.persondata -%}
-  <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{article.persondata.born}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{article.persondata.died}}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Gender') }}</span>{{article.persondata.gender_name() }}</li>
-  <li><span class="nav-header" style="display:inline">{{ _('Occupation') }}</span>{{article.persondata.occupation}}</li>
-{%- endif -%}
-</ul>
-</div>
+{% block content_title %}{{ title }}{% endblock %}
+{% block content_tagline %}{% endblock %}
 
-<div class="row">
-  <div class="col-md-9 article_text">
-    {{ article.content|markdown if article.content else _("Content")}}
-  </div>
-  <div class="col-md-3 article_comment">
-    <!--Example comment-->
-  </div>
-</div>
+{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
+{% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}
 
-{% if article.type == 'blogpost' %}
-<div id="disqus_thread"></div>
-<script type="text/javascript">
-/* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-var disqus_shortname = 'fablr'; // required: replace example with your forum shortname
+{% block intro %}
+    {% if not args.get('intent', None) %}
+        <ul class="nav imprint">
+            <li title="{{ _('Article type') }}"><span
+                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
+                <a>{{ article.get_type_display() }}</a>
+            </li>
+            {% if article.world %}
+            <li title="{{ _('World') }}"><span class="glyphicon glyphicon-globe }}"></span>
+                <a>{{ article.world }}</a>
+            </li>
+            {% endif %}
+            {% set articlegroups = article.editors + article.readers %}
+            <li title="{{ _('Creator') }}"><span class="glyphicon glyphicon-user"></span>
+                {%- if article.creator %}
+                    {% if access_policy['user'].authorize('view', res=article.creator) %}
+                        <a href="{{ url_for('social.UsersView:get', id=article.creator.identifier()) }}">{{ article.creator }}</a>
+                    {% else %}
+                        <a>{{ article.creator }}</a>
+                    {% endif %}
+                {%- else -%}<a>{{ _('Admin') }}</a>
+                {%- endif -%}</li>
+            <li title="{{ _('Created') }}"><span
+                    class="glyphicon glyphicon-calendar"></span>
+                <a>{{ article.created_date|dateformat(format='short') }}</a>
+            </li>
+            {% if articlegroups or g.user %}
+                <li title="{{ _('Visibility') }}"><span
+                        class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
+                    <a>{{ article.get_status_display() }}</a>
+                    <small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
+                </li>
+            {% endif %}
+            {% if article.tags %}
+                <li title="{{ _('Tags') }}"><span
+                        class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}"><span
+                            class="badge">{{ t }}</span></a>
+                {%- endfor -%}</li>
+            {% endif %}
+            <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
+        </ul>
+    {% endif %}
+{% endblock %}
 
-/* * * DON'T EDIT BELOW THIS LINE * * */
-(function() {
-var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-})();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-{% endif %}
+{% block content %}
 
-{% endif %} {% endblock %}
+    {% if args.get('intent', None) %}
+        <article>
+            {{ article_form.content(class="form-control content-editor", placeholder=_('Start writing here!')) }}
+            <small class="textarea-hint">{% trans %}You can format using{% endtrans %} <a
+                    href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
+        </article>
+    {% else %}
+        <article class="article-text">
+            {{ article.content|default(_('No data'), true)|markdown }}
+            {% if article.type == 'blogpost' %}
+                {% include 'includes/disqus.html' %}
+            {% endif %}
+        </article>
 
-{% block final %}
-{% if article %}
-<div class="modal fade bs-modal-sm" id="deletemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">{{ _('Are you sure you want to delete') }} {{ article.title }}?</h4>
-      </div>
-      <div class="modal-body">
-        <form id='deleteform' method="post" action="{{ url_for('.article_delete', world=world.slug, article=article.slug, op="DELETE")}}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-          <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
-          <button type="submit" class="btn btn-primary">{{ _('Yes') }}</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
-{{super()}}
+    {% endif %}
+    {% if args.get('intent', None) %}
+        <ul class="action-buttons action-buttons-footer">
+            {{ self.actionbar() }}
+        </ul>
+    {% endif %}
+{% endblock %}
 
-<script>
-{% if article_form %}
-  // Load required scripts.
-  {% if not markdown %}
-  head.js(
-    "{{ url_for('static', filename='js/utils.js') }}",
-    "{{ url_for('static', filename='js/editor.js') }}",
-        function(){
-          // Initiate ZenPen
-          editor.init();
-        }
-      );
-  {% endif %}
+{% block asides %}
+    {% if args.get('intent', None) %}
+        <div class="article-aside form-horizontal">
+            {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
+      <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
+      <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
+      <li><a href="#details" data-toggle="tab"><span class="glyphicon glyphicon-list-alt"></span> {{ _('Details') }}</a></li>
+    #}
+            {#            {% if not article or not article.is_published() %}#}
+            {#                <button type="submit" name="status" value="published"#}
+            {#                        class="btn btn-sm btn-success btn-block">{{ _('Save and publish') }}</button>#}
+            {#            {% endif %}#}
+            {##}
+            {#            <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>#}
 
-  var imageselect_options = {
-    csrf_token: "{{ csrf_token() }}",
-    image_list_url: "{{url_for('assets.imageasset_list', order_by='-created_date', per_page='all', out='fragment')}}",
-    image_upload_url: "{{url_for('assets.imageasset_new', out='json')}}"
-  }
+            {{ MACRO.FORM_FIELD(article_form.type, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
 
-  $('#content-editor a.lightbox').imageselect(imageselect_options);
 
-  $('.bubble-bar .ui-inputs a').click(function(e) {
-    var $block = $(editor.getActiveBlock());
-    var $existing_insert = $('#insert_image_asset');
-    if ($existing_insert.length) {
-        $existing_insert.next('.image-selector').remove();
-        $existing_insert.remove();
-    }
-    var $a = $('<a id="insert_image_asset" class="lightbox"><img src=""></a>');
-    $block.before($a);
-    $a.imageselect(imageselect_options);
-  })
+            {{ MACRO.FORM_FIELD(article_form.status, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
 
-  {% if not markdown %}
-  $('#articleform').one('change', function(e) {
-    console.log('Form has changed')
-    $(window).on('beforeunload', function() {
-      return "{{_('You have unsaved changes')}}";
-    });
-  })
+            {{ MACRO.FORM_FIELD(article_form.created_date, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm flatpickr-datetime',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
-	$(document).ready(
-			function() {
-        $ta = $('#content')
-        $ta.parents('form').on('submit', function(e) {
-              $(window).off('beforeunload') // remove warning
-              $('#content-editor .image-selector').replaceWith(function() {
-                return $(this).find('.image-link')
-              })
-              var text = editor.exportText()
-              $ta.val(text);
-              var image_match = text.match(/!\[.*?\]\((.*?\/)+(.*)\)/)
-              if (image_match.length > 2 && image_match[2]) {
-                $('#feature_image').val(image_match[2])
-              }
-            }
-        );
-        //----------------------------------
-        $('#header')
-          .blur(function(e) {
-            $('#title').val(this.textContent); })
-          .on('paste', function(e) {
-            $this = $(this)
-            setTimeout(function() {
-              $this.html($this.text()); // clean the html
-            }, 100);})
-          .focus();
+            {{ MACRO.FORM_FIELD(article_form.publisher, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.world, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.tags, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize-tags col-sm-12') }}
 
-        /*
-        var latlng = [parseFloat($('#placedata-coordinate_x').val()), parseFloat($('#placedata-coordinate_y').val())]
+            {{ MACRO.FORM_FIELD(article_form.editors, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12',
+                controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}
 
-        var map = L.map('map', {
-          center: [-77, 660],
-          zoom: 1,
-          minZoom: 0,
-          maxZoom: 1
-        });
-        L.tileLayer('//googledrive.com/host/0Bybs2FIAp3ZTUFd5RHgwS0FCU3M/map/mundana_stor_karta_{z}_{x}_{y}.png', {
-          attribution: 'Map data &copy; Neogames',
-        minZoom: 0,
-        maxZoom: 1,
-        noWrap: true,
-        continuousWorld: true,
-        }).addTo(map);
+            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-6', controlwrap='col-sm-6') }}
 
-        var marker
-        if (!isNaN(latlng[0]) && !isNaN(latlng[1])) {
-          marker = L.marker(latlng).addTo(map);
-          map.panTo(latlng);
-        }
+            {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
+               url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
 
-        function onMapClick(e) {
-          $('#placedata-coordinate_x').val(e.latlng.lat);
-          $('#placedata-coordinate_y').val(e.latlng.lng);
-          if(!marker) {
-            marker = L.marker(e.latlng).addTo(map);
-          } else {
-            marker.setLatLng(e.latlng);
-          }
-        }
+            <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">{{_('Help on format and image sizes')}}</a></em></small>
+            {% if g.user.id %}
+                <input type="hidden" name="creator" value="{{ g.user.id }}"/>
+            {% endif %}
 
-        map.on('click', onMapClick);
-        */
-			});
-      {% endif %}
-{% endif %}
-</script>
+        </div>
+    {% else %}
+        <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
+            {%- if article.type=='place' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Lon') }}</span>{{ article.placedata.coordinate_x }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Lat') }}</span>{{ article.placedata.coordinate_y }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Type') }}</span>{{ article.placedata.location_type }}</li>
+            {%- elif article.type=='image' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Type') }}</span>{{ article.imagedata.mime_type }}</li>
+                <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a
+                        href="{{ article.imagedata.url }}">{{ article.imagedata.url|truncate(30, true) }}</a></li>
+            {%- elif article.type=='event' -%}
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Started') }}</span>{{ article.eventdata.from_date }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Ended') }}</span>{{ article.eventdata.to_date }}</li>
+            {%- elif article.type=='person' and article.persondata -%}
+                <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{ article.persondata.born }}
+                </li>
+                <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{ article.persondata.died }}
+                </li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Gender') }}</span>{{ article.persondata.gender_name() }}</li>
+                <li><span class="nav-header"
+                          style="display:inline">{{ _('Occupation') }}</span>{{ article.persondata.occupation }}</li>
+            {%- endif -%}
+        </ul>
+    {% endif %}
+{% endblock %}
+
+{% block final_html %}
+    {{ super() }}
+    {% if article %}
+        {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
+    {% endif %}
 {% endblock %}

@@ -5,13 +5,11 @@
 *.pot
 *.sublime*
 config.py
-/node_modules
-/front
-/static
+front/
 /.idea
 /.settings
 /.project
 /.pydevproject
 /Raconteur.egg-info
 /venv
-
+/node_modules

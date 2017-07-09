@@ -1,0 +1,96 @@
+
+<!-- Items -->
+<tr>
+    <td>
+
+        <h3>{{ _('Products') }}</h3>
+        <table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if args and args['view'] == 'cart' and order_form and order_form.order_lines }}>
+            <tr>
+                <th colspan=2></th>
+                <th style="text-align:left; vertical-align:bottom">{{ _('Quantity') }}</th>
+                <th style="text-align:left; vertical-align:bottom">{{ _('Price') }}</th>
+            </tr>
+            {% for line in order.order_lines %}
+                {% if line.product.status != 'hidden' %}
+                    <tr class="product">
+                        <td>{% if line.product.get_feature_image %}
+                            <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}"><img
+                                    class="product-image"
+                                    src="{{ url_for('image_thumb', slug=line.product.get_feature_image.slug, _external=true, _scheme='') }}"></a>{% endif %}
+                        </td>
+                        <td>
+                            <h3>
+                                <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">{{ line.product.title }}</a>
+                                <small>{{ line.product.get_field_display('type') }}</small>
+                            </h3>
+                            <p>{{ line.product.description|markdown }}</p>
+                            {% if order and order.is_paid_or_shipped() %}
+                                {% if line.product.downloadable_files %}
+                                    <div><strong>{{ _('Downloadable files') }}</strong>
+                                        {% for file_asset in line.product.downloadable_files %}
+                                            <div>
+                                                <a href="{{ url_for('download', fileasset=file_asset.slug, _external=true, _scheme='') }}"><span
+                                                        class="glyphicon glyphicon-download"></span>
+                                                    <strong>{{ file_asset }}</strong>
+                                                </a>{% if file_asset.description %}:
+                                                {{ file_asset.description|markdown }}{% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {% if order_form and (args and args['view']=='pay') %}
+                                {% if order_form.order_lines[loop.index0].comment %}
+                                    <div class="form-group">
+                                        <label class="control-label clickable-label " for="order_lines-{{ loop.index0 }}-comment">
+                                            {% if line.product.comment_instruction %}{{ line.product.comment_instruction }}
+                                            {% else %}
+                                                {{ _('Add comment') }}
+                                            {% endif %}
+                                        <span class="glyphicon glyphicon-triangle-bottom"></span></label>
+                                            {{ order_form.order_lines[loop.index0].comment(class="form-control discrete-input") }}
+                                    </div>
+                                {% endif %}
+                            {% elif line.comment %}
+                                {{ _('Name')+': '+line.comment }}
+                            {% endif %}
+                        </td>
+                        <td class="product-price">
+                            {% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
+                                {{ order_form.order_lines[loop.index0].quantity(type="number", min="0", max="100", style="width: 40px", class="product-quantity") }}
+                            {% else %}
+                                {{ line.quantity }}
+                            {% endif %}
+                        </td>
+                        <td class="product-price">{{ (line.product.price if order.status=='cart' else line.price)|currencyformat(order.currency.upper()) }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            {% if order.status != 'cart' or (args and args['view'] == 'pay') %}
+            <tr>
+                <td colspan=2 style="text-align:right">
+                    <small>{{ _('Shipping') if not order.shipping else order.shipping.title }}</small>
+                </td>
+                <td></td>
+                <td class="product-price">
+                    <small>{{ (order.shipping.price if order.shipping else 0)|currencyformat(order.currency.upper()) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=2 style="border-top: none; text-align:right">
+                    <small>{{ _('Including tax') }}</small>
+                </td>
+                <td></td>
+                <td class="product-price">
+                    <small>{{ order.total_tax|currencyformat(order.currency.upper()) }}</small>
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td colspan=2 style="border-top: none; text-align:right">{{ _('Total') }}</td>
+                <td></td>
+                <td class="product-price">{{ order.total_price|currencyformat(order.currency.upper()) }}</td>
+            </tr>
+        </table>
+    </td>
+</tr>

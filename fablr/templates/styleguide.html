@@ -1,0 +1,235 @@
+{% extends root_template if not publisher_theme else publisher_theme %}
+{% import 'includes/macros.html' as MACRO %}
+
+{#{% block navbar %}#}
+{% block publisher_brand %}
+    <a class="navbar-brand navbar-collapse"
+       href="#">
+        <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
+             src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
+    </a>
+{% endblock publisher_brand %}
+
+{% block navbar_left %}
+    <li>
+        <a href="{{ url_for('world.PublishersView:index') }}">
+            <span class="glyphicon glyphicon-asterisk"></span> Navleft1
+        </a>
+    </li>
+    <li class="active">
+        <a href="{{ url_for('world.PublishersView:index') }}">
+            <span class="glyphicon glyphicon-asterisk"></span> Navleft2
+        </a>
+    </li>
+{% endblock navbar_left %}
+
+{% block navbar_right %}
+    <li>
+        <a href="#"> Navright1</a>
+    </li>
+    <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+           aria-haspopup="true" aria-expanded="false"><span
+                class="glyphicon glyphicon-user"></span> Dropdown <span
+                class="caret"></span></a>
+        <ul class="dropdown-menu">
+            <li>
+                <a href="#"> {{ _('Profile') }}</a>
+            </li>
+            <li><a class="{{ privileged }}"
+                   href="#">{{ _('My orders') }}</a>
+            </li>
+
+            <li role="separator" class="divider"></li>
+            <li><a class="privileged"
+                   href="#">{{ _('Files') }}</a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">{{ _('Log Out') }}</a></li>
+        </ul>
+    </li>
+{% endblock navbar_right %}
+
+{#{% endblock navbar %}#}
+
+{% block header_class %}page-header-hero{% endblock %}
+
+{#{% block header %}#}
+{% block content_title %}Content title {% endblock %}
+{% block content_tagline %}Content tagline, as it may be {% endblock %}
+{#{% endblock header %}#}
+
+{#{% block main %}#}
+
+{% block subnavbar %}
+    <li><a class="privileged" href="#"><span
+            class="glyphicon glyphicon-globe"></span> Subnav1</a></li>
+    <li><a class="" href="#"><span
+            class="glyphicon glyphicon-globe"></span> Subnav2</a></li>
+    <li><a class="" href="#"><span
+            class="glyphicon glyphicon-globe"></span> Subnav3</a></li>
+{% endblock %}
+
+{% block breadcrumbs -%}{{ MACRO.BREADCRUMBS(
+    ('#', 'Publisher'),
+    ('#', 'World'),
+    ('#', 'Article'),
+    )}}{%- endblock %}
+
+
+{% block actionbar %}
+        <li><a class="btn btn-info" href="#"><span class="glyphicon glyphicon-plus-sign"></span> New</a></li>
+        <li><a class="btn btn-success" href="#"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+        <li><a class="btn btn-danger" href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+{% endblock actionbar %}
+
+{% block home %}
+    Home
+{% endblock home %}
+
+{% block intro %}
+    <div class="well">Intro</div>
+{% endblock %}
+
+{% block content %}
+<article class="article-text">
+{% filter markdown %}
+On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
+the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are
+bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same
+as saying through shrinking from toil and pain.
+
+In a free hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best,
+every pleasure is to be welcomed and every pain avoided. But in certain circumstances and owing to the claims of
+duty or the obligations of business it will frequently occur that pleasures have to be repudiated and annoyances
+accepted. The wise man therefore always holds in these matters to this principle of selection: he rejects pleasures
+to secure other greater pleasures, or else he endures pains to avoid worse pains.
+{% endfilter %}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+{%- endcall -%}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+> These cases are perfectly simple and easy to distinguish.
+{%- endcall -%}
+
+
+{%- call MACRO.RENDER_MD_EXAMPLE("Linking") -%}
+[Link to something](http://google.com)
+{%- endcall -%}
+
+{%- call MACRO.RENDER_MD_EXAMPLE("Lists") -%}
+- A
+- B
+- C
+{%- endcall -%}
+
+<h2 class="anchor" id="images">Images</h2>
+{% filter markdown %}
+There are four typical ways an image can be shown on Fablr.
+
+### Wide
+An image that covers the full page width. Used for page headers and eye catching images in the middle
+of long articles. Text may be superimposed on these images in e.g. page headers, so avoid using images with text
+or control the display of text on top using custom CSS.
+
+Best uploaded in sizes of 2400px wide, 400px height (or more). By default, wide images are not scaled.
+It means that if the viewport is less than 2400px, the left and right edges will start to be hidden. The height of the
+viewport will be 500px or less. If the image is higher than 400px, it will create a parallax effect revealing
+more of the top and bottom edges as you scroll. The only area guaranteed to be visible on all devices therefore is in a
+square of roughly 400px wide and 400px high in the center.
+{% endfilter %}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+
+- gallery-wide
+- ![This is the a wide image](http://placehold.it/2400x600.png)
+
+{%- endcall -%}
+
+{% filter markdown %}
+### Center
+An image that will be shown inline with text paragraphs, and will therefore be scaled up or down
+to whatever the width of the text paragraph is. The best original size is 1600px wide, and any height.
+{% endfilter %}
+
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+- gallery-center
+- ![This is centered image](http://placehold.it/1600x1200.png)
+{%- endcall -%}
+
+{%- call MACRO.RENDER_MD_EXAMPLE() -%}
+- gallery-card
+- ![This is the card image, a good place to have a longer description here](http://placehold.it/800x800.png)
+{%- endcall -%}
+{% filter markdown %}
+### Card
+An image that will be shown as a playing card or portrait, either on the side of an article (with text
+flowing around it) or in listings using the card view. The image will be scaled to fit within the card size, which is
+usually 250px wide. However, the best original size for images intended for cards is 800px wide, and between 800px to
+1120px high, to ensure that the aspect ratio is between 1:1 and 2.5:3.5. Currently, a playing card is fixed to the
+container size of width: 258px and height: 363px.
+{% endfilter %}
+
+
+{% filter markdown %}
+
+### Icon
+An image used for small displays. The best original size is 200px wide and high or more, and aspect ratio should be 1:1.
+
+#### Notes about images
+
+* An article with attached images will automatically use the widest one for header image, and the tallest one for card image.
+It means you don't have to create all these different images, you could use the same image for all, but it would look less
+nice.
+* An upcoming feature will resize images in sizes from 2400px down to 400px wide in steps of 400px, so that
+we only need to send the image with the right amount of pixels to the device. This will be handled automatically and you
+don't need to worry.
+* Image formats should be PNG or JPG when uploaded.
+* In articles images can be grouped together in lists to form a gallery. The gallery will still be in the format of wide,
+center or card, but the images will be scaled to fit as a masonry within.
+
+
+{% endfilter %}
+
+<hr>
+
+{% filter markdown %}
+"On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
+the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are
+bound to ensue; and equal blame belongs to those who fail in their duty through weakness of will, which is the same
+as saying through shrinking from toil and pain. These cases are perfectly simple and easy to distinguish. In a free
+hour, when our power of choice is untrammelled and when nothing prevents our being able to do what we like best,
+every pleasure is to be welcomed and every pain avoided."
+
+[Link to video](http://www.youtube.com/watch?v=zqnh_YJBvOI)
+
+File links will automatically add an icon showing what type file it is:
+
+Here is a file: [File to download](http://test.com/nosuchfile.pdf)
+
+And another: [File to download](http://test.com/nosuchfile.zip)
+{% endfilter %}
+
+</article>
+
+<hr>
+
+
+
+{% endblock content %}
+
+{% block asides %}
+    <div class="well">Asides</div>
+{% endblock asides %}
+
+{#{% endblock main %}#}
+
+{% block footer %}
+    Footer
+{% endblock footer %}

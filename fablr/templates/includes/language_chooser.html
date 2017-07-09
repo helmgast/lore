@@ -1,0 +1,14 @@
+{% if g.available_locales|length > 1 %}
+<div class="dropup">
+    <button class="btn btn-primary btn-xs" type="button" id="languageChooser" data-toggle="dropdown" aria-haspopup="true"
+            aria-expanded="true">
+        {{ get_locale().language_name.capitalize() }} <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="languageChooser">
+        {% for locale in g.available_locales %}
+            <li><a class="btn-xs" href="{{ current_url(locale=locale) }}">{{ g.available_locales[locale] }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+

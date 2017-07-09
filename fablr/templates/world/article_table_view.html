@@ -1,0 +1,28 @@
+<table class="table table-hover">
+    <thead>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'creator') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created_date') }}</th>
+    </thead>
+    <tbody>
+
+    {% for article in articles %}
+        <tr {{ ' class=status-unpublished' if not article.is_published() }}>
+            <td>
+                <span title="{{ article.get_status_display() }}"
+                      class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>&nbsp;&nbsp;
+                <a href="{{ url_for('world.ArticlesView:get', id=article.slug, world_=world.slug) }}">{{ article.title }}</a>
+            </td>
+            <td><span
+                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span> {{ article.get_type_display() }}
+            </td>
+            <td>{{ article.world|default('Meta', true) }}</td>
+            <td>{{ article.creator if article.creator else _('Admin') }}</td>
+            <td>{{ article.created_date|datetimeformat(format='short') }}</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>

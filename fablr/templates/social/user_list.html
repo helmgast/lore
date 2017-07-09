@@ -2,7 +2,81 @@
 
 {% block content_title %}{{ _('All gamers') }}{% endblock %}
 
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.homepage'), _('Home')),
+        (url_for('social.UsersView:index'), _('Users'))
+    ) }}{% endblock %}
+
+{% block actionbar %}
+    {% call(privileged) MACRO.IS_ADMIN() %}
+    <li role="presentation">
+        <a class="btn btn-primary" data-toggle="modal" data-target="#themodal"
+           role="menuitem" tabindex="-1" href=
+                   "{{ url_for('mail.mail_view', mail_type='invite', intent='post') }}">
+            <span class="glyphicon glyphicon-hand-right"></span> {{ _('Invite user') }}
+        </a>
+    </li>
+    {% endcall %}
+{% endblock %}
+
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
+{% block asides %}{{ super() }}
+    {% if filter_options %}
+        <div class="filter-options">
+
+        {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login'],
+        show=['card','table', 'order','page'])}}
+
+        <h5>{% trans %}By username{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['username'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By XP{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['xp'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By location{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['location'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By join date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['join_date'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By last login date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['last_login'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
-  {% include "social/user_list_component.html" %}
-  {% include "includes/pagination.html" %}
+    {% if users %}
+        {% include "social/user_list_component.html" %}
+        {% include "includes/pagination.html" %}
+    {% else %}
+        <h3>{{ _('No users visible!') }}</h3>
+    {% endif %}
 {% endblock %}

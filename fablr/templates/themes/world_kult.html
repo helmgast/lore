@@ -1,0 +1,125 @@
+{% extends "world/world_list.html" %}
+
+{% block googlefonts %}{{ super() }}|Enriqueta{% endblock %}
+
+{% block cssimports %}
+    {{ super() }}
+    <style type="text/css">
+
+        body, .content {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .content {
+            font-family: 'Enriqueta', serif;
+        }
+
+        .page-header-hero {
+            background-image: url({{ url_for('static', filename='img/themes/kultlogo2-min.png') }});
+            background-size: 90%;
+            background-position: center 100px;
+        }
+
+        .page-header-hero h1 {
+            display: none; /* Hide title display */
+        }
+
+        article {
+            font-size: 16px;
+            font-family: 'Enriqueta', serif;
+            text-align: justify;
+            line-height: 22px;
+        }
+
+        strong, a, h1, h2, h3, h4, h5, th, label {
+            color: #d00;
+        }
+
+        blockquote {
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 16px;
+        }
+
+        blockquote p {
+            color: #eee;
+            /*font-style:italic;*/
+        }
+
+    </style>
+{#    <link href="//cdn-images.mailchimp.com/embedcode/slim-081711.css" rel="stylesheet" type="text/css">#}
+{#    <style type="text/css">#}
+{#        #mc_embed_signup {#}
+{#            clear: left;#}
+{#            width: 600px;#}
+{#            margin-left: auto;#}
+{#            margin-right: auto;#}
+{#        }#}
+{#    </style>#}
+{% endblock %}
+
+{% block header_class %}page-header-hero{% endblock %}
+
+
+{#{% block header %}#}
+{#    {% block hero_box %}#}
+{#        <img src="{{ url_for('static', filename='img/themes/kultlogo2-min.png') }}" width="100%" alt="the game logotype"/>#}
+{#        <br><br>#}
+{#        <div class="mainbody"><h1 style="text-align:center;">KULT: DIVINITY LOST ANNOUNCED</h1>#}
+{#            <h2><em> Arrives in 2016 – kickstarter launches in February! </em></h2>#}
+{#        </div>#}
+{#        <div class="mainbody"><img src="{{ url_for('static', filename='img/themes/angel-min.png') }}" width="100%"#}
+{#                                   alt="flavour image of angel"/></div>#}
+{##}
+{##}
+{#        <!-- Begin MailChimp Signup Form -->#}
+{#        <h2><label for="mce-EMAIL">Sign-up for Kult updates / newsletter</label></h2>#}
+{#        <div id="mc_embed_signup">#}
+{#            <form id="mc-embedded-subscribe-form" action="http://kultdivinitylost.us11.list-manage.com/subscribe/post?u=c2fb63161be612fbc2330d1d1&amp;id=ad4ba1c7a5"#}
+{#                  method="post" name="mc-embedded-subscribe-form" class="validate"#}
+{#                  style="padding-right: 3%;" target="_blank" novalidate>#}
+{#                <div id="mc_embed_signup_scroll">#}
+{##}
+{#                    <input type="submit" value="Signup" name="subscribe" id="mc-embedded-subscribe" class="button"#}
+{#                           style="background-color: #d00; float: right;">#}
+{#                    <input type="email" value="" name="EMAIL" class="email" id="mce-EMAIL"#}
+{#                           placeholder="Your email address" required>#}
+{#                    <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->#}
+{#                    <div style="position: absolute; left: -5000px;"><input type="text"#}
+{#                                                                           name="b_c2fb63161be612fbc2330d1d1_ad4ba1c7a5"#}
+{#                                                                           tabindex="-1" value=""></div>#}
+{#                    <div class="clear"></div>#}
+{#                </div>#}
+{#            </form>#}
+{#        </div>#}
+{#        <!--End mc_embed_signup-->#}
+{##}
+{#        <h2>For further information</h2>#}
+{#        <div class="center"><p><a target="_blank" href="https://www.facebook.com/kultdivinitylost"><i#}
+{#                class="fa fa-facebook-official">&nbsp;&nbsp;facebook.com/kultdivinitylost</i>#}
+{#        </a>&nbsp;&nbsp;&nbsp;&nbsp; <a href="mailto:info@helmgast.se"><i class="fa fa-envelope-o">&nbsp;&nbsp;</i>info@helmgast.se</a>#}
+{#        </p><br></div>#}
+{#    {% endblock hero_box %}#}
+{#{% endblock header %}#}
+{##}
+{##}
+{#{% block content %}#}
+{#    <div class="mainbody">#}
+{#        <div class="breakingline">#}
+{#            <br><br><br><br>#}
+{#            <img src="{{ url_for('static', filename='img/themes/streck2.png') }}" width="100%"#}
+{#                 alt="line that breaks the text"/><br><br><br><br></div>#}
+{#        <p><span class="bold">Helmgast AB</span> is a renowned Swedish publisher and developer of award-winning#}
+{#            roleplaying games, such as <span class="italic">Eon, Järn, Neotech</span>, and <span#}
+{#                    class="italic">Noir</span>. The company uses crowdfunding for launching titles, and has had#}
+{#            great success with two top record-breaking Swedish campaigns (for <span class="italic">“Eon”</span> and#}
+{#            <span class="italic">“Järn”</span>).</p>#}
+{#        <p><span class="bold">Paradox Entertainment Inc</span>, which will be known as Cabinet Licensing after the#}
+{#            recent change in ownership, manages and develops its rights library in all forms of entertainment,#}
+{#            including the motion picture, television, gaming, publishing and toy industries. The Company’s library#}
+{#            consists of such well-known brands as <span class="italic">Conan the Barbarian, Kull of Atlantis, Solomon Kane, Kult, Mutant Chronicles and Mutant: Year Zero</span>.#}
+{#        </p><br><br>#}
+{#    </div>#}
+{#{% endblock content %}#}

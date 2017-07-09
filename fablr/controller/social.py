@@ -3,130 +3,199 @@
     ~~~~~~~~~~~~~~~~
 
     This is the controller and Flask blueprint for social features,
-    it initializes URL routes based on the Resource module and specific
-    ResourceRoutingStrategy for each related model class. This module is then
-    responsible for taking incoming URL requests, parse their parameters,
-    perform operations on the Model classes and then return responses via 
+    This module is then responsible for taking incoming URL requests, parse their parameters,
+    perform operations on the Model classes and then return responses via
     associated template files.
 
-    :copyright: (c) 2014 by Helmgast AB
+    :copyright: (c) 2016 by Helmgast AB
 """
+import logging
+from flask import abort, request, Blueprint, g, current_app
+from flask import redirect
+from flask import url_for
+from flask_babel import lazy_gettext as _
+from flask_classy import route
+from flask_mongoengine.wtf import model_form
+from mongoengine import NotUniqueError, ValidationError, Q
+from wtforms import Form
 
-from flask import abort, request, redirect, url_for, render_template, flash, Blueprint, g, current_app
-import auth
-from fablr.controller.resource import ResourceHandler, ResourceError, ResourceRoutingStrategy, RacBaseForm, RacModelConverter, \
-  ResourceAccessPolicy, Authorization, logger
-from fablr.model.user import User, Group, Member, Conversation, Message, UserStatus
-from flask.ext.mongoengine.wtf import model_form
-from wtforms import PasswordField, validators
-from flask.ext.babel import lazy_gettext as _
-
+from fablr.controller.auth import get_logged_in_user
+from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
+    filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
+from fablr.extensions import csrf
+from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
+from fablr.model.user import User, Group, Event
+from fablr.model.world import Publisher
 
 social = Blueprint('social', __name__, template_folder='../templates/social')
+logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-user_form = model_form(User, base_class=RacBaseForm, converter=RacModelConverter(), 
-  only=['username', 'realname', 'location', 'description'])
-# user_form.confirm = PasswordField(_('Repeat Password'), 
-#   [validators.Required(), validators.Length(max=40)])
-# user_form.password = PasswordField(_('New Password'), [
-#   validators.Required(),
-#   validators.EqualTo('confirm', message=_('Passwords must match')),
-#   validators.Length(max=40)])
+
+def filter_authorized():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(id=g.user.id)
+
 
 class UserAccessPolicy(ResourceAccessPolicy):
+    def is_editor(self, op, user, res):
+        if user == res:
+            return Authorization(True, _("Allowed access to %(op)s %(res)s own user profile", op=op, res=res),
+                                 privileged=True)
+        else:
+            return Authorization(False, _("Cannot access other user's user profile"))
 
-  def authorize(self, op, instance=None):
-    if op not in self.ops_levels:
-      level = self.ops_levels['_default']
-    else:
-      level = self.ops_levels[op]
-    if level=='private':
-      if g.user and instance==g.user:
-        return Authorization(True, '%s have access to do private operation %s on instance %s' % (unicode(g.user), op, instance))
-    return super(UserAccessPolicy, self).authorize(op, instance)
+    def is_reader(self, op, user, res):
+        return self.is_editor(op, user, res)
+
+FinishTourForm = model_form(User,
+                            base_class=Form,  # No CSRF on this one
+                            only=['tourdone'],
+                            converter=RacModelConverter())
 
 
-user_access = UserAccessPolicy({
-  'view':'private',
-  'edit':'private',
-  'form_edit':'private',
-  '_default':'admin'
-  }, get_owner_func=lambda user: user) # return user itself to check for owner of a user object
+class UsersView(ResourceView):
+    access_policy = UserAccessPolicy()
+    subdomain = '<pub_host>'
+    model = User
+    list_template = 'social/user_list.html'
+    list_arg_parser = filterable_fields_parser(['username', 'status', 'xp', 'location', 'join_date', 'last_login'])
+    item_template = 'social/user_item.html'
+    item_arg_parser = prefillable_fields_parser(['username', 'realname', 'location', 'description'])
+    form_class = model_form(User,
+                            base_class=RacBaseForm,
+                            only=['username', 'realname', 'location', 'description', 'images'],
+                            converter=RacModelConverter())
 
-admin_only_access = ResourceAccessPolicy({'_default':'admin'})
+    def index(self):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
 
-user_strategy = ResourceRoutingStrategy(User, 'users', 'id', form_class=user_form, access_policy=user_access)
-ResourceHandler.register_urls(social, user_strategy)
+        users = User.objects().order_by('-username')
+        r = ListResponse(UsersView, [('users', users)])
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
 
-group_strategy = ResourceRoutingStrategy(Group, 'groups', 'slug', access_policy=admin_only_access)
-ResourceHandler.register_urls(social, group_strategy)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(filter_authorized())
+        r.prepare_query()
+        return r
 
-member_strategy = ResourceRoutingStrategy(Member, 'members', None, parent_strategy=group_strategy)
+    def get(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
 
-class MemberHandler(ResourceHandler):
-  def form_new(self, r):
-    r = super(MemberHandler, self).form_new(r)
-    # Remove existing member from the choice of new user in Member form
-    current_member_ids = [m.user.id for m in r['group'].members]
-    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-    return r
+        if id == 'post':
+            r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
+        else:
+            user = User.objects(id=id).first_or_404()
+            r = ItemResponse(UsersView, [('user', user)])
+            if not getattr(g, 'user', None):
+                # Allow invited only user to see this page
+                g.user = get_logged_in_user(require_active=False)
+            r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
 
-  def form_edit(self, r):
-    r = super(MemberHandler, self).form_edit(r)
-    current_member_ids = [m.user.id for m in r['group'].members]
-    r['member_form'].user.queryset = r['member_form'].user.queryset.filter(id__nin=current_member_ids)
-    return r
+        r.events = Event.objects(user=user) if user else []
+        return r
 
-MemberHandler.register_urls(social, member_strategy)
+    def patch(self, id):
+        publisher = Publisher.objects(slug=g.pub_host).first()
+        set_lang_options(publisher)
 
-conversation_strategy = ResourceRoutingStrategy(Conversation, 'conversations', access_policy=admin_only_access)
+        user = User.objects(id=id).first_or_404()
+        r = ItemResponse(UsersView, [('user', user)], method='patch')
 
-class ConversationHandler(ResourceHandler):
-  def new(self, r):
-    if not request.form.has_key('content') or len(request.form.get('content'))==0:
-      raise ResourceError(400, 'Need to attach first message with conversation')
-    r = super(ConversationHandler, self).new(r)
-    Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-    return r
+        if not getattr(g, 'user', None):
+            # Allow invited only user to see this page
+            g.user = get_logged_in_user(require_active=False)
+        r.auth_or_abort()
+        set_theme(r, 'publisher', publisher.slug if publisher else None)
 
-  def edit(self, r):
-    r = super(ConversationHandler, self).edit(r)
-    if request.form.has_key('content') and len(request.form.get('content'))>0:
-      Message(content=request.form.get('content'), user=g.user, conversation=r['item']).save()
-    return r
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(user, request.form.keys())  # only populate selected keys
+        try:
+            r.commit()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
+        return redirect(r.args['next'] or url_for('social.UsersView:get', id=user.id))
 
-ConversationHandler.register_urls(social, conversation_strategy)
+    @route('/finish_tour', methods=['PATCH', 'GET'])
+    @csrf.exempt
+    def finish_tour(self):
+        user = g.user
+        if not user:
+            logger.warning(_("No user to finish tour for"))
+            abort(404)
 
-message_strategy = ResourceRoutingStrategy(Message, 'messages', parent_strategy=conversation_strategy)
-ResourceHandler.register_urls(social, message_strategy)
+        r = ItemResponse(UsersView, [('user', user)], method='patch', form_class=FinishTourForm)
+        r.auth_or_abort()
 
-###
-### Template filters
-###
-def is_following(from_user, to_user):
-  return from_user.is_following(to_user)
+        user.tourdone = True
+        user.save()
+        return r
 
-social.add_app_template_filter(is_following)
+    def post(self, id):
+        abort(501)  # Not implemented
 
-# Not needed?
-# @social.route('/reset-auth/')
-# @current_app.admin_required
-# def reset_auth():
-#   if g.user and g.user.admin and request.args.has_key('user_id'):
-#     user = User.objects(id=request.args.get('user_id')).get()
-#     if user:
-#       del user.password
-#       del user.facebook_auth
-#       del user.google_auth
-#       user.status = UserStatus.invited
-#       user.save()
-#       logger.info("Authentication reset for user (%s)" % user.email)
-#       return redirect(url_for('.user_view', user=user.identifier()))
+    def delete(self, id):
+        abort(501)  # Not implemented
 
-#   raise ResourceError(403)
 
-@social.route('/')
-@current_app.login_required
-def index():
-    following_messages = Message.objects(conversation=None, user__in=g.user.following).order_by('-pub_date')
-    return render_template('social/_page.html', following_message_list=following_messages)
+UsersView.register_with_access(social, 'user')
+
+
+class GroupsView(ResourceView):
+    access_policy = UserAccessPolicy()
+    model = Group
+    list_template = 'social/group_list.html'
+    list_arg_parser = filterable_fields_parser(['type', 'location', 'created', 'updated'])
+    item_template = 'social/group_item.html'
+    item_arg_parser = prefillable_fields_parser(['title', 'location', 'description'])
+    form_class = model_form(Group,
+                            base_class=RacBaseForm,
+                            exclude=['slug', 'created', 'updated'],
+                            converter=RacModelConverter())
+    def index(self):
+        groups = Group.objects().order_by('-updated')
+        r = ListResponse(GroupsView, [('groups', groups)])
+        r.auth_or_abort(res=None)
+        r.prepare_query()
+        return r
+
+    def get(self, id):
+        if id == 'post':
+            r = ItemResponse(GroupsView, [('group', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
+        else:
+            group = Group.objects(slug=id).first_or_404()
+            r = ItemResponse(GroupsView, [('group', group)])
+            r.auth_or_abort()
+
+        return r
+
+    def patch(self, id):
+        group = Group.objects(slug=id).first_or_404()
+        r = ItemResponse(GroupsView, [('group', group)], method='patch')
+        r.auth_or_abort()
+
+        if not r.validate():
+            return r, 400  # Respond with same page, including errors highlighted
+        r.form.populate_obj(group, request.form.keys())  # only populate selected keys
+        try:
+            r.commit()
+        except (NotUniqueError, ValidationError) as err:
+            return r.error_response(err)
+        return redirect(r.args['next'] or url_for('social.GroupsView:get', id=group.slug))
+
+    def post(self, id):
+        abort(501)  # Not implemented
+
+    def delete(self, id):
+        abort(501)  # Not implemented
+
+# GroupsView.register_with_access(social, 'group')
+
+social.add_url_rule('/', endpoint='social_home', redirect_to='/social/users/')

@@ -3,16 +3,15 @@ Should also work as invite mail. #}
 
 {% extends "mail/one_column_mail.html" %}
 
-{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), next=url_for('shop.order_list'), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true) %}
+{% set verification_url = url_for('auth.join', email=user.email, email_token=user.create_token(), reset=true, username=user.username, location=user.location, realname=user.realname, _external=true, _scheme='') %}
 
 {% block preview %}{% trans %}Verify your email to complete registration on helmgast.se{% endtrans %}{% endblock %}
 
 {% block content %}
-{% trans user=user.display_name(), email=user.email, auth=user.auth_type() %}
-<p>Thank you, {{user}}, for registering at Helmgast.se! You registered this email ({{email}}) and authentication method was: {{auth}}</p>
+<p>{% trans user=user.display_name(), email=user.email, auth=user.auth_type() %}Thank you, {{user}}, for registering at Helmgast.se!
+    You registered this email ({{email}}) and authentication method was: {{auth}}{% endtrans %}</p>
 
-<p>We just need to verify that you own this email, and then you can start using your account:</p>
-{% endtrans %}
+<p>{% trans %}We just need to verify that you own this email, and then you can start using your account:{% endtrans %}</p>
 <table>
     <tr>
         <td class="padding">
@@ -21,18 +20,16 @@ Should also work as invite mail. #}
     </tr>
 </table>
 
-{% trans %}
-<p>Or, paste this link into your browser: <br><a class="longtext" href="{{verification_url}}">{{verification_url}}</a><p>
-<p>As a user of Helmgast you will be able to interact with the worlds of Helmgast
-as well as purchasing Helmgast products. The platform is constantly evolving so
-we will be sending you updates by email whenever major changes have happened.</p>
-<p><strong>Many thanks for your support!</strong></p>
 
-<p><em>If you did not sign up for this service, please ignore this email
-as it may have been someone typing your mail by mistake. If you believe there
-is suspicious activity, please contact us directly at <a href="mailto:info@helmgast.se">
-info@helmgast.se</a></em></p>
-{% endtrans %}
+<p>{% trans %}Or, paste this link into your browser:{% endtrans %} <br><a style="word-break: break-all;" href="{{verification_url}}">{{verification_url}}</a><p>
+<p>{% trans %}As a user of Helmgast you will be able to interact with the worlds of Helmgast
+as well as purchasing Helmgast products. The platform is constantly evolving so
+we will be sending you updates by email whenever major changes have happened.{% endtrans %}</p>
+<p><strong>{% trans %}Many thanks for your support!{% endtrans %}</strong></p>
+
+<p><em>{% trans %}If you did not initiate this email, please ignore it as it may have been someone typing your
+    mail by mistake. If you believe there is suspicious activity, please contact us
+    directly at{% endtrans %} <a href="mailto:info@helmgast.se">info@helmgast.se</a></em></p>
 {% endblock %}
 
 {% block recipient%}{{user.email if user}}{% endblock %}

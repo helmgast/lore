@@ -1,0 +1,48 @@
+<div class="media margin-below-large{{ ' status-unpublished' if not article.is_published() }}">
+    <div class="media-left media-top">
+        {% if article.get_feature_image %}
+            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
+                <img class="media-object"
+                     src="{{ url_for('image_thumb', slug=article.get_feature_image.slug) }}">
+            </a>
+        {% else %}
+            <a class="media-object icon64px"
+               href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
+                {{ MACRO.article_icons[article.type] if not article.get_feature_image else "&nbsp;"|safe }}
+            </a>
+        {% endif %}
+
+    </div>
+    <div class="media-body">
+        <h3 class="blog-header"><a
+                href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
+            {{ article.title }}
+        </a></h3>
+        <ul class="nav imprint fullwidth">
+            <li title="{{ _('Created') }}"><span
+                    class="glyphicon glyphicon-calendar"></span> {{ article.created_date|dateformat(format='short') }} {{ _('by') }}
+            </li>
+            <li title="{{ _('Creator') }}">
+                <span class="glyphicon glyphicon-user"></span>
+                {{ article.creator if article.creator else _('Admin') }}
+            </li>
+            {% if article.world %}
+            <li title="{{ _('World') }}">
+                <span class="glyphicon glyphicon-globe"></span> {{ article.world }}
+            </li>
+            {% endif %}
+            {% if not article.is_published() %}
+            <li><span
+                    class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span> {{ article.get_status_display() }}
+            </li>
+            {% endif %}
+        </ul>
+        <p class="dobr">
+        {% if article.description %}{{ article.description|markdown }}{% elif article.content %}
+            {{ article.content[0:500]|markdown|striptags|truncate }}{% endif %}
+        </p>
+        <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
+            <em class="nobr">{{ _('Read more') }}</em>
+        </a>
+    </div>
+</div>

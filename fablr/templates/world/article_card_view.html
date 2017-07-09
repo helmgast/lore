@@ -1,0 +1,27 @@
+<div class="card{{ ' status-unpublished' if not article.is_published() }}"
+        {%- if article.get_feature_image -%}
+     style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
+        {%- endif -%}>
+    <a class="card-cover icon150px"
+       href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
+        {{ MACRO.article_icons[article.type] if not article.get_feature_image else "&nbsp;"|safe }}
+    </a>
+    <div class="card-text">
+        <h3 class="card-title dobr">
+            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
+        </h3>
+        {% set desc =  (article.description|markdown|striptags|replace('gallery-center','')).split('. R') %}
+
+        <div class="card-description">{{ desc[0] }}</div>
+        <ul class="card-details">
+            <li class="product-type"><span
+                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span> {{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}
+            </li>
+            {% if not article.is_published() %}
+            <li><span
+                    class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

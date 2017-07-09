@@ -1,64 +1,141 @@
 {% extends "shop/_page.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{ _('Orders') }}{% endblock %}
-{% block content_tagline %}{% endblock %}
+{% block content_title %}{{ _('My orders') if method=='my_orders' else _('Orders') }}{% endblock %}
 
-{% set order_statuses = {
-  'cart' : _('Cart'),
-  'ordered' : _('Ordered'),
-  'paid' : _('Paid'),
-  'shipped' : _('Shipped'),
-  'error' : _('Error')}
-%}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('shop.shop_home'), _('Shop')),
+        (url_for('shop.OrdersView:index'), _('Orders'))
+    ) }}{% endblock %}
 
-{% block content_subheader %}
-{% if orders %}
-{{ MACRO.LIST_CONTROLS(model, ['id','user', 'created', 'updated','status', 'total_price']) }}
-{% endif %}
+{% block asides %}{{ super() }}
+    {% if filter_options %}
+        {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}
+
+        <h5>{% trans %}By updated{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['updated'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By created{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By total items{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['total_items'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By total price{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['total_price'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}
 
+{% block content_tagline %}
+    {% if aggregate %}
+    <div class="privileged list-stats">
+        <table class="table">
+            <thead>
+                <th>{{ _('Total value') }}</th>
+                <th>{{ _('First') }}</th>
+                <th>{{ _('Last') }}</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ aggregate['total_value'] }}</td>
+                    <td>{{ aggregate['min_created']|dateformat(format='short') }}</td>
+                    <td>{{ aggregate['max_created']|dateformat(format='short') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    <div>{% trans %}Currently only shows Eon crowdfunder orders{% endtrans %}</div>
+{% endblock %}
 
 {% block content %}
+    {% if orders %}
 
-{% if orders %}
-{% if request.args.get('view', 'table') == 'table' %}
-<table class="table table-hover">
-{{ MACRO.TABLE_HEADER(orders[0].__class__, ['id','user', 'created', 'updated','status', 'total_price']) }}
-<tbody>
-	{% for order in orders %}
-	<tr>
-		<td><a href="{{ url_for('.order_view', order=order.id)}}">{{order}}</a></td>
-		<td>{{order.user.username}}</td>
-		<td class="small">{{order.created.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td class="small">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</td>
-		<td>{{order_statuses[order.status]}}</td>
-    <td>{{order.total_price}}</td>
-	</tr>
-	{% endfor %}
-</tbody>
-</table>
-{% else %}
-<div class="cards">
-<div class="row">
-{% for order in orders %}
-<div class="col-md-4 product">
-    {% if order.order_lines[0].product.feature_image %}<img class="product-image" src="{{url_for('image_thumb', slug=order.order_lines[0].product.feature_image.slug)}}"></a>{% endif %}
-    <div class="product-intro">
-        <h3><a href="{{ url_for('.order_view', order=order.id)}}">{{order}}</a></h3>
-    </div>
-    <ul class="product-details">
-        <li class="product-type">{{order.user.username}}</li>
-        <li class="product-type">{{order.updated.strftime('%Y-%m-%d %H:%M')}}</li>
-        <li class="product-price">{{ order.total_price }}</li>
-    </ul>
-</div>
-{% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
-{% endfor %}
-</div></div>
-{% endif %}
-{% include "includes/pagination.html" %}
+        {% if args.get('view', none) == 'card' %}
+            <div class="cards">
+                {% for order in orders %}
+                    <div class="card"
+                            {%- if order.order_lines|length and order.order_lines[0].product.get_feature_image -%}
+                         style="background: url({{ url_for('image_thumb', slug=order.order_lines[0].product.get_feature_image.slug) }}) center top/cover;"
+                            {%- endif -%}>
+                        <a class="card-cover icon150px"
+                           href="{{ url_for('shop.OrdersView:get', id=order.id) }}">
+                            {{ "\uE032" if not (order.order_lines|length and order.order_lines[0].product.get_feature_image) else "&nbsp;"|safe }}
+                        </a>
+                        <div class="card-text">
+                            <h3 class="card-title dobr">
+                                <a href="{{ url_for('shop.OrdersView:get', id=order.id) }}">{{ order }}</a>
+                            </h3>
+                            <ul class="card-details">
+                                <li class="product-type">{{ order.user }} </li>
+                                <li class="product-type">{{ order.updated|datetimeformat(format='short') }}</li>
+                                <li class="product-price">{{ order.total_price_display() }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
 
-{% else %}
-<h3>{{_('You have not made any orders yet!')}}</h3>
-{% endif %}
+        {% else %}
+            <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'user') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'updated') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'status') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'total_price') }}</th>
+                <th class="nobr">{{ MACRO.ORDER_BY_LINK(model, args, 'total_items') }}</th>
+                </thead>
+                <tbody>
+                {% for order in orders %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('shop.OrdersView:get', id=order.id) }}">{{ order }}</a>
+                        </td>
+                        <td>{{ order.user }}</td>
+                        <td class="small">{{ order.created|datetimeformat(format='short') }}</td>
+                        <td class="small">{{ order.updated|datetimeformat(format='short') }}</td>
+                        <td>{{ order.get_field_display('status') }}</td>
+                        <td>{{ order.total_price|currencyformat(order.currency.upper()) if order.currency }}
+{#                            {{ currencies.get(order.currency,'%s') % order.total_price|currency }} #}
+                        </td>
+                        <td>{{ order.total_items }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        {% endif %}
+        {% include "includes/pagination.html" %}
+
+    {% else %}
+        <div class="jumbotron text-center">
+            <h2>{{ _('No orders found') }}</h2>
+        </div>
+    {% endif %}
 {% endblock %}

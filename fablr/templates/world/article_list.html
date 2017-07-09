@@ -1,61 +1,114 @@
-{% extends "world/world_item.html" if not parent_template else parent_template %}
+{% extends "world/world_item.html" %}
 
-{% if request.args.get('order_by')=='type' %}
-    {% set groups = articles|by_articletype %}
-    {% set type_tab = ' class=active' %}
-{% elif request.args.get('order_by')=='created_date' %}
-    {% set groups = articles|by_time %}
-    {% set time_tab = ' class=active' %}
-{% else %} {# request.args.get('groupby')=='title' #}
-    {% set groups = articles|by_initials %}
-    {% set title_tab = ' class=active' %}
-{% endif %}
+{% set groups = articles|dummygrouper %}
 
-{% block pre_content %}
-<h2 class="browseArticle">{{ _('Browse') }}</h2>
-<ul class="nav nav-tabs content-menu">
-    <li{{title_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='title') }}"><span class="glyphicon glyphicon-book"></span> {{ _('By title') }}</a></li>
-    <li{{type_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='type') }}"><span class="glyphicon glyphicon-tag"></span> {{ _('By type') }}</a></li>
-    <li{{time_tab}}><a href="{{ url_for('.article_list', world=world.slug, order_by='created_date') }}"><span class="glyphicon glyphicon-calendar"></span> {{ _('By time') }}</a></li>
- {#}   <li><a href="{{ url_for('.article_list', world=world.slug, groupby='relation') }}"><span class="glyphicon glyphicon-resize-small"></span> {{ _('By relation') }}</a></li>#}
-</ul>
+{% block breadcrumbs %}
+    {% if world.slug == 'meta' %}
+        {{ MACRO.BREADCRUMBS(
+        (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.ArticlesView:index', world_=world.slug), _('Articles'))
+    ) }}
+    {% else %}
+        {{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds')),
+        (url_for('world.ArticlesView:world_home', world_=world.slug), world.title),
+        (url_for('world.ArticlesView:index', world_=world.slug), _('Articles'))
+    ) }}
+    {% endif %}
 {% endblock %}
 
-{% block content %}
-    <div class="panel panel-default item-list">
-    {% for group in groups %}
-        <h3>{{ _(group.grouper|capitalize) }}</h3>
-        <div class="row">
-        {% for article in group.list %}
-            <div class="media col-sm-6">
-                <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
-                    <h4>{{ article.title }}
-                    {%- if not article.is_published() -%}
-                    <small>{{" ["+article.status_name()+"]"}}</small>
-                    {%- endif %}
-                    {%- if groupby=='title' -%}
-                    <small>{{" ["+article.type+"]"}}</small>
-                    {%- elif groupby=='time' -%}
-                    <small>{{" ["+article.created_date.strftime('%Y-%m-%d %H:%M')+"]"}}</small>
-                    {%- endif %}</h4>
-                </a>
-                {% if article.feature_image %}
-                <a class="pull-left" href="{{url_for('.article_view', world=world.slug, article=article.slug)}}">
-                <img class="media-object" src="{{url_for('image_thumb', slug=article.feature_image.slug)}}">
-                </a>
-                {% endif %}
+{% block content_title %}{{ _('Articles in %(world)s', world=world.title) }}{% endblock %}
+{% block content_tagline %}{% endblock %}
 
-                {{ article.description if article.description else article.content[0:500]|markdown|striptags|truncate }}
-                <a href="{{url_for('.article_view', world=world.slug, article=article.slug)}}"><em style="white-space: nowrap;">{{ _('Read more') }}</em></a>
-            </div>
-        {% if not loop.last and loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
-        {% endfor %}
+{% block asides %}{{ super() }}
+    {% if filter_options %}
+        <div class="filter-options">
+        {{ MACRO.LIST_CONTROLS(model, args, ['title', 'creator', 'type', 'created_date']) }}
+
+        <h5>{% trans %}By world{% endtrans %}</h5>
+        <div class="btn-set" id="tour-filter">
+            {% for opt in filter_options['world'] %}
+                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+            {% endfor %}
         </div>
-    {% else %}
-    <div class="jumbotron text-center">
-      <h2>{{ _('No articles yet!') }}</h2>
-    </div>
-    {% endfor %}
-    </div>
+
+        <h5>{% trans %}By type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['type'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By status{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['status'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By created date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created_date'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By tag{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['tags'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}Search text{% endtrans %}</h5>
+        <form method="get">
+            {# This will erase all other query parameters when submitted by HTML design #}
+            <div class="input-group{{ ' has-success' if args['q'] }}">
+                <input class="form-control input-sm" type="search" id='q' name='q'
+                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
+            </div>
+        </form>
+        </span>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-10{% endblock %}
+
+{% block content %}
+        {% for group in groups %}
+            {% set articles = group.list %}
+            {% if group.grouper %}
+                <h3>{{ _(group.grouper|capitalize) }}</h3>
+            {% endif %}
+            {% if not articles %}
+                <div class="jumbotron text-center">
+                    <h2>{{ _('No articles found') }}</h2>
+                </div>
+            {% elif args['view'] == 'list' %}
+
+                {% for article in articles %}
+                    {% include "world/article_list_view.html" %}
+                {% endfor %}
+
+            {% elif args['view'] == 'card' %}
+                <div class="cards">
+                    {% for article in articles %}
+                        {% include "world/article_card_view.html" %}
+{#                        {% if loop.index is divisibleby 9 %}#}
+{#                            <div class="pagebreak"></div>#}
+{#                            {% endif %}#}
+                    {% endfor %}
+                    </div>
+
+            {% else %} {# ==table #}
+                {% include "world/article_table_view.html" %}
+            {% endif %}
+        {% endfor %}
     {% include "includes/pagination.html" %}
 {% endblock %}

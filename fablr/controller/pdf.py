@@ -37,79 +37,83 @@ Then, download all user IDs, MD5 each and then search through by comparing each 
 If a user matches just one, we basically know that they are the ones that downloaded the document.
 """
 
+
 def hex(s):
-	return ' '.join(x.encode('hex') for x in s)
+    return ' '.join(x.encode('hex') for x in s)
 
-pdf_id = re.compile(r'trailer\s+<<.*?ID\[<(.{12})') # may be multiline
-doc_id = re.compile(r'<xmpMM:DocumentID>xmp.did:(.{12})') # wouldn't be multiline
-font_id = re.compile(r'/FontFamily\(([^)]{12})') # wouldn't be multiline
-font_id_find = re.compile(r'/FontFamily\(([0-9A-F]{12})') # Only look for hex characters
 
-window_size = 512 # size in bytes of the sliding window
+pdf_id = re.compile(r'trailer\s+<<.*?ID\[<(.{12})')  # may be multiline
+doc_id = re.compile(r'<xmpMM:DocumentID>xmp.did:(.{12})')  # wouldn't be multiline
+font_id = re.compile(r'/FontFamily\(([^)]{12})')  # wouldn't be multiline
+font_id_find = re.compile(r'/FontFamily\(([0-9A-F]{12})')  # Only look for hex characters
+
+window_size = 512  # size in bytes of the sliding window
+
 
 def fingerprint_from_user(user_id):
-	return md5(str(user_id)).hexdigest()[:12].upper() # first 12 chars of hexdigest
+    return md5(str(user_id)).hexdigest()[:12].upper()  # first 12 chars of hexdigest
+
 
 def fingerprint_pdf(file_object, user_id):
-	"""Generator that will fingerprint a PDF"""
-	uid = fingerprint_from_user(user_id)
-	print "Fingerprinting uid %s as hash %s" % (user_id, uid)
-	pdf_id_num, doc_id_num, font_id_num = 0,0,0
-	window = file_object.read(window_size*2)
-	buf = window # just to start with a buffer that equals true
-	do_yield = True
-	while buf:
-		if not pdf_id_num:
-			m = pdf_id.search(window)
-			if m:
-				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
-				pdf_id_num += 1
-				# print window[m.start(0) : window.find('\n', m.start(1))]
-		if not doc_id_num:
-			m = doc_id.search(window)
-			if m:
-				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
-				doc_id_num += 1
-				# print window[m.start(0) : window.find('\n', m.start(1))]
-		if not font_id_num:
-			m = font_id.search(window)
-			if m:
-				window = window[:m.start(1)] + uid + window[m.start(1)+12:]
-				font_id_num += 1
-				# print window[m.start(0) : window.find('\n', m.start(1))]
+    """Generator that will fingerprint a PDF"""
+    uid = fingerprint_from_user(user_id)
+    print "Fingerprinting uid %s as hash %s" % (user_id, uid)
+    pdf_id_num, doc_id_num, font_id_num = 0, 0, 0
+    window = file_object.read(window_size * 2)
+    buf = window  # just to start with a buffer that equals true
+    do_yield = True
+    while buf:
+        if not pdf_id_num:
+            m = pdf_id.search(window)
+            if m:
+                window = window[:m.start(1)] + uid + window[m.start(1) + 12:]
+                pdf_id_num += 1
+            # print window[m.start(0) : window.find('\n', m.start(1))]
+        if not doc_id_num:
+            m = doc_id.search(window)
+            if m:
+                window = window[:m.start(1)] + uid + window[m.start(1) + 12:]
+                doc_id_num += 1
+            # print window[m.start(0) : window.find('\n', m.start(1))]
+        if not font_id_num:
+            m = font_id.search(window)
+            if m:
+                window = window[:m.start(1)] + uid + window[m.start(1) + 12:]
+                font_id_num += 1
+            # print window[m.start(0) : window.find('\n', m.start(1))]
 
-		# We use a sliding window which means we can't yield every loop,
-		# it would duplicate half window in the output
-		if do_yield:
-			yield window
-		do_yield = not do_yield
-		buf = file_object.read(window_size)
-		window = window[window_size:]+buf
+        # We use a sliding window which means we can't yield every loop,
+        # it would duplicate half window in the output
+        if do_yield:
+            yield window
+        do_yield = not do_yield
+        buf = file_object.read(window_size)
+        window = window[window_size:] + buf
+
 
 def get_fingerprints(file):
-	fingerprints = []
-	with open(file, 'rb') as f:
-		window = f.read(window_size*2)
-		buf = window # just to start with a buffer that equals true
-		while buf:
-			# Todo - if we find something, it's often found twice as the window
-			# overlaps, so fix this
-			m = pdf_id.search(window)
-			if m:
-				print "Found %s in %s" % (m.group(1),window[m.start(0) : window.find('\n', m.start(1))])
-				fingerprints.append(m.group(1))
-			m = doc_id.search(window)
-			if m:
-				print "Found %s in %s" % (m.group(1),window[m.start(0) : window.find('\n', m.start(1))])
-				fingerprints.append(m.group(1))
-			m = font_id_find.search(window)
-			if m:
-				print "Found %s in %s" % (m.group(1),window[m.start(0) : window.find('\n', m.start(1))])
-				fingerprints.append(m.group(1))
-			buf = f.read(window_size)
-			window = window[window_size:]+buf
-	return fingerprints
-
+    fingerprints = []
+    with open(file, 'rb') as f:
+        window = f.read(window_size * 2)
+        buf = window  # just to start with a buffer that equals true
+        while buf:
+            # Todo - if we find something, it's often found twice as the window
+            # overlaps, so fix this
+            m = pdf_id.search(window)
+            if m:
+                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                fingerprints.append(m.group(1))
+            m = doc_id.search(window)
+            if m:
+                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                fingerprints.append(m.group(1))
+            m = font_id_find.search(window)
+            if m:
+                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                fingerprints.append(m.group(1))
+            buf = f.read(window_size)
+            window = window[window_size:] + buf
+    return fingerprints
 
 # obj = re.compile(r'\d+ \d+ obj\s+<<(.+?)>>(stream(.*?)endstream)?\s+endobj', re.DOTALL)
 # linearized = re.compile(r'<<\s*/Linearized.+?>>', re.DOTALL)

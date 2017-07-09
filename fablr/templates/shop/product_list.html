@@ -1,96 +1,86 @@
-{% extends "shop/_page.html" if not parent_template else parent_template %}
+{% extends "shop/_page.html" %}
 
-{% set currencies = {
-  'eur' : '€ %s',
-  'sek' : '%s :-'
-}%}
+{% block content_title %}{{ _('Products') }}{% endblock %}
+{% block content_tagline %}{% endblock %}
 
-{% set prod_types = {
-  'book':_('Book'),
-  'item':_('Item'),
-  'digital':_('Digital'),
-  'shipping':_('Shipping fee')}
-%}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('shop.shop_home'), _('Shop')),
+        (url_for('shop.ProductsView:index'), _('Products'))
+    ) }}{% endblock %}
 
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new', res=publisher)) %}
+        {{ MACRO.NEW_BUTTON(url_for('shop.ProductsView:get', id='post'), 'New product') }}
+    {% endcall %}
+{% endblock %}
 
-{% block sidebar %}{{super()}}
-  {% if not product %}
-  {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('new')) %}
-<ul class="nav nav-pills nav-stacked">
-  <li class="{{privileged}}"><a href="{{ url_for('.product_form_new') }}"><span class="glyphicon glyphicon-pencil"></span> {{ _('New product') }}</a></li>
-  </ul>
-  {% endcall %}
-  {% endif %}
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
+{% block asides %}{{ super() }}
+
+    {% if filter_options %}
+        <div class="filter-options">
+        {{ MACRO.LIST_CONTROLS(model, args, ['title', 'description', 'type', 'world', 'created', 'price'], set_view=args['view'], default='card') }}
+
+        <h5>{% trans %}By world{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['world'] %}
+                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+            {% endfor %}
+        </div>
+        <h5>{% trans %}By time{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['type'] %}
+                {{ MACRO.ARG_LINK(opt[1],opt[0], combine=True) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By price{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['price'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+        </div>
+    {% endif %}
+
 {% endblock %}
 
 {% block content %}
-<div class="cards">
-  <div class="row">
-    {% if 'table' in request.args %}
-      <table class="table table-hover">
-      <thead>
-        <tr>
-          <th><a href="?order_by=title">{% trans %}Title{% endtrans %}</a></th>
-          <th><a href="?order_by=description">{% trans %}Description{% endtrans %}</a></th>
-          <th><a href="?order_by=type">{% trans %}Type{% endtrans %}</a></th>
-          <th><a href="?order_by=publisher">{% trans %}Publisher{% endtrans %}</a></th>
-          <th><a href="?order_by=price">{% trans %}Price{% endtrans %}</a></th>
-        </tr>
-      </thead>
-      {% for product in products %}
-        <tr>
-          <td><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></td>
-          <td>{{ product.description }}</td>
-          <td>{{prod_types[product.type]}}</td>
-          <td>{{ product.publisher }}</td>
-          <td class="product-price">{{ currencies[product.currency] % product.price|currency }}</td>
-        </tr>
-      {% endfor %}
-      </table>
+    {% if products %}
+        {% if args['view'] == 'list' %}
+            {% for product in products %}
+                {% include "shop/product_list_view.html" %}
+            {% endfor %}
+
+        {% elif args['view'] == 'table' %}
+            {% include "shop/product_table_view.html" %}
+
+        {% else %} {# ==cards #}
+            <div class="cards">
+                {% for product in products %}
+                    {% include "shop/product_card_view.html" %}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% include "includes/pagination.html" %}
     {% else %}
-      {% for product in products %}
-      <div class="col-md-4 product">
-          {% if product.feature_image %}<a href="{{ url_for('.product_view', product=product.slug)}}"><img class="product-image" src="{{url_for('image_thumb', slug=product.feature_image.slug)}}"></a>{% endif %}
-          <div class="product-intro">
-              <h3><a href="{{ url_for('.product_view', product=product.slug)}}">{{ product.title }}</a></h3>
-              <p>{{ product.description }}</p>
-          </div>
-          <ul class="product-details">
-              <li class="product-type">{{ product.publisher }}</li>
-              <li class="product-price">{{ currencies[product.currency] % product.price|currency }}</li>
-              <li><a id="{{product.slug}}" class="btn btn-sm btn-primary buy-link" href="{{ url_for('.order_cart')}}">{{ _('Buy') }}</a></li>
-          </ul>
-      </div>
-      {% if loop.index is divisibleby 3 %}</div><div class="row">{% endif %}
-      {% endfor %}
+        <div class="jumbotron text-center">
+            <h2>{{ _('No products available') }}</h2>
+        </div>
     {% endif %}
-  </div>
-{% include "includes/pagination.html" %}
-</div>
 {% endblock %}
 
-{% block final %}
-{{super() }}
-<script>
-$('.buy-link').click(function(e) {
-    var jqxhr = $.ajax({
-        url: "{{ url_for('.order_cart', out='json')}}",
-        type: 'post',
-        data: {product: this.id},
-        headers: { 'X-CSRFToken': "{{ csrf_token() }}" },
-        dataType: 'json',
-        success: function (data) {
-          $c = $('#cart-counter')
-          $c.addClass("bounce").one('animationend webkitAnimationEnd oAnimationEnd', function() {
-            $c.removeClass("bounce");
-            $c.find('.badge').html(data.item)
-          });
-    }})
-    .fail(function(jqXHR) {
-        var res = JSON.parse(jqXHR.responseText)
-        flash_error(res.message, 'danger')
-    });
-    e.preventDefault();
-});
-</script>
+{% block js_globalvars %}
+    {{ super() }}
+    var SHOP_URL = "{{ url_for('shop.OrdersView:buy') }}"
 {% endblock %}

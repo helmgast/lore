@@ -1,0 +1,36 @@
+{% extends "world/world_list.html" %}
+
+{% block googlefonts %}{{ super() }}|Goudy+Bookletter+1911{% endblock %}
+
+{% block cssimports %}
+{{super()}}
+<style>
+
+{#@import url(https://fonts.googleapis.com/css?family=Goudy+Bookletter+1911);#}
+
+@font-face {
+  font-family: 'Vinque';
+  src: url({{ url_for('static', filename=assets['css/vinque.woff']) }}) format('woff'),
+       url({{ url_for('static', filename=assets['css/vinque.ttf']) }}) format('truetype');
+}
+
+.content {
+    font-family: 'Goudy Bookletter 1911', serif;
+}
+
+.article-text > p:first-of-type:first-letter {
+   font-family: Vinque, serif;
+}
+
+.article-text a {
+    text-decoration: none;
+    color: #8f0011;
+}
+
+.page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+    font-family: Vinque, serif;
+}
+
+</style>
+{% endblock %}

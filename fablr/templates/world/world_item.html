@@ -1,74 +1,263 @@
-{% extends "world/_page.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
+{% extends "world/world_list.html" if not world_theme else world_theme %}
+
+{% block content_title %}{{ world.title if world else _("New world") }}{% endblock %}
+{% block content_tagline -%}
+    {% if world %}
+        {% if world.tagline %}
+            {{ world.tagline }}
+        {% else %}
+            {{ _('by %(publisher)s', publisher=world.publisher) }}
+        {% endif %}
+    {% else %}
+        {{ _('by %(publisher)s', publisher=world_form.publisher.data) }}
+    {% endif %}
+{%- endblock %}
+
+{% block header_class -%}
+    {% if world and world.get_header_image %}page-header-hero{% endif %}
+{%- endblock %}
 
 {% block cssimports %}
-{{ super() }}
-<link rel="home" type="application/rss+xml" href="{{url_for('.article_feed', world=world.slug, _external=true)}}" />
+    {{ super() }}
+    {% if world %}
+        <link rel="home" type="application/rss+xml"
+              href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
+    {% endif %}
+    {% if world and world.get_header_image %}
+        <style>
+            .page-header-hero {
+                background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
+            }
+            {% if world.custom_css %}
+                {{ world.custom_css|safe|replace('style>','') }}
+            {% endif %}
+        </style>
+    {% endif %}
 {% endblock %}
 
-{% block content_title %}{{ world.title }}{{ ' - ' + article.title if article else '' }}{% endblock %}
-{% block content_tagline %}{% endblock %}
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds')),
+        (url_for('world.WorldsView:get', id=world.slug if world else 'post'), self.content_title())
+    ) }}{% endblock %}
 
-{% block sidebar %}
-{{super()}}
-
-<div class="worldSideBar">
-  <ul class="nav nav-pills nav-stacked">
-      <li><a href="/"><span class="glyphicon glyphicon-home"></span> {{ _('Home') }}</a></li>
-      <li><a href="{{ url_for('world.article_list', world=world.slug) }}"><span class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
-      <li><a href="{{ url_for('world.article_blog', world=world.slug) }}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog') }}</a></li>
-    {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('new')) %}
-      <li class="dropdown {{privileged}}">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-pencil"></span> {{ _('New article') }}&nbsp;<span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='default')}}"><span class="glyphicon glyphicon-record"></span> {{ _('Basic') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='person')}}"><span class="glyphicon glyphicon-eye-open"></span> {{ _('Person') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='fraction')}}"><span class="glyphicon glyphicon-certificate"></span> {{ _('Fraction') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='place')}}"><span class="glyphicon glyphicon-map-marker"></span> {{ _('Place') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='event')}}"><span class="glyphicon glyphicon-exclamation-sign"></span> {{ _('Event') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='campaign')}}"><span class="glyphicon glyphicon-flag"></span> {{ _('Campaign') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='chronicle')}}"><span class="glyphicon glyphicon-bookmark"></span> {{ _('Chronicle') }}</a></li>
-          <li><a href="{{url_for('world.article_form_new', world=world.slug, type='blogpost')}}"><span class="glyphicon glyphicon-asterisk"></span> {{ _('Blog post') }}</a></li>
-        </ul>
-      </li>
-    {% endcall %}
-</ul>
-</div>
+{% block subnavbar %}{{ super() }}
+    <li id="tour-browse">
+        <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:blog', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:random', world_=world.slug) }}"><span
+                class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
 {% endblock %}
+
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('worldform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', id=world.slug)) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('worldform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('world.WorldsView:get', id=world.slug)) }}
+    {% else %}
+        {# We are viewing #}
+        {% include "world/new_article_menu.html" %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
+            {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug)) }}
+            {{ MACRO.DELETE_BUTTON() }}
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
+{% block content_class %}col-lg-10 col-md-12 col-sm-10 content{% endblock %}
+{% block asides_class %}hide{% endblock %}
 
 {% block content %}
-    {% set world_article = world.articles().clone().filter(slug=world.slug).first() %}
+    {% if world_form %}
+        <form id="worldform" method="post" action="{{ action_url }}">
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="tour-editworld">
+                        {{ MACRO.FORM_FIELD(world_form.title) }}
+                        {{ MACRO.FORM_FIELD(world_form.tagline) }}
+                        {{ MACRO.FORM_FIELD(world_form.description) }}
+                    </div>
+                    {{ MACRO.FORM_FIELD(world_form.content, controlclass=' content-editor') }}
+                    {{ MACRO.FORM_FIELD(world_form.publisher) }}
+                    {{ MACRO.FORM_FIELD(world_form.created_date, controlclass='input-sm flatpickr-datetime',
+                        data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
+                    {{ MACRO.FORM_FIELD(world_form.publishing_year) }}
+                    {{ MACRO.FORM_FIELD(world_form.rule_system) }}
+                    {{ MACRO.FORM_FIELD(world_form.status) }}
+                    {{ MACRO.FORM_FIELD(world_form.external_host, helptext=_('If your world home page is hosted externally, enter it here')) }}
+                    {{ MACRO.FORM_FIELD(world_form.product_url) }}
+                    {{ MACRO.FORM_FIELD(world_form.facebook_url) }}
+                    {{ MACRO.FORM_FIELD(world_form.contribution) }}
+                    {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
+                    {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}
+                    {{ MACRO.FORM_FIELD(world_form.custom_css) }}
 
 
-  <div class="row">
-  {% if world_article %}
-      <div class="content article_text">
-       {{ world_article.content|markdown if world_article.content else _("Content")}}
-      </div>
+                    {{ world_form.csrf_token }}
+                </div>
+                <div class="col-md-4" id="tour-worldimage">
+                    {# data_end becomes data-end automatically #}
+                    {{ MACRO.FORM_FIELD(world_form.images, controlclass="fileselect", data_endpoint=
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
+                </div>
+            </div>
+            <div class="row form-actions">
+                <div class="col-sm-12">
+                    {% if args.get('intent', None) %}
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
     {% else %}
-    <div class="col-md-6">
-      <p class="well worldDesc">{{ world.description }}</p>
-    </div>
+        <article class="article-text">
+            {{ world.description|markdown }}
+
+            {{ world.content|markdown }}
+        </article>
+
+        {% set recent_articles=articles[:6] %}
+        {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:6] %}
+        {% set top_material=articles.filter(type='material')[:6] %}
+
+            {% if recent_articles %}
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span class="glyphicon glyphicon-exclamation-sign"></span>
+                        {% trans %}Latest news{% endtrans %}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in recent_articles %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+
+                <hr>
+            {% endif %}
+
+            {% if focus_articles %}
+
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span
+                            class="glyphicon glyphicon-fire"></span> {{ _('Featured articles') }}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in focus_articles %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+
+                <hr>
+            {% endif %}
+
+            {% if top_material %}
+
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span
+                            class="glyphicon glyphicon-briefcase"></span> {{ _('Top material') }}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in top_material %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+            {% endif %}
+
     {% endif %}
-    <!--<div class="col-md-5 imgAside pull-right">{{ _('IMAGE') }}-->
-    <!--</div>-->
-  </div>
-  <div class="row worldArticles">
-  <h3>{{ _('Articles') }}</h3>
-  {#{% if world.articles.count() == 0 %}No articles yet!{% else %}#}
-  <ul>
-    {% for article in world.articles() %}
-      <li><a href="{{ url_for('world.article_view', article=article.slug, world=world.slug) }}">{{ article.title }}</a>  <span>[{{ article.type }}]</span></li>
-    {% endfor %}
-  </ul>
-  {#{% include "includes/pagination.html" %}
-  {% endif %}#}
-  </div>
-{% endblock %}
+{% endblock content %}
 
-{% block in_table %}
-{% endblock %}
+{% block intro %}
+    {% if world and world.slug!='meta' and not world_form %}
+        <hr>
+        {% if world.product_url or world.publisher.webshop_activated %}
+        <p class="text-center">
+            <a class="btn btn-lg btn-info"
+               href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
+                {% trans %}Buy in shop{% endtrans %}
+            </a>
+        </p>
+        {% endif %}
+        <table class="table" id="tour-worlddetails">
+            <tr>
+                <th>{{ _('Publisher') }}</th>
+                <td>
+                    <small>{{ world.publisher|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Rule System') }}</th>
+                <td>
+                    <small>{{ world.rule_system|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Published') }}</th>
+                <td>
+                    <small class="nobr">{{ world.publishing_year|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Status') }}</th>
+                <td>
+                    <small>{{ world.get_status_display() }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Allows contributions') }}</th>
+                <td>
+                    <small>{{ _('Yes') if world.contribution else _('No') }}</small>
+                </td>
+            </tr>
+        </table>
+        {% if world.facebook_url %}
+            <a class="center-block margin-below" href="{{ world.facebook_url }}">
+                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
+            </a>
+        {% endif %}
+    {% endif %}
+    {% include "includes/social_icons.html" %}
+{% endblock intro %}
 
-{% block in_box %}
-{% endblock %}
+{#{% block asides %}#}
+{#    {% if world and not world_form and world.editors %}#}
+{#        <h4>{% trans %}Editors{% endtrans %}</h4>#}
+{#        <ul>#}
+{#            {% for editor in world.editors %}#}
+{#                <li>{{ editor }}</li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    {% endif %}#}
+{#{% endblock %}#}

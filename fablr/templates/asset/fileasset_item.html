@@ -1,88 +1,167 @@
 {% extends "asset/_page.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-{% block content_title %}{{fileasset.title if fileasset else _("New file")}}{% endblock %}
+{% block content_title %}{{ fileasset.slug if fileasset else _("New file") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
-{% block sidebar %}{{super()}}
-<ul class="nav nav-pills nav-stacked">
-    <li class="nav-header">{{ _('Actions') }}</li>
-    {% if op != 'new' %}
-    <li><a href="{{ url_for('.fileasset_form_edit', fileasset=fileasset.slug) }}"><span
-            class="glyphicon glyphicon-edit"></span> {{ _('Edit') }}</a></li>
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('fileform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('assets.FileAssetsView:index')) }}
+        {{ MACRO.DELETE_BUTTON() }}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('fileform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('assets.FileAssetsView:index')) }}
+    {% else %}
+        {# We are viewing #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('edit', res=filasset)) %}
+            {{ MACRO.EDIT_BUTTON(url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch')) }}
+            {{ MACRO.DELETE_BUTTON() }}
+        {% endcall %}
     {% endif %}
-</ul>
-{%endblock%}
+{% endblock %}
+
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
 
 {% block content %}{% block inline %}
-{% if fileasset_form %}
-<form method="post" action="{{fileasset_form.action_url}}" enctype=multipart/form-data>
-    <div class="row">
-        <div class="col-md-8">
-            {{ MACRO.FORM_FIELD(fileasset_form.title) }}
-            {{ MACRO.FORM_FIELD(fileasset_form.description) }}
-            {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
-            <div class="form-group">
-                <strong>{{ _('Current file') }}</strong>: {{ fileasset.source_filename if fileasset and fileasset.file_data_exists()
-                else _('No file') }}
-                {{ fileasset_form.file_data }}
+    {% if fileasset_form %}
+        <form id="fileform" method="post" action="{{ action_url }}" enctype=multipart/form-data>
+            <div class="row">
+                <div class="col-md-8">
+                    {% if args.get('intent', None) != 'post' %}
+                    {{ MACRO.FORM_FIELD(fileasset_form.slug) }}
+                    {% endif %}
+                    {{ MACRO.FORM_FIELD(fileasset_form.description, controlclass=" content-editor") }}
+                    {{ MACRO.FORM_FIELD(fileasset_form.access_type) }}
+
+                    <div class="form-group">
+                        <strong>{{ _('Current file') }}</strong>: {{ fileasset.source_filename if fileasset and fileasset.file_data_exists() else _('No file') }}
+                        {% set upload_accept = 'image/*,.pdf,.rtf,.zip,.doc,.xls,.txt' %}
+                        <input multiple type="file" name="file_data" id="file_data" accept="{{ upload_accept }}">
+                    </div>
+                    {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
+                    {{ MACRO.FORM_FIELD(fileasset_form.source_file_url) }}
+                    {{ MACRO.FORM_FIELD(fileasset_form.source_page_url) }}
+                    {{ MACRO.FORM_FIELD(fileasset_form.tags, controlclass=' selectize-tags') }}
+                    {{ fileasset_form.csrf_token }}
+                </div>
+                <div class="col-md-4">
+                    {% if fileasset %}
+                    <a class="gallery-item" href="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="img-responsive zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                    </a>
+                    {% endif %}
+                </div>
             </div>
-            {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
-            {{ fileasset_form.csrf_token }}
-        </div>
-    </div>
-    <div class="row form-actions">
-        <button type="submit" class="btn btn-primary">{{ _('Save changes') }}</button>
-        <a href="{{url_for('.fileasset_list')}}" class="btn btn-default">{{ _('Cancel') }}</a>
-        {% if op != 'new' %}
-        <a href="{{url_for('.fileasset_delete', fileasset=fileasset.slug)}}"
-           class="btn btn-danger pull-right">{{ _('Delete')}}</a>
+            <div class="row form-actions">
+                <div class="col-sm-12">
+                    {% if args.get('intent', None) %}
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+        {% if  op != 'new' %}
+            {{ MACRO.CONFIRM_MODAL(fileasset.slug, url_for('assets.FileAssetsView:delete', id=fileasset.slug, method="DELETE"), _('delete') ) }}
         {% endif %}
-    </div>
-</form>
-{% else %}
-<div class="row">
-    <div class="col-md-8">
-        <table class="table">
-            <tr>
-                <td><strong>{{ _('File') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.slug }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Title') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.title }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Description') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.description }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Access type') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.access_type_name() }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Source filename') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.source_filename }}</small>
-                </td>
-            </tr>
-            <tr>
-                <td><strong>{{ _('Attachment file name') }}</strong></td>
-                <td>
-                    <small>{{ fileasset.attachment_filename }}</small>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
-{% endif %}
+    {% else %}
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table">
+                    <tr>
+                        <th>{{ _('File') }}</th>
+                        <td>
+                            <small>{{ fileasset.slug }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('URLs') }}</th>
+                        <td>
+                            <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Open file{% endtrans %}"><span
+                                    class="glyphicon glyphicon-link"></span></a>
+                            <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                               title="{% trans %}Download file{% endtrans %}"><span
+                                    class="glyphicon glyphicon-cloud-download"></span></a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Description') }}</th>
+                        <td>
+                            <small>{{ fileasset.description|default(_('No data'), true)|markdown }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Uploaded date') }}</th>
+                        <td>
+                            <small>{{ fileasset.created_date|dateformat(format='short') }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Owner') }}</th>
+                        <td>
+                            <small>{{ fileasset.owner }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Access type') }}</th>
+                        <td>
+                            <small>{{ fileasset.get_access_type_display() }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Tags') }}</th>
+                        <td>
+                            {% for t in fileasset.tags %}
+                                <span class="badge">{{ t }}</span>
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Source filename') }}</th>
+                        <td>
+                            <small>{{ fileasset.source_filename }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Source File URL') }}</th>
+                        <td>
+                            <small>{{ fileasset.source_file_url }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Source Page URL') }}</th>
+                        <td>
+                            <small>{{ fileasset.source_page_url }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Size') }}</th>
+                        <td>
+                            <small>{{ fileasset.length|filesizeformat }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>{{ _('Content Type') }}</th>
+                        <td>
+                            <small>{{ fileasset.content_type }}</small>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div class="gallery">
+                    <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}" href="{{ url_for('image', slug = fileasset.slug) }}">
+                        <img class="img-responsive zoomable" src="{{ url_for('image', slug = fileasset.slug) }}">
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 {% endblock %}

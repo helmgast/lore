@@ -1,27 +1,63 @@
-{% extends "world/_page.html" if not parent_template else parent_template %}
+{% extends "world/_page.html" %}
+
+{% block content_title %}{{ _('Game Worlds') }}{% endblock %}
+{% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
+
+{% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('world.WorldsView:index'), _('Game Worlds'))
+    ) }}{% endblock %}
+
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new', res=publisher)) %}
+        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', id='post'), 'New world') }}
+    {% endcall %}
+{% endblock %}
+
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-12 col-md-12 col-sm-12 content{% endblock %}
+{% block asides_class %}hide{% endblock %}
+
 
 {% block content %}
-    <div class="row">
-    {% for world in blubb %}
-    <div class="col-md-5 col-xs-6 world_item">
-        <h3><a href="{{ url_for('.world_view', world=world.slug)}}">{{ world.title }}</a>
-        <br><small>{{ world.description }}</small></h3>
-        <hr>
-        <dl class="dl-horizontal">
-            <dt>{{ _('Publisher') }}</dt>
-            <dd>{{ world.publisher }}</dd>
-            <dt>{{ _('Rule System') }}</dt>
-            <dd>{{ world.rule_system }}</dd>
-            <dt>{{ _('Created date') }}</dt>
-            <dd>{{ world.created_date.strftime('%Y-%m-%d') }}</dd>
-        </dl>
+    <div class="cards">
+        {% for world in worlds %}
+            <div class="card{{ ' status-unpublished' if not world.is_published() }}"
+                    {%- if world.get_feature_image -%}
+                 style="background: url({{ url_for('image_thumb', slug=world.get_feature_image.slug) }}) center top/cover;"
+                    {%- endif -%}>
+                <a class="card-cover icon150px"
+                   href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">
+                    {% if not world.images %}
+                        <svg class="fablr-icon fablr-icon-stretch">
+                            <use xlink:href="#fablr-earth"></use>
+                        </svg>
+                    {% endif %}
+                </a>
+                <div class="card-text">
+                    <h3 class="card-title">
+                        <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
+                    </h3>
+                    {% set desc =  (world.description|default(_('No description'), true)|markdown|striptags|replace('gallery-center','')).split('. R') %}
+
+                    <div class="card-description">{{ desc[0] }}</div>
+                    <ul class="card-details">
+                        <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
+                        {% if not world.is_published() %}
+                        <li><span
+                                class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span>
+                        </li>
+                        {% endif %}
+                        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
+                            <li>
+                                {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug), btnclass='btn-sm') }}
+                            </li>
+                        {% endcall %}
+                    </ul>
+                </div>
+            </div>
+
+        {% endfor %}
     </div>
-    {% if loop.index is divisibleby 2 %}</div><div class="row">{% endif %}
-    {% else %}
-    <div class="jumbotron text-center">
-    <h2>{{_('Aeon is working on some worlds, please check back later!')}}</h2>
-    </div>
-    {% endfor %} 
-  </div>
-  {% include "includes/pagination.html" %}
+    {% include "includes/pagination.html" %}
 {% endblock %}

@@ -1,0 +1,10 @@
+{% extends "world/world_item.html" %}
+
+
+
+{% block content %}
+    {{ super()  }}
+    {% if self.home %}
+        {{ self.home() }}
+    {% endif %}
+{% endblock content %}

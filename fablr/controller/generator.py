@@ -13,17 +13,21 @@
 # 
 # 
 from flask import render_template, Blueprint
+
 # from peewee import *
 # 
 # import random
 # import itertools
 # 
 generator = Blueprint('generator', __name__, template_folder='../templates/generator')
-# 
-@generator.route('/')
-def index():
-    return render_template('generator/index.html', list=generator_dictionary.keys(), sizes=generator_sizes)
-# 
+
+
+#
+# @generator.route('/')
+# def index():
+#     return render_template('generator/index.html', list=generator_dictionary.keys(), sizes=generator_sizes)
+
+#
 # @generator.route('/<name>/<num_results>')
 # def generate(name, num_results=10):
 #     # Lookup factory function which upon calls creates a string generator

@@ -1,0 +1,32 @@
+<div class="media margin-below-large{{ ' status-unpublished' if product.status == 'hidden' }}">
+    <div class="media-left media-top">
+        {% if product.get_feature_image %}
+            <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
+                <img class="media-object"
+                     src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
+            </a>
+        {% else %}
+            <a class="media-object icon64px"
+               href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
+                {{ MACRO.product_icons[product.type] if not product.get_feature_image else "&nbsp;"|safe }}
+            </a>
+        {% endif %}
+
+    </div>
+    <div class="media-body">
+        <h3 class="blog-header"><a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
+            {{ product.title }}
+        </a></h3>
+        <ul class="nav imprint fullwidth">
+            <li title="{{ _('Created') }}"><span
+                    class="glyphicon glyphicon-calendar"></span> {{ product.created|dateformat(format='short') }}
+            </li>
+            <li>{{ product.get_status_display() }}
+            </li>
+        </ul>
+        {{ product.description|markdown }}
+        <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
+            <em class="nobr">{{ _('Read more') }}</em>
+        </a>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'product_number') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'description') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'price') }}</th>
+        </thead>
+        <tbody>
+        {% for product in products %}
+            <tr {{ 'class=status-unpublished' if product.status == 'hidden' }}>
+                <td>
+                    <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">{{ product.title }}</a>
+                </td>
+                <td>{{ product.product_number }}</td>
+                <td>{{ product.description|default(_('No description'), true)|markdown }}</td>
+                <td>{{ product.get_field_display('type') }}</td>
+                <td>{{ product.world|default(_('No data'),true) }}</td>
+                <td class="nobr">{{ product.created|dateformat(format='short') }}</td>
+                <td class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

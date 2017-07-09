@@ -361,25 +361,105 @@ the user who created the resource, if this is a field existing in the resource.
     Verify: Complete registration of a previously created but incomplete user.
     Same as join more or less, but assumes user exists but needs additional info. If email and token are given, verify user.
 
-Some access patterns
+Some authorization patterns
 ------------------------------------------------------------------
 
-- User. Read by all (if system-activated), write by user or admin.
-- Group. Read by all, write by group master or admin.
-- ImageAsset. Read by all, write by creator or admin.
-- Article. Read by those in Readgroup, Write by those in write groups.
-- World. Read by all, write by world creator group or admin.
+All instances can be operated by CRUD (Create, Read, Update, Delete). For some assets,
+Read is split into subvarieties, e.g. Read Published, Read Unpublished.
 
-Login-flow
-------------------------------------------------------------------
-A user can currently be either Invited, Active or Deleted. The definitions:
-- Invited: user exists in the database but has not verified its email, meaning it cannot be considered secure (someone can send up with another persons email). No communication can happen with an invited user, except to verify the email.
-- Active: A normal user. Must have at least one authentication method.
-- Deleted: A user that has been removed but is kept in database to keep consistency. Can theoretically be re-activated.
+There are 5 types of roles:
+- Admin: Have full rights to modify all resources.
+- Editor: Have full rights on a specific resource, and all child resources (what is a child depends)
+- Reader: Have access to read specific resources regardless of their state, and to read all child resources.
+- User: Have access to create new resources and read published resources. 
+(When a new resource is created, that user counts as Editor of the new instance)
+- Visitor: Un unauthenticated user, can only read published resources.
 
-1) Join: A visitor goes to /auth/join to create a new user. He/she provides
-an email (required) and then chooses to authenticate with Google, Facebook or
-Password.
+Subsequently, most instances have the following states:
+- Draft: not published, but in various stages of edit. glyphicon glyphicon-inbox
+- Revision: not used but reserved to denote older revisions of a resource glyphicon glyphicon-retweet
+- Published: Published to all with general access (typically visitors) glyphicon glyphicon-eye-open
+- Private: not used but reserved to mean published to selected readers only glyphicon glyphicon-eye-close
+- Archived: passed published, and now hidden from general access. glyphicon glyphicon-folder-close
+
+Public listing:
+- Public listings means to show resources with Published state, created_at an earlier time (e.g. not future dated).
+- An admin/editor would see all resources regardless of state and created_at.
+- A reader would see Draft, Private and Published resources.
+
+Listing: A visitor can list a resource if the Model (not resource) allows it, e.g. if it's public or not.
+If the listing can be considered listing subresources of another Model, this can also be checked.
+
+Creation: A user can by default create new resources if the Model (not resource) allows it. In addition, if the creation
+of the resource creates a link to another resource, we can check that this is allowed.
+
+Example scenarios for authorization
+---------
+
+/thepublisher (editor: NF, reader: PN)
+    /worlds
+    /theworld (editor: MB, reader: AW)
+        /articles
+        /thearticle (editor: PF, reader: PD)
+    /products
+    /theproduct
+        
+/thearticle can be read by PD, PF, FJ, MB, NF and MF but no one else regardless of status.
+/thearticle can be updated/deleted by PF, MB, MF
+/anewarticle can be created by MF, MB if closed, otherwise by any user
+/theotherarticle can be read by anyone if published, otherwise by PF, FJ, MB, NF and MF.
+For /theworld/articles:
+All users, incl PD and PF, will see only published articles.
+FJ, MB, NF and MF will see all articles.
+
+For /thepublisher/articles:
+All users, incl PD, PF, FJ, MB will see only published articles without worlds. However, 
+for articles with theworld visibility will be as previous example.
+MF, NF will see all articles.
+
+/theworld can be read by FJ, MB, NF, MF if not published, otherwise by all
+/theworld can be updated/deleted by MB, MF
+/anewworld can be created by MF
+
+NF = Niklas Fröjd = niklas@helmgast.se
+PN = petter@helmgast.se
+MB = marco@helmgast.se
+AW = anton@helmgast.se
+PF = per.frojdh@gmail.com
+PD = paul@helmgast.se
+user = niasd@as.com
+
+
+Roles: Admin, Editor, Reader, User, Visitor
+Actions: Create, Read Published, Read Unpublished, Update, Delete
+
+new: user
+list: is_visitor
+
+read: reader (also checks admin, editor)
+edit: editor (also checks admin)
+delete: editor
+
+
+
+
+REST Gotchas
+--------------
+Things that needs some implementation thought or should be covered by frameworks used:
+
+- Nice URLs do not match REST urls, as may want to see parent resources and no "articles" verb in the URL
+- Human users have two kinds of GET - get to read, and get to edit, e.g. a form. Thereby "intent="
+- Some fields need to be sent to client but not editable, eg. slug
+- Some fields need some form of serialization to fit into a FORM and back into an object
+- Some fields can be editable but not sent to client, e.g. password
+- Creating a reference in a field to another resource may depend on permissions from that other resource (e.g. to make
+an article inside a world needs permissions on that world)
+- There are multiple "Schemas": one for database models, one for forms, one for URL arguments, and potentially one for auth. 
+They should be kept as close/same but also have different behaviour. The DB model needs all fields while a form maybe SHOULDN'T
+contain all fields.
+- REST says that POST for new resources should happen on the list route e.g /articles/. It means the function that deals with that 
+list route has to also deal with the logic for posting. Especially as the form for creating a new resource needs to come from the GET route.
+I solved it with having the special id "post" so that the GET route can be re-used.
 
 
 
@@ -395,7 +475,7 @@ The form library is seemingly simple but infinitly complex when you scratch the 
 
 This is the lifecycle steps:
 
-1) Create Model class (db.Documents)
+1) Create Model class (Document)
 2) Create Form class by telling model_form to parse all fields in Model class, and pick suitable HTML form fields that match each variable.
 3) When you have a request for a form, instantiate the Form class for that model, and by calling each field of the form, render the HTML. If the Form was instantiated with a model object, the form will be pre-filled with real model data.
 4) When you get a form post response back, let the form self-parse the request data, and then if it validates, tell the form to populate a Model object with the new data (overwriting any old data).
@@ -610,3 +690,259 @@ Run the following command
     mongo <db_name> db/backup_db.js
 
 This will create a backup with todays timestamp.
+
+Localization
+==================================================================
+There are two types of internationalization - interface and content.
+Interface can be automatically changed but content depends on if it's 
+available in that content item. Currently, no content items support multiple
+languages. There is never any reason to intentionally have different interface
+and content language, but may happen if content of specific language is not available.
+
+Language input can be in reverse order of importance:
+
+* In HTTP header (can be multiple)
+* In visitor preference (cookie or user profile)
+* In URL
+
+URL is special - it should give a 404 if the requested language is not available 
+as interface (ignoring content). Otherwise, we shall build a list of languages
+in order of preference, with user preference ordered first. This should be matched
+with the set of languages supported by interface and content respectively.
+
+E.g.: Header says EN, SE. User says DE. Check in order DE, EN, SE vs available
+interface language (EN, SE) and content (SE).
+
+Language output is in form of:
+
+* Displayed interface language
+* Displayed content language
+* Language code in HTML header
+* Preselected language in relevant forms
+
+In addition, location means which country the visitor is likely from. Location 
+can be used to prefill address fields and currency.
+
+Themes
+==================================================================
+
+- What is not themeable (at start):
+    - Navbar (except navbrand)
+    - Footer
+- What can be themed
+    - page-header
+    - page (container)
+    - 3 types of fonts:
+        - Base font (body)
+        - Header font (h1-h7)
+        - Article font (article)
+        
+       
+Social users: 60%
+Password: 40%
+Different emails on social and pass? 30%
+Login on multiple devices: 50%
+
+Will see migration screen but already migrated:
+50%
+
+Will end up with different accounts if not migrating:
+
+
+    
+Migration procedure1:
+1) Invalidate all previous sessions
+2) If no "auth0_migrated" cookie AND no uid in session, redirect to migrate at login
+3) When authenticated, store u2m (user to migrate) in session, then show signup form and avatar
+4) At callback,
+    a) if u2m exist in session, merge auth to that user and remove old auths, set auth0_migrated cookie and remove u2m
+    b) if uid does not exist in session, but we have verified email in auth, merge with that account if it exists
+    c) if uid does not exist and no email match, create new user
+    Complete login and session.
+   
+Migration procedure2:
+0) Invalidate all previous sessions
+1a) If no session, show login screen as usual
+1b) If session, do not link to login, but if accessed, show current user and message that we will add an auth
+2) Login using email or social.
+3a) If current session:
+    If new auth doesn't match session user, add it and show profile with updated data.
+    If new auth does match session user, and 
+    If new auth does match session user, and user is invited, delete that user and merge to current user.
+    If new auth does match session user, and user is active or deleted, report an unresolvable error and contact info@
+3b) If no current session
+    If new auth matches existing user and auth is same, just login.
+    If new auth matches existing user, and auth is new, add it and show profile with updated data.
+    If existing user, and new auth, show a message that we added a new profile.
+4c) If existing user, and old auth, show profile and a message that user have been migrated.
+4d) If not existing user, send user to "post user" page.
+
+
+If press Cancel, 
+
+Cookie includes:
+email: authenticated email from auth0
+
+
+Show instructions if to merge if this was unintended.
+
+Need to always check that a user is active when verifying a logged in user, in order to be able to lock out users centrally.
+
+How to merge:
+1) We just created b@b.com (uid234) but old user is a@a.com (uid123).
+2) User requests to add email a@a.com. Email verification is sent.
+3) When code is entered, we will go to login but find that login for a@a.com maps to different uid123 than current session (uid234).
+But it means user controls both accounts. 
+
+    
+        
+URLs
+
+GET/POST    api|/articles/
+GET/DEL/PAT api|/articles/<article_id>
+GET/POST    api|/worlds/
+GET/DEL/PAT api|/worlds/<world_id>
+
+
+Human friendly URL
+GET/DEL/PAT     <pub>|/<world or 'meta'>/<article>
+GET/POST        <pub>|/<world or 'meta'>/articles/
+GET             <pub>|/<world or 'meta'>/[home, articles, blog, feed]/ <- specific views, translates to set of args on world/
+
+
+GET/DEL/PAT     <pub>|/<world>
+GET/POST        <pub>|/worlds/
+GET             <pub>|/[home, articles, blog, feed]/
+
+
+#Markdown
+
+----
+```
+![Alt](/link/image.jpg)
+```
+is rendered as:
+```
+<img src="/link/image.jpg" data-caption="Alt" alt="Alt">
+```
+CSS renders it to a full width image without visible caption, converted back as-is.
+
+----
+```
+- ![Alt](/link/image.jpg)
+```
+is rendered as:
+```
+<ul>
+<li><img src="/link/image.jpg" data-caption="Alt" alt="Alt"></li>
+</ul>
+```
+and is converted back as:
+```
+- ![Alt](/link/image.jpg)
+```
+
+----
+```
+- ![Alt](/thumb/image.jpg)
+```
+Is rendered as a link to original with a thumbnail image.
+```
+<ul>
+<li><a href="/orig/image.jpg" title="Alt"><img src="/thumb/image.jpg" alt="Alt"></a></li>
+</ul>
+```
+Converted back as:
+```
+- [![Alt](/thumb/image.jpg)](/link/image.jpg)
+```
+----
+```
+- Some text ![Alt](/link/image.jpg) more text
+- ![Alt](/thumb/image.jpg)
+```
+A list that contains any text outside an element should be treated as a normal list,
+e.g. no management of images.
+----
+
+```
+[Embed](http://oembedsupported-url.com/asd)
+```
+Rendered as:
+
+```
+<iframe ...><a href="http://oembedsupported-video.com/asd">Embed</a></iframe>
+```
+Rendered back as:
+```
+[Embed](http://oembedsupported-url.com/asd)
+```
+----
+```
+[File](/link/file.ext)
+```
+Rendered as:
+```
+<a href="/link/file.ext">File</a>
+```
+Based on ext, CSS will show this as a file icon.
+
+----
+
+```
+![Alt](/link/image.jpg#center|wide|side)
+```
+Rendered as a normal image, but the center|wide|side (one of) is a hint on where to position it on
+the page. center is default and refers to an image that spans the full column width. 
+Wide is an image that covers the full page width, but is limited in height for a narrow
+aspect ratio. Side is a right aligned box that the text flows around.
+If the hint is applied direct to an image it will affect the image. If it's in a list,
+the list will be positioned instead. The list will follow the first hint it finds.
+
+
+In the UI, any inserted file or image becomes a list, and any list that is clicked 
+opens a modal to pick which items on that list. So gallery lists cannot be edited directly
+
+## Asset linking
+
+Types of assets to link to:
+- Raw images ```[domain]/asset/image/filename.ext```. Returns an original image asset.
+- Resized images ```[domain]/asset/thumb/size-filename.ext```. Returns a resized image asset. Size is a variable that the backend determines dimensions of, e.g. wide|center|side|logo
+- File link ```[domain]/asset/link/filename.ext```
+- File download ```[domain]/asset/file/filename.ext```
+
+## Intro tour
+
+The intro tour shows new users what they can do.
+1) Explain that we are starting the intro tour
+2) Show Game Worlds
+3) Show Search
+4) Show example of article
+5) Show example of article that is hidden
+6) Go to article, show article stats
+7) Show actionbar
+8) Go to edit page, show main article
+9) Show markdown
+10) Show details aside
+11) 
+
+Domains:
+
+- All static resources are served from fablr.co (core domain). Later they might be served from a static top domain to
+avoid using same credentials. With HTTP2 the need to do this is less or even counter productive however.
+- All asset links (e.g. semi-static resources) are also served from fablr.co for simplicity. Note however that these might
+need credentials to be served.
+- fablr.co is the landing page about the platform
+- fablr.co/auth
+- api.fablr.co is where the common API (will be) hosted
+- fablr.co/mailer is used for sending email
+- publisher.com or publisher.fablr.co is a complete subset of pages. All data served with such a domain will be bound
+to either come from that publisher, or where it's not relevant, served anyway. Such routes are:
+-- worlds/ (public)
+-- articles/ (public)
+-- products/ (public)
+-- orders/ (login)
+-- fileassets/ (login, refers to the upload and editing, serving is from separate)
+-- users/ (public)
+-- 
+If a route above is visited with the core domain (fablr.co) no filtering per publisher is made.

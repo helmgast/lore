@@ -30,16 +30,3 @@
 </table>
 {% endblock %}
 {% block modal_body %}{% endblock %}
-
-{% block form %}
-
-{{super()}}
-
-<div class="form-group">
-    <label for="message" class="col-xs-2 control-label">{{_('Message')}}:</label>
-    <div class="col-xs-10">
-        {{mailform.message(class="form-control",rows="7")}}
-    </div>
-</div>
-
-{% endblock %}

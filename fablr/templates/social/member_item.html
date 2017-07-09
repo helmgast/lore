@@ -5,14 +5,14 @@
   <tr class="user-tablerow">
     {%- if member_form and not member %}
    		<td name="username" colspan="2">
-      		{{member_form.user(**{'data-role':'chosen','style':'width:100%;'})}}
+      		{{member_form.user(style='width:100%;')}}
       </td>
     {% else %}
       <td name="username">
       {% if member_form %}
       	<input type="hidden" name="members-{{index}}-user" value="{{member.user.identifier()}}" />
       {% endif %}
-      <a href="{{ url_for('.user_view', user=member.user.identifier()) }}">        
+      <a href="{{ url_for('social.UsersView:get', id=member.user.identifier()) }}">
       <img class="avatar" src="{{ member.user.gravatar_url() }}" />
       <strong class="message_name">{{member.user}}</strong></a>
     </td>
@@ -20,7 +20,7 @@
     {% endif %}
     <td>
     {% if member_form %}
-    {{ MACRO.FORM_FIELD_INLINE(member_form.role)}}
+    {{ MACRO.FORM_FIELD(member_form.role, inline=true)}}
     {% else %}{{member.get_role()}}
     {% endif %}
     </td>

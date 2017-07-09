@@ -1,0 +1,63 @@
+{
+  "name": "fablr",
+  "version": "1.0.0",
+  "description": "Fablr is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "dependencies": {
+    "auth0-lock-passwordless": "^2.2.3",
+    "autosize": "^3.0.17",
+    "bootstrap": "^3.3.7",
+    "flatpickr": "^2.0.5",
+    "intro.js": "^2.5.0",
+    "jquery": "^3.1.1",
+    "list.js": "^1.2.0",
+    "lodash": "^4.17.4",
+    "marked": "^0.3.6",
+    "rollbar-browser": "^1.9.2",
+    "selectize": "^0.12.4",
+    "trumbowyg": "^2.3.0",
+    "upndown": "^2.0.2",
+    "waypoints": "^4.0.1"
+  },
+  "devDependencies": {
+    "autoprefixer-loader": "^3.2.0",
+    "clean-webpack-plugin": "^0.1.13",
+    "css-loader": "^0.25.0",
+    "expose-loader": "^0.7.1",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "file-loader": "^0.9.0",
+    "img-loader": "^1.3.1",
+    "json-loader": "^0.5.4",
+    "less": "^2.7.1",
+    "less-loader": "^2.2.3",
+    "manifest-revision-webpack-plugin": "^0.3.0",
+    "merge": "^1.2.0",
+    "style-loader": "^0.13.1",
+    "svg-loader": "0.0.2",
+    "svg-sprite-loader": "0.0.31",
+    "svgo-loader": "^1.1.2",
+    "url-loader": "^0.5.7",
+    "webpack": "^1.13.2",
+    "webpack-manifest-plugin": "^1.0.1",
+    "webpack-svgstore-plugin": "^3.0.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack",
+    "watch": "webpack --watch",
+    "start": "webpack-dev-server --hot --inline"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/per-frojdh/fablr.git"
+  },
+  "author": "Martin Frojd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/per-frojdh/fablr/issues"
+  },
+  "homepage": "https://github.com/per-frojdh/fablr#readme"
+}

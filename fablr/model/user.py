@@ -7,194 +7,284 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
-
+from datetime import datetime
 from hashlib import md5
-from baseuser import BaseUser, make_password, create_token
-from slugify import slugify
-from misc import now, Choices
-from fablr.app import db
-from mongoengine import ValidationError
-from flask.ext.mongoengine.wtf import model_form
-from wtforms.fields import HiddenField
-# i18n (Babel)
-from flask.ext.babel import lazy_gettext as _
+
+import math
+
+from flask import flash
+
+from baseuser import BaseUser, create_token
+from misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
+    numerical_options
+from flask_babel import lazy_gettext as _
+from misc import Document  # Enhanced document
+from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
+                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
+                         ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)
 
 import logging
 from flask import current_app
+
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 UserStatus = Choices(
-  invited=_('Invited'),
-  active=_('Active'),
-  deleted=_('Deleted'))
-ExternalAuth = Choices(
-  google='Google',
-  facebook='Facebook')
+    invited=_('Invited'),
+    active=_('Active'),
+    deleted=_('Deleted'))
 
-class ExternalAuth(db.EmbeddedDocument):
-  id = db.StringField(required=True)
-  long_token = db.StringField()
-  emails = db.ListField(db.EmailField())
+auth_services = {
+    'google-oauth2': 'Google',
+    'google': 'Google',
+    'facebook': 'Facebook',
+    'email': 'Email'
+}
+
+# TODO deprecate
+class ExternalAuth(EmbeddedDocument):
+    id = StringField(required=True)
+    long_token = StringField()
+    emails = ListField(EmailField())
+
+
+# TODO deprecate
+class UserEvent(EmbeddedDocument):
+    created = DateTimeField(default=datetime.utcnow)
+    action = StringField()
+    instance = GenericReferenceField()
+    message = StringField()
+    xp = IntField()
+
+    def action_string(self):
+        try:
+            return translate_action(self.action, self.instance)
+        except DoesNotExist as dne:
+            return self.action
 
 # A user in the system
-class User(db.Document, BaseUser):
-  # We want to set username unique, but then it cannot be empty,
-  # but in case where username is created, we want to allow empty values
-  # Currently it's only a display name, not used for URLs!
-  username = db.StringField(max_length=60, verbose_name=_('username'))
-  password = db.StringField(max_length=60, verbose_name = _('password'))
-  email = db.EmailField(max_length=60, unique=True, min_length=6, verbose_name = _('email'))
-  realname = db.StringField(max_length=60, verbose_name = _('real name'))
-  location = db.StringField(max_length=60, verbose_name = _('location'))
-  description = db.StringField(verbose_name = _('description'))  # TODO should have a max length, but if we set it, won't be rendered as TextArea
-  xp = db.IntField(default=0, verbose_name = _('xp'))
-  join_date = db.DateTimeField(default=now(), verbose_name = _('join date'))
-  # msglog = db.ReferenceField(Conversation)
-  status = db.StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
-  admin = db.BooleanField(default=False)
-  newsletter = db.BooleanField(default=True)
-  google_auth = db.EmbeddedDocumentField(ExternalAuth)
-  facebook_auth = db.EmbeddedDocumentField(ExternalAuth)
+class User(Document, BaseUser):
+    # meta = {
+    #     'indexes': ['email', 'auth_keys']
+    #
+    #     # 'indexes': ['email', 'auth_keys.email']
+    # }
+    # ripperdoc@gmail.com|facebook|507316539704
+    # We want to set username unique, but then it cannot be empty,
+    # but in case where username is created, we want to allow empty values
+    # Currently it's only a display name, not used for URLs!
+    username = StringField(max_length=60, verbose_name=_('Username'))
+    email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Contact Email'))
+    auth_keys = ListField(StringField(max_length=100, unique=True), verbose_name=_('Authentication sources'))
+    realname = StringField(max_length=60, verbose_name=_('Real name'))
+    location = StringField(max_length=60, verbose_name=_('Location'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
+    xp = IntField(default=0, verbose_name=_('XP'))
+    join_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Join Date'))
+    last_login = DateTimeField(verbose_name=_('Last login'))
+    status = StringField(choices=UserStatus.to_tuples(), default=UserStatus.invited, verbose_name=_('Status'))
+    hidden = BooleanField(default=False)
+    admin = BooleanField(default=False)
+    logged_in = BooleanField(default=False)
+    tourdone = BooleanField(default=False)
 
-  following = db.ListField(db.ReferenceField('self'), verbose_name = _('Following'))
+    # Uses string instead of Class to avoid circular import
+    publishers_newsletters = ListField(ReferenceField('Publisher'))  #Reverse delete rule in world.py
+    world_newsletters = ListField(ReferenceField('World'))  #Reverse delete rule in world.py
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
+    following = ListField(ReferenceField('self', reverse_delete_rule=NULLIFY), verbose_name=_('Following'))
 
-  def clean(self):
-    # TODO Our password hashes contain 46 characters, so we can check if the value
-    # set is less, which means it's a user input that we need to hash before saving
-    if self.password and len(self.password) <= 40:
-      self.set_password(self.password)
+    # TODO deprecate
+    password = StringField(max_length=60, verbose_name=_('Password'))
+    newsletter = BooleanField(default=True)
+    google_auth = EmbeddedDocumentField(ExternalAuth)
+    facebook_auth = EmbeddedDocumentField(ExternalAuth)
+    event_log = ListField(EmbeddedDocumentField(UserEvent))
 
-  def display_name(self):
-    return self.__unicode__()
+    def clean(self):
+        # if self.username and self.location and self.description and self.images:
+        #     # Profile is completed
+        #     self.log(action='completed_profile', resource=self)  # metric is 1
+        try:
+            self.recalculate_xp()
+        except ValidationError as ve:
+            # May come if we try to count objects referring to this user, while the user hasn't been created yet
+            pass
 
-  def __unicode__(self):
-    return self.username if self.username else (
-      self.realname.split(' ')[0] if self.realname else unicode(_('Anonymous')))
+    def recalculate_xp(self):
+        xp = Event.objects(user=self).sum('xp')
+        if xp != self.xp:
+            self.xp = xp
+            return True
+        return False
 
-  def full_string(self):
-    return "%s (%s)" % (self.username, self.realname)
+    def enumerate_auth_keys(self):
+        # Assumes a Auth0 auth_id prepended with an email, e.g email@domain.com|email|58ba793c0bdcab0a0ec46cf7
+        if not self.auth_keys:
+            return
+        else:
+            for key in self.auth_keys:
+                split_key = key.split('|')
+                if not len(split_key) == 3 or any(not k for k in split_key):
+                    raise ValidationError("Auth key {key} is not valid".format(key=key))
+                else:
+                    yield split_key
 
-  def log(self, msg):
-    pass # TODO
+    def display_name(self):
+        return self.__unicode__()
 
-  def create_token(self):
-    return create_token(self.email)
+    def __unicode__(self):
+        return self.realname or self.username or self.email.split('@')[0]
 
-  def auth_type(self):
-    return "Google" if self.google_auth else "Facebook" if self.facebook_auth else "Password" if self.password else "None"
+    def full_string(self):
+        return u"%s (%s)" % (self.username, self.realname)
 
-  def groups(self):
-    return Group.objects(members__user=self)
+    def log(self, action, resource, message='', metric=1.0):
+        ev = Event(user=self, action=action, resource=resource, message=message, metric=metric)
+        ev.save()
+        return ev.xp
 
-  def identifier(self):
-    # TODO to also allow username here
-    return self.id
+    def create_token(self):
+        return create_token(self.email)
 
-  def messages(self):
-    return Message.objects(user=self).order_by('-pub_date')
+    def auth_type(self):
+        return "Google" if self.google_auth else "Facebook" if self.facebook_auth else _(
+            "Password") if self.password else _("No data")
 
-  def get_most_recent_conversation_with(self, recipients):
-    # A private conversation is one which is only between this user
-    # and the given recipients, with no other users
-    if not recipients:
-      raise ValueError('Empty list of recipients')
-    if not isinstance(recipients, list) or not isinstance(recipients[0], User):
-      raise TypeError('Expects a list of User')
-    logger.info("recipients is list of %s, first item is %s", type(recipients[0]), recipients[0])
-    recipients = recipients + [self]
-    # All conversations where all recipients are present and the length of the lists are the same
-    return Conversation.objects(members__all=recipients, members__size=len(recipients))
+    def groups(self):
+        return Group.objects(members__user=self)
 
-  def gravatar_url(self, size=48):
-    return 'http://www.gravatar.com/avatar/%s?d=identicon&s=%d' %\
-         (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
-
-  # @classmethod
-  # def allowed(cls, user, op='view', instance=None):
-  #     if user:
-  #         if op=='view' or op=='new':
-  #             return True
-  #         else:
-  #             return (user.id == instance.id) # requesting user and passed user instance has same ID - you can edit yourself
-  #     return False
+    def identifier(self):
+        # TODO to also allow username here
+        return self.id
 
 
-class Conversation(db.Document):
-  modified_date = db.DateTimeField(default=now())
-  members = db.ListField(db.ReferenceField(User))
-  title = db.StringField(max_length=60)
-  topic = db.StringField(max_length=60)
+    def gravatar_url(self, size=48):
+        return '//www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
+               (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
-  members.verbose_name  = _('members')
-  title.verbose_name  = _('title')
-  topic.verbose_name  = _('topic')
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
 
-  meta = {'ordering': ['-modified_date']}
+User.status.filter_options = choice_options('status', User.status.choices)
+User.last_login.filter_options = datetime_delta_options('last_login', from7to365)
+User.join_date.filter_options = datetime_delta_options('join_date', from7to365)
+User.xp.filter_options = numerical_options('xp', [0, 50, 100, 200])
 
-  def is_private(self):
-    return (members and len(members)>1)
+class Event(Document):
+    meta = {
+        'ordering': ['-created']
+    }
 
-  def messages(self):
-    return Message.objects(conversation=self)
+    action = StringField(required=True, max_length=62, unique_with=(['created', 'user']))  # URL-friendly name
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    user = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('User'))
+    resource = GenericReferenceField(verbose_name=_('Resource'))
+    message = StringField(max_length=500, verbose_name=_('Message'))
+    metric = FloatField(default=1.0, verbose_name=_('Metric'))
+    xp = IntField(default=0, verbose_name=_('XP'))
 
-  def last_message(self):
-    return Message.objects(conversation=self).order_by('-pub_date').first() # first only or none
+    def clean(self):
+        self.xp = Event.calculate_xp(self)
 
-  def __unicode__(self):
-    return u'conversation'
+    def action_string(self):
+        try:
+            return translate_action(self.action, self.resource)
+        except DoesNotExist as dne:
+            return self.action
+
+    @staticmethod
+    def calculate_xp(event):
+        if event.action in xp_actions:
+            count = len(Event.objects(user=event.user, action=event.action)) + 1
+            if isPower(count, xp_actions[event.action]['base']):
+                xp = xp_actions[event.action]['func'](event.metric)
+                if xp:
+                    flash(_('%(action)s: %(xp)s XP awarded to %(user)s', action=event.action_string(), xp=xp, user=event.user, ), 'info')
+                return xp
+        return 0
+
+# When we add an Event, we check below formulas for XP per metric.
+# However, we need to throttle new XP, which we do by counting number of same action from same user before
+# We do this with an exponential period, which means we award XP with an ever-growing interval. Different XP actions
+# can have a different base value:
+#  base=0: only first event will ever count
+#  base=1: every event will count
+#  base=2: 1st, 2nd, 4th, 8th, etc event will count
+#  base=3: and so on
+# We can count these events throughout all history or for a limited time period, thus resetting the counter
+
+
+xp_actions = {
+    'patch': {'func': lambda x: int(5*x), 'base':2},  # Patched a resource
+    'post': {'func': lambda x: int(10*x), 'base':2},  # Posted a new resource
+    'get': {'func': lambda x: int(1*x), 'base':2},  # Visit a page
+    'comment': {'func': lambda x: int(3*x), 'base':2},  # Posted a disqus comment (TBD)
+    'completed_profile': {'func': lambda x: int(10*x), 'base':0},  # Completed profile
+    'purchase': {'func': lambda x: int(x), 'base':1},  # 1 per SEK, with fixed FX
+    'share': {'func': lambda x: int(3*x), 'base':2},  # Initiate a share on Facebook etc (TBD)
+}
+
+def isPower(num, base):
+    if base == 1: return True
+    if base == 0: return num == 1
+    if base < 0: return False
+    return base ** int(math.log(num, base) + .5) == num
 
 MemberRoles = Choices(
-  master=_('Master'),
-  member=_('Member'),
-  invited=_('Invited'))
-class Member(db.EmbeddedDocument):
-  user = db.ReferenceField(User)
-  role = db.StringField(choices=MemberRoles.to_tuples(), default=MemberRoles.member)
+    master=_('Master'),
+    member=_('Member'),
+    invited=_('Invited'))
 
-  def get_role(self):
-    return MemberRoles[self.role]
+
+class Member(EmbeddedDocument):
+    user = ReferenceField(User)
+    role = StringField(choices=MemberRoles.to_tuples(), default=MemberRoles.member)
+
+    def get_role(self):
+        return MemberRoles[self.role]
+
 
 # A gamer group, e.g. people who regularly play together. Has game masters
 # and players
-GroupTypes = Choices(   gamegroup=_('Game Group'),
-            worldgroup=_('World Group'),
-            articlegroup=_('Article Group'))
-class Group(db.Document):
-  name = db.StringField(max_length=60, required=True)
-  location = db.StringField(max_length=60)
-  slug = db.StringField()
-  description = db.StringField() # TODO should have a max length, but if we set it, won't be rendered as TextArea
-  type = db.StringField(choices=GroupTypes.to_tuples(),default=GroupTypes.gamegroup)
-  members = db.ListField(db.EmbeddedDocumentField(Member))
+GroupTypes = Choices(gamegroup=_('Game Group'),
+                     worldgroup=_('World Group'),
+                     articlegroup=_('Article Group'),
+                     newsletter=_('Newsletter'))
 
-  def __unicode__(self):
-    return self.name
 
-  def add_masters(self, new_masters):
-    self.members.extend([Member(user=m,role=MemberRoles.master) for m in new_masters])
+class Group(Document):
+    slug = StringField(unique=True, max_length=62)  # URL-friendly name
+    title = StringField(max_length=60, required=True, verbose_name=_('Title'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
+    created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
+    updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
+    location = StringField(max_length=60)
+    type = StringField(choices=GroupTypes.to_tuples(), default=GroupTypes.gamegroup)
 
-  def add_members(self, new_members):
-    self.members.extend([Member(user=m,role=MemberRoles.master) for m in new_members])
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
+    members = ListField(EmbeddedDocumentField(Member))
 
-  def save(self, *args, **kwargs):
-    self.slug = slugify(self.name)
-    return super(Group, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return self.title or u''
 
-  def members_as_users(self):
-    return [m for m.user in members]
+    def add_masters(self, new_masters):
+        self.members.extend([Member(user=m, role=MemberRoles.master) for m in new_masters])
 
-# A message from a user (to everyone)
-class Message(db.Document):
-  user = db.ReferenceField(User)
-  content = db.StringField()
-  pub_date = db.DateTimeField(default=now())
-  conversation = db.ReferenceField(Conversation)
-  #readable_by = IntegerField(choices=((1, 'user'), (2, 'group'), (3, 'followers'), (4, 'all')))
+    def add_members(self, new_members):
+        self.members.extend([Member(user=m, role=MemberRoles.master) for m in new_members])
 
-  def __unicode__(self):
-    return '%s: %s' % (self.user, self.content)
+    def clean(self):
+        self.updated = datetime.utcnow()
+        self.slug = slugify(self.title)
 
-  def clean(self):
-    if self.conversation:
-      self.conversation.modified_date = self.pub_date
-      self.conversation.save()
+    def members_as_users(self):
+        return [m.user for m in self.members]
+
+    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
+    def get_field_display(self, field):
+        return self._BaseDocument__get_field_display(self._fields[field])
+
+Group.type.filter_options = choice_options('type', Group.type.choices)
+Group.created.filter_options = datetime_delta_options('created', from7to365)
+Group.updated.filter_options = datetime_delta_options('updated', from7to365)
