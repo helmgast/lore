@@ -30,6 +30,7 @@ def new_show_toolbar(self):
         return True
     return False
 
+
 toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
 
@@ -74,12 +75,13 @@ class FablrRule(Rule):
     """Sorts rules starting with a variable, e.g. /<xyx>, last"""
     allow_domains = False
     default_host = None
-    re_sortkey = re.compile(r'[^\/<]')
+    re_sortkey = re.compile(r'[^/<]')
+    match_order = None
 
     def bind(self, map, rebind=False):
         # if self.subdomain:  # Convert subdomain to full host rule
-            # self.host = self.subdomain + '.' + self.default_host
-            # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
+        # self.host = self.subdomain + '.' + self.default_host
+        # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
         thehost = self.subdomain or None
 
         if thehost and not self.allow_domains:
@@ -90,11 +92,11 @@ class FablrRule(Rule):
             self.host = thehost or self.default_host
         # Will transform rule to string of / and <, to ensure we sort by path with non-variables before variables
         # That means that /worlds/ab will come before /<pub>/ab
-        self.matchorder = FablrRule.re_sortkey.sub('', self.rule)
+        self.match_order = FablrRule.re_sortkey.sub('', self.rule)
         super(FablrRule, self).bind(map, rebind)
 
     def match_compare_key(self):
-        tup = (self.matchorder,) + super(FablrRule, self).match_compare_key()
+        tup = (self.match_order,) + super(FablrRule, self).match_compare_key()
         return tup
 
 
@@ -108,6 +110,7 @@ def is_db_empty(the_db):
 
 
 db = MongoEngine()
+
 
 class MongoJSONEncoder(JSONEncoder):
     def default(self, o):
@@ -153,7 +156,8 @@ def pick_locale():
         preferred_locale = request.args['locale']
         if preferred_locale not in g.available_locales:
             # Hard abort as URL specified an unavailable locale
-            abort(404, u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
+            abort(404,
+                  u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
         else:
             session['locale'] = preferred_locale
     elif 'locale' in session:
@@ -174,8 +178,7 @@ csrf = CSRFProtect()
 def init_assets(app):
     try:
         with app.open_resource(app.config.get('WEBPACK_MANIFEST_PATH'), 'r') as stats_json:
-            stats = load(stats_json)
-            app.assets = stats['assets']
+            app.assets = load(stats_json)
     except IOError as io:
         raise RuntimeError(
             "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
@@ -197,28 +200,30 @@ class GalleryList(Treeprocessor):
                             alt = img.get('alt', None)
                             if alt:
                                 li.set('title', alt)
-                        # a_el = etree.Element('a')
-                        # a_el.set('href', '#')
-                        # a_el.set('class', 'zoomable')
-                        # a_el.extend(list(li))  # list(li) enumerates all children of li
-                        # # for e in li:
-                        # #     li.remove(e)
-                        # li.append(a_el)
-                        # imgs = list(ul.iterfind('.//img'))
-                        # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-                        # # if there are same amount of images as text items, and the text is zero, we have only images in the list
-                        # # however, they may be nested in other tags, e.g. a
-                        # if ''.join(txts).strip() == '':  # All text nodes empty in the list
+                                # a_el = etree.Element('a')
+                                # a_el.set('href', '#')
+                                # a_el.set('class', 'zoomable')
+                                # a_el.extend(list(li))  # list(li) enumerates all children of li
+                                # # for e in li:
+                                # #     li.remove(e)
+                                # li.append(a_el)
+                                # imgs = list(ul.iterfind('.//img'))
+                                # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+                                # # if there are same amount of images as text items, and the text is zero,
+                                # we have only images in the list
+                                # # however, they may be nested in other tags, e.g. a
+                                # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
 
 class GalleryList(Treeprocessor):
     def run(self, root):
         for ul in root.findall('ul'):
             if len(ul):
-              imgs = list(ul.iterfind('.//img'))
-              txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-              if len(imgs) > 0 and ''.join(txts).strip() == '':
-                ul.set('class', 'gallery')
+                imgs = list(ul.iterfind('.//img'))
+                txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+                if len(imgs) > 0 and ''.join(txts).strip() == '':
+                    ul.set('class', 'gallery')
+
 
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
@@ -234,7 +239,9 @@ def build_md_filter(md_instance):
             return Markup(md_instance.convert(jinja2.escape(stream)))
         else:
             return Markup(md_instance.convert(stream))
+
     return markdown_filter
+
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):

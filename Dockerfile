@@ -1,15 +1,23 @@
-FROM python:2.7
-
-MAINTAINER Ripperdoc
-
+# First stage - build static resources using node. Required Docker CE >=17.06
+FROM node:latest
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
+COPY assets/ assets/
+COPY static/ static/
+COPY package.json .
+COPY webpack.config.js .
+RUN npm install
+RUN npm run build
 
+# Second stage, copy over static resources and start the python
+FROM python:2.7
+MAINTAINER Ripperdoc
+WORKDIR /usr/src/app
+COPY --from=0 /usr/src/app/static/ static/
 COPY requirements.txt run.py /usr/src/app/
 RUN pip install --no-cache-dir -r requirements.txt
 COPY tools/ tools/
 COPY fablr/ fablr/
-COPY static/ static/
 
 ENV FLASK_APP=run.py
 RUN flask lang_compile

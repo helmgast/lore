@@ -22,10 +22,11 @@ class Config(object):
     DEFAULT_HOST = 'fablr.dev'  # Default host when not using flask dev server
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
-    WEBPACK_MANIFEST_PATH = '../static/manifest.json'
+    WEBPACK_MANIFEST_PATH = '../static/dist/manifest.json'
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
+
 
 class SecretConfig(object):
     # Replace with mongodb://user:pass@host/dbname in config.py file

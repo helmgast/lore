@@ -31,6 +31,7 @@ asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
 
 QR_URL_FORMAT = "HTTPS://FABLR.CO/-%s"
 
+
 def set_cache(rv, cache_timeout):
     if cache_timeout is not None:
         rv.cache_control.public = True
@@ -132,7 +133,6 @@ def filter_authorized_by_publisher(publisher=None):
 
 
 class AssetAccessPolicy(ResourceAccessPolicy):
-
     def is_editor(self, op, user, res):
         if user == res.owner or (res.publisher and user in res.publisher.editors):
             return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
@@ -154,7 +154,8 @@ class FileAssetsView(ResourceView):
     list_template = 'fileasset_list.html'
     item_template = 'fileasset_item.html'
     form_class = model_form(FileAsset,
-                            exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width', 'height', 'file_data'],
+                            exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width',
+                                     'height', 'file_data'],
                             base_class=RacBaseForm,
                             converter=RacModelConverter())
     list_arg_parser = filterable_fields_parser(
@@ -192,7 +193,7 @@ class FileAssetsView(ResourceView):
                     head.append(item)
                 else:
                     tail.append(item)
-            r.files = head+tail
+            r.files = head + tail
 
         return r
 
@@ -276,6 +277,7 @@ class FileAssetsView(ResourceView):
         r.commit()
         return redirect(
             r.args['next'] or url_for('assets.FileAssetsView:index', pub_host=publisher.slug))
+
 
 FileAssetsView.register_with_access(asset_app, 'files')
 

@@ -48,6 +48,7 @@ class UserAccessPolicy(ResourceAccessPolicy):
     def is_reader(self, op, user, res):
         return self.is_editor(op, user, res)
 
+
 FinishTourForm = model_form(User,
                             base_class=Form,  # No CSRF on this one
                             only=['tourdone'],
@@ -85,6 +86,7 @@ class UsersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
+        user = None
         if id == 'post':
             r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=None)
@@ -158,6 +160,7 @@ class GroupsView(ResourceView):
                             base_class=RacBaseForm,
                             exclude=['slug', 'created', 'updated'],
                             converter=RacModelConverter())
+
     def index(self):
         groups = Group.objects().order_by('-updated')
         r = ListResponse(GroupsView, [('groups', groups)])
@@ -195,6 +198,7 @@ class GroupsView(ResourceView):
 
     def delete(self, id):
         abort(501)  # Not implemented
+
 
 # GroupsView.register_with_access(social, 'group')
 

@@ -215,6 +215,7 @@ def shop_home():
     else:
         return redirect(url_for('shop.OrdersView:my_orders'))
 
+
 # shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
 CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
@@ -345,10 +346,10 @@ class OrdersView(ResourceView):
     item_template = 'shop/order_item.html'
     item_arg_parser = prefillable_fields_parser(
         ['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
-    form_class = form_class = model_form(Order,
-                                         base_class=RacBaseForm,
-                                         only=['order_lines', 'shipping_address', 'shipping_mobile'],
-                                         converter=RacModelConverter())
+    form_class = model_form(Order,
+                            base_class=RacBaseForm,
+                            only=['order_lines', 'shipping_address', 'shipping_mobile'],
+                            converter=RacModelConverter())
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()

@@ -14,13 +14,12 @@ from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_babel import lazy_gettext as _
-from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
-                         ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
-                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField, NULLIFY, DENY, CASCADE)
+                         ListField, IntField, EmailField, EmbeddedDocumentField, DynamicField, URLField, NULLIFY, DENY)
 
 from asset import FileAsset
 from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
+from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
 from user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -93,8 +92,10 @@ class Publisher(Document):
     def __unicode__(self):
         return self.title or self.slug
 
+
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'publishers_newsletters', NULLIFY)
+
 
 class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -124,7 +125,6 @@ class World(Document):
     readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
 
     custom_css = StringField(verbose_name=_('Custom CSS'))
-
 
     def clean(self):
         self.title = self.title.replace(u'&shy;', u'\u00AD')  # Replaces soft hyphens with the real unicode
@@ -162,8 +162,10 @@ class World(Document):
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'world_newsletters', NULLIFY)
+
 
 class WorldMeta(object):
     """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
@@ -206,12 +208,6 @@ class ArticleRelation(EmbeddedDocument):
     relation_type = ReferenceField(RelationType)
     article = ReferenceField('Article')
 
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
-        return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
-
 
 class PersonData(EmbeddedDocument):
     born = IntField(verbose_name=_('Born'))
@@ -250,6 +246,7 @@ class Episode(EmbeddedDocument):
     title = StringField(max_length=60, verbose_name=_('Title'))
     description = StringField(verbose_name=_('Description'))
     content = ListField(ReferenceField('Article'))  # references Article class below
+
 
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row

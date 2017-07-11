@@ -289,7 +289,7 @@ class ResourceResponse(Response):
             for key in self.form._fields.keys():
                 if '${key}'.format(key=key) in err.message:
                     if key == 'slug':
-                        key == 'title'
+                        key = 'title'
                     self.form[key].errors.append(
                         _('This field needs to be unique and another resource already have this value'))
                     found = True
@@ -353,6 +353,7 @@ class ListResponse(ResourceResponse):
         'q': lambda x: x
     })
     method = 'list'
+    pagination, filter_options = None, {}
 
     def __init__(self, resource_view, queries, method='list', formats=None, extra_args=None):
         list_arg_parser = getattr(resource_view, 'list_arg_parser', None)
@@ -411,7 +412,6 @@ class ListResponse(ResourceResponse):
             except OperationError:
                 pass
 
-        self.filter_options = {}
         for f in self.model._fields.keys():
             field = self.model._fields[f]
             if hasattr(field, 'filter_options'):

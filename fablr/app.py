@@ -9,9 +9,6 @@
 """
 
 import os
-import urllib
-
-import sys
 
 import rollbar
 from flask import Flask, render_template, request, url_for, flash, g, redirect
@@ -52,7 +49,6 @@ def create_app(**kwargs):
     the_app.config.update(kwargs)  # add any overrides from startup command
     the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
 
-
     # If in production, make sure we don't have any dummy secrets
     if not the_app.debug:
         for key in dir(default_config.SecretConfig):
@@ -89,6 +85,7 @@ def my_report_exception(app, exception):
         person = {'id': request.remote_addr if request else 'non-request'}
     rollbar.report_exc_info(request=request, payload_data={'person': person})
 
+
 def configure_logging(app):
     # Custom logging that always goes to stderr
     import logging
@@ -120,11 +117,11 @@ def configure_logging(app):
         else:
             app.logger.warning("No ROLLBAR_TOKEN given in config, cannot be started")
 
-        # app.logger.debug("Debug")
-        # app.logger.info("Info")
-        # app.logger.warn("Warn")
-        # app.logger.error("Error")
-        # app.logger.info("Info")
+            # app.logger.debug("Debug")
+            # app.logger.info("Info")
+            # app.logger.warn("Warn")
+            # app.logger.error("Error")
+            # app.logger.info("Info")
 
 
 def configure_extensions(app):
@@ -150,7 +147,8 @@ def configure_extensions(app):
         if app.url_rule_class.default_host:  # Need to have default host to enable host_matching
             app.url_map = Map(host_matching=True)
             # Re-add the static rule
-            app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static', view_func=app.send_static_file)
+            app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static',
+                             view_func=app.send_static_file)
             app.logger.info('Doing host matching and default host is {host}{prefix}'.format(
                 host=app.url_rule_class.default_host, prefix=prefix or ''))
     else:
@@ -179,7 +177,7 @@ def configure_extensions(app):
     if not extensions.configured_locales or app.config.get('BABEL_DEFAULT_LOCALE') not in extensions.configured_locales:
         app.logger.warning('Incorrectly configured: BABEL_DEFAULT_LOCALE %s not in BABEL_AVAILABLE_LOCALES %s' %
                            app.config.get('BABEL_DEFAULT_LOCALE'), app.config.get('BABEL_AVAILABLE_LOCALES'))
-        extensions.configured_locales = set([app.config.get('BABEL_DEFAULT_LOCALE')])
+        extensions.configured_locales = set(app.config.get('BABEL_DEFAULT_LOCALE'))
 
     # Secure forms
     extensions.csrf.init_app(app)
@@ -190,9 +188,9 @@ def configure_extensions(app):
     # app.md.register_extension(extensions.AutolinkedImage)
 
     app.md = Markdown(extensions=['markdown.extensions.attr_list',
-                                   'markdown.extensions.smarty',
-                                   'markdown.extensions.tables',
-                                   extensions.AutolinkedImage()])
+                                  'markdown.extensions.smarty',
+                                  'markdown.extensions.tables',
+                                  extensions.AutolinkedImage()])
 
     app.jinja_env.filters['markdown'] = extensions.build_md_filter(app.md)
     app.jinja_env.filters['dict_with'] = extensions.dict_with
@@ -234,7 +232,9 @@ def configure_blueprints(app):
 
     return auth_app
 
+
 def configure_hooks(app):
+
     from flask_babel import get_locale
 
     # @app.before_request
@@ -267,27 +267,17 @@ def configure_hooks(app):
 
     app.add_template_global(get_locale)
 
-    @app.add_template_global
-    def in_current_args(testargs):
-        if isinstance(testargs, dict):
-            for kv in testargs.iteritems():
-                # Ignore None-values, they shouldn't be in URL anyway
-                # Values may be unicode, or non string object, so make it become unicode and then encode it properly
-                if kv[1] is not None and urllib.urlencode({kv[0]: unicode(kv[1]).encode('utf8')}) not in request.query_string:
-                    return False
-            return True
-        else:
-            return bool(not [x for x in testargs if x not in request.query_string])
-
-    from fablr.model.misc import current_url
+    from fablr.model.misc import current_url, in_current_args
     app.add_template_global(current_url)
+    app.add_template_global(in_current_args)
 
     @app.errorhandler(401)  # Unauthorized, e.g. not logged in
     def unauthorized(e):
         if request.method == 'GET':  # Only do sso on GET requests
             return redirect(url_for('auth.sso', next=request.url))
         else:
-            app.logger.warning("Could not handle 401 Unauthorized for {url} as it was not a GET".format(url=request.url))
+            app.logger.warning(
+                "Could not handle 401 Unauthorized for {url} as it was not a GET".format(url=request.url))
             return e, 401
 
     # @app.errorhandler(404)
@@ -297,8 +287,7 @@ def configure_hooks(app):
 
     @app.errorhandler(ConnectionFailure)
     def db_error(err):
-        print err
-        raise err
+        app.logger.error("Database Connection Failur: {err}".format(err=err))
         return "<body>No database</body>", 500
 
     from fablr.controller.resource import ResourceError, get_root_template
@@ -315,12 +304,12 @@ def configure_hooks(app):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-    #
-    # Print rules in alphabetic order
-    # for rule in app.url_map.iter_rules():
-    #     print rule.__repr__(), rule.subdomain
-    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
-    #   print rule.__repr__(), rule.subdomain, rule.match_compare_key()
+        #
+        # Print rules in alphabetic order
+        # for rule in app.url_map.iter_rules():
+        #     print rule.__repr__(), rule.subdomain
+        # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
+        #   print rule.__repr__(), rule.subdomain, rule.match_compare_key()
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

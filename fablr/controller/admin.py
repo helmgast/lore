@@ -110,7 +110,8 @@ def git_webhook(get_json=None):
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
         try:
-            curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
+            curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'
+                                     .format(**repo_meta)),
                                     cwd=cwd, stdout=subprocess.PIPE)
             tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
         except subprocess.CalledProcessError as cpe:

@@ -7,31 +7,24 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+import logging
 import re
+import unicodedata
 import urllib
 from collections import namedtuple, OrderedDict
-from datetime import timedelta, date, datetime
+from datetime import timedelta, date
 from urlparse import urlparse
 
-import unicodedata
+import flask_mongoengine
 from babel import Locale
-from babel.dates import get_month_names
 from bson import ObjectId
 from dateutil.relativedelta import *
-
-import flask_mongoengine
-import wtforms as wtf
-from flask import g, request, url_for
-from flask_wtf import Form  # secure form
-from jinja2 import TemplateNotFound
-from slugify import slugify as ext_slugify
-
-from wtforms.compat import iteritems
-from wtforms.widgets import TextArea
-from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
-import logging
 from flask import current_app
+from flask import g, request, url_for
+from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
+from jinja2 import TemplateNotFound
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
+from slugify import slugify as ext_slugify
 
 from fablr.extensions import configured_locales
 
@@ -73,32 +66,6 @@ def set_theme(response, theme_type, slug):
         except TemplateNotFound:
             logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
 
-
-url_for_args = {'_external', '_anchor', '_method', '_scheme'}
-
-
-def current_url(_multi=False, **kwargs):
-    """Returns the current request URL with selected modifications. Set an argument to
-    None when calling this to remove it from the current URL"""
-    copy_args = request.args.copy()
-    non_param_args = kwargs.pop('full_url', False)
-    for k, v in kwargs.iteritems():
-        if v is None:
-            copy_args.poplist(k)
-        elif _multi:
-            copy_args.setlistdefault(k).append(v)
-        else:
-            copy_args[k] = v
-        non_param_args = non_param_args or (k in request.view_args or k in url_for_args)
-    if non_param_args:
-        # We have args that will need url_for to build full url
-        copy_args.update(request.view_args)  # View args are not including query parameters
-        u = url_for(request.endpoint, **copy_args.to_dict())
-        return u
-    else:
-        u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
-        return u
-        # We are just changing url parameters, we can do a quicker way
 
 class Choices(dict):
     # def __init__(self, *args, **kwargs):
@@ -201,7 +168,8 @@ def datetime_month_options(field_name):
         for i in range(0, 11):
             rv.append(FilterOption(kwargs={
                 field_name + '__gte': now+relativedelta(months=-i),
-                field_name + '__lt': now+relativedelta(months=-i+1)}, label=format_date(now+relativedelta(months=-i), 'MMMM')))
+                field_name + '__lt': now+relativedelta(months=-i+1)},
+                label=format_date(now+relativedelta(months=-i), 'MMMM')))
         return rv
 
     return return_function
@@ -219,10 +187,12 @@ def datetime_delta_options(field_name, time_deltas=None, delta_labels=None):
         for i in range(0, len(time_deltas)):
             delta = time_deltas[i]
             rv.append(FilterOption(kwargs={field_name + '__gte': today-delta, field_name + '__lt': None},
-                                   label=_('Last %(delta)s', delta=delta_labels[i] if delta_labels else format_timedelta(delta))))
+                                   label=_('Last %(delta)s',
+                                   delta=delta_labels[i] if delta_labels else format_timedelta(delta))))
         # Add a last "older than all above" option
         rv.append(FilterOption(kwargs={field_name + '__lt': today - time_deltas[-1], field_name + '__gte': None},
-                               label=_('Older than %(delta)s', delta=format_timedelta(time_deltas[-1]))))
+                               label=_('Older than %(delta)s',
+                               delta=format_timedelta(time_deltas[-1]))))
         return rv
 
     return return_function
@@ -242,7 +212,8 @@ def distinct_options(field_name, model):
 available_locale_tuples = [(code, Locale.parse(code).language_name.capitalize()) for code in configured_locales]
 
 # Enumerates all country codes based on Babel (ISO 3166). Exclude regions (3 letter codes) and special code ZZ
-country_codes = [code for code in Locale('en').territories.iterkeys() if len(code) == 2 and not code == 'ZZ']  # Skip non-2-letter codes
+# Skip non-2-letter codes
+country_codes = [code for code in Locale('en').territories.iterkeys() if len(code) == 2 and not code == 'ZZ']
 
 
 class CountryChoices:
@@ -327,8 +298,51 @@ class StringGenerator(Document):
     def __unicode__(self):
         return self.name
 
+url_for_args = {'_external', '_anchor', '_method', '_scheme'}
+
+
+def current_url(_multi=False, **kwargs):
+    """Returns the current request URL with selected modifications. Set an argument to
+    None when calling this to remove it from the current URL"""
+    copy_args = request.args.copy()
+    non_param_args = kwargs.pop('full_url', False)
+    for k, v in kwargs.iteritems():
+        if v is None:
+            # Remove key if set to None, e.g. zero it out
+            copy_args.poplist(k)
+        elif _multi:
+            # If we have multi set, append to list instead of overwrite
+            copy_args.setlistdefault(k).append(v)
+        else:
+            copy_args[k] = v
+        non_param_args = non_param_args or (k in request.view_args or k in url_for_args)
+    if non_param_args:
+        # We have args that will need url_for to build full url
+        copy_args.update(request.view_args)  # View args are not including query parameters
+        u = url_for(request.endpoint, **copy_args.to_dict())
+        return u
+    else:
+        u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
+        return u
+        # We are just changing url parameters, we can do a quicker way
+
+
+def in_current_args(testargs):
+    if isinstance(testargs, dict):
+        for kv in testargs.iteritems():
+            # Ignore None-values, they shouldn't be in URL anyway
+            # Values may be unicode, or non string object, so make it become unicode and then encode it properly
+            if kv[1] is not None and urllib.urlencode(
+                    {kv[0]: unicode(kv[1]).encode('utf8')}) not in request.query_string:
+                return False
+        return True
+    else:
+        return bool(not [x for x in testargs if x not in request.query_string])
+
 # From Django https://github.com/django/django/blob/master/django/utils/http.py
 # Note, changed url_info = _urlparse(url) to urlparse(url), e.g. use stdlib urlparse instead of django's
+
+
 def _is_safe_url(url, allowed_hosts, require_https=False):
     # Chrome considers any URL with more than two slashes to be absolute, but
     # urlparse is not so flexible. Treat any url with three slashes as unsafe.
