@@ -1,3 +1,4 @@
+from __future__ import print_function
 import unittest
 
 from flask_mongoengine.wtf.models import ModelForm
@@ -92,7 +93,7 @@ class FablrTestCase(unittest.TestCase):
         ])
         form = CartForm(formdata, obj=obj)
         form.populate_obj(obj)
-        print "Obj1 \n%s\n" % obj.to_mongo()
+        print("Obj1 \n%s\n" % obj.to_mongo())
         #   print "Obj2 \n%s\n" % obj2.to_mongo()
         self.assertEqual(expected_obj.to_mongo(), obj.to_mongo())
 

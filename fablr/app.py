@@ -7,6 +7,7 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 
 import os
 
@@ -23,7 +24,7 @@ def create_app(**kwargs):
     # Creates new flask instance
     the_app = Flask('fablr', static_folder='../static')
     config_string = "config from:"
-    import default_config
+    from . import default_config
     the_app.config.from_object(default_config.Config)  # Default config that applies to all deployments
     the_app.config.from_object(default_config.SecretConfig)  # Add dummy secrets
     try:  # Instead of silent=True, use try/except to be able to write config_string only if loaded
@@ -125,7 +126,7 @@ def configure_logging(app):
 
 
 def configure_extensions(app):
-    import extensions
+    from . import extensions
 
     app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jinja to run code
     if not app.debug:
@@ -208,17 +209,17 @@ def identity(ob):
 
 def configure_blueprints(app):
     with app.app_context():
-        from controller.auth import auth_app
+        from .controller.auth import auth_app
         app.register_blueprint(auth_app, url_prefix='/auth')
         app.access_policy = {}
 
-        from controller.world import world_app as world
-        from controller.asset import asset_app as asset_app
-        from controller.social import social
-        from controller.generator import generator
-        from controller.admin import admin
-        from controller.shop import shop_app as shop
-        from controller.mailer import mail_app as mail
+        from .controller.world import world_app as world
+        from .controller.asset import asset_app as asset_app
+        from .controller.social import social
+        from .controller.generator import generator
+        from .controller.admin import admin
+        from .controller.shop import shop_app as shop
+        from .controller.mailer import mail_app as mail
 
         app.register_blueprint(world)  # No url_prefix as we build it up as /<world>/<article>
         app.register_blueprint(generator, url_prefix='/generator')

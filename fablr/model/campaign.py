@@ -6,14 +6,15 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 from flask.ext.babel import format_date
 
-from misc import Document  # Enhanced document
+from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, BooleanField, ListField,
                          EmbeddedDocumentField)
 
-from user import User, Group
-from world import Article
+from .user import User, Group
+from .world import Article
 
 
 # A game session that was or will be held, e.g. the instance between a scenario

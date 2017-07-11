@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 import types
 
@@ -106,7 +107,7 @@ def db_config_string(app):
 
 
 def is_db_empty(the_db):
-    print the_db.collection_names(False)
+    print(the_db.collection_names(False))
 
 
 db = MongoEngine()
@@ -245,7 +246,7 @@ def build_md_filter(md_instance):
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
-        print 'JINJA2: something was undefined!'  # TODO, should print correct log error
+        print('JINJA2: something was undefined!')  # TODO, should print correct log error
         return None
 
 

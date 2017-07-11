@@ -1,4 +1,5 @@
 # coding=utf-8
+from __future__ import print_function
 import csv
 
 from model.shop import *
@@ -29,7 +30,7 @@ class Customer:
 
 
 def setup_customer():
-    print "starting order import"
+    print("starting order import")
     # Product.drop_collection()
     stod = Product(title='Eon IV - Stöd',
                    description='Du visar ditt stöd för oss och rollspelshobbyn och får för det ett tack i boken.',
@@ -231,7 +232,7 @@ def setup_customer():
 
             orders.append(order)
 
-        print "importing %d orders" % len(orders)
+        print("importing %d orders" % len(orders))
         for order in orders:
             order.user.save()
             order.save()

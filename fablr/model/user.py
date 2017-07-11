@@ -7,6 +7,7 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 from datetime import datetime
 from hashlib import md5
 
@@ -14,11 +15,11 @@ import math
 
 from flask import flash
 
-from baseuser import BaseUser, create_token
-from misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
+from .baseuser import BaseUser, create_token
+from .misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
     numerical_options
 from flask_babel import lazy_gettext as _
-from misc import Document  # Enhanced document
+from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
                          ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)

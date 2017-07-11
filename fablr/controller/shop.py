@@ -8,6 +8,7 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import print_function
 import logging
 from datetime import datetime
 from itertools import izip
@@ -234,7 +235,7 @@ class FixedFieldList(FieldList):
     # This should be fixed by wtforms!
 
     def process(self, formdata, data=unset_value):
-        print 'FieldList process formdata %s, data %s' % (formdata, data)
+        print('FieldList process formdata %s, data %s' % (formdata, data))
         self.entries = []
         if data is unset_value or not data:
             try:
@@ -252,7 +253,7 @@ class FixedFieldList(FieldList):
             for index in indices:
                 try:
                     obj_data = data[index]
-                    print "Got obj_data %s" % obj_data
+                    print("Got obj_data %s" % obj_data)
                 except LookupError:
                     obj_data = unset_value
                 self._add_entry(formdata, obj_data, index=index)

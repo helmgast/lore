@@ -4,6 +4,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 import hashlib
 import logging
 import mimetypes
@@ -17,7 +18,7 @@ from bson import ObjectId
 from flask import request, current_app, g
 from flask_babel import gettext, lazy_gettext as _
 
-from misc import Document  # Enhanced document
+from .misc import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
                          ReferenceField, ListField, FileField, IntField, NULLIFY, DENY, CASCADE)
@@ -26,9 +27,9 @@ from mongoengine.queryset import Q
 from rfc6266 import parse_requests_response, ContentDisposition
 from werkzeug.utils import secure_filename
 
-from misc import Choices, reference_options, choice_options, numerical_options, distinct_options
-from misc import slugify
-from user import User, Group
+from .misc import Choices, reference_options, choice_options, numerical_options, distinct_options
+from .misc import slugify
+from .user import User, Group
 import magic
 
 try:
@@ -167,7 +168,7 @@ class FileAsset(Document):
                 if content_type not in allowed_mimetypes:
                     raise ValidationError("Not an allowed image type")
                 self.width, self.height = img.size
-            except Exception, e:
+            except Exception as e:
                 raise ValidationError('Invalid image: %s' % e)
             file_obj.seek(0)
         else:

@@ -1,20 +1,22 @@
 # coding: utf-8
 
+from __future__ import print_function
+from __future__ import absolute_import
 from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
 from flask_babel import lazy_gettext as _, gettext
-from misc import Document, datetime_month_options  # Enhanced document
+from .misc import Document, datetime_month_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField, NULLIFY, DENY, CASCADE)
 from mongoengine.errors import ValidationError
 
-from asset import FileAsset
-from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_delta_options, \
+from .asset import FileAsset
+from .misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_delta_options, \
     from7to365
-from user import User
-from world import Publisher, World
+from .user import User
+from .world import Publisher, World
 
 ProductTypes = Choices(
     book=_('Book'),
@@ -255,7 +257,7 @@ class Order(Document):
             if select_args and update_args:
                 # Makes an atomic update
                 allowed = stock.modify(query=select_args, **update_args)
-                print select_args, update_args, "was allowed? %s" % allowed
+                print(select_args, update_args, "was allowed? %s" % allowed)
                 return allowed
             else:
                 return True  # If nothing to update, approve it

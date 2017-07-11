@@ -7,6 +7,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 
 import logging
 import re
@@ -17,10 +18,10 @@ from flask_babel import lazy_gettext as _
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DynamicField, URLField, NULLIFY, DENY)
 
-from asset import FileAsset
-from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
-from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
-from user import User
+from .asset import FileAsset
+from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
+from .misc import Document, available_locale_tuples, distinct_options  # Enhanced document
+from .user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
