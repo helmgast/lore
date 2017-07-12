@@ -5,6 +5,7 @@
 # All configs that should work need to have a default below, or they will be ignored by the ENV parser.
 
 
+from builtins import object
 class Config(object):
     DEBUG = True
     DEBUG_TB_PROFILER_ENABLED = True  # profile time to run, will slow down things

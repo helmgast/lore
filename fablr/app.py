@@ -9,6 +9,7 @@
 """
 from __future__ import absolute_import
 
+from builtins import str
 import os
 
 import rollbar
@@ -36,7 +37,7 @@ def create_app(**kwargs):
     # Override defaults with any environment variables, as long as they are defined in default.
     # TODO there could be name collision with env variables, and this may be unsafe
     env_config = []
-    for k in the_app.config.iterkeys():
+    for k in the_app.config.keys():
         env_k = 'FABLR_%s' % k
         if env_k in os.environ:
             env_v = os.environ[env_k]
@@ -120,7 +121,7 @@ def configure_logging(app):
 
             # app.logger.debug("Debug")
             # app.logger.info("Info")
-            # app.logger.warn("Warn")
+            # app.logger.warning("Warning")
             # app.logger.error("Error")
             # app.logger.info("Info")
 
@@ -209,17 +210,17 @@ def identity(ob):
 
 def configure_blueprints(app):
     with app.app_context():
-        from .controller.auth import auth_app
+        from .api.auth import auth_app
         app.register_blueprint(auth_app, url_prefix='/auth')
         app.access_policy = {}
 
-        from .controller.world import world_app as world
-        from .controller.asset import asset_app as asset_app
-        from .controller.social import social
-        from .controller.generator import generator
-        from .controller.admin import admin
-        from .controller.shop import shop_app as shop
-        from .controller.mailer import mail_app as mail
+        from .api.world import world_app as world
+        from .api.asset import asset_app as asset_app
+        from .api.social import social
+        from .api.generator import generator
+        from .api.admin import admin
+        from .api.shop import shop_app as shop
+        from .api.mailer import mail_app as mail
 
         app.register_blueprint(world)  # No url_prefix as we build it up as /<world>/<article>
         app.register_blueprint(generator, url_prefix='/generator')
@@ -291,7 +292,7 @@ def configure_hooks(app):
         app.logger.error("Database Connection Failur: {err}".format(err=err))
         return "<body>No database</body>", 500
 
-    from fablr.controller.resource import ResourceError, get_root_template
+    from fablr.api.resource import ResourceError, get_root_template
 
     @app.errorhandler(ResourceError)
     def resource_error(err):
@@ -305,12 +306,8 @@ def configure_hooks(app):
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
-        #
-        # Print rules in alphabetic order
-        # for rule in app.url_map.iter_rules():
-        #     print rule.__repr__(), rule.subdomain
-        # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
-        #   print rule.__repr__(), rule.subdomain, rule.match_compare_key()
+    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
+    #     print(rule.__repr__(), rule.subdomain, rule.match_compare_key())
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

@@ -1,10 +1,12 @@
+from builtins import str
+from builtins import object
 from hashlib import sha1, md5
 import random
 
 
 # borrowing these methods, slightly modified, from django.contrib.auth
 def get_hexdigest(salt, raw_password):
-    return sha1((salt + unicode(raw_password)).encode('utf-8')).hexdigest()
+    return sha1((salt + str(raw_password)).encode('utf-8')).hexdigest()
 
 
 def make_password(raw_password):

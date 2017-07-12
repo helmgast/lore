@@ -64,10 +64,10 @@ class TestObject(Document):
 class FablrTestCase(unittest.TestCase):
     def test_forms2(self):
         from fablr.model.shop import Order, OrderLine
-        from fablr.controller.resource import RacBaseForm, RacModelConverter
+        from fablr.api.resource import RacBaseForm, RacModelConverter
         from flask_mongoengine.wtf import model_form
         from wtforms.fields import FormField
-        from fablr.controller.shop import FixedFieldList, CartForm
+        from fablr.api.shop import FixedFieldList, CartForm
         CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=RacBaseForm,
                                        converter=RacModelConverter())
 
@@ -104,7 +104,7 @@ class FablrTestCase(unittest.TestCase):
         self.app = create_app(TESTING=True, PRESERVE_CONTEXT_ON_EXCEPTION=False, WTF_CSRF_CHECK_DEFAULT=False)
         self.client = self.app.test_client()
         # we need to fix imports here because the need app data at load time
-        from fablr.controller.resource import ResourceRoutingStrategy, ResourceHandler, RacBaseForm
+        from fablr.api.resource import ResourceRoutingStrategy, ResourceHandler, RacBaseForm
         self.ResourceRoutingStrategy = ResourceRoutingStrategy
         self.ResourceHandler = ResourceHandler
         self.RacBaseForm = RacBaseForm

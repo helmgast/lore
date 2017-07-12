@@ -19,8 +19,8 @@ from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms import Form
 
-from fablr.controller.auth import get_logged_in_user
-from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
+from fablr.api.auth import get_logged_in_user
+from fablr.api.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from fablr.extensions import csrf
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
@@ -117,7 +117,7 @@ class UsersView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(user, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(user, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -186,7 +186,7 @@ class GroupsView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(group, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(group, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:

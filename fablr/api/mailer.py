@@ -1,3 +1,4 @@
+from builtins import str
 import logging
 import re
 
@@ -8,7 +9,7 @@ from mongoengine.errors import NotUniqueError
 import wtforms as wtf
 from wtforms.widgets import TextArea
 
-from fablr.controller.resource import parse_out_arg, ResourceError, DisabledField
+from fablr.api.resource import parse_out_arg, ResourceError, DisabledField
 from fablr.model.baseuser import create_token
 from fablr.model.shop import Order
 from fablr.model.user import User
@@ -46,7 +47,7 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
 
     rv = mail_app.sparkpost_client.transmission.send(
         recipients=recipients,
-        subject=unicode(message_subject),
+        subject=str(message_subject),
         from_email=sender,
         reply_to=reply_to,
         cc=cc,

@@ -13,8 +13,8 @@ from mongoengine.queryset import Q
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
-from fablr.controller.pdf import fingerprint_pdf
-from fablr.controller.resource import RacModelConverter, \
+from fablr.api.pdf import fingerprint_pdf
+from fablr.api.resource import RacModelConverter, \
     ResourceAccessPolicy, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
     filterable_fields_parser, \
     prefillable_fields_parser, Authorization

@@ -9,9 +9,11 @@
   :copyright: (c) 2014 by Helmgast AB
 """
 from __future__ import print_function
+from builtins import zip
+from builtins import str
 import logging
 from datetime import datetime
-from itertools import izip
+
 
 import stripe
 from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup
@@ -24,11 +26,11 @@ from wtforms.fields.html5 import EmailField, IntegerField
 from wtforms.utils import unset_value
 from wtforms.validators import InputRequired, Email, DataRequired, NumberRange
 
-from fablr.controller.mailer import send_mail
-from fablr.controller.resource import (ResourceAccessPolicy,
-                                       RacModelConverter, RacBaseForm, ResourceView,
-                                       filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
-                                       Authorization, route_subdomain)
+from fablr.api.mailer import send_mail
+from fablr.api.resource import (ResourceAccessPolicy,
+                                RacModelConverter, RacBaseForm, ResourceView,
+                                filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
+                                Authorization, route_subdomain)
 from fablr.model.asset import FileAsset
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
@@ -182,7 +184,7 @@ class ProductsView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(product, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(product, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
             r.stock.stock_count[product.slug] = r.form.stock_count.data
@@ -276,7 +278,7 @@ class FixedFieldList(FieldList):
 
         _fake = type(str('_fake'), (object,), {})
         output = []
-        for field, data in izip(self.entries, candidates):
+        for field, data in zip(self.entries, candidates):
             fake_obj = _fake()
             fake_obj.data = data
             field.populate_obj(fake_obj, 'data')
@@ -539,7 +541,7 @@ class OrdersView(ResourceView):
                     source=r.form.stripe_token.data,
                     amount=cart_order.total_price_int(),  # Stripe takes input in "cents" or similar
                     currency=cart_order.currency,
-                    description=unicode(cart_order),
+                    description=str(cart_order),
                     metadata={'order_id': cart_order.id}
                 )
                 cart_order.status = OrderStatus.paid

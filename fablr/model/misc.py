@@ -7,13 +7,18 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 import logging
 import re
 import unicodedata
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from collections import namedtuple, OrderedDict
 from datetime import timedelta, date
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import flask_mongoengine
 from babel import Locale
@@ -75,12 +80,12 @@ class Choices(dict):
     #         return dict.__init__(self, {k:_(k) for k in kwargs})
 
     def __getattr__(self, name):
-        if name in self.keys():
+        if name in list(self.keys()):
             return name
         raise AttributeError(name)
 
     def to_tuples(self, empty_value=False):
-        tuples = [(s, self[s]) for s in self.keys()]
+        tuples = [(s, self[s]) for s in list(self.keys())]
         if empty_value:
             tuples.append(('', ''))
         return tuples
@@ -213,10 +218,10 @@ available_locale_tuples = [(code, Locale.parse(code).language_name.capitalize())
 
 # Enumerates all country codes based on Babel (ISO 3166). Exclude regions (3 letter codes) and special code ZZ
 # Skip non-2-letter codes
-country_codes = [code for code in Locale('en').territories.iterkeys() if len(code) == 2 and not code == 'ZZ']
+country_codes = [code for code in Locale('en').territories.keys() if len(code) == 2 and not code == 'ZZ']
 
 
-class CountryChoices:
+class CountryChoices(object):
     """
     Lazily build lists of country choices with local translation and sorted alphabetically
     """
@@ -239,7 +244,7 @@ class CountryChoices:
         :return:
         """
         d = self.refresh()
-        return d.iteritems()
+        return iter(d.items())
 
     # def next(self):  # Python 3: def __next__(self)
     #     if self.i >= len(self.tuples)-1:  # len=3, if i is 2 then stop
@@ -265,6 +270,7 @@ class CountryChoices:
         """
         d = self.refresh()
         return item in d
+
 
 class Address(EmbeddedDocument):
     name = StringField(max_length=60, required=True, verbose_name=_('Name'))
@@ -295,7 +301,7 @@ class StringGenerator(Document):
     description = StringField()
     generator = None
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 url_for_args = {'_external', '_anchor', '_method', '_scheme'}
@@ -306,7 +312,7 @@ def current_url(_multi=False, **kwargs):
     None when calling this to remove it from the current URL"""
     copy_args = request.args.copy()
     non_param_args = kwargs.pop('full_url', False)
-    for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         if v is None:
             # Remove key if set to None, e.g. zero it out
             copy_args.poplist(k)
@@ -322,22 +328,23 @@ def current_url(_multi=False, **kwargs):
         u = url_for(request.endpoint, **copy_args.to_dict())
         return u
     else:
-        u = '?' + urllib.urlencode(list(copy_args.iteritems(True)), doseq=True)
+        u = '?' + urllib.parse.urlencode(list(copy_args.items(multi=True)), doseq=True)
         return u
         # We are just changing url parameters, we can do a quicker way
 
 
 def in_current_args(testargs):
     if isinstance(testargs, dict):
-        for kv in testargs.iteritems():
+        for kv in testargs.items():
             # Ignore None-values, they shouldn't be in URL anyway
             # Values may be unicode, or non string object, so make it become unicode and then encode it properly
-            if kv[1] is not None and urllib.urlencode(
-                    {kv[0]: unicode(kv[1]).encode('utf8')}) not in request.query_string:
-                return False
+            if kv[1] is not None:
+                q_test = urllib.parse.urlencode({kv[0]: str(kv[1])}, encoding='utf-8').encode('ascii')
+                if q_test not in request.query_string:
+                    return False
         return True
     else:
-        return bool(not [x for x in testargs if x not in request.query_string])
+        return bool(not [x for x in testargs if x.encode('utf-8') not in request.query_string])
 
 # From Django https://github.com/django/django/blob/master/django/utils/http.py
 # Note, changed url_info = _urlparse(url) to urlparse(url), e.g. use stdlib urlparse instead of django's

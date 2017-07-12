@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import str
+from builtins import object
 import re
 import types
 
@@ -27,10 +29,7 @@ toolbar = DebugToolbarExtension()
 
 
 def new_show_toolbar(self):
-    if 'debug' in request.args:
-        return True
-    return False
-
+    return 'debug' in request.args
 
 toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
@@ -73,7 +72,6 @@ class MethodRewriteMiddleware(object):
 
 
 class FablrRule(Rule):
-    """Sorts rules starting with a variable, e.g. /<xyx>, last"""
     allow_domains = False
     default_host = None
     re_sortkey = re.compile(r'[^/<]')
@@ -91,14 +89,24 @@ class FablrRule(Rule):
             self.host = ''
         else:
             self.host = thehost or self.default_host
-        # Will transform rule to string of / and <, to ensure we sort by path with non-variables before variables
-        # That means that /worlds/ab will come before /<pub>/ab
+
         self.match_order = FablrRule.re_sortkey.sub('', self.rule)
         super(FablrRule, self).bind(map, rebind)
 
-    def match_compare_key(self):
-        tup = (self.match_order,) + super(FablrRule, self).match_compare_key()
-        return tup
+    # def match_compare_key(self):
+    #     tup = super(FablrRule, self).match_compare_key()
+    #     # TODO currently inactivated
+    #     # For each level in path, we want fixed rules before variable rules, e.g. /worlds/<bc> before /<pub>/ab
+    #     # From werkzeug
+    #     # 1.  rules without any arguments come first for performance
+    #     #     reasons only as we expect them to match faster and some
+    #     #     common ones usually don't have any arguments (index pages etc.)
+    #     # 2.  The more complex rules come first so the second argument is the
+    #     #     negative length of the number of weights.
+    #     # 3.  lastly we order by the actual weights.
+    #     # tup = (self.match_order,) + tup
+    #     #tup = (0,) + tup
+    #     return tup
 
 
 def db_config_string(app):
@@ -122,7 +130,7 @@ class MongoJSONEncoder(JSONEncoder):
         elif isinstance(o, Pagination):
             return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
         if isinstance(o, _LazyString):  # i18n Babel uses lazy strings, need to be treated as string here
-            return unicode(o)
+            return str(o)
         return JSONEncoder.default(self, o)
 
 
@@ -164,7 +172,7 @@ def pick_locale():
     elif 'locale' in session:
         preferred_locale = session.get('locale')
     else:
-        preferred_locale = request.accept_languages.best_match(g.available_locales.keys())
+        preferred_locale = request.accept_languages.best_match(list(g.available_locales.keys()))
     if preferred_locale not in g.available_locales:
         return None  # Babel will go to its default
 
@@ -255,7 +263,7 @@ def currentyear(nada):
 
 
 def dict_without(value, *args):
-    return {k: value[k] for k in value.keys() if k not in args}
+    return {k: value[k] for k in list(value.keys()) if k not in args}
 
 
 def dict_with(value, **kwargs):

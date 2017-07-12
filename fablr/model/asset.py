@@ -5,10 +5,14 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.utils import old_div
 import hashlib
 import logging
 import mimetypes
-from StringIO import StringIO
+from io import StringIO
 from datetime import datetime
 
 import requests
@@ -87,7 +91,7 @@ class FileAsset(Document):
     owner = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('User'))
     file_data = FileField(verbose_name=_('File data'))
     access_type = StringField(choices=FileAccessType.to_tuples(), default=FileAccessType.public, verbose_name=_('Access type'))
-    tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
+    tags = ListField(StringField(max_length=60), verbose_name=_('Tags'))
     publisher = ReferenceField('Publisher', verbose_name=_('Publisher'))
 
     # Variables reflecting the underlying file object, updates on clean
@@ -130,7 +134,7 @@ class FileAsset(Document):
         return md5.hexdigest()
 
     def aspect_ratio(self):
-        return self.width/float(self.height) or 1.0
+        return self.width / self.height or 1.0
 
     def set_file(self, file_obj, filename, update_file=True):
         assert file_obj
@@ -248,10 +252,8 @@ class FileAsset(Document):
         return mimetypes.guess_type(self.source_filename)[0]
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return u'%s' % (self.title or self.slug)
+
 
 # Regsister delete rule here becaue in User, we haven't imported FileAsset so won't work from there
 FileAsset.register_delete_rule(User, 'images', NULLIFY)
@@ -282,15 +284,15 @@ class ImageAsset(Document):
     image = ImageField(thumbnail_size=(300, 300, False), required=True)
     source_image_url = URLField()
     source_page_url = URLField()
-    tags = ListField(StringField(max_length=30))
+    tags = ListField(StringField(max_length=60))
     mime_type = StringField(choices=MimeTypes.to_tuples(), required=True)
     creator = ReferenceField(User, reverse_delete_rule=NULLIFY, verbose_name=_('Creator'))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created date'))
     title = StringField(min_length=1, max_length=60, verbose_name=_('Title'))
     description = StringField(max_length=500, verbose_name=_('Description'))
 
-    def __unicode__(self):
-        return u'%s' % self.slug
+    def __str__(self):
+        return self.slug
 
     # Executes before saving
     def clean(self):

@@ -1,12 +1,13 @@
 # coding=utf-8
 from __future__ import print_function
+from builtins import object
 import csv
 
 from model.shop import *
 from model.user import *
 
 
-class Customer:
+class Customer(object):
     def __init__(self, email, amnt1, amnt2, totamnt, perk, shipfee, paidshipfee, shouldpaid, balance, shipname,
                  shipaddr,
                  shipaddr2, shipcity, shipstate, shipzip, shipcountry, nameinbook):
@@ -180,7 +181,7 @@ def setup_customer():
                 row[16]))
 
         orders = []
-        for email in customers.keys():
+        for email in list(customers.keys()):
             customer_orders = customers[email]
             customer_user = None
             customer_address = None
@@ -218,13 +219,13 @@ def setup_customer():
 
             order_sum = 0
             order_items = 0
-            for order_line in order_lines.values():
+            for order_line in list(order_lines.values()):
                 order_sum += order_line.quantity * order_line.price
                 order_items += order_line.quantity
 
             order = Order(user=customer_user,
                           email=customer_user.email,
-                          order_lines=order_lines.values(),
+                          order_lines=list(order_lines.values()),
                           total_items=order_items,
                           total_price=order_sum,
                           status=OrderStatus.paid,

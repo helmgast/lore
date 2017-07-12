@@ -8,7 +8,12 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+import types
+from builtins import str
+from itertools import chain
 
+from past.builtins import basestring
+from builtins import object
 import inspect
 import logging
 import pprint
@@ -257,6 +262,14 @@ class ResourceResponse(Response):
             logger.debug(auth)
             self.auth = auth
 
+    def get_template_args(self):
+        rv = {}
+        # This takes both instance and class variables, and order is important as instance variables overrides class
+        for k, arg in chain(self.__class__.__dict__.items(), self.__dict__.items()):
+            if not isinstance(arg, types.FunctionType) and not k.startswith('_'):
+                rv[k] = arg
+        return rv
+
     def render(self):
         if not self.auth:
             abort(403, _('Authorization not performed'))
@@ -265,7 +278,7 @@ class ResourceResponse(Response):
         else:
             best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
         if best_type == 'text/html':
-            template_args = vars(self)  # All local and inherited variables
+            template_args = self.get_template_args()
             template_args['root_template'] = get_root_template(self.args.get('out', None))
             self.set_data(render_template(self.template, **template_args))
             return self
@@ -286,7 +299,7 @@ class ResourceResponse(Response):
             # This error comes from PyMongo with only a text message denoting which field was not unique
             # We need to parse it to allocate it back to the right field
             found = False
-            for key in self.form._fields.keys():
+            for key in list(self.form._fields.keys()):
                 if '${key}'.format(key=key) in err.message:
                     if key == 'slug':
                         key = 'title'
@@ -299,7 +312,7 @@ class ResourceResponse(Response):
 
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
-            for k, v in err.errors.items():
+            for k, v in list(err.errors.items()):
                 msg = v.message if hasattr(v, 'message') and v.message else str(v)
                 if k in self.form:  # We have a field, append the error there
                     errors = self.form[k].errors
@@ -323,7 +336,7 @@ class ResourceResponse(Response):
         # values for same URL param (e.g. key=val1&key=val2)
         # req_args = CombinedMultiDict([request.args, extra_args])
         req_args = request.args.copy()
-        for k, v in extra_args.iteritems():
+        for k, v in extra_args.items():
             req_args.add(k, v)
         # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
         for k in arg_parser:
@@ -332,7 +345,7 @@ class ResourceResponse(Response):
                 args[k] = arg_parser[k](req_args.get(k, ''))
             else:
                 fields = arg_parser[k]
-                for q, w in req_args.iteritems(multi=True):
+                for q, w in req_args.items(multi=True):
                     if q not in arg_parser:  # Means its a field name, not a pre-defined arg
                         # new_k = re_operators.sub('', q)  # remove mongo operators from filter key
                         new_k = q.split('__', 1)[0]  # allow all operators, just check field is valid
@@ -393,7 +406,7 @@ class ListResponse(ResourceResponse):
             self.query = self.query.order_by(*self.args['order_by'])
         if self.args['fields']:
             built_query = None
-            for k, values in self.args['fields'].iterlists():
+            for k, values in self.args['fields'].lists():
                 # Field name is string until first __ (operators are after)
                 field = self.model._fields[k.split('__', 1)[0]]
                 q = Q(**{k: self.slug_to_id(field, values[0])})
@@ -412,7 +425,7 @@ class ListResponse(ResourceResponse):
             except OperationError:
                 pass
 
-        for f in self.model._fields.keys():
+        for f in list(self.model._fields.keys()):
             field = self.model._fields[f]
             if hasattr(field, 'filter_options'):
                 self.filter_options[f] = field.filter_options(self.model)
@@ -427,7 +440,7 @@ class ListResponse(ResourceResponse):
         # https://github.com/MongoEngine/flask-mongoengine/issues/310
         if getattr(self.query, '_limit', None):
             per_page = min(per_page, self.query._limit)
-            page = min(page, math.ceil(self.query._limit / per_page))
+            page = min(page, math.ceil(self.query._limit // per_page))  # // is integer division
 
         # TODO, this is a fix for an issue in MongoEngine https://github.com/MongoEngine/mongoengine/issues/1522
         try:
@@ -460,9 +473,9 @@ class ItemResponse(ResourceResponse):
             if self.args['intent']:
                 # we want to serve a form, pre-filled with field values and parent queries
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
-                form_args.update(self.args['fields'].iteritems())
+                form_args.update(iter(self.args['fields'].items()))
                 action_args = dict(request.view_args)
-                action_args.update({k: v for k, v in self.args.items() if v})  # Reflect args used in request
+                action_args.update({k: v for k, v in list(self.args.items()) if v})  # Reflect args used in request
                 del action_args['intent']
                 if self.args['intent'] == 'post':
                     # A post will not go to same URL, but a different on (e.g. a list endpoint without an id parameter)
@@ -841,7 +854,7 @@ class ResourceError(Exception):
         Exception.__init__(self, "%i: %s" % (status_code, message))
 
 
-class Authorization:
+class Authorization(object):
     def __init__(self, is_authorized, message='', privileged=False, only_fields=None, error_code=403):
         self.is_authorized = is_authorized
         self.message = message
@@ -859,7 +872,7 @@ class Authorization:
     def is_privileged(self):
         return self.privileged
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.is_authorized
 
 

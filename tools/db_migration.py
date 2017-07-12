@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-#  -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from builtins import range
+from past.builtins import basestring
 import os
 import re
 import traceback

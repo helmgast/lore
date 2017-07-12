@@ -11,6 +11,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from builtins import str
 import logging
 from datetime import datetime
 from itertools import groupby
@@ -23,9 +24,9 @@ from mongoengine import NotUniqueError, ValidationError
 from mongoengine.queryset import Q
 from werkzeug.contrib.atom import AtomFeed
 
-from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
-                                       ResourceView, filterable_fields_parser, prefillable_fields_parser,
-                                       ListResponse, ItemResponse, Authorization)
+from fablr.api.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
+                                ResourceView, filterable_fields_parser, prefillable_fields_parser,
+                                ListResponse, ItemResponse, Authorization)
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
 
@@ -200,7 +201,7 @@ class PublishersView(ResourceView):
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
-        r.form.populate_obj(publisher, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(publisher, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -289,7 +290,7 @@ class WorldsView(ResourceView):
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
-        r.form.populate_obj(world, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(world, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -458,7 +459,7 @@ class ArticlesView(ResourceView):
         for article in articles:
             feed.add(article.title, current_app.md.convert(article.content),
                      content_type='html',
-                     author=unicode(article.creator) if article.creator else 'System',
+                     author=str(article.creator) if article.creator else 'System',
                      url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True,
                                  _scheme=''),
                      updated=article.created_date,
@@ -535,7 +536,7 @@ class ArticlesView(ResourceView):
         if not r.validate():
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(article, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(article, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:

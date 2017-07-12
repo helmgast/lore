@@ -9,6 +9,8 @@
 """
 from __future__ import absolute_import
 
+from builtins import str
+from builtins import object
 import logging
 import re
 from datetime import datetime, timedelta
@@ -88,9 +90,6 @@ class Publisher(Document):
         return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
 
     def __str__(self):
-        return self.__unicode__().encode('utf-8')
-
-    def __unicode__(self):
         return self.title or self.slug
 
 
@@ -135,9 +134,6 @@ class World(Document):
         self.custom_css = secure_css(self.custom_css)
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return self.title
 
     def articles(self):
@@ -180,10 +176,10 @@ class WorldMeta(object):
         self.publisher = publisher
         self.title = publisher.title
 
-    def __unicode__(self):
-        return unicode(self.publisher) or u'Meta'
+    def __str__(self):
+        return str(self.publisher) or u'Meta'
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False  # Behave as false
 
     def articles(self):
@@ -199,9 +195,6 @@ class RelationType(Document):
     # to_type = # type of article to
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return u'%s' % self.name
 
 
@@ -277,6 +270,11 @@ ArticleTypes = Choices(
     character=_('Character')
 )
 
+# Ideas for unicode symbols of above
+# ✪ ✵ ✯ ♖ ♜ ❦ ♕ ✎ ✉ ⁂ ※ ⌘ ⚐ ⚔ ⚜ ⚥ 👤
+# dice ⚀ ⚁ ⚂ ⚃ ⚄ ⚅
+
+
 ArticleThemes = Choices(
     default=_('Default'),
     newspaper=_('Newspaper'),
@@ -307,7 +305,7 @@ class Article(Document):
     description = StringField(max_length=350, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
+    tags = ListField(StringField(max_length=60), verbose_name=_('Tags'))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
     sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
@@ -374,9 +372,6 @@ class Article(Document):
         return asked_type + 'data'
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.type)
 
     persondata = EmbeddedDocumentField(PersonData)
@@ -419,10 +414,8 @@ class Shortcut(Document):
 #     type = IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
 
 #     def __str__(self):
-#         return unicode(self).encode('utf-8')
-
-#     def __unicode__(self):
 #         return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
+
 
 
 # class ArticleRights(Document):
