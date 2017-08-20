@@ -37,8 +37,8 @@
     {% if not debug %}
         <script>
             window.ga = window.ga || function () {
-                    (ga.q = ga.q || []).push(arguments)
-                };
+                (ga.q = ga.q || []).push(arguments)
+            };
             ga.l = +new Date;
             ga('create', 'UA-49513153-1', 'none')
             ga('send', 'pageview');
@@ -48,7 +48,7 @@
     <script>
         var set_aspect = function (el) {
             var a = el.width / el.height;
-            while ((el = el.parentElement) && !el.classList.contains('gallery-item'));
+            while ((el = el.parentElement) && !el.classList.contains('gallery-item')) ;
             if (el) {
                 el.style.width = 100 * a / 4.0 + '%';
                 el.style["flex-grow"] = a;
@@ -56,8 +56,20 @@
         }
         // Polyfill for "matches" function
         // https://developer.mozilla.org/en-US/docs/Web/API/Element/matches
-        if (!Element.prototype.matches)
-            Element.prototype.matches = Element.prototype.matchesSelector || Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+        if (!Element.prototype.matches) {
+            Element.prototype.matches =
+                Element.prototype.matchesSelector ||
+                Element.prototype.mozMatchesSelector ||
+                Element.prototype.msMatchesSelector ||
+                Element.prototype.oMatchesSelector ||
+                Element.prototype.webkitMatchesSelector ||
+                function (s) {
+                    var m = (this.document || this.ownerDocument).querySelectorAll(s),
+                        i = m.length;
+                    while (--i >= 0 && m.item(i) !== this) {}
+                    return i > -1;
+                };
+        }
         // Important to set listener on body and using useCapture = true
         document.body.addEventListener('load', function (e) {
             if (e.target.matches('.gallery img'))
@@ -102,13 +114,13 @@
                 <span class="icon-bar"></span>
             </button>
             <div class="navbar-brand my-collapse collapse in">
-            {% block publisher_brand %}
-                <a href="{{ url_for('world.homepage') }}">
-                    <svg class="fablr-icon" style="fill: #a00; margin-top: -27px; width: 96px; height: 128px;">
-                        <use xlink:href="#fablr-asterisme"></use>
-                    </svg>
-                </a>
-            {% endblock publisher_brand %}
+                {% block publisher_brand %}
+                    <a href="{{ url_for('world.homepage') }}">
+                        <svg class="fablr-icon" style="fill: #a00; margin-top: -27px; width: 96px; height: 128px;">
+                            <use xlink:href="#fablr-asterisme"></use>
+                        </svg>
+                    </a>
+                {% endblock publisher_brand %}
             </div>
         </div>
         <div class="collapse navbar-collapse my-collapse">

@@ -116,6 +116,7 @@ class UsersView(ResourceView):
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(user, request.form.keys())  # only populate selected keys
+        user.status = 'active'  # Ensure active user
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:

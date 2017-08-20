@@ -238,7 +238,7 @@ def build_md_filter(md_instance):
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
-        print 'JINJA2: something was undefined!'  # TODO, should print correct log error
+        print 'JINJA2: something was undefined in {url}!'.format(url=request.url)  # TODO, should print correct log error
         return None
 
 

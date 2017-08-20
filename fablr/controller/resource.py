@@ -251,10 +251,9 @@ class ResourceResponse(Response):
             if intent:
                 auth = self.access.authorize(intent, res=res)
         if not auth:
-            logger.debug(auth)
+            logger.debug('{auth}, in {url}'.format(auth=auth, url=request.url))
             abort(auth.error_code, auth.message)
         else:
-            logger.debug(auth)
             self.auth = auth
 
     def render(self):

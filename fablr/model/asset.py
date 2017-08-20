@@ -200,7 +200,7 @@ class FileAsset(Document):
                 content_disp = parse_requests_response(r)
             except Exception as e:
                 content_disp = ContentDisposition(location=self.source_file_url)  # Filename from URL
-                logger.warning("Got exception %s when parsing fname of %s" % (e, self.source_file_url))
+                # logger.warning("Got exception %s when parsing fname of %s" % (e, self.source_file_url))
             fname = content_disp.filename_unsafe  # Will be made safe in set_file when creating slug
             self.set_file(StringIO(r.content), filename=fname)
             self.source_page_url = self.source_file_url

@@ -112,7 +112,7 @@ class UserMailForm(FlaskForm):
 # 4) Populate object
 
 
-@mail_app.route('/<any(compose, remind, order, verify, invite):mail_type>', methods=['GET', 'POST'])
+@mail_app.route('/<any(compose, remind, order, verify, invite):mail_type>', methods=['GET', 'POST'], subdomain='<pub_host>')
 def mail_view(mail_type):
     intent = request.args.get('intent', None)
     if intent == 'post':

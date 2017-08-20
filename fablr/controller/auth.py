@@ -322,6 +322,8 @@ def get_logged_in_user(require_active=True):
                 u = User.objects(id=uid).first()
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
+                        logger.warn("User {user} forced out: logged_in={logged_in}, u.status={status}, require_active={active}".
+                                    format(user=u, logged_in=u.logged_in, status=u.status, active=require_active))
                         # We are logged out or user has become other than active
                         return None
 
@@ -333,6 +335,8 @@ def get_logged_in_user(require_active=True):
                         if u2:
                             logger.debug("User %s masquerading as %s" % (u, u2))
                             return u2
+                else:
+                    logger.warn("No user in database with uid {uid}".format(uid=uid))
             except Exception as e:
                 logger.error(e)
                 logout_user()
