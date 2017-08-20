@@ -7,6 +7,7 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 from datetime import datetime
 from hashlib import md5
 
@@ -14,11 +15,11 @@ import math
 
 from flask import flash
 
-from baseuser import BaseUser, create_token
-from misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
+from .baseuser import BaseUser, create_token
+from .misc import Choices, slugify, translate_action, datetime_delta_options, choice_options, from7to365, \
     numerical_options
 from flask_babel import lazy_gettext as _
-from misc import Document  # Enhanced document
+from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
                          ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)
@@ -40,6 +41,7 @@ auth_services = {
     'email': 'Email'
 }
 
+
 # TODO deprecate
 class ExternalAuth(EmbeddedDocument):
     id = StringField(required=True)
@@ -60,6 +62,7 @@ class UserEvent(EmbeddedDocument):
             return translate_action(self.action, self.instance)
         except DoesNotExist as dne:
             return self.action
+
 
 # A user in the system
 class User(Document, BaseUser):
@@ -88,9 +91,9 @@ class User(Document, BaseUser):
     tourdone = BooleanField(default=False)
 
     # Uses string instead of Class to avoid circular import
-    publishers_newsletters = ListField(ReferenceField('Publisher'))  #Reverse delete rule in world.py
-    world_newsletters = ListField(ReferenceField('World'))  #Reverse delete rule in world.py
-    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
+    publishers_newsletters = ListField(ReferenceField('Publisher'))  # Reverse delete rule in world.py
+    world_newsletters = ListField(ReferenceField('World'))  # Reverse delete rule in world.py
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  # Reverse delete rule in asset.py
     following = ListField(ReferenceField('self', reverse_delete_rule=NULLIFY), verbose_name=_('Following'))
 
     # TODO deprecate
@@ -130,10 +133,10 @@ class User(Document, BaseUser):
                     yield split_key
 
     def display_name(self):
-        return self.__unicode__()
-
-    def __unicode__(self):
         return self.realname or self.username or self.email.split('@')[0]
+
+    def __str__(self):
+        return self.display_name()
 
     def full_string(self):
         return u"%s (%s)" % (self.username, self.realname)
@@ -157,7 +160,6 @@ class User(Document, BaseUser):
         # TODO to also allow username here
         return self.id
 
-
     def gravatar_url(self, size=48):
         return '//www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
@@ -166,10 +168,12 @@ class User(Document, BaseUser):
     def get_field_display(self, field):
         return self._BaseDocument__get_field_display(self._fields[field])
 
+
 User.status.filter_options = choice_options('status', User.status.choices)
 User.last_login.filter_options = datetime_delta_options('last_login', from7to365)
 User.join_date.filter_options = datetime_delta_options('join_date', from7to365)
 User.xp.filter_options = numerical_options('xp', [0, 50, 100, 200])
+
 
 class Event(Document):
     meta = {
@@ -197,12 +201,14 @@ class Event(Document):
     def calculate_xp(event):
         if event.action in xp_actions:
             count = len(Event.objects(user=event.user, action=event.action)) + 1
-            if isPower(count, xp_actions[event.action]['base']):
+            if is_power(count, xp_actions[event.action]['base']):
                 xp = xp_actions[event.action]['func'](event.metric)
                 if xp:
-                    flash(_('%(action)s: %(xp)s XP awarded to %(user)s', action=event.action_string(), xp=xp, user=event.user, ), 'info')
+                    flash(_('%(action)s: %(xp)s XP awarded to %(user)s', action=event.action_string(), xp=xp,
+                            user=event.user, ), 'info')
                 return xp
         return 0
+
 
 # When we add an Event, we check below formulas for XP per metric.
 # However, we need to throttle new XP, which we do by counting number of same action from same user before
@@ -216,20 +222,22 @@ class Event(Document):
 
 
 xp_actions = {
-    'patch': {'func': lambda x: int(5*x), 'base':2},  # Patched a resource
-    'post': {'func': lambda x: int(10*x), 'base':2},  # Posted a new resource
-    'get': {'func': lambda x: int(1*x), 'base':2},  # Visit a page
-    'comment': {'func': lambda x: int(3*x), 'base':2},  # Posted a disqus comment (TBD)
-    'completed_profile': {'func': lambda x: int(10*x), 'base':0},  # Completed profile
-    'purchase': {'func': lambda x: int(x), 'base':1},  # 1 per SEK, with fixed FX
-    'share': {'func': lambda x: int(3*x), 'base':2},  # Initiate a share on Facebook etc (TBD)
+    'patch': {'func': lambda x: int(5 * x), 'base': 2},  # Patched a resource
+    'post': {'func': lambda x: int(10 * x), 'base': 2},  # Posted a new resource
+    'get': {'func': lambda x: int(1 * x), 'base': 2},  # Visit a page
+    'comment': {'func': lambda x: int(3 * x), 'base': 2},  # Posted a disqus comment (TBD)
+    'completed_profile': {'func': lambda x: int(10 * x), 'base': 0},  # Completed profile
+    'purchase': {'func': lambda x: int(x), 'base': 1},  # 1 per SEK, with fixed FX
+    'share': {'func': lambda x: int(3 * x), 'base': 2},  # Initiate a share on Facebook etc (TBD)
 }
 
-def isPower(num, base):
+
+def is_power(num, base):
     if base == 1: return True
     if base == 0: return num == 1
     if base < 0: return False
     return base ** int(math.log(num, base) + .5) == num
+
 
 MemberRoles = Choices(
     master=_('Master'),
@@ -262,10 +270,10 @@ class Group(Document):
     location = StringField(max_length=60)
     type = StringField(choices=GroupTypes.to_tuples(), default=GroupTypes.gamegroup)
 
-    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  #Reverse delete rule in asset.py
+    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  # Reverse delete rule in asset.py
     members = ListField(EmbeddedDocumentField(Member))
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title or u''
 
     def add_masters(self, new_masters):
@@ -284,6 +292,7 @@ class Group(Document):
     # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
     def get_field_display(self, field):
         return self._BaseDocument__get_field_display(self._fields[field])
+
 
 Group.type.filter_options = choice_options('type', Group.type.choices)
 Group.created.filter_options = datetime_delta_options('created', from7to365)

@@ -1,5 +1,5 @@
-// IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_page.html).
-__webpack_public_path__ = STATIC_URL.replace('replace', '');
+// IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_page.html), so we don't need to hardcode it.
+__webpack_public_path__ = STATIC_URL.replace('replace', '')+'dist/';
 
 // Needed for all pages, and should be loaded first
 var jQuery = require('jquery');
@@ -10,7 +10,8 @@ svgs.keys().forEach(svgs); // Requires all files individually to call the sprite
 
 // Load early in case of error below
 if (ROLLBAR_CONFIG) {
-    var Rollbar = require('rollbar-browser').init(ROLLBAR_CONFIG);
+    // var Rollbar = require('rollbar-browser').init(ROLLBAR_CONFIG);
+    var Rollbar = require('rollbar').init(ROLLBAR_CONFIG);
 }
 
 // Own plugins
@@ -25,6 +26,7 @@ require('selectize/dist/css/selectize.bootstrap3.css');
 require('flatpickr/dist/flatpickr.min.css');
 require('trumbowyg/dist/ui/trumbowyg.css');
 require('../css/app.less');
+require('../css/webfonts.css');
 require('intro.js/introjs.css')
 
 

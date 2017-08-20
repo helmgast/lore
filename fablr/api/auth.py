@@ -8,6 +8,7 @@
     :copyright: (c) 2016 by Helmgast AB
 """
 
+from builtins import str
 import functools
 import json
 from datetime import datetime
@@ -29,6 +30,7 @@ from fablr.model.world import Publisher
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 auth_app = Blueprint('auth', __name__, template_folder='../templates/auth')
+
 
 # single signon
 # set cookie on fablr.co (also works for dev.fablr.co, helmgast.fablr.co, etc
@@ -102,7 +104,8 @@ def add_auth(user, user_info, next_url):
                     user.images = [img]
                 except Exception as e:
                     logger.warning(
-                        u"Unable to load profile image at sign-in for user {user}: {reason}".format(user=user, reason=e))
+                        u"Unable to load profile image at sign-in for user {user}: {reason}"
+                        .format(user=user, reason=e))
     elif user.status == 'invited':
         # Keep sending to user profile if we are still invited
         next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
@@ -127,7 +130,7 @@ def callback():
     token_payload = {
         'client_id': current_app.config['AUTH0_CLIENT_ID'],
         'client_secret': current_app.config['AUTH0_CLIENT_SECRET'],
-        'redirect_uri': url_for('auth.callback', pub_host=g.pub_host,  _external=True, _scheme=request.scheme),
+        'redirect_uri': url_for('auth.callback', pub_host=g.pub_host, _external=True, _scheme=request.scheme),
         'code': code,
         'grant_type': 'authorization_code'
     }
@@ -159,7 +162,7 @@ def callback():
 
     # Find user that matches the provided auth email
     try:
-        auth_user = User.objects(auth_keys__startswith=user_info['email']+'|').get()
+        auth_user = User.objects(auth_keys__startswith=user_info['email'] + '|').get()
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
@@ -322,8 +325,8 @@ def get_logged_in_user(require_active=True):
                 u = User.objects(id=uid).first()
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
-                        logger.warn("User {user} forced out: logged_in={logged_in}, u.status={status}, require_active={active}".
-                                    format(user=u, logged_in=u.logged_in, status=u.status, active=require_active))
+                        logger.warning(f"User {u} forced out: logged_in={u.logged_in}, status={u.status}, "
+                                       f"require_active={require_active}, url {request.url}")
                         # We are logged out or user has become other than active
                         return None
 

@@ -1,20 +1,24 @@
-# coding: utf-8
 
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from builtins import str
+from past.utils import old_div
 from datetime import datetime, timedelta, date
 
 from flask import g
 from flask import request
 from flask_babel import lazy_gettext as _, gettext
-from misc import Document, datetime_month_options  # Enhanced document
+from .misc import Document, datetime_month_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField,
                          ReferenceField, BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, MapField, NULLIFY, DENY, CASCADE)
 from mongoengine.errors import ValidationError
 
-from asset import FileAsset
-from misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_delta_options, \
+from .asset import FileAsset
+from .misc import slugify, Choices, Address, reference_options, choice_options, numerical_options, datetime_delta_options, \
     from7to365
-from user import User
-from world import Publisher, World
+from .user import User
+from .world import Publisher, World
 
 ProductTypes = Choices(
     book=_('Book'),
@@ -108,7 +112,7 @@ class Product(Document):
             raise ValidationError("Cannot delete product %r as it's referenced by Orders" % self)
         super(Product, self).delete()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %s %s' % (self.title, gettext('by'), self.publisher)
 
     def is_owned_by_current_user(self):
@@ -131,7 +135,7 @@ class OrderLine(EmbeddedDocument):
     price = FloatField(min_value=0, required=True, verbose_name=_('Price'))
     comment = StringField(max_length=99, verbose_name=_('Comment'))
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%ix %s @ %s (%s)' % (self.quantity, self.product, self.price, self.comment)
 
 
@@ -189,11 +193,7 @@ class Order(Document):
     internal_comment = StringField(verbose_name=_('Internal Comment'))
     shipping_address = EmbeddedDocumentField(Address)
 
-    def __str__(self):
-        s = unicode(self).encode('utf-8')
-        return s
-
-    def __unicode__(self):
+    def __strs__(self):
         max_prod, max_price = None, -1
         for ol in self.order_lines:
             if ol.price > max_price:
@@ -248,14 +248,14 @@ class Order(Document):
                     order_dict[ol.product.slug] = order_dict.get(ol.product.slug, 0) + ol.quantity
             select_args = {}
             update_args = {}
-            for prod, quantity in order_dict.iteritems():
+            for prod, quantity in order_dict.items():
                 if select_op:  # We only need to do this check when reducing quantity
                     select_args['stock_count__%s__%s' % (prod, select_op)] = quantity
                 update_args['%s__stock_count__%s' % (update_op, prod)] = quantity
             if select_args and update_args:
                 # Makes an atomic update
                 allowed = stock.modify(query=select_args, **update_args)
-                print select_args, update_args, "was allowed? %s" % allowed
+                print(select_args, update_args, "was allowed? %s" % allowed)
                 return allowed
             else:
                 return True  # If nothing to update, approve it
@@ -286,14 +286,14 @@ class Order(Document):
             sum += ol.quantity * ol.price
             # Tax rates are given as e.g. 25% or 0.25. The taxable part of sum is
             # sum * (taxrate / (taxrate+1))
-            tax += ol.quantity * ol.price * (ol.product.tax / (ol.product.tax + 1))
+            tax += ol.quantity * ol.price * (old_div(ol.product.tax, (ol.product.tax + 1.0)))
         if sum > 0:
             if self.shipping:
                 if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
-                    tax_rate = tax/sum
-                    tax += self.shipping.price * (tax_rate / (tax_rate + 1))
+                    tax_rate = old_div(tax, sum)
+                    tax += self.shipping.price * (old_div(tax_rate, (tax_rate + 1.0)))
                 else:
-                    tax += self.shipping.price * (self.shipping.tax / (self.shipping.tax + 1))
+                    tax += self.shipping.price * (old_div(self.shipping.tax, (self.shipping.tax + 1.0)))
                 sum += self.shipping.price  # Do after we calculate average tax above
         else:
             self.currency = None  # Clear it to avoid errors adding different product currencies back again
@@ -319,5 +319,4 @@ Order.updated.filter_options = datetime_delta_options('updated',
 
 def products_owned_by_user(user):
     orders = Order.objects(user=user, status__in=[OrderStatus.paid, OrderStatus.shipped])
-    return map(lambda order_line: order_line.product,
-               [order_line for order in orders for order_line in order.order_lines])
+    return [order_line.product for order_line in [order_line for order in orders for order_line in order.order_lines]]

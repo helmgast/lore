@@ -1,5 +1,6 @@
 # coding=utf-8
 # import csv
+from __future__ import print_function
 from auth import create_token
 
 # print create_token("niklas@helmgast.se")
@@ -28,8 +29,8 @@ from auth import create_token
 
 def show_token(tokens):
     for token in tokens:
-        print "%s\t%s\t%s" % (
-            token, create_token(token, salt='Jag är bara en störig gubbjävel i hörnet'), create_token(token))
+        print("%s\t%s\t%s" % (
+            token, create_token(token, salt='Jag är bara en störig gubbjävel i hörnet'), create_token(token)))
 
 
 show_token(["carljohanstrom@gmail.com", "kim.neogames@gmail.com", "dan.storafiler@gmail.com", "ola.jentzsch@gmail.com",

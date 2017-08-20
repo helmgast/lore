@@ -1,3 +1,4 @@
+from builtins import str
 import logging
 import re
 
@@ -8,7 +9,7 @@ from mongoengine.errors import NotUniqueError
 import wtforms as wtf
 from wtforms.widgets import TextArea
 
-from fablr.controller.resource import parse_out_arg, ResourceError, DisabledField
+from fablr.api.resource import parse_out_arg, ResourceError, DisabledField
 from fablr.model.baseuser import create_token
 from fablr.model.shop import Order
 from fablr.model.user import User
@@ -21,12 +22,14 @@ mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
 
 
 def send_mail(recipients, message_subject, mail_type, custom_template=None,
-              reply_to=None, cc=[], sender_name='Helmgast', **kwargs):
+              reply_to=None, cc=None, sender_name='Helmgast', **kwargs):
     # recipients should be list of emails (extract from user before sending)
     # subject is a fixed string
     # template is the template object or path
     # sender is an email or a tuple (email, name)
     # kwargs represents context for the template to render correctly
+    if cc is None:
+        cc = []
     for r in recipients + cc:
         if not mail_regex.match(r):
             raise TypeError("Email %s is not correctly formed" % r)
@@ -44,7 +47,7 @@ def send_mail(recipients, message_subject, mail_type, custom_template=None,
 
     rv = mail_app.sparkpost_client.transmission.send(
         recipients=recipients,
-        subject=unicode(message_subject),
+        subject=str(message_subject),
         from_email=sender,
         reply_to=reply_to,
         cc=cc,
@@ -62,16 +65,16 @@ class SystemMailForm(FlaskForm):
 
 class AnyUserSystemMailForm(FlaskForm):
     """Here we only ask for the to_field, others are preset"""
-    to_field = wtf.StringField(_('To'), [wtf.validators.Email(), wtf.validators.Required()])
+    to_field = wtf.StringField(_('To'), [wtf.validators.Email(), wtf.validators.DataRequired()])
     from_field = DisabledField(_('From'))
     subject = DisabledField(_('Subject'))
 
 
 class UserMailForm(FlaskForm):
     """To field is preset as it goes to the publisher, others are open for formdata"""
-    from_field = wtf.StringField(_('From'), [wtf.validators.Email(), wtf.validators.Required()])
+    from_field = wtf.StringField(_('From'), [wtf.validators.Email(), wtf.validators.DataRequired()])
     to_field = DisabledField(_('To'))
-    subject = wtf.StringField(_('Subject'), [wtf.validators.Length(min=1, max=200), wtf.validators.Required()])
+    subject = wtf.StringField(_('Subject'), [wtf.validators.Length(min=1, max=200), wtf.validators.DataRequired()])
     message = wtf.StringField(_('Message'), widget=TextArea())
 
     # def process(self, formdata=None, obj=None, allowed_fields=None, **kwargs):
@@ -96,6 +99,7 @@ class UserMailForm(FlaskForm):
     #             field.process(field_formdata, kwargs[name])
     #         else:
     #             field.process(field_formdata)
+
 
 # GET
 # 1) Load model to form
@@ -134,7 +138,7 @@ def mail_view(mail_type):
     # parent_template = parse_out_arg(request.args.get('out', None))
     mail = {'to_field': '', 'from_field': server_mail, 'subject': '', 'message': ''}
 
-
+    mailform = None
     if mail_type == 'compose':
         mailform = UserMailForm(request.form, to_field=server_mail, from_field=user.email if user else '',
                                 subject=request.args.get('subject', None))
@@ -158,6 +162,8 @@ def mail_view(mail_type):
             abort(403)
         mailform = AnyUserSystemMailForm(request.form, subject=_('Invitation to join Helmgast.se'),
                                          from_field=server_mail)
+    else:
+        abort(404)  # No such mail type
 
     template_vars = {'mail_type': mail_type, 'user': user, 'order': order, 'mailform': mailform}
     if mail_type == 'invite':

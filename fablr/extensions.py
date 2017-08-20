@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import str
+from builtins import object
 import re
 import types
 
@@ -26,9 +29,7 @@ toolbar = DebugToolbarExtension()
 
 
 def new_show_toolbar(self):
-    if 'debug' in request.args:
-        return True
-    return False
+    return 'debug' in request.args
 
 toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
@@ -71,15 +72,15 @@ class MethodRewriteMiddleware(object):
 
 
 class FablrRule(Rule):
-    """Sorts rules starting with a variable, e.g. /<xyx>, last"""
     allow_domains = False
     default_host = None
-    re_sortkey = re.compile(r'[^\/<]')
+    re_sortkey = re.compile(r'[^/<]')
+    match_order = None
 
     def bind(self, map, rebind=False):
         # if self.subdomain:  # Convert subdomain to full host rule
-            # self.host = self.subdomain + '.' + self.default_host
-            # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
+        # self.host = self.subdomain + '.' + self.default_host
+        # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
         thehost = self.subdomain or None
 
         if thehost and not self.allow_domains:
@@ -88,14 +89,24 @@ class FablrRule(Rule):
             self.host = ''
         else:
             self.host = thehost or self.default_host
-        # Will transform rule to string of / and <, to ensure we sort by path with non-variables before variables
-        # That means that /worlds/ab will come before /<pub>/ab
-        self.matchorder = FablrRule.re_sortkey.sub('', self.rule)
+
+        self.match_order = FablrRule.re_sortkey.sub('', self.rule)
         super(FablrRule, self).bind(map, rebind)
 
-    def match_compare_key(self):
-        tup = (self.matchorder,) + super(FablrRule, self).match_compare_key()
-        return tup
+    # def match_compare_key(self):
+    #     tup = super(FablrRule, self).match_compare_key()
+    #     # TODO currently inactivated
+    #     # For each level in path, we want fixed rules before variable rules, e.g. /worlds/<bc> before /<pub>/ab
+    #     # From werkzeug
+    #     # 1.  rules without any arguments come first for performance
+    #     #     reasons only as we expect them to match faster and some
+    #     #     common ones usually don't have any arguments (index pages etc.)
+    #     # 2.  The more complex rules come first so the second argument is the
+    #     #     negative length of the number of weights.
+    #     # 3.  lastly we order by the actual weights.
+    #     # tup = (self.match_order,) + tup
+    #     #tup = (0,) + tup
+    #     return tup
 
 
 def db_config_string(app):
@@ -104,10 +115,11 @@ def db_config_string(app):
 
 
 def is_db_empty(the_db):
-    print the_db.collection_names(False)
+    print(the_db.collection_names(False))
 
 
 db = MongoEngine()
+
 
 class MongoJSONEncoder(JSONEncoder):
     def default(self, o):
@@ -118,7 +130,7 @@ class MongoJSONEncoder(JSONEncoder):
         elif isinstance(o, Pagination):
             return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
         if isinstance(o, _LazyString):  # i18n Babel uses lazy strings, need to be treated as string here
-            return unicode(o)
+            return str(o)
         return JSONEncoder.default(self, o)
 
 
@@ -153,13 +165,14 @@ def pick_locale():
         preferred_locale = request.args['locale']
         if preferred_locale not in g.available_locales:
             # Hard abort as URL specified an unavailable locale
-            abort(404, u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
+            abort(404,
+                  u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
         else:
             session['locale'] = preferred_locale
     elif 'locale' in session:
         preferred_locale = session.get('locale')
     else:
-        preferred_locale = request.accept_languages.best_match(g.available_locales.keys())
+        preferred_locale = request.accept_languages.best_match(list(g.available_locales.keys()))
     if preferred_locale not in g.available_locales:
         return None  # Babel will go to its default
 
@@ -174,8 +187,7 @@ csrf = CSRFProtect()
 def init_assets(app):
     try:
         with app.open_resource(app.config.get('WEBPACK_MANIFEST_PATH'), 'r') as stats_json:
-            stats = load(stats_json)
-            app.assets = stats['assets']
+            app.assets = load(stats_json)
     except IOError as io:
         raise RuntimeError(
             "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
@@ -197,28 +209,30 @@ class GalleryList(Treeprocessor):
                             alt = img.get('alt', None)
                             if alt:
                                 li.set('title', alt)
-                        # a_el = etree.Element('a')
-                        # a_el.set('href', '#')
-                        # a_el.set('class', 'zoomable')
-                        # a_el.extend(list(li))  # list(li) enumerates all children of li
-                        # # for e in li:
-                        # #     li.remove(e)
-                        # li.append(a_el)
-                        # imgs = list(ul.iterfind('.//img'))
-                        # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-                        # # if there are same amount of images as text items, and the text is zero, we have only images in the list
-                        # # however, they may be nested in other tags, e.g. a
-                        # if ''.join(txts).strip() == '':  # All text nodes empty in the list
+                                # a_el = etree.Element('a')
+                                # a_el.set('href', '#')
+                                # a_el.set('class', 'zoomable')
+                                # a_el.extend(list(li))  # list(li) enumerates all children of li
+                                # # for e in li:
+                                # #     li.remove(e)
+                                # li.append(a_el)
+                                # imgs = list(ul.iterfind('.//img'))
+                                # txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+                                # # if there are same amount of images as text items, and the text is zero,
+                                # we have only images in the list
+                                # # however, they may be nested in other tags, e.g. a
+                                # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
 
 class GalleryList(Treeprocessor):
     def run(self, root):
         for ul in root.findall('ul'):
             if len(ul):
-              imgs = list(ul.iterfind('.//img'))
-              txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-              if len(imgs) > 0 and ''.join(txts).strip() == '':
-                ul.set('class', 'gallery')
+                imgs = list(ul.iterfind('.//img'))
+                txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+                if len(imgs) > 0 and ''.join(txts).strip() == '':
+                    ul.set('class', 'gallery')
+
 
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
@@ -234,11 +248,13 @@ def build_md_filter(md_instance):
             return Markup(md_instance.convert(jinja2.escape(stream)))
         else:
             return Markup(md_instance.convert(stream))
+
     return markdown_filter
+
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
-        print 'JINJA2: something was undefined in {url}!'.format(url=request.url)  # TODO, should print correct log error
+        current_app.logger.info(f'JINJA2: something was undefined in {request.url}!')
         return None
 
 
@@ -247,7 +263,7 @@ def currentyear(nada):
 
 
 def dict_without(value, *args):
-    return {k: value[k] for k in value.keys() if k not in args}
+    return {k: value[k] for k in list(value.keys()) if k not in args}
 
 
 def dict_with(value, **kwargs):

@@ -1,3 +1,4 @@
+from builtins import str
 import hmac
 import logging
 import os
@@ -16,7 +17,7 @@ from flask import json
 from flask import request
 from flask import safe_join
 
-from fablr.controller.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse
+from fablr.api.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse
 from fablr.extensions import csrf
 from flask_mongoengine.wtf import model_form
 
@@ -49,7 +50,7 @@ def git_webhook(get_json=None):
         return 'OK'
     elif request.method == 'POST':
         # Store the IP address of the requester
-        request_ip = ipaddress.ip_address(unicode(request.remote_addr))
+        request_ip = ipaddress.ip_address(str(request.remote_addr))
 
         hook_blocks = requests.get('https://api.github.com/meta').json()['hooks']
 
@@ -58,13 +59,13 @@ def git_webhook(get_json=None):
             if ipaddress.ip_address(request_ip) in ipaddress.ip_network(block):
                 break  # the remote_addr is within the network range of github.
         else:
-            logger.warn('git_webhook: Incorrect IP: %s not in %s' % (ipaddress.ip_address(request_ip), ipaddress.ip_network(block)))
+            logger.warning('git_webhook: Incorrect IP: %s not in %s' % (ipaddress.ip_address(request_ip), ipaddress.ip_network(block)))
             abort(403, 'Incorrect IP')
 
         if request.headers.get('X-GitHub-Event') == "ping":
             return json.dumps({'msg': 'Hi!'})
         if request.headers.get('X-GitHub-Event') != "push":
-            logger.warn('git_webhook: Wrong event type')
+            logger.warning('git_webhook: Wrong event type')
             return json.dumps({'msg': "wrong event type"}), 400
 
         payload = request.get_json()
@@ -92,7 +93,7 @@ def git_webhook(get_json=None):
         key = current_app.config.get('GITHUB_WEBHOOK_KEY', None)
         # Check if POST request signature is valid
         if not key:
-            logger.warn('git_webhook: No key configured')
+            logger.warning('git_webhook: No key configured')
             return json.dumps({'msg': "No key configured"}), 403
 
         signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
@@ -100,7 +101,7 @@ def git_webhook(get_json=None):
         #     key = key.encode()
         mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
         if not hmac.compare_digest(mac.hexdigest(), signature):
-            logger.warn('git_webhook: Incorrect key')
+            logger.warning('git_webhook: Incorrect key')
             return json.dumps({'msg': "Incorrect key"}), 403
 
         # We will create a subdir to /data/www/github and operate on that
@@ -110,10 +111,11 @@ def git_webhook(get_json=None):
         shutil.rmtree(cwd, ignore_errors=True)  # Delete directory to get clean copy
         os.makedirs(cwd)  # Make all dirs necessary for this path
         try:
-            curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'.format(**repo_meta)),
+            curl = subprocess.Popen(('curl', '-Ls', 'https://api.github.com/repos/{owner}/{name}/tarball'
+                                     .format(**repo_meta)),
                                     cwd=cwd, stdout=subprocess.PIPE)
             tar = subprocess.check_output(('tar', 'xz', '--strip=1'), stdin=curl.stdout, cwd=cwd)
         except subprocess.CalledProcessError as cpe:
-            logger.warn('Error fetching repo for {data}, got {out}'.format(data=repo_meta, out=cpe.output))
+            logger.warning('Error fetching repo for {data}, got {out}'.format(data=repo_meta, out=cpe.output))
             return json.dumps({'msg': "Error fetching repo"}), 403
         return 'OK commit {commit} to {path}'.format(path=path, **repo_meta)

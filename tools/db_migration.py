@@ -1,6 +1,8 @@
 #!/usr/bin/env python
-#  -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from builtins import range
+from past.builtins import basestring
 import os
 import re
 import traceback
@@ -34,7 +36,7 @@ def migrate_2to3():
     succeeded = []
     failed = []
 
-    print "Adding previous purchases to event log"
+    print("Adding previous purchases to event log")
     for o in Order.objects(status=OrderStatus.paid):
         ev2 = Event(user=o.user, action='purchase', resource=o, metric=o.total_price_sek(), created=o.created)
         msg = u"%s" % o
@@ -48,7 +50,7 @@ def migrate_2to3():
         succeeded.append(msg)
 
     users = User.objects()
-    print "Migrating event logs from users to separate Collection"
+    print("Migrating event logs from users to separate Collection")
     for u in users:
         if getattr(u, 'event_log', None):
             for ev in u.event_log:
@@ -76,7 +78,7 @@ def migrate_1to2():
     if not default_publisher:
         default_publisher = Publisher(slug='helmgast.se', title='Helmgast')
         default_publisher.save()
-    print "Using %s as default publisher" % default_publisher
+    print("Using %s as default publisher" % default_publisher)
 
     hg = World.objects(slug='helmgast').first()
     if hg:
@@ -90,7 +92,7 @@ def migrate_1to2():
 
     # Ensure we save all FileAsset objects again
     for fa in FileAsset.objects():
-        print "Updating %s" % fa
+        print("Updating %s" % fa)
         try:
             file_obj = fa.file_data.get()
             fa.set_file(file_obj, file_obj.filename, update_file=False)
@@ -106,7 +108,7 @@ def migrate_1to2():
         fs = ia.image.get()
         fname = fs.filename or ia.id
         ctype = fs.content_type or ia.mime_type
-        print "Found %s with format %s and size %s" % (fname, ctype, fs.length)
+        print("Found %s with format %s and size %s" % (fname, ctype, fs.length))
         try:
             slug = FileAsset.make_slug(fname, ctype)
             # Find existing and replace info as needed
@@ -136,7 +138,7 @@ def migrate_1to2():
             slug = img.slug
         elif isinstance(img, basestring):
             slug = img
-        print "Migrating image of product %s from ImageAsset (feature_image) to FileAsset (images[])" % p
+        print("Migrating image of product %s from ImageAsset (feature_image) to FileAsset (images[])" % p)
         try:
             if slug:
                 if not p.images:
@@ -162,7 +164,7 @@ def migrate_1to2():
         return u"[{alt}](https://fablr.co/asset/{type}/{slug})".format(alt=match.group(1), type=match.group(4), slug=slug)
 
     for a in Article.objects():
-        print "Replacing image references in article %s" % a
+        print("Replacing image references in article %s" % a)
         a.content = re.sub(r'\[([^]]*)\]\((http(s)?://helmgast.se)?/asset/(image|download|link)/([^)]+)\)',
                            asset_repl, a.content)
         a.content = re.sub(r'http://helmgast', 'https://helmgast', a.content)
@@ -192,12 +194,12 @@ def db_migrate(db, to_version=latest_version):
     version = get_version(db)
     admin = User.objects(admin=True).order_by('join_date').first()
     g.user = admin
-    print "DB version is %s, latest code is version %s, will migrate using admin user %s" % \
-          (version, latest_version, admin)
+    print("DB version is %s, latest code is version %s, will migrate using admin user %s" % \
+          (version, latest_version, admin))
     if to_version > latest_version:
         raise ValueError("Cannot migrate to a higher version than latest available (%i)" % latest_version)
     if version is to_version:
-        print "Already at version %i" % to_version
+        print("Already at version %i" % to_version)
         return
     elif version > to_version:
         raise ValueError("Cannot downgrade from version %i to %i" % (version, to_version))
@@ -206,25 +208,25 @@ def db_migrate(db, to_version=latest_version):
     else:
         config = db.config.find_one()
         for i in range(version, to_version):
-            print "Upgrading from %i to %i" % (i, i + 1)
+            print("Upgrading from %i to %i" % (i, i + 1))
             try:
                 succeeded, failed = migrate_functions[i-1]()  # 0-indexed, but version is 1-indexed
             except Exception as ex:
-                print "Fatal error, stopping migration with function %i : %s" % (i, ex)
+                print("Fatal error, stopping migration with function %i : %s" % (i, ex))
                 traceback.print_exc()
                 return False
-            print "  Succeeded with %i" % len(succeeded)
+            print("  Succeeded with %i" % len(succeeded))
             if not failed:
                 # Increment version by one
                 result = db.config.update_one({'version': i}, {'$inc': {'version': 1}})
                 if result.modified_count == 0:
-                    print "Fatal error, could not update version # on collection 'config'"
+                    print("Fatal error, could not update version # on collection 'config'")
                     return False
                 else:
-                    print "Updated database version from %i to %i" % (i, i+1)
+                    print("Updated database version from %i to %i" % (i, i+1))
             else:
-                print "  Failed with %i: %s" % (len(failed), failed)
-                print "Stopping migration until above failure handled manually"
+                print("  Failed with %i: %s" % (len(failed), failed))
+                print("Stopping migration until above failure handled manually")
                 return False
     return True
 
