@@ -11,9 +11,8 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from builtins import str
 import logging
-import random
-import re
 from datetime import datetime
 from itertools import groupby
 
@@ -21,16 +20,15 @@ from flask import request, redirect, url_for, Blueprint, g, abort, current_app, 
 from flask_babel import lazy_gettext as _
 from flask_classy import route
 from flask_mongoengine.wtf import model_form
-from jinja2 import TemplateNotFound
-from mongoengine.queryset import Q
 from mongoengine import NotUniqueError, ValidationError
+from mongoengine.queryset import Q
 from werkzeug.contrib.atom import AtomFeed
 
-from fablr.controller.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
-                                       ResourceView, filterable_fields_parser, prefillable_fields_parser,
-                                       ListResponse, ItemResponse, Authorization)
+from fablr.api.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
+                                ResourceView, filterable_fields_parser, prefillable_fields_parser,
+                                ListResponse, ItemResponse, Authorization)
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
-from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
+from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -91,7 +89,6 @@ def filter_authorized_by_publisher(publisher=None):
 
 
 class PublisherAccessPolicy(ResourceAccessPolicy):
-
     def is_editor(self, op, user, res):
         if user in res.editors:
             return Authorization(True, _("Allowed access to %(res)s as editor", res=res), privileged=True)
@@ -114,7 +111,6 @@ class PublisherAccessPolicy(ResourceAccessPolicy):
 
 
 class WorldAccessPolicy(PublisherAccessPolicy):
-
     def is_editor(self, op, user, res):
         if user in res.editors or (res.publisher and user in res.publisher.editors):
             return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
@@ -136,14 +132,18 @@ class ArticleAccessPolicy(PublisherAccessPolicy):
     new_allowed = Authorization(True, _('Creating new resource is allowed'))
 
     def is_editor(self, op, user, res):
-        if user in res.editors or (res.publisher and user in res.publisher.editors) or (res.world and user in res.world.editors):
+        if user in res.editors or \
+                (res.publisher and user in res.publisher.editors) or \
+                (res.world and user in res.world.editors):
             return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res),
                                  privileged=True)
         else:
             return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
 
     def is_reader(self, op, user, res):
-        if user in res.readers or (res.publisher and user in res.publisher.readers) or (res.world and user in res.world.readers):
+        if user in res.readers or \
+                (res.publisher and user in res.publisher.readers) or \
+                (res.world and user in res.world.readers):
             return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res),
                                  privileged=True)
         else:
@@ -201,7 +201,7 @@ class PublishersView(ResourceView):
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
-        r.form.populate_obj(publisher, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(publisher, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -290,7 +290,7 @@ class WorldsView(ResourceView):
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
-        r.form.populate_obj(world, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(world, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -299,7 +299,6 @@ class WorldsView(ResourceView):
 
     def delete(self, id):
         abort(501)  # Not implemented
-
 
 
 def if_not_meta(doc):
@@ -328,7 +327,8 @@ class ArticlesView(ResourceView):
         # Explicitly take pub_host as argument, not g variable
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = WorldMeta(publisher)
-        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-sort_priority', '-created_date')
+        articles = Article.objects(publisher=publisher).filter(type='blogpost').order_by('-sort_priority',
+                                                                                         '-created_date')
         set_lang_options(publisher)
         r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
                          formats=['html'])
@@ -393,7 +393,6 @@ class ArticlesView(ResourceView):
         set_theme(r, 'publisher', publisher.slug)
         r.template = 'world/article_search.html'
         return r
-
 
     @route('/articles/')  # Needed to give explicit route to index page, as route base shows world_item
     def index(self, world_):
@@ -460,8 +459,9 @@ class ArticlesView(ResourceView):
         for article in articles:
             feed.add(article.title, current_app.md.convert(article.content),
                      content_type='html',
-                     author=unicode(article.creator) if article.creator else 'System',
-                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True, _scheme=''),
+                     author=str(article.creator) if article.creator else 'System',
+                     url=url_for('world.ArticlesView:get', world_=world.slug, id=article.slug, _external=True,
+                                 _scheme=''),
                      updated=article.created_date,
                      published=article.created_date,
                      categories=[{'term': getattr(article.world or article.publisher, 'title', 'None')}])
@@ -536,7 +536,7 @@ class ArticlesView(ResourceView):
         if not r.validate():
             flash(_("Error in form"), 'danger')
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(article, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(article, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -549,7 +549,6 @@ class ArticlesView(ResourceView):
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
         article = Article.objects(slug=id).first_or_404()
         set_lang_options(world, publisher)
-
 
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
@@ -580,10 +579,12 @@ class ArticlesView(ResourceView):
 def shorturl(code):
     return redirect(code)
 
+
 @world_app.route('/')
 def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
+
 
 @world_app.route('/styleguide')
 def styleguide():
@@ -591,9 +592,12 @@ def styleguide():
     flash(_('This page is a rendered style guide and example of how to write an article'), 'info')
     return render_template('styleguide.html', root_template='_page.html')
 
+
 PublishersView.register_with_access(world_app, 'publisher')
 WorldsView.register_with_access(world_app, 'world')
 ArticlesView.register_with_access(world_app, 'article')
+
+
 # ArticleRelationsView.register_with_access(world_app, 'articlerelations')
 
 
@@ -633,7 +637,6 @@ def by_articletype(objects):
     for s, t in groupby(sorted(objects, key=lambda x: x.type), lambda y: y.type):
         groups.append({'grouper': s, 'list': sorted(list(t), key=lambda x: x.title)})
     return sorted(groups, key=lambda x: x['grouper'])
-
 
 
 world_app.add_app_template_filter(dummygrouper)

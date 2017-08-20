@@ -7,21 +7,23 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 
+from builtins import str
+from builtins import object
 import logging
 import re
 from datetime import datetime, timedelta
 
 from flask import current_app
 from flask_babel import lazy_gettext as _
-from misc import Document, available_locale_tuples, distinct_options  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
-                         ListField, IntField, EmailField, EmbeddedDocumentField, DictField,
-                         GenericEmbeddedDocumentField, DynamicEmbeddedDocument, DynamicField, URLField, NULLIFY, DENY, CASCADE)
+                         ListField, IntField, EmailField, EmbeddedDocumentField, DynamicField, URLField, NULLIFY, DENY)
 
-from asset import FileAsset
-from misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
-from user import User
+from .asset import FileAsset
+from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
+from .misc import Document, available_locale_tuples, distinct_options  # Enhanced document
+from .user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -88,13 +90,12 @@ class Publisher(Document):
         return self.status == PublishStatus.published and self.created_date <= datetime.utcnow()
 
     def __str__(self):
-        return self.__unicode__().encode('utf-8')
-
-    def __unicode__(self):
         return self.title or self.slug
+
 
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'publishers_newsletters', NULLIFY)
+
 
 class World(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -125,7 +126,6 @@ class World(Document):
 
     custom_css = StringField(verbose_name=_('Custom CSS'))
 
-
     def clean(self):
         self.title = self.title.replace(u'&shy;', u'\u00AD')  # Replaces soft hyphens with the real unicode
         self.slug = slugify(self.title)
@@ -134,9 +134,6 @@ class World(Document):
         self.custom_css = secure_css(self.custom_css)
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return self.title
 
     def articles(self):
@@ -162,8 +159,10 @@ class World(Document):
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
 
+
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'world_newsletters', NULLIFY)
+
 
 class WorldMeta(object):
     """This is a dummy World object that means no World, e.g. just articles with a Publisher"""
@@ -177,10 +176,10 @@ class WorldMeta(object):
         self.publisher = publisher
         self.title = publisher.title
 
-    def __unicode__(self):
-        return unicode(self.publisher) or u'Meta'
+    def __str__(self):
+        return str(self.publisher) or u'Meta'
 
-    def __nonzero__(self):
+    def __bool__(self):
         return False  # Behave as false
 
     def articles(self):
@@ -196,21 +195,12 @@ class RelationType(Document):
     # to_type = # type of article to
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return u'%s' % self.name
 
 
 class ArticleRelation(EmbeddedDocument):
     relation_type = ReferenceField(RelationType)
     article = ReferenceField('Article')
-
-    def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
-        return u'%s %s %s' % (self.from_article.title, self.relation_type, self.to_article.title)
 
 
 class PersonData(EmbeddedDocument):
@@ -251,6 +241,7 @@ class Episode(EmbeddedDocument):
     description = StringField(verbose_name=_('Description'))
     content = ListField(ReferenceField('Article'))  # references Article class below
 
+
 # TODO: cannot add this to Episode as it's self reference, but adding attributes
 # outside the class def seems not to be picked up by MongoEngine, so this row
 # may not have any effect
@@ -278,6 +269,11 @@ ArticleTypes = Choices(
     chronicles=_('Chronicle'),
     character=_('Character')
 )
+
+# Ideas for unicode symbols of above
+# ✪ ✵ ✯ ♖ ♜ ❦ ♕ ✎ ✉ ⁂ ※ ⌘ ⚐ ⚔ ⚜ ⚥ 👤
+# dice ⚀ ⚁ ⚂ ⚃ ⚄ ⚅
+
 
 ArticleThemes = Choices(
     default=_('Default'),
@@ -309,7 +305,7 @@ class Article(Document):
     description = StringField(max_length=350, verbose_name=_('Description'))
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
-    tags = ListField(StringField(max_length=30), verbose_name=_('Tags'))
+    tags = ListField(StringField(max_length=60), verbose_name=_('Tags'))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
     sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
@@ -376,9 +372,6 @@ class Article(Document):
         return asked_type + 'data'
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         return u'%s%s' % (self.title, ' [%s]' % self.type)
 
     persondata = EmbeddedDocumentField(PersonData)
@@ -421,10 +414,8 @@ class Shortcut(Document):
 #     type = IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
 
 #     def __str__(self):
-#         return unicode(self).encode('utf-8')
-
-#     def __unicode__(self):
 #         return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
+
 
 
 # class ArticleRights(Document):

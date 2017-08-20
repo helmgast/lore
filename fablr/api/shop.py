@@ -8,9 +8,12 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import print_function
+from builtins import zip
+from builtins import str
 import logging
 from datetime import datetime
-from itertools import izip
+
 
 import stripe
 from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup
@@ -23,11 +26,11 @@ from wtforms.fields.html5 import EmailField, IntegerField
 from wtforms.utils import unset_value
 from wtforms.validators import InputRequired, Email, DataRequired, NumberRange
 
-from fablr.controller.mailer import send_mail
-from fablr.controller.resource import (ResourceAccessPolicy,
-                                       RacModelConverter, RacBaseForm, ResourceView,
-                                       filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
-                                       Authorization, route_subdomain)
+from fablr.api.mailer import send_mail
+from fablr.api.resource import (ResourceAccessPolicy,
+                                RacModelConverter, RacBaseForm, ResourceView,
+                                filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
+                                Authorization, route_subdomain)
 from fablr.model.asset import FileAsset
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
@@ -181,7 +184,7 @@ class ProductsView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(product, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(product, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
             r.stock.stock_count[product.slug] = r.form.stock_count.data
@@ -215,6 +218,7 @@ def shop_home():
     else:
         return redirect(url_for('shop.OrdersView:my_orders'))
 
+
 # shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
 CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
@@ -233,7 +237,7 @@ class FixedFieldList(FieldList):
     # This should be fixed by wtforms!
 
     def process(self, formdata, data=unset_value):
-        print 'FieldList process formdata %s, data %s' % (formdata, data)
+        print('FieldList process formdata %s, data %s' % (formdata, data))
         self.entries = []
         if data is unset_value or not data:
             try:
@@ -251,7 +255,7 @@ class FixedFieldList(FieldList):
             for index in indices:
                 try:
                     obj_data = data[index]
-                    print "Got obj_data %s" % obj_data
+                    print("Got obj_data %s" % obj_data)
                 except LookupError:
                     obj_data = unset_value
                 self._add_entry(formdata, obj_data, index=index)
@@ -274,7 +278,7 @@ class FixedFieldList(FieldList):
 
         _fake = type(str('_fake'), (object,), {})
         output = []
-        for field, data in izip(self.entries, candidates):
+        for field, data in zip(self.entries, candidates):
             fake_obj = _fake()
             fake_obj.data = data
             field.populate_obj(fake_obj, 'data')
@@ -345,10 +349,10 @@ class OrdersView(ResourceView):
     item_template = 'shop/order_item.html'
     item_arg_parser = prefillable_fields_parser(
         ['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
-    form_class = form_class = model_form(Order,
-                                         base_class=RacBaseForm,
-                                         only=['order_lines', 'shipping_address', 'shipping_mobile'],
-                                         converter=RacModelConverter())
+    form_class = model_form(Order,
+                            base_class=RacBaseForm,
+                            only=['order_lines', 'shipping_address', 'shipping_mobile'],
+                            converter=RacModelConverter())
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
@@ -537,7 +541,7 @@ class OrdersView(ResourceView):
                     source=r.form.stripe_token.data,
                     amount=cart_order.total_price_int(),  # Stripe takes input in "cents" or similar
                     currency=cart_order.currency,
-                    description=unicode(cart_order),
+                    description=str(cart_order),
                     metadata={'order_id': cart_order.id}
                 )
                 cart_order.status = OrderStatus.paid

@@ -6,6 +6,7 @@
 *.sublime*
 config.py
 front/
+/static/dist
 /.idea
 /.settings
 /.project

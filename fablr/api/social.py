@@ -19,8 +19,8 @@ from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms import Form
 
-from fablr.controller.auth import get_logged_in_user
-from fablr.controller.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
+from fablr.api.auth import get_logged_in_user
+from fablr.api.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from fablr.extensions import csrf
 from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
@@ -47,6 +47,7 @@ class UserAccessPolicy(ResourceAccessPolicy):
 
     def is_reader(self, op, user, res):
         return self.is_editor(op, user, res)
+
 
 FinishTourForm = model_form(User,
                             base_class=Form,  # No CSRF on this one
@@ -85,6 +86,7 @@ class UsersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
+        user = None
         if id == 'post':
             r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=None)
@@ -115,8 +117,9 @@ class UsersView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(user, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(user, list(request.form.keys()))  # only populate selected keys
         user.status = 'active'  # Ensure active user
+
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -159,6 +162,7 @@ class GroupsView(ResourceView):
                             base_class=RacBaseForm,
                             exclude=['slug', 'created', 'updated'],
                             converter=RacModelConverter())
+
     def index(self):
         groups = Group.objects().order_by('-updated')
         r = ListResponse(GroupsView, [('groups', groups)])
@@ -184,7 +188,7 @@ class GroupsView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(group, request.form.keys())  # only populate selected keys
+        r.form.populate_obj(group, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -196,6 +200,7 @@ class GroupsView(ResourceView):
 
     def delete(self, id):
         abort(501)  # Not implemented
+
 
 # GroupsView.register_with_access(social, 'group')
 

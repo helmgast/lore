@@ -6,14 +6,15 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+from __future__ import absolute_import
 from flask.ext.babel import format_date
 
-from misc import Document  # Enhanced document
+from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, BooleanField, ListField,
                          EmbeddedDocumentField)
 
-from user import User, Group
-from world import Article
+from .user import User, Group
+from .world import Article
 
 
 # A game session that was or will be held, e.g. the instance between a scenario
@@ -27,7 +28,7 @@ class Session(EmbeddedDocument):
     episodes = ListField(StringField())
     present_members = ListField(ReferenceField(User));
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Session of %s at %s' % ('self.campaign', self.play_start|format_date(format='short'))
 
 
@@ -41,7 +42,7 @@ class CampaignInstance(Document):
     sessions = ListField(EmbeddedDocumentField(Session))
     chronicles = ListField(ReferenceField(Article))  # ChronicleArticles
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s by %s' % (self.campaign.title, self.group)
 
 # def load_scene_tree(self, scene_tree, parent=None):
@@ -66,7 +67,7 @@ class CampaignInstance(Document):
 #     def ordered_children(self):
 #         return self.children.order_by(Scene.order.asc())
 #
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'Scene: %s of %s' % (self.name, self.campaign)
 
 # Lists users present at a particular session

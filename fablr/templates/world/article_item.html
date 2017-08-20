@@ -147,7 +147,7 @@
                     {% else %}
                         <a>{{ article.creator }}</a>
                     {% endif %}
-                {%- else -%}<a>{{ _('Admin') }}</a>
+                {%- else -%}<a>&nbsp;{{ _('Admin') }}</a>
                 {%- endif -%}</li>
             <li title="{{ _('Created') }}"><span
                     class="glyphicon glyphicon-calendar"></span>
@@ -161,10 +161,9 @@
                 </li>
             {% endif %}
             {% if article.tags %}
-                <li title="{{ _('Tags') }}"><span
-                        class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
-                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}"><span
-                            class="badge">{{ t }}</span></a>
+                <li title="{{ _('Tags') }}"><span class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}">
+                        <span class="badge">{{ t }}</span></a>
                 {%- endfor -%}</li>
             {% endif %}
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>

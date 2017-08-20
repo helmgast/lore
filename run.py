@@ -1,3 +1,4 @@
+from __future__ import print_function
 import re
 
 import click
@@ -29,13 +30,13 @@ def lang_extract():
     runshell('pybabel extract --no-wrap -F fablr/translations/babel.cfg -o temp.pot fablr/')
     runshell('pybabel update -i temp.pot -d fablr/translations -l sv --no-fuzzy-matching')
     runshell('rm temp.pot')
-    print
-    print "New strings needing translation:"
-    print "------------------------"
+    print()
+    print("New strings needing translation:")
+    print("------------------------")
     with open('fablr/translations/sv/LC_MESSAGES/messages.po') as f:
         s = f.read()
         for m in re.findall(r'msgid ((".*"\s+)+)msgstr ""\s\s', s):
-            print m[0].split('/n')[0]  # avoid too long ones
+            print(m[0].split('/n')[0])  # avoid too long ones
 
 @app.cli.command()
 def lang_compile():
@@ -50,7 +51,7 @@ def db_setup(reset=False):
     """Setup a new database with starting data"""
     from mongoengine.connection import get_db
     from fablr.extensions import db_config_string
-    print db_config_string
+    print(db_config_string)
     db = get_db()
     # Check if DB is empty
     # If empty, insert an admin user and a default world
@@ -58,11 +59,11 @@ def db_setup(reset=False):
     if len(User.objects(admin=True)) == 0:  # consider the database empty
         admin_password = app.config['SECRET_KEY']
         admin_email = app.config['MAIL_DEFAULT_SENDER']
-        print dict(username='admin',
+        print(dict(username='admin',
                    password="<SECRET KEY FROM CONFIG>",
                    email=app.config['MAIL_DEFAULT_SENDER'],
                    admin=True,
-                   status=UserStatus.active)
+                   status=UserStatus.active))
 
         u = User(username='admin',
                  password=app.config['SECRET_KEY'],
@@ -114,7 +115,7 @@ def import_csv():
     from tools import customer_data
     from mongoengine.connection import get_db
     app.logger.info("Importing customer data")
-    print app.config['MONGODB_SETTINGS']
+    print(app.config['MONGODB_SETTINGS'])
     get_db()
     customer_data.setup_customer()
 
@@ -145,7 +146,7 @@ def test():
 @click.option('--email', help='Set a new password)')
 def set_password(email):
     if not app.debug:
-        print "We don't allow changing passwords if not in debug mode"
+        print("We don't allow changing passwords if not in debug mode")
         exit(1)
     from fablr.model.user import User
     user = User.objects(email=email).first()
@@ -155,9 +156,9 @@ def set_password(email):
             user.password = passw
             user.save()
         else:
-            print "Too short or no password provided"
+            print("Too short or no password provided")
     else:
-        print "No such user"
+        print("No such user")
 
 
 @app.cli.command()
@@ -186,7 +187,7 @@ def file_upload(file, title, desc, access):
     mime = mimetypes.guess_type(fname)[0]
     fa.file_data.put(open(file), filename=fname, content_type=mime)
     fa.save()
-    print file, title, desc
+    print(file, title, desc)
     # print file, title, description
 
 
@@ -196,7 +197,7 @@ def file_upload(file, title, desc, access):
 @click.option('--user', help='User ID to fingerprint with', required=True)
 def pdf_fingerprint(input, output, user):
     """Will manually fingerprint a PDF file."""
-    print "Fingerprinting user %s from file %s into file %s" % (user, input, output)
+    print("Fingerprinting user %s from file %s into file %s" % (user, input, output))
     with open(output, 'wb') as f:
         with open(input, 'rb') as f2:
             for buf in fingerprint_pdf(f2, user):
@@ -213,9 +214,9 @@ def pdf_check(input):
     # print users
     for user in users:
         uid = fingerprint_from_user(user.id)
-        print "User %s with id %s got fp %s" % (user, user.id, uid)
+        print("User %s with id %s got fp %s" % (user, user.id, uid))
         for fp in fps:
             if uid == fp:
-                print "User %s matches fingerprint %s in document %s" % (user, fp, input)
+                print("User %s matches fingerprint %s in document %s" % (user, fp, input))
                 exit(1)
-    print "No match for any user in document %s" % (input)
+    print("No match for any user in document %s" % (input))

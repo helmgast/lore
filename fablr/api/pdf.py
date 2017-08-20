@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import str
 import re
 from hashlib import md5
 
@@ -57,7 +59,7 @@ def fingerprint_from_user(user_id):
 def fingerprint_pdf(file_object, user_id):
     """Generator that will fingerprint a PDF"""
     uid = fingerprint_from_user(user_id)
-    print "Fingerprinting uid %s as hash %s" % (user_id, uid)
+    print("Fingerprinting uid %s as hash %s" % (user_id, uid))
     pdf_id_num, doc_id_num, font_id_num = 0, 0, 0
     window = file_object.read(window_size * 2)
     buf = window  # just to start with a buffer that equals true
@@ -101,15 +103,15 @@ def get_fingerprints(file):
             # overlaps, so fix this
             m = pdf_id.search(window)
             if m:
-                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                print("Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))]))
                 fingerprints.append(m.group(1))
             m = doc_id.search(window)
             if m:
-                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                print("Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))]))
                 fingerprints.append(m.group(1))
             m = font_id_find.search(window)
             if m:
-                print "Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))])
+                print("Found %s in %s" % (m.group(1), window[m.start(0): window.find('\n', m.start(1))]))
                 fingerprints.append(m.group(1))
             buf = f.read(window_size)
             window = window[window_size:] + buf
