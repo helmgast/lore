@@ -160,8 +160,6 @@ re_operators = re.compile(
     'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
     'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
     'not__endswith|not__iendswith)$')
-re_order_by = re.compile(r'^[+-]')
-
 
 def prefillable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
@@ -172,7 +170,7 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 def filterable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
-    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if re_order_by.sub('', y) in fields],
+    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if y.lstrip('+-') in fields],
               'fields': fields}
     extend.update(kwargs)
     return dict(ListResponse.arg_parser, **extend)
@@ -361,7 +359,7 @@ class ListResponse(ResourceResponse):
         'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
         'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 15,
         'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
-        'order_by': lambda x: '',
+        'order_by': lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
         'q': lambda x: x
     })
     method = 'list'

@@ -91,9 +91,12 @@ def my_report_exception(app, exception):
 def configure_logging(app):
     # Custom logging that always goes to stderr
     import logging
+    # root = logging.getLogger()
+    # root.addHandler(default_handler)
+
     for h in app.logger.handlers:
         if h.__class__.__name__ == 'ProductionHandler':
-            # Override default to error only
+            # This logger defaults to ERROR, we set it to INFO
             h.setLevel(logging.INFO)
     if app.debug:
         app.logger.setLevel(logging.DEBUG)

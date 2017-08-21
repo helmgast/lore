@@ -200,7 +200,7 @@
 
         {% if 'order' in show %}
             <div class="btn-group">
-                {% if in_current_args(['order_by']) %}
+                {% if in_current_args(['order_by']) and args['order_by'] %}
                     {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
                     <a href="{{ current_url(order_by=none) }}"
                        title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info btn-xs">

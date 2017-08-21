@@ -229,6 +229,7 @@ xp_actions = {
     'completed_profile': {'func': lambda x: int(10 * x), 'base': 0},  # Completed profile
     'purchase': {'func': lambda x: int(x), 'base': 1},  # 1 per SEK, with fixed FX
     'share': {'func': lambda x: int(3 * x), 'base': 2},  # Initiate a share on Facebook etc (TBD)
+    'deed': {'func': lambda x: int(50 * x), 'base': 1},  # A heroic deed, as judged by an admin
 }
 
 

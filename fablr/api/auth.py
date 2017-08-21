@@ -322,6 +322,10 @@ def get_logged_in_user(require_active=True):
         uid = session.get('uid', None)
         if uid:
             try:
+                # Temporarily allow us to decode bytes from cookies, as we transition from cookies written from
+                # py2.7 (bytes) to py 3.6 (unicode)
+                if hasattr(uid, 'decode'):
+                    uid = uid.decode()
                 u = User.objects(id=uid).first()
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
@@ -339,7 +343,7 @@ def get_logged_in_user(require_active=True):
                             logger.debug("User %s masquerading as %s" % (u, u2))
                             return u2
                 else:
-                    logger.warn("No user in database with uid {uid}".format(uid=uid))
+                    logger.warning("No user in database with uid {uid}".format(uid=uid))
             except Exception as e:
                 logger.error(e)
                 logout_user()

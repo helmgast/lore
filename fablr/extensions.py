@@ -223,15 +223,15 @@ class GalleryList(Treeprocessor):
                                 # # however, they may be nested in other tags, e.g. a
                                 # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
-
-class GalleryList(Treeprocessor):
-    def run(self, root):
-        for ul in root.findall('ul'):
-            if len(ul):
-                imgs = list(ul.iterfind('.//img'))
-                txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
-                if len(imgs) > 0 and ''.join(txts).strip() == '':
-                    ul.set('class', 'gallery')
+# Simpler version that only looks for lists of images
+# class GalleryList(Treeprocessor):
+#     def run(self, root):
+#         for ul in root.findall('ul'):
+#             if len(ul):
+#                 imgs = list(ul.iterfind('.//img'))
+#                 txts = list(ul.itertext())[1:]  # Skip first as it is the current node, e.g. ul
+#                 if len(imgs) > 0 and ''.join(txts).strip() == '':
+#                     ul.set('class', 'gallery')
 
 
 class AutolinkedImage(Extension):
@@ -254,7 +254,7 @@ def build_md_filter(md_instance):
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
-        current_app.logger.info(f'JINJA2: something was undefined in {request.url}!')
+        current_app.logger.warning(f'JINJA2: undefined in template {request.url}!')
         return None
 
 
