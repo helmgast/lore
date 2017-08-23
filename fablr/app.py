@@ -13,8 +13,9 @@ from builtins import str
 import os
 
 import rollbar
-from flask import Flask, render_template, request, url_for, flash, g, redirect
+from flask import Flask, render_template, request, url_for, flash, g, redirect, logging
 from flask import got_request_exception
+from logging import getLogger, StreamHandler, DEBUG, INFO, Formatter
 from markdown import Markdown
 from pymongo.errors import ConnectionFailure
 from werkzeug.contrib.fixers import ProxyFix
@@ -22,8 +23,10 @@ from werkzeug.routing import Map
 
 
 def create_app(**kwargs):
+
     # Creates new flask instance
     the_app = Flask('fablr', static_folder='../static')
+
     config_string = "config from:"
     from . import default_config
     the_app.config.from_object(default_config.Config)  # Default config that applies to all deployments
@@ -62,7 +65,6 @@ def create_app(**kwargs):
                         (key, config_string))
 
     configure_logging(the_app)
-
     if not the_app.testing:
         the_app.logger.info("Flask '%s' (%s) created in %s-mode, %s"
                             % (the_app.name, the_app.config.get('VERSION', None),
@@ -90,18 +92,18 @@ def my_report_exception(app, exception):
 
 def configure_logging(app):
     # Custom logging that always goes to stderr
-    import logging
-    # root = logging.getLogger()
-    # root.addHandler(default_handler)
+    logger = getLogger(app.logger_name)
 
-    for h in app.logger.handlers:
-        if h.__class__.__name__ == 'ProductionHandler':
-            # This logger defaults to ERROR, we set it to INFO
-            h.setLevel(logging.INFO)
-    if app.debug:
-        app.logger.setLevel(logging.DEBUG)
-    else:
-        app.logger.setLevel(logging.INFO)
+    class RequestFormatter(logging.Formatter):
+        def format(self, record):
+            record.url = request.url if request else ''
+            return super().format(record)
+
+    handler = StreamHandler(logging._proxy_stream)
+    handler.setFormatter(RequestFormatter('[%(levelname)s in %(module)s:%(lineno)d (%(url)s)] %(message)s'))
+    logger.addHandler(handler)
+    logger.setLevel(DEBUG if app.debug else INFO)
+    app._logger = logger  # Replace the otherwise auto-configured logger
 
     rollbar_token = app.config['ROLLBAR_TOKEN']
     if not app.debug:

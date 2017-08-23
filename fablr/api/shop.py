@@ -397,7 +397,7 @@ class OrdersView(ResourceView):
         # TODO we dont support new order creation outside of cart yet
         # if id == 'post':
         #     r = ItemResponse(OrdersView, [('order', None), ('publisher', publisher)], extra_args={'intent': 'post'})
-        order = Order.objects(id=id).first_or_404()
+        order = Order.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], form_class=PostPaymentForm)
         r.auth_or_abort()
         set_theme(r, 'publisher', publisher.slug)

@@ -152,7 +152,9 @@ mime_types = {
 #         arg_fields['queryargs'] = f.FormField(key_form, separator='__')
 #     return type(model_class.__name__ + 'Args', (baseform,), arg_fields)
 
-common_args = frozenset(['page', 'per_page', 'debug', 'as_user', 'view', 'q', 'action', 'method', 'next', 'order_by'])
+common_args = frozenset([
+    'debug', 'as_user', 'render', 'out', 'locale', 'intent',
+    'view', 'next', 'q', 'action', 'method', 'order_by'])
 
 re_operators = re.compile(
     r'__(ne|lt|lte|gt|gte|in|nin|mod|all|size|exists|exact|iexact|contains|'
@@ -161,8 +163,14 @@ re_operators = re.compile(
     'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
     'not__endswith|not__iendswith)$')
 
+
 def prefillable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
+    forbidden = fields & common_args
+    if forbidden:
+        msg = f"Cannot allow field names colliding with common args names: {forbidden}"
+        current_app.logger.error(msg)
+        exit(1)
     extend = {'fields': fields}
     extend.update(kwargs)
     return dict(ItemResponse.arg_parser, **extend)
@@ -170,6 +178,11 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 def filterable_fields_parser(fields=None, **kwargs):
     fields = frozenset(fields or [])
+    forbidden = fields & common_args
+    if forbidden:
+        msg = f"Cannot allow field names colliding with common args names: {forbidden}"
+        current_app.logger.error(msg)
+        exit(1)
     extend = {'order_by': lambda x: [y for y in x.lower().split(',') if y.lstrip('+-') in fields],
               'fields': fields}
     extend.update(kwargs)
@@ -296,16 +309,18 @@ class ResourceResponse(Response):
             # This error comes from PyMongo with only a text message denoting which field was not unique
             # We need to parse it to allocate it back to the right field
             found = False
+            msg = str(err)
             for key in list(self.form._fields.keys()):
-                if '${key}'.format(key=key) in err.message:
-                    if key == 'slug':
-                        key = 'title'
+                # When we check title, also check if there was a fault with the slug, as slug
+                # normally is what is not unique, but will not be in the form fields
+                # This means we will highlight the title field when slug is not unique
+                if key == 'title' and '$slug' in msg or f'${key}' in msg:
                     self.form[key].errors.append(
                         _('This field needs to be unique and another resource already have this value'))
                     found = True
                     break
             if not found:
-                general_errors.append(err.message)
+                general_errors.append(msg)
 
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
@@ -329,7 +344,7 @@ class ResourceResponse(Response):
     def parse_args(arg_parser, extra_args):
         """Parses request args through a form that sets defaults or removes invalid entries
         """
-        args = {'fields': MultiDict()}  # ensure we always have a fields value
+        args = MultiDict({'fields': MultiDict()})  # ensure we always have a fields value
         # values for same URL param (e.g. key=val1&key=val2)
         # req_args = CombinedMultiDict([request.args, extra_args])
         req_args = request.args.copy()
@@ -470,17 +485,17 @@ class ItemResponse(ResourceResponse):
             if self.args['intent']:
                 # we want to serve a form, pre-filled with field values and parent queries
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
-                form_args.update(iter(self.args['fields'].items()))
-                action_args = dict(request.view_args)
-                action_args.update({k: v for k, v in list(self.args.items()) if v})  # Reflect args used in request
-                del action_args['intent']
+                form_args.update(self.args['fields'].items())
+                action_args = MultiDict({k: v for k, v in self.args.items() if v and k not in ['fields', 'intent']})
+                action_args.update(self.args['fields'])
                 if self.args['intent'] == 'post':
                     # A post will not go to same URL, but a different on (e.g. a list endpoint without an id parameter)
-                    action_args.pop('id', None)
-                    self.action_url = url_for(request.endpoint.replace(':get', ':post'), **action_args)
+                    self.action_url = url_for(request.endpoint.replace(':get', ':post'),
+                                              **{k: v for k, v in request.view_args.items() if k!='id'},
+                                              **action_args)
                 else:
                     # Will take current endpoint (a get) and returns same url but with method from intent
-                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **action_args)
+                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args, **action_args)
             else:
                 # Set intent to method if we are post/put/patch as it is used in template to decide
                 self.args['intent'] = self.method

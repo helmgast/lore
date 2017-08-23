@@ -91,7 +91,7 @@ class UsersView(ResourceView):
             r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
             r.auth_or_abort(res=None)
         else:
-            user = User.objects(id=id).first_or_404()
+            user = User.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
             r = ItemResponse(UsersView, [('user', user)])
             if not getattr(g, 'user', None):
                 # Allow invited only user to see this page
@@ -106,7 +106,7 @@ class UsersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
-        user = User.objects(id=id).first_or_404()
+        user = User.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
         r = ItemResponse(UsersView, [('user', user)], method='patch')
 
         if not getattr(g, 'user', None):
