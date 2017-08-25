@@ -1,6 +1,7 @@
 import io
 import logging
 from time import time
+from urllib.parse import quote
 
 import pyqrcode
 from bson import ObjectId
@@ -59,7 +60,10 @@ def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
             if not gridfile.name:
                 raise ValueError("No attachment file name given and none in the gridfile")
             attachment_filename = gridfile.name
-        headers['Content-Disposition'] = 'attachment; filename=%s' % attachment_filename
+        # Handles unicode filenames in most browsers, see
+        # https://stackoverflow.com/questions/21818855/flask-handling-unicode-text-with-werkzeug/30953380#30953380
+        headers['Content-Disposition'] = "attachment; filename*=UTF-8''{quoted_filename}".format(
+            quoted_filename=quote(attachment_filename.encode('utf8')))
     md5 = gridfile.md5  # as we may overwrite gridfile with own iterator, save this
     if fingerprint_user_id:
         gridfile = fingerprint_pdf(gridfile, fingerprint_user_id)
