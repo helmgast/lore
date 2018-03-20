@@ -21,6 +21,7 @@ COPY Pipfile Pipfile.lock run.py /usr/src/app/
 RUN pipenv install --system
 COPY tools/ tools/
 COPY fablr/ fablr/
+COPY plugins/ plugins/
 
 ENV FLASK_APP=run.py
 RUN flask lang_compile

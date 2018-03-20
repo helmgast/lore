@@ -88,6 +88,7 @@
         var IMAGE_SELECT_URL = "{{ url_for('assets.FileAssetsView:index', out='fragment', intent='patch', view='card',
                     type='image', choice='multiple')|safe }}"
         var CSRF_TOKEN = "{{ csrf_token() }}"
+        {% if config['ROLLBAR_TOKEN'] and config['ROLLBAR_TOKEN'] != 'SECRET' %}
         var ROLLBAR_CONFIG = {
             accessToken: "ea27a30c22ca4e62a506af0ee4e581a5",
             captureUncaught: true,
@@ -102,6 +103,7 @@
                 }
             }
         };
+        {% endif %}
     {% endblock %}
 </script>
 

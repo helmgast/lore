@@ -133,7 +133,7 @@ def configure_logging(app):
             got_request_exception.connect(my_report_exception, app)
             rollbar.report_message("Initiated rollbar on %s" % app.config.get('VERSION', None), 'info')
         else:
-            app.logger.warning("No ROLLBAR_TOKEN given in config, cannot be started")
+            app.logger.warning("Running without Rollbar error monitoring; no ROLLBAR_TOKEN in config")
 
             # app.logger.debug("Debug")
             # app.logger.info("Info")
