@@ -165,10 +165,6 @@ msgstr "Användaren existerar reda "
 msgid "Sent email \"%(subject)s\" to %(recipients)s"
 msgstr "Skickade mail \"%(subject)s\" till %(recipients)s"
 
-#: fablr/controller/mailer.py:190
-msgid "Errors in form"
-msgstr "Fel i formuläret"
-
 #: fablr/controller/resource.py:54
 #, python-format
 msgid "%(name)s was %(action)s"
@@ -2270,7 +2266,7 @@ msgstr "Följare"
 
 #: fablr/templates/social/user_item.html:56
 msgid "This user is not yet active!"
-msgstr "Denna använder är inte aktiv ännu!"
+msgstr "Denna användare är inte aktiv ännu!"
 
 #: fablr/templates/social/user_item.html:57
 msgid "Save to complete the user and make it active."

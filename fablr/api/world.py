@@ -27,12 +27,12 @@ from werkzeug.contrib.atom import AtomFeed
 from fablr.api.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                 ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                 ListResponse, ItemResponse, Authorization)
-from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-world_app = Blueprint('world', __name__, template_folder='../templates/world')
+world_app = Blueprint('world', __name__)
 
 
 # All articles have a publisher, some have world. If no world, it has the meta world, "meta". There is a default 1st
@@ -183,8 +183,7 @@ class PublishersView(ResourceView):
         r.auth_or_abort(res=None)
         publisher = Publisher()
         if not r.validate():
-            flash(_("Error in form"), 'danger')
-            return r, 400
+            return r.error_response(status=400)
         r.form.populate_obj(publisher)
         try:
             r.commit(new_instance=publisher)
@@ -198,9 +197,8 @@ class PublishersView(ResourceView):
         r = ItemResponse(PublishersView, [('publisher', publisher)], method='patch')
         r.auth_or_abort()
         if not r.validate():
-            # return same page but with form errors?
-            flash(_("Error in form"), 'danger')
-            return r, 400  # BadRequest
+            return r.error_response(status=400)
+
         r.form.populate_obj(publisher, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
@@ -237,7 +235,7 @@ class WorldsView(ResourceView):
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher))
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     def get(self, id):
@@ -246,6 +244,7 @@ class WorldsView(ResourceView):
         if id == 'post':
             set_lang_options(publisher)
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.set_theme('world')  # Will pick from args if exist
             r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         else:
             world = World.objects(slug=id).first_or_404()
@@ -256,8 +255,8 @@ class WorldsView(ResourceView):
             set_lang_options(world, publisher)
             r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)])
             r.auth_or_abort()
-            set_theme(r, 'world', world.slug)
-        set_theme(r, 'publisher', publisher.slug)
+            r.set_theme('world', world.theme)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     def post(self):
@@ -266,11 +265,11 @@ class WorldsView(ResourceView):
 
         r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
         r.auth_or_abort(res=publisher)
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         world = World()
         if not r.validate():
-            flash(_("Error in form"), 'danger')
-            return r, 400
+            return r.error_response(status=400)
+
         r.form.populate_obj(world)
         try:
             r.commit(new_instance=world)
@@ -285,11 +284,10 @@ class WorldsView(ResourceView):
 
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         if not r.validate():
-            # return same page but with form errors?
-            flash(_("Error in form"), 'danger')
-            return r, 400  # BadRequest
+            return r.error_response(status=400)
+
         r.form.populate_obj(world, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
@@ -316,7 +314,7 @@ class ArticlesView(ResourceView):
     list_template = 'world/article_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date', 'tags', 'status'])
     item_template = 'world/article_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date'])
+    item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date', 'theme'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
                             exclude=['slug', 'feature_image', 'featured'],
@@ -343,7 +341,7 @@ class ArticlesView(ResourceView):
         r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published())
         r.query = r.query.limit(8)
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     @route('/<world_>/', route_base='/')
@@ -364,13 +362,13 @@ class ArticlesView(ResourceView):
             r.auth_or_abort()
             if world.external_host:
                 return redirect(world.external_host)
-            set_theme(r, 'world', r.world.slug)
+            r.set_theme('world', world.theme)
             r.articles = Article.objects(world=world).filter(
                 filter_published() |
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world(world))
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         r.template = 'world/world_home.html'
         return r
 
@@ -390,7 +388,7 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world())
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         r.template = 'world/article_search.html'
         return r
 
@@ -416,8 +414,8 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_world(world))  # If world is meta will count as None
 
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
-        set_theme(r, 'world', world.slug)
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
         return r
 
     def blog(self, world_):
@@ -479,16 +477,19 @@ class ArticlesView(ResourceView):
                              [('article', None), ('world', world), ('publisher', publisher)],
                              extra_args={'intent': 'post'})
             # check auth scoped to world or publisher, as we want to create new and use them as parent
+
             r.auth_or_abort(res=world if world_ != 'meta' else publisher)
+            r.set_theme('article')  # Will pick from args if exist
+
         else:
             r = ItemResponse(ArticlesView,
                              [('article', Article.objects(slug=id).first_or_404()), ('world', world),
                               ('publisher', publisher)])
             r.auth_or_abort()
-            set_theme(r, 'article', r.article.theme or 'default')
+            r.set_theme('article', r.article.theme)
 
-        set_theme(r, 'publisher', publisher.slug)
-        set_theme(r, 'world', world.slug)
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
 
         return r
 
@@ -502,22 +503,22 @@ class ArticlesView(ResourceView):
                          method='post')
         # Check auth scoped to world or publisher, as we want to create new and use them as parent
         r.auth_or_abort(res=world if world_ != 'meta' else publisher)
-        set_theme(r, 'publisher', publisher.slug)
-        set_theme(r, 'world', world.slug)
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
 
         article = Article()
         if not r.validate():
-            flash(_("Error in form"), 'danger')
-            return r, 400  # Respond with same page, including errors highlighted
+            return r.error_response(status=400)
+
         r.form.populate_obj(article)
-        set_theme(r, 'article', article.theme or 'default')  # Incase we need to return to user
+        r.set_theme('article', article.theme)  # Incase we need to return to user for validation error
 
         try:
             r.commit(new_instance=article)
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, pub_host=publisher.slug,
-                                                  world_=world.slug))
+                                                  world_=world.slug, intent='patch'))
 
     def patch(self, world_, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
@@ -529,20 +530,19 @@ class ArticlesView(ResourceView):
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='patch')
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
-        set_theme(r, 'world', world.slug)
-        set_theme(r, 'article', r.article.theme or 'default')
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
+        r.set_theme('article', r.article.theme)
 
         if not r.validate():
-            flash(_("Error in form"), 'danger')
-            return r, 400  # Respond with same page, including errors highlighted
+            return r.error_response(status=400)
         r.form.populate_obj(article, list(request.form.keys()))  # only populate selected keys
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('world.ArticlesView:get', id=article.slug, pub_host=publisher.slug,
-                                                  world_=world.slug))
+                                                  world_=world.slug, intent='patch'))
 
     def delete(self, world_, id):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
@@ -554,9 +554,9 @@ class ArticlesView(ResourceView):
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='delete')
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
-        set_theme(r, 'world', world.slug)
-        set_theme(r, 'article', r.article.theme or 'default')
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
+        r.set_theme('article', r.article.theme)
 
         r.commit()
         return redirect(
@@ -580,7 +580,7 @@ def shorturl(code):
     return redirect(code)
 
 
-@world_app.route('/')
+@world_app.route('/', subdomain=current_app.default_host)
 def homepage():
     publishers = Publisher.objects()
     return render_template('homepage.html', publishers=publishers)
@@ -599,7 +599,6 @@ ArticlesView.register_with_access(world_app, 'article')
 
 
 # ArticleRelationsView.register_with_access(world_app, 'articlerelations')
-
 
 def rows(objects, char_per_row=40, min_rows=10):
     found = 0

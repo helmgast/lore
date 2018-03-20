@@ -7,20 +7,20 @@
 
     <style>
         body, .content {
-            background-color: #2b2b2b;
-            color: #d9d9d9;
+            background-color: #fff;
+            color: #000;
         }
 
         .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
         .content h1, .content h2, .content h3, .content h4, .content h5, .content h6, label, th {
             font-family: Electrolize, sans-serif;
-            color: #0fc;
+            color: #c44a97;
             font-weight: 800;
-            text-shadow: #000 0px 0px 15px;
+            text-shadow: #000 1px 1px 1px;
         }
 
         .content a {
-            color: #0fc !important;
+            color: #7e4a97 !important;
         }
 
         .altsection {
@@ -44,10 +44,11 @@
 {% endblock cssimports %}
 
 {% block home %}
- <div>
-    <a data-pin-do="embedBoard" href="//www.pinterest.com/ripperdoc/nx/" data-pin-scale-width="200"
-       data-pin-scale-height="900" pin-board-width="900">
-        Follow ripperdoc's board NX on Pinterest.</a>
-    <script type="text/javascript" async src="https://assets.pinterest.com/js/pinit.js"></script>
-</div>
+    <div>
+        <h2>Inspirations-galleri</h2>
+        <a data-pin-do="embedBoard" href="//www.pinterest.com/ripperdoc/nx/" data-pin-scale-width="200"
+           data-pin-scale-height="900" pin-board-width="900">
+            Follow ripperdoc's board NX on Pinterest.</a>
+        <script type="text/javascript" async src="https://assets.pinterest.com/js/pinit.js"></script>
+    </div>
 {% endblock %}

@@ -23,7 +23,7 @@ from flask_mongoengine.wtf import model_form
 
 from fablr.model.world import Shortcut
 
-admin = Blueprint('admin', __name__, template_folder='../templates/admin')
+admin = Blueprint('admin', __name__)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 

@@ -10,6 +10,18 @@ class Config(object):
     DEBUG = True
     DEBUG_TB_PROFILER_ENABLED = True  # profile time to run, will slow down things
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+    DEBUG_TB_PANELS = (
+                'flask_debugtoolbar.panels.versions.VersionDebugPanel',
+                'flask_debugtoolbar.panels.timer.TimerDebugPanel',
+                'flask_debugtoolbar.panels.headers.HeaderDebugPanel',
+                'flask_debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
+                'flask_debugtoolbar.panels.config_vars.ConfigVarsDebugPanel',
+                'flask_debugtoolbar.panels.template.TemplateDebugPanel',
+                'flask_debugtoolbar.panels.sqlalchemy.SQLAlchemyDebugPanel',
+                'flask_debugtoolbar.panels.logger.LoggingPanel',
+                'fablr.extensions.PatchedRouteListDebugPanel',
+                'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel',
+            )
     # DEBUG_TB_HOSTS = ['127.0.0.1']  # Only allow localhost to access debug toolbar
     # Only set new cookie when old expire. This reduce data sent and simplifies caching.
     SESSION_REFRESH_EACH_REQUEST = False
@@ -20,14 +32,14 @@ class Config(object):
     BABEL_AVAILABLE_LOCALES = ['sv_SE', 'en_US']  # In order of preference for some cases
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
     MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
-    DEFAULT_HOST = 'fablr.dev'  # Default host when not using flask dev server
+    DEFAULT_HOST = 'localhost:5000'  # Default host when not using flask dev server
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/dist/manifest.json'
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
-
+    
 
 class SecretConfig(object):
     # Replace with mongodb://user:pass@host/dbname in config.py file

@@ -139,6 +139,24 @@
     </td>
 {% endmacro %}
 
+{% macro MAKE_NUMBER_INPUT(label, id='', placeholder='', class="nosubmit", min=0, max=12) %}
+    {% set readonly = not form %}
+    {% if not id %}
+        {% set id = label.lower() %}
+    {% endif %}
+    <input type="number" min={{ min }} max={{ max }} class="form-control {{ class }}" id="{{ id }}" name="{{ id }}" {{ 'readonly' if readonly }}>
+{% endmacro %}
+
+{% macro MAKE_TEXT_INPUT(label, id='', placeholder='', class="nosubmit") %}
+    {% set readonly = not form %}
+    {% if not id %}
+        {% set id = label.lower() %}
+    {% endif %}
+    <input type="text" value="{{ placeholder }}" class="form-control {{ class }}" id="{{ id }}" name="{{ id }}" {{ 'readonly' if readonly }}>
+
+{% endmacro %}
+
+
 {%- macro AUTHORIZED(auth) -%}
     {% if auth %}
         {{ caller("privileged" if auth.is_privileged() else '') }}

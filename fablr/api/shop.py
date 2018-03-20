@@ -32,14 +32,14 @@ from fablr.api.resource import (ResourceAccessPolicy,
                                 filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                 Authorization, route_subdomain)
 from fablr.model.asset import FileAsset
-from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
 from fablr.model.user import User
 from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-shop_app = Blueprint('shop', __name__, template_folder='../templates/shop')
+shop_app = Blueprint('shop', __name__)
 
 stripe.api_key = current_app.config['STRIPE_SECRET_KEY']
 
@@ -121,7 +121,7 @@ class ProductsView(ResourceView):
                 filter_authorized_by_publisher(publisher))
         r.auth_or_abort(res=publisher)
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
 
         return r
 
@@ -142,7 +142,7 @@ class ProductsView(ResourceView):
                              extra_form_args=extra_form_args)
             r.stock = stock
             r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
 
         return r
 
@@ -154,7 +154,7 @@ class ProductsView(ResourceView):
         r.auth_or_abort(res=publisher)
         r.stock = get_or_create_stock(publisher)
         product = Product()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product)
@@ -180,7 +180,7 @@ class ProductsView(ResourceView):
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
         r.auth_or_abort()
         r.stock = get_or_create_stock(publisher)
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
@@ -199,7 +199,7 @@ class ProductsView(ResourceView):
         # product = Product.objects(slug=id).first_or_404()
         # r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='delete')
         # r.auth_or_abort()
-        # set_theme(r, 'publisher', publisher.slug)
+        # r.set_theme('publisher', publisher.theme)
         # r.commit()
         # stock = Stock.objects(publisher=publisher).first()
         # if stock:
@@ -376,7 +376,7 @@ class OrdersView(ResourceView):
         }))
         r.aggregate = aggregate[0] if aggregate else None
 
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     def my_orders(self):
@@ -387,7 +387,7 @@ class OrdersView(ResourceView):
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
         r.auth_or_abort(res=publisher)
         r.prepare_query()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     def get(self, id):
@@ -400,7 +400,7 @@ class OrdersView(ResourceView):
         order = Order.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], form_class=PostPaymentForm)
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         return r
 
     def patch(self, id, publisher):
@@ -453,7 +453,7 @@ class OrdersView(ResourceView):
                          extra_args={'view': 'cart', 'intent': 'post'})
         r.auth = Authorization(True, _('Always allowed'))
 
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         if request.method in ['PATCH', 'POST']:
             r.method = request.method.lower()
             if not r.validate():
@@ -482,7 +482,7 @@ class OrdersView(ResourceView):
                          extra_args={'view': 'details', 'intent': 'post'})
         r.auth = Authorization(True, _('Always allowed'))
 
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         if request.method == 'POST':
             r.method = 'post'
             if not r.validate():
@@ -522,7 +522,7 @@ class OrdersView(ResourceView):
                          extra_args={'view': 'pay', 'intent': 'post'})
         r.auth = Authorization(True, _('Always allowed'))
 
-        set_theme(r, 'publisher', publisher.slug)
+        r.set_theme('publisher', publisher.theme)
         r.stripe_key = current_app.config['STRIPE_PUBLIC_KEY']
         if request.method == 'POST':
             r.method = 'post'

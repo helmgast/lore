@@ -12,6 +12,7 @@ import types
 from builtins import str
 from itertools import chain
 
+from jinja2 import TemplatesNotFound
 from past.builtins import basestring
 from builtins import object
 import inspect
@@ -253,10 +254,20 @@ class ResourceResponse(Response):
         self.auth = None
         super(ResourceResponse, self).__init__()  # init a blank flask Response
 
-    @property  # For convenience
-    def errors(self):
-        form_errors = self.form.errors if hasattr(self, 'form') and self.form and self.form.errors else []
-        return self.general_errors + form_errors
+    def set_theme(self, type, *paths):
+        # Check if we have a theme arg, it should overrule the current theme
+        # (e.g. if an article, override article_theme but not others)
+        # Has theme in args?
+        if len(self.resource_queries) > 0 and self.resource_queries[0] == type and \
+                ('fields' in self.args and self.args['fields'].get('theme', None)):
+            paths += (self.args['fields']['theme'],)
+        if type and paths:  # None as string denotes no option from Mongoengine
+            templates = ['%s/index.html' % p for p in paths if p and p != 'None']
+            if templates:
+                try:
+                    setattr(self, '%s_theme' % type, current_app.jinja_env.select_template(templates))
+                except TemplatesNotFound as err:
+                    logger.warning(f"Not finding any of themes {templates}")
 
     def auth_or_abort(self, res=None):
         res = res or getattr(self, 'instance', None)
@@ -303,8 +314,8 @@ class ResourceResponse(Response):
         else:  # csv
             abort(406)  # Not acceptable content available
 
-    def error_response(self, err, status=0):
-        general_errors = []
+    def error_response(self, err=None, status=0):
+        unknown_errors = []
         if isinstance(err, NotUniqueError):
             # This error comes from PyMongo with only a text message denoting which field was not unique
             # We need to parse it to allocate it back to the right field
@@ -320,7 +331,7 @@ class ResourceResponse(Response):
                     found = True
                     break
             if not found:
-                general_errors.append(msg)
+                unknown_errors.append(msg)
 
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
@@ -333,11 +344,12 @@ class ResourceResponse(Response):
                     else:
                         errors.append(msg)
                 else:
-                    general_errors.append(msg)
-        else:
-            general_errors.append(str(err))
-        self.general_errors = general_errors
-        flash(_("Errors in form, %(errors)s", errors=u",".join(general_errors)), 'danger')
+                    unknown_errors.append(msg)
+        elif err:
+            unknown_errors.append(str(err))
+        unknown_string = ','.join(unknown_errors) if unknown_errors else ''
+
+        flash(_("Errors in form")+f" [{','.join(self.form.errors.keys())}] {unknown_string}", 'danger')
         return self, status or 400
 
     @staticmethod

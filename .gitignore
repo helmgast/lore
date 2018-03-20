@@ -1,16 +1,19 @@
-*.pyc
-*.db
-*.log
-*.mo
-*.pot
-*.sublime*
+# From Gitignore
+**/*.pyc
+**/*.db
+**/*.log
+**/*.mo
+**/*.pot
+
 config.py
+
 front/
-/static/dist
-/.idea
-/.settings
-/.project
-/.pydevproject
-/Raconteur.egg-info
-/venv
-/node_modules
+.idea/
+.vscode/
+.pydevproject/
+.venv/
+node_modules/
+
+# Dockerignore
+static/dist
+.git*

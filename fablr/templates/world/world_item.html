@@ -94,6 +94,7 @@
                     {{ MACRO.FORM_FIELD(world_form.publishing_year) }}
                     {{ MACRO.FORM_FIELD(world_form.rule_system) }}
                     {{ MACRO.FORM_FIELD(world_form.status) }}
+                    {{ MACRO.FORM_FIELD(world_form.theme) }}
                     {{ MACRO.FORM_FIELD(world_form.external_host, helptext=_('If your world home page is hosted externally, enter it here')) }}
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
                     {{ MACRO.FORM_FIELD(world_form.facebook_url) }}
@@ -210,6 +211,11 @@
             </a>
         </p>
         {% endif %}
+        {% if world.facebook_url %}
+            <a class="center-block margin-below" href="{{ world.facebook_url }}">
+                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
+            </a>
+        {% endif %}
         <table class="table" id="tour-worlddetails">
             <tr>
                 <th>{{ _('Publisher') }}</th>
@@ -217,36 +223,38 @@
                     <small>{{ world.publisher|default(_('No data'), true) }}</small>
                 </td>
             </tr>
+            {% if world.rule_system %}
             <tr>
                 <th>{{ _('Rule System') }}</th>
                 <td>
                     <small>{{ world.rule_system|default(_('No data'), true) }}</small>
                 </td>
             </tr>
+            {% endif %}
+            {% if world.publishing_year %}
             <tr>
+
                 <th>{{ _('Printed') }}</th>
                 <td>
                     <small class="nobr">{{ world.publishing_year|default(_('No data'), true) }}</small>
                 </td>
             </tr>
-            <tr>
-                <th>{{ _('Status') }}</th>
-                <td>
-                    <small>{{ world.get_status_display() }}</small>
-                </td>
-            </tr>
+            {% endif %}
             <tr>
                 <th>{{ _('Open for contribution') }}</th>
                 <td>
                     <small>{{ _('Yes') if world.contribution else _('No') }}</small>
                 </td>
             </tr>
+            {% call(privileged) MACRO.IS_ADMIN() %}
+            <tr>
+                <th>{{ _('Status') }}</th>
+                <td>
+                    <small>{{ world.get_status_display() }}</small>
+                </td>
+            </tr>
+            {% endcall %}
         </table>
-        {% if world.facebook_url %}
-            <a class="center-block margin-below" href="{{ world.facebook_url }}">
-                <img class="center-block" src="{{ url_for('static', filename="img/icon/fb_like_icon_144px.png") }}">
-            </a>
-        {% endif %}
     {% endif %}
     {% include "includes/social_icons.html" %}
 {% endblock intro %}

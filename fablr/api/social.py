@@ -23,11 +23,11 @@ from fablr.api.auth import get_logged_in_user
 from fablr.api.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from fablr.extensions import csrf
-from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.user import User, Group, Event
 from fablr.model.world import Publisher
 
-social = Blueprint('social', __name__, template_folder='../templates/social')
+social = Blueprint('social', __name__)
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 
@@ -75,7 +75,7 @@ class UsersView(ResourceView):
         users = User.objects().order_by('-username')
         r = ListResponse(UsersView, [('users', users)])
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         if not (g.user and g.user.admin):
             r.query = r.query.filter(filter_authorized())
@@ -97,7 +97,7 @@ class UsersView(ResourceView):
                 # Allow invited only user to see this page
                 g.user = get_logged_in_user(require_active=False)
             r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         r.events = Event.objects(user=user) if user else []
         return r
@@ -113,7 +113,7 @@ class UsersView(ResourceView):
             # Allow invited only user to see this page
             g.user = get_logged_in_user(require_active=False)
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted

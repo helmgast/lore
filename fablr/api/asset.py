@@ -21,14 +21,13 @@ from fablr.api.resource import RacModelConverter, \
     prefillable_fields_parser, Authorization
 
 from fablr.model.asset import FileAsset, FileAccessType
-from fablr.model.misc import EMPTY_ID, set_lang_options, set_theme
+from fablr.model.misc import EMPTY_ID, set_lang_options
 from fablr.model.shop import products_owned_by_user
-from fablr.model.user import User
 from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-asset_app = Blueprint('assets', __name__, template_folder='../templates/asset')
+asset_app = Blueprint('assets', __name__)
 
 QR_URL_FORMAT = "HTTPS://FABLR.CO/-%s"
 
@@ -180,7 +179,7 @@ class FileAssetsView(ResourceView):
             ('files', FileAsset.objects().order_by('-created_date')),
             ('publisher', publisher)], extra_args=kwargs)
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -212,7 +211,7 @@ class FileAssetsView(ResourceView):
             fileasset = FileAsset.objects(slug=id).first_or_404()
             r = ItemResponse(FileAssetsView, [('fileasset', fileasset)])
             r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
     def patch(self, id):
@@ -223,7 +222,7 @@ class FileAssetsView(ResourceView):
 
         r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         if not r.validate():
             # return same page but with form errors?
@@ -242,7 +241,7 @@ class FileAssetsView(ResourceView):
 
         r = ItemResponse(FileAssetsView, [('fileasset', None)], method='post')
         r.auth_or_abort()
-        set_theme(r, 'publisher', publisher.slug if publisher else None)
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         fileasset = FileAsset()
         if not r.validate():

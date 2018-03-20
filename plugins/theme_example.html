@@ -36,6 +36,18 @@ with content that does not list header_title.
 To make a theme that fully replaces the page, replace the root blocks navbar, header, main and footer with content that
 doesn't have child blocks. However, a page without content block will effectively be static regardless of URL visited...
 
+TODO
+- Add URL/list of icons that can be used, both glyphicons and built-in icons
+- Add favicon details
+- Add twitter:image og:image details . (should draw from article image, or from theme)
+- How to refer to images and other static content
+    Make a custom static-endpoint that serves from plugin directory instead of static. Or, run webpack and put all
+    chunks in dist/plugins.
+- How to test templates locally:
+    Run a docker flask-image pointing to plugin directory
+    The flask-image serves up a page with dummy data that populates all the variables expected to a template.
+- A publisher, world or article can all have only one plugin each, but chooses from the same list of plugins, e.g. no type
+  difference between themes (eventually publisher/world/article might merge further)
 #}
 
 {# Adds some custom CSS style in the header. Ensure it starts with {{ super() }} #}

@@ -1,14 +1,20 @@
 from __future__ import print_function
-import re
 
+import sys
+import ptvsd
+# ptvsd.enable_attach("my_secret", address = ('0.0.0.0', 3000))
+
+# Enable the line of source code below only if you want the application to wait until the debugger has attached to it
+# print("Waiting for debugger to attach", file=sys.stderr)
+# ptvsd.wait_for_attach()
+
+import re
 import click
 import shlex
 import subprocess as sp
-import sys
 
 from fablr.app import create_app
 app = create_app()
-
 
 def runshell(cmd):
     retcode = sp.call(shlex.split(cmd))

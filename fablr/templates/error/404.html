@@ -1,0 +1,17 @@
+{# {% extends root_template if not publisher_theme else publisher_theme %}
+
+{% block content_title %}Page not found{% endblock %}
+{% block content %}Page not found{% endblock %} #}
+
+<!DOCTYPE html>
+<html lang="{{ get_locale().language }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{error}}</title>
+</head>
+<body>
+    {{error}}
+</body>
+</html>

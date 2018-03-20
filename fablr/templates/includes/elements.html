@@ -1,0 +1,76 @@
+{#
+Types of fields on character generator:
+
+Group model by groups, e.g "attribut.edu". Catch group name by the parent node, instead of explicit.
+
+#}
+
+
+{%- macro text(label, id="", placeholder="", prefix="", suffix="", class="", list="list_kon") -%}
+    {% if not id %}{% set id = slugify(label) %}{% endif %}
+    <b-field horizontal label="{{ label }}" class="{{ class }}">
+        <b-field>
+            <b-input type="text" v-model="{{ id }}" name="{{ id }}" placeholder="{{ placeholder }}" expanded></b-input>
+            <p class="control">
+                <button type="button"
+                        class="button is-info"
+                        v-on:click="{{ id }} = randList({{ list }})">
+                    <b-icon icon="dice-multiple"></b-icon>
+                </button>
+            </p>
+        </b-field>
+    </b-field>
+{%- endmacro -%}
+
+{# Selecttextfield (looks like a textfield but only supports list of options). Can have quite complicated list of options. #}
+{%- macro select(label, placeholder) -%}
+
+{%- endmacro -%}
+
+{%- macro lookup(label, method="", data="", id="", placeholder="", class="") -%}
+    {% if not id %}{% set id = slugify(label) %}{% endif %}
+    <b-field horizontal label="{{ label }}" class="{{ class }}">
+        <b-autocomplete
+                v-model="{{ id }}"
+                :data="{{ data }}"
+                placeholder="{{ placeholder }}"
+                icon="magnify"
+                open-on-focus
+                @select="option => selected = option">
+            <template slot-scope="props">
+                <p>
+                    <strong><% props.option.value%></strong>
+                    <br>
+                    <small><% props.option.text %></small>
+                </p>
+            </template>
+        </b-autocomplete>
+    </b-field>
+{%- endmacro -%}
+
+{#Randomselect (looks like textfield, can select an item or press a button to roll a dice formula)#}
+{%- macro randomselect() -%}
+{%- endmacro -%}
+
+{%- macro computed(formula, label="") -%}
+    <div class="control"><span class="tag" v-bind:class="{ 'is-danger': {{ formula }}<0 }"><% {{ formula }}%></span>
+    </div>
+{%- endmacro -%}
+
+{%- macro textbox() -%}
+{%- endmacro -%}
+
+{%- macro number(label, id="", min=0, max=20, class="") -%}
+    {% if not id %}{% set id = slugify(label) %}{% endif %}
+    <b-field class="{{ class }}" horizontal label="{{ label }}">
+        <b-input size="is-small" type="number" v-model.number="{{ id }}" :min="{{ min }}" :max="{{ max }}"
+                 name="{{ id }}"
+                 placeholder="{{ placeholder }}" expanded></b-input>
+        {% if caller %}{{ caller() }}{% endif %}
+    </b-field>
+{%- endmacro -%}
+
+{%- macro checkboxline() -%}
+{%- endmacro -%}
+
+{#DataTable (each column has one label, one other formelement#}

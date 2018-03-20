@@ -45,6 +45,7 @@ GenderTypes = Choices(
     female=_('Female'),
     unknown=_('Unknown'))
 
+plugin_choices = [('None', _('None'))] + [(v, v) for v in current_app.plugins]
 
 def secure_css(css):
     css = re.sub(r'<.*', '', css, flags=re.IGNORECASE)
@@ -66,6 +67,7 @@ class Publisher(Document):
     email = EmailField(max_length=60, min_length=6, verbose_name=_('Email'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     contribution = BooleanField(default=False, verbose_name=_('Publisher accepts contributions'))
+    theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_('Feature Image'))
@@ -111,6 +113,7 @@ class World(Document):
     contribution = BooleanField(default=False, verbose_name=_('World accepts contributions'))
     external_host = URLField(verbose_name=_('External host URL'))
     publishing_year = StringField(max_length=4, verbose_name=_('Publishing year'))
+    theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
@@ -171,6 +174,7 @@ class WorldMeta(object):
     editors = []
     title = ''
     creator = None
+    theme = ''
 
     def __init__(self, publisher):
         self.publisher = publisher
@@ -275,14 +279,6 @@ ArticleTypes = Choices(
 # dice ⚀ ⚁ ⚂ ⚃ ⚄ ⚅
 
 
-ArticleThemes = Choices(
-    default=_('Default'),
-    newspaper=_('Newspaper'),
-    inkletter=_('Ink Letter'),
-    papernote=_('Paper Note'),
-    vintage_form=_('Vintage Form'),
-)
-
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata', 'characterdata']
 
@@ -306,6 +302,7 @@ class Article(Document):
     content = StringField(verbose_name=_('Content'))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     tags = ListField(StringField(max_length=60), verbose_name=_('Tags'))
+    theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
     sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
@@ -316,9 +313,6 @@ class Article(Document):
 
     images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Images'))
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
-    theme = StringField(choices=ArticleThemes.to_tuples(),
-                        default=ArticleThemes.default,
-                        verbose_name=_('Theme'))
     editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
     custom_css = StringField(verbose_name=_('Custom CSS'))

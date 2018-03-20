@@ -18,7 +18,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 mail_regex = re.compile(r'^.+@[^.].*\.[a-z]{2,10}$')
 
-mail_app = Blueprint('mail', __name__, template_folder='../templates/mail')
+mail_app = Blueprint('mail', __name__)
 
 
 def send_mail(recipients, message_subject, mail_type, custom_template=None,
@@ -193,7 +193,7 @@ def mail_view(mail_type):
             return "Mail sent!"
         else:
             return render_template('mail/mail_post.html',
-                                   errors=[('danger', _("Errors in form"))],
+                                   errors=[('danger', _("Error in form"))],
                                    **template_vars), 400
 
     template_vars.update(mail)

@@ -29,7 +29,7 @@ from fablr.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-auth_app = Blueprint('auth', __name__, template_folder='../templates/auth')
+auth_app = Blueprint('auth', __name__)
 
 
 # single signon

@@ -1,0 +1,676 @@
+{% extends "world/article_list.html" %}
+
+{% import 'includes/elements.html' as el %}
+
+{% block googlefonts %}{{ super() }}|Orbitron|Nova+Sans|Audiowide|Nova+Square{% endblock %}
+
+
+{% block cssimports %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://unpkg.com/buefy/lib/buefy.min.css">
+    <link rel="stylesheet" href="//cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css">
+    <style>
+
+        body {
+            background-color: white
+        }
+
+        .navbar-default .navbar-collapse {
+            width: 100%; /* TODO fix as we mix Bulma and Bootstrap */
+        }
+
+        .navbar {
+            display: unset;
+        }
+
+        .neotech {
+            font-family: "Nova Sans", "Arial", sans-serif;
+        }
+
+        .neotech .erf-table-wide {
+            width: 50%;
+        }
+
+        .neotech h2, .neotech legend {
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-family: "Nova Square", "Arial", sans-serif;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            background: linear-gradient(135deg, transparent 5px, #399dd6 5px);
+            padding: 8px 4px;
+        }
+
+        .neotech .third {
+            width: 32%;
+            display: inline-block;
+        }
+
+        .neotech h3, .neotech th {
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-family: "Nova Square", "Arial", sans-serif;
+            font-weight: bold;
+            color: white;
+            background-color: #c0519e;
+            padding: 4px;
+        }
+
+        .el-input-number--small {
+            width: 100px;
+        }
+
+        .el-input input {
+            border-radius: 0px;
+        }
+
+        .el-text input {
+
+            margin: 3px 0px;
+            height: unset;
+            box-shadow: none;
+            -webkit-box-shadow: none;
+            border: 1px solid #c0519e;
+        }
+
+        .neotech th {
+            font-size: 12px;
+        }
+
+        .neotech fieldset {
+            margin-top: 30px;
+        }
+
+        .neotech legend {
+            margin-bottom: 5px;
+        }
+
+        .el-input__prefix {
+            left: -4px;
+            height: 42px;
+            top: 3px;
+        }
+
+        .neotech .elsmall label {
+            font-size: 12px;
+        }
+
+        .el-input--prefix .el-input__inner {
+            padding-left: 125px;
+        }
+
+        .control {
+            line-height: 2.25;
+        }
+
+        .control .dropdown-item {
+            text-decoration: none;
+            white-space: unset;
+        }
+
+        .neotech .form-control {
+            padding: 3px 6px;
+            margin: 3px 0px;
+            height: unset;
+            box-shadow: none;
+            -webkit-box-shadow: none;
+            border: 1px solid #c0519e;
+            border-radius: 0px;
+        }
+
+        [v-cloak] {
+            display: none
+        }
+
+        .neotech .dotted .form-control {
+            padding: 2px 4px;
+            margin: 6px 4px;
+            border: none;
+            border-bottom: 1px dotted #c0519e;
+        }
+
+        .neotech .control.small-entry {
+            font-size: 10px;
+            line-height: 1;
+            padding: 4px;
+            width: 100px;
+            flex-grow: 1;
+        }
+
+        .neotech label {
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 16px;
+            font-family: "Nova Square", "Arial", sans-serif;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(45deg, transparent 3px, #c0519e 3px);
+            height: 100%;
+            min-width: 125px;
+            vertical-align: top;
+            padding: 4px;
+        }
+
+        .wide {
+            width: 100%;
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block js_bottom %}
+    {{ super() }}
+    <script type="application/javascript" src="https://vuejs.org/js/vue.js"></script>
+    <script src="https://unpkg.com/buefy@0.6.3/lib/index.js"></script>
+
+    <script>
+        Vue.use(Buefy.default);
+
+        let c = {
+            person: {
+                namn: '',
+                kön: '',
+                subkultur: '',
+                koncept: '',
+                sug1: '',
+                sug2: '',
+                utseende: '',
+                soceko: '',
+            },
+            kompetens: {
+                edu: {
+                    attribut: 1,
+                    medicin: 0,
+                    natur: 0,
+                    humaniora: 0,
+                    teknologi: 0,
+                },
+                karisma: {
+                    attribut: 1,
+                    boss: 0,
+                    empati: 0,
+                    pr: 0,
+                    yao: 0,
+                },
+                kreativitet: {
+                    attribut: 1,
+                    hacking: 0,
+                    mek: 0,
+                    media: 0,
+                    avantgarde: 0,
+                },
+                primal: {
+                    attribut: 1,
+                    budo: 0,
+                    guns: 0,
+                    flex: 0,
+                    hardcore: 0,
+                },
+                cortex: {
+                    attribut: 1,
+                    biz: 0,
+                    virr: 0,
+                    perception: 0,
+                    reaktion: 0,
+                },
+                ronin: {
+                    attribut: 1,
+                    offgrid: 0,
+                    krim: 0,
+                    skugga: 0,
+                    gatan: 0,
+                }
+            },
+            cv: [],  // first item is top level CV row, an object with {kontrakt, erfarenhet}
+            edges: [
+                // {titel: '', kompetens: ''}
+            ]
+        };
+        let val = $('#characterdata__stats').val() || '{}'
+        $.extend(true, c, JSON.parse(val));
+        var vm = new Vue({
+            el: '#form',
+            data: {
+                c: c,
+                list_subkultur: [],
+                list_betongbasare: [],
+                list_kuberkontor: [],
+                list_darknetdisorder: [],
+                list_moneymammon: [],
+                list_gunsgrit: [],
+                list_karriar: [],
+                list_kon: [],
+                list_utseende: [],
+                list_namn: [],
+                list_sug: [],
+                lists: {
+                    'Betong & basare': 'list_betongbasare',
+                    'Kuber & kontor': 'list_kuberkontor',
+                    'Darknet & disorder': 'list_darknetdisorder',
+                    'Guns, guts & grit': 'list_gunsgrit',
+                    'Money & mammon': 'list_moneymammon'
+                }
+            },
+            computed: {
+                filtered_karriar: function () {
+                    let data = this
+                    return data.c.cv.map(function (line, i) {
+                        let fixed_karriär = ''
+                        if (data.c.cv[i - 1]) {
+                            fixed_karriär = data.lookup_by_value('karriar', data.c.cv[i - 1].kontrakt, 'karriär')
+                        }
+                        return data.list_karriar.filter((opt) => {
+                            return opt.kontrakt
+                                .toString()
+                                .toLowerCase()
+                                .indexOf(line.kontrakt.toLowerCase()) >= 0 && (!fixed_karriär || opt.karriär === fixed_karriär)
+                        })
+                    })
+
+                },
+                cv_kontrakt_details: function () {
+                    let data = this
+                    return data.c.cv.map(function (line) {
+                        let found = data.list_karriar.find(el => el.kontrakt === line.kontrakt)
+                        return found ? found : {kontrakt: 'tbd', karriär: 'tbd', tabell: 'tbd'}
+                    })
+                },
+                cv_erfarenhet_details: function () {
+                    let data = this
+                    let out = data.c.cv.map(function (line) {
+                        let kontrakt_info = data.list_karriar.find(el => el.kontrakt === line.kontrakt)
+                        let erf_info
+                        if (kontrakt_info) {
+                            let list = data.lists[kontrakt_info.tabell]
+                            if (list)
+                                erf_info = data[list][line.erfarenhet]
+                        }
+                        return erf_info ? erf_info : {erfarenhet: 'tbd', beskrivning: 'tbd'}
+                    })
+                    return out
+                }
+            },
+            methods:
+                {
+                    randInt: function (min, max, toast=true) {
+                        let roll = Math.floor(Math.random() * (max - min + 1)) + min;
+                        if (toast)
+                            this.$toast.open('Slog ' + roll)
+                        return roll
+                    }
+                    ,
+                    randList: function(list) {
+                        let len = list.length
+                        let out = ''
+                        if (len) {
+                            for (k of Object.keys(list[0])) {
+                                let i = this.randInt(0,len-1, toast=false)
+                                out += list[i][k] + ' '
+                            }
+                        }
+                        return out.trim()
+                    },
+                    lookup_table: function (table, lookup, property) {
+                        var thetable = 'list_' + table;
+                        if (thetable in this) {
+                            while (lookup < 101 && this[thetable][lookup] && !this[thetable][lookup].erfarenhet) {
+                                lookup++;
+                            }
+                            let found = this[thetable][lookup];
+                            return found ? found[property] : ''
+                        }
+                    }
+                    ,
+                    lookup_by_value: function (table, value, property) {
+                        var thetable = 'list_' + table;
+                        if (thetable in this) {
+                            let found = this[thetable].find(el => el.value === value)
+                            return found ? found[property] : ''
+                        }
+                    }
+                    ,
+                    add_kontrakt: function () {
+                        let år = 2070
+                        if (this.c.cv.length > 0) {
+                            år = this.c.cv[this.c.cv.length - 1].år - 4;
+                        }
+                        this.c.cv.push({år: år, kontrakt: '', erfarenhet: ''})
+                    },
+                }
+            ,
+            delimiters: ["<%", "%>"]
+        });
+
+        function getSpreadsheet(key, sheet, list, processor) {
+            let url = `https://spreadsheets.google.com/feeds/list/${key}/${sheet}/public/values?alt=json-in-script`
+            fetchJsonp(url).then(function (response) {
+                return response.json()
+            }).then(function (json) {
+                if (json.feed.entry.length) {
+                    let cols = Object.keys(json.feed.entry[0]).filter(function (prop) {
+                        return prop.indexOf('gsx$') == 0
+                    })
+                    let out = json.feed.entry.map(function (entry) {
+                        let rv = {}
+                        for (k of cols) {
+                            rv[k.substring(4)] = entry[k].$t
+                        }
+                        return rv
+
+                    })
+                    vm.$data[list] = processor ? processor(out) : out
+                }
+            }).catch(function (ex) {
+                console.log('parsing failed', ex)
+            });
+        }
+
+        function tableize(list) {
+            let newlist = []
+            for (l of list) {
+                parts = l.t100.replace(/\(.*\)/g, '').match(/\d+/g)
+                fr = parseInt(parts[0]);
+                to = parseInt(parts[1]) || fr;
+                if (fr && to) {
+                    for (let i = fr; i < (to + 1); i++) {
+                        newlist[i] = l
+                    }
+                }
+            }
+            return newlist;
+        }
+
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'od6', 'list_subkultur')
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ow4hm3n', 'list_karriar')
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'oxfl1ya', 'list_utseende', )
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ocggd2p', 'list_kon', )
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ompcwg4', 'list_sug', )
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'olwm092', 'list_namn', )
+
+
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obi8iy0', 'list_betongbasare', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'o22l8ex', 'list_darknet', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obhz2o1', 'list_gunsgrit', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'ovsuh6q', 'list_kuberkontor', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'okdtkyc', 'list_moneymammon', tableize)
+
+
+
+
+        $('#articleform').submit(function (e) {
+            let json = JSON.stringify(vm.c);
+            $('#characterdata__stats').val(json)
+        })
+
+    </script>
+{% endblock %}
+
+{% block header %}
+    {#    {{ super() }}#}
+    {% if args.get('intent', None) %}
+        <form id="articleform" method="post" action="{{ action_url }}">
+        {{ article_form.csrf_token }}
+        {{ article_form.characterdata.stats(class='hide') }}
+    {% else %}
+        <textarea class="hide" id="characterdata__stats">{{ article.characterdata.stats|tojson|safe }}</textarea>
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+    <div class="container">
+        <div class="row">
+            <div id="form" v-cloak class="col-lg-9 col-md-8 col-sm-9 content form-horizontal neotech">
+
+                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
+                    <legend>Personlighet</legend>
+                    <div class="field is-horizontal">
+                        <div class="field-label is-normal">
+                            <label class="label">Namn</label>
+                        </div>
+                        <div class="field-body">
+                            <div class="field has-addons">
+                                <div class="control is-expanded">
+                                    <input id="title" name="title" required="required" type="text"
+                                           value="{{ article.title }}" class="input">
+                                </div>
+                                <p class="control">
+                                    <button type="button"
+                                            class="button is-info"
+                                            v-on:click="c.person.namn = randList(list_namn)">
+                                        <b-icon icon="dice-multiple"></b-icon>
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <b-field horizontal label="Subkultur">
+                        <b-field>
+                            <b-autocomplete
+                                    v-model="c.person.subkultur"
+                                    :data="list_subkultur"
+                                    field="subkultur"
+                                    placeholder="Välj subkultur"
+                                    icon="magnify"
+                                    expanded
+                                    open-on-focus
+                                    @select="option => c.person.subkultur = option.subkultur">
+                                <template slot-scope="props">
+                                    <p>
+                                        <strong><% props.option.subkultur %></strong>
+                                        <br>
+                                        <small><% props.option.beskrivning %></small>
+                                    </p>
+                                </template>
+                            </b-autocomplete>
+                            <p class="control">
+                                <button type="button"
+                                        class="button is-info">
+                                    <b-icon icon="dice-multiple"></b-icon>
+                                </button>
+                            </p>
+                        </b-field>
+                    </b-field>
+                    <div class="columns">
+                        <div class="column is-half">
+                            {{ el.text("Kön", id="c.person.kön", list="list_kon") }}
+
+                        </div>
+                        <div class="column is-half">
+
+                            <b-field horizontal label="SocEko-nivå">
+                                <b-field>
+
+                                    <b-select v-model="c.person.soceko" name="c.person.soceko" placeholder="Välj nivå"
+                                              expanded>
+                                        <option value="Shacker">Shacker</option>
+                                        <option value="Basare">Basare</option>
+                                        <option value="Löneslav">Löneslav</option>
+                                        <option value="Paladin">Paladin</option>
+                                    </b-select>
+                                    <p class="control">
+                                        <button type="button"
+                                                class="button is-info">
+                                            <b-icon icon="dice-multiple"></b-icon>
+                                        </button>
+                                    </p>
+                                </b-field>
+                            </b-field>
+                        </div>
+                    </div>
+                    {{ el.text("Sug", id="c.person.sug1", list="list_sug") }}
+                    {{ el.text("Sug", id="c.person.sug2", list="list_sug") }}
+
+                    {{ el.text("Koncept", id="c.person.koncept") }}
+                    {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
+
+
+                </fieldset>
+                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
+                    <legend>Attribut & kompetenser</legend>
+                    <fieldset class="third">
+                        {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.edu.attribut*2+4-c.kompetens.edu.medicin-c.kompetens.edu.humaniora-c.kompetens.edu.natur-c.kompetens.edu.teknologi", label="Poäng") }}{% endcall %}
+                        {% call el.number("Medicin", id="c.kompetens.edu.medicin", class="elsmall") %}
+                            {{ el.computed("c.kompetens.edu.medicin+c.kompetens.edu.attribut") }}{% endcall %}
+                        {% call el.number("Humaniora", id="c.kompetens.edu.humaniora", class="elsmall") %}
+                            {{ el.computed("c.kompetens.edu.humaniora+c.kompetens.edu.attribut") }}{% endcall %}
+                        {% call el.number("Natur", id="c.kompetens.edu.natur", class="elsmall") %}
+                            {{ el.computed("c.kompetens.edu.natur+c.kompetens.edu.attribut") }}{% endcall %}
+                        {% call el.number("Teknologi", id="c.kompetens.edu.teknologi", class="elsmall") %}
+                            {{ el.computed("c.kompetens.edu.teknologi+c.kompetens.edu.attribut") }}{% endcall %}
+                    </fieldset>
+                    <fieldset class="third">
+                        {% call el.number("Karisma", id="c.kompetens.karisma.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.karisma.attribut*2+4-c.kompetens.karisma.boss-c.kompetens.karisma.empati-c.kompetens.karisma.pr-c.kompetens.karisma.yao", label="Poäng") }}{% endcall %}
+                        {% call el.number("Boss", id="c.kompetens.karisma.boss", class="elsmall") %}
+                            {{ el.computed("c.kompetens.karisma.boss+c.kompetens.karisma.attribut") }}{% endcall %}
+                        {% call el.number("Empati", id="c.kompetens.karisma.empati", class="elsmall") %}
+                            {{ el.computed("c.kompetens.karisma.empati+c.kompetens.karisma.attribut") }}{% endcall %}
+                        {% call el.number("PR", id="c.kompetens.karisma.pr", class="elsmall") %}
+                            {{ el.computed("c.kompetens.karisma.pr+c.kompetens.karisma.attribut") }}{% endcall %}
+                        {% call el.number("Yao", id="c.kompetens.karisma.yao", class="elsmall") %}
+                            {{ el.computed("c.kompetens.karisma.yao+c.kompetens.karisma.attribut") }}{% endcall %}
+                    </fieldset>
+                    <fieldset class="third">
+                        {% call el.number("Kreativitet", id="c.kompetens.kreativitet.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.kreativitet.attribut*2+4-c.kompetens.kreativitet.hacking-c.kompetens.kreativitet.mek-c.kompetens.kreativitet.media-c.kompetens.kreativitet.avantgarde", label="Poäng") }}{% endcall %}
+                        {% call el.number("Hacking", id="c.kompetens.kreativitet.hacking", class="elsmall") %}
+                            {{ el.computed("c.kompetens.kreativitet.hacking+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                        {% call el.number("Mek", id="c.kompetens.kreativitet.mek", class="elsmall") %}
+                            {{ el.computed("c.kompetens.kreativitet.mek+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                        {% call el.number("Media", id="c.kompetens.kreativitet.media", class="elsmall") %}
+                            {{ el.computed("c.kompetens.kreativitet.media+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                        {% call el.number("Avantgarde", id="c.kompetens.kreativitet.avantgarde", class="elsmall") %}
+                            {{ el.computed("c.kompetens.kreativitet.avantgarde+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                    </fieldset>
+                    <fieldset class="third">
+                        {% call el.number("Primal", id="c.kompetens.primal.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.primal.attribut*2+4-c.kompetens.primal.budo-c.kompetens.primal.guns-c.kompetens.primal.flex-c.kompetens.primal.hardcore", label="Poäng") }}{% endcall %}
+                        {% call el.number("Budo", id="c.kompetens.primal.budo", class="elsmall") %}
+                            {{ el.computed("c.kompetens.primal.budo+c.kompetens.primal.attribut") }}{% endcall %}
+                        {% call el.number("Guns", id="c.kompetens.primal.guns", class="elsmall") %}
+                            {{ el.computed("c.kompetens.primal.guns+c.kompetens.primal.attribut") }}{% endcall %}
+                        {% call el.number("Flex", id="c.kompetens.primal.flex", class="elsmall") %}
+                            {{ el.computed("c.kompetens.primal.flex+c.kompetens.primal.attribut") }}{% endcall %}
+                        {% call el.number("Hardcore", id="c.kompetens.primal.hardcore", class="elsmall") %}
+                            {{ el.computed("c.kompetens.primal.hardcore+c.kompetens.primal.attribut") }}{% endcall %}
+                    </fieldset>
+                    <fieldset class="third">
+                        {% call el.number("Cortex", id="c.kompetens.cortex.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.cortex.attribut*2+4-c.kompetens.cortex.biz-c.kompetens.cortex.virr-c.kompetens.cortex.perception-c.kompetens.cortex.reaktion", label="Poäng") }}{% endcall %}
+                        {% call el.number("Biz", id="c.kompetens.cortex.biz", class="elsmall") %}
+                            {{ el.computed("c.kompetens.cortex.biz+c.kompetens.cortex.attribut") }}{% endcall %}
+                        {% call el.number("Virr", id="c.kompetens.cortex.virr", class="elsmall") %}
+                            {{ el.computed("c.kompetens.cortex.virr+c.kompetens.cortex.attribut") }}{% endcall %}
+                        {% call el.number("Perception", id="c.kompetens.cortex.perception", class="elsmall") %}
+                            {{ el.computed("c.kompetens.cortex.perception+c.kompetens.cortex.attribut") }}{% endcall %}
+                        {% call el.number("Reaktion", id="c.kompetens.cortex.reaktion", class="elsmall") %}
+                            {{ el.computed("c.kompetens.cortex.reaktion+c.kompetens.cortex.attribut") }}{% endcall %}
+                    </fieldset>
+                    <fieldset class="third">
+                        {% call el.number("Ronin", id="c.kompetens.ronin.attribut", max=6, min=1) %}
+                            {{ el.computed("c.kompetens.ronin.attribut*2+4-c.kompetens.ronin.offgrid-c.kompetens.ronin.krim-c.kompetens.ronin.skugga-c.kompetens.ronin.gatan", label="Poäng") }}{% endcall %}
+                        {% call el.number("Offgrid", id="c.kompetens.ronin.offgrid", class="elsmall") %}
+                            {{ el.computed("c.kompetens.ronin.offgrid+c.kompetens.ronin.attribut") }}{% endcall %}
+                        {% call el.number("Krim", id="c.kompetens.ronin.krim", class="elsmall") %}
+                            {{ el.computed("c.kompetens.ronin.krim+c.kompetens.ronin.attribut") }}{% endcall %}
+                        {% call el.number("Skugga", id="c.kompetens.ronin.skugga", class="elsmall") %}
+                            {{ el.computed("c.kompetens.ronin.skugga+c.kompetens.ronin.attribut") }}{% endcall %}
+                        {% call el.number("Gatan", id="c.kompetens.ronin.gatan", class="elsmall") %}
+                            {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
+                    </fieldset>
+                </fieldset>
+                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
+                    <legend>CV</legend>
+                    <b-table
+                            :data="c.cv"
+                            detailed
+                            detail-key="år">
+                        <template slot-scope="props">
+                            <b-table-column label="År" width="40" numeric>
+                                <% props.row.år %>
+                            </b-table-column>
+
+                            <b-table-column label="Kontrakt">
+                                <b-autocomplete size="is-small"
+                                                open-on-focus
+                                                v-model="props.row.kontrakt"
+                                                field="kontrakt"
+                                                icon="magnify"
+                                                :data="filtered_karriar[props.index]"
+                                                placeholder="Välj kontrakt">
+                                </b-autocomplete>
+                            </b-table-column>
+
+                            <b-table-column label="Karriär">
+                                <% cv_kontrakt_details[props.index].karriär %>
+                            </b-table-column>
+
+                            <b-table-column label="Erfarenhet" class="erf-table-wide">
+                                <b-field>
+                                    <p class="control">
+                                        <button type="button" v-on:click="props.row.erfarenhet = randInt(1,101)"
+                                                class="button is-dark is-small">
+                                            <b-icon
+                                                    icon="dice-multiple"
+                                                    size="is-small">
+                                            </b-icon>
+                                        </button>
+                                    </p>
+                                    <b-input size="is-small" v-model="props.row.erfarenhet" type="number" :min=1
+                                             :max=150></b-input>
+                                    <p class="control">
+                                        <a class="button is-static is-small">
+                                            <% cv_erfarenhet_details[props.index].erfarenhet %>
+                                        </a>
+                                    </p>
+
+                                </b-field>
+
+                            </b-table-column>
+
+                        </template>
+
+                        <template slot="detail" slot-scope="props">
+                            <div class="columns">
+                                <div class="column is-half">
+                                    <p>
+                                        <strong><% props.row.kontrakt %></strong>
+                                        <small><% cv_kontrakt_details[props.index].karriar %></small>
+                                        <br>
+                                        <small>
+                                            Minst 4 i attribut <% cv_kontrakt_details[props.index].attribut %><br>
+                                            Minst soceko <% cv_kontrakt_details[props.index].lägstanivå %><br>
+                                            Erfarenheter från tabell <% cv_kontrakt_details[props.index].tabell %><br>
+                                            Nivå <%cv_kontrakt_details[props.index].nivå%> i
+                                            <%cv_kontrakt_details[props.index].kompetens%>
+                                        </small>
+                                    </p>
+                                </div>
+                                <div class="column is-half">
+                                    <strong> <% cv_erfarenhet_details[props.index].erfarenhet %>
+                                    </strong><small>(<% cv_kontrakt_details[props.index].tabell %>)</small><br>
+                                    <small> <% cv_erfarenhet_details[props.index].beskrivning %>
+                                    </small>
+                                </div>
+
+                            </div>
+                        </template>
+
+                    </b-table>
+
+                    <p class="control">
+                        <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">En period till
+                        </button>
+                    </p>
+                </fieldset>
+            </div>
+            <aside class="col-lg-3 col-md-4">
+                {% block asides %}
+                {% endblock asides %}
+            </aside>
+        </div>
+    </div>
+{% endblock %}

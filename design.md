@@ -448,19 +448,40 @@ REST Gotchas
 Things that needs some implementation thought or should be covered by frameworks used:
 
 - Nice URLs do not match REST urls, as may want to see parent resources and no "articles" verb in the URL
+-- separately create nice URLs as shallow alias to API calls
 - Human users have two kinds of GET - get to read, and get to edit, e.g. a form. Thereby "intent="
+-- make all editable pages automatically activate into edit mode, not loading a separate page
 - Some fields need to be sent to client but not editable, eg. slug
+-- a schema setting
 - Some fields need some form of serialization to fit into a FORM and back into an object
+-- serialize into json and make the form component deal with it
 - Some fields can be editable but not sent to client, e.g. password
+-- special case, but schema setting. in Eve, set projection for fieldname to 0
 - Creating a reference in a field to another resource may depend on permissions from that other resource (e.g. to make
 an article inside a world needs permissions on that world)
+-- Generalized hierarchical articles system
 - There are multiple "Schemas": one for database models, one for forms, one for URL arguments, and potentially one for auth. 
 They should be kept as close/same but also have different behaviour. The DB model needs all fields while a form maybe SHOULDN'T
 contain all fields.
+-- Fixed with schema setting to hide some fields
 - REST says that POST for new resources should happen on the list route e.g /articles/. It means the function that deals with that 
 list route has to also deal with the logic for posting. Especially as the form for creating a new resource needs to come from the GET route.
 I solved it with having the special id "post" so that the GET route can be re-used.
+-- Tricky to solve. Maybe keep special "post" ID. 
 
+Possible in Eve?
+prefillable fields
+WTForm might be removed - replace with vue? or we generate wtform from schema
+Filteroptions, e.g how to display the possible options?
+Automatic Action URL?
+Log events (using oplog?)
+Contribution allowed is not enforced, individual ownership maybe
+Streaming GridFS-files?
+MD5-based check of media
+Filter queries based on access right?
+Reorder asset list to show selected files first
+filter based on access?
+stock count
 
 
 Forms
@@ -946,3 +967,30 @@ to either come from that publisher, or where it's not relevant, served anyway. S
 -- users/ (public)
 -- 
 If a route above is visited with the core domain (fablr.co) no filtering per publisher is made.
+
+PLugins
+==================================================================
+
+A plugin is a template that is loaded on an article. The plugin cannot store any data on it's own, it can only use the API to store more data in e.g. the article.
+
+It consists of a theme.html file that is the entrypoint. It will be added to the page template tree, e.g. will be the parent of the page template used by the article.
+
+The theme.html may have everything inlined, or it may reference separate image, CSS and JS files.
+
+An article can only be associated with one plugin at a time, as they would otherwise conflict inheritance.
+
+Plugin can use blocks to change behaviour.
+Block cssimports makes it possible add style or reference external CSS.
+Block js adds Javascript files.
+
+A plugin is a Github repository. We register the plugin by adding its URL to the plugin page of Fablr. The first time this is done, it will download the latest commit of that repository to the folder with path /plugins/:githubuser/:repo/:commit/ .
+
+All articles, worlds and publishers can pick a template from the list of added plugins. When it is picked, at load time, it will read the template from the path given above. The asse
+
+Plugin publishing flows
+
+1 Users update a Github repo. Manually reminds admin. Admin reviews code. Admin builds new Fablr image with dependency.
+2 Users update a Github repo. Manually reminds admin. Admin reviews code. Admin runs script/web action to fetch new dependency in runtime.
+3 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. Admin reviews code. Admin approves new version (removing old, switching).
+4 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. It is automatically published and running.
+4 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. It is published only for the user, but published for all after admin reviews code.

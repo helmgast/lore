@@ -58,18 +58,8 @@ def set_lang_options(*args):
             g.content_locales = set(getattr(resource, 'languages', None))
             return
 
+
 domain_slug = re.compile(r'(www.)?([^.]+)')
-
-
-def set_theme(response, theme_type, slug):
-    if response and theme_type and slug:
-        slug = domain_slug.search(slug).group(2)  # www.domain.tld --> domain
-        try:
-            setattr(response, '%s_theme' % theme_type,
-                    current_app.jinja_env.get_template('themes/%s_%s.html' % (theme_type, slug)))
-            # print "Using theme %s" % getattr(response, '%s_theme' % theme_type)
-        except TemplateNotFound:
-            logger.debug("Not finding theme %s_%s.html" % (theme_type, slug))
 
 
 class Choices(dict):
@@ -312,6 +302,7 @@ def current_url(_multi=False, **kwargs):
     None when calling this to remove it from the current URL"""
     copy_args = request.args.copy()
     non_param_args = kwargs.pop('full_url', False)
+    va = request.view_args or {}
     for k, v in kwargs.items():
         if v is None:
             # Remove key if set to None, e.g. zero it out
@@ -321,10 +312,10 @@ def current_url(_multi=False, **kwargs):
             copy_args.setlistdefault(k).append(v)
         else:
             copy_args[k] = v
-        non_param_args = non_param_args or (k in request.view_args or k in url_for_args)
+        non_param_args = non_param_args or (k in va or k in url_for_args)
     if non_param_args:
         # We have args that will need url_for to build full url
-        copy_args.update(request.view_args)  # View args are not including query parameters
+        copy_args.update(va)  # View args are not including query parameters
         u = url_for(request.endpoint, **copy_args.to_dict())
         return u
     else:

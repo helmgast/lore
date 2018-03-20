@@ -19,7 +19,7 @@ from flask import render_template, Blueprint
 # import random
 # import itertools
 # 
-generator = Blueprint('generator', __name__, template_folder='../templates/generator')
+generator = Blueprint('generator', __name__)
 
 
 #

@@ -5,8 +5,8 @@ __webpack_public_path__ = STATIC_URL.replace('replace', '')+'dist/';
 var jQuery = require('jquery');
 window.$ = window.jQuery = jQuery;  // Set global access to jquery object
 
-var svgs = require.context("../gfx/", false, /\.svg$/)
-svgs.keys().forEach(svgs); // Requires all files individually to call the sprite
+// var svgs = require.context("../gfx/", false, /\.svg$/)
+// svgs.keys().forEach(svgs); // Requires all files individually to call the sprite
 
 // Load early in case of error below
 if (ROLLBAR_CONFIG) {
@@ -16,6 +16,8 @@ if (ROLLBAR_CONFIG) {
 
 // Own plugins
 var utils = require('utils');
+window.utils = utils;
+window.fetchJsonp = require('fetch-jsonp');
 // require('editablelist.js'); // currently not used
 // require('autosave.js')
 

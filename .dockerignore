@@ -1,13 +1,15 @@
-.idea/
-.settings/
-.project/
-node_modules/
-.pydevproject/
-Raconteur.egg-info/
-venv/
+# From Gitignore
+**/*.pyc
+**/*.db
+**/*.log
+**/*.mo
+**/*.pot
+
+config.py
+
 front/
-.git*
-*.pyc
-*/*.pyc
-*/*/*.pyc
-*/*/*/*.pyc
+.idea/
+.vscode/
+.pydevproject/
+.venv/
+node_modules/

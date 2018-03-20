@@ -10,11 +10,12 @@ import jinja2
 from babel import Locale
 from bson.objectid import ObjectId
 
-from flask import abort, request, session, current_app, g
+from flask import abort, request, session, current_app, g, render_template
 from flask_babel import Babel
 from flask_mongoengine import Pagination, MongoEngine
 from flask.json import JSONEncoder, load
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_debugtoolbar.panels.route_list import RouteListDebugPanel
 from flask_wtf import CSRFProtect
 from jinja2 import Undefined, evalcontextfilter
 from markdown import Extension
@@ -22,12 +23,17 @@ from markdown.treeprocessors import Treeprocessor
 from markupsafe import Markup
 from mongoengine import Document, QuerySet
 from speaklater import _LazyString
-from werkzeug.routing import Rule
+from werkzeug.routing import Rule, BaseConverter
 from werkzeug.urls import url_decode
 
 toolbar = DebugToolbarExtension()
 
+class PatchedRouteListDebugPanel(RouteListDebugPanel):    
+    # Patches the Route List Panel to include a template that shows hosts
+    def content(self):
+        return render_template("includes/patched_route_list.html", routes=self.routes)
 
+# Monkey patch to only show toolbar if in request args
 def new_show_toolbar(self):
     return 'debug' in request.args
 
@@ -35,6 +41,9 @@ toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
 
 class PrefixMiddleware(object):
+    """
+    Runs this Fablr instance after a prefix in the URI, e.g. domain.com/prefix/<normal site>
+    """
     def __init__(self, app, prefix):
         self.app = app
         self.prefix = prefix
@@ -71,6 +80,38 @@ class MethodRewriteMiddleware(object):
         return self.app(environ, start_response)
 
 
+# class HostConverter(BaseConverter):
+#     # Root host is the host we serve Fablr from, without a publisher. It exists in a local
+#     # and a non-local context. Local is running on special port and a localhost or other non-qualified hostname.
+#     # Non-local is the externally exposed domain
+#     # fablr:9000/ --> pub: None (e.g. fablr.dev) (matches assumed Docker name)
+#     # localhost:5000/ddd -> pub: None
+#     # fablr.dev:9000/ --> pub:
+#     # (DEFAULT|localhost)(\.\w{2,})?(:\d+)
+#
+#     # Fablr accepts any host when serving requests, all rules automatically get a prefix to catch hosts.
+#     # The g.pub_host variable includes the parsed host. If g.pub_host is None, it means we are not on a publisher
+#     #
+#
+#     # localhost:5000/host_abc --> pub: abc
+#     # abc.dev --> pub: abc
+#     # abc.se --> pub: abc
+#     # xyz.abc.se --> pub: xyz.abc
+#     # Match publisher.xxx:1234,
+#
+#     def __init__(self, url_map, default=None):
+#         super(HostConverter, self).__init__(url_map)
+#         self.default = default
+#         host = '.+?' if not default else default
+#         self.regex = f'{host}(?:\.\w+)?(?::\d+)?'
+#
+#     def to_python(self, value):
+#         return value
+#
+#     def to_url(self, value):
+#         return self.default if self.default else value
+
+
 class FablrRule(Rule):
     allow_domains = False
     default_host = None
@@ -78,19 +119,28 @@ class FablrRule(Rule):
     match_order = None
 
     def bind(self, map, rebind=False):
+        # For routes that do not come with specific subdomain, we should match localhost, fablr and DEFAULT_SERVER
+        # fablr is used when we run in a Docker context, it's assumed the service is called fablr. We should also
+        # match any port for above
+        # For routes with subdomain, those routes will decide what to do
+        # We can also attach the prefix host_abc to match the host abc, which is used when running on localhost
+        # However, for publisher_home, we are matching the root path /, and therefore we need to send to "homepage"
+        # if we cannot find the publisher
         # if self.subdomain:  # Convert subdomain to full host rule
         # self.host = self.subdomain + '.' + self.default_host
         # Treat subdomains as full domain, as Flask-Classy only supports setting subdomain currently
-        thehost = self.subdomain or None
+        thehost = self.subdomain or self.host or None
 
         if thehost and not self.allow_domains:
             self.rule = "/host_" + thehost + "/" + self.rule.lstrip("/")
             self.subdomain = ''  # Hack, parent bind will check if None, '' will be read as having one
             self.host = ''
         else:
-            self.host = thehost or self.default_host
+            self.host = thehost or '<pub_host>'
+            # self.host = thehost or self.default_host
 
         self.match_order = FablrRule.re_sortkey.sub('', self.rule)
+        # print(self.host + '|' + self.rule)
         super(FablrRule, self).bind(map, rebind)
 
     # def match_compare_key(self):
@@ -250,6 +300,17 @@ def build_md_filter(md_instance):
             return Markup(md_instance.convert(stream))
 
     return markdown_filter
+
+
+def enhance_jinja_loader(app):
+    plugin_loader = jinja2.FileSystemLoader(['plugins'])
+    plugins = [p.split('/')[0] for p in plugin_loader.list_templates() if p.endswith("index.html")]
+    app.logger.debug("Loaded templates: %s" % plugins)
+    app.plugins = plugins
+    return jinja2.ChoiceLoader([
+        app.jinja_loader,
+        plugin_loader
+    ])
 
 
 class SilentUndefined(Undefined):

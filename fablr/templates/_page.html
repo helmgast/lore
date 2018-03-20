@@ -26,7 +26,7 @@
     {%- block googlefonts -%}{%- endblock -%}">
 
     {% block cssimports %}
-        <link rel="stylesheet" href="{{ url_for('static', filename=assets['app.css']) }}">
+        <link rel="stylesheet" href="{{url_for('static', filename=assets['app.css'])}}">
     {% endblock %}
 </head>
 
@@ -273,7 +273,7 @@
 {% endblock %}
 
 {% block js_bottom %}
-    <script src="{{ url_for('static', filename=assets['app.js'], _external=true, _scheme='') }}"></script>
+    <script src="{{ url_for('static', filename=assets['app.js']) }}"></script>
 {% endblock %}
 
 {% block tour %}
