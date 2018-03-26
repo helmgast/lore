@@ -6,10 +6,11 @@ var jQuery = require('jquery');
 window.$ = window.jQuery = jQuery;  // Set global access to jquery object
 
 // var svgs = require.context("../gfx/", false, /\.svg$/)
+
 // svgs.keys().forEach(svgs); // Requires all files individually to call the sprite
 
 // Load early in case of error below
-if (ROLLBAR_CONFIG) {
+if (typeof ROLLBAR_CONFIG !== 'undefined' && ROLLBAR_CONFIG) {
     // var Rollbar = require('rollbar-browser').init(ROLLBAR_CONFIG);
     var Rollbar = require('rollbar').init(ROLLBAR_CONFIG);
 }

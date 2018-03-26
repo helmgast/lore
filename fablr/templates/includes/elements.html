@@ -53,8 +53,16 @@ Group model by groups, e.g "attribut.edu". Catch group name by the parent node, 
 {%- endmacro -%}
 
 {%- macro computed(formula, label="") -%}
-    <div class="control"><span class="tag" v-bind:class="{ 'is-danger': {{ formula }}<0 }"><% {{ formula }}%></span>
+    <b-input class="skill" readonly type="text" v-model="{{ formula }}"></b-input>
+{%- endmacro -%}
+
+{%- macro computed2(formula, label="") -%}
+    <div class="control is-pulled-right">
+    <div class="tags has-addons">
+      <span class="tag is-light">Poäng kvar</span>
+      <span class="tag is-dark" v-bind:class="{ 'is-danger': {{ formula }}<0 }"><% {{ formula }}%></span>
     </div>
+  </div>
 {%- endmacro -%}
 
 {%- macro textbox() -%}
@@ -63,9 +71,9 @@ Group model by groups, e.g "attribut.edu". Catch group name by the parent node, 
 {%- macro number(label, id="", min=0, max=20, class="") -%}
     {% if not id %}{% set id = slugify(label) %}{% endif %}
     <b-field class="{{ class }}" horizontal label="{{ label }}">
-        <b-input size="is-small" type="number" v-model.number="{{ id }}" :min="{{ min }}" :max="{{ max }}"
-                 name="{{ id }}"
-                 placeholder="{{ placeholder }}" expanded></b-input>
+        <b-input type="number" v-model.number="{{ id }}" :min="{{ min }}" :max="{{ max }}"
+                 expanded name="{{ id }}"
+                 placeholder="{{ placeholder }}"></b-input>
         {% if caller %}{{ caller() }}{% endif %}
     </b-field>
 {%- endmacro -%}

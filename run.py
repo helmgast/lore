@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 import sys
+
+import os
 import ptvsd
 # ptvsd.enable_attach("my_secret", address = ('0.0.0.0', 3000))
 
@@ -12,6 +14,9 @@ import re
 import click
 import shlex
 import subprocess as sp
+
+from flask.cli import pass_script_info, DispatchingApp
+from flask.helpers import get_debug_flag
 
 from fablr.app import create_app
 app = create_app()
@@ -25,6 +30,54 @@ def runshell(cmd):
 def initdb():
     """Initialize the database."""
     click.echo('Init the db')
+
+@app.cli.command()
+@click.option('--host', '-h', default='127.0.0.1',
+              help='The interface to bind to.')
+@click.option('--port', '-p', default=5000,
+              help='The port to bind to.')
+@click.option('--reload/--no-reload', default=None,
+              help='Enable or disable the reloader.  By default the reloader '
+              'is active if debug is enabled.')
+@click.option('--debugger/--no-debugger', default=None,
+              help='Enable or disable the debugger.  By default the debugger '
+              'is active if debug is enabled.')
+@click.option('--eager-loading/--lazy-loader', default=None,
+              help='Enable or disable eager loading.  By default eager '
+              'loading is enabled if the reloader is disabled.')
+@click.option('--with-threads/--without-threads', default=False,
+              help='Enable or disable multithreading.')
+@click.option('--watch', default=None, multiple=True,
+              help='Add files to watch for reload')
+@pass_script_info
+def runwatch(info, host, port, reload, debugger, eager_loading,
+                with_threads, watch):
+    from werkzeug.serving import run_simple
+
+    debug = get_debug_flag()
+    if reload is None:
+        reload = bool(debug)
+    if debugger is None:
+        debugger = bool(debug)
+    if eager_loading is None:
+        eager_loading = not reload
+
+    app = DispatchingApp(info.load_app, use_eager_loading=eager_loading)
+
+    # Extra startup messages.  This depends a bit on Werkzeug internals to
+    # not double execute when the reloader kicks in.
+    if os.environ.get('WERKZEUG_RUN_MAIN') != 'true':
+        # If we have an import path we can print it out now which can help
+        # people understand what's being served.  If we do not have an
+        # import path because the app was loaded through a callback then
+        # we won't print anything.
+        if info.app_import_path is not None:
+            print(' * Serving Flask app "%s"' % info.app_import_path)
+        if debug is not None:
+            print(' * Forcing debug mode %s' % (debug and 'on' or 'off'))
+
+    run_simple(host, port, app, use_reloader=reload,
+               use_debugger=debugger, threaded=with_threads, extra_files=watch)
 
 @app.cli.command()
 def lang_extract():

@@ -154,8 +154,8 @@ class FileAssetsView(ResourceView):
     route_base = '/media/'
     access_policy = AssetAccessPolicy()
     model = FileAsset
-    list_template = 'fileasset_list.html'
-    item_template = 'fileasset_item.html'
+    list_template = 'asset/fileasset_list.html'
+    item_template = 'asset/fileasset_item.html'
     form_class = model_form(FileAsset,
                             exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width',
                                      'height', 'file_data'],

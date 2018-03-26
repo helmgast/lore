@@ -20,7 +20,38 @@
         }
 
         .navbar {
-            display: unset;
+            display: unset; /* TODO fix as we mix Bulma and Bootstrap */
+        }
+
+        .neotech .dark-label > .field, .neotech .dark-label > tr {
+            background-color: #c0519e;
+            background: linear-gradient(45deg, white 3px, #c0519e 3px);
+            font-size: 0.9rem;
+
+        }
+
+        .neotech .light-label > .field {
+            background-color: #daa3ca;
+            background: linear-gradient(45deg, white 3px, #daa3ca 3px);
+            font-size: 0.75rem;
+        }
+
+        .skill {
+            width: 2.25em;
+        }
+
+        fieldset .column {
+            padding-bottom: 0rem;
+        }
+
+        .neotech .field-label {
+            margin-right: 20px;
+        }
+
+        .neotech .field input, .neotech .field select {
+            border-radius: 0px !important;
+            border-color: #c0519e;
+            font-family: "Nova Square", "Arial", sans-serif;
         }
 
         .neotech {
@@ -29,6 +60,19 @@
 
         .neotech .erf-table-wide {
             width: 50%;
+        }
+
+        .neotech label {
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-family: "Orbitron", "Arial", sans-serif;
+            font-weight: bold;
+            text-align: left;
+            color: white;
+            height: 100%;
+            min-width: 125px;
+            vertical-align: top;
+            padding: 4px;
         }
 
         .neotech h2, .neotech legend {
@@ -79,7 +123,7 @@
         }
 
         .neotech fieldset {
-            margin-top: 30px;
+            margin-bottom: 1em;
         }
 
         .neotech legend {
@@ -90,10 +134,6 @@
             left: -4px;
             height: 42px;
             top: 3px;
-        }
-
-        .neotech .elsmall label {
-            font-size: 12px;
         }
 
         .el-input--prefix .el-input__inner {
@@ -107,16 +147,6 @@
         .control .dropdown-item {
             text-decoration: none;
             white-space: unset;
-        }
-
-        .neotech .form-control {
-            padding: 3px 6px;
-            margin: 3px 0px;
-            height: unset;
-            box-shadow: none;
-            -webkit-box-shadow: none;
-            border: 1px solid #c0519e;
-            border-radius: 0px;
         }
 
         [v-cloak] {
@@ -136,20 +166,6 @@
             padding: 4px;
             width: 100px;
             flex-grow: 1;
-        }
-
-        .neotech label {
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            font-size: 16px;
-            font-family: "Nova Square", "Arial", sans-serif;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(45deg, transparent 3px, #c0519e 3px);
-            height: 100%;
-            min-width: 125px;
-            vertical-align: top;
-            padding: 4px;
         }
 
         .wide {
@@ -294,19 +310,19 @@
             },
             methods:
                 {
-                    randInt: function (min, max, toast=true) {
+                    randInt: function (min, max, toast = true) {
                         let roll = Math.floor(Math.random() * (max - min + 1)) + min;
                         if (toast)
                             this.$toast.open('Slog ' + roll)
                         return roll
                     }
                     ,
-                    randList: function(list) {
+                    randList: function (list) {
                         let len = list.length
                         let out = ''
                         if (len) {
                             for (k of Object.keys(list[0])) {
-                                let i = this.randInt(0,len-1, toast=false)
+                                let i = this.randInt(0, len - 1, toast = false)
                                 out += list[i][k] + ' '
                             }
                         }
@@ -384,10 +400,10 @@
 
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'od6', 'list_subkultur')
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ow4hm3n', 'list_karriar')
-        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'oxfl1ya', 'list_utseende', )
-        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ocggd2p', 'list_kon', )
-        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ompcwg4', 'list_sug', )
-        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'olwm092', 'list_namn', )
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'oxfl1ya', 'list_utseende',)
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ocggd2p', 'list_kon',)
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ompcwg4', 'list_sug',)
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'olwm092', 'list_namn',)
 
 
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obi8iy0', 'list_betongbasare', tableize)
@@ -395,8 +411,6 @@
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obhz2o1', 'list_gunsgrit', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'ovsuh6q', 'list_kuberkontor', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'okdtkyc', 'list_moneymammon', tableize)
-
-
 
 
         $('#articleform').submit(function (e) {
@@ -421,9 +435,8 @@
 {% block main %}
     <div class="container">
         <div class="row">
-            <div id="form" v-cloak class="col-lg-9 col-md-8 col-sm-9 content form-horizontal neotech">
-
-                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
+            <div class="col-lg-9 col-md-8 content neotech" id="form" v-cloak>
+                <fieldset {{ 'disabled' if not args.get('intent', None) }} class="dark-label">
                     <legend>Personlighet</legend>
                     <div class="field is-horizontal">
                         <div class="field-label is-normal">
@@ -473,16 +486,17 @@
                         </b-field>
                     </b-field>
                     <div class="columns">
-                        <div class="column is-half">
+                        <div class="column is-half dark-label">
                             {{ el.text("Kön", id="c.person.kön", list="list_kon") }}
 
                         </div>
-                        <div class="column is-half">
+                        <div class="column is-half dark-label">
 
                             <b-field horizontal label="SocEko-nivå">
                                 <b-field>
 
-                                    <b-select v-model="c.person.soceko" name="c.person.soceko" placeholder="Välj nivå"
+                                    <b-select v-model="c.person.soceko" name="c.person.soceko"
+                                              placeholder="Välj nivå"
                                               expanded>
                                         <option value="Shacker">Shacker</option>
                                         <option value="Basare">Basare</option>
@@ -508,79 +522,106 @@
 
                 </fieldset>
                 <fieldset {{ 'disabled' if not args.get('intent', None) }}>
-                    <legend>Attribut & kompetenser</legend>
-                    <fieldset class="third">
-                        {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.edu.attribut*2+4-c.kompetens.edu.medicin-c.kompetens.edu.humaniora-c.kompetens.edu.natur-c.kompetens.edu.teknologi", label="Poäng") }}{% endcall %}
-                        {% call el.number("Medicin", id="c.kompetens.edu.medicin", class="elsmall") %}
-                            {{ el.computed("c.kompetens.edu.medicin+c.kompetens.edu.attribut") }}{% endcall %}
-                        {% call el.number("Humaniora", id="c.kompetens.edu.humaniora", class="elsmall") %}
-                            {{ el.computed("c.kompetens.edu.humaniora+c.kompetens.edu.attribut") }}{% endcall %}
-                        {% call el.number("Natur", id="c.kompetens.edu.natur", class="elsmall") %}
-                            {{ el.computed("c.kompetens.edu.natur+c.kompetens.edu.attribut") }}{% endcall %}
-                        {% call el.number("Teknologi", id="c.kompetens.edu.teknologi", class="elsmall") %}
-                            {{ el.computed("c.kompetens.edu.teknologi+c.kompetens.edu.attribut") }}{% endcall %}
+                    <legend>Attribut & kompetenser {{ el.computed2("19-c.kompetens.edu.attribut-c.kompetens.karisma.attribut-c.kompetens.kreativitet.attribut-c.kompetens.primal.attribut-c.kompetens.cortex.attribut-c.kompetens.ronin.attribut", label="Poäng") }}</legend>
+                    <div class="columns">
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+                            {% call el.number("Medicin", id="c.kompetens.edu.medicin") %}
+                                {{ el.computed("c.kompetens.edu.medicin+c.kompetens.edu.attribut") }}{% endcall %}
+                            {% call el.number("Humaniora", id="c.kompetens.edu.humaniora") %}
+                                {{ el.computed("c.kompetens.edu.humaniora+c.kompetens.edu.attribut") }}{% endcall %}
+                            {% call el.number("Natur", id="c.kompetens.edu.natur") %}
+                                {{ el.computed("c.kompetens.edu.natur+c.kompetens.edu.attribut") }}{% endcall %}
+                            {% call el.number("Teknologi", id="c.kompetens.edu.teknologi") %}
+                                {{ el.computed("c.kompetens.edu.teknologi+c.kompetens.edu.attribut") }}{% endcall %}
+                        {{ el.computed2("c.kompetens.edu.attribut*2+4-c.kompetens.edu.medicin-c.kompetens.edu.humaniora-c.kompetens.edu.natur-c.kompetens.edu.teknologi", label="Poäng") }}
+                        </fieldset>
                     </fieldset>
-                    <fieldset class="third">
-                        {% call el.number("Karisma", id="c.kompetens.karisma.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.karisma.attribut*2+4-c.kompetens.karisma.boss-c.kompetens.karisma.empati-c.kompetens.karisma.pr-c.kompetens.karisma.yao", label="Poäng") }}{% endcall %}
-                        {% call el.number("Boss", id="c.kompetens.karisma.boss", class="elsmall") %}
-                            {{ el.computed("c.kompetens.karisma.boss+c.kompetens.karisma.attribut") }}{% endcall %}
-                        {% call el.number("Empati", id="c.kompetens.karisma.empati", class="elsmall") %}
-                            {{ el.computed("c.kompetens.karisma.empati+c.kompetens.karisma.attribut") }}{% endcall %}
-                        {% call el.number("PR", id="c.kompetens.karisma.pr", class="elsmall") %}
-                            {{ el.computed("c.kompetens.karisma.pr+c.kompetens.karisma.attribut") }}{% endcall %}
-                        {% call el.number("Yao", id="c.kompetens.karisma.yao", class="elsmall") %}
-                            {{ el.computed("c.kompetens.karisma.yao+c.kompetens.karisma.attribut") }}{% endcall %}
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Karisma", id="c.kompetens.karisma.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+
+                            {% call el.number("Boss", id="c.kompetens.karisma.boss") %}
+                                {{ el.computed("c.kompetens.karisma.boss+c.kompetens.karisma.attribut") }}{% endcall %}
+                            {% call el.number("Empati", id="c.kompetens.karisma.empati") %}
+                                {{ el.computed("c.kompetens.karisma.empati+c.kompetens.karisma.attribut") }}{% endcall %}
+                            {% call el.number("PR", id="c.kompetens.karisma.pr") %}
+                                {{ el.computed("c.kompetens.karisma.pr+c.kompetens.karisma.attribut") }}{% endcall %}
+                            {% call el.number("Yao", id="c.kompetens.karisma.yao") %}
+                                {{ el.computed("c.kompetens.karisma.yao+c.kompetens.karisma.attribut") }}{% endcall %}
+                        {{ el.computed2("c.kompetens.karisma.attribut*2+4-c.kompetens.karisma.boss-c.kompetens.karisma.empati-c.kompetens.karisma.pr-c.kompetens.karisma.yao", label="Poäng") }}
+                        </fieldset>
+
                     </fieldset>
-                    <fieldset class="third">
-                        {% call el.number("Kreativitet", id="c.kompetens.kreativitet.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.kreativitet.attribut*2+4-c.kompetens.kreativitet.hacking-c.kompetens.kreativitet.mek-c.kompetens.kreativitet.media-c.kompetens.kreativitet.avantgarde", label="Poäng") }}{% endcall %}
-                        {% call el.number("Hacking", id="c.kompetens.kreativitet.hacking", class="elsmall") %}
-                            {{ el.computed("c.kompetens.kreativitet.hacking+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                        {% call el.number("Mek", id="c.kompetens.kreativitet.mek", class="elsmall") %}
-                            {{ el.computed("c.kompetens.kreativitet.mek+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                        {% call el.number("Media", id="c.kompetens.kreativitet.media", class="elsmall") %}
-                            {{ el.computed("c.kompetens.kreativitet.media+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                        {% call el.number("Avantgarde", id="c.kompetens.kreativitet.avantgarde", class="elsmall") %}
-                            {{ el.computed("c.kompetens.kreativitet.avantgarde+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Kreativitet", id="c.kompetens.kreativitet.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+
+                            {% call el.number("Hacking", id="c.kompetens.kreativitet.hacking") %}
+                                {{ el.computed("c.kompetens.kreativitet.hacking+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                            {% call el.number("Mek", id="c.kompetens.kreativitet.mek") %}
+                                {{ el.computed("c.kompetens.kreativitet.mek+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                            {% call el.number("Media", id="c.kompetens.kreativitet.media") %}
+                                {{ el.computed("c.kompetens.kreativitet.media+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                            {% call el.number("Avantgarde", id="c.kompetens.kreativitet.avantgarde") %}
+                                {{ el.computed("c.kompetens.kreativitet.avantgarde+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                        {{ el.computed2("c.kompetens.kreativitet.attribut*2+4-c.kompetens.kreativitet.hacking-c.kompetens.kreativitet.mek-c.kompetens.kreativitet.media-c.kompetens.kreativitet.avantgarde", label="Poäng") }}
+                        </fieldset>
                     </fieldset>
-                    <fieldset class="third">
-                        {% call el.number("Primal", id="c.kompetens.primal.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.primal.attribut*2+4-c.kompetens.primal.budo-c.kompetens.primal.guns-c.kompetens.primal.flex-c.kompetens.primal.hardcore", label="Poäng") }}{% endcall %}
-                        {% call el.number("Budo", id="c.kompetens.primal.budo", class="elsmall") %}
-                            {{ el.computed("c.kompetens.primal.budo+c.kompetens.primal.attribut") }}{% endcall %}
-                        {% call el.number("Guns", id="c.kompetens.primal.guns", class="elsmall") %}
-                            {{ el.computed("c.kompetens.primal.guns+c.kompetens.primal.attribut") }}{% endcall %}
-                        {% call el.number("Flex", id="c.kompetens.primal.flex", class="elsmall") %}
-                            {{ el.computed("c.kompetens.primal.flex+c.kompetens.primal.attribut") }}{% endcall %}
-                        {% call el.number("Hardcore", id="c.kompetens.primal.hardcore", class="elsmall") %}
-                            {{ el.computed("c.kompetens.primal.hardcore+c.kompetens.primal.attribut") }}{% endcall %}
+                    </div>
+                    <div class="columns">
+
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Primal", id="c.kompetens.primal.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+
+                            {% call el.number("Budo", id="c.kompetens.primal.budo") %}
+                                {{ el.computed("c.kompetens.primal.budo+c.kompetens.primal.attribut") }}{% endcall %}
+                            {% call el.number("Guns", id="c.kompetens.primal.guns") %}
+                                {{ el.computed("c.kompetens.primal.guns+c.kompetens.primal.attribut") }}{% endcall %}
+                            {% call el.number("Flex", id="c.kompetens.primal.flex") %}
+                                {{ el.computed("c.kompetens.primal.flex+c.kompetens.primal.attribut") }}{% endcall %}
+                            {% call el.number("Hardcore", id="c.kompetens.primal.hardcore") %}
+                                {{ el.computed("c.kompetens.primal.hardcore+c.kompetens.primal.attribut") }}{% endcall %}
+                            {{ el.computed2("c.kompetens.primal.attribut*2+4-c.kompetens.primal.budo-c.kompetens.primal.guns-c.kompetens.primal.flex-c.kompetens.primal.hardcore", label="Poäng") }}
+                        </fieldset>
                     </fieldset>
-                    <fieldset class="third">
-                        {% call el.number("Cortex", id="c.kompetens.cortex.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.cortex.attribut*2+4-c.kompetens.cortex.biz-c.kompetens.cortex.virr-c.kompetens.cortex.perception-c.kompetens.cortex.reaktion", label="Poäng") }}{% endcall %}
-                        {% call el.number("Biz", id="c.kompetens.cortex.biz", class="elsmall") %}
-                            {{ el.computed("c.kompetens.cortex.biz+c.kompetens.cortex.attribut") }}{% endcall %}
-                        {% call el.number("Virr", id="c.kompetens.cortex.virr", class="elsmall") %}
-                            {{ el.computed("c.kompetens.cortex.virr+c.kompetens.cortex.attribut") }}{% endcall %}
-                        {% call el.number("Perception", id="c.kompetens.cortex.perception", class="elsmall") %}
-                            {{ el.computed("c.kompetens.cortex.perception+c.kompetens.cortex.attribut") }}{% endcall %}
-                        {% call el.number("Reaktion", id="c.kompetens.cortex.reaktion", class="elsmall") %}
-                            {{ el.computed("c.kompetens.cortex.reaktion+c.kompetens.cortex.attribut") }}{% endcall %}
+
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Cortex", id="c.kompetens.cortex.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+
+                            {% call el.number("Biz", id="c.kompetens.cortex.biz") %}
+                                {{ el.computed("c.kompetens.cortex.biz+c.kompetens.cortex.attribut") }}{% endcall %}
+                            {% call el.number("Virr", id="c.kompetens.cortex.virr") %}
+                                {{ el.computed("c.kompetens.cortex.virr+c.kompetens.cortex.attribut") }}{% endcall %}
+                            {% call el.number("Perception", id="c.kompetens.cortex.perception") %}
+                                {{ el.computed("c.kompetens.cortex.perception+c.kompetens.cortex.attribut") }}{% endcall %}
+                            {% call el.number("Reaktion", id="c.kompetens.cortex.reaktion") %}
+                                {{ el.computed("c.kompetens.cortex.reaktion+c.kompetens.cortex.attribut") }}{% endcall %}
+                            {{ el.computed2("c.kompetens.cortex.attribut*2+4-c.kompetens.cortex.biz-c.kompetens.cortex.virr-c.kompetens.cortex.perception-c.kompetens.cortex.reaktion", label="Poäng") }}
+                        </fieldset>
                     </fieldset>
-                    <fieldset class="third">
-                        {% call el.number("Ronin", id="c.kompetens.ronin.attribut", max=6, min=1) %}
-                            {{ el.computed("c.kompetens.ronin.attribut*2+4-c.kompetens.ronin.offgrid-c.kompetens.ronin.krim-c.kompetens.ronin.skugga-c.kompetens.ronin.gatan", label="Poäng") }}{% endcall %}
-                        {% call el.number("Offgrid", id="c.kompetens.ronin.offgrid", class="elsmall") %}
-                            {{ el.computed("c.kompetens.ronin.offgrid+c.kompetens.ronin.attribut") }}{% endcall %}
-                        {% call el.number("Krim", id="c.kompetens.ronin.krim", class="elsmall") %}
-                            {{ el.computed("c.kompetens.ronin.krim+c.kompetens.ronin.attribut") }}{% endcall %}
-                        {% call el.number("Skugga", id="c.kompetens.ronin.skugga", class="elsmall") %}
-                            {{ el.computed("c.kompetens.ronin.skugga+c.kompetens.ronin.attribut") }}{% endcall %}
-                        {% call el.number("Gatan", id="c.kompetens.ronin.gatan", class="elsmall") %}
-                            {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
+
+                    <fieldset class="dark-label column is-one-third">
+                        {% call el.number("Ronin", id="c.kompetens.ronin.attribut", max=6, min=1) %}{% endcall %}
+                        <fieldset class="light-label">
+
+                            {% call el.number("Offgrid", id="c.kompetens.ronin.offgrid") %}
+                                {{ el.computed("c.kompetens.ronin.offgrid+c.kompetens.ronin.attribut") }}{% endcall %}
+                            {% call el.number("Krim", id="c.kompetens.ronin.krim") %}
+                                {{ el.computed("c.kompetens.ronin.krim+c.kompetens.ronin.attribut") }}{% endcall %}
+                            {% call el.number("Skugga", id="c.kompetens.ronin.skugga") %}
+                                {{ el.computed("c.kompetens.ronin.skugga+c.kompetens.ronin.attribut") }}{% endcall %}
+                            {% call el.number("Gatan", id="c.kompetens.ronin.gatan") %}
+                                {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
+                            {{ el.computed2("c.kompetens.ronin.attribut*2+4-c.kompetens.ronin.offgrid-c.kompetens.ronin.krim-c.kompetens.ronin.skugga-c.kompetens.ronin.gatan", label="Poäng") }}
+                        </fieldset>
+
                     </fieldset>
+                                        </div>
+
                 </fieldset>
                 <fieldset {{ 'disabled' if not args.get('intent', None) }}>
                     <legend>CV</legend>
@@ -623,7 +664,7 @@
                                              :max=150></b-input>
                                     <p class="control">
                                         <a class="button is-static is-small">
-                                            <% cv_erfarenhet_details[props.index].erfarenhet %>
+                                            <% cv_erfarenhet_details[props.index].erfarenhet %> (<% cv_kontrakt_details[props.index].tabell %>)
                                         </a>
                                     </p>
 
@@ -643,7 +684,8 @@
                                         <small>
                                             Minst 4 i attribut <% cv_kontrakt_details[props.index].attribut %><br>
                                             Minst soceko <% cv_kontrakt_details[props.index].lägstanivå %><br>
-                                            Erfarenheter från tabell <% cv_kontrakt_details[props.index].tabell %><br>
+                                            Erfarenheter från tabell <% cv_kontrakt_details[props.index].tabell
+                                            %><br>
                                             Nivå <%cv_kontrakt_details[props.index].nivå%> i
                                             <%cv_kontrakt_details[props.index].kompetens%>
                                         </small>
@@ -651,7 +693,9 @@
                                 </div>
                                 <div class="column is-half">
                                     <strong> <% cv_erfarenhet_details[props.index].erfarenhet %>
-                                    </strong><small>(<% cv_kontrakt_details[props.index].tabell %>)</small><br>
+                                    </strong>
+                                    <small>(<% cv_kontrakt_details[props.index].tabell %>)</small>
+                                    <br>
                                     <small> <% cv_erfarenhet_details[props.index].beskrivning %>
                                     </small>
                                 </div>
@@ -662,7 +706,8 @@
                     </b-table>
 
                     <p class="control">
-                        <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">En period till
+                        <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">En period
+                            till
                         </button>
                     </p>
                 </fieldset>
