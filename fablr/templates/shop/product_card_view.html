@@ -1,6 +1,6 @@
 <div class="card{{ ' status-unpublished' if product.status == 'hidden' }}"
         {%- if product.get_feature_image -%}
-     style="background: url({{ url_for('image_thumb', slug=product.get_feature_image.slug) }}) center top/cover;"
+     style="background: url({{ product.get_feature_image.feature_url() }}) center top/cover;"
         {%- endif -%}>
     <a class="card-cover icon150px"
        href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">

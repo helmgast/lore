@@ -9,6 +9,7 @@
 """
 from __future__ import absolute_import
 
+import datetime
 import os
 from builtins import str
 from logging import DEBUG, INFO, Formatter, StreamHandler, getLogger
@@ -297,10 +298,12 @@ def configure_hooks(app):
     def inject_access():
         return dict(access_policy=app.access_policy, debug=app.debug, assets=app.assets, plugins=app.plugins)
 
-    from fablr.model.misc import current_url, in_current_args, slugify
+    from fablr.model.misc import current_url, in_current_args, slugify, delta_date
     app.add_template_global(current_url)
     app.add_template_global(in_current_args)
     app.add_template_global(slugify)
+    app.add_template_global(delta_date)
+    app.add_template_global(datetime.datetime.utcnow, name="now")
 
     @app.errorhandler(401)  # Unauthorized, e.g. not logged in
     def unauthorized(e):

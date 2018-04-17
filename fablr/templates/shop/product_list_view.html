@@ -3,7 +3,7 @@
         {% if product.get_feature_image %}
             <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
                 <img class="media-object"
-                     src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}">
+                     src="{{ product.get_feature_image.feature_url() }}">
             </a>
         {% else %}
             <a class="media-object icon64px"

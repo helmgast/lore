@@ -173,7 +173,7 @@ TODO
                 {% for article in articles %}
                     <div class="card"
                             {%- if article.get_feature_image -%}
-                         style="background: url({{ url_for('image_thumb', slug=article.get_feature_image.slug) }}) center top/cover;"
+                         style="background: url({{ article.get_feature_image.feature_url() }}) center top/cover;"
                             {%- endif -%}>
                         <div class="card-text">
                             <h3 class="card-title">

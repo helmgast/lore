@@ -4,6 +4,8 @@
 
 {% block googlefonts %}{{ super() }}|Orbitron|Nova+Sans|Audiowide|Nova+Square{% endblock %}
 
+{% set canedit = access_policy['article'].authorize('edit', res=article) %}
+{% set isedit = args.get('intent', None) in ['patch', 'post'] %}
 
 {% block cssimports %}
     {{ super() }}
@@ -36,8 +38,32 @@
             font-size: 0.75rem;
         }
 
+        .neotech fieldset[disabled] input, .neotech fieldset[disabled] select {
+            background-color: #f7f7f7;
+        }
+
+        .neotech fieldset[disabled] button {
+            display: none;
+        }
+
         .skill {
             width: 2.25em;
+        }
+
+        .neotech.content figure {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .neotech figure.passphoto button {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .neotech figure.passphoto img {
+            height: 180px;
+            width: auto;
         }
 
         fieldset .column {
@@ -75,6 +101,26 @@
             padding: 4px;
         }
 
+        .neotech label.normal-label {
+            font-family: unset;
+            color: unset;
+            letter-spacing: unset;
+            text-transform: unset;
+        }
+
+        .neotech h2 {
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-family: "Orbitron", "Arial", sans-serif;
+            font-weight: bold;
+            margin-bottom: 0px;
+        }
+
+        .neotech .intro {
+            font-size: 0.7em;
+            line-height: 1;
+        }
+
         .neotech h2, .neotech legend {
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -91,6 +137,14 @@
             display: inline-block;
         }
 
+        .neotech .erfarenhet {
+            margin-bottom: 0px;
+        }
+
+        .neotech .erfarenhet .control {
+            line-height: unset;
+        }
+
         .neotech h3, .neotech th {
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -99,10 +153,6 @@
             color: white;
             background-color: #c0519e;
             padding: 4px;
-        }
-
-        .el-input-number--small {
-            width: 100px;
         }
 
         .el-input input {
@@ -149,8 +199,27 @@
             white-space: unset;
         }
 
+        @keyframes rotating {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        [v-cloak]:before {
+            content: "";
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            border: 6px solid rgba(0, 0, 0, 0.1);
+            border-top: 6px solid #555;
+            animation: rotating 1.2s infinite cubic-bezier(0.785, 0.135, 0.15, 0.86);
+            visibility: visible;
+            display: block;
+            margin-left: 50%;
+        }
+
         [v-cloak] {
-            display: none
+            visibility: hidden;
         }
 
         .neotech .dotted .form-control {
@@ -180,9 +249,20 @@
     {{ super() }}
     <script type="application/javascript" src="https://vuejs.org/js/vue.js"></script>
     <script src="https://unpkg.com/buefy@0.6.3/lib/index.js"></script>
+    <script src="//widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 
     <script>
         Vue.use(Buefy.default);
+
+        function _support_html5_storage() {
+            try {
+                return 'localStorage' in window && window['localStorage'] !== null;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        let REDIRECT = "{{ url_for('auth.sso', next=request.url) if not g.user else ''}}"
 
         let c = {
             person: {
@@ -242,14 +322,22 @@
             cv: [],  // first item is top level CV row, an object with {kontrakt, erfarenhet}
             edges: [
                 // {titel: '', kompetens: ''}
-            ]
+            ],
+            image: '',
         };
         let val = $('#characterdata__stats').val() || '{}'
+        if (val.length <= 2 && _support_html5_storage() && localStorage.neotechrpgen != undefined) {
+            val = localStorage.neotechrpgen;
+            localStorage.clear();
+        }
         $.extend(true, c, JSON.parse(val));
+
+
         var vm = new Vue({
             el: '#form',
             data: {
                 c: c,
+                email: '',
                 list_subkultur: [],
                 list_betongbasare: [],
                 list_kuberkontor: [],
@@ -257,6 +345,7 @@
                 list_moneymammon: [],
                 list_gunsgrit: [],
                 list_karriar: [],
+                list_koncept: [],
                 list_kon: [],
                 list_utseende: [],
                 list_namn: [],
@@ -267,7 +356,9 @@
                     'Darknet & disorder': 'list_darknetdisorder',
                     'Guns, guts & grit': 'list_gunsgrit',
                     'Money & mammon': 'list_moneymammon'
-                }
+                },
+                list_updated: new Date(),
+                chosen_karriär: '',
             },
             computed: {
                 filtered_karriar: function () {
@@ -275,7 +366,9 @@
                     return data.c.cv.map(function (line, i) {
                         let fixed_karriär = ''
                         if (data.c.cv[i - 1]) {
-                            fixed_karriär = data.lookup_by_value('karriar', data.c.cv[i - 1].kontrakt, 'karriär')
+                            if (data.cv_erfarenhet_details[i - 1].beskrivning.indexOf('KARRIÄRSBYTE') < 0) {
+                                fixed_karriär = data.cv_kontrakt_details[i - 1].karriär
+                            }
                         }
                         return data.list_karriar.filter((opt) => {
                             return opt.kontrakt
@@ -290,22 +383,83 @@
                     let data = this
                     return data.c.cv.map(function (line) {
                         let found = data.list_karriar.find(el => el.kontrakt === line.kontrakt)
-                        return found ? found : {kontrakt: 'tbd', karriär: 'tbd', tabell: 'tbd'}
+                        return found ? found : {kontrakt: '', karriär: '', tabell: ''}
                     })
                 },
                 cv_erfarenhet_details: function () {
                     let data = this
+                    let k_counter = 0, last_karriär = ''
                     let out = data.c.cv.map(function (line) {
                         let kontrakt_info = data.list_karriar.find(el => el.kontrakt === line.kontrakt)
-                        let erf_info
+                        let erf_info = {erfarenhet: '', beskrivning: '', bonus: ''}
                         if (kontrakt_info) {
+                            if (kontrakt_info.karriär == last_karriär) {
+                                k_counter += 1
+                            } else {
+                                last_karriär = kontrakt_info.karriär
+                            }
+                            let bonus = k_counter * 20
+                            let lookup = parseInt(line.erfarenhet) + bonus
+                            lookup = lookup - Math.ceil((lookup-100) / 20)*20
                             let list = data.lists[kontrakt_info.tabell]
-                            if (list)
-                                erf_info = data[list][line.erfarenhet]
+                            if (list && data[list][lookup]) {
+                                erf_info = data[list][lookup]
+                                erf_info.bonus = bonus
+                            }
                         }
-                        return erf_info ? erf_info : {erfarenhet: 'tbd', beskrivning: 'tbd'}
-                    })
-                    return out
+                        return erf_info
+
+                    });
+                    console.log(out)
+                    return out;
+                },
+                attributpoäng: function () {
+                    let data = this
+                    let periods = data.c.cv.length
+                    let pool = 0
+                    if (periods <= 2) {
+                        pool = 16+6
+                    } else if (periods <=5) {
+                        pool = 14+6
+                    } else if (periods <=8) {
+                        pool = 12+6
+                    } else if (periods <=11) {
+                        pool = 10+6
+                    } else {
+                        pool = 8+6
+                    }
+                    return pool - data.c.kompetens.edu.attribut -
+                        data.c.kompetens.karisma.attribut -
+                        data.c.kompetens.kreativitet.attribut -
+                        data.c.kompetens.primal.attribut -
+                        data.c.kompetens.cortex.attribut -
+                        data.c.kompetens.ronin.attribut
+                },
+                kompetenspoäng: function () {
+                    let data = this
+                    let periods = data.c.cv.length
+                    let pool = 0
+
+                    if (periods <= 2) {
+                        pool = 30
+                    } else if (periods <=5) {
+                        pool = 40
+                    } else if (periods <=8) {
+                        pool = 50
+                    } else if (periods <=11) {
+                        pool = 60
+                    } else {
+                        pool = 70
+                    }
+                    for (const attr in c.kompetens) {
+                        for (const komp in c.kompetens[attr]) {
+                            if (komp != 'attribut') {
+                                pool = pool - c.kompetens[attr][komp]
+                            }
+                        }
+                    }
+                    return pool
+
                 }
             },
             methods:
@@ -317,16 +471,22 @@
                         return roll
                     }
                     ,
-                    randList: function (list) {
+                    randList: function (list, concat = true) {
                         let len = list.length
                         let out = ''
                         if (len) {
-                            for (k of Object.keys(list[0])) {
+                            if (concat) {
+                                for (k of Object.keys(list[0])) {
+                                    let i = this.randInt(0, len - 1, toast = false)
+                                    out += list[i][k].trim() + ' '
+                                }
+                                return out.trim()
+                            } else {
                                 let i = this.randInt(0, len - 1, toast = false)
-                                out += list[i][k] + ' '
+                                return list[i]
                             }
                         }
-                        return out.trim()
+
                     },
                     lookup_table: function (table, lookup, property) {
                         var thetable = 'list_' + table;
@@ -354,6 +514,37 @@
                         }
                         this.c.cv.push({år: år, kontrakt: '', erfarenhet: ''})
                     },
+                    remove_kontrakt: function (index) {
+                        this.c.cv.splice(index, 1);
+                    },
+                    select_kontrakt: function (kontrakt) {
+                        /*
+                        if (kontrakt) {
+                            let komp = kontrakt.kompetens.substr(1).toLowerCase()
+                            for (const attr in c.kompetens) {
+                                if (c.kompetens[attr].hasOwnProperty(komp)) {
+                                    c.kompetens[attr][komp] = 6
+                                }
+                            }
+                        }
+                        */
+                    },
+                    select_image: function () {
+                        cloudinary.openUploadWidget(
+                            {
+                                cloud_name: 'helmgast',
+                                upload_preset: 'q59fkfe8',
+                                sources: ['local', 'url'],
+                                theme: 'minimal'
+                            },
+                            function (error, result) {
+                                if (!error && result) {
+                                    c.image = result[0].secure_url
+                                } else {
+                                    console.log(error, result)
+                                }
+                            });
+                    }
                 }
             ,
             delimiters: ["<%", "%>"]
@@ -377,6 +568,13 @@
 
                     })
                     vm.$data[list] = processor ? processor(out) : out
+                    if (json.feed.updated.$t) {
+                        let d = new Date(json.feed.updated.$t)
+                        if (d > vm.list_updated) {
+                            vm.list_updated = d
+                            console.log(d)
+                        }
+                    }
                 }
             }).catch(function (ex) {
                 console.log('parsing failed', ex)
@@ -401,13 +599,14 @@
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'od6', 'list_subkultur')
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ow4hm3n', 'list_karriar')
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'oxfl1ya', 'list_utseende',)
+        getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ozaq8cr', 'list_koncept',)
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ocggd2p', 'list_kon',)
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'ompcwg4', 'list_sug',)
         getSpreadsheet('1AGbbY6nk8KRZWtxc_25DcSlR0ePo4s6gDYxYfKDuxaI', 'olwm092', 'list_namn',)
 
 
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obi8iy0', 'list_betongbasare', tableize)
-        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'o22l8ex', 'list_darknet', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'o22l8ex', 'list_darknetdisorder', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obhz2o1', 'list_gunsgrit', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'ovsuh6q', 'list_kuberkontor', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'okdtkyc', 'list_moneymammon', tableize)
@@ -416,306 +615,356 @@
         $('#articleform').submit(function (e) {
             let json = JSON.stringify(vm.c);
             $('#characterdata__stats').val(json)
+            $('#title').val(vm.c.person.namn);
+            $('#cloudinary').val(vm.c.image);
+            // Store submit data in case we need to redirect to login
+            if (_support_html5_storage()) {
+                localStorage.neotechrpgen = json;
+            }
+            if (REDIRECT) {
+                window.location.replace(REDIRECT)
+                e.preventDefault();
+            }
+
         })
 
     </script>
 {% endblock %}
 
+{% block title %}{% if args.get('intent', None) == 'post' %}Gör en Neotech-karaktär{% else %}{{ article.title }}
+{% endif %}{% endblock %}
+
 {% block header %}
-    {#    {{ super() }}#}
-    {% if args.get('intent', None) %}
+    {% if args.get('intent', None) in ['patch','post'] %}
+        {# We are editing #}
         <form id="articleform" method="post" action="{{ action_url }}">
         {{ article_form.csrf_token }}
         {{ article_form.characterdata.stats(class='hide') }}
+        {{ article_form.title(class="hide") }}
+        {{ article_form.cloudinary(class="hide") }}
+
+
     {% else %}
+        {# We are viewing #}
         <textarea class="hide" id="characterdata__stats">{{ article.characterdata.stats|tojson|safe }}</textarea>
+        {% if not canedit %}  {# Just viewing #}
+            <div class="alert alert-info" role="alert">
+                Göra en egen karaktär? <a class="btn btn-small btn-success"
+                                          href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">Klicka
+                här</a>
+            </div>
+        {% endif %}
     {% endif %}
+
+    {% if article_form and article_form.title.errors %}
+        <div class="alert alert-danger" role="alert">
+            Namn: {{ article_form.title.errors|join(' ') }}
+        </div>
+    {% endif %}
+
+    {#    {{ super() }}#}
+    {% if args.get('intent', None) %}
+
+    {% else %}
+    {% endif %}
+
 {% endblock %}
 
 {% block main %}
     <div class="container">
         <div class="row">
-            <div class="col-lg-9 col-md-8 content neotech" id="form" v-cloak>
-                <fieldset {{ 'disabled' if not args.get('intent', None) }} class="dark-label">
-                    <legend>Personlighet</legend>
-                    <div class="field is-horizontal">
-                        <div class="field-label is-normal">
-                            <label class="label">Namn</label>
+            <div class="col-lg-9">
+                <div class="content neotech" id="form" class="is-loading" v-cloak>
+                    <div class="columns">
+                        <div class="column is-one-third">
+                            <figure class="image"><img
+                                    src="{{ url_for('plugins', filename='neotech-rpgen/nimrod.svg', _external=true, _scheme='') }}">
+                            </figure>
                         </div>
-                        <div class="field-body">
-                            <div class="field has-addons">
-                                <div class="control is-expanded">
-                                    <input id="title" name="title" required="required" type="text"
-                                           value="{{ article.title }}" class="input">
-                                </div>
-                                <p class="control">
-                                    <button type="button"
-                                            class="button is-info"
-                                            v-on:click="c.person.namn = randList(list_namn)">
-                                        <b-icon icon="dice-multiple"></b-icon>
-                                    </button>
-                                </p>
+                        <div class="column"><h2>Välkommen till Gig Finder!</h2><br>
+                            <small class="intro"><em>Solsystemets största och bästa jobbsökarnätverk. Vi förmedlar
+                                dagligen över 100 miljoner kontakter och över 2 miljoner gig till arbetshungriga users
+                                över hela monde. Fyll i dina detaljer!</em></small>
+                        </div>
+                    </div>
+                    <fieldset {{ 'disabled' if not isedit }} class="dark-label">
+                        <legend>Personlighet</legend>
+                        <div class="columns">
+                            <div class="column is-two-third dark-label">
+                                {{ el.text("Namn", id="c.person.namn", list="list_namn") }}
+                                {{ el.text("Kön", id="c.person.kön", list="list_kon") }}
+
+                                <b-field horizontal label="Subkultur">
+                                    <b-field>
+                                        <b-autocomplete
+                                                v-model="c.person.subkultur"
+                                                :data="list_subkultur"
+                                                field="subkultur"
+                                                placeholder="Välj subkultur"
+                                                icon="magnify"
+                                                expanded
+                                                open-on-focus
+                                                @select="option => c.person.subkultur = option.subkultur">
+                                            <template slot-scope="props">
+                                                <p>
+                                                    <strong><% props.option.subkultur %></strong>
+                                                    <br>
+                                                    <small><% props.option.beskrivning %></small>
+                                                </p>
+                                            </template>
+                                        </b-autocomplete>
+                                        <p class="control">
+                                            <button v-on:click="c.person.subkultur = randList(list_subkultur, false).subkultur"
+                                                    type="button"
+                                                    class="button is-info">
+                                                <b-icon icon="dice-multiple"></b-icon>
+                                            </button>
+                                        </p>
+                                    </b-field>
+                                </b-field>
+                                <b-field horizontal label="SocEko-nivå">
+                                    <b-field>
+
+                                        <b-select v-model="c.person.soceko" name="c.person.soceko"
+                                                  placeholder="Välj nivå"
+                                                  expanded>
+                                            <option value="Shacker">Shacker</option>
+                                            <option value="Basare">Basare</option>
+                                            <option value="Löneslav">Löneslav</option>
+                                            <option value="Paladin">Paladin</option>
+                                        </b-select>
+                                        {#                                        <p class="control">#}
+                                        {#                                            <button type="button"#}
+                                        {#                                                    class="button is-info">#}
+                                        {#                                                <b-icon icon="dice-multiple"></b-icon>#}
+                                        {#                                            </button>#}
+                                        {#                                        </p>#}
+                                    </b-field>
+                                </b-field>
+                            </div>
+                            <div class="column is-one-third dark-label">
+                                <figure class="image passphoto">
+                                    <img v-if="c.image" :src="c.image">
+                                    <img v-else src="https://bulma.io/images/placeholders/640x480.png">
+                                    {% if isedit %}
+                                        <button v-on:click="select_image" class="button is-small" type="button">Välj
+                                            bild
+                                        </button>
+                                    {% endif %}
+                                </figure>
+
                             </div>
                         </div>
-                    </div>
-                    <b-field horizontal label="Subkultur">
-                        <b-field>
-                            <b-autocomplete
-                                    v-model="c.person.subkultur"
-                                    :data="list_subkultur"
-                                    field="subkultur"
-                                    placeholder="Välj subkultur"
-                                    icon="magnify"
-                                    expanded
-                                    open-on-focus
-                                    @select="option => c.person.subkultur = option.subkultur">
-                                <template slot-scope="props">
-                                    <p>
-                                        <strong><% props.option.subkultur %></strong>
-                                        <br>
-                                        <small><% props.option.beskrivning %></small>
-                                    </p>
-                                </template>
-                            </b-autocomplete>
-                            <p class="control">
-                                <button type="button"
-                                        class="button is-info">
-                                    <b-icon icon="dice-multiple"></b-icon>
-                                </button>
-                            </p>
-                        </b-field>
-                    </b-field>
-                    <div class="columns">
-                        <div class="column is-half dark-label">
-                            {{ el.text("Kön", id="c.person.kön", list="list_kon") }}
+                        {{ el.text("Sug", id="c.person.sug1", list="list_sug") }}
+                        {{ el.text("Sug", id="c.person.sug2", list="list_sug") }}
 
-                        </div>
-                        <div class="column is-half dark-label">
+                        {{ el.text("Koncept", id="c.person.koncept", list="list_koncept") }}
+                        {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
-                            <b-field horizontal label="SocEko-nivå">
-                                <b-field>
-
-                                    <b-select v-model="c.person.soceko" name="c.person.soceko"
-                                              placeholder="Välj nivå"
-                                              expanded>
-                                        <option value="Shacker">Shacker</option>
-                                        <option value="Basare">Basare</option>
-                                        <option value="Löneslav">Löneslav</option>
-                                        <option value="Paladin">Paladin</option>
-                                    </b-select>
-                                    <p class="control">
-                                        <button type="button"
-                                                class="button is-info">
-                                            <b-icon icon="dice-multiple"></b-icon>
-                                        </button>
-                                    </p>
-                                </b-field>
-                            </b-field>
-                        </div>
-                    </div>
-                    {{ el.text("Sug", id="c.person.sug1", list="list_sug") }}
-                    {{ el.text("Sug", id="c.person.sug2", list="list_sug") }}
-
-                    {{ el.text("Koncept", id="c.person.koncept") }}
-                    {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
-
-
-                </fieldset>
-                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
-                    <legend>Attribut & kompetenser {{ el.computed2("19-c.kompetens.edu.attribut-c.kompetens.karisma.attribut-c.kompetens.kreativitet.attribut-c.kompetens.primal.attribut-c.kompetens.cortex.attribut-c.kompetens.ronin.attribut", label="Poäng") }}</legend>
-                    <div class="columns">
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
-                            {% call el.number("Medicin", id="c.kompetens.edu.medicin") %}
-                                {{ el.computed("c.kompetens.edu.medicin+c.kompetens.edu.attribut") }}{% endcall %}
-                            {% call el.number("Humaniora", id="c.kompetens.edu.humaniora") %}
-                                {{ el.computed("c.kompetens.edu.humaniora+c.kompetens.edu.attribut") }}{% endcall %}
-                            {% call el.number("Natur", id="c.kompetens.edu.natur") %}
-                                {{ el.computed("c.kompetens.edu.natur+c.kompetens.edu.attribut") }}{% endcall %}
-                            {% call el.number("Teknologi", id="c.kompetens.edu.teknologi") %}
-                                {{ el.computed("c.kompetens.edu.teknologi+c.kompetens.edu.attribut") }}{% endcall %}
-                        {{ el.computed2("c.kompetens.edu.attribut*2+4-c.kompetens.edu.medicin-c.kompetens.edu.humaniora-c.kompetens.edu.natur-c.kompetens.edu.teknologi", label="Poäng") }}
-                        </fieldset>
-                    </fieldset>
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Karisma", id="c.kompetens.karisma.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
-
-                            {% call el.number("Boss", id="c.kompetens.karisma.boss") %}
-                                {{ el.computed("c.kompetens.karisma.boss+c.kompetens.karisma.attribut") }}{% endcall %}
-                            {% call el.number("Empati", id="c.kompetens.karisma.empati") %}
-                                {{ el.computed("c.kompetens.karisma.empati+c.kompetens.karisma.attribut") }}{% endcall %}
-                            {% call el.number("PR", id="c.kompetens.karisma.pr") %}
-                                {{ el.computed("c.kompetens.karisma.pr+c.kompetens.karisma.attribut") }}{% endcall %}
-                            {% call el.number("Yao", id="c.kompetens.karisma.yao") %}
-                                {{ el.computed("c.kompetens.karisma.yao+c.kompetens.karisma.attribut") }}{% endcall %}
-                        {{ el.computed2("c.kompetens.karisma.attribut*2+4-c.kompetens.karisma.boss-c.kompetens.karisma.empati-c.kompetens.karisma.pr-c.kompetens.karisma.yao", label="Poäng") }}
-                        </fieldset>
 
                     </fieldset>
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Kreativitet", id="c.kompetens.kreativitet.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
+                    <fieldset {{ 'disabled' if not isedit }}>
+                        <legend>CV</legend>
+                        <b-table :data="c.cv">
+                            <template slot-scope="props">
+                                <b-table-column label="År" width="40" numeric>
+                                    <% props.row.år %>
+                                    <br><br>
+                                    <button v-if="props.index == c.cv.length-1" type="button"
+                                            v-on:click="remove_kontrakt(props.index)" class="delete"></button>
+                                </b-table-column>
 
-                            {% call el.number("Hacking", id="c.kompetens.kreativitet.hacking") %}
-                                {{ el.computed("c.kompetens.kreativitet.hacking+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                            {% call el.number("Mek", id="c.kompetens.kreativitet.mek") %}
-                                {{ el.computed("c.kompetens.kreativitet.mek+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                            {% call el.number("Media", id="c.kompetens.kreativitet.media") %}
-                                {{ el.computed("c.kompetens.kreativitet.media+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                            {% call el.number("Avantgarde", id="c.kompetens.kreativitet.avantgarde") %}
-                                {{ el.computed("c.kompetens.kreativitet.avantgarde+c.kompetens.kreativitet.attribut") }}{% endcall %}
-                        {{ el.computed2("c.kompetens.kreativitet.attribut*2+4-c.kompetens.kreativitet.hacking-c.kompetens.kreativitet.mek-c.kompetens.kreativitet.media-c.kompetens.kreativitet.avantgarde", label="Poäng") }}
-                        </fieldset>
-                    </fieldset>
-                    </div>
-                    <div class="columns">
-
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Primal", id="c.kompetens.primal.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
-
-                            {% call el.number("Budo", id="c.kompetens.primal.budo") %}
-                                {{ el.computed("c.kompetens.primal.budo+c.kompetens.primal.attribut") }}{% endcall %}
-                            {% call el.number("Guns", id="c.kompetens.primal.guns") %}
-                                {{ el.computed("c.kompetens.primal.guns+c.kompetens.primal.attribut") }}{% endcall %}
-                            {% call el.number("Flex", id="c.kompetens.primal.flex") %}
-                                {{ el.computed("c.kompetens.primal.flex+c.kompetens.primal.attribut") }}{% endcall %}
-                            {% call el.number("Hardcore", id="c.kompetens.primal.hardcore") %}
-                                {{ el.computed("c.kompetens.primal.hardcore+c.kompetens.primal.attribut") }}{% endcall %}
-                            {{ el.computed2("c.kompetens.primal.attribut*2+4-c.kompetens.primal.budo-c.kompetens.primal.guns-c.kompetens.primal.flex-c.kompetens.primal.hardcore", label="Poäng") }}
-                        </fieldset>
-                    </fieldset>
-
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Cortex", id="c.kompetens.cortex.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
-
-                            {% call el.number("Biz", id="c.kompetens.cortex.biz") %}
-                                {{ el.computed("c.kompetens.cortex.biz+c.kompetens.cortex.attribut") }}{% endcall %}
-                            {% call el.number("Virr", id="c.kompetens.cortex.virr") %}
-                                {{ el.computed("c.kompetens.cortex.virr+c.kompetens.cortex.attribut") }}{% endcall %}
-                            {% call el.number("Perception", id="c.kompetens.cortex.perception") %}
-                                {{ el.computed("c.kompetens.cortex.perception+c.kompetens.cortex.attribut") }}{% endcall %}
-                            {% call el.number("Reaktion", id="c.kompetens.cortex.reaktion") %}
-                                {{ el.computed("c.kompetens.cortex.reaktion+c.kompetens.cortex.attribut") }}{% endcall %}
-                            {{ el.computed2("c.kompetens.cortex.attribut*2+4-c.kompetens.cortex.biz-c.kompetens.cortex.virr-c.kompetens.cortex.perception-c.kompetens.cortex.reaktion", label="Poäng") }}
-                        </fieldset>
-                    </fieldset>
-
-                    <fieldset class="dark-label column is-one-third">
-                        {% call el.number("Ronin", id="c.kompetens.ronin.attribut", max=6, min=1) %}{% endcall %}
-                        <fieldset class="light-label">
-
-                            {% call el.number("Offgrid", id="c.kompetens.ronin.offgrid") %}
-                                {{ el.computed("c.kompetens.ronin.offgrid+c.kompetens.ronin.attribut") }}{% endcall %}
-                            {% call el.number("Krim", id="c.kompetens.ronin.krim") %}
-                                {{ el.computed("c.kompetens.ronin.krim+c.kompetens.ronin.attribut") }}{% endcall %}
-                            {% call el.number("Skugga", id="c.kompetens.ronin.skugga") %}
-                                {{ el.computed("c.kompetens.ronin.skugga+c.kompetens.ronin.attribut") }}{% endcall %}
-                            {% call el.number("Gatan", id="c.kompetens.ronin.gatan") %}
-                                {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
-                            {{ el.computed2("c.kompetens.ronin.attribut*2+4-c.kompetens.ronin.offgrid-c.kompetens.ronin.krim-c.kompetens.ronin.skugga-c.kompetens.ronin.gatan", label="Poäng") }}
-                        </fieldset>
-
-                    </fieldset>
-                                        </div>
-
-                </fieldset>
-                <fieldset {{ 'disabled' if not args.get('intent', None) }}>
-                    <legend>CV</legend>
-                    <b-table
-                            :data="c.cv"
-                            detailed
-                            detail-key="år">
-                        <template slot-scope="props">
-                            <b-table-column label="År" width="40" numeric>
-                                <% props.row.år %>
-                            </b-table-column>
-
-                            <b-table-column label="Kontrakt">
-                                <b-autocomplete size="is-small"
-                                                open-on-focus
-                                                v-model="props.row.kontrakt"
-                                                field="kontrakt"
-                                                icon="magnify"
-                                                :data="filtered_karriar[props.index]"
-                                                placeholder="Välj kontrakt">
-                                </b-autocomplete>
-                            </b-table-column>
-
-                            <b-table-column label="Karriär">
-                                <% cv_kontrakt_details[props.index].karriär %>
-                            </b-table-column>
-
-                            <b-table-column label="Erfarenhet" class="erf-table-wide">
-                                <b-field>
-                                    <p class="control">
-                                        <button type="button" v-on:click="props.row.erfarenhet = randInt(1,101)"
-                                                class="button is-dark is-small">
-                                            <b-icon
-                                                    icon="dice-multiple"
-                                                    size="is-small">
-                                            </b-icon>
-                                        </button>
-                                    </p>
-                                    <b-input size="is-small" v-model="props.row.erfarenhet" type="number" :min=1
-                                             :max=150></b-input>
-                                    <p class="control">
-                                        <a class="button is-static is-small">
-                                            <% cv_erfarenhet_details[props.index].erfarenhet %> (<% cv_kontrakt_details[props.index].tabell %>)
-                                        </a>
-                                    </p>
-
-                                </b-field>
-
-                            </b-table-column>
-
-                        </template>
-
-                        <template slot="detail" slot-scope="props">
-                            <div class="columns">
-                                <div class="column is-half">
-                                    <p>
-                                        <strong><% props.row.kontrakt %></strong>
-                                        <small><% cv_kontrakt_details[props.index].karriar %></small>
-                                        <br>
+                                <b-table-column label="Kontrakt">
+                                    <b-autocomplete size="is-small"
+                                                    open-on-focus
+                                                    clear-on-select
+                                                    v-model="props.row.kontrakt"
+                                                    field="kontrakt"
+                                                    icon="magnify"
+                                                    :data="filtered_karriar[props.index]"
+                                                    placeholder="Välj kontrakt"
+                                                    @select="option => select_kontrakt(option)">
+                                    </b-autocomplete>
+                                    <p v-if="props.row.kontrakt">
                                         <small>
-                                            Minst 4 i attribut <% cv_kontrakt_details[props.index].attribut %><br>
-                                            Minst soceko <% cv_kontrakt_details[props.index].lägstanivå %><br>
-                                            Erfarenheter från tabell <% cv_kontrakt_details[props.index].tabell
-                                            %><br>
-                                            Nivå <%cv_kontrakt_details[props.index].nivå%> i
+                                            <strong>Kompetens</strong>: +1 i
                                             <%cv_kontrakt_details[props.index].kompetens%>
                                         </small>
                                     </p>
-                                </div>
-                                <div class="column is-half">
-                                    <strong> <% cv_erfarenhet_details[props.index].erfarenhet %>
-                                    </strong>
-                                    <small>(<% cv_kontrakt_details[props.index].tabell %>)</small>
-                                    <br>
-                                    <small> <% cv_erfarenhet_details[props.index].beskrivning %>
-                                    </small>
-                                </div>
+                                </b-table-column>
 
+                                <b-table-column label="Karriär">
+                                    <p v-if="props.row.kontrakt">
+                                        <% cv_kontrakt_details[props.index].karriär %><br>
+                                        <small>+1 i <% cv_kontrakt_details[props.index].attribut %></small>
+                                    </p>
+                                </b-table-column>
+
+                                <b-table-column label="Erfarenhet" class="erf-table-wide">
+                                    <b-field v-if="props.row.kontrakt" class="erfarenhet">
+                                        <p class="control">
+                                            <button type="button" v-on:click="props.row.erfarenhet = randInt(1,101)"
+                                                    class="button is-dark is-small">
+                                                <b-icon
+                                                        icon="dice-multiple"
+                                                        size="is-small">
+                                                </b-icon>
+                                            </button>
+                                        </p>
+                                        <b-input size="is-small" v-model="props.row.erfarenhet" type="number" :min=1
+                                                 :max=150></b-input>
+                                        <p class="control">
+                                            <a class="button is-static is-small">+<%cv_erfarenhet_details[props.index].bonus%></a>
+
+                                        </p>
+                                        <label class="normal-label">
+                                            <% cv_erfarenhet_details[props.index].erfarenhet %> (<%
+                                            cv_kontrakt_details[props.index].tabell %>)
+                                        </label>
+
+                                    </b-field>
+                                    <small> <% cv_erfarenhet_details[props.index].beskrivning %></small>
+
+                                </b-table-column>
+
+                            </template>
+
+
+                        </b-table>
+
+                        <p class="control">
+                            <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
+                                period
+                            </button>
+                            <button v-if="c.cv.length > 0" type="button" v-on:click="add_kontrakt()"
+                                    class="button is-dark is-small">Gå till uppväxt
+                            </button>
+                        </p>
+                    </fieldset>
+                    <fieldset {{ 'disabled' if not isedit }}>
+                        <legend>Attribut & kompetenser
+                            {{ el.computed2("attributpoäng", label="Attributpoäng kvar") }}</legend>
+                        <div class="columns">
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+                                    {% call el.number("Medicin", id="c.kompetens.edu.medicin") %}
+                                        {{ el.computed("c.kompetens.edu.medicin+c.kompetens.edu.attribut") }}{% endcall %}
+                                    {% call el.number("Humaniora", id="c.kompetens.edu.humaniora") %}
+                                        {{ el.computed("c.kompetens.edu.humaniora+c.kompetens.edu.attribut") }}{% endcall %}
+                                    {% call el.number("Natur", id="c.kompetens.edu.natur") %}
+                                        {{ el.computed("c.kompetens.edu.natur+c.kompetens.edu.attribut") }}{% endcall %}
+                                    {% call el.number("Teknologi", id="c.kompetens.edu.teknologi") %}
+                                        {{ el.computed("c.kompetens.edu.teknologi+c.kompetens.edu.attribut") }}{% endcall %}
+                                </fieldset>
+                            </fieldset>
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Karisma", id="c.kompetens.karisma.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+
+                                    {% call el.number("Boss", id="c.kompetens.karisma.boss") %}
+                                        {{ el.computed("c.kompetens.karisma.boss+c.kompetens.karisma.attribut") }}{% endcall %}
+                                    {% call el.number("Empati", id="c.kompetens.karisma.empati") %}
+                                        {{ el.computed("c.kompetens.karisma.empati+c.kompetens.karisma.attribut") }}{% endcall %}
+                                    {% call el.number("PR", id="c.kompetens.karisma.pr") %}
+                                        {{ el.computed("c.kompetens.karisma.pr+c.kompetens.karisma.attribut") }}{% endcall %}
+                                    {% call el.number("Yao", id="c.kompetens.karisma.yao") %}
+                                        {{ el.computed("c.kompetens.karisma.yao+c.kompetens.karisma.attribut") }}{% endcall %}
+                                </fieldset>
+
+                            </fieldset>
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Kreativitet", id="c.kompetens.kreativitet.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+
+                                    {% call el.number("Hacking", id="c.kompetens.kreativitet.hacking") %}
+                                        {{ el.computed("c.kompetens.kreativitet.hacking+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                                    {% call el.number("Mek", id="c.kompetens.kreativitet.mek") %}
+                                        {{ el.computed("c.kompetens.kreativitet.mek+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                                    {% call el.number("Media", id="c.kompetens.kreativitet.media") %}
+                                        {{ el.computed("c.kompetens.kreativitet.media+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                                    {% call el.number("Avantgarde", id="c.kompetens.kreativitet.avantgarde") %}
+                                        {{ el.computed("c.kompetens.kreativitet.avantgarde+c.kompetens.kreativitet.attribut") }}{% endcall %}
+                                </fieldset>
+                            </fieldset>
+                        </div>
+                        <div class="columns">
+
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Primal", id="c.kompetens.primal.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+
+                                    {% call el.number("Budo", id="c.kompetens.primal.budo") %}
+                                        {{ el.computed("c.kompetens.primal.budo+c.kompetens.primal.attribut") }}{% endcall %}
+                                    {% call el.number("Guns", id="c.kompetens.primal.guns") %}
+                                        {{ el.computed("c.kompetens.primal.guns+c.kompetens.primal.attribut") }}{% endcall %}
+                                    {% call el.number("Flex", id="c.kompetens.primal.flex") %}
+                                        {{ el.computed("c.kompetens.primal.flex+c.kompetens.primal.attribut") }}{% endcall %}
+                                    {% call el.number("Hardcore", id="c.kompetens.primal.hardcore") %}
+                                        {{ el.computed("c.kompetens.primal.hardcore+c.kompetens.primal.attribut") }}{% endcall %}
+                                </fieldset>
+                            </fieldset>
+
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Cortex", id="c.kompetens.cortex.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+
+                                    {% call el.number("Biz", id="c.kompetens.cortex.biz") %}
+                                        {{ el.computed("c.kompetens.cortex.biz+c.kompetens.cortex.attribut") }}{% endcall %}
+                                    {% call el.number("Virr", id="c.kompetens.cortex.virr") %}
+                                        {{ el.computed("c.kompetens.cortex.virr+c.kompetens.cortex.attribut") }}{% endcall %}
+                                    {% call el.number("Perception", id="c.kompetens.cortex.perception") %}
+                                        {{ el.computed("c.kompetens.cortex.perception+c.kompetens.cortex.attribut") }}{% endcall %}
+                                    {% call el.number("Reaktion", id="c.kompetens.cortex.reaktion") %}
+                                        {{ el.computed("c.kompetens.cortex.reaktion+c.kompetens.cortex.attribut") }}{% endcall %}
+                                </fieldset>
+                            </fieldset>
+
+                            <fieldset class="dark-label column is-one-third">
+                                {% call el.number("Ronin", id="c.kompetens.ronin.attribut", max=6, min=1) %}{% endcall %}
+                                <fieldset class="light-label">
+
+                                    {% call el.number("Offgrid", id="c.kompetens.ronin.offgrid") %}
+                                        {{ el.computed("c.kompetens.ronin.offgrid+c.kompetens.ronin.attribut") }}{% endcall %}
+                                    {% call el.number("Krim", id="c.kompetens.ronin.krim") %}
+                                        {{ el.computed("c.kompetens.ronin.krim+c.kompetens.ronin.attribut") }}{% endcall %}
+                                    {% call el.number("Skugga", id="c.kompetens.ronin.skugga") %}
+                                        {{ el.computed("c.kompetens.ronin.skugga+c.kompetens.ronin.attribut") }}{% endcall %}
+                                    {% call el.number("Gatan", id="c.kompetens.ronin.gatan") %}
+                                        {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
+                                </fieldset>
+
+                                {{ el.computed2("kompetenspoäng", label="Kompetenspoäng kvar") }}
+                            </fieldset>
+                        </div>
+
+                    </fieldset>
+                    <small>Tabelldata från: <% list_updated.toLocaleDateString() %></small>
+
+                </div>
+                {% if article_form %}
+                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                        <div class="panel panel-default">
+                            <div class="panel-heading" role="tab" id="headingOne">
+                                <h4 class="panel-title">
+                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
+                                       aria-expanded="true" aria-controls="collapseOne">
+                                        Artikel-detaljer
+                                    </a>
+                                </h4>
                             </div>
-                        </template>
-
-                    </b-table>
-
-                    <p class="control">
-                        <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">En period
-                            till
-                        </button>
-                    </p>
-                </fieldset>
+                            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel"
+                                 aria-labelledby="headingOne">
+                                <aside class="panel-body">
+                                    {% block asides %}
+                                    {% endblock asides %}
+                                </aside>
+                            </div>
+                        </div>
+                    </div>
+                    {{ MACRO.SAVE_BUTTON('articleform') }}
+                {% endif %}
             </div>
-            <aside class="col-lg-3 col-md-4">
-                {% block asides %}
-                {% endblock asides %}
-            </aside>
         </div>
     </div>
 {% endblock %}

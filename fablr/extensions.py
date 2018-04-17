@@ -320,7 +320,8 @@ class SilentUndefined(Undefined):
 
 
 def currentyear(nada):
-    return datetime.utcnow().strftime('%Y')
+    return datetime.utcnow()
+    # return datetime.utcnow().strftime('%Y')
 
 
 def dict_without(value, *args):

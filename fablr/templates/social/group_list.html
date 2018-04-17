@@ -57,7 +57,7 @@
                 {% for group in groups %}
                     <div class="card"
                             {%- if group.get_feature_image -%}
-                         style="background: url({{ url_for('image_thumb', slug=group.get_feature_image.slug) }}) center top/cover;"
+                         style="background: url({{ group.get_feature_image.feature_url() }}) center top/cover;"
                             {%- endif -%}>
                         <a class="card-cover icon150px"
                            href="{{ url_for('social.GroupsView:get', id=group.slug) }}"

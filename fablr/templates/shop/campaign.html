@@ -15,7 +15,7 @@
                 {% if product.get_feature_image %}
                     <a href="#">
                         <img class="media-object"
-                             src="{{ url_for('image_thumb', slug=product.get_feature_image.slug) }}" alt="...">
+                             src="{{ product.get_feature_image.feature_url() }}" alt="...">
                     </a>
                 {% endif %}
                 <div class="media-body">

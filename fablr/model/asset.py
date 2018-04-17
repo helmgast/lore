@@ -19,7 +19,7 @@ import requests
 import os.path
 
 from bson import ObjectId
-from flask import request, current_app, g
+from flask import request, current_app, g, url_for
 from flask_babel import gettext, lazy_gettext as _
 
 from .misc import Document  # Enhanced document
@@ -133,6 +133,21 @@ class FileAsset(Document):
         file_obj.seek(0)  # reset
         return md5.hexdigest()
 
+    def feature_url(self, **kwargs):
+        crop = kwargs.pop('crop', None)
+        cloudinary = current_app.config.get('CLOUDINARY_DOMAIN')
+        if cloudinary and not current_app.debug:
+            kwargs['_external'] = True
+            url = url_for('image_thumb', slug=self.slug, **kwargs)
+            transform = ''
+            if crop and len(crop) >= 2:
+                # https://res.cloudinary.com/demo/image/upload/w_250,h_250,c_limit/sample.jpg
+                crop_type = 'lfill' if len(crop) != 3 else crop[2]
+                transform = f"w_{crop[0]},h_{crop[1]},c_{crop_type},g_auto/"
+            return f'https://res.cloudinary.com/{cloudinary}/image/fetch/{transform}{url}'
+        else:
+            return url_for('image_thumb', slug=self.slug, **kwargs)
+
     def aspect_ratio(self):
         return self.width / self.height or 1.0
 
@@ -197,6 +212,9 @@ class FileAsset(Document):
         # This assumes there is a file upload
         if new_file_obj is not None and new_file_obj.filename:
             self.set_file(new_file_obj, filename=new_file_obj.filename)
+        elif self.source_file_url and self.source_file_url.startswith("https://res.cloudinary.com/helmgast/image/upload/"):
+            # A cloudinary URL
+            return
         elif self.source_file_url and not self.file_data:
             r = requests.get(self.source_file_url)
             # Try to fetch correct filename based on Content-Disposition header or location

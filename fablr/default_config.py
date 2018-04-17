@@ -39,6 +39,7 @@ class Config(object):
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
+    CLOUDINARY_DOMAIN = None
     
 
 class SecretConfig(object):

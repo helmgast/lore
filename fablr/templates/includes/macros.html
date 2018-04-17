@@ -22,19 +22,22 @@
 
 
 {%- macro OG_ARTICLE(article) -%}
+    {# Recommended image size Twitter> 144x144 up 4096x4096, 1:1 #}
+    {# Recommended image size Facebook> 1200x630 #}
+
     {% if article %}
         <meta name="twitter:card" content="summary">
         <meta name="twitter:site" content="@helmgast">
-        <meta name="twitter:url" property="og:url" content="{{ current_url(_external=true, _scheme='') }}">
+        <meta name="twitter:url" property="og:url" content="{{ current_url(_external=true) }}">
         <meta name="twitter:title" property="og:title" content="{{ article.title }}">
         <meta name="twitter:description" property="og:description" content="{{ article.description }}">
         <meta property="og:type" content="article"/>
         {% if article.get_feature_image %}
             <meta name="twitter:image" property="og:image"
-                  content="{{ url_for('image_thumb', slug=article.get_feature_image.slug, _external=true, _scheme='') }}"/>
+                  content="{{ article.get_feature_image.feature_url(_external=true) }}"/>
         {% else %}
             <meta name="twitter:image" property="og:image"
-                  content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true, _scheme='') }}"/>
+                  content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}"/>
         {% endif %}
         <meta property="article:published_time" content="{{ article.created_date.isoformat() }}"/> {# yyyy-mm-dd #}
         <meta property="article:author" content="{{ article.user }}"/>

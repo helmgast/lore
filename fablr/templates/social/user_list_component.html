@@ -5,7 +5,7 @@
             {% for user in users %}
                 <div class="card"
                     {%- if user.get_feature_image -%}
-                        style="background: url({{ url_for('image_thumb', slug=user.get_feature_image.slug) }}) center top/contain no-repeat;"
+                        style="background: url({{ user.get_feature_image.feature_url() }}) center top/contain no-repeat;"
                     {%- else -%}
                          style="background: url({{ user.gravatar_url(size=256) }}) center top/contain no-repeat;"
                     {%- endif -%}>

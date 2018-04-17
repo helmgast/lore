@@ -314,7 +314,7 @@ class ArticlesView(ResourceView):
     list_template = 'world/article_list.html'
     list_arg_parser = filterable_fields_parser(['title', 'type', 'creator', 'created_date', 'tags', 'status'])
     item_template = 'world/article_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date', 'theme'])
+    item_arg_parser = prefillable_fields_parser(['title', 'type', 'creator', 'created_date', 'theme', 'cloudinary'])
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
                             exclude=['slug', 'feature_image', 'featured'],

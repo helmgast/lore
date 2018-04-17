@@ -7,6 +7,8 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
+import datetime
+
 from future import standard_library
 standard_library.install_aliases()
 from builtins import str
@@ -322,6 +324,12 @@ def current_url(_multi=False, **kwargs):
         u = '?' + urllib.parse.urlencode(list(copy_args.items(multi=True)), doseq=True)
         return u
         # We are just changing url parameters, we can do a quicker way
+
+
+def delta_date(**datedict):
+    now = datetime.datetime.utcnow()
+    then = datetime.datetime(**datedict)
+    return then - now
 
 
 def in_current_args(testargs):

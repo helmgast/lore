@@ -22,6 +22,7 @@ from flask import redirect, url_for, g
 from flask import render_template
 from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
+from werkzeug.urls import url_encode, url_quote
 
 from fablr.model.misc import safe_next_url, set_lang_options
 from fablr.model.user import User, UserStatus
@@ -229,10 +230,11 @@ def callback():
 def sso():
     next_url = safe_next_url()
     callback_url = url_for('auth.callback', pub_host=g.pub_host, next=next_url, _external=True, _scheme=request.scheme)
+
     auth0_url = 'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={callback}'.format(
         domain=current_app.config['AUTH0_DOMAIN'],
         client_id=current_app.config['AUTH0_CLIENT_ID'],
-        callback=callback_url)
+        callback=url_quote(callback_url))
     return redirect(auth0_url)
 
 

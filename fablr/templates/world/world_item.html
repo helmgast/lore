@@ -74,7 +74,7 @@
 {% endblock %}
 
 {% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
-{% block content_class %}col-lg-10 col-md-12 col-sm-10 content{% endblock %}
+{% block content_class %}col-lg-9 col-md-12 col-sm-10 content{% endblock %}
 {% block asides_class %}hide{% endblock %}
 
 {% block content %}
@@ -148,7 +148,7 @@
                             <!-- col-lg-4 -->
                         {% endfor %}
                     </div>
-                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                    <a href="{{ url_for('world.ArticlesView:blog', world_=world.slug) }}"
                        class="pull-right"> {{ _('Read more') }}</a>
                 </div>
 
@@ -170,7 +170,7 @@
                             <!-- col-lg-4 -->
                         {% endfor %}
                     </div>
-                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"
                        class="pull-right"> {{ _('Read more') }}</a>
                 </div>
 
@@ -192,7 +192,7 @@
                             <!-- col-lg-4 -->
                         {% endfor %}
                     </div>
-                    <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, type='material') }}"
                        class="pull-right"> {{ _('Read more') }}</a>
                 </div>
             {% endif %}

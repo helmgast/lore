@@ -282,6 +282,20 @@ ArticleTypes = Choices(
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata', 'characterdata']
 
+class RemoteImage:
+    def __init__(self, url):
+        self.url = url
+        self.slug = url
+
+    def feature_url(self, **kwargs):
+        crop = kwargs.pop('crop', None)
+        if crop and len(crop) >= 2:
+            # https://res.cloudinary.com/demo/image/upload/w_250,h_250,c_limit/sample.jpg
+            crop_type = 'lfill' if len(crop) != 3 else crop[2]
+            s = f"/upload/w_{crop[0]},h_{crop[1]},c_{crop_type},g_auto/"
+            return self.url.replace('/upload/', s)
+        return self.url
+
 
 class Article(Document):
     meta = {
@@ -310,6 +324,7 @@ class Article(Document):
     # TODO DEPRECATE in DB version 3
     featured = BooleanField(default=False, verbose_name=_('Featured article'))
     feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_('Feature Image'))
+    cloudinary = StringField()
 
     images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_('Images'))
     license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4, verbose_name=_('License'))
@@ -338,8 +353,11 @@ class Article(Document):
     @property  # For convenience
     def get_feature_image(self):
         # Smallest aspect
-        newlist = sorted(self.images, key=lambda x: x.aspect_ratio())
-        return newlist[0] if newlist else None
+        if self.cloudinary:
+            return RemoteImage(self.cloudinary)
+        else:
+            newlist = sorted(self.images, key=lambda x: x.aspect_ratio())
+            return newlist[0] if newlist else None
 
     @property  # For convenience
     def get_header_image(self):

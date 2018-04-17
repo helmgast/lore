@@ -272,11 +272,11 @@ class ResourceResponse(Response):
     def auth_or_abort(self, res=None):
         res = res or getattr(self, 'instance', None)
         auth = self.access.authorize(self.method, res=res)
-        if auth and res:
-            # if there's an intent and a resource, we also should check that it's an allowed operation
-            intent = self.args.get('intent', None)
-            if intent:
-                auth = self.access.authorize(intent, res=res)
+        # if auth and res:
+        #     # if there's an intent and a resource, we also should check that it's an allowed operation
+        #     intent = self.args.get('intent', None)
+        #     if intent:
+        #         auth = self.access.authorize(intent, res=res)
         if not auth:
             logger.debug('{auth}, in {url}'.format(auth=auth, url=request.url))
             abort(auth.error_code, auth.message)
