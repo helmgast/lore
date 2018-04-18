@@ -743,7 +743,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                     <div class="columns">
                         <div class="column is-one-third">
                             <figure class="image"><img
-                                    src="{{ url_for('plugins', filename='neotech-rpgen/nimrod.svg', _external=true, _scheme='') }}">
+                                    src="{{ url_for('plugins', filename='neotech-rpgen/nimrod.svg', _external=true) }}">
                             </figure>
                         </div>
                         {% if args.get('intent', None) in ['patch','post'] %}
@@ -768,8 +768,12 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         {% endif %}
                     </div>
                     <fieldset {{ 'disabled' if not isedit }} class="dark-label">
-                    {{ description }}
-                        <legend>Personlighet</legend>
+                        <legend>Personlighet
+                                                    {% if args.get('intent', None) != 'post' %}
+                            <a class="is-pulled-right" href="https://www.facebook.com/sharer.php?u={{current_url(_external=true, intent=none)}}">
+                                <img width="200" height="39" src="{{ url_for('plugins', filename='neotech-rpgen/facebookshare.png', _external=true) }}">
+                            </a>
+                            {% endif %}</legend>
                         <div class="columns">
                             <div class="column is-two-third dark-label">
                                 {{ el.text("Namn", id="c.person.namn", list="list_namn") }}
@@ -843,7 +847,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
                     </fieldset>
-                        <div class="alert alert-info" role="alert" style="text-align: center">
+                        <div class="alert alert-info" role="alert">
                             <a href="https://helmgast.se/getedge">
                                 <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
                             </a>
