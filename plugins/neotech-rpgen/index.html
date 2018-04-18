@@ -363,18 +363,21 @@
             computed: {
                 filtered_karriar: function () {
                     let data = this
-                    return data.c.cv.map(function (line, i) {
+                    let valda_karriärer = ''
+                    return c.cv.map(function (line, i) {
                         let fixed_karriär = ''
-                        if (data.c.cv[i - 1]) {
+                        valda_karriärer += data.cv_kontrakt_details[i].karriär
+                        if (c.cv[i - 1]) {
                             if (data.cv_erfarenhet_details[i - 1].beskrivning.indexOf('KARRIÄRSBYTE') < 0) {
                                 fixed_karriär = data.cv_kontrakt_details[i - 1].karriär
                             }
                         }
                         return data.list_karriar.filter((opt) => {
-                            return opt.kontrakt
-                                .toString()
-                                .toLowerCase()
-                                .indexOf(line.kontrakt.toLowerCase()) >= 0 && (!fixed_karriär || opt.karriär === fixed_karriär)
+                            const test = opt.kontrakt.toString().toLowerCase();
+                            const isTyped = test.indexOf(line.kontrakt.toLowerCase()) >= 0;
+                            const isSameKarriär = opt.karriär === fixed_karriär || !fixed_karriär;
+                            const isNotPreviousKarriär = fixed_karriär || valda_karriärer.indexOf(opt.karriär) < 0;
+                            return isTyped && isSameKarriär && isNotPreviousKarriär
                         })
                     })
 
@@ -400,7 +403,7 @@
                             }
                             let bonus = k_counter * 20
                             let lookup = parseInt(line.erfarenhet) + bonus
-                            lookup = lookup - Math.ceil((lookup-100) / 20)*20
+                            lookup = lookup - Math.max(0,Math.ceil((lookup - 100) / 20) * 20)
                             let list = data.lists[kontrakt_info.tabell]
                             if (list && data[list][lookup]) {
                                 erf_info = data[list][lookup]
@@ -410,57 +413,48 @@
                         return erf_info
 
                     });
-                    console.log(out)
                     return out;
                 },
-                attributpoäng: function () {
-                    let data = this
-                    let periods = data.c.cv.length
-                    let pool = 0
+                uppväxtdata: function () {
+                    let periods = c.cv.length
+                    let out = {attributpoäng: 0, kompetenspoäng: 0, uppväxt: ''}
                     if (periods <= 2) {
-                        pool = 16+6
-                    } else if (periods <=5) {
-                        pool = 14+6
-                    } else if (periods <=8) {
-                        pool = 12+6
-                    } else if (periods <=11) {
-                        pool = 10+6
+                        out.attributpoäng = 16 + 6
+                        out.kompetenspoäng = 30
+                        out.uppväxt = "Gen Epsilon"
+                    } else if (periods <= 5) {
+                        out.attributpoäng = 14 + 6
+                        out.kompetenspoäng = 40
+                        out.uppväxt = "Gen Alfa"
+                    } else if (periods <= 8) {
+                        out.attributpoäng = 12 + 6
+                        out.kompetenspoäng = 50
+                        out.uppväxt = "Nydanarna"
+                    } else if (periods <= 11) {
+                        out.attributpoäng = 10 + 6
+                        out.kompetenspoäng = 60
+                        out.uppväxt = "Splittrade"
                     } else {
-                        pool = 8+6
+                        out.attributpoäng = 8 + 6
+                        out.kompetenspoäng = 70
+                        out.uppväxt = "Millenial"
                     }
-                    return pool - data.c.kompetens.edu.attribut -
-                        data.c.kompetens.karisma.attribut -
-                        data.c.kompetens.kreativitet.attribut -
-                        data.c.kompetens.primal.attribut -
-                        data.c.kompetens.cortex.attribut -
-                        data.c.kompetens.ronin.attribut
-                },
-                kompetenspoäng: function () {
-                    let data = this
-                    let periods = data.c.cv.length
-                    let pool = 0
-
-                    if (periods <= 2) {
-                        pool = 30
-                    } else if (periods <=5) {
-                        pool = 40
-                    } else if (periods <=8) {
-                        pool = 50
-                    } else if (periods <=11) {
-                        pool = 60
-                    } else {
-                        pool = 70
-                    }
+                    out.attributpoäng = out.attributpoäng -
+                        c.kompetens.edu.attribut -
+                        c.kompetens.karisma.attribut -
+                        c.kompetens.kreativitet.attribut -
+                        c.kompetens.primal.attribut -
+                        c.kompetens.cortex.attribut -
+                        c.kompetens.ronin.attribut;
                     for (const attr in c.kompetens) {
                         for (const komp in c.kompetens[attr]) {
                             if (komp != 'attribut') {
-                                pool = pool - c.kompetens[attr][komp]
+                                out.kompetenspoäng = out.kompetenspoäng - c.kompetens[attr][komp]
                             }
                         }
                     }
-                    return pool
-
-                }
+                    return out
+                },
             },
             methods:
                 {
@@ -843,7 +837,7 @@
                     </fieldset>
                     <fieldset {{ 'disabled' if not isedit }}>
                         <legend>Attribut & kompetenser
-                            {{ el.computed2("attributpoäng", label="Attributpoäng kvar") }}</legend>
+                            {{ el.computed2("uppväxtdata.attributpoäng", label="Attributpoäng kvar") }}</legend>
                         <div class="columns">
                             <fieldset class="dark-label column is-one-third">
                                 {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}{% endcall %}
@@ -934,7 +928,7 @@
                                         {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
                                 </fieldset>
 
-                                {{ el.computed2("kompetenspoäng", label="Kompetenspoäng kvar") }}
+                                {{ el.computed2("uppväxtdata.kompetenspoäng", label="Kompetenspoäng kvar") }}
                             </fieldset>
                         </div>
 
