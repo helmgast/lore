@@ -47,7 +47,7 @@
     <aside class="{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}">
         {% block intro %}
         {% endblock intro %}
-        <a style="color: white" href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme='neotech-rpgen') }}" class="btn">Gör din rollperson!</a>
+        <a href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme='neotech-rpgen') }}" class="btn">Gör din rollperson!</a>
     </aside>
 {% endblock intro_parent %}
 
