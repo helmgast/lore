@@ -344,6 +344,7 @@
                 list_darknetdisorder: [],
                 list_moneymammon: [],
                 list_gunsgrit: [],
+                list_uppvaxt: [],
                 list_karriar: [],
                 list_koncept: [],
                 list_kon: [],
@@ -355,7 +356,9 @@
                     'Kuber & kontor': 'list_kuberkontor',
                     'Darknet & disorder': 'list_darknetdisorder',
                     'Guns, guts & grit': 'list_gunsgrit',
-                    'Money & mammon': 'list_moneymammon'
+                    'Money & mammon': 'list_moneymammon',
+                    'Ungdom & uppväxt': 'list_uppvaxt'
+
                 },
                 list_updated: new Date(),
                 chosen_karriär: '',
@@ -377,7 +380,7 @@
                             const isTyped = test.indexOf(line.kontrakt.toLowerCase()) >= 0;
                             const isSameKarriär = opt.karriär === fixed_karriär || !fixed_karriär;
                             const isNotPreviousKarriär = fixed_karriär || valda_karriärer.indexOf(opt.karriär) < 0;
-                            return isTyped && isSameKarriär && isNotPreviousKarriär
+                            return isTyped && isSameKarriär && isNotPreviousKarriär;
                         })
                     })
 
@@ -399,16 +402,32 @@
                             if (kontrakt_info.karriär == last_karriär) {
                                 k_counter += 1
                             } else {
+                                k_counter = 0
                                 last_karriär = kontrakt_info.karriär
                             }
                             let bonus = k_counter * 20
                             let lookup = parseInt(line.erfarenhet) + bonus
-                            lookup = lookup - Math.max(0,Math.ceil((lookup - 100) / 20) * 20)
+                            lookup = lookup - Math.max(0, Math.ceil((lookup - 100) / 20) * 20)
                             let list = data.lists[kontrakt_info.tabell]
                             if (list && data[list][lookup]) {
                                 erf_info = data[list][lookup]
                                 erf_info.bonus = bonus
                             }
+                        } else if (line.kontrakt == 'Uppväxt') {
+                            let bonus = data.c.cv.length
+                            if (data.uppväxtdata.soceko == 'Shacker') {
+                                bonus += 10
+                            } else if (data.uppväxtdata.soceko == 'Basare') {
+                                bonus += 6
+                            } else if (data.uppväxtdata.soceko == 'Basare') {
+                                bonus += 3
+                            }
+                            let lookup = line.erfarenhet + bonus
+                            if (data.list_uppvaxt[line.erfarenhet]) {
+                                erf_info = data.list_uppvaxt[line.erfarenhet]
+                                erf_info.bonus = bonus
+                            }
+
                         }
                         return erf_info
 
@@ -417,7 +436,7 @@
                 },
                 uppväxtdata: function () {
                     let periods = c.cv.length
-                    let out = {attributpoäng: 0, kompetenspoäng: 0, uppväxt: ''}
+                    let out = {attributpoäng: 0, kompetenspoäng: 0, uppväxt: '', soceko: ''}
                     if (periods <= 2) {
                         out.attributpoäng = 16 + 6
                         out.kompetenspoäng = 30
@@ -453,8 +472,51 @@
                             }
                         }
                     }
+                    if (!c.soceko) {
+                        c.soceko = 'Löneslav'
+                    }
+                    let soceko_roll = 0
+                    if (c.soceko == 'Shacker') {
+                        soceko_roll = -2 + this.randInt(1, 10, false)
+                    } else if (c.soceko == 'Basare') {
+                        soceko_roll = this.randInt(1, 10, false)
+                    } else if (c.soceko == 'Löneslav') {
+                        soceko_roll = 2 + this.randInt(1, 10, false)
+                    } else if (c.soceko == 'Paladin') {
+                        soceko_roll = 4 + this.randInt(1, 10, false)
+                    }
+                    if (soceko_roll <= 3) {
+                        out.soceko = 'Shacker'
+                    } else if (soceko_roll <= 6) {
+                        out.soceko = 'Basare'
+                    } else if (soceko_roll <= 9) {
+                        out.soceko = 'Löneslav'
+                    } else {
+                        out.soceko = 'Paladin'
+                    }
                     return out
                 },
+                genererat_koncept: function () {
+                    let strength = 'inget'
+                    let weakness = 'ingen'
+                    let min = 20, max=0;
+                    for (const attr in c.kompetens) {
+                        for (const komp in c.kompetens[attr]) {
+                            if (komp != 'attribut') {
+                                if (c.kompetens[attr][komp] > max) {
+                                    max = c.kompetens[attr][komp]
+                                    strength = komp
+                                } else if (c.kompetens[attr][komp] < min) {
+                                    min = c.kompetens[attr][komp]
+                                    weakness = komp
+                                }
+                            }
+                        }
+                    }
+                    return `Möt ${c.person.namn}. ${c.person.koncept}. En ${c.person.kön} från subkulturen ${c.person.subkultur}.
+                        Främsta styrka är ${strength}, svaghet är ${weakness}. Sugen på att anställa?`
+                }
+
             },
             methods:
                 {
@@ -508,8 +570,20 @@
                         }
                         this.c.cv.push({år: år, kontrakt: '', erfarenhet: ''})
                     },
+                    add_uppväxt: function () {
+                        if (this.c.cv.length > 0) {
+                            const last_kontrakt = this.c.cv[this.c.cv.length - 1]
+                            this.c.cv.push({år: last_kontrakt.år - 5, kontrakt: 'Uppväxt', erfarenhet: ''})
+                            this.c.cv.push({år: last_kontrakt.år - 10, kontrakt: 'Uppväxt', erfarenhet: ''})
+                            this.c.cv.push({år: last_kontrakt.år - 20, kontrakt: 'Uppväxt', erfarenhet: ''})
+                        }
+                    },
                     remove_kontrakt: function (index) {
-                        this.c.cv.splice(index, 1);
+                        if (this.c.cv[index].kontrakt == 'Uppväxt') {
+                            this.c.cv.splice(-3, 3);
+                        } else {
+                            this.c.cv.splice(index, 1);
+                        }
                     },
                     select_kontrakt: function (kontrakt) {
                         /*
@@ -556,7 +630,8 @@
                     let out = json.feed.entry.map(function (entry) {
                         let rv = {}
                         for (k of cols) {
-                            rv[k.substring(4)] = entry[k].$t
+                            if (entry[k])
+                                rv[k.substring(4)] = entry[k].$t
                         }
                         return rv
 
@@ -604,6 +679,7 @@
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'obhz2o1', 'list_gunsgrit', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'ovsuh6q', 'list_kuberkontor', tableize)
         getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'okdtkyc', 'list_moneymammon', tableize)
+        getSpreadsheet('1nuMBrtMQLoGnVNOOcImtQiLwB0smLNu2KwWys26mM0U', 'ov9izay', 'list_uppvaxt', tableize)
 
 
         $('#articleform').submit(function (e) {
@@ -675,11 +751,17 @@
                                     src="{{ url_for('plugins', filename='neotech-rpgen/nimrod.svg', _external=true, _scheme='') }}">
                             </figure>
                         </div>
+                        {% if args.get('intent', None) in ['patch','post'] %}
                         <div class="column"><h2>Välkommen till Gig Finder!</h2><br>
                             <small class="intro"><em>Solsystemets största och bästa jobbsökarnätverk. Vi förmedlar
                                 dagligen över 100 miljoner kontakter och över 2 miljoner gig till arbetshungriga users
                                 över hela monde. Fyll i dina detaljer!</em></small>
                         </div>
+                        {% else %}
+                        <div class="column"><h2>Utdrag från Gig Finder!</h2><br>
+                            <small class="intro"><% genererat_koncept %> </small>
+                        </div>
+                        {% endif %}
                     </div>
                     <fieldset {{ 'disabled' if not isedit }} class="dark-label">
                         <legend>Personlighet</legend>
@@ -755,7 +837,6 @@
                         {{ el.text("Koncept", id="c.person.koncept", list="list_koncept") }}
                         {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
-
                     </fieldset>
                     <fieldset {{ 'disabled' if not isedit }}>
                         <legend>CV</legend>
@@ -769,40 +850,52 @@
                                 </b-table-column>
 
                                 <b-table-column label="Kontrakt">
-                                    <b-autocomplete size="is-small"
-                                                    open-on-focus
-                                                    clear-on-select
-                                                    v-model="props.row.kontrakt"
-                                                    field="kontrakt"
-                                                    icon="magnify"
-                                                    :data="filtered_karriar[props.index]"
-                                                    placeholder="Välj kontrakt"
-                                                    @select="option => select_kontrakt(option)">
-                                    </b-autocomplete>
-                                    <p v-if="props.row.kontrakt">
-                                        <small>
-                                            <strong>Kompetens</strong>: +1 i
-                                            <%cv_kontrakt_details[props.index].kompetens%>
-                                        </small>
-                                    </p>
+                                    <div v-if="props.row.kontrakt == 'Uppväxt' && props.index == c.cv.length-1">
+                                        Födelse! (ålder: <% 2070-props.row.år %>)
+                                    </div>
+                                    <div v-else-if="props.row.kontrakt == 'Uppväxt'">
+                                        Uppväxt som <% uppväxtdata.soceko %>
+                                    </div>
+                                    <div v-else>
+                                        <b-autocomplete size="is-small"
+                                                        open-on-focus
+                                                        clear-on-select
+                                                        v-model="props.row.kontrakt"
+                                                        field="kontrakt"
+                                                        icon="magnify"
+                                                        :data="filtered_karriar[props.index]"
+                                                        placeholder="Välj kontrakt"
+                                                        @select="option => select_kontrakt(option)">
+                                        </b-autocomplete>
+                                        <p v-if="props.row.kontrakt">
+                                            <small>
+                                                <strong>Kompetens</strong>: +1 i
+                                                <%cv_kontrakt_details[props.index].kompetens%>
+                                            </small>
+                                        </p>
+                                    </div>
+
                                 </b-table-column>
 
                                 <b-table-column label="Karriär">
-                                    <p v-if="props.row.kontrakt">
+                                    <p v-if="props.row.kontrakt && props.row.kontrakt!='Uppväxt'">
                                         <% cv_kontrakt_details[props.index].karriär %><br>
                                         <small>+1 i <% cv_kontrakt_details[props.index].attribut %></small>
                                     </p>
                                 </b-table-column>
 
                                 <b-table-column label="Erfarenhet" class="erf-table-wide">
-                                    <b-field v-if="props.row.kontrakt" class="erfarenhet">
+                                    <b-field v-if="props.row.kontrakt && !(props.row.kontrakt=='Uppväxt' && props.index == c.cv.length-1)" class="erfarenhet">
                                         <p class="control">
-                                            <button type="button" v-on:click="props.row.erfarenhet = randInt(1,101)"
+                                            <button v-if="props.row.kontrakt == 'Uppväxt'" type="button"
+                                                    v-on:click="props.row.erfarenhet = randInt(1,10)"
                                                     class="button is-dark is-small">
-                                                <b-icon
-                                                        icon="dice-multiple"
-                                                        size="is-small">
-                                                </b-icon>
+                                                <b-icon icon="dice-multiple" size="is-small"></b-icon>
+                                            </button>
+                                            <button v-else type="button"
+                                                    v-on:click="props.row.erfarenhet = randInt(1,101)"
+                                                    class="button is-dark is-small">
+                                                <b-icon icon="dice-multiple" size="is-small"></b-icon>
                                             </button>
                                         </p>
                                         <b-input size="is-small" v-model="props.row.erfarenhet" type="number" :min=1
@@ -820,9 +913,7 @@
                                     <small> <% cv_erfarenhet_details[props.index].beskrivning %></small>
 
                                 </b-table-column>
-
                             </template>
-
 
                         </b-table>
 
@@ -830,7 +921,7 @@
                             <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
                                 period
                             </button>
-                            <button v-if="c.cv.length > 0" type="button" v-on:click="add_kontrakt()"
+                            <button v-if="c.cv.length > 0" type="button" v-on:click="add_uppväxt()"
                                     class="button is-dark is-small">Gå till uppväxt
                             </button>
                         </p>
