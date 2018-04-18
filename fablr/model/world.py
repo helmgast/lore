@@ -235,8 +235,44 @@ class EventData(EmbeddedDocument):
     to_date = IntField(verbose_name=_('To'))
 
 
+def safeget(dct, *keys):
+    for key in keys:
+        try:
+            dct = dct[key]
+        except KeyError:
+            return ''
+    return dct
+
+
 class CharacterData(EmbeddedDocument):
     stats = DynamicField()
+
+    def get(self, *keys):
+        dct = self.stats
+        for key in keys:
+            try:
+                dct = dct[key]
+            except KeyError:
+                return ''
+        return dct
+
+    def komp_minmax(self):
+        attribut = self.get('kompetens')
+        minp, maxp, minkomp, maxkomp = 20, 0, None, None
+        if attribut:
+            try:
+                for k,v in attribut.items():
+                    for n, p in v.items():
+                        if n != 'attribut':
+                            if p > maxp:
+                                maxkomp = n
+                                maxp = p
+                            elif p < minp:
+                                minkomp = n
+                                minp = p
+            except KeyError:
+                pass
+        return minkomp, maxkomp
 
 
 class Episode(EmbeddedDocument):

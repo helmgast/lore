@@ -130,9 +130,11 @@
             {{ world.content|markdown }}
         </article>
 
-        {% set recent_articles=articles.order_by('-created_date')[:6] %}
+        {% set recent_articles=articles.filter(type__ne='character').order_by('-created_date')[:6] %}
         {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:6] %}
         {% set top_material=articles.filter(type='material').order_by('-created_date')[:6] %}
+        {% set latest_characters=articles.filter(type='character').order_by('-created_date')[:6] %}
+
 
             {% if recent_articles %}
                 <div class="row">
@@ -193,6 +195,26 @@
                         {% endfor %}
                     </div>
                     <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, type='material') }}"
+                       class="pull-right"> {{ _('Read more') }}</a>
+                </div>
+            {% endif %}
+
+            {% if top_material %}
+
+                <div class="row">
+                    <h3 id="latestnews" class="anchor"><span
+                            class="glyphicon glyphicon-heart"></span> {{ _('Characters') }}</h3>
+                    <div class="col-md-12 cards margin-above">
+                        {% for article in latest_characters %}
+                            {% include "world/article_card_view.html" %}
+                        {% else %}
+                            <div class="jumbotron text-center">
+                                <h2>{{ _('No articles yet!') }}</h2>
+                            </div>
+                            <!-- col-lg-4 -->
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, type='character') }}"
                        class="pull-right"> {{ _('Read more') }}</a>
                 </div>
             {% endif %}

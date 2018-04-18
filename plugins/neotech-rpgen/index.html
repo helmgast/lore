@@ -7,6 +7,8 @@
 {% set canedit = access_policy['article'].authorize('edit', res=article) %}
 {% set isedit = args.get('intent', None) in ['patch', 'post'] %}
 
+{% block custom_alert %}Hej{% endblock %}
+
 {% block cssimports %}
     {{ super() }}
     <link rel="stylesheet" href="https://unpkg.com/buefy/lib/buefy.min.css">
@@ -117,8 +119,11 @@
         }
 
         .neotech .intro {
-            font-size: 0.7em;
-            line-height: 1;
+            font-size: 1em;
+            line-height: 1.3;
+            padding-top: 10px;
+            display: block;
+            font-family: "Nova Square", "Arial", sans-serif;
         }
 
         .neotech h2, .neotech legend {
@@ -422,11 +427,13 @@
                             } else if (data.uppväxtdata.soceko == 'Basare') {
                                 bonus += 3
                             }
-                            let lookup = line.erfarenhet + bonus
-                            if (data.list_uppvaxt[line.erfarenhet]) {
-                                erf_info = data.list_uppvaxt[line.erfarenhet]
-                                erf_info.bonus = bonus
+                            let lookup = Math.min(line.erfarenhet + bonus, data.list_uppvaxt.length - 1)
+
+                            if (line.erfarenhet && data.list_uppvaxt[lookup]) {
+                                erf_info = data.list_uppvaxt[lookup]
                             }
+                            erf_info.bonus = bonus
+
 
                         }
                         return erf_info
@@ -496,26 +503,6 @@
                     }
                     return out
                 },
-                genererat_koncept: function () {
-                    let strength = 'inget'
-                    let weakness = 'ingen'
-                    let min = 20, max=0;
-                    for (const attr in c.kompetens) {
-                        for (const komp in c.kompetens[attr]) {
-                            if (komp != 'attribut') {
-                                if (c.kompetens[attr][komp] > max) {
-                                    max = c.kompetens[attr][komp]
-                                    strength = komp
-                                } else if (c.kompetens[attr][komp] < min) {
-                                    min = c.kompetens[attr][komp]
-                                    weakness = komp
-                                }
-                            }
-                        }
-                    }
-                    return `Möt ${c.person.namn}. ${c.person.koncept}. En ${c.person.kön} från subkulturen ${c.person.subkultur}.
-                        Främsta styrka är ${strength}, svaghet är ${weakness}. Sugen på att anställa?`
-                }
 
             },
             methods:
@@ -717,13 +704,6 @@
     {% else %}
         {# We are viewing #}
         <textarea class="hide" id="characterdata__stats">{{ article.characterdata.stats|tojson|safe }}</textarea>
-        {% if not canedit %}  {# Just viewing #}
-            <div class="alert alert-info" role="alert">
-                Göra en egen karaktär? <a class="btn btn-small btn-success"
-                                          href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">Klicka
-                här</a>
-            </div>
-        {% endif %}
     {% endif %}
 
     {% if article_form and article_form.title.errors %}
@@ -740,11 +720,26 @@
 
 {% endblock %}
 
+{% set c = article.characterdata %}
+{% set minmax = article.characterdata.komp_minmax() %}
+{% set description =  "Gör din egen avatar! Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
+". En "+c.get('person','kön')|lower+" att lita på. Respekterad i sin "+
+c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget', true)+
+", med förbättringspotential i "+minmax[0]+"."  %}
+
 {% block main %}
     <div class="container">
         <div class="row">
             <div class="col-lg-9">
                 <div class="content neotech" id="form" class="is-loading" v-cloak>
+                    {% if not canedit and args.get('intent', None) not in ['patch','post'] %}  {# Just viewing #}
+                        <div class="alert alert-info" role="alert">
+                            Göra en egen karaktär?
+                            <a style="color: #fff !important" class="btn btn-small btn-success" href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">
+                                Klicka här
+                            </a>
+                        </div>
+                    {% endif %}
                     <div class="columns">
                         <div class="column is-one-third">
                             <figure class="image"><img
@@ -752,18 +747,28 @@
                             </figure>
                         </div>
                         {% if args.get('intent', None) in ['patch','post'] %}
-                        <div class="column"><h2>Välkommen till Gig Finder!</h2><br>
-                            <small class="intro"><em>Solsystemets största och bästa jobbsökarnätverk. Vi förmedlar
-                                dagligen över 100 miljoner kontakter och över 2 miljoner gig till arbetshungriga users
-                                över hela monde. Fyll i dina detaljer!</em></small>
-                        </div>
+                            <div class="column"><h2>Välkommen till Gig Finder!</h2>
+                                <small class="intro"><em>Solsystemets största och bästa jobbsökarnätverk. Vi förmedlar
+                                    dagligen över 100 miljoner kontakter och över 2 miljoner gig till arbetshungriga
+                                    users
+                                    över hela monde. Fyll i dina detaljer!</em></small>
+                            </div>
                         {% else %}
-                        <div class="column"><h2>Utdrag från Gig Finder!</h2><br>
-                            <small class="intro"><% genererat_koncept %> </small>
-                        </div>
+
+                            <div class="column"><h2>Utdrag från Gig Finder!</h2>
+                                <small class="intro">
+                                    Möt <strong>{{ c.get('person','namn') }}</strong>.
+                                    {{ c.get('person','koncept')|capitalize }}. En {{ c.get('person','kön')|lower }} att
+                                    lita på. Respekterad
+                                    i sin {{ c.get('person','subkultur') }}-tribe. En mästare
+                                    på <strong>{{ minmax[1]|default('inget', true) }}</strong>, med
+                                    förbättringspotential i {{ minmax[0] }}. Anställ nu!
+                                </small>
+                            </div>
                         {% endif %}
                     </div>
                     <fieldset {{ 'disabled' if not isedit }} class="dark-label">
+                    {{ description }}
                         <legend>Personlighet</legend>
                         <div class="columns">
                             <div class="column is-two-third dark-label">
@@ -838,6 +843,11 @@
                         {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
                     </fieldset>
+                        <div class="alert alert-info" role="alert" style="text-align: center">
+                            <a href="https://helmgast.se/getedge">
+                                <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
+                            </a>
+                        </div>
                     <fieldset {{ 'disabled' if not isedit }}>
                         <legend>CV</legend>
                         <b-table :data="c.cv">
@@ -885,7 +895,9 @@
                                 </b-table-column>
 
                                 <b-table-column label="Erfarenhet" class="erf-table-wide">
-                                    <b-field v-if="props.row.kontrakt && !(props.row.kontrakt=='Uppväxt' && props.index == c.cv.length-1)" class="erfarenhet">
+                                    <b-field
+                                            v-if="props.row.kontrakt && !(props.row.kontrakt=='Uppväxt' && props.index == c.cv.length-1)"
+                                            class="erfarenhet">
                                         <p class="control">
                                             <button v-if="props.row.kontrakt == 'Uppväxt'" type="button"
                                                     v-on:click="props.row.erfarenhet = randInt(1,10)"
@@ -905,8 +917,9 @@
 
                                         </p>
                                         <label class="normal-label">
-                                            <% cv_erfarenhet_details[props.index].erfarenhet %> (<%
-                                            cv_kontrakt_details[props.index].tabell %>)
+                                            <% cv_erfarenhet_details[props.index].erfarenhet %><span
+                                                v-if="cv_kontrakt_details[props.index].tabell"> (<%
+                                            cv_kontrakt_details[props.index].tabell %>)</span>
                                         </label>
 
                                     </b-field>
@@ -918,7 +931,7 @@
                         </b-table>
 
                         <p class="control">
-                            <button type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
+                            <button v-if="c.cv[c.cv.length-1] && c.cv[c.cv.length-1].kontrakt != 'Uppväxt'" type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
                                 period
                             </button>
                             <button v-if="c.cv.length > 0" type="button" v-on:click="add_uppväxt()"
@@ -927,8 +940,23 @@
                         </p>
                     </fieldset>
                     <fieldset {{ 'disabled' if not isedit }}>
-                        <legend>Attribut & kompetenser
-                            {{ el.computed2("uppväxtdata.attributpoäng", label="Attributpoäng kvar") }}</legend>
+                        <legend>Attribut & kompetenser<br>
+                            <div class="control is-pulled-left">
+                                <div class="tags has-addons">
+                                    <span class="tag is-light">Attributpoäng kvar</span>
+                                    <span class="tag is-dark"
+                                          v-bind:class="{ 'is-danger': uppväxtdata.attributpoäng<0 }"><% uppväxtdata.attributpoäng %></span>
+                                </div>
+                            </div>
+                            <div class="control is-pulled-right">
+                                <div class="tags has-addons">
+                                    <span class="tag is-light">Kompetenspoäng kvar</span>
+                                    <span class="tag is-dark"
+                                          v-bind:class="{ 'is-danger': uppväxtdata.kompetenspoäng<0 }"><% uppväxtdata.kompetenspoäng%></span>
+                                </div>
+                            </div>
+                        </legend>
+
                         <div class="columns">
                             <fieldset class="dark-label column is-one-third">
                                 {% call el.number("Edu", id="c.kompetens.edu.attribut", max=6, min=1) %}{% endcall %}
@@ -1019,7 +1047,6 @@
                                         {{ el.computed("c.kompetens.ronin.gatan+c.kompetens.ronin.attribut") }}{% endcall %}
                                 </fieldset>
 
-                                {{ el.computed2("uppväxtdata.kompetenspoäng", label="Kompetenspoäng kvar") }}
                             </fieldset>
                         </div>
 

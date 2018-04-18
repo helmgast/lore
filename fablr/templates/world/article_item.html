@@ -91,7 +91,7 @@
 
 
 {% block opengraph %}
-    {{ MACRO.OG_ARTICLE(article) }}
+    {% include "includes/opengraph.html" with context %}
 {% endblock %}
 
 {% block header %}

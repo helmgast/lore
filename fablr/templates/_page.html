@@ -15,11 +15,11 @@
         <meta name="twitter:card" content="summary">
         <meta property="og:type" content="website"/>
         <meta name="twitter:site" content="@helmgast">
-        <meta name="twitter:url" property="og:url" content="{{ current_url(_external=true, _scheme='') }}">
+        <meta name="twitter:url" property="og:url" content="{{ current_url(_external=true) }}">
         <meta name="twitter:title" property="og:title" content="{{ self.content_title() }}">
         <meta name="twitter:description" property="og:description" content="">
         <meta name="twitter:image" property="og:image"
-              content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true, _scheme='') }}">
+              content="{{ url_for('static', filename='img/helmgast_512px.png', _external=true) }}">
     {% endblock %}
 
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=News+Cycle:400,700|Raleway:400,700
