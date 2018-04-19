@@ -27,6 +27,18 @@
             display: unset; /* TODO fix as we mix Bulma and Bootstrap */
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1050;
+            -webkit-overflow-scrolling: touch;
+            outline: 0;
+        }
+
         .neotech .dark-label > .field, .neotech .dark-label > tr {
             background-color: #c0519e;
             background: linear-gradient(45deg, white 3px, #c0519e 3px);
@@ -330,6 +342,7 @@
                 // {titel: '', kompetens: ''}
             ],
             image: '',
+            uppväxtsoceko: ''
         };
         let val = $('#characterdata__stats').val() || '{}'
         if (val.length <= 2 && _support_html5_storage() && localStorage.neotechrpgen != undefined) {
@@ -421,11 +434,11 @@
                             }
                         } else if (line.kontrakt == 'Uppväxt') {
                             let bonus = data.c.cv.length
-                            if (data.uppväxtdata.soceko == 'Shacker') {
+                            if (data.c.uppväxtsoceko == 'Shacker') {
                                 bonus += 10
-                            } else if (data.uppväxtdata.soceko == 'Basare') {
+                            } else if (data.c.uppväxtsoceko == 'Basare') {
                                 bonus += 6
-                            } else if (data.uppväxtdata.soceko == 'Basare') {
+                            } else if (data.c.uppväxtsoceko == 'Basare') {
                                 bonus += 3
                             }
                             let lookup = Math.min(line.erfarenhet + bonus, data.list_uppvaxt.length - 1)
@@ -442,7 +455,7 @@
                 },
                 uppväxtdata: function () {
                     let periods = c.cv.length
-                    let out = {attributpoäng: 0, kompetenspoäng: 0, uppväxt: '', soceko: ''}
+                    let out = {attributpoäng: 0, kompetenspoäng: 0, uppväxt: ''}
                     if (periods <= 2) {
                         out.attributpoäng = 16 + 6
                         out.kompetenspoäng = 30
@@ -477,28 +490,6 @@
                                 out.kompetenspoäng = out.kompetenspoäng - c.kompetens[attr][komp]
                             }
                         }
-                    }
-                    if (!c.soceko) {
-                        c.soceko = 'Löneslav'
-                    }
-                    let soceko_roll = 0
-                    if (c.soceko == 'Shacker') {
-                        soceko_roll = -2 + this.randInt(1, 10, false)
-                    } else if (c.soceko == 'Basare') {
-                        soceko_roll = this.randInt(1, 10, false)
-                    } else if (c.soceko == 'Löneslav') {
-                        soceko_roll = 2 + this.randInt(1, 10, false)
-                    } else if (c.soceko == 'Paladin') {
-                        soceko_roll = 4 + this.randInt(1, 10, false)
-                    }
-                    if (soceko_roll <= 3) {
-                        out.soceko = 'Shacker'
-                    } else if (soceko_roll <= 6) {
-                        out.soceko = 'Basare'
-                    } else if (soceko_roll <= 9) {
-                        out.soceko = 'Löneslav'
-                    } else {
-                        out.soceko = 'Paladin'
                     }
                     return out
                 },
@@ -562,6 +553,28 @@
                             this.c.cv.push({år: last_kontrakt.år - 5, kontrakt: 'Uppväxt', erfarenhet: ''})
                             this.c.cv.push({år: last_kontrakt.år - 10, kontrakt: 'Uppväxt', erfarenhet: ''})
                             this.c.cv.push({år: last_kontrakt.år - 20, kontrakt: 'Uppväxt', erfarenhet: ''})
+                            if (!c.soceko) {
+                                c.soceko = 'Löneslav'
+                            }
+                            let soceko_roll = 0
+                            if (c.soceko == 'Shacker') {
+                                soceko_roll = -2 + this.randInt(1, 10, false)
+                            } else if (c.soceko == 'Basare') {
+                                soceko_roll = this.randInt(1, 10, false)
+                            } else if (c.soceko == 'Löneslav') {
+                                soceko_roll = 2 + this.randInt(1, 10, false)
+                            } else if (c.soceko == 'Paladin') {
+                                soceko_roll = 4 + this.randInt(1, 10, false)
+                            }
+                            if (soceko_roll <= 3) {
+                                c.uppväxtsoceko = 'Shacker'
+                            } else if (soceko_roll <= 6) {
+                                c.uppväxtsoceko = 'Basare'
+                            } else if (soceko_roll <= 9) {
+                                c.uppväxtsoceko = 'Löneslav'
+                            } else {
+                                c.uppväxtsoceko = 'Paladin'
+                            }
                         }
                     },
                     remove_kontrakt: function (index) {
@@ -779,6 +792,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                                     <img width="200" height="39"
                                          src="{{ url_for('plugins', filename='neotech-rpgen/facebookshare.png', _external=true) }}">
                                 </a>
+                                <div class="is-clearfix"></div>
                             {% endif %}</legend>
                         <div class="columns">
                             <div class="column is-two-third dark-label">
@@ -879,7 +893,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                                         Födelse! (ålder: <% 2070-props.row.år %>)
                                     </div>
                                     <div v-else-if="props.row.kontrakt == 'Uppväxt'">
-                                        Uppväxt som <% uppväxtdata.soceko %>
+                                        Uppväxt som <% c.uppväxtsoceko %>
                                     </div>
                                     <div v-else>
                                         <b-autocomplete size="is-small"
@@ -1068,30 +1082,36 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         </div>
 
                     </fieldset>
-                    <small>Tabelldata från: <% list_updated.toLocaleDateString() %></small>
+                    <div class="columns">
+                        <div class="column">
+                            <small>Tabelldata från: <% list_updated.toLocaleDateString() %><br>
+                                Skapad av: {{ article.creator }}</small>
+                        </div>
+                        <div class="column">{% if args.get('intent', None) != 'post' %}
+                            <a class="is-pulled-right"
+                               href="https://www.facebook.com/sharer.php?u={{ current_url(_external=true, intent=none) }}">
+                                <img width="200" height="39"
+                                     src="{{ url_for('plugins', filename='neotech-rpgen/facebookshare.png', _external=true) }}">
+                            </a>
+                            <div class="is-clearfix"></div>
+                        {% endif %}</div>
+                    </div>
 
                 </div>
-                {% if article_form %}
-                    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-                        <div class="panel panel-default">
-                            <div class="panel-heading" role="tab" id="headingOne">
-                                <h4 class="panel-title">
-                                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
-                                       aria-expanded="true" aria-controls="collapseOne">
-                                        Artikel-detaljer
-                                    </a>
-                                </h4>
-                            </div>
-                            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel"
-                                 aria-labelledby="headingOne">
-                                <aside class="panel-body">
-                                    {% block asides %}
-                                    {% endblock asides %}
-                                </aside>
-                            </div>
-                        </div>
+                {% if args.get('intent', None) %}
+                    <div class="clearfix">
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
                     </div>
-                    {{ MACRO.SAVE_BUTTON('articleform') }}
+                {% endif %}
+                {% if article_form %}
+                    <div>
+                        <aside class="panel-body">
+                            {% block asides %}
+                            {% endblock asides %}
+                        </aside>
+                    </div>
                 {% endif %}
             </div>
         </div>
