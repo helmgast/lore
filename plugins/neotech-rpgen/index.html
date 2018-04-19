@@ -57,10 +57,11 @@
             margin-right: 0;
         }
 
-        .neotech figure.passphoto button {
+        .neotech figure.passphoto .overlay {
             position: absolute;
-            top: 5px;
-            left: 5px;
+            top: 0px;
+            left: 0px;
+            padding: 5px;
         }
 
         .neotech figure.passphoto img {
@@ -73,7 +74,7 @@
         }
 
         .neotech .field-label {
-            margin-right: 20px;
+            margin-right: 4px;
         }
 
         .neotech .field input, .neotech .field select {
@@ -599,6 +600,9 @@
                                     console.log(error, result)
                                 }
                             });
+                    },
+                    random_image: function() {
+                        c.image = "http://res.cloudinary.com/helmgast/image/upload/rpgenchar"+this.randInt(1,29, false)+".jpg"
                     }
                 }
             ,
@@ -721,11 +725,11 @@
 {% endblock %}
 
 {% set c = article.characterdata %}
-{% set minmax = article.characterdata.komp_minmax() %}
+{% set minmax = c.komp_minmax() if c else ('','') %}
 {% set description =  "Gör din egen avatar! Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
 ". En "+c.get('person','kön')|lower+" att lita på. Respekterad i sin "+
 c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget', true)+
-", med förbättringspotential i "+minmax[0]+"."  %}
+", med förbättringspotential i "+minmax[0]+"." if c else '' %}
 
 {% block main %}
     <div class="container">
@@ -832,9 +836,13 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                                     <img v-if="c.image" :src="c.image">
                                     <img v-else src="https://bulma.io/images/placeholders/640x480.png">
                                     {% if isedit %}
+                                        <div class="overlay">
                                         <button v-on:click="select_image" class="button is-small" type="button">Välj
                                             bild
                                         </button>
+                                        <button v-on:click="random_image" class="button is-small is-pull-right" type="button">Slumpa
+                                        </button>
+                                        </div>
                                     {% endif %}
                                 </figure>
 
@@ -848,7 +856,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
 
                     </fieldset>
                         <div class="alert alert-info" role="alert">
-                            <a href="https://helmgast.se/getedge">
+                            Gillar du vad du ser? <a href="https://helmgast.se/getedge">
                                 <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
                             </a>
                         </div>
