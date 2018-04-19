@@ -724,8 +724,8 @@
 
 {% set c = article.characterdata %}
 {% set minmax = c.komp_minmax() if c else ('','') %}
-{% set title = "Neotech: gör din egen avatar!" %}
-{% set description =  "Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
+{% set title = "Vem är du år 2070?" %}
+{% set description =  "Neotech: Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
 ". En "+c.get('person','kön')|lower+" att lita på. Respekterad i sin "+
 c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget', true)+
 ", med förbättringspotential i "+minmax[0]+"." if c else '' %}
