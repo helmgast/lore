@@ -434,8 +434,6 @@
                                 erf_info = data.list_uppvaxt[lookup]
                             }
                             erf_info.bonus = bonus
-
-
                         }
                         return erf_info
 
@@ -601,8 +599,8 @@
                                 }
                             });
                     },
-                    random_image: function() {
-                        c.image = "http://res.cloudinary.com/helmgast/image/upload/rpgenchar"+this.randInt(1,29, false)+".jpg"
+                    random_image: function () {
+                        c.image = "http://res.cloudinary.com/helmgast/image/upload/rpgenchar" + this.randInt(1, 29, false) + ".jpg"
                     }
                 }
             ,
@@ -726,7 +724,8 @@
 
 {% set c = article.characterdata %}
 {% set minmax = c.komp_minmax() if c else ('','') %}
-{% set description =  "Gör din egen avatar! Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
+{% set title = "Neotech: gör din egen avatar!" %}
+{% set description =  "Möt "+c.get('person','namn')+". "+c.get('person','koncept')|capitalize+
 ". En "+c.get('person','kön')|lower+" att lita på. Respekterad i sin "+
 c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget', true)+
 ", med förbättringspotential i "+minmax[0]+"." if c else '' %}
@@ -739,7 +738,8 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                     {% if not canedit and args.get('intent', None) not in ['patch','post'] %}  {# Just viewing #}
                         <div class="alert alert-info" role="alert">
                             Göra en egen karaktär?
-                            <a style="color: #fff !important" class="btn btn-small btn-success" href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">
+                            <a style="color: #fff !important" class="btn btn-small btn-success"
+                               href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">
                                 Klicka här
                             </a>
                         </div>
@@ -773,10 +773,12 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                     </div>
                     <fieldset {{ 'disabled' if not isedit }} class="dark-label">
                         <legend>Personlighet
-                                                    {% if args.get('intent', None) != 'post' %}
-                            <a class="is-pulled-right" href="https://www.facebook.com/sharer.php?u={{current_url(_external=true, intent=none)}}">
-                                <img width="200" height="39" src="{{ url_for('plugins', filename='neotech-rpgen/facebookshare.png', _external=true) }}">
-                            </a>
+                            {% if args.get('intent', None) != 'post' %}
+                                <a class="is-pulled-right"
+                                   href="https://www.facebook.com/sharer.php?u={{ current_url(_external=true, intent=none) }}">
+                                    <img width="200" height="39"
+                                         src="{{ url_for('plugins', filename='neotech-rpgen/facebookshare.png', _external=true) }}">
+                                </a>
                             {% endif %}</legend>
                         <div class="columns">
                             <div class="column is-two-third dark-label">
@@ -837,11 +839,12 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                                     <img v-else src="https://bulma.io/images/placeholders/640x480.png">
                                     {% if isedit %}
                                         <div class="overlay">
-                                        <button v-on:click="select_image" class="button is-small" type="button">Välj
-                                            bild
-                                        </button>
-                                        <button v-on:click="random_image" class="button is-small is-pull-right" type="button">Slumpa
-                                        </button>
+                                            <button v-on:click="select_image" class="button is-small" type="button">Välj
+                                                bild
+                                            </button>
+                                            <button v-on:click="random_image" class="button is-small is-pull-right"
+                                                    type="button">Slumpa
+                                            </button>
                                         </div>
                                     {% endif %}
                                 </figure>
@@ -855,11 +858,11 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
                     </fieldset>
-                        <div class="alert alert-info" role="alert">
-                            Gillar du vad du ser? <a href="https://helmgast.se/getedge">
-                                <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
-                            </a>
-                        </div>
+                    <div class="alert alert-info" role="alert">
+                        Gillar du vad du ser? <a href="https://helmgast.se/getedge">
+                        <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
+                    </a>
+                    </div>
                     <fieldset {{ 'disabled' if not isedit }}>
                         <legend>CV</legend>
                         <b-table :data="c.cv">
@@ -943,7 +946,8 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         </b-table>
 
                         <p class="control">
-                            <button v-if="c.cv[c.cv.length-1] && c.cv[c.cv.length-1].kontrakt != 'Uppväxt'" type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
+                            <button v-if="!(c.cv[c.cv.length-1] && c.cv[c.cv.length-1].kontrakt == 'Uppväxt')"
+                                    type="button" v-on:click="add_kontrakt()" class="button is-dark is-small">Lägg till
                                 period
                             </button>
                             <button v-if="c.cv.length > 0" type="button" v-on:click="add_uppväxt()"
@@ -967,6 +971,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                                           v-bind:class="{ 'is-danger': uppväxtdata.kompetenspoäng<0 }"><% uppväxtdata.kompetenspoäng%></span>
                                 </div>
                             </div>
+                            <div class="is-clearfix"></div>
                         </legend>
 
                         <div class="columns">
