@@ -11,7 +11,7 @@ RUN npm run build
 
 # Second stage, copy over static resources and start the python
 FROM python:3.6-alpine
-RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl
+RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl tar
 # Temporarily install pipenv from nightly
 RUN set -ex && pip install git+git://github.com/pypa/pipenv.git@8378a1b104f2d817790a05da370bef0a1b00f452
 LABEL maintainer="martin@helmgast.se"
