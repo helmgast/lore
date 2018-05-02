@@ -40,6 +40,7 @@ class ShortcutsView(ResourceView):
         r.auth_or_abort()
         return r
 
+
 ShortcutsView.register_with_access(admin, 'shortcut')
 
 
@@ -55,12 +56,13 @@ def git_webhook(get_json=None):
         hook_blocks = requests.get('https://api.github.com/meta').json()['hooks']
 
         # Check if the POST request is from github.com
-        for block in hook_blocks:
-            if ipaddress.ip_address(request_ip) in ipaddress.ip_network(block):
-                break  # the remote_addr is within the network range of github.
-        else:
-            logger.warning('git_webhook: Incorrect IP: %s not in %s' % (ipaddress.ip_address(request_ip), ipaddress.ip_network(block)))
-            abort(403, 'Incorrect IP')
+        if not current_app.debug:
+            for block in hook_blocks:
+                if ipaddress.ip_address(request_ip) in ipaddress.ip_network(block):
+                    break  # the remote_addr is within the network range of github.
+            else:
+                logger.warning('git_webhook: Incorrect IP: %s not in %s' % (ipaddress.ip_address(request_ip), ipaddress.ip_network(block)))
+                abort(403, f'Incorrect IP {request_ip}')
 
         if request.headers.get('X-GitHub-Event') == "ping":
             return json.dumps({'msg': 'Hi!'})
@@ -90,16 +92,17 @@ def git_webhook(get_json=None):
         else:
             path = '{owner}/{name}'.format(**repo_meta)
 
-        key = current_app.config.get('GITHUB_WEBHOOK_KEY', None)
+        key = current_app.config.get('GITHUB_WEBHOOK_KEY', None).encode()
         # Check if POST request signature is valid
         if not key:
             logger.warning('git_webhook: No key configured')
             return json.dumps({'msg': "No key configured"}), 403
 
-        signature = request.headers.get('X-Hub-Signature').split('=')[1].encode()
+        signature = request.headers.get('X-Hub-Signature').split('=')[1]
         # if type(key) == unicode:
         #     key = key.encode()
-        mac = hmac.new(key, msg=request.data.encode(), digestmod=sha1)
+        # Input to hmac.new need to be bytes, but compare_digest can compare str
+        mac = hmac.new(key, msg=request.data, digestmod=sha1)
         if not hmac.compare_digest(mac.hexdigest(), signature):
             logger.warning('git_webhook: Incorrect key')
             return json.dumps({'msg': "Incorrect key"}), 403
