@@ -1,0 +1,40 @@
+<script src="//cdn.auth0.com/js/lock-passwordless-2.2.3.js"></script>
+
+<script type="text/javascript">
+    var clientID = "{{ config["AUTH0_CLIENT_ID"] }}";
+    var domain = "{{ config["AUTH0_DOMAIN"] }}";
+
+    var options = {
+            icon: "{{ url_for('static', filename='img/helmgast_512px.png', _external=true, _scheme='') }}",
+            closable: false,
+            focusInput: true,
+            primaryColor: "#a00",
+            socialBigButtons: true,
+            connections: ["facebook", "google-oauth2"],
+            dict: {
+                title: '{{ _("Lore by Helmgast") }}',
+                code: {
+                    codeInputPlaceholder: "{{ _('Your code') }}",
+                    footerText: "",
+                    headerText: "{{ _('An email with the code has been sent to {email}.') }}",
+                    resendLabel: "{{ _('Did not get the code?') }}"
+                },
+                networkOrEmail: {
+                    emailInputPlaceholder: "yours@example.com",
+                    footerText: "",
+                    headerText: "{{ _('New login system activated, passwords removed but use same email or social account as before. More info <a href=\\"%(link)s\\">here</a>', link=url_for('world.ArticlesView:get', world_='meta', id='ny-login')) }}",
+                    separatorText: "{{ _('or get a one-time code via email') }}",
+                    smallSocialButtonsHeader: "{{ _('Login with') }}"
+                },
+                signedIn: {
+                    success: "{{ _('Thanks for signing in.') }}"
+                },
+                welcome: "{{ _('Welcome {name}!') }}"
+            },
+
+            callbackURL: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0], next=request.args.get('next','/')) }}",
+        }
+    ;
+
+    var lock = new Auth0LockPasswordless(clientID, domain);
+</script>

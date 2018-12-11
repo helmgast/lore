@@ -1,7 +1,7 @@
 Design
 ==================================================================
 
-_This working document describes the internal design of Raconteur. It is not fully up to date with the code, and features described here may also not exist yet. Try to add a **(TODO)** marker near those sections!_
+_This working document describes the internal design of Lore. It is not fully up to date with the code, and features described here may also not exist yet. Try to add a **(TODO)** marker near those sections!_
 
 Known issues
 ==================================================================
@@ -9,9 +9,9 @@ Known issues
 - Getting ```(E11000 duplicate key error index: rac-mirror.product.$product_id_1 dup key: { : null })``` errors when doing normal DB operations and mongoengine tries to do "ensure_index" or when inserting new. This is when a field is set as unique, but it contains several null values, for example when a new unique field is created and there is no existing data in the old db. The solution is to set the key to sparse, and remove it if we know that the index always has data.
 
 
-Fablr 1.0 notes
+Lore 1.0 notes
 ==================================================================
-Below is a list of refactoring planned for the Fablr 1.0 release.
+Below is a list of refactoring planned for the Lore 1.0 release.
 
 - Use https://github.com/hansonkd/FlaskBootstrapSecurity as basis
 - Implement Flask-Security (but keep our social logins)
@@ -77,12 +77,12 @@ field_permissions # which fields can be accessed by whom
 Domains
 ==================================================================
 
-Fablr runs on fablr.co as host. Blueprints point to a path of `/<blueprint>/`, e.g. `fablr.co/<blueprint>`, for example `fablr.co/social`
-Static assets are served from either `fablr.co/static` or from `asset.fablr.co` (TODO) . Asset allows us to use several subdomains to allow parallell download, which speeds up performance.
+Lore runs on lore.pub as host. Blueprints point to a path of `/<blueprint>/`, e.g. `lore.pub/<blueprint>`, for example `lore.pub/social`
+Static assets are served from either `lore.pub/static` or from `asset.lore.pub` (TODO) . Asset allows us to use several subdomains to allow parallell download, which speeds up performance.
 
-Worlds are special cases, as they may want to stand on their own. A world is found at `<world>.fablr.co`. Some world publishers may have purchased their own domains. As such, they may want to point `publisherdomain.com` to `publisherdomain.fablr.co` and they may even have other worlds pointing to `sub.publisherdomain.com`.(TODO: publisher feature)
+Worlds are special cases, as they may want to stand on their own. A world is found at `<world>.lore.pub`. Some world publishers may have purchased their own domains. As such, they may want to point `publisherdomain.com` to `publisherdomain.lore.pub` and they may even have other worlds pointing to `sub.publisherdomain.com`.(TODO: publisher feature)
 
-The only place host matters is to match the URL route to a correct endpoint, and when creating URLs using `url_for`. Also, when we use `<world>.fablr.co` it's important that `fablr.co/world` redirects to `world.fablr.co` . Also, when we use a publisherdomain, it's important that world.fablr.co still exists and redirects to publisherdomain. We need to consider `canonical URLs`, that is, the corret master URL - Google penalizes duplicate content without correct markup.
+The only place host matters is to match the URL route to a correct endpoint, and when creating URLs using `url_for`. Also, when we use `<world>.lore.pub` it's important that `lore.pub/world` redirects to `world.lore.pub` . Also, when we use a publisherdomain, it's important that world.lore.pub still exists and redirects to publisherdomain. We need to consider `canonical URLs`, that is, the corret master URL - Google penalizes duplicate content without correct markup.
 
 Creating routes with hostname can be created by:
 
@@ -316,7 +316,7 @@ _TODO Not fully up to date with current code_
 Auth
 ==================================================================
 
-The authorization system is there to limit access on the Raconteur system. It's represented in a few ways:
+The authorization system is there to limit access on the Lore system. It's represented in a few ways:
 - Limiting access to Operations / URLs and throwing a 401 error
 - Conditionally displaying links / html fragments only if the user is authorized to see it
 
@@ -949,15 +949,15 @@ The intro tour shows new users what they can do.
 
 Domains:
 
-- All static resources are served from fablr.co (core domain). Later they might be served from a static top domain to
+- All static resources are served from lore.pub (core domain). Later they might be served from a static top domain to
 avoid using same credentials. With HTTP2 the need to do this is less or even counter productive however.
-- All asset links (e.g. semi-static resources) are also served from fablr.co for simplicity. Note however that these might
+- All asset links (e.g. semi-static resources) are also served from lore.pub for simplicity. Note however that these might
 need credentials to be served.
-- fablr.co is the landing page about the platform
-- fablr.co/auth
-- api.fablr.co is where the common API (will be) hosted
-- fablr.co/mailer is used for sending email
-- publisher.com or publisher.fablr.co is a complete subset of pages. All data served with such a domain will be bound
+- lore.pub is the landing page about the platform
+- lore.pub/auth
+- api.lore.pub is where the common API (will be) hosted
+- lore.pub/mailer is used for sending email
+- publisher.com or publisher.lore.pub is a complete subset of pages. All data served with such a domain will be bound
 to either come from that publisher, or where it's not relevant, served anyway. Such routes are:
 -- worlds/ (public)
 -- articles/ (public)
@@ -966,7 +966,7 @@ to either come from that publisher, or where it's not relevant, served anyway. S
 -- fileassets/ (login, refers to the upload and editing, serving is from separate)
 -- users/ (public)
 -- 
-If a route above is visited with the core domain (fablr.co) no filtering per publisher is made.
+If a route above is visited with the core domain (lore.pub) no filtering per publisher is made.
 
 PLugins
 ==================================================================
@@ -983,14 +983,14 @@ Plugin can use blocks to change behaviour.
 Block cssimports makes it possible add style or reference external CSS.
 Block js adds Javascript files.
 
-A plugin is a Github repository. We register the plugin by adding its URL to the plugin page of Fablr. The first time this is done, it will download the latest commit of that repository to the folder with path /plugins/:githubuser/:repo/:commit/ .
+A plugin is a Github repository. We register the plugin by adding its URL to the plugin page of Lore. The first time this is done, it will download the latest commit of that repository to the folder with path /plugins/:githubuser/:repo/:commit/ .
 
 All articles, worlds and publishers can pick a template from the list of added plugins. When it is picked, at load time, it will read the template from the path given above. The asse
 
 Plugin publishing flows
 
-1 Users update a Github repo. Manually reminds admin. Admin reviews code. Admin builds new Fablr image with dependency.
+1 Users update a Github repo. Manually reminds admin. Admin reviews code. Admin builds new Lore image with dependency.
 2 Users update a Github repo. Manually reminds admin. Admin reviews code. Admin runs script/web action to fetch new dependency in runtime.
-3 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. Admin reviews code. Admin approves new version (removing old, switching).
-4 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. It is automatically published and running.
-4 Users update a Github repo. Webhook is called at Fablr, new version automatically fetched. It is published only for the user, but published for all after admin reviews code.
+3 Users update a Github repo. Webhook is called at Lore, new version automatically fetched. Admin reviews code. Admin approves new version (removing old, switching).
+4 Users update a Github repo. Webhook is called at Lore, new version automatically fetched. It is automatically published and running.
+4 Users update a Github repo. Webhook is called at Lore, new version automatically fetched. It is published only for the user, but published for all after admin reviews code.

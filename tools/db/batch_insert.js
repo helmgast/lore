@@ -1,2 +1,2 @@
-/* Usage: mongoimport.exe --db <db_name> --collection world --file fablr-world.js */
-/* Usage: mongoimport.exe --db <db_name> --collection user --file fablr-user.js */
+/* Usage: mongoimport.exe --db <db_name> --collection world --file lore-world.js */
+/* Usage: mongoimport.exe --db <db_name> --collection user --file lore-user.js */

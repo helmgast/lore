@@ -130,10 +130,10 @@ define(["jquery", "utils"], function ($, utils) {
     $.fn.fileupload = function (option) {
         return this.each(function () {
             var $this = $(this)
-            var data = $this.data('fablr.fileselect')
+            var data = $this.data('lore.fileselect')
             var options = $.extend(FileUpload.DEFAULTS, $this.data(), typeof option == 'object' && option)
             // If no data set, create a FileSelect object and attach to this element
-            if (!data) $this.data('fablr.fileupload', (data = new FileUpload(this, options)))
+            if (!data) $this.data('lore.fileupload', (data = new FileUpload(this, options)))
             // if (typeof option == 'string') data[option](_relatedTarget)
             // else if (options.show) data.show(_relatedTarget)
         })

@@ -117,7 +117,7 @@ config = {
         new SVGSpritemapPlugin({
             src: 'assets/gfx/*.svg',
             filename: 'spritemap.[contenthash].svg',
-            prefix: 'fablr-',
+            prefix: 'lore-',
         }),
         new ManifestPlugin({
             map: function(o){o.path = o.path.replace('/static/',''); return o}}),
@@ -149,7 +149,7 @@ module.exports = config
 //         new SVGSpritemapPlugin({
 //             src: 'assets/gfx/*.svg',
 //             filename: 'spritemap.[contenthash].svg',
-//             prefix: 'fablr-',
+//             prefix: 'lore-',
 //         }),
 //     ],
 //     resolve: {

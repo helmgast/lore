@@ -18,7 +18,7 @@ import subprocess as sp
 from flask.cli import pass_script_info, DispatchingApp
 from flask.helpers import get_debug_flag
 
-from fablr.app import create_app
+from lore.app import create_app
 app = create_app()
 
 def runshell(cmd):
@@ -80,28 +80,28 @@ def runwatch(info, host, port, reload, debugger, eager_loading,
                use_debugger=debugger, threaded=with_threads, extra_files=watch)
 
 @app.cli.command()
-def lang_extract():
+def lang_extract(): # Run as lang-extract
     """Extract translatable strings and .PO files for predefined locales (SV).
-    After running this, go to the .PO files in fablr/translations/ and manually
+    After running this, go to the .PO files in lore/translations/ and manually
     translate all empty MsgId. Then run python manage.py lang_compile
     """
 
-    runshell('pybabel extract --no-wrap -F fablr/translations/babel.cfg -o temp.pot fablr/')
-    runshell('pybabel update -i temp.pot -d fablr/translations -l sv --no-fuzzy-matching')
+    runshell('pybabel extract --no-wrap -F lore/translations/babel.cfg -o temp.pot lore/')
+    runshell('pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching')
     runshell('rm temp.pot')
     print()
     print("New strings needing translation:")
     print("------------------------")
-    with open('fablr/translations/sv/LC_MESSAGES/messages.po') as f:
+    with open('lore/translations/sv/LC_MESSAGES/messages.po') as f:
         s = f.read()
         for m in re.findall(r'msgid ((".*"\s+)+)msgstr ""\s\s', s):
             print(m[0].split('/n')[0])  # avoid too long ones
 
 @app.cli.command()
-def lang_compile():
+def lang_compile(): # Run as lang-compile
     """Compiles all .PO files to .MO so that they will show up at runtime."""
 
-    runshell('pybabel compile -d fablr/translations -l sv')
+    runshell('pybabel compile -d lore/translations -l sv')
 
 
 @app.cli.command()
@@ -109,7 +109,7 @@ def lang_compile():
 def db_setup(reset=False):
     """Setup a new database with starting data"""
     from mongoengine.connection import get_db
-    from fablr.extensions import db_config_string
+    from lore.extensions import db_config_string
     print(db_config_string)
     db = get_db()
     # Check if DB is empty
@@ -183,7 +183,7 @@ def import_csv():
 def db_migrate():
     from tools import db_migration
     from mongoengine.connection import get_db
-    from fablr import extensions
+    from lore import extensions
     extensions.db.init_app(app)
     db = get_db()
     # Ensure we have both app context and a (dummy) request context
@@ -194,10 +194,10 @@ def db_migrate():
 
 @app.cli.command()
 def test():
-    """Run all unit tests on Fablr"""
+    """Run all unit tests on Lore"""
     from tests import app_test
     import unittest
-    suite = unittest.TestLoader().loadTestsFromTestCase(app_test.FablrTestCase)
+    suite = unittest.TestLoader().loadTestsFromTestCase(app_test.LoreTestCase)
     unittest.TextTestRunner(verbosity=2).run(suite)
 
 
@@ -207,7 +207,7 @@ def set_password(email):
     if not app.debug:
         print("We don't allow changing passwords if not in debug mode")
         exit(1)
-    from fablr.model.user import User
+    from lore.model.user import User
     user = User.objects(email=email).first()
     if user:
         passw = prompt_pass("Enter the new password")
@@ -227,7 +227,7 @@ def set_password(email):
 @click.option('--access', help='Access type, either public, product or user')
 def file_upload(file, title, desc, access):
     """Adds a file asset from command line to the GridFS database"""
-    from fablr.model.asset import FileAsset, FileAccessType
+    from lore.model.asset import FileAsset, FileAccessType
     import mimetypes
 
     if not file or not os.access(file, os.R_OK):  # check read access
@@ -267,7 +267,7 @@ def pdf_fingerprint(input, output, user):
 def pdf_check(input):
     """Will scan a PDF for matching fingerprints"""
     fps = get_fingerprints(input)
-    from fablr.model.user import User
+    from lore.model.user import User
     users = list(User.objects().only('id', 'username'))
     # users.append('ripperdoc@gmail.com')
     # print users

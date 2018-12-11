@@ -15,11 +15,11 @@ from flask import g
 from mongoengine import NotUniqueError, DoesNotExist
 from pymongo.errors import InvalidName
 
-from fablr.model.asset import FileAsset, ImageAsset
-from fablr.model.misc import slugify
-from fablr.model.shop import Product, Order, OrderStatus
-from fablr.model.user import User, Event
-from fablr.model.world import Publisher, Article, World
+from lore.model.asset import FileAsset, ImageAsset
+from lore.model.misc import slugify
+from lore.model.shop import Product, Order, OrderStatus
+from lore.model.user import User, Event
+from lore.model.world import Publisher, Article, World
 
 
 # All migration functions needs to be idempotent, e.g. create same result every time run, even if database already has this version.
@@ -266,7 +266,7 @@ def get_version(db):
         #
         # raw_input("Continue")
         #
-        # from fablr.model.asset import ImageAsset
+        # from lore.model.asset import ImageAsset
         # for img in ImageAsset.objects().order_by('created_date'):
         #     tmp = open(img.id, "r")
         #     img.image.replace(tmp, content_type=img.mime_type, filename=img.id)

@@ -1,0 +1,53 @@
+{% extends root_template %}
+
+{% block publishers_active %} class="active"{% endblock %}
+
+{% block content_title %}{{ _('Publisher') }}{% endblock %}
+{% block content_tagline %}{{ _('working hard to imagine') }}{% endblock %}
+
+
+{% block subnavbar %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=none)) %}
+            <li><a class="{{ privileged }}" href="{{ url_for('world.PublishersView:index') }}"><span
+                    class="glyphicon glyphicon-home"></span> {{ _('All publishers') }}</a></li>
+        {% endcall %}
+{% endblock %}
+
+{% block actionbar %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new', res=none)) %}
+        {{ MACRO.NEW_BUTTON(url_for('world.PublishersView:get', id='post'), 'New publisher') }}
+    {% endcall %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="cards">
+        {% for publisher in publishers %}
+            <div class="card{{ ' status-unpublished' if not publisher.is_published() }}"
+                    {%- if publisher.images -%}
+                 style="background: url({{ url_for('image_thumb', slug=publisher.images[0].slug) }}) center top/cover;"
+                    {%- endif -%}>
+                <a class="card-cover icon150px" href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">
+                    {% if not publisher.images %}
+                    <svg class="lore-icon lore-icon-stretch">
+                        <use xlink:href="#lore-book"></use>
+                    </svg>
+                    {% endif %}
+                </a>
+                <div class="card-text">
+                    <h3 class="card-title dobr">
+                        <a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
+                    </h3>
+                    <div class="card-description">
+
+                        {{ description|default(_('No data'), true)|markdown }}
+                    </div>
+                    <ul class="card-details">
+                        <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date|dateformat(format='short') }}</li>
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% include "includes/pagination.html" %}
+{% endblock %}

@@ -13,3 +13,7 @@ front/
 .pydevproject/
 .venv/
 node_modules/
+
+# Dockerignore
+static/dist
+.git*

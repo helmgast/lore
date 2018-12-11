@@ -1,0 +1,3456 @@
+# Swedish translations for PROJECT.
+# Copyright (C) 2016 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2016.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2018-12-10 12:17+0800\n"
+"PO-Revision-Date: 2014-06-08 13:26+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: sv\n"
+"Language-Team: sv <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.5.3\n"
+
+#: lore/api/asset.py:141 lore/api/shop.py:81 lore/api/world.py:116
+#: lore/api/world.py:138
+#, python-format
+msgid "Allowed access to %(op)s %(res)s as editor"
+msgstr ""
+
+#: lore/api/asset.py:143 lore/api/shop.py:84 lore/api/world.py:118
+#: lore/api/world.py:141
+#, python-format
+msgid "Not allowed access to %(op)s %(res)s as not an editor"
+msgstr ""
+
+#: lore/api/asset.py:147 lore/api/shop.py:88 lore/api/world.py:122
+#: lore/api/world.py:147
+#, python-format
+msgid "Allowed access to %(op)s %(res)s as reader"
+msgstr ""
+
+#: lore/api/asset.py:149 lore/api/shop.py:91 lore/api/world.py:124
+#: lore/api/world.py:150
+#, python-format
+msgid "Not allowed access to %(op)s %(res)s as not a reader"
+msgstr ""
+
+#: lore/api/asset.py:229 lore/api/asset.py:248 lore/api/mailer.py:196
+msgid "Error in form"
+msgstr "Fel i formuläret"
+
+#: lore/api/auth.py:86
+msgid ""
+"Your user have been migrated to the new login system, contact us if "
+"something doesn't look ok"
+msgstr ""
+"Din användare har migrerats till det nya loginsystemet, kontakta oss om "
+"någonting ser konstigt ut"
+
+#: lore/api/auth.py:91
+#, python-format
+msgid ""
+"We added %(provider)s authentication using %(email)s to your user, and "
+"updated your profile data"
+msgstr ""
+"Vi lade till %(provider)s autentisering med %(email)s till din användare "
+"och uppdaterade din profildata"
+
+#: lore/api/auth.py:113
+msgid "Save your profile before you can use your new user!"
+msgstr "Spara din profil innan du kan använda dina nya användare!"
+
+#: lore/api/auth.py:115
+#, python-format
+msgid "You are logged in as %(user)s with %(email)s"
+msgstr "Du har loggat in som %(user)s med %(email)s"
+
+#: lore/api/auth.py:153
+#, python-format
+msgid "Error logging in, contact %(email)s for support"
+msgstr "Fel vid inloggningen, kontakta %(email)s för support"
+
+#: lore/api/auth.py:159
+msgid "Check your email inbox for verification link before you can login"
+msgstr "Kolla din email-inbox för verifieringslänken innan du kan logga in"
+
+#: lore/api/auth.py:168
+#, python-format
+msgid "This user is deleted and cannot be used. Contact %(email)s for support."
+msgstr ""
+"Denna användare är borttagen och kan ej användas. Kontakta %(email)s för "
+"support."
+
+#: lore/api/auth.py:175
+#, python-format
+msgid "Multiple users with same email, contact %(email)s for support"
+msgstr "Flera använder har samma email, kontakta %(email)s för support"
+
+#: lore/api/auth.py:199
+#, python-format
+msgid ""
+"Cannot add this auth to logged in user %(user)s, contact %(email)s for "
+"support"
+msgstr ""
+"Kan inte lägga till denna autentiseringen till inloggad användare "
+"%(user)s, kontakta  %(email)s för support"
+
+#: lore/api/auth.py:217
+msgid "Your new user have been created."
+msgstr "Din nya användare har skapats."
+
+#: lore/api/auth.py:248
+msgid "You are now logged out"
+msgstr "Du är nu utloggad"
+
+#: lore/api/mailer.py:61 lore/api/mailer.py:68 lore/api/mailer.py:76
+#: lore/model/world.py:235 lore/templates/mail/mail_post.html:20
+msgid "To"
+msgstr "Till"
+
+#: lore/api/mailer.py:62 lore/api/mailer.py:69 lore/api/mailer.py:75
+#: lore/model/world.py:234 lore/templates/mail/mail_post.html:27
+msgid "From"
+msgstr "Från"
+
+#: lore/api/mailer.py:63 lore/api/mailer.py:70 lore/api/mailer.py:77
+#: lore/templates/mail/mail_post.html:34
+msgid "Subject"
+msgstr "Ämne"
+
+#: lore/api/mailer.py:78 lore/model/user.py:187
+#: lore/templates/mail/mail_post.html:42
+msgid "Message"
+msgstr "Meddelande"
+
+#: lore/api/mailer.py:148
+#, python-format
+msgid "%(user)s, welcome to Helmgast!"
+msgstr "%(user)s, välkommen till Helmgast!"
+
+#: lore/api/mailer.py:153 lore/templates/mail/order.html:3
+msgid "Order confirmation on helmgast.se"
+msgstr "Orderbekräftelse från helmgast.se"
+
+#: lore/api/mailer.py:158
+msgid "Reminder on how to login to Helmgast.se"
+msgstr "Påminnelse hur du loggar in på Helmgast.se"
+
+#: lore/api/mailer.py:163
+msgid "Invitation to join Helmgast.se"
+msgstr "Inbjudan att gå med i Helmgast.se"
+
+#: lore/api/mailer.py:179
+msgid "No token could be generated from email"
+msgstr "Ingen token kunde skapas från mailadressen"
+
+#: lore/api/mailer.py:187
+msgid "User already exists"
+msgstr "Användaren existerar reda "
+
+#: lore/api/mailer.py:191
+#, python-format
+msgid "Sent email \"%(subject)s\" to %(recipients)s"
+msgstr "Skickade mail \"%(subject)s\" till %(recipients)s"
+
+#: lore/api/resource.py:60
+#, python-format
+msgid "%(name)s was %(action)s"
+msgstr "%(name)s %(action)s"
+
+#: lore/api/resource.py:200
+msgid "posted"
+msgstr "skapad"
+
+#: lore/api/resource.py:201
+msgid "put"
+msgstr "uppdaterad"
+
+#: lore/api/resource.py:202
+msgid "deleted"
+msgstr "borttagen"
+
+#: lore/api/resource.py:203
+msgid "patched"
+msgstr "modifierad"
+
+#: lore/api/resource.py:206
+msgid "The article"
+msgstr "Artikeln"
+
+#: lore/api/resource.py:207
+msgid "The world"
+msgstr "Världen"
+
+#: lore/api/resource.py:208
+msgid "The publisher"
+msgstr "Utgivaren"
+
+#: lore/api/resource.py:209
+msgid "The user"
+msgstr "Användaren"
+
+#: lore/api/resource.py:296 lore/api/resource.py:522
+msgid "Authorization not performed"
+msgstr ""
+
+#: lore/api/resource.py:330
+msgid "This field needs to be unique and another resource already have this value"
+msgstr ""
+
+#: lore/api/resource.py:352
+msgid "Errors in form"
+msgstr "Fel i formulär"
+
+#: lore/api/resource.py:562 lore/api/resource.py:564
+msgid "The item"
+msgstr "Artikeln"
+
+#: lore/api/resource.py:688
+msgid "Invalid choice(s): one or more data inputs could not be coerced"
+msgstr ""
+
+#: lore/api/resource.py:848
+msgid "Bad request or invalid input"
+msgstr ""
+
+#: lore/api/resource.py:849
+msgid "Unauthorized access, please login"
+msgstr "Otillåten access, logga in först"
+
+#: lore/api/resource.py:850
+msgid "Forbidden, this is not an allowed operation"
+msgstr "Detta är inte en tillåten metod"
+
+#: lore/api/resource.py:851
+msgid "Resource not found"
+msgstr "Resursen kan inte hittas"
+
+#: lore/api/resource.py:852
+msgid "Internal server error"
+msgstr "Internt serverfel"
+
+#: lore/api/resource.py:856
+msgid "Unknown error"
+msgstr "Okänt fel"
+
+#: lore/api/resource.py:906
+msgid "Creating new resource is not allowed"
+msgstr "Skapa en ny resurs är inte tillåtet"
+
+#: lore/api/resource.py:914
+msgid "List is allowed"
+msgstr "Listning är tillåtet"
+
+#: lore/api/resource.py:921
+msgid "Viewing an empty form is allowed"
+msgstr ""
+
+#: lore/api/resource.py:929
+msgid "Can't edit/delete a None resource"
+msgstr "Kan inte redigera/ta bort en None-resurs"
+
+#: lore/api/resource.py:935
+#, python-format
+msgid "%(op)s requires a logged in user"
+msgstr "%(op)s kräver en inloggad användare"
+
+#: lore/api/resource.py:943
+#, python-format
+msgid "%(user)s is an admin"
+msgstr "%(user)s är en admin"
+
+#: lore/api/resource.py:945
+msgid "Need to be logged in with admin access"
+msgstr "Behöver vara inloggad med admin-access"
+
+#: lore/api/resource.py:948
+msgid "This resource does not support to be public"
+msgstr "Denna resursen stödjer inte att vara publik"
+
+#: lore/api/resource.py:951
+msgid "This resource does not support contributions"
+msgstr "Denna resurs stödjer inte bidrag"
+
+#: lore/api/resource.py:954
+msgid "Access rules for readers are undefined and therefore denied"
+msgstr ""
+
+#: lore/api/resource.py:957
+msgid "Access rules for editors are undefined and therefore denied"
+msgstr ""
+
+#: lore/api/resource.py:960 lore/api/shop.py:339
+#, python-format
+msgid "No authorization implemented for %(op)s"
+msgstr ""
+
+#: lore/api/shop.py:94 lore/api/world.py:105
+msgid "Public resource"
+msgstr "Publik resurs"
+
+#: lore/api/shop.py:95 lore/api/world.py:106
+msgid "Not a public resource"
+msgstr "Icke-publik resurs"
+
+#: lore/api/shop.py:111 lore/templates/shop/product_item.html:139
+msgid "Remaining Stock"
+msgstr "Lagerstatus"
+
+#: lore/api/shop.py:291 lore/api/shop.py:301 lore/api/shop.py:302
+msgid "Please enter your email address."
+msgstr "Skriv in din email-adress"
+
+#: lore/api/shop.py:307
+msgid "Error, missing Stripe token"
+msgstr "Fel, saknar en Stripe-token"
+
+#: lore/api/shop.py:316
+msgid "No editor access to orders"
+msgstr ""
+
+#: lore/api/shop.py:320
+#, python-format
+msgid "Allowed access to %(op)s %(res)s as owner of order"
+msgstr ""
+
+#: lore/api/shop.py:323
+#, python-format
+msgid "Not allowed access to %(op)s %(res)s as not owner of order"
+msgstr ""
+
+#: lore/api/shop.py:417 lore/api/shop.py:454 lore/api/shop.py:483
+#: lore/api/shop.py:523
+msgid "Always allowed"
+msgstr ""
+
+#: lore/api/shop.py:495
+#, python-format
+msgid ""
+"Email belongs to existing user, please <a href=\"%(loginurl)s\">login</a>"
+" first or change email"
+msgstr ""
+"Emailen tillhör en existerande användare, var vänlig <a "
+"href=\"%(loginurl)s\">logga in</a> först eller ändra email"
+
+#: lore/api/shop.py:552
+msgid "Thank you for your order!"
+msgstr "Tack för din beställning!"
+
+#: lore/api/social.py:43
+#, python-format
+msgid "Allowed access to %(op)s %(res)s own user profile"
+msgstr ""
+
+#: lore/api/social.py:46
+msgid "Cannot access other user's user profile"
+msgstr "Kan ej accessa en annan användares profil"
+
+#: lore/api/social.py:134
+msgid "No user to finish tour for"
+msgstr "Ingen användare att avsluta touren för"
+
+#: lore/api/world.py:94
+#, python-format
+msgid "Allowed access to %(res)s as editor"
+msgstr "Tilläts access till %(res)s i egenskap av redaktör"
+
+#: lore/api/world.py:96
+#, python-format
+msgid "Not allowed access to %(res)s as not an editor"
+msgstr "Ej tillåten access till %(res)s eftersom användaren inte är en redaktör"
+
+#: lore/api/world.py:100
+#, python-format
+msgid "Allowed access to %(res)s as reader"
+msgstr ""
+
+#: lore/api/world.py:102
+#, python-format
+msgid "Not allowed access to %(res)s as not a reader"
+msgstr ""
+
+#: lore/api/world.py:109
+msgid "Publisher flagged as open for contribution"
+msgstr ""
+
+#: lore/api/world.py:110
+msgid "Publisher not open for contribution"
+msgstr ""
+
+#: lore/api/world.py:127
+msgid "World flagged as open for contribution"
+msgstr ""
+
+#: lore/api/world.py:128
+msgid "World not open for contribution"
+msgstr ""
+
+#: lore/api/world.py:132
+msgid "Creating new resource is allowed"
+msgstr ""
+
+#: lore/api/world.py:454
+msgid "Recent Articles in "
+msgstr "Nya artiklar på "
+
+#: lore/api/world.py:592
+msgid "This page is a rendered style guide and example of how to write an article"
+msgstr ""
+"Denna sidan är en genererad stilguide och exempel på hur man skriver en "
+"artikel"
+
+#: lore/model/asset.py:48
+msgid "Public use"
+msgstr "Publik access"
+
+#: lore/model/asset.py:49 lore/model/shop.py:34
+msgid "Hidden"
+msgstr "Gömd"
+
+#: lore/model/asset.py:50
+msgid "Product required"
+msgstr "Kräver en produkt"
+
+#: lore/model/asset.py:51
+msgid "User unique and product required"
+msgstr "Användarunik och kräver produkt"
+
+#: lore/model/asset.py:67
+msgid "Image"
+msgstr "Bild"
+
+#: lore/model/asset.py:68 lore/templates/asset/fileasset_item.html:77
+#: lore/templates/asset/fileasset_list.html:72
+msgid "File"
+msgstr "Fil"
+
+#: lore/model/asset.py:69
+msgid "Embed"
+msgstr "Inbädda"
+
+#: lore/model/asset.py:89 lore/model/asset.py:309 lore/model/shop.py:71
+#: lore/model/user.py:267 lore/model/world.py:61 lore/model/world.py:104
+#: lore/model/world.py:280 lore/model/world.py:350
+#: lore/templates/shop/product_item.html:78
+#: lore/templates/world/publisher_item.html:89
+msgid "Title"
+msgstr "Titel"
+
+#: lore/model/asset.py:90 lore/model/asset.py:310 lore/model/shop.py:72
+#: lore/model/user.py:83 lore/model/user.py:268 lore/model/world.py:63
+#: lore/model/world.py:105 lore/model/world.py:281 lore/model/world.py:351
+#: lore/model/world.py:449 lore/templates/asset/fileasset_item.html:94
+#: lore/templates/includes/feedback_modal.html:25
+#: lore/templates/world/publisher_item.html:95
+msgid "Description"
+msgstr "Beskrivning"
+
+#: lore/model/asset.py:91 lore/model/shop.py:179 lore/model/user.py:185
+msgid "User"
+msgstr "Användare"
+
+#: lore/model/asset.py:92
+msgid "File data"
+msgstr "Fildata"
+
+#: lore/model/asset.py:93 lore/templates/asset/fileasset_item.html:112
+#: lore/templates/asset/fileasset_list.html:74
+msgid "Access type"
+msgstr "Accesstyp"
+
+#: lore/model/asset.py:94 lore/model/world.py:354
+#: lore/templates/asset/fileasset_item.html:118
+#: lore/templates/asset/fileasset_list.html:73
+#: lore/templates/world/article_item.html:166
+msgid "Tags"
+msgstr "Taggar"
+
+#: lore/model/asset.py:95 lore/model/shop.py:73 lore/model/shop.py:157
+#: lore/model/world.py:108 lore/model/world.py:347
+#: lore/templates/asset/fileasset_list.html:77
+#: lore/templates/shop/order_header.html:57
+#: lore/templates/shop/product_item.html:90 lore/templates/world/_page.html:30
+#: lore/templates/world/publisher_list.html:5
+#: lore/templates/world/world_item.html:243
+msgid "Publisher"
+msgstr "Utgivare"
+
+#: lore/model/asset.py:98
+msgid "Filename"
+msgstr "Filnamn"
+
+#: lore/model/asset.py:99
+msgid "Uploaded on"
+msgstr "Uppladdad den"
+
+#: lore/model/asset.py:107 lore/templates/asset/fileasset_item.html:132
+msgid "Source File URL"
+msgstr "URL till källfil"
+
+#: lore/model/asset.py:108 lore/templates/asset/fileasset_item.html:138
+msgid "Source Page URL"
+msgstr "URL till källsida"
+
+#: lore/model/asset.py:111
+msgid "Filename when downloading"
+msgstr "Filnamn vid nedladdning"
+
+#: lore/model/asset.py:163
+#, python-format
+msgid "Files of type %(mimetype)s are not allowed."
+msgstr "Filer av typ %(mimetype)s är inte tillåtna"
+
+#: lore/model/asset.py:284 lore/model/asset.py:285 lore/model/asset.py:286
+#: lore/model/misc.py:122
+#, python-format
+msgid "Less than %(val)s"
+msgstr "Mindre än %(val)s"
+
+#: lore/model/asset.py:287 lore/model/misc.py:128
+#, python-format
+msgid "More than %(val)s"
+msgstr "Mer än %(val)s"
+
+#: lore/model/asset.py:300 lore/model/world.py:448
+msgid "Slug"
+msgstr "Slug"
+
+#: lore/model/asset.py:307 lore/model/world.py:109 lore/model/world.py:348
+#: lore/templates/world/article_item.html:145
+#: lore/templates/world/article_list_view.html:25
+msgid "Creator"
+msgstr "Skapare"
+
+#: lore/model/asset.py:308 lore/templates/world/world_list.html:51
+msgid "Created date"
+msgstr "Skapad"
+
+#: lore/model/misc.py:92
+#, python-format
+msgid "\"%(item)s\" edited"
+msgstr "\"%(item)s\" redigerad"
+
+#: lore/model/misc.py:94
+#, python-format
+msgid "\"%(item)s\" created"
+msgstr "\"%(item)s\" skapad"
+
+#: lore/model/misc.py:96
+#, python-format
+msgid "\"%(item)s\" replaced"
+msgstr "\"%(item)s\" ersatt"
+
+#: lore/model/misc.py:98
+#, python-format
+msgid "\"%(item)s\" deleted"
+msgstr "\"%(item)s\" borttagen"
+
+#: lore/model/misc.py:100
+msgid "Completed profile"
+msgstr "Färdigställde användarprofil"
+
+#: lore/model/misc.py:102
+#, python-format
+msgid "Purchased \"%(item)s\""
+msgstr "Köpte \"%(item)s\""
+
+#: lore/model/misc.py:188
+#, python-format
+msgid "Last %(delta)s"
+msgstr "Senaste %(delta)s"
+
+#: lore/model/misc.py:192
+#, python-format
+msgid "Older than %(delta)s"
+msgstr "Äldre än %(delta)s"
+
+#: lore/model/misc.py:268 lore/templates/shop/order_address.html:37
+#: lore/templates/shop/order_header.html:31
+#: lore/templates/shop/order_lines.html:55
+#: lore/templates/social/user_item.html:139
+msgid "Name"
+msgstr "Namn"
+
+#: lore/model/misc.py:269 lore/templates/shop/order_address.html:42
+msgid "Street"
+msgstr "Gatuaddress"
+
+#: lore/model/misc.py:270 lore/templates/shop/order_address.html:47
+msgid "ZIP Code"
+msgstr "Postnummer"
+
+#: lore/model/misc.py:271 lore/templates/shop/order_address.html:49
+msgid "City"
+msgstr "Stad"
+
+#: lore/model/misc.py:275 lore/templates/shop/order_address.html:53
+msgid "Country"
+msgstr "Land"
+
+#: lore/model/misc.py:276 lore/templates/shop/order_address.html:58
+msgid "Cellphone Number"
+msgstr "Mobilnummer"
+
+#: lore/model/shop.py:24
+msgid "Book"
+msgstr "Bok"
+
+#: lore/model/shop.py:25
+msgid "Item"
+msgstr "Föremål"
+
+#: lore/model/shop.py:26
+msgid "Digital"
+msgstr "Digital"
+
+#: lore/model/shop.py:27
+msgid "Shipping fee"
+msgstr "Fraktkostnad"
+
+#: lore/model/shop.py:30
+msgid "Pre-order"
+msgstr "Förhandsboka"
+
+#: lore/model/shop.py:31
+msgid "Available"
+msgstr "Tillgänglig"
+
+#: lore/model/shop.py:32
+msgid "Ready for download"
+msgstr "Redo att laddas ned"
+
+#: lore/model/shop.py:33
+msgid "Out of stock"
+msgstr "Slut på lager"
+
+#: lore/model/shop.py:69 lore/templates/shop/product_item.html:82
+msgid "Product Number"
+msgstr "Produktnummer"
+
+#: lore/model/shop.py:70 lore/templates/shop/product_item.html:86
+msgid "Project Code"
+msgstr "Projektkod"
+
+#: lore/model/shop.py:74 lore/model/world.py:346
+#: lore/templates/shop/product_item.html:94
+#: lore/templates/world/article_item.html:140
+#: lore/templates/world/article_list_view.html:30
+msgid "World"
+msgstr "Värld"
+
+#: lore/model/shop.py:75
+msgid "Product Family"
+msgstr "Produktfamilj"
+
+#: lore/model/shop.py:76 lore/model/shop.py:188 lore/model/user.py:184
+#: lore/model/user.py:269 lore/model/world.py:349
+#: lore/templates/shop/order_header.html:39
+#: lore/templates/shop/product_item.html:108
+#: lore/templates/shop/product_list_view.html:21
+#: lore/templates/social/group_list.html:78
+#: lore/templates/world/article_item.html:154
+#: lore/templates/world/article_list_view.html:22
+#: lore/templates/world/publisher_list.html:46
+msgid "Created"
+msgstr "Skapad"
+
+#: lore/model/shop.py:77 lore/model/shop.py:158 lore/model/shop.py:189
+#: lore/model/user.py:270 lore/templates/shop/order_header.html:43
+#: lore/templates/shop/product_item.html:112
+msgid "Updated"
+msgstr "Uppdaterad"
+
+#: lore/model/shop.py:78 lore/model/world.py:345
+#: lore/templates/shop/product_item.html:116
+#: lore/templates/world/article_item.html:252
+#: lore/templates/world/article_item.html:255
+msgid "Type"
+msgstr "Typ"
+
+#: lore/model/shop.py:81 lore/model/shop.py:135
+#: lore/templates/shop/order_lines.html:11
+#: lore/templates/shop/product_item.html:126
+msgid "Price"
+msgstr "Pris"
+
+#: lore/model/shop.py:82 lore/templates/shop/product_item.html:134
+msgid "Tax"
+msgstr "Moms"
+
+#: lore/model/shop.py:84 lore/model/shop.py:187
+#: lore/templates/shop/product_item.html:130
+msgid "Currency"
+msgstr "Valuta"
+
+#: lore/model/shop.py:85 lore/model/shop.py:190 lore/model/user.py:87
+#: lore/model/world.py:68 lore/model/world.py:112 lore/model/world.py:353
+#: lore/templates/shop/order_header.html:47
+#: lore/templates/shop/product_item.html:120
+#: lore/templates/world/world_item.html:273
+msgid "Status"
+msgstr "Status"
+
+#: lore/model/shop.py:87 lore/model/world.py:73 lore/model/world.py:119
+#: lore/model/world.py:362
+msgid "Feature Image"
+msgstr "Presentationsbild"
+
+#: lore/model/shop.py:88
+msgid "Product Images"
+msgstr "Produktbilder"
+
+#: lore/model/shop.py:89
+msgid "Name in book"
+msgstr "Namn i boken"
+
+#: lore/model/shop.py:90
+msgid "Instructions for comments in order"
+msgstr "Instruktioner för kommentarer i ordrar"
+
+#: lore/model/shop.py:92 lore/templates/shop/order_lines.html:29
+#: lore/templates/shop/product_item.html:156
+msgid "Downloadable files"
+msgstr "Nedladdningsbara filer"
+
+#: lore/model/shop.py:116 lore/templates/world/article_blog.html:20
+#: lore/templates/world/article_list_view.html:23
+msgid "by"
+msgstr "av"
+
+#: lore/model/shop.py:133 lore/model/shop.py:136
+msgid "Comment"
+msgstr "Kommentar"
+
+#: lore/model/shop.py:134
+msgid "Product"
+msgstr "Produkt"
+
+#: lore/model/shop.py:143 lore/templates/shop/_page.html:11
+#: lore/templates/shop/order_item.html:5
+msgid "Cart"
+msgstr "Kundvagn"
+
+#: lore/model/shop.py:144
+msgid "Checkout"
+msgstr "Lägg beställning"
+
+#: lore/model/shop.py:145
+msgid "Ordered"
+msgstr "Beställd"
+
+#: lore/model/shop.py:146
+msgid "Paid"
+msgstr "Betald"
+
+#: lore/model/shop.py:147
+msgid "Shipped"
+msgstr "Fraktad"
+
+#: lore/model/shop.py:148
+msgid "Error"
+msgstr "Fel"
+
+#: lore/model/shop.py:167
+msgid "Unlimited stock"
+msgstr "Obegränsad"
+
+#: lore/model/shop.py:169
+msgid "No stock"
+msgstr "Slut i lager"
+
+#: lore/model/shop.py:171
+msgid "A few items"
+msgstr "Några exemplar"
+
+#: lore/model/shop.py:173
+msgid "Many items"
+msgstr "Många exemplar"
+
+#: lore/model/shop.py:175 lore/model/world.py:46
+#: lore/templates/shop/product_item.html:141
+#: lore/templates/shop/product_item.html:145
+msgid "Unknown"
+msgstr "Okänd"
+
+#: lore/model/shop.py:180
+msgid "Session ID"
+msgstr "Sessions ID"
+
+#: lore/model/shop.py:181 lore/model/world.py:67
+#: lore/templates/shop/order_address.html:32
+#: lore/templates/shop/order_header.html:35
+#: lore/templates/shop/order_header.html:61
+#: lore/templates/social/user_item.html:125
+msgid "Email"
+msgstr "Email"
+
+#: lore/model/shop.py:183
+msgid "# items"
+msgstr "# artiklar"
+
+#: lore/model/shop.py:185
+msgid "Total price"
+msgstr "Ordervärde"
+
+#: lore/model/shop.py:186
+msgid "Total tax"
+msgstr "Moms"
+
+#: lore/model/shop.py:191 lore/templates/shop/order_lines.html:72
+msgid "Shipping"
+msgstr "Frakt"
+
+#: lore/model/shop.py:193
+msgid "Internal Comment"
+msgstr "Intern kommentar"
+
+#: lore/model/shop.py:205
+#, python-format
+msgid "and %(additional_items)s more"
+msgstr "och %(additional_items)s till"
+
+#: lore/model/shop.py:208
+msgid "Empty order"
+msgstr "Tom beställning"
+
+#: lore/model/user.py:33 lore/model/user.py:246
+msgid "Invited"
+msgstr "Inbjuden"
+
+#: lore/model/user.py:34
+msgid "Active"
+msgstr "Aktiv"
+
+#: lore/model/user.py:35
+msgid "Deleted"
+msgstr "Borttagen"
+
+#: lore/model/user.py:78 lore/templates/social/group_item.html:43
+#: lore/templates/social/user_item.html:133
+msgid "Username"
+msgstr "Användarnamn"
+
+#: lore/model/user.py:79
+msgid "Contact Email"
+msgstr "Kontaktmail"
+
+#: lore/model/user.py:80 lore/templates/social/user_item.html:73
+msgid "Authentication sources"
+msgstr "Autentiseringskällor"
+
+#: lore/model/user.py:81 lore/templates/social/group_item.html:44
+msgid "Real name"
+msgstr "Namn"
+
+#: lore/model/user.py:82 lore/templates/social/user_item.html:143
+msgid "Location"
+msgstr "Hemort"
+
+#: lore/model/user.py:84 lore/model/user.py:189
+#: lore/templates/social/user_item.html:170
+msgid "XP"
+msgstr ""
+
+#: lore/model/user.py:85
+msgid "Join Date"
+msgstr "Gick med"
+
+#: lore/model/user.py:86 lore/templates/social/user_item.html:151
+msgid "Last login"
+msgstr "Senaste inloggning"
+
+#: lore/model/user.py:96 lore/model/user.py:274 lore/model/world.py:365
+msgid "Images"
+msgstr "Bilder"
+
+#: lore/model/user.py:97 lore/templates/social/user_following.html:3
+msgid "Following"
+msgstr "Följande"
+
+#: lore/model/user.py:100 lore/model/user.py:153
+msgid "Password"
+msgstr "Lösenord"
+
+#: lore/model/user.py:154 lore/templates/asset/fileasset_item.html:96
+#: lore/templates/shop/order_address.html:34
+#: lore/templates/shop/order_address.html:39
+#: lore/templates/shop/order_address.html:44
+#: lore/templates/shop/order_address.html:48
+#: lore/templates/shop/order_address.html:50
+#: lore/templates/shop/order_address.html:60
+#: lore/templates/shop/order_header.html:74
+#: lore/templates/shop/product_item.html:99
+#: lore/templates/shop/product_table_view.html:21
+#: lore/templates/social/group_list.html:71
+#: lore/templates/social/group_list.html:99
+#: lore/templates/social/user_item.html:135
+#: lore/templates/social/user_item.html:140
+#: lore/templates/social/user_item.html:144
+#: lore/templates/social/user_item.html:162
+#: lore/templates/social/user_list_component.html:45
+#: lore/templates/world/article_item.html:186
+#: lore/templates/world/publisher_item.html:85
+#: lore/templates/world/publisher_item.html:91
+#: lore/templates/world/publisher_item.html:97
+#: lore/templates/world/publisher_item.html:103
+#: lore/templates/world/publisher_list.html:43
+#: lore/templates/world/world_item.html:245
+#: lore/templates/world/world_item.html:252
+#: lore/templates/world/world_item.html:261
+msgid "No data"
+msgstr "Ingen data"
+
+#: lore/model/user.py:186
+msgid "Resource"
+msgstr "Resurs"
+
+#: lore/model/user.py:188
+msgid "Metric"
+msgstr "Mätvärde"
+
+#: lore/model/user.py:207
+#, python-format
+msgid "%(action)s: %(xp)s XP awarded to %(user)s"
+msgstr "%(action)s: %(xp)s XP givna till %(user)s"
+
+#: lore/model/user.py:244
+msgid "Master"
+msgstr "Ägare"
+
+#: lore/model/user.py:245
+msgid "Member"
+msgstr "Medlem"
+
+#: lore/model/user.py:259
+msgid "Game Group"
+msgstr "Spelgrupp"
+
+#: lore/model/user.py:260
+msgid "World Group"
+msgstr "Världsgrupp"
+
+#: lore/model/user.py:261
+msgid "Article Group"
+msgstr "Artikelgrupp"
+
+#: lore/model/user.py:262
+msgid "Newsletter"
+msgstr "Nyhetsbrev"
+
+#: lore/model/world.py:31
+msgid "Draft"
+msgstr "Utkast"
+
+#: lore/model/world.py:32
+msgid "Revision"
+msgstr "Revision"
+
+#: lore/model/world.py:33
+msgid "Published"
+msgstr "Publicerad"
+
+#: lore/model/world.py:34
+msgid "Private"
+msgstr "Privat"
+
+#: lore/model/world.py:35
+msgid "Archived"
+msgstr "Arkiverad"
+
+#: lore/model/world.py:38
+msgid "Public Domain"
+msgstr ""
+
+#: lore/model/world.py:39
+msgid "All Rights Reserved"
+msgstr ""
+
+#: lore/model/world.py:40
+msgid "Creative Commons Attribution 4.0"
+msgstr ""
+
+#: lore/model/world.py:41
+msgid "Creative Commons Attribution + Non-commercial 4.0"
+msgstr ""
+
+#: lore/model/world.py:44
+msgid "Male"
+msgstr "Manlig"
+
+#: lore/model/world.py:45
+msgid "Female"
+msgstr "Kvinnlig"
+
+#: lore/model/world.py:48
+msgid "None"
+msgstr "Ingen"
+
+#: lore/model/world.py:59
+msgid "Publisher Domain"
+msgstr "Utgivardomän"
+
+#: lore/model/world.py:60
+msgid "Publisher Code"
+msgstr "Utgivarkod"
+
+#: lore/model/world.py:62 lore/model/world.py:107
+msgid "Tagline"
+msgstr ""
+
+#: lore/model/world.py:64 lore/model/world.py:111
+msgid "Created on"
+msgstr "Skapad"
+
+#: lore/model/world.py:65 lore/templates/asset/fileasset_item.html:106
+#: lore/templates/world/publisher_item.html:101
+msgid "Owner"
+msgstr "Ägare"
+
+#: lore/model/world.py:66 lore/templates/world/publisher_item.html:49
+msgid "Registered address"
+msgstr "Registrerad adress"
+
+#: lore/model/world.py:69
+msgid "Publisher accepts contributions"
+msgstr "Utgivaren tillåter artikelbidrag"
+
+#: lore/model/world.py:70 lore/model/world.py:116 lore/model/world.py:355
+msgid "Theme"
+msgstr "Tema"
+
+#: lore/model/world.py:74
+msgid "Publisher Images"
+msgstr "Utgivarbilder"
+
+#: lore/model/world.py:76
+msgid "Webshop URL"
+msgstr ""
+
+#: lore/model/world.py:77 lore/model/world.py:122
+msgid "Facebook URL"
+msgstr ""
+
+#: lore/model/world.py:78
+msgid "Activate webshop"
+msgstr "Aktivera webshopp"
+
+#: lore/model/world.py:80 lore/model/world.py:127 lore/model/world.py:367
+msgid "Editors"
+msgstr "Redaktörer"
+
+#: lore/model/world.py:81 lore/model/world.py:128 lore/model/world.py:368
+msgid "Readers"
+msgstr "Läsaccess"
+
+#: lore/model/world.py:84 lore/model/world.py:126
+msgid "Available Languages"
+msgstr "Tillgängliga språk"
+
+#: lore/model/world.py:86 lore/model/world.py:125
+msgid "Preferred License"
+msgstr "Förvald licens"
+
+#: lore/model/world.py:106 lore/model/world.py:352
+msgid "Content"
+msgstr "Innehåll"
+
+#: lore/model/world.py:110 lore/templates/world/world_item.html:250
+msgid "Rule System"
+msgstr "Regelsystem"
+
+#: lore/model/world.py:113
+msgid "World accepts contributions"
+msgstr "Världen tillåter artikelbidrag"
+
+#: lore/model/world.py:114
+msgid "External host URL"
+msgstr "Extern domän-URL"
+
+#: lore/model/world.py:115
+msgid "Publishing year"
+msgstr "Utgivningsår"
+
+#: lore/model/world.py:120
+msgid "World Images"
+msgstr "Världsbilder"
+
+#: lore/model/world.py:121
+msgid "Product URL"
+msgstr "Produkt-URL"
+
+#: lore/model/world.py:130 lore/model/world.py:369
+msgid "Custom CSS"
+msgstr ""
+
+#: lore/model/world.py:211 lore/templates/world/article_item.html:264
+msgid "Born"
+msgstr "Född"
+
+#: lore/model/world.py:212 lore/templates/world/article_item.html:266
+msgid "Died"
+msgstr "Avliden"
+
+#: lore/model/world.py:213 lore/templates/world/article_item.html:269
+msgid "Gender"
+msgstr "Kön"
+
+#: lore/model/world.py:215 lore/templates/world/article_item.html:271
+msgid "Occupation"
+msgstr "Yrke"
+
+#: lore/model/world.py:222 lore/model/world.py:305
+#: lore/templates/world/new_article_menu.html:15
+msgid "Fraction"
+msgstr "Organisation"
+
+#: lore/model/world.py:227
+msgid "Coordinate X"
+msgstr "Koordinat X"
+
+#: lore/model/world.py:228
+msgid "Coordinate Y"
+msgstr "Koordinat Y"
+
+#: lore/model/world.py:230
+msgid "Location type"
+msgstr "Typ av plats"
+
+#: lore/model/world.py:301 lore/templates/world/new_article_menu.html:11
+msgid "Default"
+msgstr "Standard"
+
+#: lore/model/world.py:302
+msgid "Blog Post"
+msgstr "Bloggpost"
+
+#: lore/model/world.py:303 lore/templates/world/new_article_menu.html:13
+msgid "Material"
+msgstr "Material"
+
+#: lore/model/world.py:304 lore/templates/world/new_article_menu.html:14
+msgid "Person"
+msgstr "Person"
+
+#: lore/model/world.py:306 lore/templates/world/new_article_menu.html:16
+msgid "Place"
+msgstr "Plats"
+
+#: lore/model/world.py:307 lore/templates/world/new_article_menu.html:17
+msgid "Event"
+msgstr "Händelse"
+
+#: lore/model/world.py:308 lore/templates/world/new_article_menu.html:18
+msgid "Campaign"
+msgstr "Kampanj"
+
+#: lore/model/world.py:309 lore/templates/world/new_article_menu.html:19
+msgid "Chronicle"
+msgstr "Krönika"
+
+#: lore/model/world.py:310 lore/templates/world/new_article_menu.html:20
+msgid "Character"
+msgstr "Karaktär"
+
+#: lore/model/world.py:358
+msgid "Sort priority"
+msgstr "Sorteringsprioritet"
+
+#: lore/model/world.py:361
+msgid "Featured article"
+msgstr "Fokusartikel"
+
+#: lore/model/world.py:366
+msgid "License"
+msgstr "Licens"
+
+#: lore/model/world.py:415
+msgid "from"
+msgstr "från"
+
+#: lore/model/world.py:447
+msgid "Long URL"
+msgstr "Lång URL"
+
+#: lore/model/world.py:450
+msgid "Hits"
+msgstr "Träffar"
+
+#: lore/templates/_modal.html:17 lore/templates/includes/feedback_modal.html:36
+#: lore/templates/includes/macros.html:296
+#: lore/templates/includes/macros.html:324
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: lore/templates/_modal.html:18
+msgid "Insert"
+msgstr "Lägg till"
+
+#: lore/templates/_page.html:135
+msgid "Publishers"
+msgstr "Utgivare"
+
+#: lore/templates/_page.html:142 lore/templates/social/user_item.html:21
+#: lore/templates/social/user_list.html:7
+msgid "Users"
+msgstr "Användare"
+
+#: lore/templates/_page.html:153
+msgid "Log In"
+msgstr "Logga in"
+
+#: lore/templates/_page.html:156
+msgid "Join"
+msgstr "Registrera"
+
+#: lore/templates/_page.html:166 lore/templates/styleguide.html:37
+msgid "Profile"
+msgstr "Profil"
+
+#: lore/templates/_page.html:170 lore/templates/shop/_page.html:31
+#: lore/templates/shop/order_list.html:3 lore/templates/styleguide.html:40
+msgid "My orders"
+msgstr "Mina ordrar"
+
+#: lore/templates/_page.html:176 lore/templates/styleguide.html:45
+msgid "Files"
+msgstr "Filer"
+
+#: lore/templates/_page.html:183 lore/templates/styleguide.html:48
+msgid "Log Out"
+msgstr "Logga ut"
+
+#: lore/templates/_page.html:205 lore/templates/includes/feedback_modal.html:20
+msgid "Give feedback"
+msgstr "Ge feedback"
+
+#: lore/templates/_page.html:257
+msgid "Design and code"
+msgstr "Design och kod"
+
+#: lore/templates/_page.html:258
+msgid "Built using "
+msgstr "Byggd med "
+
+#: lore/templates/homepage.html:3 lore/templates/homepage.html:19
+msgid "The digital engine to keep stories going."
+msgstr "Den digitala motorn för berättelser"
+
+#: lore/templates/homepage.html:17
+msgid "Soon opening:"
+msgstr "Öppnar snart:"
+
+#: lore/templates/homepage.html:21
+msgid "For game masters"
+msgstr "För spelledare"
+
+#: lore/templates/homepage.html:31
+msgid "Plan your campaigns and game sessions"
+msgstr "Planera dina kampanjer och spelsessioner"
+
+#: lore/templates/homepage.html:32
+msgid ""
+"Not only schedule sessions, but create and organize the content you need,"
+"\n"
+"      such as handouts, images, music, texts, etc. Use it as your notes "
+"for playing,\n"
+"      but also easily share it on a screen or with the players during a "
+"session!"
+msgstr ""
+"Inte bara planering, du kan även skapa och organisera innehåll, \n"
+"som handouts, bilder, musik, texter, etc. Anteckna händelser under spel,"
+" \n"
+"men du kan även enkelt dela det till en skärm eller andra spelare under "
+"en session!"
+
+#: lore/templates/homepage.html:48
+msgid "Manage your group and find new players"
+msgstr "Hantera dina grupper och hitta nya spelare"
+
+#: lore/templates/homepage.html:49
+msgid ""
+"Manage your groups and campaigns. Find new players based on their "
+"location\n"
+"      and preferences and invite them! Easily communicate with the whole "
+"group."
+msgstr ""
+"Hantera dina grupper och kampanjer. Hitta nya spelare baserat på deras "
+"plats,\n"
+"intresse och bjud enkelt in dem. Kommunicera enkelt med hela din "
+"spelgrupp."
+
+#: lore/templates/homepage.html:65
+msgid "Read and write about the game world"
+msgstr "Läs och skriv om en spelvärld"
+
+#: lore/templates/homepage.html:66
+msgid ""
+"The game is a wiki, and you can both build your own content, and merge it"
+"\n"
+"       with the official content. Together with other game masters, you "
+"are constantly\n"
+"       evolving the game world!"
+msgstr ""
+"Spelet är en wiki, och du kan både skapa eget innehåll och slå ihop\n"
+"det med den officiella världen. Tillsammans med andra spelledare så\n"
+"förändras spelvärldarna ständigt."
+
+#: lore/templates/homepage.html:74
+msgid "For players"
+msgstr "För spelare"
+
+#: lore/templates/homepage.html:85
+msgid "Use on your phone or tablet when gaming!"
+msgstr "Använd på telefon eller surfplatta under spelmöten!"
+
+#: lore/templates/homepage.html:86
+msgid ""
+"Have your character digitally on your phone, and update instantly as you\n"
+"       increase in level or evolve your character."
+msgstr ""
+"Ha din karaktär tillgänglig digital på din telefon och uppdatera\n"
+"på ett ögonblick när din karaktär ökar i level eller utvecklas."
+
+#: lore/templates/homepage.html:102
+msgid "See handouts for the current scene"
+msgstr "Ha tillgång till handouts för varje scen"
+
+#: lore/templates/homepage.html:103
+msgid ""
+"Access all the content for a scene in the game, such as NPC portraits,\n"
+"       maps, articles, etc. Excellent to read up and make use of those "
+"times\n"
+"       your character is not active in the game."
+msgstr ""
+"Allt innehåll som SLPer, kartor, artiklar och mera blir tillgängligt "
+"direkt.\n"
+"Utmärkt för att läsa på och uppdatera sig vid de tillfällen din karaktär\n"
+"inte medverkar i spel."
+
+#: lore/templates/homepage.html:118
+msgid "Send messages and take notes"
+msgstr "Skicka meddelanden och anteckna"
+
+#: lore/templates/homepage.html:119
+msgid ""
+"Use a super-simple messaging function to send secret notes to the game\n"
+"        master, other players or to take shorter side discussions. Let "
+"your\n"
+"        character events be auto-shared with the others. Take easy notes."
+msgstr ""
+"Använd en super-simpel meddelande-funktion för att skicka hemliga "
+"information\n"
+"till spelledaren, andra spelare eller för att förkorta diskussioner. Låt "
+"din\n"
+"karaktärs händelser bli automatiskt delade med andra. Anteckna enkelt!"
+
+#: lore/templates/homepage.html:128
+msgid "For game authors"
+msgstr "För spelskapare"
+
+#: lore/templates/homepage.html:139
+msgid "Publish your game digitally and interactively!"
+msgstr "Publicera ditt spel digitalt och gör det interaktivt!"
+
+#: lore/templates/homepage.html:140
+msgid ""
+"People use laptops, tablets and phones at the game sessions all the time."
+"\n"
+"        Let people read and browse your game right there. Go beyond "
+"boring PDFs\n"
+"        and offer content with hyperlinks and videos."
+msgstr ""
+"Spelare använder laptops, surfplattor och telefoner på spelmöten hela "
+"tiden\n"
+"Låt folk läsa och bläddra i din spelvärld. Inga mer tråkiga PDFer\n"
+"utan erbjud istället interaktivt innehåll med videos etc."
+
+#: lore/templates/homepage.html:156
+msgid "Offer a world that changes as player's explore it"
+msgstr "Erbjud en värld som förändras under spel"
+
+#: lore/templates/homepage.html:157
+msgid ""
+"Your game can be an instant wiki, where people can edit and even things\n"
+"       that happen in sessions can be auto-posted back to the world. Your"
+" game\n"
+"       world is alive!"
+msgstr ""
+"Din värld kan bli en wiki, där alla kan redigera. Tillochmed händelser\n"
+"under spel kan bli automatiskt postade i wikin. Spelvärlden är konstant i"
+" rörelse!"
+
+#: lore/templates/homepage.html:172
+msgid "Build a social community around your game"
+msgstr "Bygg en social gemenskap runt din värld."
+
+#: lore/templates/homepage.html:173
+msgid ""
+"Build a social following around your game, that doesn't limit you to only"
+"\n"
+"       one platform. Make it easy for people to share articles and game "
+"sessions\n"
+"       on their social networks."
+msgstr ""
+"Bygg en social gemenskap runt din värld som inte bara finns\n"
+"på en plattform. Gör det enkelt för andra att dela artiklar och spelmöten"
+"\n"
+"på andra sociala nätverk."
+
+#: lore/templates/homepage.html:189
+msgid "Check out the first publisher on the platform:"
+msgstr "Kolla in den första utgivaren på plattformen:"
+
+#: lore/templates/newsletter.html:3
+msgid "Subscribe to our mailing list"
+msgstr "Prenumerera på vårt nyhetsbrev"
+
+#: lore/templates/newsletter.html:5
+msgid "email address"
+msgstr "emailadress"
+
+#: lore/templates/newsletter.html:9
+msgid "Subscribe"
+msgstr "Prenumerera"
+
+#: lore/templates/asset/_page.html:5
+msgid "File assets"
+msgstr "Filer"
+
+#: lore/templates/asset/_page.html:11
+msgid "List"
+msgstr "Lista"
+
+#: lore/templates/asset/fileasset_item.html:4
+msgid "New file"
+msgstr "Ny fil"
+
+#: lore/templates/asset/fileasset_item.html:41
+msgid "Current file"
+msgstr "Nuvarande fil"
+
+#: lore/templates/asset/fileasset_item.html:41
+msgid "No file"
+msgstr "Ingen fil"
+
+#: lore/templates/asset/fileasset_item.html:70
+#: lore/templates/shop/product_item.html:71
+#: lore/templates/world/article_item.html:280
+msgid "delete"
+msgstr "ta bort"
+
+#: lore/templates/asset/fileasset_item.html:83
+msgid "URLs"
+msgstr "URLer"
+
+#: lore/templates/asset/fileasset_item.html:86
+#: lore/templates/asset/fileasset_list.html:95
+#: lore/templates/asset/fileasset_list.html:205
+msgid "Open file"
+msgstr "Öppna fil"
+
+#: lore/templates/asset/fileasset_item.html:89
+#: lore/templates/asset/fileasset_list.html:98
+#: lore/templates/asset/fileasset_list.html:208
+msgid "Download file"
+msgstr "Ladda ned fil"
+
+#: lore/templates/asset/fileasset_item.html:100
+msgid "Uploaded date"
+msgstr "Uppladdad den"
+
+#: lore/templates/asset/fileasset_item.html:126
+msgid "Source filename"
+msgstr "Källfilnamn"
+
+#: lore/templates/asset/fileasset_item.html:144
+msgid "Size"
+msgstr "Storlek"
+
+#: lore/templates/asset/fileasset_item.html:150
+msgid "Content Type"
+msgstr "Filtyp"
+
+#: lore/templates/asset/fileasset_list.html:18
+msgid "By owner"
+msgstr "På ägare"
+
+#: lore/templates/asset/fileasset_list.html:20
+msgid "Myself"
+msgstr "Mig själv"
+
+#: lore/templates/asset/fileasset_list.html:21
+msgid "Others"
+msgstr "Andra"
+
+#: lore/templates/asset/fileasset_list.html:24
+#: lore/templates/world/article_list.html:57
+msgid "By tag"
+msgstr "På tagg"
+
+#: lore/templates/asset/fileasset_list.html:31
+msgid "By access type"
+msgstr "På accesstyp"
+
+#: lore/templates/asset/fileasset_list.html:38
+msgid "By content type"
+msgstr "På filtyp"
+
+#: lore/templates/asset/fileasset_list.html:44
+msgid "By size"
+msgstr "På storlek"
+
+#: lore/templates/asset/fileasset_list.html:51
+#: lore/templates/world/article_list.html:64
+msgid "Search text"
+msgstr "Söktext"
+
+#: lore/templates/asset/fileasset_list.html:56
+#: lore/templates/world/article_list.html:69
+#: lore/templates/world/article_search.html:16
+msgid "Text"
+msgstr "Text"
+
+#: lore/templates/asset/fileasset_list.html:58
+#: lore/templates/world/_page.html:9 lore/templates/world/article_list.html:71
+#: lore/templates/world/article_search.html:5
+#: lore/templates/world/article_search.html:18
+msgid "Search"
+msgstr "Sök"
+
+#: lore/templates/asset/fileasset_list.html:75
+msgid "File size"
+msgstr "Filstorlek"
+
+#: lore/templates/asset/fileasset_list.html:76
+msgid "Actions"
+msgstr "Funktioner"
+
+#: lore/templates/asset/fileasset_list.html:109
+#: lore/templates/asset/fileasset_list.html:224
+msgid "No file assets available!"
+msgstr "Inga filer tillgängliga!"
+
+#: lore/templates/asset/fileasset_list.html:118
+msgid "By me"
+msgstr "Av mig"
+
+#: lore/templates/asset/fileasset_list.html:119
+msgid "By others"
+msgstr "Av andra"
+
+#: lore/templates/asset/fileasset_list.html:156
+msgid "Drag or click to&nbsp;upload&nbsp;files"
+msgstr "Dra eller klicka för att&nbsp;ladda&nbsp;upp&nbsp;filer"
+
+#: lore/templates/asset/fileasset_list.html:162
+msgid "Paste file URL here"
+msgstr "Klistra in URL till fil här"
+
+#: lore/templates/asset/fileasset_list.html:219
+msgid "Show more"
+msgstr "Visa mer"
+
+#: lore/templates/auth/auth0.html:15
+msgid "Lore by Helmgast"
+msgstr "Lore av Helmgast"
+
+#: lore/templates/auth/auth0.html:17
+msgid "Your code"
+msgstr "Din kod"
+
+#: lore/templates/auth/auth0.html:19
+msgid "An email with the code has been sent to {email}."
+msgstr "Ett email med en kod har skickats till {email}"
+
+#: lore/templates/auth/auth0.html:20
+msgid "Did not get the code?"
+msgstr "Fick du inte koden?"
+
+#: lore/templates/auth/auth0.html:25
+#, python-format
+msgid ""
+"New login system activated, passwords removed but use same email or "
+"social account as before. More info <a href=\\\"%(link)s\\\">here</a>"
+msgstr ""
+"Nytt inloggningssystem aktiverat, lösenord är borttagna men använd samma "
+"email eller socialt nätverk som förut. Mer info <a "
+"href=\\\"%(link)s\\\">här</a>"
+
+#: lore/templates/auth/auth0.html:26
+msgid "or get a one-time code via email"
+msgstr "eller få engångskod via email"
+
+#: lore/templates/auth/auth0.html:27
+msgid "Login with"
+msgstr "Logga in med"
+
+#: lore/templates/auth/auth0.html:30
+msgid "Thanks for signing in."
+msgstr "Tack för din inloggning."
+
+#: lore/templates/auth/auth0.html:32
+msgid "Welcome {name}!"
+msgstr "Välkommen {name}!"
+
+#: lore/templates/includes/feedback_modal.html:7
+msgid "Help us improve!"
+msgstr "Hjälp oss bli bättre"
+
+#: lore/templates/includes/feedback_modal.html:14
+msgid "Report an error"
+msgstr "Rapportera ett fel"
+
+#: lore/templates/includes/feedback_modal.html:27
+msgid "characters left"
+msgstr "bokstäver kvar"
+
+#: lore/templates/includes/feedback_modal.html:30
+msgid "Email address"
+msgstr "Emailadress"
+
+#: lore/templates/includes/feedback_modal.html:37
+#: lore/templates/mail/mail_post.html:57
+msgid "Send"
+msgstr "Skicka"
+
+#: lore/templates/includes/macros.html:167
+msgid "Your access rights allow you to view this resource in this view"
+msgstr "Dina accessrättigheter tillåter dig att se denna resursen i denna vyn"
+
+#: lore/templates/includes/macros.html:175
+msgid "View"
+msgstr "Visa"
+
+#: lore/templates/includes/macros.html:179
+msgid "Card view"
+msgstr "Galleri-vy"
+
+#: lore/templates/includes/macros.html:184
+msgid "Table view"
+msgstr "Tabell-vy"
+
+#: lore/templates/includes/macros.html:189
+msgid "List view"
+msgstr "List-vy"
+
+#: lore/templates/includes/macros.html:201
+msgid "Click to reset current ordering"
+msgstr "Klicka för att återställa sorteringen"
+
+#: lore/templates/includes/macros.html:202
+#: lore/templates/includes/macros.html:207
+msgid "Order by"
+msgstr "Sortera på"
+
+#: lore/templates/includes/macros.html:205
+msgid "Select ordering"
+msgstr "Välj sortering"
+
+#: lore/templates/includes/macros.html:228
+msgid "Click to reset items per page"
+msgstr "Klicka för att återställa visade artiklar per sida"
+
+#: lore/templates/includes/macros.html:229
+#: lore/templates/includes/macros.html:233
+msgid "Per page"
+msgstr "Per sida"
+
+#: lore/templates/includes/macros.html:231
+msgid "Choose number of items per page"
+msgstr "Välj antar visade artiklar per sida"
+
+#: lore/templates/includes/macros.html:239
+msgid "All"
+msgstr "Alla"
+
+#: lore/templates/includes/macros.html:290
+msgid "Are you sure you want to"
+msgstr "Är du säker att du vill"
+
+#: lore/templates/includes/macros.html:297
+#: lore/templates/world/world_item.html:268
+msgid "Yes"
+msgstr "Ja"
+
+#: lore/templates/includes/macros.html:308
+msgid "Edit"
+msgstr "Ändra"
+
+#: lore/templates/includes/macros.html:316
+msgid "Save"
+msgstr "Spara"
+
+#: lore/templates/includes/macros.html:332
+msgid "Delete"
+msgstr "Ta bort"
+
+#: lore/templates/includes/macros.html:340
+msgid "New"
+msgstr "Ny"
+
+#: lore/templates/includes/social_icons.html:1
+msgid "Print"
+msgstr "Skriv ut"
+
+#: lore/templates/mail/compose.html:15
+#, python-format
+msgid "Email from Helmgast visitor %(from_field)s..."
+msgstr "Email från Helmgast-besökaren %(from_field)s..."
+
+#: lore/templates/mail/invite.html:8
+msgid ""
+"We would be very happy if you would join us as user of Helmgast.se! It's "
+"a web platform\n"
+"for roleplaying gamers; game masters, players and publishers alike. If "
+"you want to\n"
+"join, just click below and register!"
+msgstr ""
+"Vi vore väldigt glada om du skulle vilja gå med som användare i "
+"Helmgast.se! Det är en webbplattform för rollspelare; spelledare, spelare"
+" och författare. Om du vill delta, klicka bara på länken nedan för att "
+"registrera!"
+
+#: lore/templates/mail/invite.html:16 lore/templates/mail/verify.html:18
+msgid "Verify email"
+msgstr "Bekräfta email"
+
+#: lore/templates/mail/invite.html:16
+msgid "Join Helmgast"
+msgstr "Gå med i Helmgast"
+
+#: lore/templates/mail/invite.html:23
+#: lore/templates/mail/one_column_mail.html:51
+msgid "on"
+msgstr "på"
+
+#: lore/templates/mail/mail_post.html:8
+#: lore/templates/mail/one_column_mail.html:4
+msgid "Send email"
+msgstr "Skicka email"
+
+#: lore/templates/mail/one_column_mail.html:20
+msgid "Email from Helmgast..."
+msgstr "Email från Helmgast..."
+
+#: lore/templates/mail/one_column_mail.html:52
+#, python-format
+msgid "You are receiving this email to %(email)s as a user of"
+msgstr "Du får detta email till %(email)s som en användare av"
+
+#: lore/templates/mail/one_column_mail.html:53
+msgid "If you have any problems, just reply to this email."
+msgstr "Om du har några problem, svara gärna på detta mail"
+
+#: lore/templates/mail/order.html:7
+#, python-format
+msgid ""
+"Thank you %(user)s for your order at helmgast.se! Please see your receipt"
+" below:"
+msgstr "Tack %(user)s för ditt köp på helmgast.se! Du ser ditt kvitto nedan:"
+
+#: lore/templates/mail/order.html:15
+#, python-format
+msgid ""
+"You received this email as a confirmation of your purchase order at "
+"helmgast.se.\n"
+"    Please read the terms and conditions of purchase <a "
+"href=\"%(termslink)s\">here</a>."
+msgstr ""
+"Du fick detta email som en bekräftelse på ditt inköp på helmgast.se. Var "
+"vänlig läs köpvillkoren <a href=\"%(termslink)s\">här</a>."
+
+#: lore/templates/mail/remind.html:8
+msgid "Instructions on logging in to helmgast.se"
+msgstr "Instruktioner för att logga in på helmgast.se"
+
+#: lore/templates/mail/remind.html:12
+msgid "You just requested information on how to login to helmgast.se:"
+msgstr "Du begärde just information om att logga in på helmgast.se"
+
+#: lore/templates/mail/remind.html:16
+#, python-format
+msgid ""
+"We can't find any record of this email registered to helmgast.se. Is it\n"
+"            possible that you used a different email, or that you used a "
+"social login\n"
+"            (Facebook, Google) and have a different email registered "
+"there? We suggest you\n"
+"            search your email accounts for the text \"Welcome to "
+"helmgast.se\". If you can't\n"
+"            find the right email contact us directly at %(maillink)s."
+msgstr ""
+"Vi kan inte hitta din mailadress på helmgast.se. Är det möjligt att du "
+"använde en annan adress, eller att du registrerade dig med ett socialt "
+"nätverk (Facebook, Google)? Vi föreslår att du söker igenom dina "
+"mailkonton efter ett email från Helmgast. Om du inte kan hitta rätt "
+"email, kontakta oss direkt på %(maillink)s."
+
+#: lore/templates/mail/remind.html:23
+#, python-format
+msgid ""
+"You registered with the email\n"
+"            %(email)s on %(join)s and your authentication method was:"
+msgstr ""
+"Du registrerade med emailen %(email)s på %(join)s och din "
+"inloggningsmetod var:"
+
+#: lore/templates/mail/remind.html:27
+msgid ""
+"If you have forgotten your password, click below link to reset your\n"
+"                password:"
+msgstr ""
+"Om du har glömt ditt lösenord, klicka nedanstående länk för att "
+"återställa lösenordet:"
+
+#: lore/templates/mail/remind.html:34
+msgid "Reset password"
+msgstr "Återställ lösenord"
+
+#: lore/templates/mail/remind.html:40
+#, python-format
+msgid ""
+"To login again, just click the %(auth)s-button on the login page and "
+"follow the procedure -\n"
+"                you\n"
+"                may have to login to your social network account:"
+msgstr ""
+"För att logga in igen, klicka bara %(auth)s-knappen på inloggningssidan "
+"och följ instruktionerna - du kan behöva logga in till ditt sociala "
+"nätverk:"
+
+#: lore/templates/mail/remind.html:46 lore/templates/mail/remind.html:48
+msgid "Login again"
+msgstr "Logga in igen"
+
+#: lore/templates/mail/remind.html:55
+msgid "You received this email as you had trouble logging in to Helmgast."
+msgstr "Du har fått detta email då du hade problem att logga in på Helmgast."
+
+#: lore/templates/mail/remind.html:56
+msgid ""
+"If you did not initiate this email, please ignore it as it may have been "
+"someone typing your\n"
+"            mail by mistake. If you believe there is suspicious activity,"
+" please contact us\n"
+"            directly at"
+msgstr ""
+"Om du inte initierade detta mail, var vänlig bortse från det då det kan "
+"ha varit någon som skrev din adress av misstag. Om du tror att detta är "
+"misstänkt aktivitet, var vänlig kontakta oss direkt på"
+
+#: lore/templates/mail/verify.html:8
+msgid "Verify your email to complete registration on helmgast.se"
+msgstr "Bekräfta din email-adress för att slutföra registreringen på helmgast.se"
+
+#: lore/templates/mail/verify.html:11
+#, python-format
+msgid ""
+"Thank you, %(user)s, for registering at Helmgast.se!\n"
+"    You registered this email (%(email)s) and authentication method was: "
+"%(auth)s"
+msgstr ""
+"Stort tack, %(user)s, för att du registrerat dig på Helmgast.se! Du "
+"registerade denna emailen (%(email)s) och inloggningsmetoden var: "
+"%(auth)s"
+
+#: lore/templates/mail/verify.html:14
+msgid ""
+"We just need to verify that you own this email, and then you can start "
+"using your account:"
+msgstr ""
+"Vi behöver bara verifiera att du äger denna email, därefter kan du börja "
+"använda ditt konto:"
+
+#: lore/templates/mail/verify.html:24
+msgid "Or, paste this link into your browser:"
+msgstr "Eller, klistra in denna länk i din webläsare:"
+
+#: lore/templates/mail/verify.html:25
+msgid ""
+"As a user of Helmgast you will be able to interact with the worlds of "
+"Helmgast\n"
+"as well as purchasing Helmgast products. The platform is constantly "
+"evolving so\n"
+"we will be sending you updates by email whenever major changes have "
+"happened."
+msgstr ""
+"Som en användare på Helmgast kommer du kunna interagera med alla våra "
+"världar likaväl som att köpa Helmgast-produkter. Plattformen utvecklas "
+"konstant så vi kommer att skicka uppdateringar via email när större "
+"förändringar skett."
+
+#: lore/templates/mail/verify.html:28
+msgid "Many thanks for your support!"
+msgstr "Stort tack för ditt stöd!"
+
+#: lore/templates/mail/verify.html:30
+msgid ""
+"If you did not initiate this email, please ignore it as it may have been "
+"someone typing your\n"
+"    mail by mistake. If you believe there is suspicious activity, please "
+"contact us\n"
+"    directly at"
+msgstr ""
+"Om du inte initierade detta email, var vänlig ignorera det då det kan ha "
+"varit någon som skrev din adress av misstag. Om du tror detta är "
+"misstänkt aktivitet, var vänlig kontakta oss direkt på"
+
+#: lore/templates/shop/_page.html:4 lore/templates/shop/order_item.html:20
+#: lore/templates/shop/order_list.html:7
+#: lore/templates/shop/product_item.html:27
+#: lore/templates/shop/product_list.html:8
+msgid "Shop"
+msgstr "Butik"
+
+#: lore/templates/shop/_page.html:5
+msgid "get your inspiration"
+msgstr "hitta inspirationen"
+
+#: lore/templates/shop/_page.html:23 lore/templates/shop/order_lines.html:6
+#: lore/templates/shop/product_item.html:28
+#: lore/templates/shop/product_list.html:3
+#: lore/templates/shop/product_list.html:9
+msgid "Products"
+msgstr "Produkter"
+
+#: lore/templates/shop/_page.html:27 lore/templates/shop/order_item.html:21
+#: lore/templates/shop/order_list.html:3 lore/templates/shop/order_list.html:8
+msgid "Orders"
+msgstr "Ordrar"
+
+#: lore/templates/shop/_page.html:45 lore/templates/shop/product_list.html:78
+msgid "No products available"
+msgstr "Inga produkter tillgängliga"
+
+#: lore/templates/shop/campaign.html:10
+msgid "Perks"
+msgstr "Kampanjnivåer"
+
+#: lore/templates/shop/order_address.html:8
+msgid "Order email"
+msgstr "Ordermail"
+
+#: lore/templates/shop/order_address.html:12
+msgid "Shipping Address"
+msgstr "Leveransadress"
+
+#: lore/templates/shop/order_address.html:25
+msgid "For SMS notification"
+msgstr "För SMS-avisering"
+
+#: lore/templates/shop/order_header.html:22
+msgid "Order Info"
+msgstr "Orderinfo"
+
+#: lore/templates/shop/order_header.html:25
+msgid "Order ID"
+msgstr "Order-ID"
+
+#: lore/templates/shop/order_header.html:32
+msgid "No name"
+msgstr "Inget namn"
+
+#: lore/templates/shop/order_header.html:54
+msgid "Seller Info"
+msgstr "Säljarinfo"
+
+#: lore/templates/shop/order_header.html:65
+msgid "Address"
+msgstr "Adress"
+
+#: lore/templates/shop/order_item.html:7 lore/templates/shop/order_item.html:74
+#: lore/templates/shop/order_item.html:119
+msgid "Your details"
+msgstr "Dina uppgifter"
+
+#: lore/templates/shop/order_item.html:9
+#: lore/templates/shop/order_item.html:188
+msgid "Pay"
+msgstr "Betala"
+
+#: lore/templates/shop/order_item.html:11
+#, python-format
+msgid "Order: %(order)s"
+msgstr "Order: %(order)s"
+
+#: lore/templates/shop/order_item.html:15
+msgid "make sure it's correct!"
+msgstr "dubbelkolla att det är rätt!"
+
+#: lore/templates/shop/order_item.html:19 lore/templates/shop/order_list.html:6
+#: lore/templates/shop/product_item.html:26
+#: lore/templates/shop/product_list.html:7
+#: lore/templates/social/group_item.html:9
+#: lore/templates/social/group_list.html:6
+#: lore/templates/social/user_item.html:20
+#: lore/templates/social/user_list.html:6
+#: lore/templates/world/article_blog.html:6
+#: lore/templates/world/article_blog.html:11
+#: lore/templates/world/article_item.html:24
+#: lore/templates/world/article_item.html:30
+#: lore/templates/world/article_item.html:37
+#: lore/templates/world/article_item.html:45
+#: lore/templates/world/article_list.html:8
+#: lore/templates/world/article_list.html:13
+#: lore/templates/world/article_search.html:4
+#: lore/templates/world/publisher_home.html:3
+#: lore/templates/world/world_item.html:39
+#: lore/templates/world/world_list.html:7
+msgid "Home"
+msgstr "Hem"
+
+#: lore/templates/shop/order_item.html:29
+#: lore/templates/shop/order_item.html:108
+#, python-format
+msgid "Regarding order %(order)s"
+msgstr "Gällande order %(order)s"
+
+#: lore/templates/shop/order_item.html:30
+#: lore/templates/shop/order_item.html:109
+msgid "Contact Us"
+msgstr "Kontakta oss"
+
+#: lore/templates/shop/order_item.html:37
+msgid "Send order mail"
+msgstr "Skicka ordermail"
+
+#: lore/templates/shop/order_item.html:58
+msgid "Nothing in cart, "
+msgstr "Inget i kundvagnen, "
+
+#: lore/templates/shop/order_item.html:59
+msgid "go shopping"
+msgstr "börja shoppa!"
+
+#: lore/templates/shop/order_item.html:69
+msgid "Confirm products"
+msgstr "Bekräfta produkter"
+
+#: lore/templates/shop/order_item.html:79
+#: lore/templates/shop/order_item.html:143
+msgid "Pay order"
+msgstr "Betala"
+
+#: lore/templates/shop/order_item.html:117
+msgid "Save changes"
+msgstr "Spara ändringar"
+
+#: lore/templates/shop/order_item.html:122
+msgid "Total shipping cost will be shown after"
+msgstr "Fraktkostnad visas senare"
+
+#: lore/templates/shop/order_item.html:129
+#: lore/templates/shop/order_item.html:140
+msgid "Go back"
+msgstr "Gå tillbaka"
+
+#: lore/templates/shop/order_item.html:133
+msgid "Review payment"
+msgstr "Granska betalning"
+
+#: lore/templates/shop/order_lines.html:10
+msgid "Quantity"
+msgstr "Antal"
+
+#: lore/templates/shop/order_lines.html:48
+msgid "Add comment"
+msgstr "Lägg till kommentar"
+
+#: lore/templates/shop/order_lines.html:81
+msgid "Including tax"
+msgstr "Varav moms"
+
+#: lore/templates/shop/order_lines.html:90
+msgid "Total"
+msgstr "Summa"
+
+#: lore/templates/shop/order_list.html:15
+#: lore/templates/social/group_list.html:43
+msgid "By updated"
+msgstr "Efter modifierad"
+
+#: lore/templates/shop/order_list.html:22
+#: lore/templates/social/group_list.html:36
+msgid "By created"
+msgstr "Efter skapelse"
+
+#: lore/templates/shop/order_list.html:29
+msgid "By total items"
+msgstr "Efter antal artiklar"
+
+#: lore/templates/shop/order_list.html:36
+msgid "By total price"
+msgstr "Efter ordervärde"
+
+#: lore/templates/shop/order_list.html:43
+#: lore/templates/social/user_list.html:39
+#: lore/templates/world/article_list.html:43
+msgid "By status"
+msgstr "Efter status"
+
+#: lore/templates/shop/order_list.html:57
+msgid "Total value"
+msgstr "Totalt värde"
+
+#: lore/templates/shop/order_list.html:58
+msgid "First"
+msgstr "Första"
+
+#: lore/templates/shop/order_list.html:59
+msgid "Last"
+msgstr "Sista"
+
+#: lore/templates/shop/order_list.html:71
+msgid "Currently only shows Eon crowdfunder orders"
+msgstr "Visar just nu bara ordrar från Eon-crowfunder"
+
+#: lore/templates/shop/order_list.html:138
+msgid "No orders found"
+msgstr "Inga ordrar hittade"
+
+#: lore/templates/shop/product_card_view.html:19
+#: lore/templates/shop/product_item.html:172
+msgid "Add to cart"
+msgstr "Lägg i kundvagn"
+
+#: lore/templates/shop/product_item.html:3
+msgid "New product"
+msgstr "Ny produkt"
+
+#: lore/templates/shop/product_item.html:61
+#: lore/templates/shop/product_item.html:164
+msgid "Access to download file depends on per-file settings"
+msgstr "Vem som kan ladda ner filerna beror på filinställningarna"
+
+#: lore/templates/shop/product_item.html:104
+msgid "Family"
+msgstr "Familj"
+
+#: lore/templates/shop/product_item.html:148
+msgid "Times purchased"
+msgstr "Antal köp"
+
+#: lore/templates/shop/product_list.html:27
+#: lore/templates/world/article_list.html:29
+msgid "By world"
+msgstr "Efter värld"
+
+#: lore/templates/shop/product_list.html:33
+msgid "By time"
+msgstr "Efter tid"
+
+#: lore/templates/shop/product_list.html:40
+#: lore/templates/social/group_list.html:22
+#: lore/templates/world/article_list.html:36
+msgid "By type"
+msgstr "Efter typ"
+
+#: lore/templates/shop/product_list.html:47
+msgid "By price"
+msgstr "Efter pris"
+
+#: lore/templates/shop/product_list_view.html:29
+#: lore/templates/world/article_list_view.html:45
+#: lore/templates/world/publisher_home.html:107
+#: lore/templates/world/world_item.html:154
+#: lore/templates/world/world_item.html:176
+#: lore/templates/world/world_item.html:198
+#: lore/templates/world/world_item.html:218
+msgid "Read more"
+msgstr "Läs mer"
+
+#: lore/templates/shop/product_table_view.html:19
+#: lore/templates/world/world_list.html:46
+msgid "No description"
+msgstr "Ingen beskrivning"
+
+#: lore/templates/social/_page.html:4
+msgid "Social"
+msgstr "Social"
+
+#: lore/templates/social/_page.html:5
+msgid "bringing you closer to other gamers"
+msgstr "tar dig närmare andra spelare"
+
+#: lore/templates/social/_page.html:11 lore/templates/world/world_item.html:47
+msgid "Browse"
+msgstr "Bläddra"
+
+#: lore/templates/social/_page.html:21
+msgid "Welcome"
+msgstr "Välkommen"
+
+#: lore/templates/social/_page.html:23
+msgid ""
+"Here you will be able to interact with other gamers, create and manage "
+"your game groups,\n"
+"  events, etc."
+msgstr ""
+"Här kommer du kunna interagera med andra spelare, skapa och hantera dina "
+"spelgrupper, \n"
+"möten, etc."
+
+#: lore/templates/social/group_item.html:10
+#: lore/templates/social/group_list.html:3
+#: lore/templates/social/group_list.html:7
+msgid "Groups"
+msgstr "Grupper"
+
+#: lore/templates/social/group_item.html:45
+msgid "Role"
+msgstr "Roll"
+
+#: lore/templates/social/group_item.html:57
+msgid "Details"
+msgstr "Detaljer"
+
+#: lore/templates/social/group_item.html:64
+msgid "Members"
+msgstr "Medlemmar"
+
+#: lore/templates/social/group_item.html:68
+msgid "Meetings"
+msgstr "Möten"
+
+#: lore/templates/social/group_list.html:29
+#: lore/templates/social/user_list.html:53
+msgid "By location"
+msgstr "Efter plats"
+
+#: lore/templates/social/group_list.html:114
+#: lore/templates/social/user_list.html:80
+msgid "No users visible!"
+msgstr "Inga användare är synliga!"
+
+#: lore/templates/social/user_followers.html:3
+msgid "Followers"
+msgstr "Följare"
+
+#: lore/templates/social/user_item.html:56
+msgid "This user is not yet active!"
+msgstr "Denna användare är inte aktiv ännu!"
+
+#: lore/templates/social/user_item.html:57
+msgid "Save to complete the user and make it active."
+msgstr "Spara för att aktivera användaren"
+
+#: lore/templates/social/user_item.html:58
+msgid ""
+"If you had an existing user and made this new user by error, click merge "
+"button below:"
+msgstr ""
+"Om du hade en användare sedan tidigare och skapat denna nya användaren av"
+" misstag, klicka knappen nedan:"
+
+#: lore/templates/social/user_item.html:67
+msgid ""
+"Click to upload your avatar, by default we will use your <a "
+"href=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
+msgstr ""
+"Klicka för att ladda upp din avatar, som standard använder vi din "
+"<ahref=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
+
+#: lore/templates/social/user_item.html:85
+msgid "Merge with existing user"
+msgstr "För samman med existerande användare"
+
+#: lore/templates/social/user_item.html:90
+msgid "Add authentication method"
+msgstr "Lägg till autentiseringsmetod"
+
+#: lore/templates/social/user_item.html:147
+#: lore/templates/social/user_list_component.html:19
+msgid "Joined"
+msgstr "Registrerad"
+
+#: lore/templates/social/user_item.html:152
+msgid "Not logged in yet"
+msgstr "Har inte loggat in än"
+
+#: lore/templates/social/user_item.html:165
+msgid "History"
+msgstr "Historik"
+
+#: lore/templates/social/user_item.html:168
+msgid "Time"
+msgstr "Tidpunkt"
+
+#: lore/templates/social/user_item.html:169
+msgid "Activity"
+msgstr "Aktivitet"
+
+#: lore/templates/social/user_item.html:250
+#, python-format
+msgid "Add to %(account)s"
+msgstr "Lägg till på %(account)s"
+
+#: lore/templates/social/user_item.html:252
+msgid "Enter a new email to add by verification"
+msgstr "Skriv in en ny email att lägga till med verifiering"
+
+#: lore/templates/social/user_item.html:262
+msgid "Merge this account"
+msgstr "Kombinera detta konto"
+
+#: lore/templates/social/user_item.html:264
+msgid "Enter the email you signed up your previous account to."
+msgstr "Ange emailen du registrerade ditt tidigare konto med"
+
+#: lore/templates/social/user_list.html:3
+msgid "All gamers"
+msgstr "Alla spelare"
+
+#: lore/templates/social/user_list.html:16
+msgid "Invite user"
+msgstr "Bjud in användare"
+
+#: lore/templates/social/user_list.html:32
+msgid "By username"
+msgstr "Efter användarnamn"
+
+#: lore/templates/social/user_list.html:46
+msgid "By XP"
+msgstr "Efter XP"
+
+#: lore/templates/social/user_list.html:59
+msgid "By join date"
+msgstr "Efter registrering"
+
+#: lore/templates/social/user_list.html:65
+msgid "By last login date"
+msgstr "Efter senaste inloggning"
+
+#: lore/templates/world/_page.html:50
+msgid "Welcome as an editor to Helmgast, please take the tour!"
+msgstr "Välkommen som en redaktör på Helmgast, ta gärna den guidade turen!"
+
+#: lore/templates/world/_page.html:54
+msgid "Here you will find a page for each world and all the content"
+msgstr "Här hittar du en sida för varje värld och alla dess artiklar"
+
+#: lore/templates/world/_page.html:64
+msgid "Here is the home for a game world."
+msgstr "Här är navet för en spelvärld"
+
+#: lore/templates/world/_page.html:68
+msgid "Visitors see some of the world facts"
+msgstr "Besökare ser här lite fakta om spelvärlden"
+
+#: lore/templates/world/_page.html:72
+msgid ""
+"On every page you can edit, you see the see action buttons. Let's try to "
+"edit the world."
+msgstr ""
+"På varje sida som du har access att redigera så ser du dessa knappar. Låt"
+" ossändra något på denna spelvärlden"
+
+#: lore/templates/world/_page.html:83
+msgid "Edit the details of the world including it's full start page."
+msgstr ""
+"Redigera informationen om denna världen, även en fullt formaterad "
+"startsida"
+
+#: lore/templates/world/_page.html:87
+msgid "... or it's thumbnail"
+msgstr "... eller dess thumbnail-bild"
+
+#: lore/templates/world/_page.html:91
+msgid "You can also browse all articles in the world"
+msgstr "Du kan också bläddra genom alla artiklar i spelärlden"
+
+#: lore/templates/world/_page.html:103
+msgid "Here you can filter articles in all kinds of ways..."
+msgstr "Här kan du filtrera artiklar på alla sorts sätt ..."
+
+#: lore/templates/world/_page.html:107
+msgid ""
+"... and greyed out articles are those that only editors can see. Let's "
+"click one!"
+msgstr ""
+"... och utgråade artiklar är sådana som bara redaktörer kan se. Låt oss "
+"klicka på en!"
+
+#: lore/templates/world/_page.html:117
+msgid "Here we can edit the article."
+msgstr "Här kan vi redigera artikeln"
+
+#: lore/templates/world/_page.html:121
+msgid "... and it's details, including who can read it"
+msgstr "... och dess information, inkluderat vem som kan läsa den"
+
+#: lore/templates/world/_page.html:125
+msgid "Now we are done! Good luck!"
+msgstr "Nu är vi klara! Lycka till!"
+
+#: lore/templates/world/article_blog.html:7
+#: lore/templates/world/article_blog.html:14
+#: lore/templates/world/article_item.html:25
+#: lore/templates/world/article_item.html:40
+#: lore/templates/world/world_item.html:50
+msgid "Blog"
+msgstr "Blogg"
+
+#: lore/templates/world/article_blog.html:12
+#: lore/templates/world/article_item.html:38
+#: lore/templates/world/article_item.html:46
+#: lore/templates/world/article_list.html:14
+#: lore/templates/world/world_item.html:40
+#: lore/templates/world/world_list.html:3
+#: lore/templates/world/world_list.html:8
+msgid "Game Worlds"
+msgstr "Spelvärldar"
+
+#: lore/templates/world/article_blog.html:19
+#, python-format
+msgid "The %(world)s blog"
+msgstr "%(world)s-bloggen"
+
+#: lore/templates/world/article_blog.html:27
+#: lore/templates/world/publisher_home.html:101
+#: lore/templates/world/world_item.html:148
+#: lore/templates/world/world_item.html:170
+#: lore/templates/world/world_item.html:192
+#: lore/templates/world/world_item.html:212
+msgid "No articles yet!"
+msgstr "Inga artiklar än!"
+
+#: lore/templates/world/article_item.html:10
+#, python-format
+msgid "New %(type)s article"
+msgstr "Ny %(type)s-artikel"
+
+#: lore/templates/world/article_item.html:135
+msgid "Article type"
+msgstr "Artikel&shy;typ"
+
+#: lore/templates/world/article_item.html:152
+#: lore/templates/world/article_list_view.html:27
+#: lore/templates/world/article_table_view.html:22
+msgid "Admin"
+msgstr "Admin"
+
+#: lore/templates/world/article_item.html:159
+msgid "Visibility"
+msgstr "Synlighet"
+
+#: lore/templates/world/article_item.html:162
+msgid "Anyone"
+msgstr "Alla"
+
+#: lore/templates/world/article_item.html:171
+msgid "Share"
+msgstr "Dela"
+
+#: lore/templates/world/article_item.html:180
+msgid "Start writing here!"
+msgstr "Börja skriv här!"
+
+#: lore/templates/world/article_item.html:181
+msgid "You can format using"
+msgstr "Du kan formatera med"
+
+#: lore/templates/world/article_item.html:231
+#: lore/templates/world/publisher_item.html:47
+#: lore/templates/world/world_item.html:104
+msgid "Empty means public read access"
+msgstr "Tomt fält betyder publik läsaccess"
+
+#: lore/templates/world/article_item.html:235
+msgid "Thumbnail"
+msgstr "Thumbnail"
+
+#: lore/templates/world/article_item.html:238
+msgid "Help on format and image sizes"
+msgstr "Hjälp med format och bildstorlekar"
+
+#: lore/templates/world/article_item.html:248
+msgid "Lon"
+msgstr "Lon"
+
+#: lore/templates/world/article_item.html:250
+msgid "Lat"
+msgstr "Lat"
+
+#: lore/templates/world/article_item.html:256
+msgid "URL"
+msgstr "URL"
+
+#: lore/templates/world/article_item.html:260
+msgid "Started"
+msgstr "Startad"
+
+#: lore/templates/world/article_item.html:262
+msgid "Ended"
+msgstr "Avslutad"
+
+#: lore/templates/world/article_list.html:9
+#: lore/templates/world/article_list.html:16
+msgid "Articles"
+msgstr "Artiklar"
+
+#: lore/templates/world/article_list.html:21
+#, python-format
+msgid "Articles in %(world)s"
+msgstr "Artiklar i %(world)s"
+
+#: lore/templates/world/article_list.html:50
+msgid "By created date"
+msgstr "Efter datum skapat"
+
+#: lore/templates/world/article_list.html:91
+msgid "No articles found"
+msgstr "Inga artiklar hittade"
+
+#: lore/templates/world/article_search.html:8
+msgid "Search results:"
+msgstr "Sökresultat:"
+
+#: lore/templates/world/new_article_menu.html:8
+msgid "New article"
+msgstr "Ny artikel"
+
+#: lore/templates/world/new_article_menu.html:12
+msgid "Blog post"
+msgstr "Bloggpost"
+
+#: lore/templates/world/publisher_home.html:36
+#: lore/templates/world/publisher_home.html:95
+#: lore/templates/world/world_item.html:142
+msgid "Latest news"
+msgstr "Senaste nytt"
+
+#: lore/templates/world/publisher_item.html:3
+msgid "New publisher"
+msgstr "Ny utgivare"
+
+#: lore/templates/world/publisher_item.html:32
+msgid "2 letter code"
+msgstr "Kod på 2 bokstäver"
+
+#: lore/templates/world/publisher_item.html:83
+msgid "Domain"
+msgstr "Domän"
+
+#: lore/templates/world/publisher_item.html:107
+msgid "Publisher Home"
+msgstr "Utgivarsida"
+
+#: lore/templates/world/publisher_list.html:6
+msgid "working hard to imagine"
+msgstr "anstränger fantasin för din skull"
+
+#: lore/templates/world/publisher_list.html:12
+msgid "All publishers"
+msgstr "Alla utgivare"
+
+#: lore/templates/world/world_item.html:3
+msgid "New world"
+msgstr "Ny värld"
+
+#: lore/templates/world/world_item.html:9
+#: lore/templates/world/world_item.html:12
+#, python-format
+msgid "by %(publisher)s"
+msgstr "av %(publisher)s"
+
+#: lore/templates/world/world_item.html:53
+msgid "Random article"
+msgstr "Slumpartikel"
+
+#: lore/templates/world/world_item.html:98
+msgid "If your world home page is hosted externally, enter it here"
+msgstr "Om din spelvärld finns på en annan domän, skriv in den här"
+
+#: lore/templates/world/world_item.html:164
+msgid "Featured articles"
+msgstr "Fokusartiklar"
+
+#: lore/templates/world/world_item.html:186
+msgid "Top material"
+msgstr "Toppmaterial"
+
+#: lore/templates/world/world_item.html:206
+msgid "Characters"
+msgstr "Karaktärer"
+
+#: lore/templates/world/world_item.html:232
+msgid "Buy in shop"
+msgstr "Köp i butiken"
+
+#: lore/templates/world/world_item.html:259
+msgid "Printed"
+msgstr "Utgiven"
+
+#: lore/templates/world/world_item.html:266
+msgid "Open for contribution"
+msgstr "Öppen för bidrag"
+
+#: lore/templates/world/world_item.html:268
+msgid "No"
+msgstr "Nej"
+
+#: lore/templates/world/world_list.html:4
+msgid "any fictional world at your fingertips"
+msgstr "rollspelsvärldar bara ett klick bort"
+
+#~ msgid "Incorrect username or password"
+#~ msgstr "Ogiltigt användarnamn eller lösenord"
+
+#~ msgid "MASTER"
+#~ msgstr "Ägare"
+
+#~ msgid "MEMBER"
+#~ msgstr "Medlem"
+
+#~ msgid "INVITED"
+#~ msgstr "Inbjuden"
+
+#~ msgid "person"
+#~ msgstr "person"
+
+#~ msgid "event"
+#~ msgstr "event"
+
+#~ msgid "campaign"
+#~ msgstr "campaign"
+
+#~ msgid "chronicle"
+#~ msgstr "chronicle"
+
+#~ msgid "Password"
+#~ msgstr "Lösenord"
+
+#~ msgid "Token"
+#~ msgstr ""
+
+#~ msgid "That username is already taken"
+#~ msgstr "Användarnamnet är redan registrerat"
+
+#~ msgid "You have already verified this account"
+#~ msgstr "Detta konto har redan verifierats"
+
+#~ msgid "is now verified!"
+#~ msgstr "är nu verifierat!"
+
+#~ msgid "Repeat Password"
+#~ msgstr "Upprepa lösenord"
+
+#~ msgid "New Password"
+#~ msgstr "Nytt lösenord"
+
+#~ msgid "About order from"
+#~ msgstr "Gällande order"
+
+#~ msgid "with Lore account"
+#~ msgstr "med Lore konto"
+
+#~ msgid "New products"
+#~ msgstr "Nya produkter"
+
+#~ msgid "placed"
+#~ msgstr "placerad"
+
+#~ msgid "Messages from those you follow"
+#~ msgstr "Meddelanden från de du följer"
+
+#~ msgid "Not member of any groups yet!"
+#~ msgstr "Inte medlem i någon grupp än!"
+
+#~ msgid "Messages to followers"
+#~ msgstr "Meddelande till följare"
+
+#~ msgid "My worlds"
+#~ msgstr "Mina världar"
+
+#~ msgid "Not all users can see this"
+#~ msgstr "Inte alla användare kan se detta"
+
+#~ msgid "A verification email have been sent out to"
+#~ msgstr "Ett verifieringsemail har skickats till"
+
+#~ msgid "A user with this email already exists"
+#~ msgstr "En användare med denna email existerar redan"
+
+#~ msgid "Error connecting to Google"
+#~ msgstr "Fel under kommunikationen med Google"
+
+#~ msgid "Error connecting to Facebook"
+#~ msgstr "Fel under kommunikationen med Facebook"
+
+#~ msgid "No subject"
+#~ msgstr "Inget ämne"
+
+#~ msgid "Confirm Password"
+#~ msgstr "Bekräfta lösenord"
+
+#~ msgid "Passwords must match"
+#~ msgstr "Lösenorden måste stämma överens"
+
+#~ msgid "Join link"
+#~ msgstr "Registreringslänk"
+
+#~ msgid "File name"
+#~ msgstr "Filnamn"
+
+#~ msgid "Exclusive"
+#~ msgstr ""
+
+#~ msgid "Acknowledgement"
+#~ msgstr "Signering"
+
+#~ msgid "Order for"
+#~ msgstr "Order av"
+
+#~ msgid "Value"
+#~ msgstr "Värde"
+
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "There is a problem with your login, please contact us info@helmgast.se!"
+#~ msgstr ""
+
+#~ msgid " by "
+#~ msgstr " av "
+
+#~ msgid "Product Group"
+#~ msgstr "Produktgrupp"
+
+#~ msgid "username"
+#~ msgstr "Användarnamn"
+
+#~ msgid "password"
+#~ msgstr "Lösenord"
+
+#~ msgid "email"
+#~ msgstr "Email"
+
+#~ msgid "location"
+#~ msgstr "Plats"
+
+#~ msgid "description"
+#~ msgstr "Beskrivning"
+
+#~ msgid "xp"
+#~ msgstr "xp"
+
+#~ msgid "Choose a way of authenticating yourself"
+#~ msgstr ""
+
+#~ msgid "Or continue without, each time we will verify through your email"
+#~ msgstr ""
+
+#~ msgid "All articles"
+#~ msgstr "Alla artiklar"
+
+#~ msgid "Real Name"
+#~ msgstr ""
+
+#~ msgid "Metadata"
+#~ msgstr "Metadata"
+
+#~ msgid "Relations"
+#~ msgstr "Relationer"
+
+#~ msgid "By title"
+#~ msgstr "Efter titel"
+
+#~ msgid "By type"
+#~ msgstr "Efter typ"
+
+#~ msgid "By time"
+#~ msgstr "Efter tid"
+
+#~ msgid "Need to log in to use shopping cart"
+#~ msgstr "Du måste logga in för att fylla din kundvagn"
+
+#~ msgid "Preferred Languages"
+#~ msgstr "Förvalda språk"
+
+#~ msgid "Preferred Language"
+#~ msgstr "Förvalt språk"
+
+#~ msgid "Available Language"
+#~ msgstr ""
+
+#~ msgid "Successfully"
+#~ msgstr "Framgångsrikt"
+
+#~ msgid "Successfully %(action)s %(name)s"
+#~ msgstr "Genomfört "
+
+#~ msgid "Buy"
+#~ msgstr "Köp"
+
+#~ msgid "Ordering"
+#~ msgstr "Sortering"
+
+#~ msgid "Error: Cannot apply private access without an instance"
+#~ msgstr ""
+
+#~ msgid "Error: Cannot identify user which instance %(inst)s belongs to"
+#~ msgstr ""
+
+#~ msgid "%(op)s is a private operation which requires the owner to be logged in"
+#~ msgstr ""
+
+#~ msgid "Anonymous"
+#~ msgstr "Anonym"
+
+#~ msgid "Short Code"
+#~ msgstr ""
+
+#~ msgid "Registered Address"
+#~ msgstr ""
+
+#~ msgid "Protected"
+#~ msgstr "Skyddad"
+
+#~ msgid "Public"
+#~ msgstr "Allmän"
+
+#~ msgid "Tools"
+#~ msgstr "Verktyg"
+
+#~ msgid "Unathorized access, please login"
+#~ msgstr ""
+
+#~ msgid "Do backup"
+#~ msgstr "Gör en backup"
+
+#~ msgid "Backup name"
+#~ msgstr "Backup namn"
+
+#~ msgid "Application state"
+#~ msgstr "Tillstånd"
+
+#~ msgid "Application features"
+#~ msgstr "Det här kan du göra"
+
+#~ msgid "Admin"
+#~ msgstr "Admin"
+
+#~ msgid "Databases"
+#~ msgstr "Databaser"
+
+#~ msgid "Login again"
+#~ msgstr "Logga in igen"
+
+#~ msgid "born"
+#~ msgstr "Född"
+
+#~ msgid "died"
+#~ msgstr "Avliden"
+
+#~ msgid "gender"
+#~ msgstr "Kön"
+
+#~ msgid "occupation"
+#~ msgstr "Yrke"
+
+#~ msgid "fraction"
+#~ msgstr "organisation"
+
+#~ msgid "No products found!"
+#~ msgstr ""
+
+#~ msgid "Attachment file name"
+#~ msgstr "Bifogningens filnamn"
+
+#~ msgid "Are you sure you want to delete"
+#~ msgstr "Är du säker på att du vill ta bort"
+
+#~ msgid "Stock lists"
+#~ msgstr ""
+
+#~ msgid "Stock"
+#~ msgstr ""
+
+#~ msgid "New stock list"
+#~ msgstr ""
+
+#~ msgid "No stock lists available"
+#~ msgstr ""
+
+#~ msgid "Type or Paste URL here"
+#~ msgstr "Skriv eller klistra in en länk här"
+
+#~ msgid "You have unsaved changes"
+#~ msgstr "Du har osparade ändringar"
+
+#~ msgid "Source file URL"
+#~ msgstr ""
+
+#~ msgid "Source page URL"
+#~ msgstr ""
+
+#~ msgid "Article Images"
+#~ msgstr "Artikelbilder"
+
+#~ msgid "Article Theme"
+#~ msgstr "Artikeltema"
+
+#~ msgid "Send verification link"
+#~ msgstr "Skicka verifikationslänk"
+
+#~ msgid "Auth Code"
+#~ msgstr ""
+
+#~ msgid "Email Token"
+#~ msgstr ""
+
+#~ msgid "External Service"
+#~ msgstr ""
+
+#~ msgid "You are logged in as"
+#~ msgstr "Du är nu inloggad som"
+
+#~ msgid "Someone has already created this user!"
+#~ msgstr "Någon har redan skapat denna användaren"
+
+#~ msgid "Form data has been manipulated, unsupported external auth service"
+#~ msgstr ""
+
+#~ msgid "Password successfully changed"
+#~ msgstr "Lösenordet har ändrats"
+
+#~ msgid "This user is already verified!"
+#~ msgstr "Denna användare är redan verifierad!"
+
+#~ msgid "No invitation for this email and token exists"
+#~ msgstr "Ingen användare med denna email och nyckel existerar"
+
+#~ msgid "Incorrect email or email token, did you use the right link?"
+#~ msgstr "Ogiltig email eller nyckel, har du använt rätt länk?"
+
+#~ msgid "This user account is not active or verified"
+#~ msgstr "Detta användarkonto är inte aktiverat eller verifierat"
+
+#~ msgid "Error contacting external service"
+#~ msgstr "Fel vid kontakten mot extern inloggningstjänst"
+
+#~ msgid "Incorrect external service supplied"
+#~ msgstr "Felaktig extern inloggningstjänst angiven"
+
+#~ msgid "No such user exist, are you sure you registered first?"
+#~ msgstr ""
+
+#~ msgid "Reminder email sent to your address"
+#~ msgstr "Påminnelsemail har skickats till din email"
+
+#~ msgid "edited"
+#~ msgstr "redigerat"
+
+#~ msgid "English"
+#~ msgstr "Engelska"
+
+#~ msgid "Swedish"
+#~ msgstr "Svenska"
+
+#~ msgid "members"
+#~ msgstr "Medlemmar"
+
+#~ msgid "title"
+#~ msgstr "Titel"
+
+#~ msgid "topic"
+#~ msgstr "ämne"
+
+#~ msgid "Join"
+#~ msgstr "Registrera"
+
+#~ msgid "Insert image"
+#~ msgstr "Lägg till bild"
+
+#~ msgid "Upload"
+#~ msgstr "Ladda upp"
+
+#~ msgid "Gallery"
+#~ msgstr "Galleri"
+
+#~ msgid "or link to image online"
+#~ msgstr "eller länka till en bild"
+
+#~ msgid "Normal"
+#~ msgstr "Normal"
+
+#~ msgid "Thumbnail"
+#~ msgstr "Miniatyr"
+
+#~ msgid " Gallery"
+#~ msgstr "Galleri"
+
+#~ msgid "Image Gallery"
+#~ msgstr "Bildgalleri"
+
+#~ msgid "Please sign in"
+#~ msgstr "Logga in här"
+
+#~ msgid "Complete your account"
+#~ msgstr "Färdigställ ditt konto"
+
+#~ msgid "Login"
+#~ msgstr "Logga in"
+
+#~ msgid "Authorized with Google as"
+#~ msgstr "Identifierad av Google som"
+
+#~ msgid "associated email"
+#~ msgstr "anknuten email"
+
+#~ msgid "Authorized with Facebook as"
+#~ msgstr "Identifierad av Facebook som"
+
+#~ msgid "Cannot join, you are already logged in!"
+#~ msgstr "Det går inte att registrera en ny användare, du är redan inloggad!"
+
+#~ msgid "Sign up"
+#~ msgstr "Registrera"
+
+#~ msgid "Reset authentication"
+#~ msgstr "Återställ autentisering"
+
+#~ msgid "Join via Google"
+#~ msgstr "Registrera via Google"
+
+#~ msgid "Join via Facebook"
+#~ msgstr "Registrera via Facebook"
+
+#~ msgid "Use own password"
+#~ msgstr "Använd eget lösenord"
+
+#~ msgid "Recommended choice"
+#~ msgstr "Rekommenderat val!"
+
+#~ msgid "Don't change, only this email is verified"
+#~ msgstr "Ändra ej, den måste matcha din inbjudan"
+
+#~ msgid "Minimum 8 characters!"
+#~ msgstr "Minst 8 tecken långt!"
+
+#~ msgid "Optional details"
+#~ msgstr "Frivilliga uppgifter"
+
+#~ msgid "Receive newsletter"
+#~ msgstr "Prenumerera på nyhetsbrev"
+
+#~ msgid "Problem signing in?"
+#~ msgstr "Problem att logga in?"
+
+#~ msgid "Remind login"
+#~ msgstr "Remind login"
+
+#~ msgid "with external provider (safer!)"
+#~ msgstr "with external provider (safer!)"
+
+#~ msgid "Login via Google"
+#~ msgstr "Logga in via Google"
+
+#~ msgid "Login via Facebook"
+#~ msgstr "Logga in via Facebook"
+
+#~ msgid "Sign in"
+#~ msgstr "Logga in"
+
+#~ msgid "If you have problems you can also contact us at "
+#~ msgstr "Om du har problem kan du också kontakta oss på "
+
+#~ msgid "manage YOUR game"
+#~ msgstr "hantera DITT spel"
+
+#~ msgid "Campaigns"
+#~ msgstr "Kampanjer"
+
+#~ msgid "My sessions"
+#~ msgstr "Mina sessioner"
+
+#~ msgid "Chronicles"
+#~ msgstr "Krönikor"
+
+#~ msgid "Group"
+#~ msgstr "Grupp"
+
+#~ msgid "Rules"
+#~ msgstr "Regelsystem"
+
+#~ msgid "Sessions"
+#~ msgstr "Sessioner"
+
+#~ msgid "Scenes"
+#~ msgstr "Scener"
+
+#~ msgid "(reorder the tree of scenes as you like!)"
+#~ msgstr "(ändra om scen-trädet som du vill!)"
+
+#~ msgid "Drag"
+#~ msgstr "Dra"
+
+#~ msgid "where the magic happens"
+#~ msgstr "där magin händer"
+
+#~ msgid "Start time"
+#~ msgstr "Start tid"
+
+#~ msgid "End time"
+#~ msgstr "Slut tid"
+
+#~ msgid "upcoming and already done"
+#~ msgstr "kommande och redan klara"
+
+#~ msgid "Book sessions"
+#~ msgstr "Boka sessioner"
+
+#~ msgid "Past events"
+#~ msgstr "Tidigare möten"
+
+#~ msgid "Start"
+#~ msgstr "Start"
+
+#~ msgid "End"
+#~ msgstr "Slut"
+
+#~ msgid "Present"
+#~ msgstr "Nuvarande"
+
+#~ msgid "Main"
+#~ msgstr "Start"
+
+#~ msgid "Gamers"
+#~ msgstr "Spelare"
+
+#~ msgid "New conversation"
+#~ msgstr "Ny konversation"
+
+#~ msgid "Conversation"
+#~ msgstr "Konversation"
+
+#~ msgid "Last activity"
+#~ msgstr "Senaste aktivitet"
+
+#~ msgid "My groups"
+#~ msgstr "Mina grupper"
+
+#~ msgid "All groups"
+#~ msgstr "Alla grupper"
+
+#~ msgid "Group name"
+#~ msgstr "Gruppnamn"
+
+#~ msgid "Public Timeline"
+#~ msgstr "Allmän tidslinje"
+
+#~ msgid "Send reset link"
+#~ msgstr "Skicka återställningslänk"
+
+#~ msgid "Copy reset link"
+#~ msgstr "Kopiera återställningslänk"
+
+#~ msgid "Error logging in, contact info@helmgast.se for support"
+#~ msgstr ""
+
+#~ msgid "%s is a publicly allowed operation"
+#~ msgstr ""
+
+#~ msgid "Error logging in, contact %(email)s for support"
+#~ msgstr "Fel vid inloggningen, kontakta %(email)s för support"
+
+#~ msgid "Check your email inbox for verification link before you can login"
+#~ msgstr "Kolla din email-inbox för verifikationslänk innan du kan logga in"
+
+#~ msgid "Your new user have been created."
+#~ msgstr "Din användare har skapats"
+
+#~ msgid "This user is deleted and cannot be used. Contact %(email)s for support."
+#~ msgstr ""
+
+#~ msgid "Your user have been migrated to new login system."
+#~ msgstr "Din användare har migrerats till det nya loginsystemet"
+
+#~ msgid "You are logged in as %(user)s with %(email)s"
+#~ msgstr "Du är inloggad som %(user)s med %(email)s"
+
+#~ msgid "Drag or click to upload file"
+#~ msgstr "Dra en bild hit eller klicka för att ladda upp"
+
+#~ msgid "Image URL"
+#~ msgstr "Bild-URL"
+
+#~ msgid "Caption"
+#~ msgstr "Rubrik"
+
+#~ msgid "Select from library"
+#~ msgstr "Välj från bibliotek"
+
+#~ msgid "is currently in maintenance"
+#~ msgstr "underhålls just nu"
+
+#~ msgid "Check back with us shortly"
+#~ msgstr "Återkom snart"
+
+#~ msgid "Learn more"
+#~ msgstr "Läs mer"
+
+#~ msgid "Join us!"
+#~ msgstr "Registrera"
+
+#~ msgid "Your previous choice"
+#~ msgstr "Ditt tidigare val"
+
+#~ msgid "Last %(val)s days"
+#~ msgstr "Senaste %(val)s dagarna"
+
+#~ msgid "Older than %(val)s days"
+#~ msgstr "Äldre än %(val)s dagar"
+
+#~ msgid "You have not made any orders yet!"
+#~ msgstr "Du har inte gjort några beställningar ännu!"
+
+#~ msgid "Edit as Markdown"
+#~ msgstr "Ändra i Markdown"
+
+#~ msgid "Aeon is working on some worlds, please check back later!"
+#~ msgstr "Aeon håller på att bygga världarna, ta en titt lite senare!"
+
+#~ msgid "Today"
+#~ msgstr "Idag"
+
+#~ msgid "Older"
+#~ msgstr "Äldre"
+
+#~ msgid "Order"
+#~ msgstr "Order"
+
+#~ msgid "Empty..."
+#~ msgstr "Tom..."
+
+#~ msgid "Worlds"
+#~ msgstr "Världar"
+
+#~ msgid "Media"
+#~ msgstr "Media"
+
+#~ msgid "Security policy"
+#~ msgstr "Säkerhetspolicy"
+
+#~ msgid "a story engine"
+#~ msgstr ""
+
+#~ msgid "Confirm"
+#~ msgstr "Bekräfta"
+
+#~ msgid "All products"
+#~ msgstr "Alla produkter"
+
+#~ msgid "All orders"
+#~ msgstr "Alla ordrar"
+
+#~ msgid "Contact us about this order"
+#~ msgstr "Kontakta oss om denna ordern"
+
+#~ msgid "Save and publish"
+#~ msgstr "Spara och publicera"
+
+#~ msgid "All worlds"
+#~ msgstr "Alla världar"
+
+#~ msgid "Article actions"
+#~ msgstr "Artikel-funktioner"
+
+#~ msgid "Relations to other articles"
+#~ msgstr "Relationer till andra artiklar"
+
+#~ msgid "Other articles relation to this article"
+#~ msgstr "Artiklar med relationer till denna"
+
+#~ msgid "Unpublished"
+#~ msgstr "Ej publicerad"
+
+#~ msgid "IMAGE"
+#~ msgstr "BILD"
+
+#~ msgid "Game &#187;Worlds"
+#~ msgstr ""
+
+#~ msgid "Contact us"
+#~ msgstr ""
+
+#~ msgid "Primary Email"
+#~ msgstr ""
+
+#~ msgid "New"
+#~ msgstr "Ny"
+
+#~ msgid "world"
+#~ msgstr "värld"
+
+#~ msgid "New world"
+#~ msgstr "Ny värld"
+
+#~ msgid "Undefined access status given for this instance"
+#~ msgstr "Odefinierad rättighetsstatus för denna instansen"
+
+#~ msgid "Focus"
+#~ msgstr "Fokus"
+
+#~ msgid "Ordering priority"
+#~ msgstr ""
+
+#~ msgid "%(op)s is a publicly allowed operation"
+#~ msgstr "%(op)s är en publikt tillåten handling"
+
+#~ msgid "This is catch all denied authorization, should not be here"
+#~ msgstr ""
+
+#~ msgid "Access rules for readers is undefined and therefore denied"
+#~ msgstr ""
+
+#~ msgid "Access rules for editors is undefined and therefore denied"
+#~ msgstr ""
+
+#~ msgid "Access rules for owners is undefined and therefore denied"
+#~ msgstr ""
+
+#~ msgid "Allowed access to %(instance)s as it's own order"
+#~ msgstr ""
+
+#~ msgid "Not allowed access to %(instance)s as not own order"
+#~ msgstr ""
+
+#~ msgid "No instance to test for access on"
+#~ msgstr "Ingen instans att testa för access på"
+
+#~ msgid "User %(user)s allowed to %(op)s on own user profile"
+#~ msgstr "Användaren %(user)s tilläts %(op)s på sin egna användarprofil"
+
+#~ msgid "Allowed access to %(res)s as creator"
+#~ msgstr "Tilläts access till %(res)s som dess skapare"
+
+#~ msgid "Not allowed access to %(res)s as not a creator"
+#~ msgstr "Ej tillåten access till %(res)s eftersom inte dess skapare"
+
+#~ msgid "Enable shop feature"
+#~ msgstr "Aktivera butiksfunktion"
+
+#~ msgid "Shared world"
+#~ msgstr "Delad värld"
+
+#~ msgid "Pick your avatar at"
+#~ msgstr "Välj din avatar hos"
+
+#~ msgid "Authentication"
+#~ msgstr "Autentisering"
+
+#~ msgid "\"Welcome as an editor to Helmgast, please take the tour!\""
+#~ msgstr ""
+
+#~ msgid "\"Here is the home for a game world.\""
+#~ msgstr ""
+
+#~ msgid "\"Visitors see some of the world facts\""
+#~ msgstr ""
+
+#~ msgid "\"... or it's thumbnail\""
+#~ msgstr ""
+
+#~ msgid "\"You can also browse all articles in the world\""
+#~ msgstr ""
+
+#~ msgid "\"Here you can filter articles in all kinds of ways...\""
+#~ msgstr ""
+
+#~ msgid "\"Here we can edit the article.\""
+#~ msgstr ""
+
+#~ msgid "\"... and it's details, including who can read it\""
+#~ msgstr ""
+
+#~ msgid "\"Now we are done! Good luck!\""
+#~ msgstr ""
+
+#~ msgid "\"Now we are done! Good luck!"
+#~ msgstr ""
+
+#~ msgid "Welcome to"
+#~ msgstr "Välkommen till"
+
+#~ msgid "Our publishers"
+#~ msgstr "Våra utgivare"
+
+#~ msgid "No publishers setup yet"
+#~ msgstr "Inga utvigare har skapats ännu"
+
+#~ msgid "Can't view a None resource"
+#~ msgstr ""
+
+#~ msgid "No content"
+#~ msgstr "Inget innehåll"
+
+#~ msgid "Recent updates"
+#~ msgstr "Senaste nytt"
+
+#~ msgid ""
+#~ "Warning, this form is only compatible"
+#~ " with \"Character\" type articles. Change"
+#~ " on\n"
+#~ "                            the left\n"
+#~ "                            or your changes will not be saved."
+#~ msgstr ""
+
+#~ msgid "Allows contributions"
+#~ msgstr "Tillåter bidrag"
+
+#~ msgid "Errors in form, %(errors)s"
+#~ msgstr "Fel i formuläret, %(errors)s"
+
+#~ msgid "Newspaper"
+#~ msgstr "Dagstidning"
+
+#~ msgid "Ink Letter"
+#~ msgstr "Handskrivet brev"
+
+#~ msgid "Paper Note"
+#~ msgstr "Papperslapp"
+
+#~ msgid "Vintage Form"
+#~ msgstr "Gammaldags formulär"
+
+#~ msgid ""
+#~ "Warning, this form is only compatible"
+#~ " with \"Character\" type articles.\n"
+#~ "                            Change on the left"
+#~ " or your changes will not be "
+#~ "saved."
+#~ msgstr ""
+
+#~ msgid "Forum"
+#~ msgstr "Forum"
+
+#~ msgid "Question"
+#~ msgstr "Fråga"
+
+#~ msgid "About"
+#~ msgstr "Om"
+
+#~ msgid "Work with us"
+#~ msgstr "Arbeta med oss"
+
+#~ msgid "Terms of Service"
+#~ msgstr "Användaravtal"
+
+#~ msgid "Security and cookie policy"
+#~ msgstr "Säkerhet och kakor"
+
+#~ msgid "Previous"
+#~ msgstr "Tidigare"
+
+#~ msgid "Next"
+#~ msgstr "Nästa"
+

@@ -402,4 +402,4 @@ function init_dom(e) {
 // }
 
 $(init_dom)
-$(document).on('fablr.dom-updated', init_dom);
+$(document).on('lore.dom-updated', init_dom);

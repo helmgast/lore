@@ -48,7 +48,7 @@ define(["jquery"], function ($) {
                 $this.find(selectors[$type].eachItem + selectors[$type].removeAt).css('position', 'relative').append($removeBtn)
                 $this.on('click', '.btn-delete', function () {
                     $(this).parents(selectors[$type].eachItem).first().remove()
-                    $this.trigger('fablr.removed')
+                    $this.trigger('lore.removed')
                 })
             }
             if ($addBtn) {

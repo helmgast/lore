@@ -59,10 +59,10 @@ define(["jquery", "utils"], function ($, utils) {
         return this.each(function () {
             var $this = $(this)
 
-            var data = $this.data('fablr.fileselect')
+            var data = $this.data('lore.fileselect')
             var options = $.extend(FileSelect.DEFAULTS, $this.data(), typeof option == 'object' && option)
             // If no data set, create a FileSelect object and attach to this element
-            if (!data) $this.data('fablr.fileselect', (data = new FileSelect(this, options)))
+            if (!data) $this.data('lore.fileselect', (data = new FileSelect(this, options)))
         })
     }
 });

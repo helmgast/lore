@@ -1,7 +1,7 @@
 {
-  "name": "fablr",
+  "name": "lore",
   "version": "1.0.0",
-  "description": "Fablr is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.",
+  "description": "Lore is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.",
   "main": "index.js",
   "directories": {
     "test": "tests"
@@ -26,6 +26,7 @@
     "waypoints": "^4.0.1"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.10",
     "extract-text-webpack-plugin": "^3.0.2",
@@ -34,9 +35,12 @@
     "less-loader": "^4.1.0",
     "merge": "^1.2.0",
     "mini-css-extract-plugin": "^0.2.0",
+    "mocha": "^5.2.0",
+    "mock-require": "^3.0.2",
     "style-loader": "^0.20.3",
     "svg-sprite-loader": "^3.6.2",
     "svg-spritemap-webpack-plugin": "^2.0.0",
+    "underscore": "^1.9.1",
     "url-loader": "^1.0.1",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.11",
@@ -47,16 +51,17 @@
     "build": "webpack -p",
     "dev": "webpack",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server --hot --inline"
+    "start": "webpack-dev-server --hot --inline",
+    "test_auth0": "mocha test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/per-frojdh/fablr.git"
+    "url": "git+https://github.com/helmgast/lore.git"
   },
   "author": "Martin Frojd",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/per-frojdh/fablr/issues"
+    "url": "https://github.com/helmgast/lore/issues"
   },
-  "homepage": "https://github.com/per-frojdh/fablr#readme"
+  "homepage": "https://github.com/helmgast/lore#readme"
 }

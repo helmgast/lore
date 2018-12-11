@@ -121,7 +121,7 @@ function load_content(href, target, base_href, append) {
                             dest.html(data)
                         }
                         // Trigger all plugins on added content
-                        dest.trigger('fablr.dom-updated')
+                        dest.trigger('lore.dom-updated')
                     }
                 },
                 dataType: 'html',

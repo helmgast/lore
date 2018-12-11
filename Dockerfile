@@ -12,26 +12,26 @@ RUN npm run build
 # Second stage, copy over static resources and start the python
 FROM python:3.6-alpine
 RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl tar
-# Temporarily install pipenv from nightly
-RUN set -ex && pip install git+git://github.com/pypa/pipenv.git@8378a1b104f2d817790a05da370bef0a1b00f452
+RUN pip install pipenv
 LABEL maintainer="martin@helmgast.se"
 WORKDIR /usr/src/app
 COPY --from=0 /usr/src/app/static/ static/
 COPY Pipfile Pipfile.lock run.py /usr/src/app/
-RUN pipenv install --system
+ENV FLASK_APP=run.py PIPENV_NOSPIN=1 PIPENV_COLORBLIND=1 PIPENV_YES=1
+RUN pipenv install --system --deploy --sequential --clear --verbose
+#RUN pipenv graph
 COPY tools/ tools/
-COPY fablr/ fablr/
+COPY lore/ lore/
 COPY plugins/ plugins/
 
-ENV FLASK_APP=run.py
-RUN flask lang_compile
+#RUN flask lang-compile
 
 # provide from git or by Docker autobild
 ARG SOURCE_COMMIT=no_ver
 # provide from git or by Docker autobild
 ARG SOURCE_BRANCH=no_branch
-ENV FABLR_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
-RUN echo \$FABLR_VERSION=${FABLR_VERSION}
+ENV LORE_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
+RUN echo \$LORE_VERSION=${LORE_VERSION}
 
 # This format runs executable without bash/shell, faster
 CMD ["flask","run"]

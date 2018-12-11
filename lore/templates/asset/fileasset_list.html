@@ -1,0 +1,227 @@
+{% extends "asset/_page.html" if not parent_template else parent_template %}
+
+{% set modal = (args['out'] == 'modal') %}
+
+{% block cssimports %}
+    <meta name="pinterest" content="nopin"/>
+    {{ super() }}
+{% endblock %}
+
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
+{% block asides %}{{ super() }}
+    {% if filter_options %}
+        <div class="filter-options">
+        {{ MACRO.LIST_CONTROLS(model, args, ['slug', 'owner', 'access_type', 'tags']) }}
+
+        <h5>{% trans %}By owner{% endtrans %}</h5>
+        <div class="btn-set">
+            {{ MACRO.ARG_LINK(_('Myself'), {'owner':g.user.id, 'owner__ne':none}) }}
+            {{ MACRO.ARG_LINK(_('Others'), {'owner':none, 'owner__ne':g.user.id}) }}
+        </div>
+
+        <h5>{% trans %}By tag{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['tags'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By access type{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['access_type'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}By content type{% endtrans %}</h5>
+        <div class="btn-set">
+            {{ MACRO.ARG_LINK('image', {'content_type__startswith':'image/'}) }}
+            {{ MACRO.ARG_LINK('other', {'content_type__startswith':'application/'}) }}
+        </div>
+
+        <h5>{% trans %}By size{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['length'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}Search text{% endtrans %}</h5>
+        <form method="get">
+            {# This will erase all other query parameters when submitted by HTML design #}
+            <div class="input-group{{ ' has-success' if args['q'] }}">
+                <input class="form-control input-sm" type="search" id='q' name='q'
+                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
+            </div>
+        </form>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+        {% if not args.get('view') or args.get('view') == 'table' %}
+        {% if files %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>{{ _('File') }}</th>
+                        <th>{{ _('Tags') }}</th>
+                        <th>{{ _('Access type') }}</th>
+                        <th>{{ _('File size') }}</th>
+                        <th>{{ _('Actions') }}</th>
+                        <th>{{ _('Publisher') }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for fileasset in files %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug, intent='patch') }}">{{ fileasset.slug }}</a>
+                            </td>
+                            <td>
+                                {% for t in fileasset.tags %}
+                                    <a href="{{ url_for('assets.FileAssetsView:index', tags=t) }}"><span class="badge">{{ t }}</span></a>
+                                {% endfor %}
+                            </td>
+                            <td>{{ fileasset.get_field_display('access_type') }}</td>
+                            <td>{{ fileasset.file_data.length|filesizeformat }}</td>
+                            <td>
+                                <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                                   title="{% trans %}Open file{% endtrans %}"><span
+                                        class="glyphicon glyphicon-link"></span></a>
+                                <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                                   title="{% trans %}Download file{% endtrans %}"><span
+                                        class="glyphicon glyphicon-cloud-download"></span></a>
+                            </td>
+                            <td>{{ fileasset.publisher }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% include "includes/pagination.html" %}
+        {% else %}
+            <h3>{{ _('No file assets available!') }}</h3>
+        {% endif %}
+    {% else %}
+        {% set patch = args.get('intent', None) == 'patch' %}
+        {% if modal %}  {# Modal buttons for quick filtering #}
+            <div class="btn-set margin-below">
+                {% for opt in filter_options['tags'] %}
+                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs, full_url=true) }}
+                {% endfor %}
+                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}, full_url=true) }}
+                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}, full_url=true) }}
+                <small>Insert position:</small>
+                <div id="insert-position" class="btn-group" style="background-color: #fff" data-toggle="buttons">
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-center' }}">
+                        <input type="radio" name="gallery-class" id="gallery-center"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-center' }}>
+                        <svg class="lore-icon-btn">
+                            <use xlink:href="#lore-gallery-center"></use>
+                        </svg>
+                    </label>
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-wide' }}">
+                        <input type="radio" name="gallery-class" id="gallery-wide"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-wide' }}>
+                        <svg class="lore-icon-btn">
+                            <use xlink:href="#lore-gallery-wide"></use>
+                        </svg>
+                    </label>
+                    <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-card' }}">
+                        <input type="radio" name="gallery-class" id="gallery-card"
+                               autocomplete="off" {{ 'checked' if args.get('position')=='gallery-card' }}>
+                        <svg class="lore-icon-btn">
+                            <use xlink:href="#lore-gallery-card"></use>
+                        </svg>
+                    </label>
+                </div>
+            </div>
+
+        {% endif %}
+
+        {% if files %}
+            <div class="gallery" {{ 'data-selectmultiple=true' if args.get('choice') == 'multiple' }}>
+                {% if patch and args.get('out') != 'fragment' %}
+                    <div class="file-upload form-group gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(2.0) }}">
+                    {# TODO Class notmodal signals that this should not be submitted with the modal Submit btn #}
+                        <form class="notmodal" action="{{ url_for('assets.FileAssetsView:post', _external=true, _scheme='') }}">
+                            {# Uses nbsp to avoid the title breaking in ugly way when used in css #}
+                            <label for="file_data"
+                                   title="{% trans %}Drag or click to&nbsp;upload&nbsp;files{% endtrans %}">
+                                <svg class="lore-icon-stretch">
+                                    <use xlink:href="#lore-upload2-1"/>
+                                </svg>
+                            </label>
+                            <input type="text" class="form-control input-sm" id="source_file_url" pattern="https?://.+"
+                                   placeholder="{% trans %}Paste file URL here{% endtrans %}">
+                            {% if args['fields'].get('content_type__startswith', '') == 'image/' %}
+                                {% set upload_accept = 'image/*' %}
+                            {% elif args['fields'].get('content_type__not__startswith', '') == 'image/' %}
+                                {% set upload_accept = '.pdf,.rtf,.zip,.doc,.xls,.txt' %}
+                            {% endif %}
+
+                            <input multiple type="file" class="hide" name="file_data" id="file_data"
+                                   accept="{{ upload_accept }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        </form>
+                    </div>
+                {% endif %}
+                {% block fragment %}
+                    {% set patch = args.get('intent',None)=='patch' %} {# need this again as we're in a new block #}
+                    {% for fileasset in files %}
+                        {% if fileasset.slug in args['select'] %}
+                            {% set selection = 'data-selection=%i'|format(args['select'].index(fileasset.slug) + 1) %}
+                        {% else %}
+                            {% set selection='' %}
+                        {% endif %}
+                        {% if fileasset.is_image() %}
+                            <figure class="gallery-item{{ ' selectable' if patch }}"
+                                    style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}"
+                                    {{ selection }} id="{{ fileasset.id }}">
+{#                                {% if not patch %}#}
+{#                                    <a class="zoomable" href="#">#}
+{#                                {% endif %}#}
+                                <img class="{{ ' zoomable' if not patch }}" src="{{ url_for('image', slug = fileasset.slug, _external=true, _scheme='') }}">
+{#                                {% if not patch %}#}
+{#                                    </a>#}
+{#                                {% endif %}#}
+                                <figcaption><a class="slug"
+                                               href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}" {{ 'target=_blank' if modal else '' }}>
+                                    {{ fileasset.slug }}</a><br>
+                                    [{{ fileasset.created_date|dateformat(format='short') }} {{ fileasset.width }}x{{ fileasset.height }}px]
+                                </figcaption>
+                            </figure>
+                        {% else %}
+                            <figure class="gallery-item file-item{{ ' selectable' if patch }}" {{ selection }}
+                                    id="{{ fileasset.id }}">
+                                <a class="slug" href="{{ url_for('link', fileasset=fileasset.slug) }}">{{ fileasset.slug }}</a>
+                                <figcaption><a class="link" href="{{ url_for('link', fileasset=fileasset.slug) }}"
+                                       title="{% trans %}Open file{% endtrans %}"><span
+                                            class="glyphicon glyphicon-link"></span></a>
+                                    <a href="{{ url_for('download', fileasset=fileasset.slug) }}"
+                                       title="{% trans %}Download file{% endtrans %}"><span
+                                            class="glyphicon glyphicon-cloud-download"></span></a><br>
+                                    [{{ fileasset.created_date|dateformat(format='short') }}]
+                                </figcaption>
+                            </figure>
+                        {% endif %}
+
+                    {% endfor %}
+                    {% if pagination and pagination.has_next %}
+                        <a class="btn btn-primary pagination loadlink" target="#show-more-link"
+                           href="{{ current_url(page=pagination.next_num, _external=true, _scheme='') }}">
+                            {% trans %}Show more{% endtrans %}</a>
+                    {% endif %}
+                {% endblock fragment %}
+            </div>
+        {% else %}
+            <h3>{{ _('No file assets available!') }}</h3>
+        {% endif %}
+    {% endif %}
+{% endblock %}
