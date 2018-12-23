@@ -39,7 +39,7 @@
         {% for user in users %}
             <tr>
                 <td style="position: relative"><a href="{{ url_for('social.UsersView:get', id=user.identifier()) }}">
-                    <img class="avatar" src="{{ user.gravatar_url() }}"/>
+                    <img class="avatar img-polaroid img-thumbnail" style="width: 64px" src="{{ user.avatar_url if user.avatar_url else user.gravatar_url() }}"/>
                     <strong class="message_name">{{ user }}</strong>
                 </a></td>
                 <td>{{ user.realname|default(_('No data')) }}</td>

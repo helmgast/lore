@@ -89,6 +89,7 @@ class User(Document, BaseUser):
     admin = BooleanField(default=False)
     logged_in = BooleanField(default=False)
     tourdone = BooleanField(default=False)
+    avatar_url = StringField(verbose_name=_('Avatar URL'))
 
     # Uses string instead of Class to avoid circular import
     publishers_newsletters = ListField(ReferenceField('Publisher'))  # Reverse delete rule in world.py
@@ -98,7 +99,7 @@ class User(Document, BaseUser):
 
     # TODO deprecate
     password = StringField(max_length=60, verbose_name=_('Password'))
-    newsletter = BooleanField(default=True)
+    newsletter = BooleanField(default=True, verbose_name=_('Accepting newsletters'))
     google_auth = EmbeddedDocumentField(ExternalAuth)
     facebook_auth = EmbeddedDocumentField(ExternalAuth)
     event_log = ListField(EmbeddedDocumentField(UserEvent))

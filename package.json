@@ -51,8 +51,7 @@
     "build": "webpack -p",
     "dev": "webpack",
     "watch": "webpack --watch",
-    "start": "webpack-dev-server --hot --inline",
-    "test_auth0": "mocha test.js"
+    "start": "webpack-dev-server --hot --inline"
   },
   "repository": {
     "type": "git",

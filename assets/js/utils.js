@@ -24,9 +24,9 @@ function flash_error(message, level, target) {
         document.open();
         document.write(message);
         document.close();
-        return false
-    } else {
-        message = 'Unknown error'
+        return false;
+    } else if (!message || typeof message !== 'string') {
+        message = 'Unknown error';
     }
 
     var $error = $('<div class="alert alert-' + (level || 'warning') +
@@ -34,7 +34,7 @@ function flash_error(message, level, target) {
         'data-dismiss="alert" aria-hidden="true">&times;</button>' +
         '<p>' + message + '</p>' +
         '</div>');
-    target.append($error)
+    target.append($error);
 };
 
 function decompose_url(url) {

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-12-10 12:17+0800\n"
+"POT-Creation-Date: 2018-12-23 09:56+0100\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -72,41 +72,32 @@ msgstr "Spara din profil innan du kan använda dina nya användare!"
 msgid "You are logged in as %(user)s with %(email)s"
 msgstr "Du har loggat in som %(user)s med %(email)s"
 
-#: lore/api/auth.py:153
+#: lore/api/auth.py:156
 #, python-format
 msgid "Error logging in, contact %(email)s for support"
 msgstr "Fel vid inloggningen, kontakta %(email)s för support"
 
-#: lore/api/auth.py:159
+#: lore/api/auth.py:162
 msgid "Check your email inbox for verification link before you can login"
 msgstr "Kolla din email-inbox för verifieringslänken innan du kan logga in"
 
-#: lore/api/auth.py:168
+#: lore/api/auth.py:173
 #, python-format
 msgid "This user is deleted and cannot be used. Contact %(email)s for support."
 msgstr ""
 "Denna användare är borttagen och kan ej användas. Kontakta %(email)s för "
 "support."
 
-#: lore/api/auth.py:175
+#: lore/api/auth.py:180
 #, python-format
 msgid "Multiple users with same email, contact %(email)s for support"
 msgstr "Flera använder har samma email, kontakta %(email)s för support"
 
-#: lore/api/auth.py:199
-#, python-format
-msgid ""
-"Cannot add this auth to logged in user %(user)s, contact %(email)s for "
-"support"
-msgstr ""
-"Kan inte lägga till denna autentiseringen till inloggad användare "
-"%(user)s, kontakta  %(email)s för support"
-
-#: lore/api/auth.py:217
+#: lore/api/auth.py:222
 msgid "Your new user have been created."
 msgstr "Din nya användare har skapats."
 
-#: lore/api/auth.py:248
+#: lore/api/auth.py:247
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
@@ -575,7 +566,7 @@ msgstr "Äldre än %(delta)s"
 #: lore/model/misc.py:268 lore/templates/shop/order_address.html:37
 #: lore/templates/shop/order_header.html:31
 #: lore/templates/shop/order_lines.html:55
-#: lore/templates/social/user_item.html:139
+#: lore/templates/social/user_item.html:115
 msgid "Name"
 msgstr "Namn"
 
@@ -788,7 +779,7 @@ msgstr "Sessions ID"
 #: lore/templates/shop/order_address.html:32
 #: lore/templates/shop/order_header.html:35
 #: lore/templates/shop/order_header.html:61
-#: lore/templates/social/user_item.html:125
+#: lore/templates/social/user_item.html:101
 msgid "Email"
 msgstr "Email"
 
@@ -834,7 +825,7 @@ msgid "Deleted"
 msgstr "Borttagen"
 
 #: lore/model/user.py:78 lore/templates/social/group_item.html:43
-#: lore/templates/social/user_item.html:133
+#: lore/templates/social/user_item.html:109
 msgid "Username"
 msgstr "Användarnamn"
 
@@ -842,7 +833,7 @@ msgstr "Användarnamn"
 msgid "Contact Email"
 msgstr "Kontaktmail"
 
-#: lore/model/user.py:80 lore/templates/social/user_item.html:73
+#: lore/model/user.py:80
 msgid "Authentication sources"
 msgstr "Autentiseringskällor"
 
@@ -850,12 +841,12 @@ msgstr "Autentiseringskällor"
 msgid "Real name"
 msgstr "Namn"
 
-#: lore/model/user.py:82 lore/templates/social/user_item.html:143
+#: lore/model/user.py:82 lore/templates/social/user_item.html:119
 msgid "Location"
 msgstr "Hemort"
 
 #: lore/model/user.py:84 lore/model/user.py:189
-#: lore/templates/social/user_item.html:170
+#: lore/templates/social/user_item.html:146
 msgid "XP"
 msgstr ""
 
@@ -863,7 +854,7 @@ msgstr ""
 msgid "Join Date"
 msgstr "Gick med"
 
-#: lore/model/user.py:86 lore/templates/social/user_item.html:151
+#: lore/model/user.py:86 lore/templates/social/user_item.html:127
 msgid "Last login"
 msgstr "Senaste inloggning"
 
@@ -879,6 +870,10 @@ msgstr "Följande"
 msgid "Password"
 msgstr "Lösenord"
 
+#: lore/model/user.py:101
+msgid "Accepting newsletters"
+msgstr "Godkänner nyhetsbrev"
+
 #: lore/model/user.py:154 lore/templates/asset/fileasset_item.html:96
 #: lore/templates/shop/order_address.html:34
 #: lore/templates/shop/order_address.html:39
@@ -891,10 +886,10 @@ msgstr "Lösenord"
 #: lore/templates/shop/product_table_view.html:21
 #: lore/templates/social/group_list.html:71
 #: lore/templates/social/group_list.html:99
-#: lore/templates/social/user_item.html:135
-#: lore/templates/social/user_item.html:140
-#: lore/templates/social/user_item.html:144
-#: lore/templates/social/user_item.html:162
+#: lore/templates/social/user_item.html:111
+#: lore/templates/social/user_item.html:116
+#: lore/templates/social/user_item.html:120
+#: lore/templates/social/user_item.html:138
 #: lore/templates/social/user_list_component.html:45
 #: lore/templates/world/article_item.html:186
 #: lore/templates/world/publisher_item.html:85
@@ -1210,9 +1205,9 @@ msgstr "Logga in"
 msgid "Join"
 msgstr "Registrera"
 
-#: lore/templates/_page.html:166 lore/templates/styleguide.html:37
-msgid "Profile"
-msgstr "Profil"
+#: lore/templates/_page.html:166
+msgid "My account"
+msgstr "Mitt konto"
 
 #: lore/templates/_page.html:170 lore/templates/shop/_page.html:31
 #: lore/templates/shop/order_list.html:3 lore/templates/styleguide.html:40
@@ -1419,6 +1414,10 @@ msgstr "emailadress"
 #: lore/templates/newsletter.html:9
 msgid "Subscribe"
 msgstr "Prenumerera"
+
+#: lore/templates/styleguide.html:37
+msgid "Profile"
+msgstr "Profil"
 
 #: lore/templates/asset/_page.html:5
 msgid "File assets"
@@ -2234,15 +2233,15 @@ msgstr "Inga användare är synliga!"
 msgid "Followers"
 msgstr "Följare"
 
-#: lore/templates/social/user_item.html:56
+#: lore/templates/social/user_item.html:59
 msgid "This user is not yet active!"
 msgstr "Denna användare är inte aktiv ännu!"
 
-#: lore/templates/social/user_item.html:57
+#: lore/templates/social/user_item.html:60
 msgid "Save to complete the user and make it active."
 msgstr "Spara för att aktivera användaren"
 
-#: lore/templates/social/user_item.html:58
+#: lore/templates/social/user_item.html:61
 msgid ""
 "If you had an existing user and made this new user by error, click merge "
 "button below:"
@@ -2250,59 +2249,43 @@ msgstr ""
 "Om du hade en användare sedan tidigare och skapat denna nya användaren av"
 " misstag, klicka knappen nedan:"
 
-#: lore/templates/social/user_item.html:67
-msgid ""
-"Click to upload your avatar, by default we will use your <a "
-"href=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
-msgstr ""
-"Klicka för att ladda upp din avatar, som standard använder vi din "
-"<ahref=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
+#: lore/templates/social/user_item.html:68
+#: lore/templates/social/user_item.html:94
+msgid "Linked accounts"
+msgstr "Länkade konton"
 
-#: lore/templates/social/user_item.html:85
-msgid "Merge with existing user"
-msgstr "För samman med existerande användare"
+#: lore/templates/social/user_item.html:78
+msgid "Link other email"
+msgstr "Länka annan email"
 
-#: lore/templates/social/user_item.html:90
-msgid "Add authentication method"
-msgstr "Lägg till autentiseringsmetod"
-
-#: lore/templates/social/user_item.html:147
+#: lore/templates/social/user_item.html:123
 #: lore/templates/social/user_list_component.html:19
 msgid "Joined"
 msgstr "Registrerad"
 
-#: lore/templates/social/user_item.html:152
+#: lore/templates/social/user_item.html:128
 msgid "Not logged in yet"
 msgstr "Har inte loggat in än"
 
-#: lore/templates/social/user_item.html:165
+#: lore/templates/social/user_item.html:141
 msgid "History"
 msgstr "Historik"
 
-#: lore/templates/social/user_item.html:168
+#: lore/templates/social/user_item.html:144
 msgid "Time"
 msgstr "Tidpunkt"
 
-#: lore/templates/social/user_item.html:169
+#: lore/templates/social/user_item.html:145
 msgid "Activity"
 msgstr "Aktivitet"
 
-#: lore/templates/social/user_item.html:250
-#, python-format
-msgid "Add to %(account)s"
-msgstr "Lägg till på %(account)s"
-
-#: lore/templates/social/user_item.html:252
-msgid "Enter a new email to add by verification"
-msgstr "Skriv in en ny email att lägga till med verifiering"
-
-#: lore/templates/social/user_item.html:262
-msgid "Merge this account"
-msgstr "Kombinera detta konto"
-
-#: lore/templates/social/user_item.html:264
-msgid "Enter the email you signed up your previous account to."
-msgstr "Ange emailen du registrerade ditt tidigare konto med"
+#: lore/templates/social/user_item.html:220
+msgid ""
+"Click to upload your avatar, by default we will use your <a "
+"href=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
+msgstr ""
+"Klicka för att ladda upp din avatar, som standard använder vi din <"
+"a href=\"https://en.gravatar.com/site/signup/\">Gravatar</a>"
 
 #: lore/templates/social/user_list.html:3
 msgid "All gamers"
@@ -3453,4 +3436,31 @@ msgstr "rollspelsvärldar bara ett klick bort"
 
 #~ msgid "Next"
 #~ msgstr "Nästa"
+
+#~ msgid ""
+#~ "Cannot add this auth to logged in"
+#~ " user %(user)s, contact %(email)s for "
+#~ "support"
+#~ msgstr ""
+#~ "Kan inte lägga till denna "
+#~ "autentiseringen till inloggad användare "
+#~ "%(user)s, kontakta  %(email)s för support"
+
+#~ msgid "Merge with existing user"
+#~ msgstr "För samman med existerande användare"
+
+#~ msgid "Add authentication method"
+#~ msgstr "Lägg till autentiseringsmetod"
+
+#~ msgid "Add to %(account)s"
+#~ msgstr "Lägg till på %(account)s"
+
+#~ msgid "Enter a new email to add by verification"
+#~ msgstr "Skriv in en ny email att lägga till med verifiering"
+
+#~ msgid "Merge this account"
+#~ msgstr "Kombinera detta konto"
+
+#~ msgid "Enter the email you signed up your previous account to."
+#~ msgstr "Ange emailen du registrerade ditt tidigare konto med"
 

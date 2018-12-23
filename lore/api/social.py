@@ -65,7 +65,7 @@ class UsersView(ResourceView):
     item_arg_parser = prefillable_fields_parser(['username', 'realname', 'location', 'description'])
     form_class = model_form(User,
                             base_class=RacBaseForm,
-                            only=['username', 'realname', 'location', 'description', 'images'],
+                            only=['username', 'realname', 'location', 'description', 'images','newsletter', 'avatar_url'],
                             converter=RacModelConverter())
 
     def index(self):
@@ -203,5 +203,11 @@ class GroupsView(ResourceView):
 
 
 # GroupsView.register_with_access(social, 'group')
+@social.route('/me', subdomain='<pub_host>')
+def me():
+    if g.user:
+        return redirect(url_for('social.UsersView:get', intent='patch', id=g.user.identifier()))
+    else:
+        abort(401) # Should redirect to sso
 
 social.add_url_rule('/', endpoint='social_home', redirect_to='/social/users/')

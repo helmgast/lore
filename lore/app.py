@@ -299,6 +299,8 @@ def configure_hooks(app):
         return dict(access_policy=app.access_policy, debug=app.debug, assets=app.assets, plugins=app.plugins)
 
     from lore.model.misc import current_url, in_current_args, slugify, delta_date
+    from lore.api.auth import auth0_url
+    app.add_template_global(auth0_url)
     app.add_template_global(current_url)
     app.add_template_global(in_current_args)
     app.add_template_global(slugify)

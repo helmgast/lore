@@ -50,6 +50,10 @@
 {% block content %}
     {% if user_form %}
         <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
+        <input id="avatar_url" type="hidden" name="avatar_url" value="{{user.avatar_url|default('', true)}}">
+    {% endif %}
+    {% if user.admin %}
+        <div class="alert alert-info">User is an admin</div>
     {% endif %}
     {% if user_form and user.status == 'invited' %}
         <div class="well">
@@ -57,133 +61,104 @@
             {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
             {% trans %}If you had an existing user and made this new user by error, click merge button below:{% endtrans %}
         </div>
+        
     {% endif %}
-<div class="row">
-    <div class="col-md-4">
-        {% if user_form %}
-            {{ MACRO.FORM_FIELD(user_form.images, controlclass='fileselect',
-            data_endpoint=url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'),
-            data_class='avatar feature-images') }}
-            <small>{{ _('Click to upload your avatar, by default we will use your <a href="https://en.gravatar.com/site/signup/">Gravatar</a>') }}</small>
-        {% else %}
-            <img src="{{ url_for('image', slug=user.images[0].slug) if user.images else user.gravatar_url(256)}}" class="img-polaroid img-responsive">
-        {% endif %}
 
-        <div>
-            <h4>{% trans %}Authentication sources{% endtrans %}</h4>
-
-            {% for email, service, key in user.enumerate_auth_keys() %}
-                <p>
-                    <span class="badge">{{ service }}</span>
-                    <small>{{ email }}</small>
-                </p>
-            {% endfor %}
+    {% if user_form %}
+        <div class="form-group">
+            <label class="control-label col-sm-3" for="auth_sources">{% trans %}Linked accounts{% endtrans %}</label>
+            <div class="col-sm-9">
+            <table class="table loading" style="min-height: 50px" id="authsources">
+            </table>
             {% if user_form %}
-
-                {% if user.status == 'invited' %}
+                {# {% if user.status == 'invited' %}
                     <button type="button" class="btn btn-small btn-primary" id="lock-mail">
                         {% trans %}Merge with existing user{% endtrans %}</button>
-
-                {% else %}
-
+                {% else %} #}
                     <button type="button" class="btn btn-small btn-primary" id="lock-activate">
-                        {% trans %}Add authentication method{% endtrans %}</button>
-                {% endif %}
+                    {% trans %}Link other email{% endtrans %}</button>
+                {# {% endif %} #}
             {% endif %}
+            </div>
         </div>
-        <div class="btn-toolbar">
-            {#        {% if resouxrce.op == 'view' %}
-      <button type="button" class="btn btn-small m_action
-        {% if g.user|is_following(user) %}" href="{{url_for('social.user_unfollow', username=user.username)}}">{{ _('Unfollow') }}
-        {% else %}btn-primary" href="{{url_for('social.user_follow', username=user.username)}}">{{ _('Follow') }} ...
-        {% endif %}</button>
-      <div class="btn-group">
-        <a class="btn btn-small dropdown-toggle" data-toggle="dropdown" href="#">
-        {{ _('Add to group') }}<span class="caret"></span></a>
-        {% include "social/group_member_selector.html" %}
-      </div>
-      <button type="button" class="btn btn-small btn-primary m_action" href="{{url_for('social.conversation_new', recipients=user.username, fixed_recipients=true)}}" data-action-type="modal">{{ _('Send message') }}</button>
-    {% endif %}
-#}
-        </div>
-    </div>
-    <div class="col-md-8">
-        {% if user.admin %}
-            <div class="alert alert-info">User is an admin</div>
+        {% if user and user==g.user %}
+            {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
         {% endif %}
-        {% if user_form %}
-            {% if user and user==g.user %}
-                {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-            {% endif %}
-            {{ MACRO.FORM_FIELD(user_form.realname, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-            {{ MACRO.FORM_FIELD(user_form.location, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-            {{ MACRO.FORM_FIELD(user_form.description, labelclass="col-sm-3", controlwrap="col-sm-9", controlclass="content-editor") }}
-        {% else %}
-            <table class="table">
-                {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
-                    <tr>
-                        <th>{{ _('Email') }}</th>
-                        <td>
-                            <small>{{ user.email }}</small>
-                        </td>
-                    </tr>
-                {% endcall %}
+        {{ MACRO.FORM_FIELD(user_form.realname, labelclass="col-sm-3", controlwrap="col-sm-9") }}
+        {{ MACRO.FORM_FIELD(user_form.location, labelclass="col-sm-3", controlwrap="col-sm-9") }}
+        {{ MACRO.FORM_FIELD(user_form.description, labelclass="col-sm-3", controlwrap="col-sm-9", controlclass="content-editor") }}
+        {{ MACRO.FORM_FIELD(user_form.newsletter, labelclass="col-sm-3", controlwrap="col-sm-9") }}
 
+    {% else %}
+        <table class="table">       
+            {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
+            <tr><th>{{ _('Linked accounts') }}</th>
+                <td>
+                <table class="table loading" style="min-height: 50px" id="authsources">
+                </table>
+                <td>
+            </tr>  
                 <tr>
-                    <th>{{ _('Username') }}</th>
+                    <th>{{ _('Email') }}</th>
                     <td>
-                        <small>{{ user.username|default(_('No data'), true) }}</small>
+                        <small>{{ user.email }}</small>
                     </td>
                 </tr>
-                <tr>
-                    <th>{{ _('Name') }}</th>
-                    <td>{{ user.realname|default(_('No data'), true) }}</td>
-                </tr>
-                <tr>
-                    <th>{{ _('Location') }}</th>
-                    <td>{{ user.location|default(_('No data'), true) }}</td>
-                </tr>
-                <tr>
-                    <th>{{ _('Joined') }}</th>
-                    <td>{{ user.join_date|datetimeformat(format='short') }}</td>
-                </tr>
-                <tr>
-                    <th>{{ _('Last login') }}</th>
-                    <td>{{ user.last_login|datetimeformat(format='short') if user.last_login else _('Not logged in yet') }}</td>
-                </tr>
-
-                {#
-      <tr><th>{{ _('Following') }}</th>
-      <td><span class="badge">N/A</span></td></tr>
-      <tr><th>{{ _('Followers') }}</th>
-      <td><span class="badge">N/A</span></td></tr>
-      #}
-            </table>
-            <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div>
-            {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
-
-                <h3>{{ _('History') }}</h3>
-                <table class="table">
-                    <tr>
-                        <th>{{ _('Time') }}</th>
-                        <th>{{ _('Activity') }}</th>
-                        <th>{{ _('XP') }}</th>
-                    </tr>
-                    {% for event in events %}
-                        <tr>
-                            <td>
-                                <small>{{ event.created|datetimeformat(format='medium') }}</small>
-                            </td>
-                            <td>{{ event.action_string() }}</td>
-                            <td>{{ event.xp }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
             {% endcall %}
 
-        {% endif %}
-    </div>
-</div>
+            <tr>
+                <th>{{ _('Username') }}</th>
+                <td>
+                    <small>{{ user.username|default(_('No data'), true) }}</small>
+                </td>
+            </tr>
+            <tr>
+                <th>{{ _('Name') }}</th>
+                <td>{{ user.realname|default(_('No data'), true) }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Location') }}</th>
+                <td>{{ user.location|default(_('No data'), true) }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Joined') }}</th>
+                <td>{{ user.join_date|datetimeformat(format='short') }}</td>
+            </tr>
+            <tr>
+                <th>{{ _('Last login') }}</th>
+                <td>{{ user.last_login|datetimeformat(format='short') if user.last_login else _('Not logged in yet') }}</td>
+            </tr>
+
+            {#
+    <tr><th>{{ _('Following') }}</th>
+    <td><span class="badge">N/A</span></td></tr>
+    <tr><th>{{ _('Followers') }}</th>
+    <td><span class="badge">N/A</span></td></tr>
+    #}
+        </table>
+        <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div>
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
+
+            <h3>{{ _('History') }}</h3>
+            <table class="table">
+                <tr>
+                    <th>{{ _('Time') }}</th>
+                    <th>{{ _('Activity') }}</th>
+                    <th>{{ _('XP') }}</th>
+                </tr>
+                {% for event in events %}
+                    <tr>
+                        <td>
+                            <small>{{ event.created|datetimeformat(format='medium') }}</small>
+                        </td>
+                        <td>{{ event.action_string() }}</td>
+                        <td>{{ event.xp }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% endcall %}
+
+    {% endif %}
 
 {% if user_form %}
     <div class="row form-actions">
@@ -235,37 +210,119 @@
     </ul>
   {% endif %}
 </div>
+
+        {{ MACRO.FORM_FIELD(user_form.images, controlclass='fileselect',
+        data_endpoint=url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'),
+        data_class='avatar feature-images') }}
 #}
 {% endblock %}
 
+{% block asides %}
+    <img id="avatar" src="{{ user.avatar_url if user.avatar_url else user.gravatar_url(256)}}" 
+        class="img-polaroid img-responsive avatar">
+    {% if user_form %}
+        <small>{{ _('Click to upload your avatar, by default we will use your <a href="https://en.gravatar.com/site/signup/">Gravatar</a>') }}</small>
+    {% endif %}
+{% endblock asides %}
+
+{% block topjs %}
+    {{ super() }}
+    <script src="https://cdn.auth0.com/js/auth0/9.5.1/auth0.min.js"></script>
+    <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>  
+{% endblock topjs %}
+
 {% block js_bottom %}
     {{ super() }}
-    {% include "auth/auth0.html" %}
-    <script>
-        $('#lock-activate').click(function (e) {
-            lock.socialOrEmailcode($.extend(true, options, {
-                closable: true,
-                rememberLastLogin: false,
-                dict: {
-                    title: '{{ _("Add to %(account)s", account=user.display_name()) }}',
-                    networkOrEmail: {
-                        headerText: '{{ _("Enter a new email to add by verification") }}'
-                    }
+    <script type="text/javascript">
+    var webAuth = new auth0.WebAuth({
+        domain:       '{{ config["AUTH0_DOMAIN"] }}',
+        clientID:     '{{ config["AUTH0_CLIENT_ID"] }}',
+        responseType: 'token',
+        redirectUri: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0], next=request.url) }}"
+    });
+
+    var sso = "{{ url_for('auth.sso', pub_host=request.host, next=request.url) }}";
+    var primary_email = '';
+
+    $(document).ready(function(e) {
+        webAuth.checkSession({}, function (err, authResult) {
+            if (err) {
+                // Redirect to log us in
+                window.location = sso;
+            } else {
+                webAuth.client.userInfo(authResult.accessToken, function(err, user) {
+                if (err) {
+                    utils.flash_error("Error loading user accounts: "+err);
+                    $('#authsources').removeClass('loading');
+                } else {
+                    var ih = '';
+                    primary_email = user.email;
+                    user.linked.forEach(function(email) {
+                        ih += '<tr><td>'+email.email+'</td><td>';
+                        email.ids.forEach(function(uid) {
+                            ih += '<span class="badge">'+ uid.split('|')[0] +'</span>';
+                        });
+                        ih += '</td></tr>';
+                    });
+                    $('#authsources').html(ih);
+                    $('#authsources').removeClass('loading');
                 }
-            }));
-        })
-        $('#lock-mail').click(function (e) {
-            lock.emailcode($.extend(true, options, {
-                closable: true,
-                rememberLastLogin: false,
-                dict: {
-                    title: '{{ _("Merge this account") }}',
-                    email: {
-                        headerText: '{{ _("Enter the email you signed up your previous account to.") }}'
-                    }
-                }
-            }));
-        })
+            });
+            } 
+        });
+    });
+    {% if user_form %}
+    $('#lock-activate').click(function (e) {
+        $('#lock-activate').addClass("loading");
+        webAuth.checkSession({approve: primary_email}, function (err, authResult) {
+            if (err) {
+                $('#authsources').removeClass('loading');
+                if (err) utils.flash_error("Error loading user accounts: "+err);
+            } else {
+                webAuth.client.userInfo(authResult.accessToken, function(err, user) {
+                if (err) {
+                    $('#authsources').removeClass('loading');
+                    if (err) utils.flash_error("Error loading user accounts: "+err);
+                } else {
+                    webAuth.authorize({
+                    link: 'ripperdoc@gmail.com',
+                    approve_token: user.approve_token,
+                    prompt: 'login',
+                    redirectUri: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0], next='/social/users') }}"
+                    }, function(err, result) {
+                        $('#authsources').removeClass('loading');
+                        if (err) utils.flash_error("Error loading user accounts: "+err);
+                    }); 
+                }        
+            });
+            }
+            
+        });
+    });
+
+    var avatarWidget = cloudinary.createUploadWidget({
+        cloud_name: 'helmgast',
+        upload_preset: 'vzg4qkqx',
+        sources: ['local', 'url'],
+        theme: 'minimal',
+        multiple: 'false',
+        resourceType: 'image',
+
+    }, (error, result) => { 
+        if (!error && result && result.event === "success") {
+            $('#avatar_url').val(result.info.secure_url);
+            $('#avatar').attr("src", result.info.secure_url);
+            avatarWidget.close();
+        } else if (error) {
+            utils.flash_error("Error uploading avatar: "+error);
+        }        
+    });
+    $('#avatar').click(function (e) {
+        avatarWidget.open();
+    });
+
+    
+    {% endif %}
     </script>
 
 {% endblock %}

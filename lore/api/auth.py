@@ -121,10 +121,12 @@ def add_auth(user, user_info, next_url):
 def callback():
     # Note: This callback applies both to login and signup, there is no difference.
 
+    current_app.logger.info(f"CB received with {request.url}")
     support_email = current_app.config['MAIL_DEFAULT_SENDER']
     code = request.args.get('code', None)
     if not code:
-        abort(401)
+        # It probably a token callback, using the # fragments on URL. We can't see from server
+        return 'Ok',200
 
     token_url = "https://{domain}/oauth/token".format(domain=current_app.config['AUTH0_DOMAIN'])
 
@@ -146,9 +148,10 @@ def callback():
 
     # Make sure next is a relative URL
     next_url = safe_next_url(default_url='/')
+    logger.info(user_info)
 
-    if not user_info or 'email' not in user_info or 'sub' not in user_info:
-        logger.error(u"Unknown user denied login due to missing from backend {info}".format(info=user_info))
+    if not user_info or 'linked' not in user_info or not len(user_info['linked']):
+        logger.error(u"Unknown user denied login due to missing info from backend {info}".format(info=user_info))
         logout_user()
         flash(_('Error logging in, contact %(email)s for support', email=support_email), 'danger')
         return redirect(next_url)  # RETURN IN ERROR
@@ -159,51 +162,53 @@ def callback():
         flash(_('Check your email inbox for verification link before you can login'), 'warning')
         return redirect(next_url)  # RETURN IN ERROR
 
+    email = user_info['linked'][0]['email'] # Count as primary email
+
     session_user = get_logged_in_user(require_active=False)
 
     # Find user that matches the provided auth email
     try:
-        auth_user = User.objects(auth_keys__startswith=user_info['email'] + '|').get()
+        auth_user = User.objects(auth_keys__startswith=email + '|').get()
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
-            logger.error(u'{user} tried to login but the user is deleted'.format(user=user_info['email']))
+            logger.error(u'{user} tried to login but the user is deleted'.format(user=email))
             return redirect(next_url)  # RETURN IN ERROR
     except MultipleObjectsReturned:
-        logger.error(u"Multiple users found with same email {email}, shouldn't happen".format(email=user_info['email']))
+        logger.error(u"Multiple users found with same email {email}, shouldn't happen".format(email=email))
         logout_user()
         flash(_('Multiple users with same email, contact %(email)s for support', email=support_email), 'danger')
         return redirect(next_url)  # RETURN IN ERROR
     except DoesNotExist:
         # TODO while we are migrating, also match just email field
-        auth_user = User.objects(Q(email=user_info['email']) |
-                                 Q(facebook_auth__emails=user_info['email']) |
-                                 Q(google_auth__emails=user_info['email'])).first()  # Returns None if not found
+        auth_user = User.objects(Q(email=email) |
+                                 Q(facebook_auth__emails=email) |
+                                 Q(google_auth__emails=email)).first()  # Returns None if not found
 
-    if session_user:
-        # Someone already logged in, means they are trying to add more auths to current account
-        user = session_user
-        if auth_user and session_user != auth_user:
-            # We have two different users that might be trying to merge
-            if session_user.status == 'invited' and auth_user.status == 'active':
-                # Move over auths from old user before we delete it
-                for ak in session_user.auth_keys:
-                    auth_user.auth_keys.append(ak)
-                logout_user()
-                session_user.delete()
-                user = auth_user
-            else:
-                logger.error(u"User tried to add auth {auth} while logged in as {user}, cannot merge".format(
-                    auth=auth_user, user=session_user))
-                logout_user()
-                flash(_('Cannot add this auth to logged in user %(user)s, contact %(email)s for support',
-                        user=session_user.email, email=support_email), 'danger')
-                return redirect(next_url)  # RETURN IN ERROR
-        else:
-            # Will add new auth to session user, or just login
-            next_url = add_auth(session_user, user_info, next_url)
+    # if session_user:
+    #     # Someone already logged in, means they are trying to add more auths to current account
+    #     user = session_user
+    #     if auth_user and session_user != auth_user:
+    #         # We have two different users that might be trying to merge
+    #         if session_user.status == 'invited' and auth_user.status == 'active':
+    #             # Move over auths from old user before we delete it
+    #             for ak in session_user.auth_keys:
+    #                 auth_user.auth_keys.append(ak)
+    #             logout_user()
+    #             session_user.delete()
+    #             user = auth_user
+    #         else:
+    #             logger.error(u"User tried to add auth {auth} while logged in as {user}, cannot merge".format(
+    #                 auth=auth_user, user=session_user))
+    #             logout_user()
+    #             flash(_('Cannot add this auth to logged in user %(user)s, contact %(email)s for support',
+    #                     user=session_user.email, email=support_email), 'danger')
+    #             return redirect(next_url)  # RETURN IN ERROR
+    #     else:
+    #         # Will add new auth to session user, or just login
+    #         next_url = add_auth(session_user, user_info, next_url)
 
-    elif auth_user:
+    if auth_user:
         # Will add new auth to auth user, or just login
         next_url = add_auth(auth_user, user_info, next_url)
         user = auth_user
@@ -228,14 +233,8 @@ def callback():
 
 @auth_app.route('/sso', subdomain='<pub_host>')
 def sso():
-    next_url = safe_next_url()
-    callback_url = url_for('auth.callback', pub_host=g.pub_host, next=next_url, _external=True, _scheme=request.scheme)
-
-    auth0_url = 'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={callback}'.format(
-        domain=current_app.config['AUTH0_DOMAIN'],
-        client_id=current_app.config['AUTH0_CLIENT_ID'],
-        callback=url_quote(callback_url))
-    return redirect(auth0_url)
+    url = auth0_url(action='login')
+    return redirect(url)
 
 
 @auth_app.route('/logout', subdomain='<pub_host>')
@@ -246,11 +245,9 @@ def logout():
 
     logout_user()
     flash(_('You are now logged out'), 'success')
-    auth0_url = 'https://{domain}/v2/logout?returnTo={home}'.format(
-        domain=current_app.config['AUTH0_DOMAIN'],
-        home=url_for('world.ArticlesView:publisher_home', _external=True, _scheme=request.scheme))
+    url = auth0_url(action='logout')
 
-    return redirect(auth0_url)
+    return redirect(url)
 
 
 @auth_app.route('/login', subdomain='<pub_host>')
@@ -265,6 +262,21 @@ def join():
     # TODO redirect to the Auth0 screen?
     abort(404)
 
+
+def auth0_url(action='login', **kwargs):
+    domain = current_app.config['AUTH0_DOMAIN']
+    client_id = current_app.config['AUTH0_CLIENT_ID']
+    # prompt=login
+    if action=='login':
+        next_url = safe_next_url()
+        callback_url = url_for('auth.callback', pub_host=g.pub_host, next=next_url, _external=True, _scheme=request.scheme)
+        url = f'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={url_quote(callback_url, safe="")}'
+    elif action=='logout':
+        home = url_for('world.ArticlesView:publisher_home', _external=True, _scheme=request.scheme)
+        url = f'https://{domain}/v2/logout?returnTo={home}'
+    if kwargs:
+        url = url + '&' + url_encode(kwargs)
+    return url
 
 def get_context_user():
     return {'user': get_logged_in_user()}
