@@ -47,11 +47,20 @@
     {#    {% endcall %}#}
 {% endblock %}
 
-{% block content %}
+{% block header %}
+    {{ super() }}
     {% if user_form %}
         <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
-        <input id="avatar_url" type="hidden" name="avatar_url" value="{{user.avatar_url|default('', true)}}">
     {% endif %}
+{% endblock %}
+
+{% block post_content %}
+    {% if user_form %}
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
     {% if user.admin %}
         <div class="alert alert-info">User is an admin</div>
     {% endif %}
@@ -68,15 +77,21 @@
         <div class="form-group">
             <label class="control-label col-sm-3" for="auth_sources">{% trans %}Linked accounts{% endtrans %}</label>
             <div class="col-sm-9">
-            <table class="table loading" style="min-height: 50px" id="authsources">
+            <table class="table" id="authsources">
+                {% for email, providers in user.identities_by_email().items() %}
+                    <tr>
+                        <td>{{ email }}{%- if loop.first -%}{{_(' (primary)')}}{%- endif-%}</td>
+                        <td>{%- for p in providers -%}<span class="badge">{{p}}</span>{%- endfor -%}</td>
+                    </tr>
+                {% endfor %}
             </table>
             {% if user_form %}
                 {# {% if user.status == 'invited' %}
                     <button type="button" class="btn btn-small btn-primary" id="lock-mail">
                         {% trans %}Merge with existing user{% endtrans %}</button>
                 {% else %} #}
-                    <button type="button" class="btn btn-small btn-primary" id="lock-activate">
-                    {% trans %}Link other email{% endtrans %}</button>
+                    <a href="{{auth0_url(callback_args={'link': user.email, 'next': request.url}, prompt='login')}}"  class="btn btn-small btn-primary" id="lock-activate">
+                    {% trans %}Link other email{% endtrans %}</a>
                 {# {% endif %} #}
             {% endif %}
             </div>
@@ -94,7 +109,13 @@
             {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
             <tr><th>{{ _('Linked accounts') }}</th>
                 <td>
-                <table class="table loading" style="min-height: 50px" id="authsources">
+                <table class="table" id="authsources">
+                    {% for email, providers in user.identities_by_email().items() %}
+                        <tr>
+                            <td>{{ email }}{%- if loop.first -%}{{_(' (primary)')}}{%- endif-%}</td>
+                            <td>{%- for p in providers -%}<span class="badge">{{p}}</span>{%- endfor -%}</td>
+                        </tr>
+                    {% endfor %}
                 </table>
                 <td>
             </tr>  
@@ -171,134 +192,31 @@
             {% endif %}
         </div>
     </div></form>{% endif %}
-    {#
-<div class="row">
-  <div class="col-md-5">
-  <h4>{{ _('Groups') }}</h4>
-  {% set groups = user.groups() %}
-  {% if groups and groups|length > 0 %}
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>{{ _('Group name') }}</th>
-        <th>{{ _('Location') }}</th>
-        <th>{{ _('Members') }}</th>
-        <th>{{ _('Role') }}</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% for group in groups %}
-        <tr class="user-tablerow">
-          <th><a href="{{ url_for('social.GroupsView:get', id=group.slug) }}">{{group.name}}</a></th>
-          <td>{{group.location}}</td>
-          <td><span class="badge badge-info">{{group.members|length }}</span></td>
-          <td>#TODO</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}{{ _('Not member of any groups yet!') }}{% endif %}
-  </div>
-  <div class="col-md-5">
-    {% set message_list = user.messages() %}
-    {% if message_list.count() > 0  %}
-    <h4>{{ _('Messages to followers') }}</h4>
-      <ul class="list-unstyled">
-      {% for message in message_list %}
-        <li>{% include "social/message_item.html" %}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-</div>
 
-        {{ MACRO.FORM_FIELD(user_form.images, controlclass='fileselect',
-        data_endpoint=url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'),
-        data_class='avatar feature-images') }}
-#}
 {% endblock %}
 
 {% block asides %}
     <img id="avatar" src="{{ user.avatar_url if user.avatar_url else user.gravatar_url(256)}}" 
-        class="img-polaroid img-responsive avatar">
+        class="img-polaroid img-responsive">
     {% if user_form %}
         <small>{{ _('Click to upload your avatar, by default we will use your <a href="https://en.gravatar.com/site/signup/">Gravatar</a>') }}</small>
+        <div class="form-group">
+        {{user_form.avatar_url(class="form-control input-sm", form_id="userform")}}
+        </div>
+        
     {% endif %}
 {% endblock asides %}
 
 {% block topjs %}
     {{ super() }}
-    <script src="https://cdn.auth0.com/js/auth0/9.5.1/auth0.min.js"></script>
     <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>  
 {% endblock topjs %}
 
 {% block js_bottom %}
     {{ super() }}
     <script type="text/javascript">
-    var webAuth = new auth0.WebAuth({
-        domain:       '{{ config["AUTH0_DOMAIN"] }}',
-        clientID:     '{{ config["AUTH0_CLIENT_ID"] }}',
-        responseType: 'token',
-        redirectUri: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0], next=request.url) }}"
-    });
 
-    var sso = "{{ url_for('auth.sso', pub_host=request.host, next=request.url) }}";
-    var primary_email = '';
-
-    $(document).ready(function(e) {
-        webAuth.checkSession({}, function (err, authResult) {
-            if (err) {
-                // Redirect to log us in
-                window.location = sso;
-            } else {
-                webAuth.client.userInfo(authResult.accessToken, function(err, user) {
-                if (err) {
-                    utils.flash_error("Error loading user accounts: "+err);
-                    $('#authsources').removeClass('loading');
-                } else {
-                    var ih = '';
-                    primary_email = user.email;
-                    user.linked.forEach(function(email) {
-                        ih += '<tr><td>'+email.email+'</td><td>';
-                        email.ids.forEach(function(uid) {
-                            ih += '<span class="badge">'+ uid.split('|')[0] +'</span>';
-                        });
-                        ih += '</td></tr>';
-                    });
-                    $('#authsources').html(ih);
-                    $('#authsources').removeClass('loading');
-                }
-            });
-            } 
-        });
-    });
     {% if user_form %}
-    $('#lock-activate').click(function (e) {
-        $('#lock-activate').addClass("loading");
-        webAuth.checkSession({approve: primary_email}, function (err, authResult) {
-            if (err) {
-                $('#authsources').removeClass('loading');
-                if (err) utils.flash_error("Error loading user accounts: "+err);
-            } else {
-                webAuth.client.userInfo(authResult.accessToken, function(err, user) {
-                if (err) {
-                    $('#authsources').removeClass('loading');
-                    if (err) utils.flash_error("Error loading user accounts: "+err);
-                } else {
-                    webAuth.authorize({
-                    link: 'ripperdoc@gmail.com',
-                    approve_token: user.approve_token,
-                    prompt: 'login',
-                    redirectUri: "{{ url_for('auth.callback', pub_host=request.host, _external=true, _scheme=request.url.split(':')[0], next='/social/users') }}"
-                    }, function(err, result) {
-                        $('#authsources').removeClass('loading');
-                        if (err) utils.flash_error("Error loading user accounts: "+err);
-                    }); 
-                }        
-            });
-            }
-            
-        });
-    });
 
     var avatarWidget = cloudinary.createUploadWidget({
         cloud_name: 'helmgast',

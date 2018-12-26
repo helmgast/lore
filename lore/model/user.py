@@ -21,7 +21,7 @@ from .misc import Choices, slugify, translate_action, datetime_delta_options, ch
 from flask_babel import lazy_gettext as _
 from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
-                         BooleanField, ListField, IntField, EmailField, EmbeddedDocumentField, FloatField,
+                         BooleanField, ListField, IntField, URLField, DynamicField, EmailField, EmbeddedDocumentField, FloatField,
                          ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)
 
 import logging
@@ -38,7 +38,7 @@ auth_services = {
     'google-oauth2': 'Google',
     'google': 'Google',
     'facebook': 'Facebook',
-    'email': 'Email'
+    'email': 'One-Time Code'
 }
 
 
@@ -89,7 +89,9 @@ class User(Document, BaseUser):
     admin = BooleanField(default=False)
     logged_in = BooleanField(default=False)
     tourdone = BooleanField(default=False)
-    avatar_url = StringField(verbose_name=_('Avatar URL'))
+    avatar_url = URLField(verbose_name=_('Avatar URL'))
+    identities = DynamicField()
+    access_token = StringField()
 
     # Uses string instead of Class to avoid circular import
     publishers_newsletters = ListField(ReferenceField('Publisher'))  # Reverse delete rule in world.py
@@ -146,6 +148,16 @@ class User(Document, BaseUser):
         ev = Event(user=self, action=action, resource=resource, message=message, metric=metric)
         ev.save()
         return ev.xp
+
+    def identities_by_email(self):
+        emails = {}
+        if self.identities:
+            for id in self.identities:
+                if 'profileData' in id and 'email' in id['profileData']:
+                    emails.setdefault(id['profileData']['email'], []).append(auth_services[id['provider']])
+                else:
+                    emails.setdefault(self.email, []).append(auth_services[id['provider']])
+        return emails
 
     def create_token(self):
         return create_token(self.email)

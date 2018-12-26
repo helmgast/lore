@@ -14,6 +14,7 @@ import json
 from datetime import datetime
 
 import requests
+import rollbar
 from flask import Blueprint, request, session, flash
 from flask import abort
 from flask import current_app
@@ -27,11 +28,17 @@ from werkzeug.urls import url_encode, url_quote
 from lore.model.misc import safe_next_url, set_lang_options
 from lore.model.user import User, UserStatus
 from lore.model.world import Publisher
+from auth0.v3.management import Auth0
+from auth0.v3.authentication import GetToken
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 auth_app = Blueprint('auth', __name__)
-
+auth0_domain = ''
+auth0_mgmt_client = None
+auth0_mgmt_token = {}
+auth0_mgmt_token_expiry = None
+token_getter = None
 
 # single signon
 # set cookie on lore.pub (also works for subdomains like helmgast.lore.pub, etc
@@ -52,87 +59,52 @@ auth_app = Blueprint('auth', __name__)
 # Attach hooks at blueprint init time, instead of at import time
 @auth_app.record_once
 def on_load(state):
+    global auth0_domain, auth0_client_id, auth0_client_secret, token_getter
     state.app.before_request(load_user)
     state.app.template_context_processors[None].append(get_context_user)
     state.app.login_required = login_required
     state.app.admin_required = admin_required
+    auth0_domain = current_app.config['AUTH0_DOMAIN']
+    auth0_client_id = current_app.config['AUTH0_CLIENT_ID']
+    auth0_client_secret = current_app.config['AUTH0_CLIENT_SECRET']
+    token_getter = GetToken(auth0_domain)
 
+def get_mgmt_api():
+    global auth0_mgmt_token, auth0_mgmt_token_expiry, auth0_mgmt_client
+    if not auth0_mgmt_token or datetime.utcnow().timestamp() > auth0_mgmt_token_expiry:
+        auth0_mgmt_token = token_getter.client_credentials(auth0_client_id, auth0_client_secret, 'https://{}/api/v2/'.format(auth0_domain))
+        logger.info(auth0_mgmt_token)
+        auth0_mgmt_token_expiry = datetime.utcnow().timestamp() + auth0_mgmt_token['expires_in']
+        auth0_mgmt_client = Auth0(auth0_domain, auth0_mgmt_token['access_token'])
+    return auth0_mgmt_client
 
-def add_auth(user, user_info, next_url):
-    if not user.auth_keys:
-        user.auth_keys = []
-
-    ak = "{email}|{sub}".format(email=user_info['email'], sub=user_info['sub'])
-    # Go through user profile change if we have a new auth method
-    new_auth = ak not in user.auth_keys
-
-    if new_auth:
-        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
-
-        user.auth_keys.append(ak)
-
-        # Only delete old info when we have confirmed it using a new login
-        migrated = False
-        if user.password:
-            user.password = None
-            migrated = True
-        if user.google_auth and user.google_auth.emails and user_info['email'] in user.google_auth.emails:
-            user.google_auth = None
-            migrated = True
-        if user.facebook_auth and user.facebook_auth.emails and user_info['email'] in user.facebook_auth.emails:
-            user.facebook_auth = None
-            migrated = True
-        if migrated:
-            flash(_("Your user have been migrated to the new login system, contact us if something doesn't look ok"),
-                  'info')
-        else:
-            # We have migrated before but are now adding an additional auth method
-            flash(_("We added %(provider)s authentication using %(email)s to your user, and updated your profile data",
-                    provider=user_info['sub'].split('|')[0], email=user_info['email']), 'info')
-
-        if not user.realname:
-            user.realname = user_info.get('name', None)
-        if not user.username:
-            user.username = user_info.get('nickname', None)
-        if not user.images:
-            picture_url = user_info.get('picture_large', None) or user_info.get('picture', None)
-            if picture_url and 'gravatar.com' not in picture_url:
-                from lore.model.asset import FileAsset
-                img = FileAsset(owner=user, access_type='hidden', tags=['user'],
-                                source_file_url=picture_url)
-                try:
-                    img.save()
-                    user.images = [img]
-                except Exception as e:
-                    logger.warning(
-                        u"Unable to load profile image at sign-in for user {user}: {reason}"
-                        .format(user=user, reason=e))
-    elif user.status == 'invited':
-        # Keep sending to user profile if we are still invited
-        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
-        flash(_('Save your profile before you can use your new user!'), 'info')
-    else:
-        flash(_('You are logged in as %(user)s with %(email)s', user=user, email=user_info['email']), 'success')
-
-    return next_url
-
+def populate_user(user, user_info, token_info=None):
+    if not user.realname:
+        user.realname = user_info.get('name', None)
+    if not user.username:
+        user.username = user_info.get('nickname', None)
+    if not user.avatar_url:
+        user.avatar_url = user_info.get('picture_large', None) or user_info.get('picture', None)
+    user.identities = user_info['identities']
+    if token_info:
+        user.access_token = token_info['access_token']
+    return user
 
 @auth_app.route('/callback', subdomain='<pub_host>')
 def callback():
     # Note: This callback applies both to login and signup, there is no difference.
 
-    current_app.logger.info(f"CB received with {request.url}")
     support_email = current_app.config['MAIL_DEFAULT_SENDER']
     code = request.args.get('code', None)
     if not code:
         # It probably a token callback, using the # fragments on URL. We can't see from server
-        return 'Ok',200
+        abort(400)
 
-    token_url = "https://{domain}/oauth/token".format(domain=current_app.config['AUTH0_DOMAIN'])
+    token_url = "https://{domain}/oauth/token".format(domain=auth0_domain)
 
     token_payload = {
-        'client_id': current_app.config['AUTH0_CLIENT_ID'],
-        'client_secret': current_app.config['AUTH0_CLIENT_SECRET'],
+        'client_id': auth0_client_id,
+        'client_secret': auth0_client_secret,
         'redirect_uri': url_for('auth.callback', pub_host=g.pub_host, _external=True, _scheme=request.scheme),
         'code': code,
         'grant_type': 'authorization_code'
@@ -140,91 +112,86 @@ def callback():
     # Verify the token
     token_info = requests.post(token_url, data=json.dumps(token_payload),
                                headers={'content-type': 'application/json'}).json()
+
     # Fetch user info
     user_url = "https://{domain}/userinfo?access_token={access_token}" \
-        .format(domain=current_app.config['AUTH0_DOMAIN'], access_token=token_info['access_token'])
+        .format(domain=auth0_domain, access_token=token_info['access_token'])
 
     user_info = requests.get(user_url).json()
 
     # Make sure next is a relative URL
     next_url = safe_next_url(default_url='/')
-    logger.info(user_info)
 
-    if not user_info or 'linked' not in user_info or not len(user_info['linked']):
-        logger.error(u"Unknown user denied login due to missing info from backend {info}".format(info=user_info))
+    if not user_info:
+        logger.error(f"Unknown user denied login due to missing info from backend {user_info}")
         logout_user()
         flash(_('Error logging in, contact %(email)s for support', email=support_email), 'danger')
         return redirect(next_url)  # RETURN IN ERROR
 
     if not user_info.get('email_verified', False):
-        logger.warning(u"{user} denied login due to lacking verification".format(user=user_info))
+        logger.warning(f"{user_info} denied login due to lacking verification")
         logout_user()
         flash(_('Check your email inbox for verification link before you can login'), 'warning')
         return redirect(next_url)  # RETURN IN ERROR
 
-    email = user_info['linked'][0]['email'] # Count as primary email
-
+    email = user_info['email']
     session_user = get_logged_in_user(require_active=False)
+    auth_user = None
 
     # Find user that matches the provided auth email
     try:
-        auth_user = User.objects(auth_keys__startswith=email + '|').get()
+        auth_user = User.objects(email=email).get()
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
-            logger.error(u'{user} tried to login but the user is deleted'.format(user=email))
+            msg = u'{user} tried to login but the user is deleted'.format(user=email)
+            rollbar.report_message(msg)
+            logger.error(msg)
             return redirect(next_url)  # RETURN IN ERROR
-    except MultipleObjectsReturned:
-        logger.error(u"Multiple users found with same email {email}, shouldn't happen".format(email=email))
-        logout_user()
-        flash(_('Multiple users with same email, contact %(email)s for support', email=support_email), 'danger')
-        return redirect(next_url)  # RETURN IN ERROR
     except DoesNotExist:
-        # TODO while we are migrating, also match just email field
-        auth_user = User.objects(Q(email=email) |
-                                 Q(facebook_auth__emails=email) |
-                                 Q(google_auth__emails=email)).first()  # Returns None if not found
+        pass
 
-    # if session_user:
-    #     # Someone already logged in, means they are trying to add more auths to current account
-    #     user = session_user
-    #     if auth_user and session_user != auth_user:
-    #         # We have two different users that might be trying to merge
-    #         if session_user.status == 'invited' and auth_user.status == 'active':
-    #             # Move over auths from old user before we delete it
-    #             for ak in session_user.auth_keys:
-    #                 auth_user.auth_keys.append(ak)
-    #             logout_user()
-    #             session_user.delete()
-    #             user = auth_user
-    #         else:
-    #             logger.error(u"User tried to add auth {auth} while logged in as {user}, cannot merge".format(
-    #                 auth=auth_user, user=session_user))
-    #             logout_user()
-    #             flash(_('Cannot add this auth to logged in user %(user)s, contact %(email)s for support',
-    #                     user=session_user.email, email=support_email), 'danger')
-    #             return redirect(next_url)  # RETURN IN ERROR
-    #     else:
-    #         # Will add new auth to session user, or just login
-    #         next_url = add_auth(session_user, user_info, next_url)
+    if 'link' in request.args and request.args['link']:
+        # We are requested to link accounts
+        if session_user and session_user.email == request.args['link']:  # The logged in user is the primary from link arg
+            if session_user != auth_user and session_user.email != user_info['email']:  # Authenticating user is empty or different from logged in user
+                primary_id = f"{session_user.identities[0]['provider']}|{session_user.identities[0]['user_id']}"
+                identities = get_mgmt_api().users.link_user_account(primary_id, {
+                    "user_id": user_info['identities'][0]['user_id'],
+                    "provider": user_info['identities'][0]['provider']
+                })
+                # As we linked auth_user to session_user, we can keep current session
+                session_user.identities = identities
+                populate_user(session_user, user_info)
+                session_user.save()
+                flash(_(f"You linked email {user_info['email']} to primary {session_user.email}"), 'info')
+            # If not, we essentially do nothing, as the user is already itself
+            return redirect(next_url)
+        else:  # Something went wrong, there is no valid logged in user
+            logger.error(f"Invalid linking attempt session_user {session_user}, link arg {request.args['link']}")
+            abort(400)
 
-    if auth_user:
-        # Will add new auth to auth user, or just login
-        next_url = add_auth(auth_user, user_info, next_url)
-        user = auth_user
-    else:
+    if not auth_user:
         # We have neither user from session or from login. Create a new user!
-        user = User(email=user_info['email'])
+        user = User(email=email)
         user.save()  # So that we are guaranteed to have a user id for add_auth()
         logger.info(u"New user {user} created using {identities}".format(
             user=user_info['email'],
             identities=user_info['identities']))
         flash(_('Your new user have been created.'), 'info')
-        next_url = add_auth(user, user_info, next_url)
+    else:
+        user = auth_user
+
+    populate_user(user, user_info, token_info)
+    if user.status == 'invited':
+        # Keep sending to user profile if we are still invited
+        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
+        flash(_('Save your profile before you can use your new user!'), 'info')
+    else:
+        flash(_('You are logged in as %(user)s with %(email)s', user=user, email=user_info['email']), 'success')
 
     user.last_login = datetime.utcnow()
     user.logged_in = True
-    # user.status = 'active'
     user.save()
 
     login_user(user)
@@ -263,13 +230,17 @@ def join():
     abort(404)
 
 
-def auth0_url(action='login', **kwargs):
+def auth0_url(action='login', callback_args=None, **kwargs):
+    if not callback_args:
+        callback_args = {}
     domain = current_app.config['AUTH0_DOMAIN']
     client_id = current_app.config['AUTH0_CLIENT_ID']
     # prompt=login
+    # prompt=none
     if action=='login':
-        next_url = safe_next_url()
-        callback_url = url_for('auth.callback', pub_host=g.pub_host, next=next_url, _external=True, _scheme=request.scheme)
+        if 'next' not in callback_args:
+            callback_args['next'] = safe_next_url()
+        callback_url = url_for('auth.callback', pub_host=g.pub_host, _external=True, _scheme=request.scheme, **callback_args)
         url = f'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={url_quote(callback_url, safe="")}'
     elif action=='logout':
         home = url_for('world.ArticlesView:publisher_home', _external=True, _scheme=request.scheme)

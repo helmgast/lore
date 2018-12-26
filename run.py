@@ -3,7 +3,7 @@ from __future__ import print_function
 import sys
 
 import os
-import ptvsd
+# import ptvsd
 # ptvsd.enable_attach("my_secret", address = ('0.0.0.0', 3000))
 
 # Enable the line of source code below only if you want the application to wait until the debugger has attached to it
