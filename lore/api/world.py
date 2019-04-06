@@ -492,7 +492,6 @@ class ArticlesView(ResourceView):
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
         logger.debug("Here, debug %s , internal debugger"%(current_app.debug))
-        raise TypeError("Es")
 
         return r
 

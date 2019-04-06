@@ -1,6 +1,6 @@
 # LORE
 
-Lore is a platform for sharing stories and fictional worlds. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.
+Lore is a platform for sharing stories and fictional worlds between printed and digital media. It's a wiki and a tool for gaming and for getting together with friends. It's a responsive web based platform that should work equally well on desktop, tablet and mobiles (optimized for modern browsers - above IE8). However, it is built with an API to support non-web frontends such as mobile apps.
 
 ## FRAMEWORKS
 

@@ -315,7 +315,9 @@ def current_url(_multi=False, **kwargs):
         else:
             copy_args[k] = v
         non_param_args = non_param_args or (k in va or k in url_for_args)
-    if non_param_args:
+    if not request.endpoint:
+        return ''
+    elif non_param_args:
         # We have args that will need url_for to build full url
         copy_args.update(va)  # View args are not including query parameters
         u = url_for(request.endpoint, **copy_args.to_dict())
