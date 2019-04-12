@@ -34,11 +34,12 @@ from flask_mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
 from flask.views import View
-from mongoengine import ReferenceField, DateTimeField, Q, OperationError
+from mongoengine import ReferenceField, DateTimeField, Q, OperationError, InvalidQueryError
 from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import CombinedMultiDict, MultiDict
 from werkzeug.exceptions import HTTPException
+from werkzeug.utils import secure_filename
 from wtforms import Form as OrigForm, StringField, SelectMultipleField
 from wtforms import fields as f, validators as v, widgets
 from wtforms.compat import iteritems, text_type
@@ -261,13 +262,14 @@ class ResourceResponse(Response):
         if len(self.resource_queries) > 0 and self.resource_queries[0] == type and \
                 ('fields' in self.args and self.args['fields'].get('theme', None)):
             paths += (self.args['fields']['theme'],)
-        if type and paths:  # None as string denotes no option from Mongoengine
-            templates = ['%s/index.html' % p for p in paths if p and p != 'None']
+        if type and paths:
+            # != 'None' as this string may mean None in Mongoengine
+            templates = ['%s/index.html' % secure_filename(p) for p in paths if p and p != 'None']
             if templates:
                 try:
                     setattr(self, '%s_theme' % type, current_app.jinja_env.select_template(templates))
                 except TemplatesNotFound as err:
-                    logger.warning(f"Not finding any of themes {templates}")
+                    logger.warning(f"Not finding any of themes {templates} (from paths {paths}")
 
     def auth_or_abort(self, res=None):
         res = res or getattr(self, 'instance', None)
@@ -278,7 +280,8 @@ class ResourceResponse(Response):
         #     if intent:
         #         auth = self.access.authorize(intent, res=res)
         if not auth:
-            logger.debug('{auth}, in {url}'.format(auth=auth, url=request.url))
+            if g.user:
+                logger.warn('User "{user}" unauthorized "{msg}"'.format(user=g.user, msg=auth.message))
             abort(auth.error_code, auth.message)
         else:
             self.auth = auth
@@ -411,7 +414,10 @@ class ListResponse(ResourceResponse):
         if objid_matcher.match(slug):
             return slug  # Is already Object ID
         elif isinstance(field, ReferenceField):
-            instance = field.document_type.objects(slug=slug).only('id').first()
+            try:
+                instance = field.document_type.objects(slug=slug).only('id').first()
+            except InvalidQueryError as err:
+                instance = None
             if instance:
                 return instance.id
             else:
@@ -613,7 +619,6 @@ class RacBaseForm(ModelForm):
         super(RacBaseForm, self).populate_obj(obj)
 
     # field.populate_obj(obj, name)
-
     #     if fields_to_populate:
     #         # FormFields in form args will have '-' do denote it's subfields. We
     #         # only want the first part, or it won't match the field names
@@ -856,9 +861,9 @@ class ResourceError(Exception):
         message = message if message else self.default_messages.get(status_code, u"%s" % _('Unknown error'))
         self.r = r
         if r:
-            form = r.get('form', None)
+            form = getattr(r, 'form', None)
             self.field_errors = form.errors if form else None
-            self.template = r.get('template', None)
+            self.template = getattr(r, 'template', None)
             self.template_vars = r
         if status_code == 400 and field_errors:
             message += u", invalid fields: \n%s" % pprint.pformat(field_errors)
@@ -874,7 +879,7 @@ class ResourceError(Exception):
 
         logger.warning(u"%d: %s%s", self.status_code, self.message,
                        u"\n%s\nin resource: \n%s\nwith formdata:\n%s" %
-                       (request.url, pprint.pformat(self.r).decode('utf-8'), pprint.pformat(dict(request.form))))
+                       (request.url, pprint.pformat(self.r), pprint.pformat(dict(request.form))))
         Exception.__init__(self, "%i: %s" % (status_code, message))
 
 

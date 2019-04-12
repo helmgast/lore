@@ -1,0 +1,16 @@
+{% extends root_template if not publisher_theme else publisher_theme %}
+
+{% block js_bottom %}
+    {{ super() }}
+    {% if sentry_event_id and config['SENTRY_DSN'] %}
+        <script>
+        $('#sentry-trigger').on('click', function(e) {
+            sentryReport({ title: "Access forbidden", subtitle: 'If you believe this is incorrect, explain', eventId: '{{ sentry_event_id }}' })
+            return false;
+        });
+        </script>
+    {% endif %}   
+{% endblock js_bottom %}
+
+{% block content_title %}Access forbidden{% endblock %}
+{% block content %}{{error}}. If you believe this is incorrect, <a href="#" id="sentry-trigger">let us know</a>!{% endblock %} #}

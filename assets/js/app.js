@@ -10,9 +10,27 @@ window.$ = window.jQuery = jQuery;  // Set global access to jquery object
 // svgs.keys().forEach(svgs); // Requires all files individually to call the sprite
 
 // Load early in case of error below
-if (typeof ROLLBAR_CONFIG !== 'undefined' && ROLLBAR_CONFIG) {
-    // var Rollbar = require('rollbar-browser').init(ROLLBAR_CONFIG);
-    var Rollbar = require('rollbar').init(ROLLBAR_CONFIG);
+let Sentry;
+window.sentryReport = function(c) {}
+if (typeof SENTRY_DSN !== 'undefined' && SENTRY_DSN) {
+    Sentry = require('@sentry/browser');
+    Sentry.init({dsn: SENTRY_DSN, 
+        beforeSend(event) {
+            // Check if it is an exception, if so, show the report dialog
+            if (event.exception) {
+              Sentry.showReportDialog();
+            }
+            return event;
+          }});
+    Sentry.configureScope((scope) => {
+        scope.setUser(SENTRY_USER);
+    });
+    window.sentryReport = function(config) {
+        if (!config.user && SENTRY_USER && 'email' in SENTRY_USER && 'username' in SENTRY_USER) {
+            config.user = {email: SENTRY_USER.email, name: SENTRY_USER.username}
+        }
+        Sentry.showReportDialog(config);
+    }
 }
 
 // Own plugins
@@ -114,40 +132,17 @@ $(document).on('click', '.loadlink', function (e) {
     return false;
 });
 
+$('#feedback-ribbon').on('click', function(e) {
+    if (Sentry) {
+        Sentry.captureMessage("User report");
+        sentryReport({
+            title: "Give us feedback or report an error",
+            subtitle: "",
+            labelComments: "What's not working?"
+        })
 
-// Hide and show the debug toolbar with the betaribbon
-$('#feedback-modal').on('show.bs.modal', function (e) {
-    $('#flDebugToolbar').show();
-})
-
-$('#feedback-modal').on('hide.bs.modal', function (e) {
-    $('#flDebugToolbar').hide();
-})
-
-// Send feedback to Slack
-$('#feedback-modal').on('submit', 'form', function (e) {
-    var input = $(this).serializeArray()
-    var type = input[0]['value'] || 'error'
-    var desc = input[1]['value'] || 'none'
-    var user = input[2]['value'] || 'Anonymous'
-    var payload = {
-        'attachments': [
-            {
-                "fallback": "Received " + type + ": " + desc,
-                "pretext": "Received " + type + " for " + window.location,
-                "text": desc,
-                "author_name": user,
-                "author_link": user.indexOf("@") > 0 ? "mailto:" + user : '',
-                "color": type == 'error' ? "danger" : "warning"
-            }
-        ]
     }
-    ga('send', 'event', type, '(selector)', desc);
-    $.post(
-        'https://hooks.slack.com/services/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',
-        JSON.stringify(payload))
-    e.preventDefault()
-    $('#feedback-modal').modal('hide')
+    return false;
 });
 
 $(document).on('click', '.selectable', function (e) {

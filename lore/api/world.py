@@ -24,7 +24,7 @@ from mongoengine import NotUniqueError, ValidationError
 from mongoengine.queryset import Q
 from werkzeug.contrib.atom import AtomFeed
 
-from lore.api.resource import (ResourceAccessPolicy, RacModelConverter, ArticleBaseForm, RacBaseForm,
+from lore.api.resource import (ResourceAccessPolicy, ResourceError, RacModelConverter, ArticleBaseForm, RacBaseForm,
                                 ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                 ListResponse, ItemResponse, Authorization)
 from lore.model.misc import EMPTY_ID, set_lang_options
@@ -91,15 +91,15 @@ def filter_authorized_by_publisher(publisher=None):
 class PublisherAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
         if user in res.editors:
-            return Authorization(True, _("Allowed access to %(res)s as editor", res=res), privileged=True)
+            return Authorization(True, _('Allowed access to "%(res)s" as editor', res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(res)s as not an editor", res=res))
+            return Authorization(False, _('Not allowed access to "%(res)s" as not an editor', res=res))
 
     def is_reader(self, op, user, res):
         if user in res.readers:
-            return Authorization(True, _("Allowed access to %(res)s as reader", res=res), privileged=True)
+            return Authorization(True, _('Allowed access to "%(res)s" as reader', res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(res)s as not a reader", res=res))
+            return Authorization(False, _('Not allowed access to "%(res)s" as not a reader', res=res))
 
     def is_resource_public(self, op, res):
         return Authorization(True, _("Public resource")) if res.status == 'published' else \
@@ -113,15 +113,15 @@ class PublisherAccessPolicy(ResourceAccessPolicy):
 class WorldAccessPolicy(PublisherAccessPolicy):
     def is_editor(self, op, user, res):
         if user in res.editors or (res.publisher and user in res.publisher.editors):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as editor', op=op, res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not an editor', op=op, res=res))
 
     def is_reader(self, op, user, res):
         if user in res.readers or (res.publisher and user in res.publisher.readers):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res), privileged=True)
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as reader', op=op, res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not a reader', op=op, res=res))
 
     def is_contribution_allowed(self, op, res):
         return Authorization(True, _("World flagged as open for contribution")) if res.contribution else \
@@ -135,19 +135,19 @@ class ArticleAccessPolicy(PublisherAccessPolicy):
         if user in res.editors or \
                 (res.publisher and user in res.publisher.editors) or \
                 (res.world and user in res.world.editors):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res),
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as editor', op=op, res=res),
                                  privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not an editor', op=op, res=res))
 
     def is_reader(self, op, user, res):
         if user in res.readers or \
                 (res.publisher and user in res.publisher.readers) or \
                 (res.world and user in res.world.readers):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res),
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as reader', op=op, res=res),
                                  privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not a reader', op=op, res=res))
 
 
 class PublishersView(ResourceView):
@@ -466,11 +466,12 @@ class ArticlesView(ResourceView):
         return feed.get_response()
 
     def get(self, world_, id):
+
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
 
         set_lang_options(world, publisher)
-
+        
         # Special id post means we interpret this as intent=post (to allow simple routing to get)
         if id == 'post':
             r = ItemResponse(ArticlesView,
@@ -490,6 +491,8 @@ class ArticlesView(ResourceView):
 
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
+        logger.debug("Here, debug %s , internal debugger"%(current_app.debug))
+        raise TypeError("Es")
 
         return r
 

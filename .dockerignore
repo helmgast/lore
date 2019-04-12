@@ -16,4 +16,5 @@ node_modules/
 
 # Dockerignore
 static/dist
+static/dev
 .git*

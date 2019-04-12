@@ -14,7 +14,6 @@ import json
 from datetime import datetime
 
 import requests
-import rollbar
 from flask import Blueprint, request, session, flash
 from flask import abort
 from flask import current_app
@@ -24,6 +23,7 @@ from flask import render_template
 from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
 from werkzeug.urls import url_encode, url_quote
+from sentry_sdk import configure_scope, capture_message, capture_exception
 
 from lore.model.misc import safe_next_url, set_lang_options
 from lore.model.user import User, UserStatus
@@ -84,7 +84,7 @@ def populate_user(user, user_info, token_info=None):
     if not user.username:
         user.username = user_info.get('nickname', None)
     if not user.avatar_url:
-        user.avatar_url = user_info.get('picture_large', None) or user_info.get('picture', None)
+        user.avatar_url = user_info.get('picture', None)
     user.identities = user_info['identities']
     if token_info:
         user.access_token = token_info['access_token']
@@ -118,20 +118,25 @@ def callback():
         .format(domain=auth0_domain, access_token=token_info['access_token'])
 
     user_info = requests.get(user_url).json()
+    #logger.info(user_info)
 
     # Make sure next is a relative URL
     next_url = safe_next_url(default_url='/')
 
     if not user_info:
-        logger.error(f"Unknown user denied login due to missing info from backend {user_info}")
+        msg = f"Unknown user denied login due to missing info from backend {user_info}"
+        logger.error(msg)
         logout_user()
         flash(_('Error logging in, contact %(email)s for support', email=support_email), 'danger')
+        capture_message(msg)
         return redirect(next_url)  # RETURN IN ERROR
 
     if not user_info.get('email_verified', False):
-        logger.warning(f"{user_info} denied login due to lacking verification")
+        msg = f"{user_info} denied login due to lacking verification"
+        logger.warning(msg)
         logout_user()
         flash(_('Check your email inbox for verification link before you can login'), 'warning')
+        capture_message(msg)
         return redirect(next_url)  # RETURN IN ERROR
 
     email = user_info['email']
@@ -145,7 +150,7 @@ def callback():
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
             msg = u'{user} tried to login but the user is deleted'.format(user=email)
-            rollbar.report_message(msg)
+            capture_message(msg)
             logger.error(msg)
             return redirect(next_url)  # RETURN IN ERROR
     except DoesNotExist:
@@ -168,7 +173,9 @@ def callback():
             # If not, we essentially do nothing, as the user is already itself
             return redirect(next_url)
         else:  # Something went wrong, there is no valid logged in user
-            logger.error(f"Invalid linking attempt session_user {session_user}, link arg {request.args['link']}")
+            msg = f"Invalid linking attempt session_user {session_user}, link arg {request.args['link']}"
+            logger.error(msg)
+            capture_message(msg)
             abort(400)
 
     if not auth_user:
@@ -255,6 +262,9 @@ def get_context_user():
 
 def load_user():
     g.user = get_logged_in_user()
+    if g.user:
+        with configure_scope() as scope:
+            scope.user = {"email": g.user.email, "id": g.user.id}
 
 
 # TODO update or depcrecate
@@ -316,6 +326,7 @@ def get_logged_in_user(require_active=True):
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
                         logger.warning(f"User {u} forced out: logged_in={u.logged_in}, status={u.status}, "
                                        f"require_active={require_active}, url {request.url}")
+                        capture_message
                         # We are logged out or user has become other than active
                         return None
 
@@ -331,5 +342,6 @@ def get_logged_in_user(require_active=True):
                     logger.warning("No user in database with uid {uid}".format(uid=uid))
             except Exception as e:
                 logger.error(e)
+                capture_exception(e)
                 logout_user()
     return u  # Might be None if all failed above

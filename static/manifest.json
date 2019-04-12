@@ -1,0 +1,10 @@
+{
+  "0.js": "dev/0.js",
+  "1.js": "dev/1.js",
+  "app.css": "dev/app.css",
+  "app.js": "dev/app.js",
+  "custom_bootstrap.less": "dev/glyphicons-halflings-regular.woff2",
+  "icons.svg": "dev/icons.svg",
+  "spritemap.svg": "dev/spritemap.svg",
+  "webfonts.css": "dev/vinque.woff"
+}

@@ -21,25 +21,25 @@ msgstr ""
 #: lore/api/asset.py:141 lore/api/shop.py:81 lore/api/world.py:116
 #: lore/api/world.py:138
 #, python-format
-msgid "Allowed access to %(op)s %(res)s as editor"
+msgid 'Allowed access to %(op)s "%(res)s" as editor'
 msgstr ""
 
 #: lore/api/asset.py:143 lore/api/shop.py:84 lore/api/world.py:118
 #: lore/api/world.py:141
 #, python-format
-msgid "Not allowed access to %(op)s %(res)s as not an editor"
+msgid 'Not allowed access to %(op)s "%(res)s" as not an editor'
 msgstr ""
 
 #: lore/api/asset.py:147 lore/api/shop.py:88 lore/api/world.py:122
 #: lore/api/world.py:147
 #, python-format
-msgid "Allowed access to %(op)s %(res)s as reader"
+msgid 'Allowed access to %(op)s "%(res)s" as reader'
 msgstr ""
 
 #: lore/api/asset.py:149 lore/api/shop.py:91 lore/api/world.py:124
 #: lore/api/world.py:150
 #, python-format
-msgid "Not allowed access to %(op)s %(res)s as not a reader"
+msgid 'Not allowed access to %(op)s "%(res)s" as not a reader'
 msgstr ""
 
 #: lore/api/asset.py:229 lore/api/asset.py:248 lore/api/mailer.py:196
@@ -309,12 +309,12 @@ msgstr ""
 
 #: lore/api/shop.py:320
 #, python-format
-msgid "Allowed access to %(op)s %(res)s as owner of order"
+msgid 'Allowed access to %(op)s "%(res)s" as owner of order'
 msgstr ""
 
 #: lore/api/shop.py:323
 #, python-format
-msgid "Not allowed access to %(op)s %(res)s as not owner of order"
+msgid 'Not allowed access to %(op)s "%(res)s" as not owner of order'
 msgstr ""
 
 #: lore/api/shop.py:417 lore/api/shop.py:454 lore/api/shop.py:483
@@ -350,22 +350,22 @@ msgstr "Ingen användare att avsluta touren för"
 
 #: lore/api/world.py:94
 #, python-format
-msgid "Allowed access to %(res)s as editor"
+msgid 'Allowed access to "%(res)s" as editor'
 msgstr "Tilläts access till %(res)s i egenskap av redaktör"
 
 #: lore/api/world.py:96
 #, python-format
-msgid "Not allowed access to %(res)s as not an editor"
+msgid 'Not allowed access to "%(res)s" as not an editor'
 msgstr "Ej tillåten access till %(res)s eftersom användaren inte är en redaktör"
 
 #: lore/api/world.py:100
 #, python-format
-msgid "Allowed access to %(res)s as reader"
+msgid 'Allowed access to "%(res)s" as reader'
 msgstr ""
 
 #: lore/api/world.py:102
 #, python-format
-msgid "Not allowed access to %(res)s as not a reader"
+msgid 'Not allowed access to "%(res)s" as not a reader'
 msgstr ""
 
 #: lore/api/world.py:109

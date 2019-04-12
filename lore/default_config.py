@@ -7,6 +7,7 @@
 
 from builtins import object
 class Config(object):
+    PRODUCTION = False
     DEBUG = True
     DEBUG_TB_PROFILER_ENABLED = True  # profile time to run, will slow down things
     DEBUG_TB_INTERCEPT_REDIRECTS = False
@@ -35,7 +36,7 @@ class Config(object):
     DEFAULT_HOST = 'localhost:5000'  # Default host when not using flask dev server
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
-    WEBPACK_MANIFEST_PATH = '../static/dist/manifest.json'
+    WEBPACK_MANIFEST_PATH = '../static/manifest.json'
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
@@ -50,7 +51,7 @@ class SecretConfig(object):
     # Used by Sparkpost email sending API
     SPARKPOST_API_KEY = 'SECRET'
 
-    ROLLBAR_TOKEN = 'SECRET'
+    SENTRY_DSN = 'SECRET'
 
     # Used to access Auth0 authentication backend
     AUTH0_CLIENT_SECRET = 'SECRET'

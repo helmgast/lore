@@ -1,0 +1,16 @@
+{% extends root_template %}
+
+{% block js_bottom %}
+    {{ super() }}
+    {% if sentry_event_id and config['SENTRY_DSN'] %}
+        <script>
+        $('#sentry-trigger').on('click', function(e) {
+            sentryReport({ title: "Sorry, something is broken", eventId: '{{ sentry_event_id }}' })
+        }).click();
+        
+        </script>
+    {% endif %}   
+{% endblock js_bottom %}
+
+{% block content_title %}Server Error{% endblock %}
+{% block content %}Sorry, something is broken <a href="#" id="sentry-trigger">add some details</a>!{% endblock %}

@@ -78,17 +78,17 @@ def filter_authorized_by_publisher(publisher=None):
 class ProductAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
         if res.publisher and user in res.publisher.editors:
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res),
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as editor', op=op, res=res),
                                  privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not an editor', op=op, res=res))
 
     def is_reader(self, op, user, res):
         if res.publisher and user in res.publisher.readers:
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res),
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as reader', op=op, res=res),
                                  privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not a reader', op=op, res=res))
 
     def is_resource_public(self, op, res):
         return Authorization(True, _("Public resource")) if res.status != 'hidden' else \
@@ -317,10 +317,10 @@ class OrdersAccessPolicy(ResourceAccessPolicy):
 
     def is_reader(self, op, user, res):
         if user and user == res.user:
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as owner of order", op=op, res=res),
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as owner of order', op=op, res=res),
                                  privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not owner of order", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not owner of order', op=op, res=res))
 
     def authorize(self, op, user=None, res=None):
         auth = super(OrdersAccessPolicy, self).authorize(op, user, res)

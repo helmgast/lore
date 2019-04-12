@@ -193,7 +193,7 @@ class Order(Document):
     internal_comment = StringField(verbose_name=_('Internal Comment'))
     shipping_address = EmbeddedDocumentField(Address)
 
-    def __strs__(self):
+    def __str__(self):
         max_prod, max_price = None, -1
         for ol in self.order_lines:
             if ol.price > max_price:
@@ -234,7 +234,6 @@ class Order(Document):
         price_format = (u'{:.0f}' if float(self.total_price).is_integer() else u'{:.2f}').format(self.total_price)
         fx_format = FX_FORMAT.get(self.currency, u'%s')
         return fx_format % price_format
-
 
     def update_stock(self, publisher, update_op, select_op=None):
         """Updates the stock count (either by inc(rement) or dec(rement) operators) and optionally ensures a select

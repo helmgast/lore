@@ -12,8 +12,9 @@ front/
 .vscode/
 .pydevproject/
 .venv/
+.env
 node_modules/
 
-# Dockerignore
 static/dist
+static/dev
 .git*

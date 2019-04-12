@@ -28,17 +28,19 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 
 
-config = {
-    mode: 'development',
+function getConfig(devMode) {
+    return {
+    devtool: devMode ? 'cheap-module-eval-source-map' : '',
     entry: {
         app: path.resolve(__dirname, 'assets/js/app.js'),
     },
     output: {
-        path: path.resolve(__dirname, 'static/dist'),
-        filename: '[name].[chunkhash].js',
+        path: path.resolve(__dirname, devMode ? 'static/dev' : 'static/dist'),
+        filename: devMode ? '[name].js' : '[name].[contenthash:8].js',
+        chunkFilename: devMode ? '[id].js' : '[id].[contenthash:8].js',
         // This will be prepended to URLs printed at build-time (into e.g. css files). At runtime, we will use dynamic
         // variable from server set in app.js.
-        publicPath: '/static/dist/'
+        publicPath: devMode ? '/static/dev/': '/static/dist/'
     },
     module: {
         rules: [
@@ -77,7 +79,7 @@ config = {
                         loader: 'url-loader',
                         options: {
                             limit: 8192,
-                            name: '[name].[sha512:hash:base64:7].[ext]'
+                            name: devMode ? '[name].[ext]' : '[name].[hash:8].[ext]'
                         }
                     }
                 ],
@@ -97,7 +99,7 @@ config = {
                         loader: 'url-loader',
                         options: {
                             limit: 8192,
-                            name: '[name].[sha512:hash:base64:7].[ext]'
+                            name: devMode ? '[name].[ext]' : '[name].[hash:8].[ext]'
                         }
                     }
                 ]
@@ -109,28 +111,33 @@ config = {
         new MiniCssExtractPlugin({
             // Options similar to the same options in webpackOptions.output
             // both options are optional
-            // filename: "[name].[chunkhash].bundle.css",
-            chunkFilename: "[name].[hash].css"
+            filename: devMode ? '[name].css' : "[name].[contenthash:8].css",
           }),
-        // new ExtractTextPlugin('[name].[chunkhash].bundle.css'),
         // new SpritePlugin(),
         new SVGSpritemapPlugin({
             src: 'assets/gfx/*.svg',
-            filename: 'spritemap.[contenthash].svg',
+            filename: devMode ? 'spritemap.svg' : 'spritemap.[contenthash].svg', // doesn't support short hash
             prefix: 'lore-',
         }),
         new ManifestPlugin({
+            // Remove static from output as this will be automatically added in Flask
+            fileName: '../manifest.json',
             map: function(o){o.path = o.path.replace('/static/',''); return o}}),
 
-        new CleanWebpackPlugin(['static/dist'])
+        new CleanWebpackPlugin()
 
     ],
     resolve: {
         modules: ['assets/js', 'node_modules'],
     }
+    }
 }
 
-module.exports = config
+module.exports = (env, argv) => {
+    console.log("MODE "+argv.mode);
+    return getConfig(argv.mode !== 'production');
+}
+
 
 // const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 // const path = require('path');

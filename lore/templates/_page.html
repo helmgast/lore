@@ -89,21 +89,16 @@
                     type='image', choice='multiple')|safe }}"
         var CSRF_TOKEN = "{{ csrf_token() }}"
         var USER="{{ g.user.email if g.user else ''}}"
-        {% if config['ROLLBAR_TOKEN'] and config['ROLLBAR_TOKEN'] != 'SECRET' %}
-        var ROLLBAR_CONFIG = {
-            accessToken: "ea27a30c22ca4e62a506af0ee4e581a5",
-            captureUncaught: true,
-            captureUnhandledRejections: true,
-            payload: {
-                environment: "lore",
-                person: {
-                    {% if g.user %}
-                        id: "{{ g.user.id }}",
-                        email: "{{ g.user.email }}",
-                    {% endif %}
-                }
-            }
-        };
+        {% if config['SENTRY_DSN'] and config['SENTRY_DSN'] != 'SECRET' %}
+        const SENTRY_DSN = "{{config['SENTRY_DSN']}}";
+        var SENTRY_USER = {}
+        {% if g.user %}
+        SENTRY_USER = {
+            id: "{{ g.user.id }}",
+            email: "{{ g.user.email }}",
+            username: "{{ g.user.display_name() }}"
+        }
+        {% endif %}
         {% endif %}
     {% endblock %}
 </script>
@@ -129,7 +124,7 @@
         <div class="collapse navbar-collapse my-collapse">
             <ul class="nav navbar-nav navbar-nav-top">
                 {% block navbar_left %}
-                    {% call(privileged) MACRO.IS_ADMIN() %}
+                    {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=user)) %}
                         <li{% block publishers_active %}{% endblock %}>
                             <a href="{{ url_for('world.PublishersView:index') }}">
                                 <span class="glyphicon glyphicon-asterisk"></span> {{ _('Publishers') }}
@@ -201,7 +196,7 @@
         </div>
 
     </nav>
-    <button class="betaribbon" data-toggle="modal" data-target="#feedback-modal">
+    <button class="betaribbon" id="feedback-ribbon">
         <span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Give feedback{% endtrans %}!<br><span
             style="font-variant: small-caps">Beta</span>
     </button>
@@ -265,7 +260,6 @@
 </footer>
 
 {% block final_html %}
-    {% include "includes/feedback_modal.html" %}
 
     {# Standard modal element, don't touch #}
     {# TODO data-remote='' cancels out remote setting from data-toggle=modal to stop remote loading#}

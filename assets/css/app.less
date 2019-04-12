@@ -1306,7 +1306,9 @@ article {
   width: 100%;
   padding: 0;
   display: -ms-flexbox;
+  flex-wrap: wrap;
   -ms-flex-wrap: wrap;
+  flex-direction: column;
   -ms-flex-direction: column;
   -webkit-flex-flow: row wrap;
   flex-flow: row wrap;
@@ -1340,6 +1342,7 @@ article {
   margin-right: 4px;
   display: block;
   position: relative;
+  backface-visibility: hidden;
   -webkit-backface-visibility: hidden; /* To fix webkit 1px rendering bug */
   //box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   flex: 1 1 auto; /* Autoshrink will make it fit nicer if no width was given */
@@ -1767,6 +1770,10 @@ img.zoomable.zoomed {
 /* ------------------- Bugfixers or similar --------------------- */
 // Are at bottom to ensure they overrule anything before
 
+.sentry-error-embed-wrapper {
+  z-index: 1100 !important;
+}
+
 .container {
   /*width: 100%; !* For some reason needed for overflow-x to work in table-responsives below *!*/
   flex: 1;
@@ -1875,7 +1882,7 @@ img.zoomable.zoomed {
     background: #fff !important;
     text-rendering: optimizeLegibility;
     -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    color-adjust: exact;
   }
 
   a[href]:after {

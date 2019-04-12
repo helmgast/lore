@@ -38,6 +38,16 @@ def filter_authorized():
 
 
 class UserAccessPolicy(ResourceAccessPolicy):
+    def authorize(self, op, user=None, res=None):
+        op = self.translate.get(op, op)  # TODO temporary translation between old and new op words, e.g. patch vs edit
+        if not user:
+            user = g.user
+
+        if op is 'list':
+            return self.is_user(op, user, res)
+        else:
+            return super(UserAccessPolicy, self).authorize(op, user, res)
+
     def is_editor(self, op, user, res):
         if user == res:
             return Authorization(True, _("Allowed access to %(op)s %(res)s own user profile", op=op, res=res),

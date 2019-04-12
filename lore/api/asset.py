@@ -138,15 +138,15 @@ def filter_authorized_by_publisher(publisher=None):
 class AssetAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
         if user == res.owner or (res.publisher and user in res.publisher.editors):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as editor", op=op, res=res), privileged=True)
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as editor', op=op, res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not an editor", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not an editor', op=op, res=res))
 
     def is_reader(self, op, user, res):
         if user == res.owner or (res.publisher and user in res.publisher.readers):
-            return Authorization(True, _("Allowed access to %(op)s %(res)s as reader", op=op, res=res), privileged=True)
+            return Authorization(True, _('Allowed access to %(op)s "%(res)s" as reader', op=op, res=res), privileged=True)
         else:
-            return Authorization(False, _("Not allowed access to %(op)s %(res)s as not a reader", op=op, res=res))
+            return Authorization(False, _('Not allowed access to %(op)s "%(res)s" as not a reader', op=op, res=res))
 
 
 class FileAssetsView(ResourceView):
