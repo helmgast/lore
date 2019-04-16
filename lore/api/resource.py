@@ -23,7 +23,7 @@ import sys
 
 import flask
 import math
-from flask import request, render_template, flash, url_for, abort, g, current_app
+from flask import request, render_template, flash, url_for, abort, g, current_app, session
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
 from flask_mongoengine import Pagination
@@ -308,12 +308,18 @@ class ResourceResponse(Response):
             return self
         elif best_type == 'application/json':
             # TODO this will create a new response, which is a bit of waste
-            # TODO this will not properly filter instances exposing secret data!
             # Need to at least keep the status from before
-            if self.errors:
-                return jsonify(errors=self.errors), self.status
-            else:
-                return jsonify({k: getattr(self, k) for k in self.json_fields}), self.status
+            # if self.errors:
+            #     return jsonify(errors=self.errors), self.status
+            # else:
+            rv = {k: getattr(self, k) for k in self.json_fields}
+            flashes = session.get('_flashes', [])
+            if flashes:
+                rv['errors'] = []
+                for flash in flashes:
+                    rv['errors'].append(flash[1]) # Message
+                session['_flashes'] = []
+            return jsonify(rv), self.status
         else:  # csv
             abort(406)  # Not acceptable content available
 

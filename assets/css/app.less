@@ -890,10 +890,12 @@ article, .gallery {
   padding-right: 10px;
 }
 
-.nav.imprint a {
+.nav.imprint a, .nav.imprint .imprint-info {
   display: inline-block;
   padding-left: 0px;
   padding-right: 2px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .nav.imprint > li > a:hover {
@@ -1214,23 +1216,35 @@ top-shadow {
   z-index: 20;
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding-top: 15px;
+  padding: 15px;
   background-color: @gray-lighter;
 }
 
-.form-horizontal .form-group {
-  /* Counter a -15px margin on form-horizontal */
-  margin-left: 0px;
-  margin-right: 0px;
+.form-horizontal .form-group-noncolumn {
+  // .form-horizontal .form-group has countering margins. This selector allows us to
+  // use .col-adjust to have a form element span the whole width without getting 
+  // messed up left margin
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-bottom: 0px;
 }
 
-.form-horizontal .form-group > input {
-  margin-left: 15px;
-  margin-right: 15px;
-}
+// .form-horizontal .form-group > input {
+//   margin-left: 15px;
+//   margin-right: 15px;
+// }
 
 .form-control[type='checkbox'] {
   box-shadow: none;
+}
+
+.input-group-addon.input-group-addon-xs {
+  font-size: 12px;
+  padding-right: 0px;
+}
+
+#shortcut {
+  padding: 5px;
 }
 
 /*.article_comment.form-horizontal .form-group label, .article_comment.form-horizontal .form-group div {*/
@@ -1331,8 +1345,10 @@ article {
   font-size: 10px;
   font-family: @font-family-sans-serif;
   background: @light-shade;
-  margin-top: -12px;
-  margin-left: 2px;
+  // margin-top: -12px;
+  // margin-left: 2px;
+  margin-top: -6px;
+  margin-left: -4px;
   padding: 1px;
 }
 
@@ -1797,10 +1813,10 @@ img.zoomable.zoomed {
   padding-top: 1px; /* Some bug that affects article_vintage */
 }
 
-#flDebug #flDebugToolbarHandle {
-  // Hide the ugly toolbar handle, show when pressing betaribbon
-  display: none !important;
-}
+// #flDebug #flDebugToolbarHandle {
+//   // Hide the ugly toolbar handle, show when pressing betaribbon
+//   display: none !important;
+// }
 
 /* Fixes for Bootswatch Journal */
 .navbar-default .navbar-brand:hover {

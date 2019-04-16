@@ -5,7 +5,6 @@ Group model by groups, e.g "attribut.edu". Catch group name by the parent node, 
 
 #}
 
-
 {%- macro text(label, id="", placeholder="", prefix="", suffix="", class="", list="list_kon") -%}
     {% if not id %}{% set id = slugify(label) %}{% endif %}
     <b-field horizontal label="{{ label }}" class="{{ class }}">

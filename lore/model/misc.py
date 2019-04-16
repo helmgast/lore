@@ -21,6 +21,8 @@ import urllib.request, urllib.parse, urllib.error
 from collections import namedtuple, OrderedDict
 from datetime import timedelta, date
 from urllib.parse import urlparse
+import hashlib
+
 
 import flask_mongoengine
 from babel import Locale
@@ -28,12 +30,17 @@ from bson import ObjectId
 from dateutil.relativedelta import *
 from flask import current_app
 from flask import g, request, url_for
+from flask.json import load
 from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
 from jinja2 import TemplateNotFound
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
 from slugify import slugify as ext_slugify
 
 from lore.extensions import configured_locales
+
+from nltk.corpus import stopwords
+import pyphen
+from itertools import product, accumulate, chain
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -45,7 +52,6 @@ Document = flask_mongoengine.Document
 
 EMPTY_ID = ObjectId('000000000000000000000000')  # Needed to make empty non-matching Query objects
 
-
 def slugify(title):
     slug = ext_slugify(title)
     if slug.upper() in METHODS:
@@ -53,16 +59,44 @@ def slugify(title):
     else:
         return slug
 
-
 def set_lang_options(*args):
     for resource in args:
         if resource and getattr(resource, 'languages', None):
             g.content_locales = set(getattr(resource, 'languages', None))
             return
 
+stops = {}
+syllabifier = {}
+
+for locale in configured_locales:
+    lang = locale.split('_')[0]
+    with current_app.open_resource(f"translations/{lang}/stopwords.json", 'r') as stopfile:
+        stops[locale] = [slugify(s) for s in load(stopfile)]
+    syllabifier[locale] = pyphen.Pyphen(lang=locale)
 
 domain_slug = re.compile(r'(www.)?([^.]+)')
 
+def shorten(sentence_slug, locale='sv_SE', out_len=7):
+        # Algorithm: clean sentence form stopwords and split to words of syllables
+        # start with first syllable, combine with each other syllable in the sentence,
+        # beginning with last word and going backwards, capping at out_len characters and keeping
+        # only unique
+        words = [syllabifier[locale].inserted(word).split('-') for word in sentence_slug.split('-') if word not in stops[locale]]
+        head = [words[0].pop(0)]
+        combined = list(product(accumulate(head), words[::-1]))  # [::-1] means reverse
+        flattened = [list(chain(*sub)) for sub in combined]  # Flatten inner nested lists
+        shortened = [''.join(short)[:out_len] for short in flattened]  # Combine lists to strings
+        seen = set()
+        unique = [short for short in shortened if not (short in seen or seen.add(short))]
+        # https://stackoverflow.com/questions/2267362/how-to-convert-an-integer-in-any-base-to-a-string
+        BS="0123456789abcdefghijklmnopqrstuvwxyz"
+        as_int = int(hashlib.md5(sentence_slug.encode()).hexdigest(),16)
+        res = ""
+        while as_int and len(res) < out_len:
+            res+=BS[as_int%36]
+            as_int //= 36
+        unique.append(res)
+        return unique
 
 class Choices(dict):
     # def __init__(self, *args, **kwargs):

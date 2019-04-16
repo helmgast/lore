@@ -28,6 +28,8 @@ future = "*"
 auth0-python = "==3.4.0"
 speaklater = "*"
 sentry-sdk = {extras = ["flask"],version = "*"}
+nltk = "*"
+pyphen = "*"
 
 [dev-packages]
 pylint = "*"

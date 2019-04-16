@@ -29,9 +29,6 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__)
 
-QR_URL_FORMAT = "HTTPS://LORE.PUB/-%s"
-
-
 def set_cache(rv, cache_timeout):
     if cache_timeout is not None:
         rv.cache_control.public = True
@@ -295,11 +292,14 @@ def link(fileasset):
     return authorize_and_return(fileasset)
 
 
-@current_app.route('/asset/qr/<code>')
+@current_app.route('/asset/qr/<code>.svg')
 def qrcode(code):
-    qr = pyqrcode.create(QR_URL_FORMAT % code.upper(), error='L', mode='alphanumeric')
+    host = current_app.config['DEFAULT_HOST'].upper()
+    code = code.upper()
+    # Uppercase letters give a more compact QR code
+    qr = pyqrcode.create(f"{host}+{code}", error='L')
     out = io.BytesIO()
-    qr.svg(out, scale=10)
+    qr.svg(out, scale=5)
     out.seek(0)
     return send_file(out, attachment_filename='qrcode.svg', mimetype='image/svg+xml')
 

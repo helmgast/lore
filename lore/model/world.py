@@ -15,14 +15,14 @@ import logging
 import re
 from datetime import datetime, timedelta
 
-from flask import current_app
+from flask import current_app, url_for
 from flask_babel import lazy_gettext as _
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DynamicField, URLField, NULLIFY, DENY)
 
 from .asset import FileAsset
 from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
-from .misc import Document, available_locale_tuples, distinct_options  # Enhanced document
+from .misc import Document, shorten, available_locale_tuples, distinct_options  # Enhanced document
 from .user import User
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -367,6 +367,7 @@ class Article(Document):
     editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
     custom_css = StringField(verbose_name=_('Custom CSS'))
+    shortcut = ReferenceField('Shortcut', verbose_name=_('Shortcut'))
 
     # modified_date = DateTimeField()
 
@@ -414,6 +415,8 @@ class Article(Document):
     def status_name(self):
         return PublishStatus[self.status] + ((' %s %s' % (_('from'), str(self.created_date))
                                               if self.status == PublishStatus.published and self.created_date >= datetime.utcnow() else ''))
+    def shortcut_suggestions(self):
+        return shorten(self.slug)
 
     @staticmethod
     def type_data_name(asked_type):
@@ -428,7 +431,6 @@ class Article(Document):
     eventdata = EmbeddedDocumentField(EventData)
     campaigndata = EmbeddedDocumentField(CampaignData)
     characterdata = EmbeddedDocumentField(CharacterData)
-
     relations = ListField(EmbeddedDocumentField(ArticleRelation))
 
 
@@ -444,10 +446,30 @@ Article.created_date.filter_options = datetime_delta_options('created_date',
 
 
 class Shortcut(Document):
-    long_url = URLField(verbose_name=_('Long URL'))
+    meta = {'indexes': ['slug']}
+    url = URLField(verbose_name=_('External URL'))
     slug = StringField(unique=True, required=True, max_length=10, verbose_name=_('Slug'))
-    description = StringField(max_length=500, verbose_name=_('Description'))
+    created_date = DateTimeField(default=datetime.utcnow, verbose_name=_('Created on'))
     hits = IntField(min_value=0, verbose_name=_('Hits'))
+    description = StringField(max_length=500, verbose_name=_('Description'))
+    article = ReferenceField(Article, reverse_delete_rule=NULLIFY, verbose_name=_('Article'))
+
+    def clean(self):
+        self.slug = slugify(self.slug) # Force slugify as the slug is manually chosen
+        if self.article:
+            self.url = None
+        elif self.url:
+            self.article = None
+
+    def short_url(self):
+        return url_for('world.shorturl', code=self.slug, _external=True)
+
+Shortcut.created_date.filter_options = datetime_delta_options('created_date',
+                                                             [timedelta(days=7),
+                                                              timedelta(days=30),
+                                                              timedelta(days=90),
+                                                              timedelta(days=365)])
+Shortcut.register_delete_rule(Article, 'shortcut', NULLIFY)
 
 # ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
 # ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))

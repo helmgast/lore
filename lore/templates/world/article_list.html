@@ -81,34 +81,34 @@
 {% block asides_class %}col-lg-3 col-md-4 col-sm-10{% endblock %}
 
 {% block content %}
-        {% for group in groups %}
-            {% set articles = group.list %}
-            {% if group.grouper %}
-                <h3>{{ _(group.grouper|capitalize) }}</h3>
-            {% endif %}
-            {% if not articles %}
-                <div class="jumbotron text-center">
-                    <h2>{{ _('No articles found') }}</h2>
-                </div>
-            {% elif args['view'] == 'list' %}
+    {% for group in groups %}
+        {% set articles = group.list %}
+        {% if group.grouper %}
+            <h3>{{ _(group.grouper|capitalize) }}</h3>
+        {% endif %}
+        {% if not articles %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No articles found') }}</h2>
+            </div>
+        {% elif args['view'] == 'list' %}
 
+            {% for article in articles %}
+                {% include "world/article_list_view.html" %}
+            {% endfor %}
+
+        {% elif args['view'] == 'card' %}
+            <div class="cards">
                 {% for article in articles %}
-                    {% include "world/article_list_view.html" %}
-                {% endfor %}
-
-            {% elif args['view'] == 'card' %}
-                <div class="cards">
-                    {% for article in articles %}
-                        {% include "world/article_card_view.html" %}
+                    {% include "world/article_card_view.html" %}
 {#                        {% if loop.index is divisibleby 9 %}#}
 {#                            <div class="pagebreak"></div>#}
 {#                            {% endif %}#}
-                    {% endfor %}
-                    </div>
+                {% endfor %}
+                </div>
 
-            {% else %} {# ==table #}
-                {% include "world/article_table_view.html" %}
-            {% endif %}
-        {% endfor %}
+        {% else %} {# ==table #}
+            {% include "world/article_table_view.html" %}
+        {% endif %}
+    {% endfor %}
     {% include "includes/pagination.html" %}
 {% endblock %}

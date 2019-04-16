@@ -1,0 +1,72 @@
+{% extends root_template %}
+
+{% block content_title %}{{ _('Shortcuts') }}{% endblock %}
+
+{% block subnavbar %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=none)) %}
+            <li><a class="{{ privileged }}" href="{{ url_for('admin.ShortcutsView:index') }}"><span
+                    class="glyphicon glyphicon-home"></span> {{ _('All shortcuts') }}</a></li>
+        {% endcall %}
+{% endblock %}
+
+{% block actionbar %}
+        {{ MACRO.NEW_BUTTON(url_for('admin.ShortcutsView:get', id='post'), 'New shortcut') }}
+{% endblock %}
+
+
+{% block asides %}{{ super() }}
+    {% if filter_options %}
+        <div class="filter-options">
+        {{ MACRO.LIST_CONTROLS(model, args, ['created_date']) }}
+
+        <h5>{% trans %}By created date{% endtrans %}</h5>
+        <div class="btn-set">
+            {% for opt in filter_options['created_date'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% endfor %}
+        </div>
+
+        <h5>{% trans %}Search text{% endtrans %}</h5>
+        <form method="get">
+            {# This will erase all other query parameters when submitted by HTML design #}
+            <div class="input-group{{ ' has-success' if args['q'] }}">
+                <input class="form-control input-sm" type="search" id='q' name='q'
+                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
+            </div>
+        </form>
+        </span>
+        </div>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+    
+    <table class="table table-hover">
+    <thead>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'slug') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'url') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'article') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created_date') }}</th>
+    </thead>
+    <tbody>
+
+    {% for shortcut in shortcuts %}
+        <tr>
+            <td>
+                <a href="{{ url_for('admin.ShortcutsView:get', id=shortcut.slug) }}">{{url_for('world.shorturl', code=shortcut.slug, _external=true)}}</a>
+            </td>
+            <td>{% if shortcut.url %}<a href="{{ shortcut.url }}">{{ shortcut.url }}</a>{% endif%}</td>
+            <td>{% if shortcut.article %}<a href="{{url_for('world.ArticlesView:get', 
+                pub_host=shortcut.article.publisher.slug, world_=shortcut.article.world.slug, 
+                id=shortcut.article.slug)}}">{{ shortcut.article }}</a>{%endif%}</td>
+            <td>{{ shortcut.created_date|datetimeformat(format='short') }}</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+    {% include "includes/pagination.html" %}
+{% endblock %}

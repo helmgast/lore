@@ -28,7 +28,7 @@ from lore.api.resource import (ResourceAccessPolicy, ResourceError, RacModelConv
                                 ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                 ListResponse, ItemResponse, Authorization)
 from lore.model.misc import EMPTY_ID, set_lang_options
-from lore.model.world import (Article, World, PublishStatus, Publisher, WorldMeta)
+from lore.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -491,7 +491,6 @@ class ArticlesView(ResourceView):
 
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
-        logger.debug("Here, debug %s , internal debugger"%(current_app.debug))
 
         return r
 
@@ -577,9 +576,19 @@ class ArticlesView(ResourceView):
 #     def index(self, world_):
 #         abort(501)  # Not implemented
 
-@world_app.route('/-<code>')
+@world_app.route('/+<code>', subdomain=current_app.default_host)
 def shorturl(code):
-    return redirect(code)
+    shortcut = Shortcut.objects(slug=code.lower()).first_or_404()
+    url = ''
+    if shortcut.article:
+        url = url_for('world.ArticlesView:get', pub_host=article.publisher.slug, world_=article.world.slug,
+                                    id=article.slug)
+    elif shortcut.url:
+        url = shortcut.url
+    if url:
+        return redirect(url)
+    else:
+        abort(404)
 
 
 @world_app.route('/', subdomain=current_app.default_host)

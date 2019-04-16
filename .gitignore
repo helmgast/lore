@@ -17,4 +17,5 @@ node_modules/
 
 static/dist
 static/dev
+static/manifest.json
 .git*

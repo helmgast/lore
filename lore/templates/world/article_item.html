@@ -134,11 +134,11 @@
         <ul class="nav imprint">
             <li title="{{ _('Article type') }}"><span
                     class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
-                <a>{{ article.get_type_display() }}</a>
+                <span class="imprint-info">{{ article.get_type_display() }}</span>
             </li>
             {% if article.world %}
             <li title="{{ _('World') }}"><span class="glyphicon glyphicon-globe }}"></span>
-                <a>{{ article.world }}</a>
+                <a href="{{url_for('world.ArticlesView:world_home', world_=article.world.slug)}}">{{ article.world }}</a>
             </li>
             {% endif %}
             {% set articlegroups = article.editors + article.readers %}
@@ -149,27 +149,33 @@
                     {% else %}
                         <a>{{ article.creator }}</a>
                     {% endif %}
-                {%- else -%}<a>&nbsp;{{ _('Admin') }}</a>
+                {%- else -%}<span class="imprint-info">&nbsp;{{ _('Admin') }}</span>
                 {%- endif -%}</li>
             <li title="{{ _('Created') }}"><span
                     class="glyphicon glyphicon-calendar"></span>
-                <a>{{ article.created_date|dateformat(format='short') }}</a>
+                <span class="imprint-info">{{ article.created_date|dateformat(format='short') }}</span>
             </li>
             {% if articlegroups or g.user %}
                 <li title="{{ _('Visibility') }}"><span
                         class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
-                    <a>{{ article.get_status_display() }}</a>
-                    <small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>
+                    <span class="imprint-info">{{ article.get_status_display() }}</span>
+                    {#<small>{{ articlegroups|join(', ') if articlegroups else _('Anyone') }}</small>#}
                 </li>
             {% endif %}
             {% if article.tags %}
-                <li title="{{ _('Tags') }}"><span class="glyphicon glyphicon-tag"></span> {%- for t in article.tags -%}
+                <li title="{{ _('Tags') }}"><span class="glyphicon glyphicon-tag"></span>{%- for t in article.tags -%}
                     <a href="{{ url_for('world.ArticlesView:index', world_=world.slug, tags=t) }}">
                         <span class="badge">{{ t }}</span></a>
                 {%- endfor -%}</li>
             {% endif %}
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
         </ul>
+        {% if article.shortcut %}
+        <div class="form-group form-group-noncolumn">
+        <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{article.shortcut.short_url()}}"/>
+        <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
+        </div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -199,7 +205,8 @@
 
 {% block asides %}
     {% if args.get('intent', None) %}
-        <div class="article-aside form-horizontal">
+        <div class="article-aside">
+        <div class="form-horizontal">
             {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
       <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
       <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
@@ -224,22 +231,50 @@
             {{ MACRO.FORM_FIELD(article_form.world, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.tags, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize-tags col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-5', controlwrap='col-sm-7', controlclass='input-sm') }}
 
-            {{ MACRO.FORM_FIELD(article_form.editors, labelclass='col-sm-3', controlwrap='col-sm-12', controlclass=' input-sm selectize col-sm-12') }}
-            {{ MACRO.FORM_FIELD(article_form.readers, labelclass='col-sm-3', controlwrap='col-sm-12',
+            {{ MACRO.FORM_FIELD(article_form.tags, groupclass='form-group-noncolumn', controlclass=' input-sm selectize-tags col-sm-12') }}
+
+            {{ MACRO.FORM_FIELD(article_form.editors, groupclass='form-group-noncolumn', controlclass=' input-sm selectize col-sm-12') }}
+            {{ MACRO.FORM_FIELD(article_form.readers, groupclass='form-group-noncolumn',
                 controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}
 
-            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-6', controlwrap='col-sm-6') }}
-
-            {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
+            {{ MACRO.FORM_FIELD(article_form.images, groupclass='form-group-noncolumn', controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
                url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
-
+            
             <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">{{_('Help on format and image sizes')}}</a></em></small>
             {% if g.user.id %}
                 <input type="hidden" name="creator" value="{{ g.user.id }}"/>
             {% endif %}
 
+            {% if article %}
+                {% if article.shortcut %}
+                <div class="form-group form-group-noncolumn">
+                <label class="control-label" for="shortcut">{% trans %}Short URL / QR{% endtrans %}</label>
+                <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{url_for('world.shorturl', code=article.shortcut.slug, _external=true)}}"/>
+                <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
+                </div>
+                {% else %}
+                <div class="form-group form-group-noncolumn">
+                <label class="control-label" for="shortcut">{% trans %}Create short URL{% endtrans %}</label>
+                <div class="">
+                    <div class="input-group input-group-sm">
+                    <span class="input-group-addon input-group-addon-xs">{{url_for('world.shorturl', code='', _external=true)}}</span>
+                    <input class="form-control" type="text" id="shortcut" maxlength=7 minlength=2 size=7 value=""/>
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary shortcut-save" type="button" data-post="{{url_for('admin.ShortcutsView:post')}}" data-article="{{article.id}}">{%trans%}Set{%endtrans%}</button>
+                    </span>
+                    </div>
+                    <span class="help-block">
+                    {% trans %}Try: {% endtrans %}
+                    {% for suggestion in article.shortcut_suggestions() %}
+                        <button class="btn btn-default btn-xs setval" data-target="#shortcut" type="button">{{suggestion}}</button>
+                    {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
         </div>
     {% else %}
         <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">

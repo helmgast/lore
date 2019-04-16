@@ -22,10 +22,10 @@
 
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const ManifestPlugin = require('webpack-manifest-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 // const SpritePlugin = require('svg-sprite-loader/plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
+const WebpackAssetsManifest = require('webpack-assets-manifest');
 
 
 function getConfig(devMode) {
@@ -50,10 +50,6 @@ function getConfig(devMode) {
                     MiniCssExtractPlugin.loader,
                     "css-loader"
                   ]
-                // use: ExtractTextPlugin.extract({
-                //     fallback: "style-loader",
-                //     use: "css-loader",
-                // }),
             },
 
             {  // Loads all less files and puts in style tag, include auto-prefix
@@ -63,10 +59,6 @@ function getConfig(devMode) {
                     "css-loader",
                     "less-loader"
                   ]
-                // use: ExtractTextPlugin.extract({
-                //     fallback: "style-loader",
-                //     use: ['css-loader', 'less-loader'],
-                // }),
             },
 
             // We don't minimize images because they should be minimized online by nginx/FileAssets
@@ -114,17 +106,17 @@ function getConfig(devMode) {
             filename: devMode ? '[name].css' : "[name].[contenthash:8].css",
           }),
         // new SpritePlugin(),
-        new SVGSpritemapPlugin({
-            src: 'assets/gfx/*.svg',
-            filename: devMode ? 'spritemap.svg' : 'spritemap.[contenthash].svg', // doesn't support short hash
-            prefix: 'lore-',
+        new SVGSpritemapPlugin('assets/gfx/*.svg', {
+            output: {filename: devMode ? 'spritemap.svg' : 'spritemap.[contenthash].svg'},  // doesn't support short hash
+            sprite: {prefix: 'lore-'}
         }),
-        new ManifestPlugin({
-            // Remove static from output as this will be automatically added in Flask
-            fileName: '../manifest.json',
-            map: function(o){o.path = o.path.replace('/static/',''); return o}}),
-
-        new CleanWebpackPlugin()
+        // Have also tried webpack-manifest-plugin and assets-webpack-plugin, not giving exactly what we need
+        new WebpackAssetsManifest({
+            writeToDisk: true, 
+            publicPath: devMode ? 'dev/': 'dist/',  // No static prefix as it's added by Lore server static calls
+            output: path.resolve(__dirname, 'static/manifest.json')
+        }),
+        new CleanWebpackPlugin(),
 
     ],
     resolve: {

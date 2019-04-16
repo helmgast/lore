@@ -1,5 +1,5 @@
 // IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_page.html), so we don't need to hardcode it.
-__webpack_public_path__ = STATIC_URL.replace('replace', '')+'dist/';
+__webpack_public_path__ = STATIC_URL.split("/static")[0]+__webpack_public_path__;
 
 // Needed for all pages, and should be loaded first
 var jQuery = require('jquery');
@@ -89,6 +89,27 @@ $modal.on('click', 'button[type="submit"]', function (e) {
     }
 });
 
+$(document).on('click', '.shortcut-save', function (e) {
+    var data = {slug: $('#shortcut').val(), article: $(this).data('article')}
+    if (data.slug && data.article) {
+        var jqxhr = $.ajax({
+            url: $(this).data('post'),
+            type: 'post',
+            data: data,
+            headers: {'X-CSRFToken': CSRF_TOKEN},
+            dataType: 'json',
+            success: function (data) {
+                utils.flash_error("Short URL created", 'success');
+                $(".shortcut-save").attr("disabled", "disabled");
+                $('#shortcut').attr('readonly','readonly');
+            }
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            utils.flash_error(jqXHR.responseJSON, 'danger')
+        });
+    }
+    e.preventDefault();
+});
 
 $(document).on('click', '.buy-link', function (e) {
     var jqxhr = $.ajax({
@@ -131,6 +152,21 @@ $(document).on('click', '.loadlink', function (e) {
     $a.remove()
     return false;
 });
+
+$(document).on('click', '.setval', function (e) {
+    var $a = $(this);
+    var target = $a.data('target');
+    if (target) {
+        $(target).val($a.text());
+    }
+    return false;
+});
+
+// $('.debug-toolbar').on('click', function(e) {
+//     $('#flDebugToolbar').show();
+//     alert("Hej")
+//     return false;
+// });
 
 $('#feedback-ribbon').on('click', function(e) {
     if (Sentry) {
@@ -279,7 +315,7 @@ function init_dom(e) {
 
     // File upload plugin for file upload forms
     require('fileuploader.js')
-    scope.find('.file-upload').fileupload({static_url: STATIC_URL});
+    scope.find('.file-upload').fileupload({static_url: __webpack_public_path__});
 
     // File select plugin (activates the jquery part, the trumbowyg part loads with trumbowyg later)
     require('fileselect.js')

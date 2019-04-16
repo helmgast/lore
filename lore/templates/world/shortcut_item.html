@@ -1,0 +1,81 @@
+{% extends root_template %}
+
+{% block content_title %}{{ shortcut.slug if shortcut else _("New shortcut") }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
+{% block actionbar %}
+    {% if args.get('intent', None) == 'patch' %}
+        {# We are editing #}
+        {{ MACRO.SAVE_BUTTON('shortcutform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('admin.ShortcutsView:get', id=shortcut.slug)) }}
+{#        {{ MACRO.DELETE_BUTTON() }}#}
+    {% elif args.get('intent', None) == 'post' %}
+        {# We are creating new resource #}
+        {{ MACRO.SAVE_BUTTON('shortcutform') }}
+        {{ MACRO.CANCEL_BUTTON(url_for('admin.ShortcutsView:get', id=shortcut.slug)) }}
+    {% else %}
+        {# We are viewing #}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['shortcut'].authorize('edit', res=shortcut)) %}
+            {{ MACRO.EDIT_BUTTON(url_for('admin.ShortcutsView:get', id=shortcut.slug, intent='patch')) }}
+{#            {{ MACRO.DELETE_BUTTON() }}#}
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}{% block inline %}
+    {% if shortcut_form %}
+        <form id="shortcutform" method="post" action="{{ action_url }}">
+            <div class="row">
+                <div class="col-md-8">
+                    {{ MACRO.FORM_FIELD(shortcut_form.slug) }}
+                    {{ MACRO.FORM_FIELD(shortcut_form.url) }}
+                    {{ shortcut_form.csrf_token }}
+                </div>
+            </div>
+            <div class="row form-actions">
+                <div class="col-sm-12">
+                    {% if args.get('intent', None) %}
+                        <ul class="action-buttons action-buttons-footer">
+                            {{ self.actionbar() }}
+                        </ul>
+                    {% endif %}
+                </div>
+
+            </div>
+        </form>
+    {% else %}
+        <div class="row">
+            <div class="col-md-8">
+                <div class="table-responsive">
+                    <table class="table">
+                        <tr>
+                            <th>{{ _('Slug') }}</th>
+                            <td>
+                                <small>{{ shortcut.slug|default(_('No data'), true) }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ _('URL') }}</th>
+                            <td>
+                                <small>{{ shortcut.url|default(_('No data'), true) }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ _('Description') }}</th>
+                            <td>
+                                <small>{{ shortcut.description|default(_('No data'), true)|markdown }}</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{{ _('QR Code') }}</th>
+                            <td>
+                                <small><img src="{{ url_for('qrcode', code=shortcut.slug) }}"></small>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+{% endblock %}

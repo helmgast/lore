@@ -16,7 +16,7 @@ function flash_error(message, level, target) {
     if (message instanceof Object && message.errors) {
         var new_message = ''
         Object.keys(message.errors).forEach(function (key, index) {
-            new_message += key + ': ' + message.errors[key] + ', '
+            new_message += message.errors[key] + ', '
         });
         message = new_message
     } else if (message.length && message.indexOf('__debugger__') > 0) {

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f7dbcae44152ee7a2fc56050a5804de832c5796760d84dfe5887345e25a5688e"
+            "sha256": "a544cebf2943fc8c8230dc144ed2324966ec3b0d8edf0f60bb160207ccf45a7b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -196,6 +196,13 @@
             ],
             "version": "==0.17.0"
         },
+        "nltk": {
+            "hashes": [
+                "sha256:286f6797204ffdb52525a1d21ec0a221ec68b8e3fa4f2d25f412ac8e63c70e8d"
+            ],
+            "index": "pypi",
+            "version": "==3.4"
+        },
         "pillow": {
             "hashes": [
                 "sha256:00203f406818c3f45d47bb8fe7e67d3feddb8dcbbd45a289a1de7dd789226360",
@@ -302,6 +309,14 @@
             ],
             "version": "==3.7.2"
         },
+        "pyphen": {
+            "hashes": [
+                "sha256:3b633a50873156d777e1f1075ba4d8e96a6ad0a3ca42aa3ea9a6259f93f18921",
+                "sha256:e172faf10992c8c9d369bdc83e36dbcf1121f4ed0d881f1a0b521935aee583b5"
+            ],
+            "index": "pypi",
+            "version": "==0.9.5"
+        },
         "pyqrcode": {
             "hashes": [
                 "sha256:1b2812775fa6ff5c527977c4cd2ccb07051ca7d0bc0aecf937a43864abe5eff6",
@@ -365,6 +380,13 @@
             ],
             "index": "pypi",
             "version": "==0.7.10"
+        },
+        "singledispatch": {
+            "hashes": [
+                "sha256:5b06af87df13818d14f08a028e42f566640aef80805c3b50c5056b086e3c2b9c",
+                "sha256:833b46966687b3de7f438c761ac475213e53b306740f1abfaa86e1d1aae56aa8"
+            ],
+            "version": "==3.4.0.3"
         },
         "six": {
             "hashes": [
@@ -499,10 +521,10 @@
         },
         "pylint-mongoengine": {
             "hashes": [
-                "sha256:5a5ebdda4e6262c913f9d33b6f88c4fff13967d6189d3f122593319d5817da7f"
+                "sha256:14d3b6c9f3b72163b67a93b56b621c271d8089743fe88649281872facf6b8661"
             ],
             "index": "pypi",
-            "version": "==0.2.3"
+            "version": "==0.3.0"
         },
         "pylint-plugin-utils": {
             "hashes": [

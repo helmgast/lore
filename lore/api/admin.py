@@ -16,10 +16,13 @@ from flask import current_app
 from flask import json
 from flask import request
 from flask import safe_join
+from flask import redirect, g, url_for, flash
+from flask_babel import lazy_gettext as _
 
-from lore.api.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse
+from lore.api.resource import ResourceView, ResourceAccessPolicy, RacModelConverter, RacBaseForm, ListResponse, ItemResponse, filterable_fields_parser
 from lore.extensions import csrf
 from flask_mongoengine.wtf import model_form
+from mongoengine import NotUniqueError, ValidationError
 
 from lore.model.world import Shortcut
 
@@ -27,18 +30,69 @@ admin = Blueprint('admin', __name__)
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
+class ShortcutAccessPolicy(ResourceAccessPolicy):
+
+    def authorize(self, op, user=None, res=None):
+        op = self.translate.get(op, op)  # TODO temporary translation between old and new op words, e.g. patch vs edit
+        if not user:
+            user = g.user
+
+        if op is 'list':
+            return self.is_admin(op, user, res)
+
+        if op is 'new':
+            if res and res.url:  # Only let admins set external URL
+                return self.is_admin(op, user, res)
+            else:
+                return self.is_user(op, user, res)
+
+        if op is 'view':  # If list, resource refers to a parent resource
+            return self.is_admin(op, user, res)
+
+        return self.custom_auth(op, user, res)
 
 class ShortcutsView(ResourceView):
     list_template = 'world/shortcut_list.html'
     item_template = 'world/shortcut_item.html'
     form_class = model_form(Shortcut, base_class=RacBaseForm, converter=RacModelConverter())
-    access_policy = ResourceAccessPolicy()
+    access_policy = ShortcutAccessPolicy()
     model = Shortcut
+    list_arg_parser = filterable_fields_parser(['created_date'])
 
     def index(self):
         r = ListResponse(ShortcutsView, [('shortcuts', Shortcut.objects())])
         r.auth_or_abort()
+        r.prepare_query()
         return r
+
+    def get(self, id):
+        if id == 'post':
+            r = ItemResponse(ShortcutsView, [('shortcut', None)], extra_args={'intent': 'post'})
+            r.auth_or_abort(res=None)
+        else:
+            shortcut = Shortcut.objects(slug=id).first_or_404()
+            r = ItemResponse(ShortcutsView, [('shortcut', shortcut)])
+            r.auth_or_abort()
+        return r
+
+    def post(self):
+        r = ItemResponse(ShortcutsView, [('shortcuts', None)], method='post')
+        shortcut = Shortcut()
+        if not r.validate():
+            return r.error_response(status=400)
+        r.form.populate_obj(shortcut)
+        r.auth_or_abort(res=shortcut)
+        try:
+            r.commit(new_instance=shortcut)
+        except NotUniqueError as err:
+            flash(_("Short URL already in use"))
+            return r, 400
+        except ValidationError as err:
+            return r.error_response(err)
+        if shortcut.article:
+            shortcut.article.shortcut = shortcut
+            shortcut.article.save()
+        return redirect(r.args['next'] or url_for('admin.ShortcutsView:get', id=shortcut.slug))
 
 
 ShortcutsView.register_with_access(admin, 'shortcut')
