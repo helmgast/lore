@@ -581,8 +581,10 @@ def shorturl(code):
     shortcut = Shortcut.objects(slug=code.lower()).first_or_404()
     url = ''
     if shortcut.article:
-        url = url_for('world.ArticlesView:get', pub_host=article.publisher.slug, world_=article.world.slug,
-                                    id=article.slug)
+        url = url_for('world.ArticlesView:get', 
+            pub_host=shortcut.article.publisher.slug, 
+            world_=shortcut.article.world.slug,
+            id=shortcut.article.slug)
     elif shortcut.url:
         url = shortcut.url
     if url:

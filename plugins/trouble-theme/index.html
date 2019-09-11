@@ -1,0 +1,43 @@
+{% extends "world/world_list.html" %}
+
+{% block cssimports %}
+{{super()}}
+<link rel="stylesheet" href="https://use.typekit.net/aha5euz.css">
+<style>
+
+.content {
+    font-family: "le-monde-journal",serif;
+    font-size: 22px;
+}
+
+
+img[src$="rthumb"] {
+    float: right;
+    width: auto;
+    max-width: 180px;
+    position: relative;
+    left: 30px;
+}
+
+img[src$="lthumb"] {
+    float: left;
+    width: auto;
+    max-width: 180px;
+    position: relative;
+    left: -30px;
+}
+
+.page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6,
+        .content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+    font-family: "astounder-squared-bb",sans-serif;
+    font-weight: normal; /* Already a bold font */
+    color: #0090db;
+    clear: both;
+}
+
+.content h2, .content h3 {
+    color: #9c1006;
+}
+
+</style>
+{% endblock %}
