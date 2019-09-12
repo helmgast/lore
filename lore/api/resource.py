@@ -217,7 +217,7 @@ def get_root_template(out_value):
     elif out_value == 'fragment':
         return current_app.jinja_env.get_or_select_template('_fragment.html')
     else:
-        return current_app.jinja_env.get_or_select_template('_page.html')
+        return current_app.jinja_env.get_or_select_template('_root.html')
 
 
 class ResourceResponse(Response):

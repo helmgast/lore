@@ -1,4 +1,4 @@
-{% extends "asset/_page.html" if not parent_template else parent_template %}
+{% extends "asset/_root.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ fileasset.slug if fileasset else _("New file") }}{% endblock %}

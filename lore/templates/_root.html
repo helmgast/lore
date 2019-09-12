@@ -220,7 +220,7 @@
     </div>
 {% endblock header %}
 
-{% block main %}
+{% block main %}{% block mainsub %}
     <div class="container">
         <div class="row">
             {% block intro_parent %}
@@ -241,7 +241,7 @@
         </div>
         {% block post_content %}{% endblock post_content %}
     </div>
-{% endblock main %}
+{% endblock mainsub %}{% endblock main %}
 
 <footer>
     <div class="container">

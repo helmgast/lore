@@ -1,5 +1,4 @@
 {% extends root_template if not publisher_theme else publisher_theme %}
-{% import 'includes/macros.html' as MACRO %}
 
 {% block navbar_left %}
     {{ super() }}
@@ -8,35 +7,8 @@
           id="tour-search">
         <span class="glyphicon glyphicon-search"></span> <input type="search" id='q' name='q' placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">
     </form>
-{##}
-{#        <div class="input-group">#}
-{#            <input class="form-control input" type="search" id='q' name='q'#}
-{#                   placeholder="{{ _('Search') }} ..." value="{{ args['q']|escape }}">#}
-{#            <span class="input-group-btn">#}
-{#            <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search"></span></button>#}
-{#            </span>#}
-{#        </div>#}
     </li>
 {% endblock %}
-
-{% block content %}
-    <div class="row">
-        {% for world in worlds %}
-            <div class="col-md-6">
-                <h3><a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
-                </h3>
-                <div class="well">{{ world.description|markdown }}</div>
-                <dl class="dl-horizontal">
-                    <dt>{{ _('Publisher') }}</dt>
-                    <dd>{{ world.publisher }}</dd>
-                </dl>
-            </div>
-            {% if loop.index is divisibleby 2 %}</div>
-                <div class="row">{% endif %}
-        {% endfor %}
-        </div>
-{% endblock %}
-
 
 {% block tour %}
     {% if g.user and (g.user.admin or g.user in publisher.editors) and not g.user.tourdone %}

@@ -1,10 +1,10 @@
 {% extends "world/world_item.html" %}
 
 
-
-{% block content %}
-    {{ super()  }}
+{% block main %}
     {% if self.home %}
-        {{ self.home() }}
+        {{ self.home() }}  {# Replace all of main with home block from theme #}
+    {% else %}
+        {{ self.mainsub() }} {# Normal mode by re-printing all inherited content of mainsub #}
     {% endif %}
-{% endblock content %}
+{% endblock %}

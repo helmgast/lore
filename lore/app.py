@@ -309,20 +309,20 @@ def configure_hooks(app):
     @app.errorhandler(403)
     def forbidden(err):
         capture_exception(err)  # Explitily capture exception to Sentry
-        return render_template("error/403.html", root_template='_page.html', error=err, sentry_event_id=last_event_id()), 403
+        return render_template("error/403.html", root_template='_root.html', error=err, sentry_event_id=last_event_id()), 403
 
     @app.errorhandler(404)
     def not_found(err):
         # if app.debug:
         #     # We want to show debug toolbar if we get 404, but needs to return an HTML page with status 200 for it
         #     # to activate
-        #     return render_template("error/404.html", root_template='_page.html', error=f"{request.path} not found at host {request.host}"), 200
-        return render_template("error/404.html", root_template='_page.html', error=f"{request.path} not found at host {request.host}"), 404
+        #     return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 200
+        return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 404
 
     @app.errorhandler(MongoEngineConnectionError)
     def db_error(err):
         app.logger.error("Database Connection Failure: {err}".format(err=err))
-        return render_template('error/nodb.html', root_template='_page.html'), 500
+        return render_template('error/nodb.html', root_template='_root.html'), 500
 
     from lore.api.resource import ResourceError, get_root_template
 
@@ -340,7 +340,7 @@ def configure_hooks(app):
 
     @app.errorhandler(500)
     def server_error(err):
-        return render_template("error/500.html", err=err, root_template='_page.html', sentry_event_id=last_event_id()), 500
+        return render_template("error/500.html", err=err, root_template='_root.html', sentry_event_id=last_event_id()), 500
 
 
     # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):

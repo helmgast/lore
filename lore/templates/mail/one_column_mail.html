@@ -1,4 +1,4 @@
-{% extends "mail/_page.html" if not parent_template else parent_template %}
+{% extends "mail/_root.html" if not parent_template else parent_template %}
 
 {% block header %}
 <h4 class="modal-title">{{_('Send email')}}</h4>

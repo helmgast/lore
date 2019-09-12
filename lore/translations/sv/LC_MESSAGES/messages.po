@@ -468,7 +468,7 @@ msgstr "Taggar"
 #: lore/model/world.py:108 lore/model/world.py:347
 #: lore/templates/asset/fileasset_list.html:77
 #: lore/templates/shop/order_header.html:57
-#: lore/templates/shop/product_item.html:90 lore/templates/world/_page.html:30
+#: lore/templates/shop/product_item.html:90 lore/templates/world/_root.html:30
 #: lore/templates/world/publisher_list.html:5
 #: lore/templates/world/world_item.html:243
 msgid "Publisher"
@@ -724,7 +724,7 @@ msgstr "Kommentar"
 msgid "Product"
 msgstr "Produkt"
 
-#: lore/model/shop.py:143 lore/templates/shop/_page.html:11
+#: lore/model/shop.py:143 lore/templates/shop/_root.html:11
 #: lore/templates/shop/order_item.html:5
 msgid "Cart"
 msgstr "Kundvagn"
@@ -1192,49 +1192,49 @@ msgstr "Avbryt"
 msgid "Insert"
 msgstr "Lägg till"
 
-#: lore/templates/_page.html:135
+#: lore/templates/_root.html:135
 msgid "Publishers"
 msgstr "Utgivare"
 
-#: lore/templates/_page.html:142 lore/templates/social/user_item.html:21
+#: lore/templates/_root.html:142 lore/templates/social/user_item.html:21
 #: lore/templates/social/user_list.html:7
 msgid "Users"
 msgstr "Användare"
 
-#: lore/templates/_page.html:153
+#: lore/templates/_root.html:153
 msgid "Log In"
 msgstr "Logga in"
 
-#: lore/templates/_page.html:156
+#: lore/templates/_root.html:156
 msgid "Join"
 msgstr "Registrera"
 
-#: lore/templates/_page.html:166
+#: lore/templates/_root.html:166
 msgid "My account"
 msgstr "Mitt konto"
 
-#: lore/templates/_page.html:170 lore/templates/shop/_page.html:31
+#: lore/templates/_root.html:170 lore/templates/shop/_root.html:31
 #: lore/templates/shop/order_list.html:3 lore/templates/styleguide.html:40
 msgid "My orders"
 msgstr "Mina ordrar"
 
-#: lore/templates/_page.html:176 lore/templates/styleguide.html:45
+#: lore/templates/_root.html:176 lore/templates/styleguide.html:45
 msgid "Files"
 msgstr "Filer"
 
-#: lore/templates/_page.html:183 lore/templates/styleguide.html:48
+#: lore/templates/_root.html:183 lore/templates/styleguide.html:48
 msgid "Log Out"
 msgstr "Logga ut"
 
-#: lore/templates/_page.html:205 lore/templates/includes/feedback_modal.html:20
+#: lore/templates/_root.html:205 lore/templates/includes/feedback_modal.html:20
 msgid "Give feedback"
 msgstr "Ge feedback"
 
-#: lore/templates/_page.html:257
+#: lore/templates/_root.html:257
 msgid "Design and code"
 msgstr "Design och kod"
 
-#: lore/templates/_page.html:258
+#: lore/templates/_root.html:258
 msgid "Built using "
 msgstr "Byggd med "
 
@@ -1423,11 +1423,11 @@ msgstr "Prenumerera"
 msgid "Profile"
 msgstr "Profil"
 
-#: lore/templates/asset/_page.html:5
+#: lore/templates/asset/_root.html:5
 msgid "File assets"
 msgstr "Filer"
 
-#: lore/templates/asset/_page.html:11
+#: lore/templates/asset/_root.html:11
 msgid "List"
 msgstr "Lista"
 
@@ -1522,7 +1522,7 @@ msgid "Text"
 msgstr "Text"
 
 #: lore/templates/asset/fileasset_list.html:58
-#: lore/templates/world/_page.html:9 lore/templates/world/article_list.html:71
+#: lore/templates/world/_root.html:9 lore/templates/world/article_list.html:71
 #: lore/templates/world/article_search.html:5
 #: lore/templates/world/article_search.html:18
 msgid "Search"
@@ -1906,30 +1906,30 @@ msgstr ""
 "varit någon som skrev din adress av misstag. Om du tror detta är "
 "misstänkt aktivitet, var vänlig kontakta oss direkt på"
 
-#: lore/templates/shop/_page.html:4 lore/templates/shop/order_item.html:20
+#: lore/templates/shop/_root.html:4 lore/templates/shop/order_item.html:20
 #: lore/templates/shop/order_list.html:7
 #: lore/templates/shop/product_item.html:27
 #: lore/templates/shop/product_list.html:8
 msgid "Shop"
 msgstr "Butik"
 
-#: lore/templates/shop/_page.html:5
+#: lore/templates/shop/_root.html:5
 msgid "get your inspiration"
 msgstr "hitta inspirationen"
 
-#: lore/templates/shop/_page.html:23 lore/templates/shop/order_lines.html:6
+#: lore/templates/shop/_root.html:23 lore/templates/shop/order_lines.html:6
 #: lore/templates/shop/product_item.html:28
 #: lore/templates/shop/product_list.html:3
 #: lore/templates/shop/product_list.html:9
 msgid "Products"
 msgstr "Produkter"
 
-#: lore/templates/shop/_page.html:27 lore/templates/shop/order_item.html:21
+#: lore/templates/shop/_root.html:27 lore/templates/shop/order_item.html:21
 #: lore/templates/shop/order_list.html:3 lore/templates/shop/order_list.html:8
 msgid "Orders"
 msgstr "Ordrar"
 
-#: lore/templates/shop/_page.html:45 lore/templates/shop/product_list.html:78
+#: lore/templates/shop/_root.html:45 lore/templates/shop/product_list.html:78
 msgid "No products available"
 msgstr "Inga produkter tillgängliga"
 
@@ -2175,23 +2175,23 @@ msgstr "Läs mer"
 msgid "No description"
 msgstr "Ingen beskrivning"
 
-#: lore/templates/social/_page.html:4
+#: lore/templates/social/_root.html:4
 msgid "Social"
 msgstr "Social"
 
-#: lore/templates/social/_page.html:5
+#: lore/templates/social/_root.html:5
 msgid "bringing you closer to other gamers"
 msgstr "tar dig närmare andra spelare"
 
-#: lore/templates/social/_page.html:11 lore/templates/world/world_item.html:47
+#: lore/templates/social/_root.html:11 lore/templates/world/world_item.html:47
 msgid "Browse"
 msgstr "Bläddra"
 
-#: lore/templates/social/_page.html:21
+#: lore/templates/social/_root.html:21
 msgid "Welcome"
 msgstr "Välkommen"
 
-#: lore/templates/social/_page.html:23
+#: lore/templates/social/_root.html:23
 msgid ""
 "Here you will be able to interact with other gamers, create and manage "
 "your game groups,\n"
@@ -2315,23 +2315,23 @@ msgstr "Efter registrering"
 msgid "By last login date"
 msgstr "Efter senaste inloggning"
 
-#: lore/templates/world/_page.html:50
+#: lore/templates/world/_root.html:50
 msgid "Welcome as an editor to Helmgast, please take the tour!"
 msgstr "Välkommen som en redaktör på Helmgast, ta gärna den guidade turen!"
 
-#: lore/templates/world/_page.html:54
+#: lore/templates/world/_root.html:54
 msgid "Here you will find a page for each world and all the content"
 msgstr "Här hittar du en sida för varje värld och alla dess artiklar"
 
-#: lore/templates/world/_page.html:64
+#: lore/templates/world/_root.html:64
 msgid "Here is the home for a game world."
 msgstr "Här är navet för en spelvärld"
 
-#: lore/templates/world/_page.html:68
+#: lore/templates/world/_root.html:68
 msgid "Visitors see some of the world facts"
 msgstr "Besökare ser här lite fakta om spelvärlden"
 
-#: lore/templates/world/_page.html:72
+#: lore/templates/world/_root.html:72
 msgid ""
 "On every page you can edit, you see the see action buttons. Let's try to "
 "edit the world."
@@ -2339,25 +2339,25 @@ msgstr ""
 "På varje sida som du har access att redigera så ser du dessa knappar. Låt"
 " ossändra något på denna spelvärlden"
 
-#: lore/templates/world/_page.html:83
+#: lore/templates/world/_root.html:83
 msgid "Edit the details of the world including it's full start page."
 msgstr ""
 "Redigera informationen om denna världen, även en fullt formaterad "
 "startsida"
 
-#: lore/templates/world/_page.html:87
+#: lore/templates/world/_root.html:87
 msgid "... or it's thumbnail"
 msgstr "... eller dess thumbnail-bild"
 
-#: lore/templates/world/_page.html:91
+#: lore/templates/world/_root.html:91
 msgid "You can also browse all articles in the world"
 msgstr "Du kan också bläddra genom alla artiklar i spelärlden"
 
-#: lore/templates/world/_page.html:103
+#: lore/templates/world/_root.html:103
 msgid "Here you can filter articles in all kinds of ways..."
 msgstr "Här kan du filtrera artiklar på alla sorts sätt ..."
 
-#: lore/templates/world/_page.html:107
+#: lore/templates/world/_root.html:107
 msgid ""
 "... and greyed out articles are those that only editors can see. Let's "
 "click one!"
@@ -2365,15 +2365,15 @@ msgstr ""
 "... och utgråade artiklar är sådana som bara redaktörer kan se. Låt oss "
 "klicka på en!"
 
-#: lore/templates/world/_page.html:117
+#: lore/templates/world/_root.html:117
 msgid "Here we can edit the article."
 msgstr "Här kan vi redigera artikeln"
 
-#: lore/templates/world/_page.html:121
+#: lore/templates/world/_root.html:121
 msgid "... and it's details, including who can read it"
 msgstr "... och dess information, inkluderat vem som kan läsa den"
 
-#: lore/templates/world/_page.html:125
+#: lore/templates/world/_root.html:125
 msgid "Now we are done! Good luck!"
 msgstr "Nu är vi klara! Lycka till!"
 
@@ -2573,8 +2573,8 @@ msgid "Buy in shop"
 msgstr "Köp i butiken"
 
 #: lore/templates/world/world_item.html:259
-msgid "Printed"
-msgstr "Utgiven"
+msgid "Print year"
+msgstr "Tryckår"
 
 #: lore/templates/world/world_item.html:266
 msgid "Open for contribution"

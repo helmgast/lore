@@ -1,4 +1,4 @@
-// IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_page.html), so we don't need to hardcode it.
+// IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_root.html), so we don't need to hardcode it.
 __webpack_public_path__ = STATIC_URL.split("/static")[0]+__webpack_public_path__;
 
 // Needed for all pages, and should be loaded first

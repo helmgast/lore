@@ -603,7 +603,7 @@ def homepage():
 def styleguide():
     # publishers = Publisher.objects()
     flash(_('This page is a rendered style guide and example of how to write an article'), 'info')
-    return render_template('styleguide.html', root_template='_page.html')
+    return render_template('styleguide.html', root_template='_root.html')
 
 
 PublishersView.register_with_access(world_app, 'publisher')

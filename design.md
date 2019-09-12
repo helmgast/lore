@@ -536,14 +536,14 @@ Templates
 
 When we render, we have many different scenarios to deal with. We have the following type of template files:
 
-- Base-files. These are complete with header, footer, sidebar etc but inhering form parent category, ultimately _page.html.
+- Base-files. These are complete with header, footer, sidebar etc but inhering form parent category, ultimately _root.html.
 - View-files. A view fills the main content part of a Base file with either a Instance, or a list of Instances. It is the response to e.g. /list, /view, etc. Most views are simply a 1-to-1 with an Instance view, e.g. user/edit for account form. As the template is very similar, the same view is used to show all operations /new, /view and /edit.
 - Instance-files. These are an atomic representation of an instance. Instance can be of different types, where the default is "full". Full will typically show all the non-internal fields of an Instance. "row" will be a minimal representation based to fit into a table, and "inline" will be small view/form intended to be shown in modals or similar. As the instance files are re-usable across views, the views should only refer to instance-files.
 
 Template structure
 ------------------------------------------------------------------
 
-    _page.html
+    _root.html
         section.html
             model.html
 
@@ -560,7 +560,7 @@ Template structure
     <model>_list
     <model>_custom
 
-    _page.html
+    _root.html
     ---------
 
     <html>
@@ -605,7 +605,7 @@ Template structure
     {% block content %}{% endblock %}
 
     resource_item.html
-    {% extends _page.html if not template else template}
+    {% extends _root.html if not template else template}
 
 Example
 ------------------------------------------------------------------

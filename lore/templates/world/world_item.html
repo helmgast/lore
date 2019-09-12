@@ -1,4 +1,4 @@
-{% extends "world/world_list.html" if not world_theme else world_theme %}
+{% extends "world/_root.html" if not world_theme else world_theme %}
 
 {% block content_title %}{{ world.title if world else _("New world") }}{% endblock %}
 {% block content_tagline -%}
@@ -19,10 +19,6 @@
 
 {% block cssimports %}
     {{ super() }}
-    {% if world %}
-        <link rel="home" type="application/rss+xml"
-              href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
-    {% endif %}
     {% if world and world.get_header_image %}
         <style>
             .page-header-hero {
@@ -32,6 +28,10 @@
                 {{ world.custom_css|safe|replace('style>','') }}
             {% endif %}
         </style>
+    {% endif %}
+    {% if world %}
+        <link rel="home" type="application/rss+xml"
+              href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
     {% endif %}
 {% endblock %}
 
@@ -255,22 +255,23 @@
             {% endif %}
             {% if world.publishing_year %}
             <tr>
-
-                <th>{{ _('Printed') }}</th>
+                <th>{{ _('Print year') }}</th>
                 <td>
                     <small class="nobr">{{ world.publishing_year|default(_('No data'), true) }}</small>
                 </td>
             </tr>
             {% endif %}
+            {% if world.contribution %}
             <tr>
                 <th>{{ _('Open for contribution') }}</th>
                 <td>
                     <small>{{ _('Yes') if world.contribution else _('No') }}</small>
                 </td>
             </tr>
+            {% endif %}
             {% call(privileged) MACRO.IS_ADMIN() %}
             <tr>
-                <th>{{ _('Status') }}</th>
+                <th class="privileged">{{ _('Status') }}</th>
                 <td>
                     <small>{{ world.get_status_display() }}</small>
                 </td>
