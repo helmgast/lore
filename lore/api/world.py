@@ -578,19 +578,19 @@ class ArticlesView(ResourceView):
 
 @world_app.route('/+<code>', subdomain=current_app.default_host)
 def shorturl(code):
-    shortcut = Shortcut.objects(slug=code.lower()).first_or_404()
+    shortcut = Shortcut.objects(slug=code.lower()).first()
     url = ''
-    if shortcut.article:
-        url = url_for('world.ArticlesView:get', 
-            pub_host=shortcut.article.publisher.slug, 
-            world_=shortcut.article.world.slug,
-            id=shortcut.article.slug)
-    elif shortcut.url:
-        url = shortcut.url
-    if url:
-        return redirect(url)
-    else:
-        abort(404)
+    if shortcut:
+        if shortcut.article:
+            url = url_for('world.ArticlesView:get', 
+                pub_host=shortcut.article.publisher.slug, 
+                world_=shortcut.article.world.slug,
+                id=shortcut.article.slug)
+        elif shortcut.url:
+            url = shortcut.url
+        if url:
+            return redirect(url)
+    abort(404, description=_("This code has not yet been created."))
 
 
 @world_app.route('/', subdomain=current_app.default_host)

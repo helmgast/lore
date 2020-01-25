@@ -118,7 +118,6 @@ def callback():
         .format(domain=auth0_domain, access_token=token_info['access_token'])
 
     user_info = requests.get(user_url).json()
-    #logger.info(user_info)
 
     # Make sure next is a relative URL
     next_url = safe_next_url(default_url='/')
@@ -139,13 +138,23 @@ def callback():
         capture_message(msg)
         return redirect(next_url)  # RETURN IN ERROR
 
+    # Authenticating user exists in DB
+        # Another user logged in (session user)
+        # Another session not logged in
+    # Authenticating user doesn't exist in DB
+        # Another user logged in (session user)
+        # Another session not logged in
+    # Attempting link?
+
+
     email = user_info['email']
     session_user = get_logged_in_user(require_active=False)
     auth_user = None
 
     # Find user that matches the provided auth email
+    # Will look in identities, but if Auth0 works correctly, we shouldn't arrive here with an email that is not primary (e.g. not in identities)
     try:
-        auth_user = User.objects(email=email).get()
+        auth_user = User.query_user_by_email(email).get()
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
@@ -169,7 +178,7 @@ def callback():
                 session_user.identities = identities
                 populate_user(session_user, user_info)
                 session_user.save()
-                flash(_(f"You linked email {user_info['email']} to primary {session_user.email}"), 'info')
+                flash(_("You linked email %(email)s to primary %(primary)s", email=user_info['email'], primary=session_user.email), 'info')
             # If not, we essentially do nothing, as the user is already itself
             return redirect(next_url)
         else:  # Something went wrong, there is no valid logged in user
@@ -334,7 +343,7 @@ def get_logged_in_user(require_active=True):
                         as_user = request.args['as_user']
                         if as_user == 'none':
                             return None  # Simulate no logged in user
-                        u2 = User.objects(email=as_user).first()
+                        u2 = User.query_user_by_email(email=as_user).first()
                         if u2:
                             logger.debug("User %s masquerading as %s" % (u, u2))
                             return u2

@@ -12,6 +12,7 @@ from datetime import datetime
 from hashlib import md5
 
 import math
+import re
 
 from flask import flash
 
@@ -22,7 +23,7 @@ from flask_babel import lazy_gettext as _
 from .misc import Document  # Enhanced document
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, ReferenceField, GenericReferenceField,
                          BooleanField, ListField, IntField, URLField, DynamicField, EmailField, EmbeddedDocumentField, FloatField,
-                         ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE)
+                         ValidationError, DoesNotExist, NULLIFY, DENY, CASCADE, Q)
 
 import logging
 from flask import current_app
@@ -66,18 +67,23 @@ class UserEvent(EmbeddedDocument):
 
 # A user in the system
 class User(Document, BaseUser):
-    # meta = {
-    #     'indexes': ['email', 'auth_keys']
-    #
-    #     # 'indexes': ['email', 'auth_keys.email']
-    # }
-    # ripperdoc@gmail.com|facebook|507316539704
+    meta = {
+        'indexes': [
+            'email', 
+#            'identities.profileData.email', # Cannot index a dynamic field
+            # {"fields": ["username",], # Does unique but not for null fields
+            #     "unique": True,
+            #     "partialFilterExpression": {
+            #         "username": {"$type": "string"}
+            #      }
+            # },
+        ]
+    }
     # We want to set username unique, but then it cannot be empty,
     # but in case where username is created, we want to allow empty values
     # Currently it's only a display name, not used for URLs!
-    username = StringField(max_length=60, verbose_name=_('Username'))
+    username = StringField(max_length=60, null=True, verbose_name=_('Username'))
     email = EmailField(max_length=60, unique=True, min_length=6, verbose_name=_('Contact Email'))
-    auth_keys = ListField(StringField(max_length=100, unique=True), verbose_name=_('Authentication sources'))
     realname = StringField(max_length=60, verbose_name=_('Real name'))
     location = StringField(max_length=60, verbose_name=_('Location'))
     description = StringField(max_length=500, verbose_name=_('Description'))
@@ -90,6 +96,26 @@ class User(Document, BaseUser):
     logged_in = BooleanField(default=False)
     tourdone = BooleanField(default=False)
     avatar_url = URLField(verbose_name=_('Avatar URL'))
+
+    # Structure of identities (coming from Auth0)
+    # First identity lacks profileData but is implicity that of user.email
+    # "identities" : [ 
+    #     {
+    #         "provider" : "google-oauth2",
+    #         "user_id" : "101739805468412392797",
+    #         "connection" : "google-oauth2",
+    #         "isSocial" : true
+    #     }, 
+    #     {
+    #         "profileData" : {
+    #             "email" : "froejd@gmail.com",
+    #             "email_verified" : true
+    #         },
+    #         "user_id" : "5c1facce50d832460364aad8",
+    #         "provider" : "email",
+    #         "connection" : "email",
+    #         "isSocial" : false
+    #     },  
     identities = DynamicField()
     access_token = StringField()
 
@@ -103,6 +129,7 @@ class User(Document, BaseUser):
     password = StringField(max_length=60, verbose_name=_('Password'))
     newsletter = BooleanField(default=True, verbose_name=_('Accepting newsletters'))
     google_auth = EmbeddedDocumentField(ExternalAuth)
+    auth_keys = ListField(StringField(max_length=100, unique=True), verbose_name=_('Authentication sources'))
     facebook_auth = EmbeddedDocumentField(ExternalAuth)
     event_log = ListField(EmbeddedDocumentField(UserEvent))
 
@@ -123,17 +150,17 @@ class User(Document, BaseUser):
             return True
         return False
 
-    def enumerate_auth_keys(self):
-        # Assumes a Auth0 auth_id prepended with an email, e.g email@domain.com|email|58ba793c0bdcab0a0ec46cf7
-        if not self.auth_keys:
-            return
-        else:
-            for key in self.auth_keys:
-                split_key = key.split('|')
-                if not len(split_key) == 3 or any(not k for k in split_key):
-                    raise ValidationError("Auth key {key} is not valid".format(key=key))
-                else:
-                    yield split_key
+    # def enumerate_auth_keys(self):
+    #     # Assumes a Auth0 auth_id prepended with an email, e.g email@domain.com|email|58ba793c0bdcab0a0ec46cf7
+    #     if not self.auth_keys:
+    #         return
+    #     else:
+    #         for key in self.auth_keys:
+    #             split_key = key.split('|')
+    #             if not len(split_key) == 3 or any(not k for k in split_key):
+    #                 raise ValidationError("Auth key {key} is not valid".format(key=key))
+    #             else:
+    #                 yield split_key
 
     def display_name(self):
         return self.realname or self.username or self.email.split('@')[0]
@@ -158,6 +185,24 @@ class User(Document, BaseUser):
                 else:
                     emails.setdefault(self.email, []).append(auth_services[id['provider']])
         return emails
+
+    @staticmethod
+    def query_user_by_email(email):
+        """Authoritative method for finding existing user in database based on provided email.
+        Looks for users that either have the main email, or have the email within their identities.
+        We compare emails case-insensitively (froejd@ == FROEJD@) but always store main email as lowercase.
+        Identities object from Auth0 MAY contain uppercase although unusual.
+        """
+        # Deprectated fields google_auth.emails and facebook_auth.emails are not searched as they in old data always are same as user.email
+        # Deprecated field auth_keys shouldn't contain unique emails not in identities but haven't verified yet 
+
+        # q = User.objects(__raw__={"$or": [
+        #     {"email":f"/^{email}$/i"}, # Match from start to end of string
+        #     {"identities.profileData.email": f"/^{email}$/i"}, # Match from start to end of string
+        #     {"auth_keys":f"/^{email}\|/i"} # Find from start to |
+        # ]})
+        q = User.objects(Q(email__iexact=email) | Q(__raw__={"identities.profileData.email":re.compile(f"^{email}$", re.IGNORECASE)}) | Q(auth_keys__istartswith=email))
+        return q
 
     def create_token(self):
         return create_token(self.email)

@@ -82,10 +82,12 @@
                         <th>{{ _('Product Number') }}</th>
                         <td>{{ product.product_number }}</td>
                     </tr>
+                    {% call(privileged) MACRO.IS_ADMIN() %}
                     <tr>
                         <th>{{ _('Project Code') }}</th>
                         <td>{{ product.project_code }}</td>
                     </tr>
+                    {% endcall %}
                     <tr>
                         <th>{{ _('Publisher') }}</th>
                         <td>{{ product.publisher }}</td>
@@ -104,6 +106,7 @@
                         <th>{{ _('Family') }}</th>
                         <td>{{ product.family }}</td>
                     </tr>
+                    {% call(privileged) MACRO.IS_ADMIN() %}
                     <tr>
                         <th>{{ _('Created') }}</th>
                         <td>{{ product.created|datetimeformat(format='short') }}</td>
@@ -112,6 +115,7 @@
                         <th>{{ _('Updated') }}</th>
                         <td>{{ product.updated|datetimeformat(format='short') }}</td>
                     </tr>
+                    {% endcall %}
                     <tr>
                         <th>{{ _('Type') }}</th>
                         <td>{{ product.get_field_display('type') }}</td>
@@ -124,7 +128,7 @@
 
                     <tr>
                         <th>{{ _('Price') }}</th>
-                        <td>{{ product.price|currencyformat(product.currency.upper()) }}</td>
+                        <td>{{ product.get_price()|currencyformat(product.currency.upper()) }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Currency') }}</th>
@@ -151,19 +155,23 @@
                     {% endif %}
                 </table>
 
-                <div class="well">{{ product.description|markdown }}</div>
+                {% if product.description %}<div class="well">{{ product.description|markdown }}</div>{% endif %}
                 {% if product.downloadable_files %}
-                    <div class="well"><strong>{{ _('Downloadable files') }}</strong>
+                    {% if product.is_owned_by_current_user() %}
+                    <div class="well"><strong>{{ _('Downloadable files') }}: </strong>
+                        <ul>
                         {% for file_asset in product.downloadable_files %}
-                            <div>{% if product.is_owned_by_current_user() %}<a
+                            <li><a
                                     href="{{ url_for('download', fileasset=file_asset.slug) }}"><span
-                                    class="glyphicon glyphicon-download"></span> <strong>{{ file_asset }}</strong></a>{% else %}
-                                <strong>{{ file_asset.slug }}</strong>{% endif %}{% if file_asset.description %}:
-                                {{ file_asset.description|markdown }}{% endif %}</div>
+                                    class="glyphicon glyphicon-download"></span> <strong>{{ file_asset }}</strong></a>
+                            </li>
                         {% endfor %}
-                        <span class="help-block">{% trans %}Access to download file depends on per-file settings{% endtrans %}</span>
+                        </ul>
 
                     </div>
+                    {% else %}
+                    <p><span class="help-block">{%trans%}You have not bought this product{%endtrans%}</span></p>
+                    {%endif%}
                 {% endif %}
             </div>
             <div class="col-md-4">

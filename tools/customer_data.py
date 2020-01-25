@@ -215,7 +215,7 @@ def setup_customer():
                     if order_product in order_lines:
                         order_lines[order_product].quantity += 1
                     else:
-                        order_lines[order_product] = OrderLine(product=order_product, price=order_product.price)
+                        order_lines[order_product] = OrderLine(product=order_product, price=order_product.get_price())
 
             order_sum = 0
             order_items = 0

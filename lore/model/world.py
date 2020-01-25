@@ -15,13 +15,15 @@ import logging
 import re
 from datetime import datetime, timedelta
 
-from flask import current_app, url_for
+from flask import current_app, url_for, g
 from flask_babel import lazy_gettext as _
 from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatField, ReferenceField, BooleanField,
                          ListField, IntField, EmailField, EmbeddedDocumentField, DynamicField, URLField, NULLIFY, DENY)
+from mongoengine.queryset import Q
+
 
 from .asset import FileAsset
-from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options
+from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options, EMPTY_ID
 from .misc import Document, shorten, available_locale_tuples, distinct_options  # Enhanced document
 from .user import User
 
@@ -97,6 +99,18 @@ class Publisher(Document):
 
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'publishers_newsletters', NULLIFY)
+
+def filter_authorized_by_publisher(publisher=None):
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    if not publisher:
+        # Check all publishers
+        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
+    elif g.user in publisher.editors or g.user in publisher.readers:
+        # Save some time and only check given publisher
+        return Q(publisher__in=[publisher])
+    else:
+        return Q(id=EMPTY_ID)
 
 
 class World(Document):
@@ -455,7 +469,7 @@ class Shortcut(Document):
     article = ReferenceField(Article, reverse_delete_rule=NULLIFY, verbose_name=_('Article'))
 
     def clean(self):
-        self.slug = slugify(self.slug) # Force slugify as the slug is manually chosen
+        self.slug = slugify(self.slug) # Force slugify as it may be invalid otherwise
         if self.article:
             self.url = None
         elif self.url:

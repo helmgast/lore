@@ -63,6 +63,10 @@ FX_IN_SEK = {
 # type = one of ProductTypes except shipping
 # country = 2-letter country code
 
+class Price(EmbeddedDocument):
+    price = FloatField(min_value=0, default=0, required=True, verbose_name=_('Price'))
+    currency = StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek,
+                           verbose_name=_('Currency'))
 
 class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
@@ -79,6 +83,7 @@ class Product(Document):
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
     price = FloatField(min_value=0, default=0, required=True, verbose_name=_('Price'))
+    prices = ListField(EmbeddedDocumentField(Price))
     tax = FloatField(min_value=0, default=0.25, choices=[(0.25, '25%'), (0.06, '6%'), (0, '0% (Auto)')], verbose_name=_('Tax'))
     currency = StringField(required=True, choices=Currencies.to_tuples(), default=Currencies.sek,
                            verbose_name=_('Currency'))
@@ -97,6 +102,18 @@ class Product(Document):
         if request.values.get('downloadable_files', None) is None:
             self.downloadable_files = []
         self.slug = slugify(self.title)
+
+    def get_price(self, currency=None):
+        """Returns price per currency, in a backwards compatible manner as price format has changed"""
+        if self.price!=None: # We are using old, single-currency price
+            if (currency == None) or (currency and currency == self.currency):
+                return self.price
+            else:
+                raise ValueError(f"No price defined for %{currency}")
+        else:
+            currency = currency or self.currency or Currencies.sek
+            priceline = next(x for x in self.prices if x.currency == currency)
+            return priceline.price
 
     @property  # For convenience
     def get_feature_image(self):
@@ -176,7 +193,21 @@ class Stock(Document):
 
 
 class Order(Document):
+    meta = {
+        'indexes': [
+            {"fields": ["external_key",], # Does unique but not for null fields
+                "unique": True,
+                "partialFilterExpression": {
+                    "external_key": {"$type": "string"}
+                 }
+            },
+        ],
+    }
+
+    title = StringField(max_length=60, verbose_name=_('Title'))
+    external_key = StringField(null=True, verbose_name=_('External Key'))
     user = ReferenceField(User, reverse_delete_rule=DENY, verbose_name=_('User'))
+    publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, verbose_name=_('Publisher'))
     session = StringField(verbose_name=_('Session ID'))
     email = EmailField(max_length=60, verbose_name=_('Email'))
     order_lines = ListField(EmbeddedDocumentField(OrderLine))
@@ -184,7 +215,7 @@ class Order(Document):
     total_price = FloatField(min_value=0, default=0.0,
                              verbose_name=_('Total price'))  # Total price of order incl shipping
     total_tax = FloatField(min_value=0, default=0.0, verbose_name=_('Total tax'))  # Total tax of order
-    currency = StringField(choices=Currencies.to_tuples(), verbose_name=_('Currency'))
+    currency = StringField(choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_('Currency'))
     created = DateTimeField(default=datetime.utcnow, verbose_name=_('Created'))
     updated = DateTimeField(default=datetime.utcnow, verbose_name=_('Updated'))
     status = StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_('Status'))
@@ -194,6 +225,8 @@ class Order(Document):
     shipping_address = EmbeddedDocumentField(Address)
 
     def __str__(self):
+        if self.title:
+            return self.title
         max_prod, max_price = None, -1
         for ol in self.order_lines:
             if ol.price > max_price:
@@ -272,14 +305,15 @@ class Order(Document):
         self.updated = datetime.utcnow()
         num, sum, tax = 0, 0.0, 0.0
         for ol in self.order_lines:
-            if self.currency:
-                if ol.product.currency != self.currency:
-                    raise ValidationError(
-                        u'This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
-            else:
-                self.currency = ol.product.currency
-            if ol.product.status == ProductStatus.out_of_stock:
-                raise ValidationError(u'Product %s is out of stock' % ol.product)
+            # TODO removed as we need to have products with multiple currencies but not yet
+            # if self.currency:
+            #     if ol.product.currency != self.currency:
+            #         raise ValidationError(
+            #             u'This order is in %s, cannot add line with %s' % (self.currency, ol.product.currency))
+            # else:
+            #     self.currency = ol.product.currency
+            # if ol.product.status == ProductStatus.out_of_stock:
+            #     raise ValidationError(u'Product %s is out of stock' % ol.product)
 
             num += ol.quantity
             sum += ol.quantity * ol.price
@@ -290,12 +324,12 @@ class Order(Document):
             if self.shipping:
                 if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
                     tax_rate = old_div(tax, sum)
-                    tax += self.shipping.price * (old_div(tax_rate, (tax_rate + 1.0)))
+                    tax += self.shipping.get_price() * (old_div(tax_rate, (tax_rate + 1.0)))
                 else:
-                    tax += self.shipping.price * (old_div(self.shipping.tax, (self.shipping.tax + 1.0)))
-                sum += self.shipping.price  # Do after we calculate average tax above
-        else:
-            self.currency = None  # Clear it to avoid errors adding different product currencies back again
+                    tax += self.shipping.get_price() * (old_div(self.shipping.tax, (self.shipping.tax + 1.0)))
+                sum += self.shipping.get_price()  # Do after we calculate average tax above
+        # else:
+        #     self.currency = None  # Clear it to avoid errors adding different product currencies back again
 
         self.total_items = num
         self.total_price = sum

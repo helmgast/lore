@@ -30,11 +30,14 @@ speaklater = "*"
 sentry-sdk = {extras = ["flask"],version = "*"}
 nltk = "*"
 pyphen = "*"
+gspread = "*"
+oauth2client = "*"
 
 [dev-packages]
 pylint = "*"
 pylint-django = "*"
 pylint-mongoengine = "*"
+autopep8 = "*"
 
 [requires]
 python_version = "3.6"

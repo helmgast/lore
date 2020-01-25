@@ -21,9 +21,9 @@ from lore.api.resource import RacModelConverter, \
     prefillable_fields_parser, Authorization
 
 from lore.model.asset import FileAsset, FileAccessType
-from lore.model.misc import EMPTY_ID, set_lang_options
+from lore.model.misc import EMPTY_ID, set_lang_options, filter_is_owner
 from lore.model.shop import products_owned_by_user
-from lore.model.world import Publisher
+from lore.model.world import Publisher, filter_authorized_by_publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -108,28 +108,9 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
             fpid = None
         rv = send_gridfs_file(asset.file_data.get(), mimetype=mime, as_attachment=as_attachment,
                               attachment_filename=attachment_filename, fingerprint_user_id=fpid)
-        rv.headers['Cache-Control'] = 'private'  # Override the public cache
+        #rv.headers['Cache-Control'] = 'private'  # Override the public cache
         return rv
     abort(403)
-
-
-def filter_authorized():
-    if not g.user:
-        return Q(id=EMPTY_ID)
-    return Q(owner=g.user)
-
-
-def filter_authorized_by_publisher(publisher=None):
-    if not g.user:
-        return Q(id=EMPTY_ID)
-    if not publisher:
-        # Check all publishers
-        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
-    elif g.user in publisher.editors or g.user in publisher.readers:
-        # Save some time and only check given publisher
-        return Q(publisher__in=[publisher])
-    else:
-        return Q(id=EMPTY_ID)
 
 
 class AssetAccessPolicy(ResourceAccessPolicy):
@@ -180,7 +161,7 @@ class FileAssetsView(ResourceView):
 
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
-                filter_authorized() |
+                filter_is_owner() |
                 filter_authorized_by_publisher(publisher))
 
         r.prepare_query()

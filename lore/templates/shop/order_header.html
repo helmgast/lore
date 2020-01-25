@@ -27,6 +27,14 @@
                             <small>{{ order.id }}</small>
                         </td>
                     </tr>
+                    {% if order.external_key %}
+                    <tr>
+                        <th width="30%">{{ _('Key') }}</th>
+                        <td>
+                            <small>{{ order.external_key }}</small>
+                        </td>
+                    </tr>
+                    {% endif%}
                     <tr>
                         <th width="30%">{{ _('Name') }}</th>
                         <td>{{ order.user.realname|default(_('No name'), true) }}</td>

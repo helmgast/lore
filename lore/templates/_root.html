@@ -162,7 +162,7 @@
                                 </li>
                                 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
                                     <li><a class="{{ privileged }}"
-                                           href="{{ url_for('shop.OrdersView:my_orders') }}">{{ _('My orders') }}</a>
+                                           href="{{ url_for('shop.OrdersView:my_orders') }}">{{ _('My products') }}</a>
                                     </li>
                                 {% endcall %}
                                 {% call(privileged) MACRO.IS_ADMIN() %}

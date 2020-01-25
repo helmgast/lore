@@ -1,0 +1,71 @@
+{% extends "shop/_root.html" %}
+
+{% block header_title %}
+    <h2 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">Activation code: <code>{{code}}</code></h2>
+{% endblock header_title %}
+
+{% block breadcrumbs %}
+{#{{ MACRO.BREADCRUMBS(
+    (url_for('world.ArticlesView:publisher_home'), _('Home')),
+        (url_for('shop.shop_home'), _('Shop')),
+        (url_for('shop.OrdersView:index'), _('Orders')),
+        ('', self.content_title())
+    ) }} #}
+{% endblock %}
+
+{% block actionbar %}
+    {{ super() }}
+    <li>
+        <a class="btn btn-default" data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
+            from_field=user.email, intent='post', subject=gettext('Regarding activation key %(key)s', key=code)) }}">
+            {{ _('Contact Us') }}</a>
+    </li>
+    {% if order.status != 'cart' %}
+        {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('view', res=order)) %}
+            <li>
+                <a class="btn btn-default" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1"
+                   href="{{ url_for('mail.mail_view', mail_type='order', user=user.id, order=order.id, intent='post') }}">
+                    <span class="glyphicon glyphicon-envelope"></span> {{ _('Send order mail') }}
+                </a>
+            </li>
+        {% endcall %}
+    {% endif %}
+{% endblock %}
+
+{#
+  What user can edit in different order stages:
+  cart: editable list, editable quantity, address, editable comment
+  ordered: editable comment, address
+  paid: editable comment, address
+  shipped: nothing editable
+#}
+
+{{ products }}
+
+{% block content %}{% block inline %}
+    {% if order.user or order.email %}
+        {% if order.user == g.user or order.email == g.user %}
+            <p>{%trans %}This code has already been activated by you.{%endtrans%} <a href="{{url_for('shop.OrdersView:get', id=order.id)}}">{%trans%}Click here to see the full order.{%endtrans%}</a></p>
+        {% else %}
+            <p>{%trans %}This code has already been activated by another user, and probably does not belong to you. If you think this is an error, contact us.{% endtrans %}</p>
+        {% endif %}
+    {% else %}
+    <p>{%trans %}The code gives you access to the following digital products. Click "Claim" to confirm your access and and be able to download them.{% endtrans %}</p>
+    <table style="width: 100%">
+        <tbody>
+            {% include "shop/order_lines.html" %}
+        </tbody>
+    </table>
+    <form id="orderform" class="order-cart" method="post" action="{{ action_url }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="row">
+                <div class="col-md-2">
+                </div>
+                <div class="col-md-offset-8">
+                    <button type="submit" id="save" class="btn btn-success btn-block">{{ _('Claim products') }}</button>
+                </div>
+        </div>
+    </form>
+    {% endif %}
+
+{% endblock %}{% endblock %}

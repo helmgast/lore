@@ -6,6 +6,7 @@
 **/*.pot
 
 config.py
+google_service_account.json
 
 front/
 .idea/

@@ -20,7 +20,7 @@
                 <td>{{ product.get_field_display('type') }}</td>
                 <td>{{ product.world|default(_('No data'),true) }}</td>
                 <td class="nobr">{{ product.created|dateformat(format='short') }}</td>
-                <td class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</td>
+                <td class="product-price">{{ product.get_price()|currencyformat(product.currency.upper()) }}</td>
             </tr>
         {% endfor %}
         </tbody>

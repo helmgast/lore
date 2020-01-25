@@ -34,10 +34,10 @@ from flask.json import load
 from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
 from jinja2 import TemplateNotFound
 from mongoengine import (EmbeddedDocument, StringField, ReferenceField)
+from mongoengine.queryset import Q
 from slugify import slugify as ext_slugify
 
 from lore.extensions import configured_locales
-
 from nltk.corpus import stopwords
 import pyphen
 from itertools import product, accumulate, chain
@@ -182,6 +182,15 @@ def choice_options(field_name, choices):
 
     return return_function
 
+def filter_is_owner():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(owner=g.user)
+
+def filter_is_user():
+    if not g.user:
+        return Q(id=EMPTY_ID)
+    return Q(user=g.user)
 
 def datetime_month_options(field_name):
     """

@@ -1,6 +1,6 @@
 {% extends "shop/_root.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{ _('My orders') if method=='my_orders' else _('Orders') }}{% endblock %}
+{% block content_title %}{{ _('My products') if method=='my_orders' else _('Orders') }}{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
@@ -9,7 +9,7 @@
     ) }}{% endblock %}
 
 {% block asides %}{{ super() }}
-    {% if filter_options %}
+    {% if filter_options and method!='my_orders' %}
         {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}
 
         <h5>{% trans %}By updated{% endtrans %}</h5>
@@ -68,10 +68,10 @@
         </table>
     </div>
     {% endif %}
-    <div>{% trans %}Currently only shows Eon crowdfunder orders{% endtrans %}</div>
 {% endblock %}
 
 {% block content %}
+    <p><small><em>{%trans%}This view shows your digital orders, click each to find downloadable files. Does not yet include orders from webshop.helmgast.se.{%endtrans%}</em></small></p>
     {% if orders %}
 
         {% if args.get('view', none) == 'card' %}

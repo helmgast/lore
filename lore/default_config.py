@@ -32,11 +32,12 @@ class Config(object):
     # Locales that can be selected throughout the system
     BABEL_AVAILABLE_LOCALES = ['sv_SE', 'en_US']  # In order of preference for some cases
     MAIL_DEFAULT_SENDER = 'info@helmgast.se'
-    MAX_CONTENT_LENGTH = 64 * 1024 * 1024  # 64 MB
+    MAX_CONTENT_LENGTH = 256 * 1024 * 1024  # 256 MB
     DEFAULT_HOST = 'localhost:5000'  # Default host when not using flask dev server
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
+    GOOGLE_SERVICE_ACCOUNT_PATH = "google_service_account.json" # Relative to root, as import tools run at CWD root
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app

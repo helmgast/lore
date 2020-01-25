@@ -62,7 +62,7 @@
                                 {{ line.quantity }}
                             {% endif %}
                         </td>
-                        <td class="product-price">{{ (line.product.price if order.status=='cart' else line.price)|currencyformat(order.currency.upper()) }}</td>
+                        <td class="product-price">{{ (line.product.get_price() if order.status=='cart' else line.price)|currencyformat(order.currency.upper()) }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -73,7 +73,7 @@
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{{ (order.shipping.price if order.shipping else 0)|currencyformat(order.currency.upper()) }}</small>
+                    <small>{{ (order.shipping.get_price() if order.shipping else 0)|currencyformat(order.currency.upper()) }}</small>
                 </td>
             </tr>
             <tr>

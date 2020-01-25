@@ -16,7 +16,7 @@ from datetime import datetime
 
 
 import stripe
-from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup
+from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup, render_template
 from flask_babel import lazy_gettext as _
 from flask_classy import route
 from flask_mongoengine.wtf import model_form
@@ -32,10 +32,10 @@ from lore.api.resource import (ResourceAccessPolicy,
                                 filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                 Authorization, route_subdomain)
 from lore.model.asset import FileAsset
-from lore.model.misc import EMPTY_ID, set_lang_options
+from lore.model.misc import EMPTY_ID, set_lang_options, filter_is_owner, filter_is_user
 from lore.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
 from lore.model.user import User
-from lore.model.world import Publisher
+from lore.model.world import Publisher, filter_authorized_by_publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -54,26 +54,6 @@ def get_or_create_stock(publisher):
 
 def filter_product_published():
     return Q(status__ne=ProductStatus.hidden, created__lte=datetime.utcnow())
-
-
-def filter_order_authorized():
-    if not g.user:
-        return Q(id=EMPTY_ID)
-    return Q(user=g.user)
-
-
-def filter_authorized_by_publisher(publisher=None):
-    if not g.user:
-        return Q(id=EMPTY_ID)
-    if not publisher:
-        # Check all publishers
-        return Q(publisher__in=Publisher.objects(Q(editors__all=[g.user]) | Q(readers__all=[g.user])))
-    elif g.user in publisher.editors or g.user in publisher.readers:
-        # Save some time and only check given publisher
-        return Q(publisher__in=[publisher])
-    else:
-        return Q(id=EMPTY_ID)
-
 
 class ProductAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
@@ -113,7 +93,7 @@ class ProductsView(ResourceView):
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
-        products = Product.objects().order_by('type', '-price')
+        products = Product.objects().order_by('type', '-created')
         r = ListResponse(ProductsView, [('products', products), ('publisher', publisher)])
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -335,6 +315,8 @@ class OrdersAccessPolicy(ResourceAccessPolicy):
     def custom_auth(self, op, user, res):
         if op == 'my_orders':
             return self.is_user(op, user, res)
+        elif op == 'key':
+            return self.is_user(op, user, res)
         else:
             return Authorization(False, _("No authorization implemented for %(op)s", op=op), error_code=403)
 
@@ -355,7 +337,7 @@ class OrdersView(ResourceView):
                             converter=RacModelConverter())
 
     def index(self):
-        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
         orders = Order.objects().order_by('-updated')  # last updated will show paid highest
@@ -364,7 +346,9 @@ class OrdersView(ResourceView):
 
         r.auth_or_abort(res=publisher)
         if not (g.user and g.user.admin):
-            r.query = r.query.filter(filter_order_authorized())
+            r.query = r.query.filter(
+                filter_is_user() |
+                filter_authorized_by_publisher(publisher))
         r.prepare_query()
         aggregate = list(r.orders.aggregate({'$group':
             {
@@ -376,18 +360,22 @@ class OrdersView(ResourceView):
         }))
         r.aggregate = aggregate[0] if aggregate else None
 
-        r.set_theme('publisher', publisher.theme)
+        r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
     def my_orders(self):
-        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
         orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
-        r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders')
+        r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders', extra_args={"view": "cards"})
         r.auth_or_abort(res=publisher)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_is_user() |
+                filter_authorized_by_publisher(publisher))
         r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
+        r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
     def get(self, id):
@@ -401,6 +389,32 @@ class OrdersView(ResourceView):
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], form_class=PostPaymentForm)
         r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
+        return r
+
+    @route('/key/<code>', methods=['GET','PATCH'])
+    def key(self, code):
+        # Custom authentication
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        set_lang_options(publisher)
+
+        order = Order.objects(external_key=code).get_or_404()  # get_or_404 handles exception if not a valid object ID
+            
+        r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], method='key', extra_args={'intent': 'patch'})
+        r.set_theme('publisher', publisher.theme)
+        if not g.user:
+            return render_template("error/needlogin.html", root_template='_root.html', publisher_theme=r.publisher_theme)
+        r.auth_or_abort()
+        r.template = "shop/order_peek.html"
+        r.code = code                
+        if request.method in ['PATCH'] and not (order.user or order.email): # Key has already been activated for this order
+            r.method = "patch"
+            order.user = g.user
+            order.status = OrderStatus.paid
+            try:
+                r.commit()
+            except (NotUniqueError, ValidationError) as err:
+                return r.error_response(err)
+            return redirect(r.args['next'] or url_for('shop.OrdersView:get', id=order.id))
         return r
 
     def patch(self, id, publisher):
@@ -488,7 +502,7 @@ class OrdersView(ResourceView):
             if not r.validate():
                 return r, 400  # Respond with same page, including errors highlighted
             r.form.populate_obj(cart_order)  # populate all of the object
-            if not g.user and User.objects(email=cart_order.email)[:1]:
+            if not g.user and User.query_user_by_email(email=cart_order.email)[:1]:
                 # An existing user has this email, force login or different email
                 flash(Markup(_(
                     'Email belongs to existing user, please <a href="%(loginurl)s">login</a> first or change email',
@@ -597,6 +611,13 @@ def get_cart_order():
     else:
         return None
 
+@current_app.route('/key/<code>', subdomain=current_app.default_host)
+def key(code):
+    order = Order.objects(external_key=code).first()
+    if order and order.publisher:
+        return redirect(url_for('shop.OrdersView:key', code=code, pub_host=order.publisher.slug))
+    else:    
+        abort(404, description=_("This code doesn't exist or haven't been added yet. Contact your publisher for more information."))
 
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor

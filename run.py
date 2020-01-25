@@ -16,9 +16,10 @@ from lore.app import create_app
 app = create_app()
 
 def runshell(cmd):
-    retcode = sp.call(shlex.split(cmd))
-    if retcode > 0:
-        sys.exit(retcode)
+    cmdsplit = shlex.split(cmd)
+    cp = sp.run(cmdsplit)
+    if cp.returncode > 0:
+        sys.exit(cp.returncode)
 
 @app.cli.command()
 def initdb():
@@ -80,8 +81,8 @@ def lang_extract(): # Run as lang-extract
     translate all empty MsgId. Then run python manage.py lang_compile
     """
 
-    runshell('pybabel extract --no-wrap -F lore/translations/babel.cfg -o temp.pot lore/')
-    runshell('pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching')
+    runshell('.venv/bin/pybabel extract --no-wrap --sort-by-file -F lore/translations/babel.cfg -o temp.pot lore/ plugins/')
+    runshell('.venv/bin/pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching')
     runshell('rm temp.pot')
     print()
     print("New strings needing translation:")
@@ -172,6 +173,23 @@ def import_csv():
     get_db()
     customer_data.setup_customer()
 
+@app.cli.command()
+@click.option('-s','--sheet', required=False, help='Name or index of worksheet, if URL lacks #gid=x parameter')
+@click.option('-m','--model', required=True, help='Name of model to import to/with')
+@click.option('-r','--repeat_on_empty', is_flag=True, help='If a cell is empty in a row with data, repeat value from row above')
+@click.option('-c','--commit', is_flag=True, help='If given, will commit import. Otherwise just print the first 10 results.')
+@click.option('--maxrows', default=10, type=int, help='Maximum amounts of rows to process')
+@click.argument('url_or_id', required=True)
+def import_sheet(url_or_id, sheet, model, repeat_on_empty, commit, maxrows):
+    from tools.sheets_importer import import_data
+    from mongoengine.connection import get_db
+    from lore import extensions
+    extensions.db.init_app(app)
+    db = get_db()
+    if maxrows < 1:
+        maxrows = 1000000 # Just a high number
+    import_data(url_or_id, sheet, model, repeat_on_empty, commit, maxrows)
+
 
 @app.cli.command()
 def db_migrate():
@@ -202,7 +220,7 @@ def set_password(email):
         print("We don't allow changing passwords if not in debug mode")
         exit(1)
     from lore.model.user import User
-    user = User.objects(email=email).first()
+    user = User.query_user_by_email(email=email).first()
     if user:
         passw = prompt_pass("Enter the new password")
         if passw and len(passw) > 4:
