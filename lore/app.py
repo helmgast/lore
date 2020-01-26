@@ -203,6 +203,7 @@ def configure_extensions(app):
     app.jinja_env.filters['dict_with'] = extensions.dict_with
     app.jinja_env.filters['dict_without'] = extensions.dict_without
     app.jinja_env.filters['currentyear'] = extensions.currentyear
+    app.jinja_env.filters['first_p_length'] = extensions.first_p_length
     app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jinja to run code
     app.jinja_loader = extensions.enhance_jinja_loader(app)
     app.json_encoder = extensions.MongoJSONEncoder
@@ -317,7 +318,7 @@ def configure_hooks(app):
         #     # We want to show debug toolbar if we get 404, but needs to return an HTML page with status 200 for it
         #     # to activate
         #     return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 200
-        return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 404
+        return render_template("error/404.html", root_template='_root.html', error=err.description or f"{request.path} not found at host {request.host}"), 404
 
     @app.errorhandler(MongoEngineConnectionError)
     def db_error(err):

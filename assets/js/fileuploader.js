@@ -57,7 +57,7 @@ define(["jquery", "utils"], function ($, utils) {
     }
 
     FileUpload.prototype.fileSelected = function (e) {
-        var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer.files) || [e.target]
+        var files = e.target.files || (e.originalEvent && e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files) || [e.target]
         var formData, that = this; // save this reference as it will be changed inside nested functions
 
         e.stopPropagation();
@@ -106,9 +106,16 @@ define(["jquery", "utils"], function ($, utils) {
                                 $fig.remove()
                             } else {
                                 // Trigger all plugins on added content
+                                var newUrl = "", id = "";
+                                try {
+                                    newUrl = jqXHR.responseJSON.instance.slug;
+                                    id = jqXHR.responseJSON.instance._id.$oid;
+                                } catch {}
 
-                                if ($fig.find('img').attr('src').match(/^data:/)) {
-                                    console.log('TODO: replace this with original url')
+                                if ($fig.find('img').attr('src').match(/^data:/) && newUrl ) {
+                                    console.log('New fig with url ('+newUrl+') and id ('+id+')');
+                                    $fig.find('img').attr('src', that.options.image_url.replace('replace', newUrl))
+                                    $fig.attr('id', id);
                                 }
                                 $fig.removeClass('loading loading-large');
                             }
@@ -120,9 +127,9 @@ define(["jquery", "utils"], function ($, utils) {
 
             })
             // Hack to let us reload the modal by pretending it was initiated from it's target again
-            var $modal = $('#themodal')
-            var e = jQuery.Event('show.bs.modal', {relatedTarget: {href: $modal.data('bs.modal').options['href']}})
-            $modal.trigger(e)
+            //var $modal = $('#themodal')
+            //var e = jQuery.Event('show.bs.modal', {relatedTarget: {href: $modal.data('bs.modal').options['href']}})
+            // $modal.trigger(e)
         }
         return false;
     }

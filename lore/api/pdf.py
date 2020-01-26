@@ -43,17 +43,17 @@ If a user matches just one, we basically know that they are the ones that downlo
 def hex(s):
     return ' '.join(x.encode('hex') for x in s)
 
-
-pdf_id = re.compile(r'trailer\s+<<.*?ID\[<(.{12})')  # may be multiline
-doc_id = re.compile(r'<xmpMM:DocumentID>xmp.did:(.{12})')  # wouldn't be multiline
-font_id = re.compile(r'/FontFamily\(([^)]{12})')  # wouldn't be multiline
-font_id_find = re.compile(r'/FontFamily\(([0-9A-F]{12})')  # Only look for hex characters
+# rb = bytes regex
+pdf_id = re.compile(rb'trailer\s+<<.*?ID\[<(.{12})')  # may be multiline
+doc_id = re.compile(rb'<xmpMM:DocumentID>xmp.did:(.{12})')  # wouldn't be multiline
+font_id = re.compile(rb'/FontFamily\(([^)]{12})')  # wouldn't be multiline
+font_id_find = re.compile(rb'/FontFamily\(([0-9A-F]{12})')  # Only look for hex characters
 
 window_size = 512  # size in bytes of the sliding window
 
 
 def fingerprint_from_user(user_id):
-    return md5(str(user_id)).hexdigest()[:12].upper()  # first 12 chars of hexdigest
+    return md5(str(user_id).encode()).hexdigest()[:12].upper().encode()  # first 12 chars of hexdigest
 
 
 def fingerprint_pdf(file_object, user_id):

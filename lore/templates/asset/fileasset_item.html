@@ -1,10 +1,10 @@
 {% extends "asset/_root.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
 
 {% block content_title %}{{ fileasset.slug if fileasset else _("New file") }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block actionbar %}
+    {{ super() }}
     {% if args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {{ MACRO.SAVE_BUTTON('fileform') }}
@@ -41,8 +41,8 @@
                         <strong>{{ _('Current file') }}</strong>: {{ fileasset.source_filename if fileasset and fileasset.file_data_exists() else _('No file') }}
                         {% set upload_accept = 'image/*,.pdf,.rtf,.zip,.doc,.xls,.txt' %}
                         <input multiple type="file" name="file_data" id="file_data" accept="{{ upload_accept }}">
+                        <span class="help-block">{% trans %}Max size 256 MB{% endtrans %}</span>
                     </div>
-                    {{ MACRO.FORM_FIELD(fileasset_form.attachment_filename) }}
                     {{ MACRO.FORM_FIELD(fileasset_form.source_file_url) }}
                     {{ MACRO.FORM_FIELD(fileasset_form.source_page_url) }}
                     {{ MACRO.FORM_FIELD(fileasset_form.tags, controlclass=' selectize-tags') }}

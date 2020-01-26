@@ -14,7 +14,7 @@
 
 {% block content %}
     <div class="jumbotron" style="background-image: url(//i.imgur.com/9i3wbSZ.jpg); background-size: cover;">
-        <h1>{{ _('Soon opening:') }} Lore</h1>
+        <h1>{{ _('We are working on ...') }} Lore</h1>
 {#        {% include "newsletter.html" %}#}
         <p style="background-color: rgba(240,240,240,0.9); padding: 4px; border-radius: 5px;">{{ _('The digital engine to keep stories going.') }}</p>
     </div>
@@ -183,7 +183,7 @@
     <hr>
         <div class="col-md-6">
         <a href="{{ url_for('world.ArticlesView:publisher_home', pub_host='helmgast.se') }}"><img class="img-responsive" src="{{
-                url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}"></a>
+                url_for('plugins', filename='helmgast-theme/logo-helmgast.svg', _external=true, _scheme='') }}"></a>
         </div>
         <div class="col-md-6">
          <h2>{{ _('Check out the first publisher on the platform:') }}</h2>

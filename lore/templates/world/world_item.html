@@ -124,9 +124,10 @@
             </div>
         </form>
     {% else %}
-        <article class="article-text">
-            {{ world.description|markdown }}
-
+        {% if world.description != world.tagline %}
+        <div class="lead">{{ world.description|markdown }}</div>
+        {% endif %}
+        <article class="article-text {{ 'drop-caps' if world.content|first_p_length >300 else ''}}">
             {{ world.content|markdown }}
         </article>
 
@@ -134,7 +135,6 @@
         {% set focus_articles=articles.filter(sort_priority__gt=0).order_by('-created_date', '-sort_priority')[:6] %}
         {% set top_material=articles.filter(type='material').order_by('-created_date')[:6] %}
         {% set latest_characters=articles.filter(type='character').order_by('-created_date')[:6] %}
-
 
             {% if recent_articles %}
                 <div class="row">

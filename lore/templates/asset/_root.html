@@ -9,9 +9,6 @@
 {% block subnavbar %}
     <li><a class="{{privileged}}" href="{{ url_for('assets.FileAssetsView:index') }}"><span
             class="glyphicon glyphicon-book"></span> {{ _('List') }}</a></li>
-{% endblock %}
-
-{% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['files'].authorize('new', res=None)) %}
         {{ MACRO.NEW_BUTTON(url_for('assets.FileAssetsView:get', id='post')) }}
     {% endcall %}

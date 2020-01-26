@@ -841,13 +841,12 @@ article {
   line-height: @article-line-height;
 }
 
-.article-text > p:first-of-type:first-letter {
+.drop-caps > p:first-of-type:first-letter {
   float: left;
   margin: 0;
   font-size: 3.55em;
   line-height: .9;
-  font-weight: 300;
-  padding-right: .1em;
+  padding: 0.05em 0.1em 0 0;
   text-transform: uppercase;
 }
 
@@ -1026,7 +1025,6 @@ top-shadow {
   .card-mixin;
   display: flex;
   flex-direction: column;
-  page-break-after: always;
   justify-content: flex-end;
 }
 

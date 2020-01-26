@@ -74,8 +74,13 @@ class MethodRewriteMiddleware(object):
         if environ['REQUEST_METHOD'] == 'POST':
             args = url_decode(environ['QUERY_STRING'])
             method = args.get('method', '').upper()
+            try:
+                # ensure UTF-8 not byte
+                method = method.decode('utf-8')
+            except AttributeError:
+                pass 
             if method and method in self.applied_methods:
-                method = method.encode('ascii', 'replace')
+                # method = method.encode('ascii', 'replace')
                 environ['REQUEST_METHOD'] = method
         return self.app(environ, start_response)
 
@@ -215,6 +220,7 @@ def pick_locale():
         preferred_locale = request.args['locale']
         if preferred_locale not in g.available_locales:
             # Hard abort as URL specified an unavailable locale
+            request.babel_locale = babel.default_locale # Need to set this as the exception will terminate the locale flow early
             abort(404,
                   u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
         else:
@@ -332,3 +338,6 @@ def dict_with(value, **kwargs):
     z = value.copy()
     z.update(kwargs)
     return z
+
+def first_p_length(string):
+    return len(string.strip().splitlines()[0])

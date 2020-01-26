@@ -13,4 +13,4 @@
 {% endblock js_bottom %}
 
 {% block content_title %}Server Error{% endblock %}
-{% block content %}Sorry, something is broken <a href="#" id="sentry-trigger">add some details</a>!{% endblock %}
+{% block content %}{% trans %}Sorry, something is broken.{% endtrans %} <a href="#" id="sentry-trigger">{%trans%}Please detail what led to this error.{%endtrans%}</a>!{% endblock %}

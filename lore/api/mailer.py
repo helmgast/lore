@@ -13,6 +13,7 @@ from lore.api.resource import parse_out_arg, ResourceError, DisabledField
 from lore.model.baseuser import create_token
 from lore.model.shop import Order
 from lore.model.user import User
+from lore.model.world import Publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -129,8 +130,10 @@ def mail_view(mail_type):
         if user:
             user = User.objects(id=user).get()  # May throw DoesNotExist
         order = request.args.get('order', None)
+        publisher = None
         if order:
             order = Order.objects(id=order).get()  # May throw DoesNotExist
+            publisher = Publisher.objects(slug=g.pub_host).get()
     except Exception as e:
         # Catch and re-raise as a 404 because incorrect parameter to mail_view
         abort(404, e.message)
@@ -165,7 +168,7 @@ def mail_view(mail_type):
     else:
         abort(404)  # No such mail type
 
-    template_vars = {'mail_type': mail_type, 'user': user, 'order': order, 'mailform': mailform}
+    template_vars = {'mail_type': mail_type, 'user': user, 'order': order, 'publisher': publisher, 'mailform': mailform}
     if mail_type == 'invite':
         template_vars['token'] = create_token(mailform.to_field.data)
 

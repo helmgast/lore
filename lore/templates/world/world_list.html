@@ -39,14 +39,14 @@
                         <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
                     </h3>
                     {% if world.description %}
-                        {% set desc =  (world.description|markdown|striptags|replace('gallery-center','')).split('. R') %}
+                        {% set desc =  (world.description|markdown|striptags|replace('gallery-center',''))|truncate(80) %}
                     {% elif world.tagline %}
-                        {% set desc =  world.tagline %}
+                        {% set desc =  world.tagline|truncate(80) %}
                     {% else %}
                         {% set desc = _('No description') %}
                     {% endif %}
 
-                    <div class="card-description">{{ desc[0] }}</div>
+                    <div class="card-description">{{ desc }}</div>
                     <ul class="card-details">
                         <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
                         {% if not world.is_published() %}

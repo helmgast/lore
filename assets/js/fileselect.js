@@ -25,10 +25,13 @@ define(["jquery", "utils"], function ($, utils) {
             this.$gallery.on('hide.bs.modal.atbtn', function (e) {
                 // Images have been selected
                 that.selectFiles($.map($('#themodal').find("[data-selection]"), function (el) {
-                    var $el = $(el), slug = $el.find('.slug').text().trim();
+                    var $el = $(el);
                     if ($el.children().first().is('a')) {
+                        var slug = $el.find('.slug').text().trim();
                         return {id: el.id, slug: slug, type: 'document'}
                     } else {
+                        // Picks file name without parameters from URL
+                        var slug = $el.find('img').attr('src').split('/').pop().split('#')[0].split('?')[0];
                         return {id: el.id, slug: slug, type: 'image'}
                     }
                 }))

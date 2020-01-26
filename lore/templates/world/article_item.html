@@ -188,8 +188,8 @@
                     href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
         </article>
     {% else %}
-        <article class="article-text">
-            {{ article.content|default(_('No data'), true)|markdown }}
+        <article class="article-text {{ 'drop-caps' if article.content|first_p_length >300 else ''}}">
+            {{ article.content|default(_('No data'), true)|safe|markdown }}
             {% if article.type == 'blogpost' %}
                 {% include 'includes/disqus.html' %}
             {% endif %}

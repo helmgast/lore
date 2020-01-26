@@ -11,8 +11,8 @@
 
 {% block cssimports %}
     {{ super() }}
-    <link rel="stylesheet" href="https://unpkg.com/buefy/lib/buefy.min.css">
-    <link rel="stylesheet" href="//cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css">
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
     <style>
 
         body {
@@ -266,7 +266,7 @@
 {% block js_bottom %}
     {{ super() }}
     <script type="application/javascript" src="https://vuejs.org/js/vue.js"></script>
-    <script src="https://unpkg.com/buefy@0.6.3/lib/index.js"></script>
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
     <script src="//widget.cloudinary.com/global/all.js" type="text/javascript"></script>
 
     <script>
@@ -638,7 +638,12 @@
                         return rv
 
                     })
-                    vm.$data[list] = processor ? processor(out) : out
+                    try {
+                        vm.$data[list] = processor ? processor(out) : out
+                    } catch(err) {
+                        console.log(`Failed to process ${key} ${sheet} ${list} due to ${err}`);
+                    }
+                    
                     if (json.feed.updated.$t) {
                         let d = new Date(json.feed.updated.$t)
                         if (d > vm.list_updated) {
@@ -655,6 +660,8 @@
         function tableize(list) {
             let newlist = []
             for (l of list) {
+                if (!l.t100)
+                    throw "Missing column T100 from "+JSON.stringify(l);
                 parts = l.t100.replace(/\(.*\)/g, '').match(/\d+/g)
                 fr = parseInt(parts[0]);
                 to = parseInt(parts[1]) || fr;
@@ -748,15 +755,12 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
         <div class="row">
             <div class="col-lg-9">
                 <div class="content neotech" id="form" class="is-loading" v-cloak>
-                    {% if not canedit and args.get('intent', None) not in ['patch','post'] %}  {# Just viewing #}
-                        <div class="alert alert-info" role="alert">
-                            Göra en egen karaktär?
-                            <a style="color: #fff !important" class="btn btn-small btn-success"
-                               href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme="neotech-rpgen") }}">
-                                Klicka här
-                            </a>
-                        </div>
-                    {% endif %}
+
+                    <div class="alert alert-info" role="alert">
+                        Detta är ett test av en karaktärsgenerator för <a href="https://webshop.helmgast.se/neotech">
+                        <strong><u>Neotech</u></strong></a>. Vi arbetar på att göra generatorn tillgänglig för alla och uppdaterad med de slutgiltiga reglerna.
+                    </a>
+                    </div>
                     <div class="columns">
                         <div class="column is-one-third">
                             <figure class="image"><img
@@ -764,7 +768,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                             </figure>
                         </div>
                         {% if args.get('intent', None) in ['patch','post'] %}
-                            <div class="column"><h2>Välkommen till Gig Finder!</h2>
+                            <div class="column"><h2>Välkommen till Headhunter!</h2>
                                 <small class="intro"><em>Solsystemets största och bästa jobbsökarnätverk. Vi förmedlar
                                     dagligen över 100 miljoner kontakter och över 2 miljoner gig till arbetshungriga
                                     users
@@ -772,7 +776,7 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                             </div>
                         {% else %}
 
-                            <div class="column"><h2>Utdrag från Gig Finder!</h2>
+                            <div class="column"><h2>Utdrag från Headhunter!</h2>
                                 <small class="intro">
                                     Möt <strong>{{ c.get('person','namn') }}</strong>.
                                     {{ c.get('person','koncept')|capitalize }}. En {{ c.get('person','kön')|lower }} att
@@ -872,11 +876,6 @@ c.get('person','subkultur')+"-tribe. En mästare på "+minmax[1]|default('inget'
                         {{ el.text("Utseende", id="c.person.utseende", list="list_utseende") }}
 
                     </fieldset>
-                    <div class="alert alert-info" role="alert">
-                        Gillar du vad du ser? <a href="https://helmgast.se/getedge">
-                        <strong><u>Missa inte att Kickstarta Neotech!</u></strong>
-                    </a>
-                    </div>
                     <fieldset {{ 'disabled' if not isedit }}>
                         <legend>CV</legend>
                         <b-table :data="c.cv">

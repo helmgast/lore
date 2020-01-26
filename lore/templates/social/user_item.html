@@ -66,9 +66,8 @@
     {% endif %}
     {% if user_form and user.status == 'invited' %}
         <div class="well">
-            <strong>{% trans %}This user is not yet active!{% endtrans %}</strong><br>
-            {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
-            {% trans %}If you had an existing user and made this new user by error, click merge button below:{% endtrans %}
+            <strong>{% trans %}This user is not yet active!{% endtrans %}</strong> {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
+            {% trans %}If you've had an account before and don't wish to create this new user, press Cancel, log in with the old user, and then click "Merge" below to add more login methods.{% endtrans %}
         </div>
         
     {% endif %}

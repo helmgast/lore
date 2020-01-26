@@ -48,16 +48,6 @@
         {% block intro %}
         {% endblock intro %}
         <br>
-        <a href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme='neotech-rpgen') }}" class="btn btn-info">Gör din rollperson!</a>
+        {# <a href="{{ url_for('world.ArticlesView:get', id='post', world_=world.slug, type='character', theme='neotech-rpgen') }}" class="btn btn-info">Gör din rollperson!</a> #}
     </aside>
 {% endblock intro_parent %}
-
-{% block home %}
-    <div>
-        <h2>Inspirations-galleri</h2>
-        <a data-pin-do="embedBoard" href="//www.pinterest.com/ripperdoc/nx/" data-pin-scale-width="200"
-           data-pin-scale-height="900" pin-board-width="900">
-            Follow ripperdoc's board NX on Pinterest.</a>
-        <script type="text/javascript" async src="https://assets.pinterest.com/js/pinit.js"></script>
-    </div>
-{% endblock %}

@@ -231,6 +231,8 @@ class ResourceResponse(Response):
         'intent': lambda x: x if x.upper() in METHODS else None,
     }
 
+    json_fields = frozenset([])
+
     def __init__(self, resource_view, queries, method, formats=None, extra_args=None):
         # Can be set from Model
         assert resource_view
@@ -269,7 +271,7 @@ class ResourceResponse(Response):
                 try:
                     setattr(self, '%s_theme' % type, current_app.jinja_env.select_template(templates))
                 except TemplatesNotFound as err:
-                    logger.warning(f"Not finding any of themes {templates} (from paths {paths}")
+                    logger.warning(f"Can't find named themes {paths} at {templates}")
 
     def auth_or_abort(self, res=None):
         res = res or getattr(self, 'instance', None)
@@ -321,6 +323,7 @@ class ResourceResponse(Response):
                 session['_flashes'] = []
             return jsonify(rv), self.status
         else:  # csv
+            logger.warn(f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'")
             abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
@@ -569,7 +572,7 @@ def log_event(action, instance=None, message='', user=None, flash=True):
         user.log(action, instance, message)
     else:
         user = "System"
-    logger.info("%s %s %s", user, action_strings[action], " (%s)" % message if message else "")
+    logger.info("%s %s %s", user, action_strings.get(action, 'unknown'), " (%s)" % message if message else "")
     if instance:
         name = instance_types_translated.get(instance._class_name.lower(), _('The item'))
     else:

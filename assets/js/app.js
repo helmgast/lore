@@ -315,7 +315,7 @@ function init_dom(e) {
 
     // File upload plugin for file upload forms
     require('fileuploader.js')
-    scope.find('.file-upload').fileupload({static_url: __webpack_public_path__});
+    scope.find('.file-upload').fileupload({static_url: __webpack_public_path__, image_url: IMAGE_URL});
 
     // File select plugin (activates the jquery part, the trumbowyg part loads with trumbowyg later)
     require('fileselect.js')

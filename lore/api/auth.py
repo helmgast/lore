@@ -333,10 +333,7 @@ def get_logged_in_user(require_active=True):
                 u = User.objects(id=uid).first()
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
-                        logger.warning(f"User {u} forced out: logged_in={u.logged_in}, status={u.status}, "
-                                       f"require_active={require_active}, url {request.url}")
-                        capture_message
-                        # We are logged out or user has become other than active
+                        # Server has logged us out or the user is not active so cannot be considered logged in
                         return None
 
                     if "as_user" in request.args and u and u.admin:
