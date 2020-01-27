@@ -11,7 +11,6 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-from builtins import str
 import logging
 from datetime import datetime
 from itertools import groupby

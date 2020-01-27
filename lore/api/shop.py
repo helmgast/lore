@@ -8,9 +8,6 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
-from __future__ import print_function
-from builtins import zip
-from builtins import str
 import logging
 from datetime import datetime
 

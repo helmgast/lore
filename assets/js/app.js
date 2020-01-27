@@ -374,8 +374,8 @@ function init_dom(e) {
             require('trumbowyg.markdown.js')  // Markdown coversion to underlying textarea
 
             // Set path to SVG, will be fetched by trumbowyg using XHR
-            $.trumbowyg.svgPath = require('trumbowyg/dist/ui/icons.svg')
-            var $textarea = $('.content-editor')
+            $.trumbowyg.svgPath = require('trumbowyg/dist/ui/icons.svg').default; // For some reason, path is under default here when using require
+            var $textarea = $('.content-editor');
 
             $textarea.trumbowyg({
                 btns: ['strong', 'em', '|', 'formatting', 'unorderedList', 'orderedList', 'link',

@@ -1,6 +1,5 @@
 # coding=utf-8
 # import csv
-from __future__ import print_function
 from auth import create_token
 
 # print create_token("niklas@helmgast.se")

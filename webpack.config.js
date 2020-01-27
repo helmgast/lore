@@ -22,7 +22,7 @@
 
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 // const SpritePlugin = require('svg-sprite-loader/plugin');
 const SVGSpritemapPlugin = require('svg-spritemap-webpack-plugin');
 const WebpackAssetsManifest = require('webpack-assets-manifest');

@@ -7,10 +7,7 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-from __future__ import absolute_import
 
-from builtins import str
-from builtins import object
 import logging
 import re
 from datetime import datetime, timedelta

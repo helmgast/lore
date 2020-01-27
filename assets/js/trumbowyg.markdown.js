@@ -2,14 +2,14 @@
  * Created by martin on 2016-10-20.
  */
 
-define(["jquery", "utils", "upndown", "marked"], function ($, utils, upndown_dep, marked) {
+define(["jquery", "utils", "turndown", "marked"], function ($, utils, turndown_dep, marked) {
     $.extend(true, $.trumbowyg, {
         plugins: {
             markdown: {
                 // shouldInit: isSupported,
                 init: function (trumbowyg) {
-                    var upndown = new upndown_dep();
-
+                    var turndownService = new turndown_dep.default(); // use default because ES module
+                    turndownService.keep(['table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot'])
                     // Patches the val() function of the $ta that represents the jqueryied textarea, so that it
                     // converts html->markdown when set, and markdown->html when read.
 
@@ -30,13 +30,8 @@ define(["jquery", "utils", "upndown", "marked"], function ($, utils, upndown_dep
                             }
                             return marked(rv, {renderer: renderer})
                         }
-                        upndown.convert(value, function(err, markdown) {
-                              if (err) {
-                                  throw err;
-                              } else {
-                                  oldval.call(trumbowyg.$ta, markdown);
-                              }
-                          })
+                        var markdown = turndownService.turndown(value);
+                        oldval.call(trumbowyg.$ta, markdown);
                     };
                 }
             }

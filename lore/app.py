@@ -16,7 +16,7 @@ from flask import (Flask, flash, g, got_request_exception, logging, redirect,
                    render_template, request, current_app, url_for, send_from_directory)
 from flask.config import Config
 from markdown import Markdown
-from mongoengine.connection import MongoEngineConnectionError
+from mongoengine.connection import ConnectionFailure
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.routing import Map
 import sentry_sdk
@@ -32,8 +32,7 @@ def create_app(**kwargs):
     the_app.config.from_object(default_config.Config)  # Default config that applies to all deployments
     the_app.config.from_object(default_config.SecretConfig)  # Add dummy secrets
         
-    # Load specific configuration in the following order, so that last applies
-    # local config.py
+    # 1. Load specific configuration in the following order, so that last applies local config.py
     fileconfig = Config(the_app.root_path)
     fileconfig.from_pyfile('../config.py', silent=True)
     the_app.config.update(fileconfig)
@@ -266,7 +265,7 @@ def configure_hooks(app):
         db_settings['serverSelectionTimeoutMS'] = 5000  # Shortened from 30000 default
         try:
             app.extensions['mongoengine'][extensions.db] = {'app':app, 'conn': _connect(db_settings)}
-        except MongoEngineConnectionError as err:
+        except ConnectionFailure as err:
             pass  # We need to leave this method without an exception, as the request finishes, the exception will raise again
 
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
@@ -320,7 +319,7 @@ def configure_hooks(app):
         #     return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 200
         return render_template("error/404.html", root_template='_root.html', error=err.description or f"{request.path} not found at host {request.host}"), 404
 
-    @app.errorhandler(MongoEngineConnectionError)
+    @app.errorhandler(ConnectionFailure)
     def db_error(err):
         app.logger.error("Database Connection Failure: {err}".format(err=err))
         return render_template('error/nodb.html', root_template='_root.html'), 500

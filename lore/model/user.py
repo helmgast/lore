@@ -7,7 +7,6 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
-from __future__ import absolute_import
 from datetime import datetime
 from hashlib import md5
 

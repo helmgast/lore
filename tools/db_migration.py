@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-from builtins import range
-from past.builtins import basestring
 import os
 import re
 import traceback
@@ -29,7 +26,7 @@ def set_default_reference(obj, attr, default_value):
         ref = getattr(obj, attr, None)
     except DoesNotExist as dne:
         ref = None
-    if not ref or isinstance(ref, DBRef) or isinstance(ref, basestring):
+    if not ref or isinstance(ref, DBRef) or isinstance(ref, str):
         setattr(obj, attr, default_value)
 
 def migrate_2to3():
@@ -136,7 +133,7 @@ def migrate_1to2():
             slug = img.id
         elif isinstance(img, ImageAsset):
             slug = img.slug
-        elif isinstance(img, basestring):
+        elif isinstance(img, str):
             slug = img
         print("Migrating image of product %s from ImageAsset (feature_image) to FileAsset (images[])" % p)
         try:

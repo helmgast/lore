@@ -1,0 +1,1 @@
+Run `git config core.hooksPath githooks` to make this repo use the hooks provided in this folder.

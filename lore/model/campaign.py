@@ -6,7 +6,6 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-from __future__ import absolute_import
 from flask.ext.babel import format_date
 
 from .misc import Document  # Enhanced document

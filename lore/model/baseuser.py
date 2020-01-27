@@ -1,5 +1,3 @@
-from builtins import str
-from builtins import object
 from hashlib import sha1, md5
 import random
 

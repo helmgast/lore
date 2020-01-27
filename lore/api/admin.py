@@ -1,4 +1,3 @@
-from builtins import str
 import hmac
 import logging
 import os

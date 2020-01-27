@@ -8,7 +8,6 @@
     :copyright: (c) 2016 by Helmgast AB
 """
 
-from builtins import str
 import functools
 import json
 from datetime import datetime

@@ -8,12 +8,6 @@
     :copyright: (c) 2014 by Helmgast AB
 """
 import datetime
-
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
-from builtins import object
 import logging
 import re
 import unicodedata

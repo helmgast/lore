@@ -4,8 +4,6 @@
 # needed. The config.py should not use classes, just global variables.
 # All configs that should work need to have a default below, or they will be ignored by the ENV parser.
 
-
-from builtins import object
 class Config(object):
     PRODUCTION = False
     DEBUG = True
@@ -58,14 +56,6 @@ class SecretConfig(object):
     AUTH0_CLIENT_SECRET = 'SECRET'
     AUTH0_CLIENT_ID = 'SECRET'
     AUTH0_DOMAIN = 'SECRET'
-
-    # # Used by social login with Google
-    # GOOGLE_CLIENT_ID = 'SECRET'
-    # GOOGLE_CLIENT_SECRET = 'SECRET'
-    #
-    # # Used by social login with Facebook
-    # FACEBOOK_APP_ID = 'SECRET'
-    # FACEBOOK_APP_SECRET = 'SECRET'
 
     # Used for payments
     STRIPE_SECRET_KEY = 'SECRET'

@@ -4,11 +4,6 @@
 
     :copyright: (c) 2014 by Helmgast AB
 """
-from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from past.utils import old_div
 import hashlib
 import logging
 import mimetypes

@@ -9,12 +9,9 @@
   :copyright: (c) 2014 by Helmgast AB
 """
 import types
-from builtins import str
 from itertools import chain
 
 from jinja2 import TemplatesNotFound
-from past.builtins import basestring
-from builtins import object
 import inspect
 import logging
 import pprint
@@ -242,7 +239,7 @@ class ResourceResponse(Response):
         assert queries and isinstance(queries, list)
         for q in queries:
             assert isinstance(q, tuple)
-            assert isinstance(q[0], basestring)
+            assert isinstance(q[0], str)
             setattr(self, q[0], q[1])
             self.resource_queries.append(q[0])  # remember names in order
 
