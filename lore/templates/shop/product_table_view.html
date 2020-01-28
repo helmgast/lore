@@ -17,7 +17,7 @@
                 </td>
                 <td>{{ product.product_number }}</td>
                 <td>{{ product.description|default(_('No description'), true)|markdown }}</td>
-                <td>{{ product.get_field_display('type') }}</td>
+                <td>{{ product.get_type_display() }}</td>
                 <td>{{ product.world|default(_('No data'),true) }}</td>
                 <td class="nobr">{{ product.created|dateformat(format='short') }}</td>
                 <td class="product-price">{{ product.get_price()|currencyformat(product.currency.upper()) }}</td>

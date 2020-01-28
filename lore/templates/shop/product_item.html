@@ -118,11 +118,11 @@
                     {% endcall %}
                     <tr>
                         <th>{{ _('Type') }}</th>
-                        <td>{{ product.get_field_display('type') }}</td>
+                        <td>{{ product.get_type_display() }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Status') }}</th>
-                        <td>{{ product.get_field_display('status') }}</td>
+                        <td>{{ product.get_status_display() }}</td>
                     </tr>
                     {% if product.publisher and product.publisher.webshop_activated %}
 
@@ -132,7 +132,7 @@
                     </tr>
                     <tr>
                         <th>{{ _('Currency') }}</th>
-                        <td>{{ product.get_field_display('currency') }}</td>
+                        <td>{{ product.get_currency_display() }}</td>
                     </tr>
                     <tr>
                         <th>{{ _('Tax') }}</th>

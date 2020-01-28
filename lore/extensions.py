@@ -337,4 +337,5 @@ def dict_with(value, **kwargs):
     return z
 
 def first_p_length(string):
-    return len(string.strip().splitlines()[0])
+    string = string.strip()
+    return len(string.splitlines()[0]) if string else 0

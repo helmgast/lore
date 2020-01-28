@@ -106,10 +106,6 @@ class FileAsset(Document):
     attachment_filename = StringField(max_length=60, verbose_name=_('Filename when downloading'))
     tmp_file_obj = None
 
-    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
-    def get_field_display(self, field):
-        return self._BaseDocument__get_field_display(self._fields[field])
-
     # def delete(self):
     #     if self.file_data:
     #         self.file_data.delete()

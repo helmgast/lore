@@ -221,10 +221,6 @@ class User(Document, BaseUser):
         return '//www.gravatar.com/avatar/%s?d=identicon&s=%d' % \
                (md5(self.email.strip().lower().encode('utf-8')).hexdigest(), size)
 
-    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
-    def get_field_display(self, field):
-        return self._BaseDocument__get_field_display(self._fields[field])
-
 
 User.status.filter_options = choice_options('status', User.status.choices)
 User.last_login.filter_options = datetime_delta_options('last_login', from7to365)
@@ -346,10 +342,6 @@ class Group(Document):
 
     def members_as_users(self):
         return [m.user for m in self.members]
-
-    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
-    def get_field_display(self, field):
-        return self._BaseDocument__get_field_display(self._fields[field])
 
 
 Group.type.filter_options = choice_options('type', Group.type.choices)

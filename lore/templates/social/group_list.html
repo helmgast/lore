@@ -98,7 +98,7 @@
                         <td><a href="{{ url_for('social.GroupsView:get', id=group.slug) }}">
                             <strong class="message_name">{{ group.title|default(_('No data'), true) }}</strong>
                         </a></td>
-                        <td>{{ group.get_field_display('type') }}</td>
+                        <td>{{ group.get_type_display() }}</td>
                         <td>{{ group.location|default }}</td>
                         <td class="small">{{ group.created|datetimeformat(format='short') if group.created }}</td>
                         <td class="small">{{ group.updated|datetimeformat(format='short') if group.updated }}</td>

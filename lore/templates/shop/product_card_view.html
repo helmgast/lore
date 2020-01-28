@@ -12,7 +12,7 @@
         </h4>
         <div class="card-description">{{ product.description|markdown }}</div>
         <ul class="card-details">
-            <li class="product-type">{{ product.get_field_display('type') }}</li>
+            <li class="product-type">{{ product.get_type_display() }}</li>
             {% if product.publisher and product.publisher.webshop_activated and product.status != 'hidden' %}
                 <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
                 <li><a id="{{ product.slug }}" class="btn btn-xs btn-primary buy-link"

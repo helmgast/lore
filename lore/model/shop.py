@@ -129,10 +129,6 @@ class Product(Document):
     def is_owned_by_current_user(self):
         return g.user and (g.user.admin or self in products_owned_by_user(g.user))
 
-    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
-    def get_field_display(self, field):
-        return self._BaseDocument__get_field_display(self._fields[field])
-
 
 Product.world.filter_options = reference_options('world', Product)
 Product.type.filter_options = choice_options('type', Product.type.choices)
@@ -234,10 +230,6 @@ class Order(Document):
         else:
             s = u'%s' % _('Empty order')
         return s
-
-    # TODO hack to avoid bug in https://github.com/MongoEngine/mongoengine/issues/1279
-    def get_field_display(self, field):
-        return self._BaseDocument__get_field_display(self._fields[field])
 
     def is_paid_or_shipped(self):
         return self.status in [OrderStatus.paid, OrderStatus.shipped]

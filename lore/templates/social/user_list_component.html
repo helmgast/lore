@@ -43,7 +43,7 @@
                     <strong class="message_name">{{ user }}</strong>
                 </a></td>
                 <td>{{ user.realname|default(_('No data')) }}</td>
-                <td>{{ user.get_field_display('status') }}</td>
+                <td>{{ user.get_status_display() }}</td>
                 <td>{{ user.xp|default }}</td>
                 <td>{{ user.location|default }}</td>
                 <td class="small">{{ user.join_date|datetimeformat(format='short') if user.join_date}}</td>

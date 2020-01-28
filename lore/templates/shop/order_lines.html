@@ -21,7 +21,7 @@
                         <td>
                             <h3>
                                 <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">{{ line.product.title }}</a>
-                                <small>{{ line.product.get_field_display('type') }}</small>
+                                <small>{{ line.product.get_type_display() }}</small>
                             </h3>
                             <p>{{ line.product.description|markdown }}</p>
                             {% if order and order.is_paid_or_shipped() %}

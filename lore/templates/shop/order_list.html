@@ -120,7 +120,7 @@
                         <td>{{ order.user }}</td>
                         <td class="small">{{ order.created|datetimeformat(format='short') }}</td>
                         <td class="small">{{ order.updated|datetimeformat(format='short') }}</td>
-                        <td>{{ order.get_field_display('status') }}</td>
+                        <td>{{ order.get_status_display() }}</td>
                         <td>{{ order.total_price|currencyformat(order.currency.upper()) if order.currency }}
 {#                            {{ currencies.get(order.currency,'%s') % order.total_price|currency }} #}
                         </td>
