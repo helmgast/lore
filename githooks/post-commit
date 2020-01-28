@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
-echo "Running post-commit hook"
-echo "VERSION = '$(git log -1 --pretty=%cs-%h)''" > ../config.py
+echo "Post-commit hook: set version"
+echo "VERSION = '$(git log -1 --pretty=%cs-%h)'" > config.py
+cat config.py

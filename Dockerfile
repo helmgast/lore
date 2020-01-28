@@ -25,15 +25,15 @@ RUN pipenv install --system --clear
 COPY tools/ tools/
 COPY lore/ lore/
 COPY plugins/ plugins/
+COPY config.py config.py
 
 RUN flask lang-compile
 
 # provide from git or by Docker autobild
-ARG SOURCE_COMMIT=no_ver
+# ARG SOURCE_COMMIT=no_ver
 # provide from git or by Docker autobild
-ARG SOURCE_BRANCH=no_branch
-ENV LORE_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
-RUN echo \$LORE_VERSION=${LORE_VERSION}
+# ARG SOURCE_BRANCH=no_branch
+# ENV LORE_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
 
 # This format runs executable without bash/shell, faster
 CMD ["flask","run"]

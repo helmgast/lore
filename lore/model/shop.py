@@ -313,14 +313,14 @@ class Order(Document):
             sum += ol.quantity * ol.price
             # Tax rates are given as e.g. 25% or 0.25. The taxable part of sum is
             # sum * (taxrate / (taxrate+1))
-            tax += ol.quantity * ol.price * (old_div(ol.product.tax, (ol.product.tax + 1.0)))
+            tax += ol.quantity * ol.price * (ol.product.tax / (ol.product.tax + 1.0))
         if sum > 0:
             if self.shipping:
                 if self.shipping.tax == 0:  # This means set tax of shipping as the average tax of all products in order
-                    tax_rate = old_div(tax, sum)
-                    tax += self.shipping.get_price() * (old_div(tax_rate, (tax_rate + 1.0)))
+                    tax_rate = tax / sum
+                    tax += self.shipping.get_price() * (tax_rate / (tax_rate + 1.0))
                 else:
-                    tax += self.shipping.get_price() * (old_div(self.shipping.tax, (self.shipping.tax + 1.0)))
+                    tax += self.shipping.get_price() * (self.shipping.tax / (self.shipping.tax + 1.0))
                 sum += self.shipping.get_price()  # Do after we calculate average tax above
         # else:
         #     self.currency = None  # Clear it to avoid errors adding different product currencies back again
