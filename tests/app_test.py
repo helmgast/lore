@@ -1,8 +1,5 @@
 import unittest
 
-from flask_mongoengine.wtf.models import ModelForm
-from flask_mongoengine.wtf import model_form
-
 # Below 3 lines needed to be able to access lore module
 import sys
 from os import path
@@ -11,7 +8,7 @@ sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
 from lore.app import create_app
 from flask_mongoengine import Document
-from mongoengine import EmbeddedDocument, StringField
+from mongoengine import StringField
 from werkzeug.datastructures import ImmutableMultiDict
 
 
@@ -63,14 +60,14 @@ class TestObject(Document):
 class LoreTestCase(unittest.TestCase):
     def test_forms2(self):
         from lore.model.shop import Order, OrderLine
-        from lore.api.resource import RacBaseForm, RacModelConverter
+        from lore.api.resource import ImprovedBaseForm, ImprovedModelConverter
         from flask_mongoengine.wtf import model_form
         from wtforms.fields import FormField
-        from lore.api.shop import FixedFieldList, CartForm
-        CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=RacBaseForm,
-                                       converter=RacModelConverter())
+        from lore.api.shop import FixedFieldList
+        CartOrderLineForm = model_form(OrderLine, only=['quantity', 'comment'], base_class=ImprovedBaseForm,
+                                       converter=ImprovedModelConverter())
 
-        class CartForm(RacBaseForm):
+        class CartForm(ImprovedBaseForm):
             order_lines = FixedFieldList(FormField(CartOrderLineForm))
 
         obj = Order(email='test@test.com', order_lines=[
@@ -103,10 +100,10 @@ class LoreTestCase(unittest.TestCase):
         self.app = create_app(TESTING=True, PRESERVE_CONTEXT_ON_EXCEPTION=False, WTF_CSRF_CHECK_DEFAULT=False)
         self.client = self.app.test_client()
         # we need to fix imports here because the need app data at load time
-        from lore.api.resource import ResourceRoutingStrategy, ResourceHandler, RacBaseForm
+        from lore.api.resource import ResourceRoutingStrategy, ResourceHandler, ImprovedBaseForm
         self.ResourceRoutingStrategy = ResourceRoutingStrategy
         self.ResourceHandler = ResourceHandler
-        self.RacBaseForm = RacBaseForm
+        self.ImprovedBaseForm = ImprovedBaseForm
         TestObject.drop_collection()  # Ensure clean slate
 
     def tearDown(self):

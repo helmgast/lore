@@ -23,8 +23,8 @@ from mongoengine import NotUniqueError, ValidationError
 from mongoengine.queryset import Q
 from werkzeug.contrib.atom import AtomFeed
 
-from lore.api.resource import (ResourceAccessPolicy, ResourceError, RacModelConverter, ArticleBaseForm, RacBaseForm,
-                                ResourceView, filterable_fields_parser, prefillable_fields_parser,
+from lore.api.resource import (ResourceAccessPolicy, ImprovedModelConverter, ArticleBaseForm, ImprovedBaseForm,
+    ResourceView, filterable_fields_parser, prefillable_fields_parser,
                                 ListResponse, ItemResponse, Authorization)
 from lore.model.misc import EMPTY_ID, set_lang_options
 from lore.model.world import (Article, World, PublishStatus, Publisher, WorldMeta, Shortcut)
@@ -156,7 +156,7 @@ class PublishersView(ResourceView):
     list_arg_parser = filterable_fields_parser(['title', 'owner', 'created_date'])
     item_template = 'world/publisher_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'owner', 'created_date'])
-    form_class = model_form(Publisher, base_class=RacBaseForm, converter=RacModelConverter())
+    form_class = model_form(Publisher, base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
 
     def index(self):
         r = ListResponse(PublishersView, [('publishers', Publisher.objects())])
@@ -218,9 +218,9 @@ class WorldsView(ResourceView):
     list_arg_parser = filterable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
     item_template = 'world/world_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'publisher', 'creator', 'created_date'])
-    form_class = model_form(World, base_class=RacBaseForm, exclude=['slug'], converter=RacModelConverter())
-
+    form_class = model_form(World, base_class=ImprovedBaseForm, exclude=['slug'], converter=ImprovedModelConverter())
     # @route('/worlds/')
+
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
@@ -317,7 +317,7 @@ class ArticlesView(ResourceView):
     form_class = model_form(Article,
                             base_class=ArticleBaseForm,
                             exclude=['slug', 'feature_image', 'featured'],
-                            converter=RacModelConverter())
+                            converter=ImprovedModelConverter())
 
     @route('/', route_base='/')
     def publisher_home(self):
@@ -470,7 +470,7 @@ class ArticlesView(ResourceView):
         world = World.objects(slug=world_).first_or_404() if world_ != 'meta' else WorldMeta(publisher)
 
         set_lang_options(world, publisher)
-        
+
         # Special id post means we interpret this as intent=post (to allow simple routing to get)
         if id == 'post':
             r = ItemResponse(ArticlesView,
@@ -568,7 +568,7 @@ class ArticlesView(ResourceView):
 #     route_base = '/<world_>/<article>'
 #     list_template = 'world/articlerelation_list.html'
 #     item_template = 'world/articlerelation_item.html'
-#     form_class = model_form(World, base_class=RacBaseForm, converter=RacModelConverter())
+#     form_class = model_form(World, base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
 #     access_policy = ResourceAccessPolicy()
 #
 #     @route('/relations/')
@@ -581,8 +581,8 @@ def shorturl(code):
     url = ''
     if shortcut:
         if shortcut.article:
-            url = url_for('world.ArticlesView:get', 
-                pub_host=shortcut.article.publisher.slug, 
+            url = url_for('world.ArticlesView:get',
+                pub_host=shortcut.article.publisher.slug,
                 world_=shortcut.article.world.slug,
                 id=shortcut.article.slug)
         elif shortcut.url:

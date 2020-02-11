@@ -19,7 +19,7 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
 from mongoengine.queryset import Q
 
 
-from .asset import FileAsset
+from .asset import FileAsset, NewFileAsset
 from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options, EMPTY_ID
 from .misc import Document, shorten, available_locale_tuples, distinct_options  # Enhanced document
 from .user import User
@@ -125,6 +125,8 @@ class World(Document):
     external_host = URLField(verbose_name=_('External host URL'))
     publishing_year = StringField(max_length=4, verbose_name=_('Publishing year'))
     theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
+
+    assets = ListField(EmbeddedDocumentField(NewFileAsset, only=['source_url']))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))

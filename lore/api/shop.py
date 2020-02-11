@@ -21,15 +21,14 @@ from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms.fields import FormField, FieldList, StringField
 from wtforms.fields.html5 import EmailField, IntegerField
 from wtforms.utils import unset_value
-from wtforms.validators import InputRequired, Email, DataRequired, NumberRange
+from wtforms.validators import InputRequired, Email, NumberRange
 
 from lore.api.mailer import send_mail
 from lore.api.resource import (ResourceAccessPolicy,
-                                RacModelConverter, RacBaseForm, ResourceView,
+                                ImprovedModelConverter, ImprovedBaseForm, ResourceView,
                                 filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
-                                Authorization, route_subdomain)
-from lore.model.asset import FileAsset
-from lore.model.misc import EMPTY_ID, set_lang_options, filter_is_owner, filter_is_user
+                                Authorization)
+from lore.model.misc import set_lang_options, filter_is_user
 from lore.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
 from lore.model.user import User
 from lore.model.world import Publisher, filter_authorized_by_publisher
@@ -51,6 +50,7 @@ def get_or_create_stock(publisher):
 
 def filter_product_published():
     return Q(status__ne=ProductStatus.hidden, created__lte=datetime.utcnow())
+
 
 class ProductAccessPolicy(ResourceAccessPolicy):
     def is_editor(self, op, user, res):
@@ -81,9 +81,9 @@ class ProductsView(ResourceView):
     item_template = 'shop/product_item.html'
     item_arg_parser = prefillable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
     form_class = model_form(Product,
-                            base_class=RacBaseForm,
+                            base_class=ImprovedBaseForm,
                             exclude=['slug'],
-                            converter=RacModelConverter())
+                            converter=ImprovedModelConverter())
     # Add stock count as a faux input field of the ProductForm
     form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[InputRequired(), NumberRange(min=-1)])
 
@@ -198,10 +198,10 @@ def shop_home():
 
 # shop_app.add_url_rule('/', endpoint='shop_home', subdomain='<publisher>', redirect_to='/shop/products/')
 
-CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=RacBaseForm, converter=RacModelConverter())
+CartOrderLineForm = model_form(OrderLine, only=['quantity'], base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
 # Orderlines that only include comments, to allow for editing comments but not the order lines as such
-LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=RacBaseForm, converter=RacModelConverter())
-AddressForm = model_form(Address, base_class=RacBaseForm, converter=RacModelConverter())
+LimitedOrderLineForm = model_form(OrderLine, only=['comment'], base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
+AddressForm = model_form(Address, base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
 
 
 class FixedFieldList(FieldList):
@@ -264,27 +264,27 @@ class FixedFieldList(FieldList):
         setattr(obj, name, output)
 
 
-class BuyForm(RacBaseForm):
+class BuyForm(ImprovedBaseForm):
     product = StringField(validators=[InputRequired(_("Please enter your email address."))])
 
 
-class CartForm(RacBaseForm):
+class CartForm(ImprovedBaseForm):
     order_lines = FixedFieldList(FormField(CartOrderLineForm))
 
 
-class DetailsForm(RacBaseForm):
+class DetailsForm(ImprovedBaseForm):
     shipping_address = FormField(AddressForm)
     email = EmailField("Email", validators=[
         InputRequired(_("Please enter your email address.")),
         Email(_("Please enter your email address."))])
 
 
-class PaymentForm(RacBaseForm):
+class PaymentForm(ImprovedBaseForm):
     order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
     stripe_token = StringField(validators=[InputRequired(_("Error, missing Stripe token"))])
 
 
-class PostPaymentForm(RacBaseForm):
+class PostPaymentForm(ImprovedBaseForm):
     order_lines = FixedFieldList(FormField(LimitedOrderLineForm))
 
 
@@ -329,9 +329,9 @@ class OrdersView(ResourceView):
     item_arg_parser = prefillable_fields_parser(
         ['id', 'user', 'created', 'updated', 'status', 'total_price', 'total_items'])
     form_class = model_form(Order,
-                            base_class=RacBaseForm,
+                            base_class=ImprovedBaseForm,
                             only=['order_lines', 'shipping_address', 'shipping_mobile'],
-                            converter=RacModelConverter())
+                            converter=ImprovedModelConverter())
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first()
@@ -388,22 +388,22 @@ class OrdersView(ResourceView):
         r.set_theme('publisher', publisher.theme)
         return r
 
-    @route('/key/<code>', methods=['GET','PATCH'])
+    @route('/key/<code>', methods=['GET', 'PATCH'])
     def key(self, code):
         # Custom authentication
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
 
         order = Order.objects(external_key=code).get_or_404()  # get_or_404 handles exception if not a valid object ID
-            
+
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], method='key', extra_args={'intent': 'patch'})
         r.set_theme('publisher', publisher.theme)
         if not g.user:
             return render_template("error/needlogin.html", root_template='_root.html', publisher_theme=r.publisher_theme)
         r.auth_or_abort()
         r.template = "shop/order_peek.html"
-        r.code = code                
-        if request.method in ['PATCH'] and not (order.user or order.email): # Key has already been activated for this order
+        r.code = code
+        if request.method in ['PATCH'] and not (order.user or order.email):  # Key has already been activated for this order
             r.method = "patch"
             order.user = g.user
             order.status = OrderStatus.paid
@@ -608,12 +608,13 @@ def get_cart_order():
     else:
         return None
 
+
 @current_app.route('/key/<code>', subdomain=current_app.default_host)
 def key(code):
     order = Order.objects(external_key=code).first()
     if order and order.publisher:
         return redirect(url_for('shop.OrdersView:key', code=code, pub_host=order.publisher.slug))
-    else:    
+    else:
         abort(404, description=_("This code doesn't exist or haven't been added yet. Contact your publisher for more information."))
 
 # This injects the "cart_items" into templates in shop_app

@@ -12,13 +12,9 @@ import types
 from itertools import chain
 
 from jinja2 import TemplatesNotFound
-import inspect
 import logging
 import pprint
 import re
-import sys
-
-import flask
 import math
 from flask import request, render_template, flash, url_for, abort, g, current_app, session
 from flask_babel import lazy_gettext as _
@@ -30,21 +26,18 @@ from flask_mongoengine.wtf.models import ModelForm
 from flask_mongoengine.wtf.orm import ModelConverter, converts
 from flask import Response
 from flask.json import jsonify
-from flask.views import View
-from mongoengine import ReferenceField, DateTimeField, Q, OperationError, InvalidQueryError
-from mongoengine.errors import DoesNotExist, ValidationError, NotUniqueError
+from mongoengine import ReferenceField, Q, OperationError, InvalidQueryError
+from mongoengine.errors import ValidationError, NotUniqueError
 from mongoengine.queryset.visitor import QNode
-from werkzeug.datastructures import CombinedMultiDict, MultiDict
-from werkzeug.exceptions import HTTPException
+from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 from wtforms import Form as OrigForm, StringField, SelectMultipleField
 from wtforms import fields as f, validators as v, widgets
-from wtforms.compat import iteritems, text_type
 from wtforms.utils import unset_value
 from wtforms.widgets import html5, HTMLString, html_params
 
 from lore.extensions import configured_locales
-from lore.model.misc import METHODS, safe_next_url, current_url
+from lore.model.misc import METHODS, safe_next_url
 from lore.model.world import EMBEDDED_TYPES, Article
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -142,7 +135,7 @@ mime_types = {
 #             model_class,
 #             base_class=OrigForm,
 #             only=field_names,
-#             converter=RacModelConverter()
+#             converter=ImprovedModelConverter()
 #             )
 #         for name in field_names:
 #             # Remove all defaults from the model, as they wont be useful for
@@ -315,8 +308,8 @@ class ResourceResponse(Response):
             flashes = session.get('_flashes', [])
             if flashes:
                 rv['errors'] = []
-                for flash in flashes:
-                    rv['errors'].append(flash[1]) # Message
+                for one_flash in flashes:
+                    rv['errors'].append(one_flash[1])  # Message
                 session['_flashes'] = []
             return jsonify(rv), self.status
         else:  # csv
@@ -515,7 +508,7 @@ class ItemResponse(ResourceResponse):
                 if self.args['intent'] == 'post':
                     # A post will not go to same URL, but a different on (e.g. a list endpoint without an id parameter)
                     self.action_url = url_for(request.endpoint.replace(':get', ':post'),
-                                              **{k: v for k, v in request.view_args.items() if k!='id'},
+                                              **{k: v for k, v in request.view_args.items() if k != 'id'},
                                               **action_args)
                 else:
                     # Will take current endpoint (a get) and returns same url but with method from intent
@@ -617,12 +610,12 @@ def route_subdomain(app, rule, **options):
 # take data from fields that exist in the form.
 # when using a fieldlist or formfield we are just encapsulating forms that work as usual.
 
-class RacBaseForm(ModelForm):
+class ImprovedBaseForm(ModelForm):
 
     # TODO if fields_to_populate are set to use form keys, a deleted field may mean
     # no form key is left in the submitted form, ignoring that delete
     def populate_obj(self, obj, fields_to_populate=None):
-        super(RacBaseForm, self).populate_obj(obj)
+        super(ImprovedBaseForm, self).populate_obj(obj)
 
     # field.populate_obj(obj, name)
     #     if fields_to_populate:
@@ -643,7 +636,7 @@ class RacBaseForm(ModelForm):
     #         field.populate_obj(obj, name)
 
 
-class ArticleBaseForm(RacBaseForm):
+class ArticleBaseForm(ImprovedBaseForm):
     def process(self, formdata=None, obj=None, **kwargs):
         super(ArticleBaseForm, self).process(formdata, obj, **kwargs)
         # remove all *article fields that don't match new type
@@ -758,24 +751,28 @@ class DisabledField(StringField):
         super(StringField, self).process(None, data)
 
 
-class RacModelConverter(ModelConverter):
+class ImprovedModelConverter(ModelConverter):
+
     @converts('EmbeddedDocumentField')
     def conv_EmbeddedDocument(self, model, field, kwargs):
+        """An improved converter for the EmbeddedDocumentField. It uses the CSRF-less form class
+        to not get repeated CSRF in the same parent form (automatically added by flask-wtf).
+        It uses the ImprovedModelConverter also to fields within the EmbeddedDocument.
+        Finally, it will pick up `only` and `exclude` lists from Mongoengine field)."""
+
+        only = getattr(field, 'only', None)
+        exclude = getattr(field, 'exclude', None)
         kwargs = {
             'validators': [],
             'filters': [],
             'default': field.default or field.document_type_obj,
-            # Important. This separator makes the form also able to double as parser
-            # for filter args to mongoengine, of type 'author__name'.
+            # This separator is added between parent and child field names to see the hierarchy.
+            # Using __ means we use the same naming scheme as mongoening, e.g 'author__name'.
+            # This means we can use the embedded document field names as is for querying Mongoengine.
             'separator': '__'
         }
-        # The only difference to normal ModelConverter is that we use the original,
-        # insecure WTForms form base class instead of the CSRF enabled one from
-        # flask-wtf. This is because we are in a FormField, and it doesn't require
-        # additional CSRFs.
 
-        form_class = model_form(field.document_type_obj, converter=RacModelConverter(),
-                                base_class=OrigForm, field_args={})
+        form_class = model_form(field.document_type_obj, only=only, exclude=exclude, converter=ImprovedModelConverter(), base_class=OrigForm)
         return f.FormField(form_class, **kwargs)
 
     @converts('ListField')
@@ -921,13 +918,13 @@ class ResourceAccessPolicy(object):
         if not user:
             user = g.user
 
-        if op is 'list':
+        if op == 'list':
             return Authorization(True, _("List is allowed"))
 
-        if op is 'new':
+        if op == 'new':
             return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.new_allowed)
 
-        if op is 'view':  # If list, resource refers to a parent resource
+        if op == 'view':  # If list, resource refers to a parent resource
             if not res:
                 return Authorization(True, _("Viewing an empty form is allowed"))
             return self.is_resource_public(op, res) or self.is_user(op, user, res) and (
@@ -935,7 +932,7 @@ class ResourceAccessPolicy(object):
                    self.is_editor(op, user, res) or
                    self.is_reader(op, user, res))
 
-        if op is 'edit' or op is 'delete':
+        if op == 'edit' or op == 'delete':
             if not res:
                 return Authorization(False, _("Can't edit/delete a None resource"), error_code=403)
             return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.is_editor(op, user, res))

@@ -32,12 +32,15 @@ nltk = "*"
 pyphen = "*"
 gspread = "*"
 oauth2client = "*"
+cloudinary = "*"
 
 [dev-packages]
 pylint = "*"
 pylint-django = "*"
 pylint-mongoengine = "*"
 autopep8 = "*"
+flake8 = "*"
+rope = "*"
 
 [requires]
 python_version = "3.7"

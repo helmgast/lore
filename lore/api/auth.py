@@ -20,7 +20,7 @@ from flask import logging
 from flask import redirect, url_for, g
 from flask import render_template
 from flask_babel import lazy_gettext as _
-from mongoengine import MultipleObjectsReturned, DoesNotExist, Q
+from mongoengine import MultipleObjectsReturned, DoesNotExist
 from werkzeug.urls import url_encode, url_quote
 from sentry_sdk import configure_scope, capture_message, capture_exception
 
@@ -68,14 +68,19 @@ def on_load(state):
     auth0_client_secret = current_app.config['AUTH0_CLIENT_SECRET']
     token_getter = GetToken(auth0_domain)
 
+
 def get_mgmt_api():
     global auth0_mgmt_token, auth0_mgmt_token_expiry, auth0_mgmt_client
     if not auth0_mgmt_token or datetime.utcnow().timestamp() > auth0_mgmt_token_expiry:
-        auth0_mgmt_token = token_getter.client_credentials(auth0_client_id, auth0_client_secret, 'https://{}/api/v2/'.format(auth0_domain))
+        auth0_mgmt_token = token_getter.client_credentials(
+            auth0_client_id, auth0_client_secret, 'https://{}/api/v2/'.format(auth0_domain))
         logger.info(auth0_mgmt_token)
-        auth0_mgmt_token_expiry = datetime.utcnow().timestamp() + auth0_mgmt_token['expires_in']
-        auth0_mgmt_client = Auth0(auth0_domain, auth0_mgmt_token['access_token'])
+        auth0_mgmt_token_expiry = datetime.utcnow().timestamp() + \
+            auth0_mgmt_token['expires_in']
+        auth0_mgmt_client = Auth0(
+            auth0_domain, auth0_mgmt_token['access_token'])
     return auth0_mgmt_client
+
 
 def populate_user(user, user_info, token_info=None):
     if not user.realname:
@@ -88,6 +93,7 @@ def populate_user(user, user_info, token_info=None):
     if token_info:
         user.access_token = token_info['access_token']
     return user
+
 
 @auth_app.route('/callback', subdomain='<pub_host>')
 def callback():
@@ -125,7 +131,8 @@ def callback():
         msg = f"Unknown user denied login due to missing info from backend {user_info}"
         logger.error(msg)
         logout_user()
-        flash(_('Error logging in, contact %(email)s for support', email=support_email), 'danger')
+        flash(_('Error logging in, contact %(email)s for support',
+                email=support_email), 'danger')
         capture_message(msg)
         return redirect(next_url)  # RETURN IN ERROR
 
@@ -145,7 +152,6 @@ def callback():
         # Another session not logged in
     # Attempting link?
 
-
     email = user_info['email']
     session_user = get_logged_in_user(require_active=False)
     auth_user = None
@@ -157,17 +163,27 @@ def callback():
         if auth_user.status == 'deleted':
             flash(_('This user is deleted and cannot be used. Contact %(email)s for support.', email=support_email),
                   'error')
-            msg = u'{user} tried to login but the user is deleted'.format(user=email)
+            msg = u'{user} tried to login but the user is deleted'.format(
+                user=email)
             capture_message(msg)
             logger.error(msg)
             return redirect(next_url)  # RETURN IN ERROR
     except DoesNotExist:
         pass
+    except MultipleObjectsReturned:
+        flash(_('This user account is not correctly configured, contact %(email)s for manual support.',
+                email=support_email), 'error')
+        msg = u'{user} returns multiple users from database'.format(user=email)
+        capture_message(msg)
+        logger.error(msg)
+        return redirect(next_url)  # RETURN IN ERROR
 
     if 'link' in request.args and request.args['link']:
         # We are requested to link accounts
-        if session_user and session_user.email == request.args['link']:  # The logged in user is the primary from link arg
-            if session_user != auth_user and session_user.email != user_info['email']:  # Authenticating user is empty or different from logged in user
+        # The logged in user is the primary from link arg
+        if session_user and session_user.email == request.args['link']:
+            # Authenticating user is empty or different from logged in user
+            if session_user != auth_user and session_user.email != user_info['email']:
                 primary_id = f"{session_user.identities[0]['provider']}|{session_user.identities[0]['user_id']}"
                 identities = get_mgmt_api().users.link_user_account(primary_id, {
                     "user_id": user_info['identities'][0]['user_id'],
@@ -177,7 +193,8 @@ def callback():
                 session_user.identities = identities
                 populate_user(session_user, user_info)
                 session_user.save()
-                flash(_("You linked email %(email)s to primary %(primary)s", email=user_info['email'], primary=session_user.email), 'info')
+                flash(_("You linked email %(email)s to primary %(primary)s",
+                        email=user_info['email'], primary=session_user.email), 'info')
             # If not, we essentially do nothing, as the user is already itself
             return redirect(next_url)
         else:  # Something went wrong, there is no valid logged in user
@@ -200,10 +217,12 @@ def callback():
     populate_user(user, user_info, token_info)
     if user.status == 'invited':
         # Keep sending to user profile if we are still invited
-        next_url = url_for('social.UsersView:get', intent='patch', id=user.identifier(), next=next_url)
+        next_url = url_for('social.UsersView:get', intent='patch',
+                           id=user.identifier(), next=next_url)
         flash(_('Save your profile before you can use your new user!'), 'info')
     else:
-        flash(_('You are logged in as %(user)s with %(email)s', user=user, email=user_info['email']), 'success')
+        flash(_('You are logged in as %(user)s with %(email)s',
+                user=user, email=user_info['email']), 'success')
 
     user.last_login = datetime.utcnow()
     user.logged_in = True
@@ -252,17 +271,20 @@ def auth0_url(action='login', callback_args=None, **kwargs):
     client_id = current_app.config['AUTH0_CLIENT_ID']
     # prompt=login
     # prompt=none
-    if action=='login':
+    if action == 'login':
         if 'next' not in callback_args:
             callback_args['next'] = safe_next_url()
-        callback_url = url_for('auth.callback', pub_host=g.pub_host, _external=True, _scheme=request.scheme, **callback_args)
+        callback_url = url_for('auth.callback', pub_host=g.pub_host,
+                               _external=True, _scheme=request.scheme, **callback_args)
         url = f'https://{domain}/authorize?client_id={client_id}&response_type=code&redirect_uri={url_quote(callback_url, safe="")}'
-    elif action=='logout':
-        home = url_for('world.ArticlesView:publisher_home', _external=True, _scheme=request.scheme)
+    elif action == 'logout':
+        home = url_for('world.ArticlesView:publisher_home',
+                       _external=True, _scheme=request.scheme)
         url = f'https://{domain}/v2/logout?returnTo={home}'
     if kwargs:
         url = url + '&' + url_encode(kwargs)
     return url
+
 
 def get_context_user():
     return {'user': get_logged_in_user()}
@@ -320,7 +342,8 @@ def logout_user():
 
 
 def get_logged_in_user(require_active=True):
-    u = getattr(g, 'user', None)  # See if we already fetched it in this request
+    # See if we already fetched it in this request
+    u = getattr(g, 'user', None)
     if not u:
         uid = session.get('uid', None)
         if uid:
@@ -341,10 +364,12 @@ def get_logged_in_user(require_active=True):
                             return None  # Simulate no logged in user
                         u2 = User.query_user_by_email(email=as_user).first()
                         if u2:
-                            logger.debug("User %s masquerading as %s" % (u, u2))
+                            logger.debug(
+                                "User %s masquerading as %s" % (u, u2))
                             return u2
                 else:
-                    logger.warning("No user in database with uid {uid}".format(uid=uid))
+                    logger.warning(
+                        "No user in database with uid {uid}".format(uid=uid))
             except Exception as e:
                 logger.error(e)
                 capture_exception(e)

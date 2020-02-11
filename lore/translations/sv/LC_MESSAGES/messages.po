@@ -2587,7 +2587,7 @@ msgstr "Spara"
 
 #: lore/templates/world/article_item.html:269
 msgid "Try: "
-msgstr "Försök: "
+msgstr "Pröva: "
 
 #: lore/templates/world/article_item.html:283
 msgid "Lon"

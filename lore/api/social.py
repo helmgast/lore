@@ -20,7 +20,7 @@ from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms import Form
 
 from lore.api.auth import get_logged_in_user
-from lore.api.resource import RacBaseForm, RacModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
+from lore.api.resource import ImprovedBaseForm, ImprovedModelConverter, ResourceAccessPolicy, Authorization, ResourceView, \
     filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse
 from lore.extensions import csrf
 from lore.model.misc import EMPTY_ID, set_lang_options
@@ -39,11 +39,12 @@ def filter_authorized():
 
 class UserAccessPolicy(ResourceAccessPolicy):
     def authorize(self, op, user=None, res=None):
-        op = self.translate.get(op, op)  # TODO temporary translation between old and new op words, e.g. patch vs edit
+        # TODO temporary translation between old and new op words, e.g. patch vs edit
+        op = self.translate.get(op, op)
         if not user:
             user = g.user
 
-        if op is 'list':
+        if op == 'list':
             return self.is_user(op, user, res)
         else:
             return super(UserAccessPolicy, self).authorize(op, user, res)
@@ -62,7 +63,7 @@ class UserAccessPolicy(ResourceAccessPolicy):
 FinishTourForm = model_form(User,
                             base_class=Form,  # No CSRF on this one
                             only=['tourdone'],
-                            converter=RacModelConverter())
+                            converter=ImprovedModelConverter())
 
 
 class UsersView(ResourceView):
@@ -70,13 +71,16 @@ class UsersView(ResourceView):
     subdomain = '<pub_host>'
     model = User
     list_template = 'social/user_list.html'
-    list_arg_parser = filterable_fields_parser(['username', 'status', 'xp', 'location', 'join_date', 'last_login'])
+    list_arg_parser = filterable_fields_parser(
+        ['username', 'status', 'xp', 'location', 'join_date', 'last_login'])
     item_template = 'social/user_item.html'
-    item_arg_parser = prefillable_fields_parser(['username', 'realname', 'location', 'description'])
+    item_arg_parser = prefillable_fields_parser(
+        ['username', 'realname', 'location', 'description'])
     form_class = model_form(User,
-                            base_class=RacBaseForm,
-                            only=['username', 'realname', 'location', 'description', 'images','newsletter', 'avatar_url'],
-                            converter=RacModelConverter())
+                            base_class=ImprovedBaseForm,
+                            only=['username', 'realname', 'location',
+                                  'description', 'images', 'newsletter', 'avatar_url'],
+                            converter=ImprovedModelConverter())
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first()
@@ -98,10 +102,12 @@ class UsersView(ResourceView):
 
         user = None
         if id == 'post':
-            r = ItemResponse(UsersView, [('user', None)], extra_args={'intent': 'post'})
+            r = ItemResponse(UsersView, [('user', None)], extra_args={
+                             'intent': 'post'})
             r.auth_or_abort(res=None)
         else:
-            user = User.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
+            # get_or_404 handles exception if not a valid object ID
+            user = User.objects(id=id).get_or_404()
             r = ItemResponse(UsersView, [('user', user)])
             if not getattr(g, 'user', None):
                 # Allow invited only user to see this page
@@ -116,7 +122,8 @@ class UsersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
-        user = User.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
+        # get_or_404 handles exception if not a valid object ID
+        user = User.objects(id=id).get_or_404()
         r = ItemResponse(UsersView, [('user', user)], method='patch')
 
         if not getattr(g, 'user', None):
@@ -127,7 +134,8 @@ class UsersView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(user, list(request.form.keys()))  # only populate selected keys
+        r.form.populate_obj(user, list(request.form.keys())
+                            )  # only populate selected keys
         user.status = 'active'  # Ensure active user
 
         try:
@@ -144,7 +152,8 @@ class UsersView(ResourceView):
             logger.warning(_("No user to finish tour for"))
             abort(404)
 
-        r = ItemResponse(UsersView, [('user', user)], method='patch', form_class=FinishTourForm)
+        r = ItemResponse(UsersView, [('user', user)],
+                         method='patch', form_class=FinishTourForm)
         r.auth_or_abort()
 
         user.tourdone = True
@@ -165,13 +174,15 @@ class GroupsView(ResourceView):
     access_policy = UserAccessPolicy()
     model = Group
     list_template = 'social/group_list.html'
-    list_arg_parser = filterable_fields_parser(['type', 'location', 'created', 'updated'])
+    list_arg_parser = filterable_fields_parser(
+        ['type', 'location', 'created', 'updated'])
     item_template = 'social/group_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'location', 'description'])
+    item_arg_parser = prefillable_fields_parser(
+        ['title', 'location', 'description'])
     form_class = model_form(Group,
-                            base_class=RacBaseForm,
+                            base_class=ImprovedBaseForm,
                             exclude=['slug', 'created', 'updated'],
-                            converter=RacModelConverter())
+                            converter=ImprovedModelConverter())
 
     def index(self):
         groups = Group.objects().order_by('-updated')
@@ -182,7 +193,8 @@ class GroupsView(ResourceView):
 
     def get(self, id):
         if id == 'post':
-            r = ItemResponse(GroupsView, [('group', None)], extra_args={'intent': 'post'})
+            r = ItemResponse(GroupsView, [('group', None)], extra_args={
+                             'intent': 'post'})
             r.auth_or_abort(res=None)
         else:
             group = Group.objects(slug=id).first_or_404()
@@ -198,7 +210,8 @@ class GroupsView(ResourceView):
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
-        r.form.populate_obj(group, list(request.form.keys()))  # only populate selected keys
+        # only populate selected keys
+        r.form.populate_obj(group, list(request.form.keys()))
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -218,6 +231,7 @@ def me():
     if g.user:
         return redirect(url_for('social.UsersView:get', intent='patch', id=g.user.identifier()))
     else:
-        abort(401) # Should redirect to sso
+        abort(401)  # Should redirect to sso
+
 
 social.add_url_rule('/', endpoint='social_home', redirect_to='/social/users/')

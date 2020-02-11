@@ -4,30 +4,29 @@ from time import time
 from urllib.parse import quote
 
 import pyqrcode
-from bson import ObjectId
 from flask import Blueprint, current_app, redirect, url_for, g, request, Response, flash
 from flask import send_file
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
-from mongoengine.queryset import Q
 from werkzeug.exceptions import abort
 from werkzeug.utils import secure_filename
 
 from lore.api.pdf import fingerprint_pdf
-from lore.api.resource import RacModelConverter, \
-    ResourceAccessPolicy, ResourceView, ListResponse, ItemResponse, RacBaseForm, \
+from lore.api.resource import ImprovedModelConverter, \
+    ResourceAccessPolicy, ResourceView, ListResponse, ItemResponse, ImprovedBaseForm, \
     filterable_fields_parser, \
     prefillable_fields_parser, Authorization
 
 from lore.model.asset import FileAsset, FileAccessType
-from lore.model.misc import EMPTY_ID, set_lang_options, filter_is_owner
+from lore.model.misc import set_lang_options, filter_is_owner
 from lore.model.shop import products_owned_by_user
 from lore.model.world import Publisher, filter_authorized_by_publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 asset_app = Blueprint('assets', __name__)
+
 
 def set_cache(rv, cache_timeout):
     if cache_timeout is not None:
@@ -54,7 +53,8 @@ def send_gridfs_file(gridfile, mimetype=None, as_attachment=False,
     if as_attachment:
         if not attachment_filename:
             if not gridfile.name:
-                raise ValueError("No attachment file name given and none in the gridfile")
+                raise ValueError(
+                    "No attachment file name given and none in the gridfile")
             attachment_filename = gridfile.name
         # Handles unicode filenames in most browsers, see
         # https://stackoverflow.com/questions/21818855/flask-handling-unicode-text-with-werkzeug/30953380#30953380
@@ -92,7 +92,8 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
     # If we come this far the file is private to a user and should not be cached
     # by any proxies
     if not g.user:
-        abort(401)  # Should be caught by error handler in app.py that does SSO redirect if applicable
+        # Should be caught by error handler in app.py that does SSO redirect if applicable
+        abort(401)
 
     if g.user.admin or asset in [a for p in products_owned_by_user(g.user) for a in p.downloadable_files]:
         # List comprehensions are hard - here is how above row would look as for loop
@@ -108,7 +109,7 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
             fpid = None
         rv = send_gridfs_file(asset.file_data.get(), mimetype=mime, as_attachment=as_attachment,
                               attachment_filename=attachment_filename, fingerprint_user_id=fpid)
-        #rv.headers['Cache-Control'] = 'private'  # Override the public cache
+        # rv.headers['Cache-Control'] = 'private'  # Override the public cache
         return rv
     abort(403)
 
@@ -137,13 +138,14 @@ class FileAssetsView(ResourceView):
     form_class = model_form(FileAsset,
                             exclude=['md5', 'source_filename', 'length', 'created_date', 'content_type', 'width',
                                      'height', 'file_data'],
-                            base_class=RacBaseForm,
-                            converter=RacModelConverter())
+                            base_class=ImprovedBaseForm,
+                            converter=ImprovedModelConverter())
     list_arg_parser = filterable_fields_parser(
         ['slug', 'owner', 'access_type', 'content_type', 'tags', 'length'],
         choice=lambda x: x if x in ['single', 'multiple'] else 'multiple',
         select=lambda x: x.split(','),
-        position=lambda x: x if x in ['gallery-center', 'gallery-card', 'gallery-wide'] else 'gallery-center'
+        position=lambda x: x if x in [
+            'gallery-center', 'gallery-card', 'gallery-wide'] else 'gallery-center'
     )
 
     item_arg_parser = prefillable_fields_parser(
@@ -183,7 +185,8 @@ class FileAssetsView(ResourceView):
         set_lang_options(publisher)
 
         if id == 'post':
-            r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={'intent': 'post'})
+            r = ItemResponse(FileAssetsView, [('fileasset', None)], extra_args={
+                             'intent': 'post'})
             r.auth_or_abort(res=None)
         else:
             fileasset = FileAsset.objects(slug=id).first_or_404()
@@ -198,7 +201,8 @@ class FileAssetsView(ResourceView):
 
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
-        r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='patch')
+        r = ItemResponse(FileAssetsView, [
+                         ('fileasset', fileasset)], method='patch')
         r.auth_or_abort()
         r.set_theme('publisher', publisher.theme if publisher else None)
 
@@ -206,7 +210,8 @@ class FileAssetsView(ResourceView):
             # return same page but with form errors?
             flash(_("Error in form"), 'danger')
             return r, 400  # BadRequest
-        r.form.populate_obj(fileasset)  # only populate selected keys. will skip empty selects!
+        # only populate selected keys. will skip empty selects!
+        r.form.populate_obj(fileasset)
         try:
             r.commit()
         except (NotUniqueError, ValidationError) as err:
@@ -253,7 +258,8 @@ class FileAssetsView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
         fileasset = FileAsset.objects(slug=id).first_or_404()
-        r = ItemResponse(FileAssetsView, [('fileasset', fileasset)], method='delete')
+        r = ItemResponse(FileAssetsView, [
+                         ('fileasset', fileasset)], method='delete')
         r.auth_or_abort()
         r.commit()
         return redirect(
@@ -294,9 +300,11 @@ def download(fileasset):
 def image(slug):
     asset = FileAsset.objects(slug=slug).first_or_404()
     if asset.content_type and asset.content_type.startswith('image/'):
-        r = send_gridfs_file(asset.file_data.get(), mimetype=asset.content_type)
+        r = send_gridfs_file(asset.file_data.get(),
+                             mimetype=asset.content_type)
     else:
-        r = redirect(url_for('static', filename='img/icon/%s-icon.svg' % secure_filename(asset.content_type)))
+        r = redirect(url_for('static', filename='img/icon/%s-icon.svg' %
+                             secure_filename(asset.content_type)))
         # Redirect default uses 302 temporary redirect, but we want to cache it for a while
         set_cache(r, 10)  # 10 seconds, should be 2628000 = 1 month
     return r

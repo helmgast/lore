@@ -10,6 +10,8 @@
 	"settings": {
 		"files.associations": {
 			"*.html": "jinja-html"
-		}
+		},
+		"python.analysis.logLevel": "Information",
+		"python.linting.enabled": true
 	}
 }

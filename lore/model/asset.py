@@ -21,7 +21,7 @@ from .misc import Document  # Enhanced document
 from jinja2.filters import do_filesizeformat
 from mongoengine import (StringField, DateTimeField, ImageField, URLField,
                          ReferenceField, ListField, FileField, IntField, NULLIFY, DENY, CASCADE)
-from mongoengine import ValidationError
+from mongoengine import ValidationError, EmbeddedDocument
 from mongoengine.queryset import Q
 from rfc6266 import parse_requests_response, ContentDisposition
 from werkzeug.utils import secure_filename
@@ -58,17 +58,66 @@ allowed_mimetypes = {
     # 'image/svg+xml': 'svg',  # Disabled for time being, can be a security issue and more difficult to get width/height
     'text/plain': 'txt'}
 
-FileType = Choices(
-    image=_('Image'),
-    file=_('File'),
-    embed=_('Embed')
-)
+
+# title - text description of asset
+# filename - e.g. the slug, automatically created from URL
+# source_url - remote source
+# mime_type
+# resolution
+# filesize
+
+# Access rules for FileAssets depends on their parent document, with the addition that access may require to have a product.
+
+# Image formats:
+# Wide: 2400px x >400px, aspect >2:1
+# Center: 1600px x any, any aspect
+# Card: 800px x 800-1120px, aspect 1:1 to 5:7
+
+# Default URL for downloading a file would be
+# :publisher.tld/:world/:article/:filename.ext
+# e.g. helmgast.se/eon/rollformular/rollformular.pdf
+# but the old format is :host.tld/asset/(link|download)/:slug and this still needs to work
+
+# Editor behaviour
+# We have an article/world/product and want to add some images.
+# We can type an image link directly into the content. --> Will turn into a FileAsset on the article
+# We can drag a file directly on the content --> Will upload it to default source and turn it into a FileAsset on the article
+# We can click "Add file asset". It will popup a modal where we can enter a URL, upload, or pick from Google.
+# We can click an existing file asset. It will show a modal where we can rename the asset and see different formats it can be represented in.
 
 
-# Don't store any variations (e.g. thumbnails), generate on fly and cache outside
+class NewFileAsset(EmbeddedDocument):
+    source_url = URLField(verbose_name=_('Source File URL'))
+    filename = StringField(max_length=62)
+    slug = StringField(max_length=62) # We may use an old slug to allow access through old asset/ urls
+    caption = StringField(max_length=500, verbose_name=_('Description'))
+    content_type = StringField()
+    width = IntField()
+    height = IntField()
+    downloads = IntField()
 
-# On clean, if filedata in request, replace. If URL, and it has changed, fetch as file.
-# Show icons as thumbnails or as icons
+    def is_image(self):
+        return self.content_type.startswith('image/')
+
+    def image_url(self, *options):
+        """Returns an image url that is generated to a certain format, e.g. a thumbnail. If the original file is
+        not an image, this will instead generate a suitable file preview such as an icon."""
+        pass
+
+    def srcset(self, *options):
+        """Returns a srcset representing several image formats representing this file"""
+
+    def dl_url(self, *options):
+        """Returns original asset download URL, if the user passes an authorization check"""
+        pass
+
+    def clean(self):
+        """If we get a new URL, we'll need to download it to get it's content type and width/height. Or we get this through Cloudinary?"""
+        # TODO may be risky/slow to attempt and download large remote files. a HEAD works quickly for content type but not for image size.
+        # So we should not blindly attempt to set these things.
+        pass
+
+
 
 class FileAsset(Document):
     slug = StringField(max_length=62, unique=True)

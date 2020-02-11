@@ -60,7 +60,7 @@ class UserEvent(EmbeddedDocument):
     def action_string(self):
         try:
             return translate_action(self.action, self.instance)
-        except DoesNotExist as dne:
+        except DoesNotExist:
             return self.action
 
 
@@ -69,7 +69,7 @@ class User(Document, BaseUser):
     meta = {
         'indexes': [
             'email', 
-#            'identities.profileData.email', # Cannot index a dynamic field
+            # 'identities.profileData.email', # Cannot index a dynamic field
             # {"fields": ["username",], # Does unique but not for null fields
             #     "unique": True,
             #     "partialFilterExpression": {
