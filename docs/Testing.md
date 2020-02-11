@@ -1,0 +1,55 @@
+# Test-scenarios of Lore
+
+- Check all routes with a functioning ID
+- Check routes that should give 404
+- Check routes that should give 500
+
+- Create article.
+    - Do below both in a flow for a publisher and for a world.
+    - Create a new article.
+    - Try different combinations of input to explore correct form validation.
+    - Go to created article.
+    - Update content of the article.
+    - Add and remove images, change look of images.
+    - Add and remove files (e.g. PDFs)
+    - Check publish and access rights of an article (e.g. to make it visible, set to specific users, etc)
+    - Test themes of the article
+    - Delete article
+- Browse and search for articles.
+    - Do below flow both for publisher and for a world.
+    - Browse the articles to see that you can find different articles based on filtering tools
+    - Find article by using search box
+    - Check that articles that are hidden to your user (not published, not accessible) cannot be seen in the browsing
+    - Check that RSS feed of articles correspond to the right time and publish access of articles
+- Upload and use files
+    - Upload files of different types (PDF, images, others)
+    - Upload either with drag and drop, select from file box or URL
+    - Browse the results of the file upload to see that you can find them correctly
+    - Set file access to user or to product, check that it can be found by correct user and not found by incorrect user
+    - Delete file, check that articles which reference the file do not break (more than necessary)
+- Create worlds
+    - Ensure you have admin rights or editor rights for a world
+    - Create a new world
+    - Try different inputs on the form
+    - Edit details of world and see that they update
+    - Pick one or several images for the world, check that they show up in listings
+- Create a product
+    - Go to a shop of a publisher
+    - Check that you can only see a shop if activated for a publisher
+    - Create a new product
+    - Try different inputs on the form
+    - Edit details of the product after it’s saved
+    - Check that it shows up correctly in listings and for right categories/filters
+    - Set product to “archived”/“deleted”
+- Shop and order flow
+    - Add some different products to cart
+    - Add products with different currencies and ensure it gives correct errors or messages
+    - Change number of products in cart
+    - Remove product from cart
+    - Cancel cart
+    - Progress to adding buying details (check both for digital, physical and mixed carts)
+    - Try to add incorrect details and check form validation
+    - Cancel cart after progressing to add details
+    - Try to complete purchase with incorrect payment details
+    - Complete purchase with correct payment details
+    - Review finished order for correctness
