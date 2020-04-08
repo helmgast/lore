@@ -125,6 +125,7 @@ class World(Document):
     external_host = URLField(verbose_name=_('External host URL'))
     publishing_year = StringField(max_length=4, verbose_name=_('Publishing year'))
     theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
+    hide_header_text = BooleanField(default=False, verbose_name=_('Hide header text'))
 
     assets = ListField(EmbeddedDocumentField(NewFileAsset, only=['source_url']))
 
@@ -331,6 +332,7 @@ ArticleTypes = Choices(
 # Those types that are actually EmbeddedDocuments. Other types may just be strings without metadata.
 EMBEDDED_TYPES = ['persondata', 'fractiondata', 'placedata', 'eventdata', 'campaigndata', 'characterdata']
 
+
 class RemoteImage:
     def __init__(self, url):
         self.url = url
@@ -366,6 +368,7 @@ class Article(Document):
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_('Status'))
     tags = ListField(StringField(max_length=60), verbose_name=_('Tags'))
     theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
+    hide_header_text = BooleanField(default=False, verbose_name=_('Hide header text'))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
     sort_priority = IntField(default=0, verbose_name=_('Sort priority'))
@@ -476,6 +479,7 @@ class Shortcut(Document):
 
     def short_url(self):
         return url_for('world.shorturl', code=self.slug, _external=True)
+
 
 Shortcut.created_date.filter_options = datetime_delta_options('created_date',
                                                              [timedelta(days=7),

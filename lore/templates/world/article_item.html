@@ -76,6 +76,7 @@
 
 {% block header_class -%}
     {% if article and article.get_header_image %}page-header-hero{% endif %}
+    {% if article and not article_form and article.hide_header_text %}page-header-hide-text{% endif %}
 {%- endblock %}
 
 {% block cssimports %}
@@ -108,6 +109,9 @@
     {% endif %}
 {% endblock %}
 
+{% block content_title %}{{ title }}{% endblock %}
+{% block content_tagline %}{% endblock %}
+
 {% block header_title %}
     {% if args.get('intent', None) %}
         <h1 class="col-lg-offset-2 col-lg-10 col-md-12 article-header">
@@ -117,14 +121,11 @@
             <span class="help-block">{{ article_form.title.errors|join(' ') }}</span>
         {% endif %}
     {%- else -%}
-        {{ super() }}
+        {{super()}}
     {% endif %}
 {% endblock %}
 
 {#### PAGE ####}
-
-{% block content_title %}{{ title }}{% endblock %}
-{% block content_tagline %}{% endblock %}
 
 {% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}
 {% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}
@@ -232,6 +233,7 @@
             {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-5', controlwrap='col-sm-7', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.hide_header_text, labelclass='col-sm-5', controlwrap='col-sm-7', controlclass='input-sm') }}
 
             {{ MACRO.FORM_FIELD(article_form.tags, groupclass='form-group-noncolumn', controlclass=' input-sm selectize-tags col-sm-12') }}
 

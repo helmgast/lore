@@ -95,13 +95,9 @@ footer a {
 }
 
 #zoombrand-from {
-  height: 400px;
-  margin: 0 auto;
-  float: none;
-  width: 400px;
-  position: relative;
-  top: 100px;
-  margin-top: -100px;
+  height: 0;
+  width: 100%;
+  padding-top: calc(258 / 345 * 100%); // Ensures box has aspect ratio 345/258 as Helmgast logo
 }
 
 .publisher-brand {
@@ -680,7 +676,7 @@ th a:hover {
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  max-width: 400px;
+  max-width: 375px;
 }
 
 a.highlight {
@@ -766,6 +762,10 @@ a.highlight {
   width: auto;
   padding: 15px;
   border-radius: 8px;
+}
+
+.page-header-hide-text h1 {
+  visibility: hidden;
 }
 
 .page-header-hero small {
@@ -1005,7 +1005,7 @@ top-shadow {
 .cards {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 

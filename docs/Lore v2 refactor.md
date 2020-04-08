@@ -1,6 +1,6 @@
 # Lore Refactor
 
-_Only one thing is contstant, and that is the desire to refactor_
+_Only one thing is constant, and that is the desire to refactor_
 
 ### Currently, Lore has some fundamental issues:
 
@@ -47,6 +47,7 @@ _Only one thing is contstant, and that is the desire to refactor_
 - Contentful - priced per user
 - Prismic - priced per user
 - https://www.datocms.com/pricing - user based pricing
+- https://forestry.io/pricing/ - backed by Git
 
 ### Open Source CMS:
 
@@ -56,6 +57,7 @@ _Only one thing is contstant, and that is the desire to refactor_
 - https://getcockpit.com (PHP, MongoDB, SQLite)
 - https://github.com/birkir/prime (NodeJS, Postgresql)
 - https://www.keystonejs.com/ (NodeJS, Mongo, Graphql)
+- https://wagtail.io/ (Python/Django, )
 
 ### GraphQL solutions:
 

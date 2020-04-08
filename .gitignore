@@ -15,6 +15,7 @@ front/
 .venv/
 .env
 node_modules/
+__pycache__/
 
 static/dist
 static/dev

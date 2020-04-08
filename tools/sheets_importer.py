@@ -4,7 +4,6 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from bson.objectid import ObjectId
 from urllib.parse import urlparse
-from itertools import islice
 from lore.model.shop import Order, OrderStatus, OrderLine, Product
 from lore.model.world import Publisher, Article, Shortcut, World, PublishStatus
 from lore.model.user import User
@@ -37,6 +36,7 @@ class color:
 OK = f"{color.OKGREEN}✓{color.ENDC}"
 FAIL = f"{color.FAIL}✗{color.ENDC}"
 
+
 def print_row(num, row, warnings=[], error=None):
     """Prints a simple table row. If warnings/error they will get an indented extra row"""
     out = f"{OK}" if not error else f"{FAIL}"
@@ -48,6 +48,7 @@ def print_row(num, row, warnings=[], error=None):
     for item in warnings:
         out += f"\n    {item}"
     print(out)  
+
 
 def import_data(url_or_id, sheet, model, repeat_on_empty, commit, maxrows):
     assert(type(url_or_id) == str)
@@ -108,6 +109,7 @@ def import_data(url_or_id, sheet, model, repeat_on_empty, commit, maxrows):
             break
     print("------------------")
     print(f"Imported {imported} and skipped {skipped}")
+
 
 def user_from_email(email, create=False, commit=False):
     user = User.query_user_by_email(email).scalar('id').as_pymongo().first()

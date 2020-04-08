@@ -15,6 +15,7 @@
 
 {% block header_class -%}
     {% if world and world.get_header_image %}page-header-hero{% endif %}
+    {% if world and world.hide_header_text %}page-header-hide-text{% endif %}
 {%- endblock %}
 
 {% block cssimports %}
@@ -99,6 +100,7 @@
                     {{ MACRO.FORM_FIELD(world_form.product_url) }}
                     {{ MACRO.FORM_FIELD(world_form.facebook_url) }}
                     {{ MACRO.FORM_FIELD(world_form.contribution) }}
+                    {{ MACRO.FORM_FIELD(world_form.hide_header_text) }}
                     {{ MACRO.FORM_FIELD(world_form.languages, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}

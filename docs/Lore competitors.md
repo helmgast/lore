@@ -6,9 +6,12 @@
 - [Roll20](https://roll20.net/). Online (?) based tool to play together, with some content parts. Focused on maps and dungeon crawl. Poorly designed.
 - [Fantasy grounds](https://www.fantasygrounds.com/home/home.php). Similar to Roll20. Paid, premium at 60 USD/y.
 - [World Anvil](https://www.worldanvil.com/). Online, paid up to 150 USD/y. The most capable, something for Lore to aspire to.
+- [Fandom.com](https://fandom.com). Has most of the content for books, movies and games already.
 
-# Some game wikis with content
+# Some user's own game wikis with content
 
+- http://kaigon.se/wiki/?title=Den_sj%C3%A4tte_konfluxen_(kampanj)
+- Olas Mundanapedia
 - http://www.moorcrest.se/2018/11/11/evoluotica-absurdum-zero/?fbclid=IwAR1feoxhwP2zZq4lx5yL4LnHuTuhjFuCyzRHUbEOSBqY5jAl2I9aQXvTa68
 - http://segmarian.shoutwiki.com/?fbclid=IwAR34xSNFSOidkDglXB2qnynu_6eeEXND-6xLpBc0Mujziqcm7zLLwyrz8dI
 - https://theenemywithinremixed.wordpress.com/?fbclid=IwAR1aTNB81eTv56DUNwly-8v6spXPtaXXloLBFx3Y3sVoUVtPXqAzbUcpz3w
