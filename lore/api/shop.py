@@ -11,7 +11,6 @@
 import logging
 from datetime import datetime
 
-
 import stripe
 from flask import Blueprint, current_app, g, request, url_for, redirect, abort, session, flash, Markup, render_template
 from flask_babel import lazy_gettext as _
@@ -403,7 +402,7 @@ class OrdersView(ResourceView):
         r.auth_or_abort()
         r.template = "shop/order_peek.html"
         r.code = code
-        if request.method in ['PATCH'] and not (order.user or order.email):  # Key has already been activated for this order
+        if request.method in ['PATCH'] and not (order.user or order.email):  # Key hasn't already been activated for this order
             r.method = "patch"
             order.user = g.user
             order.status = OrderStatus.paid

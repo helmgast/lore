@@ -1,0 +1,44 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.3/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.3/ http://www.mediawiki.org/xml/export-0.3.xsd" version="0.3" xml:lang="sv">
+  <siteinfo>
+    <sitename>Mundanapedia</sitename>
+    <base>http://mundanapedia.erinys.org/mediawiki/index.php?title=Huvudsida</base>
+    <generator>MediaWiki 1.15.3</generator>
+    <case>first-letter</case>
+    <namespaces>
+      <namespace key="-2">Media</namespace>
+      <namespace key="-1">Special</namespace>
+      <namespace key="0" />
+      <namespace key="1">Diskussion</namespace>
+      <namespace key="2">Användare</namespace>
+      <namespace key="3">Användardiskussion</namespace>
+      <namespace key="4">Mundanapedia</namespace>
+      <namespace key="5">Mundanapediadiskussion</namespace>
+      <namespace key="6">Fil</namespace>
+      <namespace key="7">Fildiskussion</namespace>
+      <namespace key="8">MediaWiki</namespace>
+      <namespace key="9">MediaWiki-diskussion</namespace>
+      <namespace key="10">Mall</namespace>
+      <namespace key="11">Malldiskussion</namespace>
+      <namespace key="12">Hjälp</namespace>
+      <namespace key="13">Hjälpdiskussion</namespace>
+      <namespace key="14">Kategori</namespace>
+      <namespace key="15">Kategoridiskussion</namespace>
+    </namespaces>
+  </siteinfo>
+  <page>
+    <title>Test</title>
+    <id>1328</id>
+    <revision>
+      <id>5361</id>
+      <timestamp>2011-03-13T18:42:38Z</timestamp>
+      <contributor>
+        <username>Ymir</username>
+        <id>2</id>
+      </contributor>
+      <text xml:space="preserve">* Test1. 
+
+* Test2.</text>
+    </revision>
+  </page>
+  
+</mediawiki>

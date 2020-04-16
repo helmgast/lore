@@ -1,0 +1,139 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.3/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.3/ http://www.mediawiki.org/xml/export-0.3.xsd" version="0.3" xml:lang="sv">
+  <siteinfo>
+    <sitename>Mundanapedia</sitename>
+    <base>http://mundanapedia.erinys.org/mediawiki/index.php?title=Huvudsida</base>
+    <generator>MediaWiki 1.15.3</generator>
+    <case>first-letter</case>
+    <namespaces>
+      <namespace key="-2">Media</namespace>
+      <namespace key="-1">Special</namespace>
+      <namespace key="0" />
+      <namespace key="1">Diskussion</namespace>
+      <namespace key="2">Användare</namespace>
+      <namespace key="3">Användardiskussion</namespace>
+      <namespace key="4">Mundanapedia</namespace>
+      <namespace key="5">Mundanapediadiskussion</namespace>
+      <namespace key="6">Fil</namespace>
+      <namespace key="7">Fildiskussion</namespace>
+      <namespace key="8">MediaWiki</namespace>
+      <namespace key="9">MediaWiki-diskussion</namespace>
+      <namespace key="10">Mall</namespace>
+      <namespace key="11">Malldiskussion</namespace>
+      <namespace key="12">Hjälp</namespace>
+      <namespace key="13">Hjälpdiskussion</namespace>
+      <namespace key="14">Kategori</namespace>
+      <namespace key="15">Kategoridiskussion</namespace>
+    </namespaces>
+  </siteinfo>
+  <page>
+    <title>Test</title>
+    <id>1328</id>
+    <revision>
+      <id>5361</id>
+      <timestamp>2011-03-13T18:42:38Z</timestamp>
+      <contributor>
+        <username>Ymir</username>
+        <id>2</id>
+      </contributor>
+      <text xml:space="preserve">8, eller Åtta, {{testmall|hej}} är en sjunde rangens mumie i tjänst hos [[Im-Berefel Ra'drach do Kampa]]. Dess kamrater, 4 och 6, än numera sorgligt bortgångna (permanent, den här gången), men 8 kämpar oförtrutligt vidare, och har åtföljt [[Shirvan Cartika|Shirvan Cartikas]] följe över de Ikamriska bergen, på flykt undan hennes syster [[Shara Cartika|Shara]], numera magikrat av [[Ivani-tribunalen]].
+
+=Sammanfattning=
+[[Bild:Joseph Tiesen.jpg|thumb|[[Joseph Tiesen]], ledaren för [[Kublai Shakkar|Kublais]] konfluxexpedition.]]
+
+{|cellpadding = &quot;5&quot;
+!align = &quot;left&quot;| Spjut !! width=10% | Huggskada !! Krosskada !! Stickskada !! STYK !! Fattn !! BRYT !! SI !! Längd !! Vikt !! Pris
+|- style=&quot;background: #eee;&quot; align=&quot;center&quot;
+| align=&quot;left&quot; | Åskspjut || H+Ob1T6+3 || K+1 || S+Ob4T6 || 6 || 2H || 20 || 4/2 || 185 cm || 1,3 kg || -
+|- align=&quot;center&quot;
+|}
+
+[[Media:Any link|caption]]
+
+[[Image:Wikiarienne.JPG|thumb|right]]
+
+[[image:Dann_Casen.jpg|right]]
+
+[[Fil:Oxuma1.jpg|200px|thumb|right]]
+
+[[File:Oxuma2.jpg|200px|thumb|right]]
+
+[[file:Oxuma3.jpg|200px|thumb|right]]
+
+[[Kategori:Lägre vandöda]] [[Kategori:_Viljelösa skal]] [[Kategori: Stop at nothing]] [[Kategori: Danarthier]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Mall:Test</title>
+    <id>404</id>
+    <revision>
+      <id>7551</id>
+      <timestamp>2012-09-25T15:56:33Z</timestamp>
+      <contributor>
+        <username>Lycan</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">Öar i kung Hannos rike
+
+[[Atlamana]]
+
+[[Gesno]]
+
+[[Mo'djanda]]
+
+[[Category: Work in progress]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Abelard</title>
+    <id>1345</id>
+    <revision>
+      <id>5490</id>
+      <timestamp>2011-06-08T05:17:04Z</timestamp>
+      <contributor>
+        <username>Ymir</username>
+        <id>2</id>
+      </contributor>
+      <text xml:space="preserve">Abelard är en jargisk boklärd som kom på kant med inkvisitionen efter att ha dykt för djupt i kättersk mûhadinsk teologi, och slutade upp som försupen tiggare på [[Arlon|Arlons]] gator. Där uppmärksammades han av [[Celdan]], som var särskilt fascinerat av att Abelard läst hela det gigantiska antika uppslagsverket [[Ezêm Kordadbeh]], därtill i dess fullständiga zhaniska form snarare än [[Encyclopædia Tellurum]], [[Illona av Amtagona|Illonas av Amtagona]] jargiska översättning. En sådan hjärna kunde inte förslösas i Celdans tycke, och Abelard blev omedelbart medsläpad till [[Val Timan]], där [[Nicoz Mehzinor|Nicoz]] lät sig övertalas att ta honom i sin tjänst, om än först efter ordentliga bad och klädbyten.
+
+[[Legio XXVI|XXVI:e legionen]]
+
+[[Bild:Joseph Tiesen.jpg|thumb|[[Joseph Tiesen]], ledaren för [[Kublai Shakkar|Kublais]] konfluxexpedition.]]
+
+[[Fil:Oxuma0.jpg]]
+
+[[Fil:Oxuma1.jpg|200px|thumb|right]]
+
+[[Extension:DynamicPageList (Wikimedia)]]
+
+[[Help:Editing pages|editing help]]
+
+[[Help:Editing pages#Preview|previewing]]
+
+[[User:John Doe|]]
+
+[[Help]]ing
+
+[[:Category:Help]]
+
+[https://mediawiki.org MediaWiki]
+
+[https://mediawiki.org]
+
+[[Kategori: Jargier]] [[Kategori: Gamla Akademiker]] [[Kategori: Ölkännare]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Old Abelard</title>
+    <id>1345</id>
+    <revision>
+      <id>5490</id>
+      <timestamp>2011-06-08T05:17:04Z</timestamp>
+      <contributor>
+        <username>Ymir</username>
+        <id>2</id>
+      </contributor>
+      <text xml:space="preserve">#OMDIRIGERING [[Abelard]]</text>
+
+    </revision>
+  </page>
+</mediawiki>

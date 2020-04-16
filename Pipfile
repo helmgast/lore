@@ -33,6 +33,12 @@ pyphen = "*"
 gspread = "*"
 oauth2client = "*"
 cloudinary = "*"
+flask-graphql = "*"
+graphene-mongo = "*"
+werkzeug = "==0.16.1"
+pypandoc = "*"
+python-frontmatter = "*"
+panflute = "*"
 
 [dev-packages]
 pylint = "*"

@@ -11,11 +11,13 @@ from flask.helpers import get_debug_flag
 from lore.app import create_app
 app = create_app()
 
+
 def runshell(cmd):
     cmdsplit = shlex.split(cmd)
     cp = sp.run(cmdsplit)
     if cp.returncode > 0:
         sys.exit(cp.returncode)
+
 
 @app.cli.command()
 def initdb():
@@ -70,15 +72,17 @@ def initdb():
 #     run_simple(host, port, app, use_reloader=reload,
 #                use_debugger=debugger, threaded=with_threads, extra_files=watch)
 
+
 @app.cli.command()
-def lang_extract(): # Run as lang-extract
+def lang_extract():  # Run as lang-extract
     """Extract translatable strings and .PO files for predefined locales (SV).
     After running this, go to the .PO files in lore/translations/ and manually
     translate all empty MsgId. Then run python manage.py lang_compile
     """
 
     runshell('.venv/bin/pybabel extract --no-wrap --sort-by-file -F lore/translations/babel.cfg -o temp.pot lore/ plugins/')
-    runshell('.venv/bin/pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching')
+    runshell(
+        '.venv/bin/pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching')
     runshell('rm temp.pot')
     print()
     print("New strings needing translation:")
@@ -88,8 +92,9 @@ def lang_extract(): # Run as lang-extract
         for m in re.findall(r'msgid ((".*"\s+)+)msgstr ""\s\s', s):
             print(m[0].split('/n')[0])  # avoid too long ones
 
+
 @app.cli.command()
-def lang_compile(): # Run as lang-compile
+def lang_compile():  # Run as lang-compile
     """Compiles all .PO files to .MO so that they will show up at runtime."""
 
     runshell('pybabel compile -d lore/translations -l sv')
@@ -137,10 +142,12 @@ def db_setup(reset=False):
         # db.connection[the_app.config['MONGODB_SETTINGS']['DB']]['images.files'].ensure_index(
         #        'md5', unique=True, background=True)
 
+
 @app.cli.command()
 def validate_model():
     is_ok = True
-    pkgs = ['model.misc', 'model.user', 'model.world']  # Look for model classes in these packages
+    # Look for model classes in these packages
+    pkgs = ['model.misc', 'model.user', 'model.world']
     for doc in Document._subclasses:  # Ugly way of finding all document type
         if doc != 'Document':  # Ignore base type (since we don't own it)
             for pkg in pkgs:
@@ -156,7 +163,8 @@ def validate_model():
                     pass  # Ignore errors from getattr
                 except ImportError:
                     pass  # Ignore errors from __import__
-    logger.info("Model has been validated" if is_ok else "Model has errors, aborting startup")
+    logger.info(
+        "Model has been validated" if is_ok else "Model has errors, aborting startup")
     return is_ok
 
 
@@ -169,11 +177,12 @@ def import_csv():
     get_db()
     customer_data.setup_customer()
 
+
 @app.cli.command()
-@click.option('-s','--sheet', required=False, help='Name or index of worksheet, if URL lacks #gid=x parameter')
-@click.option('-m','--model', required=True, help='Name of model to import to/with')
-@click.option('-r','--repeat_on_empty', is_flag=True, help='If a cell is empty in a row with data, repeat value from row above')
-@click.option('-c','--commit', is_flag=True, help='If given, will commit import. Otherwise just print the first 10 results.')
+@click.option('-s', '--sheet', required=False, help='Name or index of worksheet, if URL lacks #gid=x parameter')
+@click.option('-m', '--model', required=True, help='Name of model to import to/with')
+@click.option('-r', '--repeat_on_empty', is_flag=True, help='If a cell is empty in a row with data, repeat value from row above')
+@click.option('-c', '--commit', is_flag=True, help='If given, will commit import. Otherwise just print the first 10 results.')
 @click.option('--maxrows', default=10, type=int, help='Maximum amounts of rows to process')
 @click.argument('url_or_id', required=True)
 def import_sheet(url_or_id, sheet, model, repeat_on_empty, commit, maxrows):
@@ -183,8 +192,62 @@ def import_sheet(url_or_id, sheet, model, repeat_on_empty, commit, maxrows):
     extensions.db.init_app(app)
     db = get_db()
     if maxrows < 1:
-        maxrows = 1000000 # Just a high number
+        maxrows = 1000000  # Just a high number
     import_data(url_or_id, sheet, model, repeat_on_empty, commit, maxrows)
+
+
+@app.cli.command()
+@click.argument('path', required=True)
+@click.option('--dry-run', is_flag=True)
+@click.option('--log-level', default="WARN")
+def import_markdown_topics(path, dry_run, log_level):
+    from tools.batch import Batch, LogLevel
+    from tools.markdown_importer import doc_generator, job_import_topic
+    # from mongoengine.connection import get_db
+    from lore import extensions
+    # extensions.db.init_app(app)
+    # db = get_db()
+    # original_dates True/False
+    # url_prefix = ""
+    b = Batch(f"Import markdown files from path {path}",
+              level=LogLevel[log_level],
+              dry_run=dry_run,
+              all_topics={})
+    b.process(doc_generator(path), job_import_topic)
+    for t in b.context['all_topics'].values():
+        print(repr(t))
+
+    print(b.summary_str())
+
+
+@app.cli.command()
+@click.argument('wiki_xml_file', required=True)
+@click.argument('output_folder', required=True)
+@click.argument('filter', required=False)
+@click.option('--dry-run', is_flag=True)
+@click.option('--log-level', default="WARN")
+@click.option('--bugreport', is_flag=True)
+@click.option('--no-metadata', is_flag=True)
+def wikitext_to_markdown(wiki_xml_file, output_folder, filter, dry_run, log_level, bugreport, no_metadata):
+    from tools.batch import Batch, LogLevel
+    from tools.mediawiki_importer import wikitext_generator, job_wikitext_to_markdown
+    # from mongoengine.connection import get_db
+    # from lore import extensions
+    # extensions.db.init_app(app)
+    # db = get_db()
+    out_folder = os.path.join(output_folder, os.path.splitext(
+        os.path.basename(wiki_xml_file))[0])
+    os.makedirs(out_folder, exist_ok=True)
+    b = Batch(f"Wikitext to Markdown: {wiki_xml_file}",
+              level=LogLevel[log_level],
+              dry_run=dry_run,
+              bugreport=bugreport,
+              no_metadata=no_metadata,
+              all_pages={},
+              out_folder=out_folder,
+              filter=filter)
+    b.process(wikitext_generator(wiki_xml_file), job_wikitext_to_markdown)
+    print(b.summary_str())
 
 
 @app.cli.command()
@@ -264,11 +327,13 @@ def file_upload(file, title, desc, access):
 @click.option('--user', help='User ID to fingerprint with', required=True)
 def pdf_fingerprint(input, output, user):
     """Will manually fingerprint a PDF file."""
-    print("Fingerprinting user %s from file %s into file %s" % (user, input, output))
+    print("Fingerprinting user %s from file %s into file %s" %
+          (user, input, output))
     with open(output, 'wb') as f:
         with open(input, 'rb') as f2:
             for buf in fingerprint_pdf(f2, user):
                 f.write(buf)
+
 
 @app.cli.command()
 @click.option('--input', help='PDF file to check for fingerprints')
@@ -284,6 +349,7 @@ def pdf_check(input):
         print("User %s with id %s got fp %s" % (user, user.id, uid))
         for fp in fps:
             if uid == fp:
-                print("User %s matches fingerprint %s in document %s" % (user, fp, input))
+                print("User %s matches fingerprint %s in document %s" %
+                      (user, fp, input))
                 exit(1)
     print("No match for any user in document %s" % (input))

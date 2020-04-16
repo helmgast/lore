@@ -46,12 +46,11 @@ Document = flask_mongoengine.Document
 
 EMPTY_ID = ObjectId('000000000000000000000000')  # Needed to make empty non-matching Query objects
 
+
 def slugify(title):
     slug = ext_slugify(title)
-    if slug.upper() in METHODS:
-        return "%s_" % slug
-    else:
-        return slug
+    return f"{slug}_" if slug.upper() in METHODS else slug
+
 
 def set_lang_options(*args):
     for resource in args:
