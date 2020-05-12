@@ -18,17 +18,19 @@
 {% endblock %}
 
 {% block subnavbar %}
-    {% call(privileged) MACRO.IS_ADMIN() %}
-        <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:index') }}"><span
-                class="glyphicon glyphicon-certificate"></span> {{ _('Products') }}</a></li>
-    {% endcall %}
+    <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:index') }}"><span
+            class="glyphicon glyphicon-certificate"></span> {{ _('All Products') }}</a></li>
     {% call(privileged) MACRO.IS_ADMIN() %}
         <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:index') }}"><span
-                class="glyphicon glyphicon-list-alt"></span> {{ _('Orders') }}</a></li>
+                class="glyphicon glyphicon-list-alt"></span> {{ _('All Orders') }}</a></li>
     {% endcall %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
         <li><a class="{{ privileged }}" href="{{ url_for('shop.OrdersView:my_orders') }}"><span
-                class="glyphicon glyphicon-gift"></span> {{ _('My products') }}</a></li>
+                class="glyphicon glyphicon-gift"></span> {{ _('My orders') }}</a></li>
+    {% endcall %}
+    {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('my_products')) %}
+        <li><a class="{{ privileged }}" href="{{ url_for('shop.ProductsView:my_products') }}"><span
+                class="glyphicon glyphicon-book"></span> {{ _('My library') }}</a></li>
     {% endcall %}
 {% endblock %}
 

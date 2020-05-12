@@ -1,6 +1,6 @@
 <div class="card{{ ' status-unpublished' if product.status == 'hidden' }}"
-        {%- if product.get_feature_image -%}
-     style="background: url({{ product.get_feature_image.feature_url() }}) center top/cover;"
+        {% if product.get_feature_image -%}
+     style="background: url({{ product.get_feature_image.feature_url(crop=(516,726)) }}) center top/cover;"
         {%- endif -%}>
     <a class="card-cover icon150px"
        href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
@@ -14,7 +14,7 @@
         <ul class="card-details">
             <li class="product-type">{{ product.get_type_display() }}</li>
             {% if product.publisher and product.publisher.webshop_activated and product.status != 'hidden' %}
-                <li class="product-price">{{ product.price|currencyformat(product.currency.upper()) }}</li>
+                <li class="product-price">{{ product.get_price()|currencyformat(product.currency.upper()) }}</li>
                 <li><a id="{{ product.slug }}" class="btn btn-xs btn-primary buy-link"
                        href="{{ url_for('shop.OrdersView:cart') }}">{{ _('Add to cart') }}</a>
                 </li>

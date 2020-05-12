@@ -8,7 +8,7 @@
     {% elif args['view']=='pay' %}
         {{ _('Pay') }}
     {% else %}
-        {{ _('Order: %(order)s', order=order) }}
+        {# {{ order }} #}
     {% endif %}
 {% endblock %}
 
@@ -19,7 +19,7 @@
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('shop.shop_home'), _('Shop')),
         (url_for('shop.OrdersView:index'), _('Orders')),
-        ('', self.content_title())
+        ('', order)
     ) }}{% endblock %}
 
 {% block actionbar %}

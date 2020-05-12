@@ -28,9 +28,9 @@ from lore.api.resource import (ResourceAccessPolicy,
                                 filterable_fields_parser, prefillable_fields_parser, ListResponse, ItemResponse,
                                 Authorization)
 from lore.model.misc import set_lang_options, filter_is_user
-from lore.model.shop import Product, Order, OrderLine, Address, OrderStatus, Stock, ProductStatus
+from lore.model.shop import Address, Order, OrderLine, OrderStatus, Product, ProductStatus, Stock, products_owned_by_user
 from lore.model.user import User
-from lore.model.world import Publisher, filter_authorized_by_publisher
+from lore.model.world import Publisher, World, filter_authorized_by_publisher
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -70,21 +70,27 @@ class ProductAccessPolicy(ResourceAccessPolicy):
         return Authorization(True, _("Public resource")) if res.status != 'hidden' else \
             Authorization(False, _("Not a public resource"))
 
+    def custom_auth(self, op, user, res):
+        if op == 'my_products':
+            return self.is_user(op, user, res)
+        else:
+            return Authorization(False, _("No authorization implemented for %(op)s", op=op), error_code=403)
+
 
 class ProductsView(ResourceView):
     subdomain = '<pub_host>'
     access_policy = ProductAccessPolicy()
     model = Product
     list_template = 'shop/product_list.html'
-    list_arg_parser = filterable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
+    list_arg_parser = filterable_fields_parser(['created', 'type', 'world', 'price'])
     item_template = 'shop/product_item.html'
-    item_arg_parser = prefillable_fields_parser(['title', 'description', 'created', 'type', 'world', 'price'])
+    item_arg_parser = prefillable_fields_parser(['created', 'type', 'world', 'price'])
     form_class = model_form(Product,
                             base_class=ImprovedBaseForm,
                             exclude=['slug'],
                             converter=ImprovedModelConverter())
     # Add stock count as a faux input field of the ProductForm
-    form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[InputRequired(), NumberRange(min=-1)])
+    # form_class.stock_count = IntegerField(label=_("Remaining Stock"), validators=[InputRequired(), NumberRange(min=-1)])
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
@@ -97,6 +103,38 @@ class ProductsView(ResourceView):
                 filter_authorized_by_publisher(publisher))
         r.auth_or_abort(res=publisher)
         r.prepare_query()
+        if r.args.get('fields', None) and r.args['fields'].get('world', None):
+            world = World.objects(slug=r.args['fields'].get('world', "")).first()
+            r.world = world
+        r.set_theme('publisher', publisher.theme)
+
+        return r
+
+    def my_products(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        set_lang_options(publisher)
+        # products = Product.objects().order_by('type', '-created')
+
+        products = list(products_owned_by_user(g.user))
+        grouped = {}
+        for p in products:
+            grouped.setdefault(p.world or p.family, []).append(p)
+        for group in grouped.values():
+            group.sort(key=lambda p: p.publish_date or str(p.created), reverse=True)
+        
+        # products above is not a query, but a set generated from a for loop. This makes it impossible
+        # to use paging or query args on it.
+
+        r = ListResponse(ProductsView, [('products', []), ('publisher', publisher)])
+        # if not (g.user and g.user.admin):
+        #     r.query = r.query.filter(
+        #         filter_product_published() |
+        #         filter_authorized_by_publisher(publisher))
+        r.auth_or_abort(res=publisher)
+        r.template = "shop/my_products.html"
+        r.my_products = grouped
+
+        # r.prepare_query()
         r.set_theme('publisher', publisher.theme)
 
         return r
@@ -111,12 +149,11 @@ class ProductsView(ResourceView):
         else:
             product = Product.objects(slug=id).first_or_404()
             # We will load the stock count from the publisher specific Stock object
-            stock = get_or_create_stock(publisher)
-            stock_count = stock.stock_count.get(product.slug, None)
-            extra_form_args = {} if stock_count is None else {'stock_count': stock_count}
-            r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)],
-                             extra_form_args=extra_form_args)
-            r.stock = stock
+            # stock = get_or_create_stock(publisher)
+            # stock_count = stock.stock_count.get(product.slug, None)
+            # extra_form_args = {} if stock_count is None else {'stock_count': stock_count}
+            r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)])
+            # r.stock = stock
             r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
 
@@ -128,7 +165,7 @@ class ProductsView(ResourceView):
 
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
         r.auth_or_abort(res=publisher)
-        r.stock = get_or_create_stock(publisher)
+        # r.stock = get_or_create_stock(publisher)
         product = Product()
         r.set_theme('publisher', publisher.theme)
         if not r.validate():
@@ -138,8 +175,8 @@ class ProductsView(ResourceView):
             r.commit(new_instance=product)
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
-        r.stock.stock_count[product.slug] = r.form.stock_count.data
-        r.stock.save()
+        # r.stock.stock_count[product.slug] = r.form.stock_count.data
+        # r.stock.save()
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', id=product.slug))
 
     def patch(self, id):
@@ -155,16 +192,17 @@ class ProductsView(ResourceView):
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
         r.auth_or_abort()
-        r.stock = get_or_create_stock(publisher)
+        # r.stock = get_or_create_stock(publisher)
         r.set_theme('publisher', publisher.theme)
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product, list(request.form.keys()))  # only populate selected keys
+
         try:
             r.commit()
-            r.stock.stock_count[product.slug] = r.form.stock_count.data
-            r.stock.save()
+            # r.stock.stock_count[product.slug] = r.form.stock_count.data
+            # r.stock.save()
         except (NotUniqueError, ValidationError) as err:
             return r.error_response(err)
         return redirect(r.args['next'] or url_for('shop.ProductsView:get', id=product.slug))
@@ -363,7 +401,7 @@ class OrdersView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
 
-        orders = Order.objects(user=g.user).order_by('-updated')  # last updated will show paid highest
+        orders = Order.objects(user=g.user).order_by('-created')  # last created shown first
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders', extra_args={"view": "cards"})
         r.auth_or_abort(res=publisher)
         if not (g.user and g.user.admin):
@@ -371,6 +409,7 @@ class OrdersView(ResourceView):
                 filter_is_user() |
                 filter_authorized_by_publisher(publisher))
         r.prepare_query()
+        r.template = "shop/my_orders.html"
         r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
@@ -608,13 +647,14 @@ def get_cart_order():
         return None
 
 
+# The main entry point for keys at lore.pub, before routing to publisher
 @current_app.route('/key/<code>', subdomain=current_app.default_host)
 def key(code):
     order = Order.objects(external_key=code).first()
     if order and order.publisher:
         return redirect(url_for('shop.OrdersView:key', code=code, pub_host=order.publisher.slug))
     else:
-        abort(404, description=_("This code doesn't exist or haven't been added yet. Contact your publisher for more information."))
+        abort(404, description=_("This code doesn't exist or haven't been added yet. Double check that you typed it correctly, otherwise contact your publisher for more information."))
 
 # This injects the "cart_items" into templates in shop_app
 @shop_app.context_processor

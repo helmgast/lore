@@ -19,10 +19,12 @@ from mongoengine import (EmbeddedDocument, StringField, DateTimeField, FloatFiel
 from mongoengine.queryset import Q
 
 
-from .asset import FileAsset, NewFileAsset
+from .asset import FileAsset, Attachment
 from .misc import Choices, slugify, Address, choice_options, datetime_delta_options, reference_options, EMPTY_ID
-from .misc import Document, shorten, available_locale_tuples, distinct_options  # Enhanced document
+from .misc import Document, shorten, configured_langs_tuples, distinct_options  # Enhanced document
 from .user import User
+from lore.model.misc import get
+from lore.model.user import user_from_email
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -44,13 +46,16 @@ GenderTypes = Choices(
     female=_('Female'),
     unknown=_('Unknown'))
 
-plugin_choices = [('None', _('None'))] + [(v, v) for v in current_app.plugins]
+
+# Generate the choices at runtime instead of import time
+plugin_choices = []
 
 def secure_css(css):
-    css = re.sub(r'<.*', '', css, flags=re.IGNORECASE)
-    css = re.sub(r'expression\(', '', css, flags=re.IGNORECASE)
-    css = re.sub(r'javascript:', '', css, flags=re.IGNORECASE)
-    css = re.sub(r'\.htc:', '', css, flags=re.IGNORECASE)
+    if css:
+        css = re.sub(r'<.*', '', css, flags=re.IGNORECASE)
+        css = re.sub(r'expression\(', '', css, flags=re.IGNORECASE)
+        css = re.sub(r'javascript:', '', css, flags=re.IGNORECASE)
+        css = re.sub(r'\.htc:', '', css, flags=re.IGNORECASE)
     return css
 
 
@@ -80,7 +85,7 @@ class Publisher(Document):
     readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
 
     # Settings per publisher
-    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
+    languages = ListField(StringField(choices=configured_langs_tuples), verbose_name=_('Available Languages'))
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
 
@@ -96,6 +101,7 @@ class Publisher(Document):
 
 # Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
 Publisher.register_delete_rule(User, 'publishers_newsletters', NULLIFY)
+
 
 def filter_authorized_by_publisher(publisher=None):
     if not g.user:
@@ -127,7 +133,7 @@ class World(Document):
     theme = StringField(choices=plugin_choices, null=True, verbose_name=_('Theme'))
     hide_header_text = BooleanField(default=False, verbose_name=_('Hide header text'))
 
-    assets = ListField(EmbeddedDocumentField(NewFileAsset, only=['source_url']))
+    assets = ListField(EmbeddedDocumentField(Attachment, only=['source_url']))
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, verbose_name=_('Feature Image'))
@@ -137,7 +143,7 @@ class World(Document):
 
     preferred_license = StringField(choices=Licenses.to_tuples(), default=Licenses.ccby4,
                                     verbose_name=_('Preferred License'))
-    languages = ListField(StringField(choices=available_locale_tuples), verbose_name=_('Available Languages'))
+    languages = ListField(StringField(choices=configured_langs_tuples), verbose_name=_('Available Languages'))
     editors = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Editors'))
     readers = ListField(ReferenceField(User, reverse_delete_rule=NULLIFY), verbose_name=_('Readers'))
 
@@ -175,10 +181,6 @@ class World(Document):
         # daysperyear = 360
         # datestring = "day %i in the year of %i"
         # calendar = [{name: january, days: 31}, {name: january, days: 31}, {name: january, days: 31}...]
-
-
-# Regsister delete rule here becaue in User, we haven't imported Publisher so won't work from there
-Publisher.register_delete_rule(User, 'world_newsletters', NULLIFY)
 
 
 class WorldMeta(object):
@@ -471,7 +473,7 @@ class Shortcut(Document):
     article = ReferenceField(Article, reverse_delete_rule=NULLIFY, verbose_name=_('Article'))
 
     def clean(self):
-        self.slug = slugify(self.slug) # Force slugify as it may be invalid otherwise
+        self.slug = slugify(self.slug)  # Force slugify as it may be invalid otherwise
         if self.article:
             self.url = None
         elif self.url:
@@ -488,24 +490,49 @@ Shortcut.created_date.filter_options = datetime_delta_options('created_date',
                                                               timedelta(days=365)])
 Shortcut.register_delete_rule(Article, 'shortcut', NULLIFY)
 
-# ARTICLE_CREATOR, ARTICLE_EDITOR, ARTICLE_FOLLOWER = 0, 1, 2
-# ARTICLE_USERS = ((ARTICLE_CREATOR, 'creator'), (ARTICLE_EDITOR,'editor'), (ARTICLE_FOLLOWER,'follower'))
-# class ArticleUser(Document):
-#     article = ForeignKeyField(Article, related_name='user')
-#     user = ForeignKeyField(User)
-#     type = IntegerField(default=ARTICLE_CREATOR, choices=ARTICLE_USERS)
 
-# class ArticleGroup(Document):
-#     article = ReferenceField(Article)
-#     group = ReferenceField(Group)
-#     type = IntField(choices=((GROUP_MASTER, 'master'), (GROUP_PLAYER, 'player')))
+def import_article(row, commit=False):
+    """The model method for importing to Article from text-based data in row"""
+    article = Article()
+    warnings = []
+    title = get(row, "Title", "")
+    content = get(row, "Content", "")
+    shortcode = get(row, "Shortcode", "").lower()
+    created = get(row, "Created", "")
+    status = get(row, "Status", "")
+    publisher = get(row, "Publisher", "")
+    world = get(row, "World", "")
+    creator_email = get(row, "Creator", "").lower()
+    if not title:
+        raise ValueError("Missing compulsory column Title")
+    if shortcode:
+        count = Shortcut.objects(slug=shortcode).count()
+        if count > 0:
+            raise ValueError(f"The shortcode {shortcode} is already taken")
+    article.created_date = datetime.datetime.strptime(created, "%Y-%m-%d")
+    article.creator, created = user_from_email(creator_email, create=True, commit=commit)
+    if status:
+        if status not in PublishStatus:
+            raise ValueError(f"Publish Status {status} is invalid")
+        else:
+            article.status = status
+    if publisher:
+        article.publisher = Publisher.objects(slug=publisher).scalar("id").as_pymongo().get()["_id"]
+    if world:
+        article.world = World.objects(slug=world).scalar("id").as_pymongo().get()["_id"]
+    article.title = title
+    article.content = content
+    if commit:
+        article.save()
+        if shortcode:
+            sh = Shortcut(slug=shortcode, article=article.id)
+            sh.save()
+            article.shortcut = sh
+            article.save()
 
-#     def __str__(self):
-#         return u'%s (%ss)' % (self.group.name, GROUP_ROLE_TYPES[self.type])
-
-
-
-# class ArticleRights(Document):
-# user = ForeignKeyField(User)
-# article = ForeignKeyField(Article)
-# right = ForeignKeyField(UserRights)
+    results = dict(row)
+    results["Email"] = article.creator
+    results["Publisher"] = article.publisher
+    results["World"] = article.world
+    results["Created"] = article.created_date
+    return article, results, warnings

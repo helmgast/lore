@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>{% block title %}{{ self.content_title() }}{% endblock %}</title>
+    {% for locale in g.configured_locales.values() %}
+        <link rel="alternate" hreflang="{{locale.language}}" href="{{current_url(lang=locale.language, _external=true)}}" />
+    {% endfor %}
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
     {% if args and args.get('intent',None) %}
         {#            Turn off Pinterest pinning from image galleries on editable pages#}
@@ -142,7 +145,7 @@
 
             <ul class="nav navbar-nav navbar-nav-top navbar-right">
                 {% block navbar_right %}
-
+                    {% include 'includes/language_chooser.html' %}
                     {% if not g.user %}
                         <li>
                             <a href="{{ auth0_url(next=request.url) }}">{{ _('Log In') }}</a>
@@ -158,11 +161,16 @@
                                     class="caret"></span></a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a {% call MACRO.IS_USER() %}href="{{ url_for('social.UsersView:get', id=g.user.identifier()) }}"{% endcall %}> {{ _('My account') }}</a>
+                                    <a {% call MACRO.IS_USER() %}href="{{ url_for('social.UsersView:get', id=g.user.identifier(), intent='patch') }}"{% endcall %}> {{ _('My account') }}</a>
                                 </li>
                                 {% call(privileged) MACRO.AUTHORIZED(access_policy['order'].authorize('my_orders')) %}
                                     <li><a class="{{ privileged }}"
-                                           href="{{ url_for('shop.OrdersView:my_orders') }}">{{ _('My products') }}</a>
+                                           href="{{ url_for('shop.OrdersView:my_orders') }}">{{ _('My orders') }}</a>
+                                    </li>
+                                {% endcall %}
+                                {% call(privileged) MACRO.AUTHORIZED(access_policy['product'].authorize('my_products')) %}
+                                    <li><a class="{{ privileged }}"
+                                           href="{{ url_for('shop.ProductsView:my_products') }}">{{ _('My library') }}</a>
                                     </li>
                                 {% endcall %}
                                 {% call(privileged) MACRO.IS_ADMIN() %}
@@ -211,7 +219,7 @@
         <div class="container">
             <div class="row">
                 {% block header_title %}
-                    <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">{% block content_title %}{% endblock %}
+                    <h1 class="col-lg-12 col-md-12 col-sm-12">{% block content_title %}{% endblock %}
                         <small>{% block content_tagline %}{% endblock %}</small>
                     </h1>
                 {% endblock header_title %}
@@ -247,10 +255,10 @@
     <div class="container">
         {% block footer %}{% endblock %}
         <div class="row">
-            <div class="col-sm-6">
-                {% include 'includes/language_chooser.html' %}
-            </div>
-            <div class="col-sm-6"><p class="pull-right">
+            {# <div class="col-sm-6">
+                <ul class="list-unstyled">{% include 'includes/language_chooser.html' %}</ul>
+            </div> #}
+            <div class="col-sm-offset-6 col-sm-6"><p class="pull-right">
                 {% trans %}Design and code{% endtrans %} © {{ now().strftime("%Y") }} Helmgast AB<br>
                 {% trans %}Built using {% endtrans %}<a
                     href="{{ url_for('world.homepage', _external=true, _scheme='') }}">Lore</a>,

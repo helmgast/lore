@@ -2,12 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"path": "/Users/martin/dev/deploy/helmgast"
-		},
-		{
-			"path": "/Users/martin/dev/src/lore-convert"
 		}
 	],
 	"settings": {

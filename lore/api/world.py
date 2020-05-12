@@ -33,6 +33,10 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 world_app = Blueprint('world', __name__)
 
+# @world_app.before_request
+# def x(*args, **kwargs):
+#     if not request.view_args.get('lang'):
+#         return redirect('/sv' + request.full_path)
 
 # All articles have a publisher, some have world. If no world, it has the meta world, "meta". There is a default 1st
 # publisher, called "system". So "system/meta/about"
@@ -307,7 +311,7 @@ def if_not_meta(doc):
 
 class ArticlesView(ResourceView):
     subdomain = '<pub_host>'
-    route_base = '/<world_>'
+    route_base = '/<not(en,sv):world_>'
     access_policy = ArticleAccessPolicy()
     model = Article
     list_template = 'world/article_list.html'
@@ -343,7 +347,7 @@ class ArticlesView(ResourceView):
         r.set_theme('publisher', publisher.theme)
         return r
 
-    @route('/<world_>/', route_base='/')
+    @route('/<not(en,sv):world_>/', route_base='/')
     def world_home(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         if world_ == 'post':

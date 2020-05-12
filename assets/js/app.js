@@ -226,9 +226,12 @@ $(document).on('click', '.zoomable', function (e) {
 
 // Smooth scroll for anchor links
 $(document).on('click', 'a[href*=\\#]', function (event) {
-    if (this.hash) {
-        event.preventDefault();
-        $('html,body').animate({scrollTop: $(this.hash).offset().top}, 500);
+    if (this.hash && (this.href == this.hash || this.href.indexOf(window.location.pathname+this.hash) > 0)) {
+        let $offset = $(this.hash).offset();
+        if ($offset) {
+            event.preventDefault();
+            $('html,body').animate({scrollTop: $offset.top}, 500);
+        }
     }
 
 });

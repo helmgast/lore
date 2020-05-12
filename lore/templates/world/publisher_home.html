@@ -42,7 +42,7 @@
             <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">
 
                 <div class="page-header page-header-hero parallax-border {{ 'page-header-hide-text' if world.hide_header_text }}"
-                     style="background-image: url({{ url_for('image', slug=world.get_header_image.slug) }})">
+                     style="background-image: url({{world.get_header_image.feature_url(transform='w_2400') }})">
                     <div class="container">
                         <h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">
                             {{ world.title }}

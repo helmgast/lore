@@ -588,6 +588,20 @@ footer a {
   font-size: 20px;
 }
 
+.checkbox-list .checkbox-inline label {
+  // A checkbox list automatically gets labels added with a lot of padding to their left
+  padding-left: 0px;
+}
+
+.checkbox-list .checkbox-inline {
+  /* if list of checkboxes break to new line, they come out of phase, as the first checkbox has a different margin
+  This sets the same for all */
+  margin-left: 0px; 
+  margin-right: 10px;
+}
+
+
+
 .longtext {
   word-break: break-all;
 }
@@ -669,6 +683,10 @@ th a:hover {
 
 .table-condensed > tbody > tr > th {
   border-top: none;
+}
+
+.subproduct td {
+  border-top: none !important; /* Remove top border to make rows with free products look like part of a bigger row*/
 }
 
 .avatar {
@@ -1036,6 +1054,10 @@ top-shadow {
   text-decoration: none;
 }
 
+.card:hover .card-description, .card:hover .card-details {
+  display: auto;
+}
+
 .card-text {
   background-color: rgba(255, 255, 255, 0.95);
   border-radius: 0 0 5px 5px;
@@ -1069,6 +1091,7 @@ top-shadow {
 .card-description {
   font-size: 13px;
   overflow-y: scroll;
+  display: none;
 }
 
 .product-intro {
@@ -1089,6 +1112,7 @@ top-shadow {
   padding: 6px;
   margin-top: 0px;
   margin-bottom: 0px;
+  display: none;
 }
 
 .card-details li {

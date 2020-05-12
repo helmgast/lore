@@ -1,14 +1,11 @@
-{% if g.available_locales|length > 1 %}
-<div class="dropup">
-    <button class="btn btn-primary btn-xs" type="button" id="languageChooser" data-toggle="dropdown" aria-haspopup="true"
-            aria-expanded="true">
-        {{ get_locale().language_name.capitalize() }} <span class="caret"></span>
-    </button>
-    <ul class="dropdown-menu" aria-labelledby="languageChooser">
-        {% for locale in g.available_locales %}
-            <li><a class="btn-xs" href="{{ current_url(locale=locale) }}">{{ g.available_locales[locale] }}</a></li>
+{% if g.configured_locales|length > 1 %}
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+    <img src="https://www.countryflags.io/{{get_locale().territory}}/flat/16.png"> <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        {% for locale in g.configured_locales.values() %}
+            <li><a id="{{locale.language}}" href="{{ current_url(lang=locale.language) }}"><img src="https://www.countryflags.io/{{locale.territory}}/flat/16.png"> {{ locale.language_name.capitalize() }}</a></li>
         {% endfor %}
     </ul>
-</div>
+</li>
 {% endif %}
-

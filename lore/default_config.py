@@ -4,6 +4,7 @@
 # needed. The config.py should not use classes, just global variables.
 # All configs that should work need to have a default below, or they will be ignored by the ENV parser.
 
+
 class Config(object):
     PRODUCTION = False
     DEBUG = True
@@ -35,7 +36,7 @@ class Config(object):
     DEBUG_MAIL_OVERRIDE = 'martin@helmgast.se'
     VERSION = "No Version"
     WEBPACK_MANIFEST_PATH = '../static/manifest.json'
-    GOOGLE_SERVICE_ACCOUNT_PATH = "google_service_account.json" # Relative to root, as import tools run at CWD root
+    GOOGLE_SERVICE_ACCOUNT_PATH = "google_service_account.json"  # Relative to root, as import tools run at CWD root
     PREFERRED_URL_SCHEME = ''  # Protocol relative URLs in case no request context
     PLUGIN_PATH = '/data/www/github/'
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
@@ -62,3 +63,5 @@ class SecretConfig(object):
     STRIPE_PUBLIC_KEY = 'SECRET'
 
     GITHUB_WEBHOOK_KEY = 'SECRET'
+
+    TEXTALK_URL = 'SECRET'

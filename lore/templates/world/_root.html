@@ -11,7 +11,8 @@
 {% endblock %}
 
 {% block tour %}
-    {% if g.user and (g.user.admin or g.user in publisher.editors) and not g.user.tourdone %}
+    {# inactivated due to bugs #}
+    {% if false and g.user and (g.user.admin or g.user in publisher.editors) and not g.user.tourdone %}
         <script>
             var TOUR_OPTIONS = [
                     {

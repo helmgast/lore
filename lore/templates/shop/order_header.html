@@ -18,9 +18,17 @@
     <table width="100%">
         <tr>
             <!-- Order/customer info-->
-            <td align="center" valign="top" class="order_info">
+            <td align="center" valign="top">
                 <h3>{{ _('Order Info') }}</h3>
                 <table class="table table-condensed">
+                    {% if order.title %}
+                    <tr>
+                        <th width="30%">{{ _('Title') }}</th>
+                        <td>
+                            <strong>{% if order.source_url %}<a href="{{order.source_url}}">{{ order.title }}</a>{% else %}{{ order.title }}{%endif%}</strong>
+                        </td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <th width="30%">{{ _('Order ID') }}</th>
                         <td>
@@ -57,8 +65,9 @@
                     </tr>
                 </table>
             </td>
+            <td style="width: 20%">&nbsp;</td>
             <!-- Seller info-->
-            <td align="center" valign="top" class="order_info">
+            <td align="center" valign="top">
                 <h3>{{ _('Seller Info') }}</h3>
                 <table class="table table-condensed">
                     <tr>

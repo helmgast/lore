@@ -89,7 +89,7 @@
                                 {% endfor %}
                             </td>
                             <td>{{ fileasset.get_access_type_display() }}</td>
-                            <td>{{ fileasset.file_data.length|filesizeformat }}</td>
+                            <td>{{ fileasset.length|filesizeformat }}</td>
                             <td>
                                 <a href="{{ url_for('link', fileasset=fileasset.slug) }}"
                                    title="{% trans %}Open file{% endtrans %}"><span
@@ -113,10 +113,10 @@
         {% if modal %}  {# Modal buttons for quick filtering #}
             <div class="btn-set margin-below">
                 {% for opt in filter_options['tags'] %}
-                    {{ MACRO.ARG_LINK(opt.label, opt.kwargs, full_url=true) }}
+                    {{ MACRO.ARG_LINK(opt.label, dict(opt.kwargs, **{"_external": true})) }}
                 {% endfor %}
-                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none}, full_url=true) }}
-                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id}, full_url=true) }}
+                {{ MACRO.ARG_LINK(_('By me'), {'owner':g.user.id, 'owner__ne':none, "_external": true}) }}
+                {{ MACRO.ARG_LINK(_('By others'), {'owner':none, 'owner__ne':g.user.id, "_external": true}) }}
                 <small>Insert position:</small>
                 <div id="insert-position" class="btn-group" style="background-color: #fff" data-toggle="buttons">
                     <label class="btn btn-default btn-xs {{ 'active' if args.get('position')=='gallery-center' }}">
@@ -187,12 +187,12 @@
 {#                                {% if not patch %}#}
 {#                                    <a class="zoomable" href="#">#}
 {#                                {% endif %}#}
-                                <img class="{{ ' zoomable' if not patch }}" src="{{ url_for('image', slug = fileasset.slug, _external=true, _scheme='') }}">
+                                <img class="hello {{ ' zoomable' if not patch }}" src="{{ fileasset.feature_url(transform='w_1280,h_1280,c_limit') }}">
 {#                                {% if not patch %}#}
 {#                                    </a>#}
 {#                                {% endif %}#}
-                                <figcaption><a class="slug"
-                                               href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}" {{ 'target=_blank' if modal else '' }}>
+                                <figcaption>
+                                <a class="slug" href="{{ url_for('assets.FileAssetsView:get', id=fileasset.slug) }}" {{ 'target=_blank' if modal else '' }}>
                                     {{ fileasset.slug }}</a><br>
                                     [{{ fileasset.created_date|dateformat(format='short') }} {{ fileasset.width }}x{{ fileasset.height }}px]
                                 </figcaption>

@@ -34,30 +34,27 @@ from werkzeug.utils import secure_filename
 from wtforms import Form as OrigForm, StringField, SelectMultipleField
 from wtforms import fields as f, validators as v, widgets
 from wtforms.utils import unset_value
-from wtforms.widgets import html5, HTMLString, html_params
+from wtforms.widgets import html5, HTMLString, html_params, Select
 
-from lore.extensions import configured_locales
-from lore.model.misc import METHODS, safe_next_url
+from lore.model.misc import METHODS, localized_field_labels, safe_next_url
 from lore.model.world import EMBEDDED_TYPES, Article
+from wtforms.fields.core import UnboundField
+from wtforms.widgets.core import HiddenInput
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
-objid_matcher = re.compile(r'^[0-9a-fA-F]{24}$')
+objid_matcher = re.compile(r"^[0-9a-fA-F]{24}$")
 
 
-def generate_flash(action, name, model_identifiers, dest=''):
+def generate_flash(action, name, model_identifiers, dest=""):
     # s = u'%s %s%s %s%s' % (action, name, 's' if len(model_identifiers) > 1
     #   else '', ', '.join(model_identifiers), u' to %s' % dest if dest else '')
-    s = _('%(name)s was %(action)s', action=action, name=name)
-    flash(s, 'success')
+    s = _("%(name)s was %(action)s", action=action, name=name)
+    flash(s, "success")
     return s
 
 
-mime_types = {
-    'html': 'text/html',
-    'json': 'application/json',
-    'csv': 'text/csv'
-}
+mime_types = {"html": "text/html", "json": "application/json", "csv": "text/csv"}
 
 # import collections
 #
@@ -144,16 +141,17 @@ mime_types = {
 #         arg_fields['queryargs'] = f.FormField(key_form, separator='__')
 #     return type(model_class.__name__ + 'Args', (baseform,), arg_fields)
 
-common_args = frozenset([
-    'debug', 'as_user', 'render', 'out', 'locale', 'intent',
-    'view', 'next', 'q', 'action', 'method', 'order_by'])
+common_args = frozenset(
+    ["debug", "as_user", "render", "out", "intent", "view", "next", "q", "action", "method", "order_by"]
+)
 
 re_operators = re.compile(
-    r'__(ne|lt|lte|gt|gte|in|nin|mod|all|size|exists|exact|iexact|contains|'
-    'icontains|istartswith|endswith|iendswith|match|not__ne|not__lt|not__lte|'
-    'not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|'
-    'not__exact|not__iexact|not__contains|not__icontains|not__istartswith|'
-    'not__endswith|not__iendswith)$')
+    r"__(ne|lt|lte|gt|gte|in|nin|mod|all|size|exists|exact|iexact|contains|"
+    "icontains|istartswith|endswith|iendswith|match|not__ne|not__lt|not__lte|"
+    "not__gt|not__in|not__nin|not__mod|not__all|not__size|not__exists|"
+    "not__exact|not__iexact|not__contains|not__icontains|not__istartswith|"
+    "not__endswith|not__iendswith)$"
+)
 
 
 def prefillable_fields_parser(fields=None, **kwargs):
@@ -163,7 +161,7 @@ def prefillable_fields_parser(fields=None, **kwargs):
         msg = f"Cannot allow field names colliding with common args names: {forbidden}"
         current_app.logger.error(msg)
         exit(1)
-    extend = {'fields': fields}
+    extend = {"fields": fields}
     extend.update(kwargs)
     return dict(ItemResponse.arg_parser, **extend)
 
@@ -175,50 +173,43 @@ def filterable_fields_parser(fields=None, **kwargs):
         msg = f"Cannot allow field names colliding with common args names: {forbidden}"
         current_app.logger.error(msg)
         exit(1)
-    extend = {'order_by': lambda x: [y for y in x.lower().split(',') if y.lstrip('+-') in fields],
-              'fields': fields}
+    extend = {"order_by": lambda x: [y for y in x.lower().split(",") if y.lstrip("+-") in fields], "fields": fields}
     extend.update(kwargs)
     return dict(ListResponse.arg_parser, **extend)
 
 
-action_strings = {
-    'post': 'posted',
-    'put': 'put',
-    'patch': 'patched',
-    'delete': 'deleted'
-}
+action_strings = {"post": "posted", "put": "put", "patch": "patched", "delete": "deleted"}
 action_strings_translated = {
-    'post': _('posted'),
-    'put': _('put'),
-    'delete': _('deleted'),
-    'patch': _('patched'),
+    "post": _("posted"),
+    "put": _("put"),
+    "delete": _("deleted"),
+    "patch": _("modified"),
 }
 instance_types_translated = {
-    'article': _('The article'),
-    'world': _('The world'),
-    'publisher': _('The publisher'),
-    'user': _('The user'),
+    "article": _("The article"),
+    "world": _("The world"),
+    "publisher": _("The publisher"),
+    "user": _("The user"),
 }
 
 
 def get_root_template(out_value):
-    if out_value == 'modal':
-        return current_app.jinja_env.get_or_select_template('_modal.html')
-    elif out_value == 'fragment':
-        return current_app.jinja_env.get_or_select_template('_fragment.html')
+    if out_value == "modal":
+        return current_app.jinja_env.get_or_select_template("_modal.html")
+    elif out_value == "fragment":
+        return current_app.jinja_env.get_or_select_template("_fragment.html")
     else:
-        return current_app.jinja_env.get_or_select_template('_root.html')
+        return current_app.jinja_env.get_or_select_template("_root.html")
 
 
 class ResourceResponse(Response):
     arg_parser = {
         # none should remain for subsequent requests
-        'debug': lambda x: x.lower() == 'true',
-        'as_user': lambda x: x,
-        'render': lambda x: x if x in ['json', 'html'] else None,
-        'out': lambda x: x if x in ['modal', 'fragment'] else None,
-        'locale': lambda x: x if x in configured_locales else None,
-        'intent': lambda x: x if x.upper() in METHODS else None,
+        "debug": lambda x: x.lower() == "true",
+        "as_user": lambda x: x,
+        "render": lambda x: x if x in ["json", "html"] else None,
+        "out": lambda x: x if x in ["modal", "fragment"] else None,
+        "intent": lambda x: x if x.upper() in METHODS else None,
     }
 
     json_fields = frozenset([])
@@ -242,7 +233,7 @@ class ResourceResponse(Response):
         self.general_errors = []
 
         # To be set from from route
-        self.formats = formats or ['html', 'json']
+        self.formats = formats or ["html", "json"]
         self.args = self.parse_args(self.arg_parser, extra_args or {})
         self.auth = None
         super(ResourceResponse, self).__init__()  # init a blank flask Response
@@ -251,20 +242,23 @@ class ResourceResponse(Response):
         # Check if we have a theme arg, it should overrule the current theme
         # (e.g. if an article, override article_theme but not others)
         # Has theme in args?
-        if len(self.resource_queries) > 0 and self.resource_queries[0] == type and \
-                ('fields' in self.args and self.args['fields'].get('theme', None)):
-            paths += (self.args['fields']['theme'],)
+        if (
+            len(self.resource_queries) > 0
+            and self.resource_queries[0] == type
+            and ("fields" in self.args and self.args["fields"].get("theme", None))
+        ):
+            paths += (self.args["fields"]["theme"],)
         if type and paths:
             # != 'None' as this string may mean None in Mongoengine
-            templates = ['%s/index.html' % secure_filename(p) for p in paths if p and p != 'None']
+            templates = ["%s/index.html" % secure_filename(p) for p in paths if p and p != "None"]
             if templates:
                 try:
-                    setattr(self, '%s_theme' % type, current_app.jinja_env.select_template(templates))
+                    setattr(self, "%s_theme" % type, current_app.jinja_env.select_template(templates))
                 except TemplatesNotFound as err:
                     logger.warning(f"Can't find named themes {paths} at {templates}")
 
     def auth_or_abort(self, res=None):
-        res = res or getattr(self, 'instance', None)
+        res = res or getattr(self, "instance", None)
         auth = self.access.authorize(self.method, res=res)
         # if auth and res:
         #     # if there's an intent and a resource, we also should check that it's an allowed operation
@@ -282,38 +276,40 @@ class ResourceResponse(Response):
         rv = {}
         # This takes both instance and class variables, and order is important as instance variables overrides class
         for k, arg in chain(self.__class__.__dict__.items(), self.__dict__.items()):
-            if not isinstance(arg, types.FunctionType) and not k.startswith('_'):
+            if not isinstance(arg, types.FunctionType) and not k.startswith("_"):
                 rv[k] = arg
         return rv
 
     def render(self):
         if not self.auth:
-            abort(403, _('Authorization not performed'))
-        if self.args['render']:
-            best_type = mime_types[self.args['render']]
+            abort(403, _("Authorization not performed"))
+        if self.args["render"]:
+            best_type = mime_types[self.args["render"]]
         else:
             best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
-        if best_type == 'text/html':
+        if best_type == "text/html":
             template_args = self.get_template_args()
-            template_args['root_template'] = get_root_template(self.args.get('out', None))
+            template_args["root_template"] = get_root_template(self.args.get("out", None))
             self.set_data(render_template(self.template, **template_args))
             return self
-        elif best_type == 'application/json':
+        elif best_type == "application/json":
             # TODO this will create a new response, which is a bit of waste
             # Need to at least keep the status from before
             # if self.errors:
             #     return jsonify(errors=self.errors), self.status
             # else:
             rv = {k: getattr(self, k) for k in self.json_fields}
-            flashes = session.get('_flashes', [])
+            flashes = session.get("_flashes", [])
             if flashes:
-                rv['errors'] = []
+                rv["errors"] = []
                 for one_flash in flashes:
-                    rv['errors'].append(one_flash[1])  # Message
-                session['_flashes'] = []
+                    rv["errors"].append(one_flash[1])  # Message
+                session["_flashes"] = []
             return jsonify(rv), self.status
         else:  # csv
-            logger.warn(f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'")
+            logger.warn(
+                f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
+            )
             abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
@@ -327,9 +323,10 @@ class ResourceResponse(Response):
                 # When we check title, also check if there was a fault with the slug, as slug
                 # normally is what is not unique, but will not be in the form fields
                 # This means we will highlight the title field when slug is not unique
-                if key == 'title' and '$slug' in msg or f'${key}' in msg:
+                if key == "title" and "$slug" in msg or f"${key}" in msg:
                     self.form[key].errors.append(
-                        _('This field needs to be unique and another resource already have this value'))
+                        _("This field needs to be unique and another resource already have this value")
+                    )
                     found = True
                     break
             if not found:
@@ -338,7 +335,7 @@ class ResourceResponse(Response):
         elif isinstance(err, ValidationError):
             # TODO checkout ValidationError._format_errors()
             for k, v in list(err.errors.items()):
-                msg = v.message if hasattr(v, 'message') and v.message else str(v)
+                msg = v.message if hasattr(v, "message") and v.message else str(v)
                 if k in self.form:  # We have a field, append the error there
                     errors = self.form[k].errors
                     if isinstance(errors, dict):
@@ -349,16 +346,16 @@ class ResourceResponse(Response):
                     unknown_errors.append(msg)
         elif err:
             unknown_errors.append(str(err))
-        unknown_string = ','.join(unknown_errors) if unknown_errors else ''
+        unknown_string = ",".join(unknown_errors) if unknown_errors else ""
 
-        flash(_("Errors in form")+f" [{','.join(self.form.errors.keys())}] {unknown_string}", 'danger')
+        flash(_("Errors in form") + f" [{','.join(self.form.errors.keys())}] {unknown_string}", "danger")
         return self, status or 400
 
     @staticmethod
     def parse_args(arg_parser, extra_args):
         """Parses request args through a form that sets defaults or removes invalid entries
         """
-        args = MultiDict({'fields': MultiDict()})  # ensure we always have a fields value
+        args = MultiDict({"fields": MultiDict()})  # ensure we always have a fields value
         # values for same URL param (e.g. key=val1&key=val2)
         # req_args = CombinedMultiDict([request.args, extra_args])
         req_args = request.args.copy()
@@ -366,17 +363,17 @@ class ResourceResponse(Response):
             req_args.add(k, v)
         # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
         for k in arg_parser:
-            if k is not 'fields':
+            if k is not "fields":
                 # Defaults to empty string to ensure all keys exists
-                args[k] = arg_parser[k](req_args.get(k, ''))
+                args[k] = arg_parser[k](req_args.get(k, ""))
             else:
                 fields = arg_parser[k]
                 for q, w in req_args.items(multi=True):
                     if q not in arg_parser:  # Means its a field name, not a pre-defined arg
                         # new_k = re_operators.sub('', q)  # remove mongo operators from filter key
-                        new_k = q.split('__', 1)[0]  # allow all operators, just check field is valid
+                        new_k = q.split("__", 1)[0]  # allow all operators, just check field is valid
                         if new_k in fields:
-                            args['fields'].add(q, w)
+                            args["fields"].add(q, w)
         # print args, arg_parser
         return args
 
@@ -384,18 +381,21 @@ class ResourceResponse(Response):
 class ListResponse(ResourceResponse):
     """index, listing of resources"""
 
-    arg_parser = dict(ResourceResponse.arg_parser, **{
-        'page': lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
-        'per_page': lambda x: int(x) if x.lstrip('-').isdigit() and int(x) >= -1 else 15,
-        'view': lambda x: x.lower() if x.lower() in ['card', 'table', 'list'] else None,
-        'order_by': lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
-        'q': lambda x: x
-    })
-    method = 'list'
+    arg_parser = dict(
+        ResourceResponse.arg_parser,
+        **{
+            "page": lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
+            "per_page": lambda x: int(x) if x.lstrip("-").isdigit() and int(x) >= -1 else 15,
+            "view": lambda x: x.lower() if x.lower() in ["card", "table", "list"] else None,
+            "order_by": lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
+            "q": lambda x: x,
+        },
+    )
+    method = "list"
     pagination, filter_options = None, {}
 
-    def __init__(self, resource_view, queries, method='list', formats=None, extra_args=None):
-        list_arg_parser = getattr(resource_view, 'list_arg_parser', None)
+    def __init__(self, resource_view, queries, method="list", formats=None, extra_args=None):
+        list_arg_parser = getattr(resource_view, "list_arg_parser", None)
         if list_arg_parser:
             self.arg_parser = list_arg_parser
         super(ListResponse, self).__init__(resource_view, queries, method, formats, extra_args)
@@ -414,7 +414,7 @@ class ListResponse(ResourceResponse):
             return slug  # Is already Object ID
         elif isinstance(field, ReferenceField):
             try:
-                instance = field.document_type.objects(slug=slug).only('id').first()
+                instance = field.document_type.objects(slug=slug).only("id").first()
             except InvalidQueryError as err:
                 instance = None
             if instance:
@@ -431,13 +431,13 @@ class ListResponse(ResourceResponse):
     def prepare_query(self):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
-        if self.args['order_by']:  # is a list
-            self.query = self.query.order_by(*self.args['order_by'])
-        if self.args['fields']:
+        if self.args["order_by"]:  # is a list
+            self.query = self.query.order_by(*self.args["order_by"])
+        if self.args["fields"]:
             built_query = None
-            for k, values in self.args['fields'].lists():
+            for k, values in self.args["fields"].lists():
                 # Field name is string until first __ (operators are after)
-                field = self.model._fields[k.split('__', 1)[0]]
+                field = self.model._fields[k.split("__", 1)[0]]
                 q = Q(**{k: self.slug_to_id(field, values[0])})
                 if len(values) > 1:  # multiple values for this field, combine with or
                     for v in values[1:]:
@@ -447,27 +447,27 @@ class ListResponse(ResourceResponse):
                 else:
                     built_query = built_query._combine(q, QNode.AND)
             self.query = self.query.filter(built_query)
-        if self.args['q']:
+        if self.args["q"]:
             # Doing this twice will throw error, but we cannot guarantee we won't runt prepare_query twice
             try:
-                self.query = self.query.search_text(self.args['q']).order_by('$text_score')
+                self.query = self.query.search_text(self.args["q"]).order_by("$text_score")
             except OperationError:
                 pass
 
         for f in list(self.model._fields.keys()):
             field = self.model._fields[f]
-            if hasattr(field, 'filter_options'):
+            if hasattr(field, "filter_options"):
                 self.filter_options[f] = field.filter_options(self.model)
 
     def paginate(self):
         # TODO max query size 10000 implied here
-        per_page = int(self.args['per_page'])
-        page = int(self.args['page'])
+        per_page = int(self.args["per_page"])
+        page = int(self.args["page"])
         if per_page < 0:
             per_page = 10000
         # TODO, a fix because pagination will otherwise reset any previous .limit() set on the query.
         # https://github.com/MongoEngine/flask-mongoengine/issues/310
-        if getattr(self.query, '_limit', None):
+        if getattr(self.query, "_limit", None):
             per_page = min(per_page, self.query._limit)
             page = min(page, math.ceil(self.query._limit // per_page))  # // is integer division
 
@@ -482,40 +482,55 @@ class ListResponse(ResourceResponse):
 class ItemResponse(ResourceResponse):
     """both for getting and editing items of resources"""
 
-    json_fields = frozenset(['instance'])
-    arg_parser = dict(ResourceResponse.arg_parser, **{
-        'view': lambda x: x.lower() if x.lower() in ['markdown', 'pay', 'cart', 'details'] else None,
-        'next': lambda x: safe_next_url(x)
-    })
+    json_fields = frozenset(["instance"])
+    arg_parser = dict(
+        ResourceResponse.arg_parser,
+        **{
+            "view": lambda x: x.lower() if x.lower() in ["markdown", "pay", "cart", "details"] else None,
+            "next": lambda x: safe_next_url(x),
+        },
+    )
 
-    def __init__(self, resource_view, queries, method='get', formats=None, extra_args=None,
-                 form_class=None, extra_form_args=None):
-        item_arg_parser = getattr(resource_view, 'item_arg_parser', None)
+    def __init__(
+        self,
+        resource_view,
+        queries,
+        method="get",
+        formats=None,
+        extra_args=None,
+        form_class=None,
+        extra_form_args=None,
+    ):
+        item_arg_parser = getattr(resource_view, "item_arg_parser", None)
         if item_arg_parser:
             self.arg_parser = item_arg_parser
         super(ItemResponse, self).__init__(resource_view, queries, method, formats, extra_args)
 
         self.template = resource_view.item_template
 
-        if (self.method != 'get') or self.args['intent']:
+        if (self.method != "get") or self.args["intent"]:
             form_args = extra_form_args or {}
-            if self.args['intent']:
+            if self.args["intent"]:
                 # we want to serve a form, pre-filled with field values and parent queries
                 form_args.update({k: getattr(self, k) for k in self.resource_queries[1:]})
-                form_args.update(self.args['fields'].items())
-                action_args = MultiDict({k: v for k, v in self.args.items() if v and k not in ['fields', 'intent']})
-                action_args.update(self.args['fields'])
-                if self.args['intent'] == 'post':
+                form_args.update(self.args["fields"].items())
+                action_args = MultiDict({k: v for k, v in self.args.items() if v and k not in ["fields", "intent"]})
+                action_args.update(self.args["fields"])
+                if self.args["intent"] == "post":
                     # A post will not go to same URL, but a different on (e.g. a list endpoint without an id parameter)
-                    self.action_url = url_for(request.endpoint.replace(':get', ':post'),
-                                              **{k: v for k, v in request.view_args.items() if k != 'id'},
-                                              **action_args)
+                    self.action_url = url_for(
+                        request.endpoint.replace(":get", ":post"),
+                        **{k: v for k, v in request.view_args.items() if k != "id"},
+                        **action_args,
+                    )
                 else:
                     # Will take current endpoint (a get) and returns same url but with method from intent
-                    self.action_url = url_for(request.endpoint, method=self.args['intent'], **request.view_args, **action_args)
+                    self.action_url = url_for(
+                        request.endpoint, method=self.args["intent"], **request.view_args, **action_args
+                    )
             else:
                 # Set intent to method if we are post/put/patch as it is used in template to decide
-                self.args['intent'] = self.method
+                self.args["intent"] = self.method
             form_class = form_class or self.resource_view.form_class
             self.form = form_class(formdata=request.form, obj=self.instance, **form_args)
 
@@ -524,10 +539,10 @@ class ItemResponse(ResourceResponse):
 
     def commit(self, new_instance=None, flash=True):
         if not self.auth:
-            abort(403, _('Authorization not performed'))
+            abort(403, _("Authorization not performed"))
         new_args = dict(request.view_args)
-        new_args.pop('id', None)
-        if self.method == 'delete':
+        new_args.pop("id", None)
+        if self.method == "delete":
             self.instance.delete()
         else:
             instance = new_instance or self.instance
@@ -552,7 +567,7 @@ class ItemResponse(ResourceResponse):
         setattr(self, self.resource_queries[0] + "_form", x)
 
 
-def log_event(action, instance=None, message='', user=None, flash=True):
+def log_event(action, instance=None, message="", user=None, flash=True):
     # <datetime> <user> <action> <object> <message>
     # martin patch article(helmgast)
     # The article theArticle was patched
@@ -562,21 +577,21 @@ def log_event(action, instance=None, message='', user=None, flash=True):
         user.log(action, instance, message)
     else:
         user = "System"
-    logger.info("%s %s %s", user, action_strings.get(action, 'unknown'), " (%s)" % message if message else "")
+    logger.info("%s %s %s", user, action_strings.get(action, "unknown"), " (%s)" % message if message else "")
     if instance:
-        name = instance_types_translated.get(instance._class_name.lower(), _('The item'))
+        name = instance_types_translated.get(instance._class_name.lower(), _("The item"))
     else:
-        name = _('The item')
+        name = _("The item")
     # print name
     if flash:
         generate_flash(action_strings_translated[action], name, instance)
 
 
 def parse_out_arg(out_param):
-    if out_param == 'json':
+    if out_param == "json":
         return out_param
-    elif out_param in ['page', 'modal', 'fragment']:
-        return '_%s.html' % out_param  # to use as template path
+    elif out_param in ["page", "modal", "fragment"]:
+        return "_%s.html" % out_param  # to use as template path
         # used in Jinja
     else:
         return None  # Same as page, but set as None in order to not override template given inheritance
@@ -610,6 +625,7 @@ def route_subdomain(app, rule, **options):
 # take data from fields that exist in the form.
 # when using a fieldlist or formfield we are just encapsulating forms that work as usual.
 
+
 class ImprovedBaseForm(ModelForm):
 
     # TODO if fields_to_populate are set to use form keys, a deleted field may mean
@@ -640,24 +656,19 @@ class ArticleBaseForm(ImprovedBaseForm):
     def process(self, formdata=None, obj=None, **kwargs):
         super(ArticleBaseForm, self).process(formdata, obj, **kwargs)
         # remove all *article fields that don't match new type
-        typedata = Article.type_data_name(self.data.get('type', 'default'))
+        typedata = Article.type_data_name(self.data.get("type", "default"))
         for embedded_type in EMBEDDED_TYPES:
             if embedded_type != typedata:
                 del self._fields[embedded_type]
 
     def populate_obj(self, obj, fields_to_populate=None):
         if not type(obj) is Article:
-            raise TypeError('ArticleBaseForm can only handle Article models')
-        if 'type' in self.data:
-            new_type = self.data['type']
+            raise TypeError("ArticleBaseForm can only handle Article models")
+        if "type" in self.data:
+            new_type = self.data["type"]
             # Tell the Article we have changed type
             obj.change_type(new_type)
         super(ArticleBaseForm, self).populate_obj(obj, fields_to_populate)
-
-
-class MultiCheckboxField(f.SelectMultipleField):
-    widget = widgets.ListWidget(prefix_label=False)
-    option_widget = widgets.CheckboxInput()
 
 
 class TagField(SelectMultipleField):
@@ -676,7 +687,7 @@ class TagField(SelectMultipleField):
 
     def iter_choices(self):
         # Selects distinct values for the field tags in the queryset that represents all documents for this model
-        for value in self.model.objects().distinct('tags'):
+        for value in self.model.objects().distinct("tags"):
             selected = self.data is not None and self.coerce(value) in self.data
             yield (value, value, selected)
 
@@ -689,29 +700,54 @@ class TagField(SelectMultipleField):
             if len(self.data) == 0:
                 self.data = None  # needed to actually clear the value in Mongoengine
         except ValueError:
-            raise ValueError(self.gettext('Invalid choice(s): one or more data inputs could not be coerced'))
+            raise ValueError(self.gettext("Invalid choice(s): one or more data inputs could not be coerced"))
 
 
 class SelectizeWidget(object):
-    def __init__(self, html_tag='ul', prefix_label=True):
+    def __init__(self, html_tag="ul", prefix_label=True):
         self.html_tag = 'input type="text"'  # ignore
         self.prefix_label = prefix_label
 
     def __call__(self, field, **kwargs):
+        kwargs.setdefault("id", field.id)
+        kwargs.setdefault("name", field.id)
+        html_class = kwargs.get("class", "")
+        kwargs["class"] = html_class + " selectize"
+
+        return HTMLString(
+            '<%s %s value="%s">'
+            % (self.html_tag, html_params(**kwargs), ", ".join([item.slug for item in field.data]))
+        )
+
+
+class ThumbSelectWidget(Select):
+    # Modofied __call__ that takes all arguments returned from field.iter_choices,
+    # allowing custom data-attributes for example
+    def __call__(self, field, **kwargs):
         kwargs.setdefault('id', field.id)
-        kwargs.setdefault('name', field.id)
-        html_class = kwargs.get('class', '')
-        kwargs['class'] = html_class + ' selectize'
+        if self.multiple:
+            kwargs['multiple'] = True
+        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
+        for val, label, selected, option_kwargs in field.iter_choices():
+            html.append(self.render_option(val, label, selected, **option_kwargs))
+        html.append('</select>')
+        return HTMLString(''.join(html))
 
-        return HTMLString('<%s %s value="%s">' % (self.html_tag, html_params(**kwargs),
-                                                  ', '.join([item.slug for item in field.data])))
 
+class HiddenModelField(ModelSelectField):
+    widget = HiddenInput()
+
+    def _value(self):
+        return self.data.id if self.data else None
 
 class OrderedModelSelectMultipleField(ModelSelectMultipleField):
+
+    widget = ThumbSelectWidget(multiple=True)
+
     # Replaces inherited iter_choices with one that yields selected items first in right order
     def iter_choices(self):
         if self.allow_blank:
-            yield (u'__None', self.blank_text, self.data is None)
+            yield ("__None", self.blank_text, self.data is None, {})
 
         if self.queryset is None:
             return
@@ -726,17 +762,52 @@ class OrderedModelSelectMultipleField(ModelSelectMultipleField):
 
         for obj in selected:
             label = self.label_attr and getattr(obj, self.label_attr) or obj
-            yield (obj.id, label, True)
-        for obj in self.queryset:
+            kwargs = {}
+            if hasattr(obj, "thumb_url"):
+                kwargs["data-thumb-url"] = getattr(obj, "thumb_url", "")
+            if isinstance(self.widget, ThumbSelectWidget):
+                yield (obj.id, label, True, kwargs)
+            else:
+                yield (obj.id, label, True)
+        for obj in self.queryset[:100]:  # TODO crazy hack. Some query sets result in too many objects, so we cap it at 100
             label = self.label_attr and getattr(obj, self.label_attr) or obj
+            kwargs = {}
+            if hasattr(obj, "thumb_url"):
+                kwargs["data-thumb-url"] = getattr(obj, "thumb_url", "")
             if obj not in selected:
-                yield (obj.id, label, False)
+                if isinstance(self.widget, ThumbSelectWidget):
+                    yield (obj.id, label, False, kwargs)
+                else:
+                    yield (obj.id, label, False)
 
     def process_formdata(self, valuelist):
         super(OrderedModelSelectMultipleField, self).process_formdata(valuelist)
         if self.data and len(self.data) > 1:
             # Sort based on the order of the valuelist given
             self.data.sort(key=lambda obj: valuelist.index(str(obj.id)))
+
+
+class CheckboxListWidget(object):
+    """
+    Renders a list of fields as a `ul` or `ol` list.
+
+    This is used for fields which encapsulate many inner fields as subfields.
+    The widget will try to iterate the field to get access to the subfields and
+    call them to render them.
+
+    If `prefix_label` is set, the subfield's label is printed before the field,
+    otherwise afterwards. The latter is useful for iterating radios or
+    checkboxes.
+    """
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('class', 'form-group')
+        html = ['<%s %s>' % ('div', html_params(**kwargs))]
+        for subfield in field:
+            html.append('<div class="checkbox-inline">%s %s</div>' % (subfield(), subfield.label))
+        html.append('</div>')
+        return HTMLString(''.join(html))
 
 
 class DisabledField(StringField):
@@ -752,73 +823,94 @@ class DisabledField(StringField):
 
 
 class ImprovedModelConverter(ModelConverter):
-
-    @converts('EmbeddedDocumentField')
+    @converts("EmbeddedDocumentField")
     def conv_EmbeddedDocument(self, model, field, kwargs):
         """An improved converter for the EmbeddedDocumentField. It uses the CSRF-less form class
         to not get repeated CSRF in the same parent form (automatically added by flask-wtf).
         It uses the ImprovedModelConverter also to fields within the EmbeddedDocument.
         Finally, it will pick up `only` and `exclude` lists from Mongoengine field)."""
 
-        only = getattr(field, 'only', None)
-        exclude = getattr(field, 'exclude', None)
+        only = getattr(field, "only", []) + kwargs.pop("only", [])
+        exclude = getattr(field, "exclude", []) + kwargs.pop("exclude", [])
+        field_args = kwargs.pop("field_args", None)
+        form_class = kwargs.pop("form_class", None)
         kwargs = {
-            'validators': [],
-            'filters': [],
-            'default': field.default or field.document_type_obj,
+            "validators": [],
+            "filters": [],
+            "default": field.default or field.document_type_obj,
             # This separator is added between parent and child field names to see the hierarchy.
-            # Using __ means we use the same naming scheme as mongoening, e.g 'author__name'.
+            # Using __ means we use the same naming scheme as mongoengine, e.g 'author__name'.
             # This means we can use the embedded document field names as is for querying Mongoengine.
-            'separator': '__'
+            # Breaks FieldList if used
+            # "separator": "__",
         }
 
-        form_class = model_form(field.document_type_obj, only=only, exclude=exclude, converter=ImprovedModelConverter(), base_class=OrigForm)
+        if not form_class:
+            form_class = model_form(
+                field.document_type_obj,
+                only=only,
+                exclude=exclude,
+                converter=ImprovedModelConverter(),
+                base_class=OrigForm,
+                field_args=field_args
+            )
         return f.FormField(form_class, **kwargs)
 
-    @converts('ListField')
+    @converts("ListField")
     def conv_List(self, model, field, kwargs):
-        if field.name == 'tags':
+        list_type = kwargs.pop('list_type', "")
+        if field.name == "tags" or list_type == "tags":
             return TagField(model=model, **kwargs)
+        # elif kwargs.get('list_type', "") == "multicheck":
+        #     return MultiCheckboxField(model=model, **kwargs)
         elif isinstance(field.field, ReferenceField):
-            kwargs[
-                'allow_blank'] = not field.required  # Make reference fields inside listfields to allow blanks
+            kwargs["allow_blank"] = not field.required  # Make reference fields inside listfields to allow blanks
             return OrderedModelSelectMultipleField(model=field.field.document_type, **kwargs)
         if field.field.choices:
-            kwargs['multiple'] = True
+            kwargs["multiple"] = True
             return self.convert(model, field.field, kwargs)
         field_args = kwargs.pop("field_args", {})
         unbound_field = self.convert(model, field.field, field_args)
-        unacceptable = {
-            'validators': [],
-            'filters': [],
-            'min_entries': kwargs.get('min_entries', 0)
-        }
+        unacceptable = {"validators": [], "filters": [], "min_entries": kwargs.get("min_entries", 0)}
         kwargs.update(unacceptable)
         return f.FieldList(unbound_field, **kwargs)
 
-    @converts('ReferenceField')
+    @converts("MapField")
+    def conv_MapField(self, model, field, kwargs):
+        field_args = kwargs.pop("field_args", {})
+        if field.name.endswith("_i18n") or field.name.endswith("_translated") and "sub_labels" not in kwargs and "label" in kwargs:
+            kwargs["sub_labels"] = localized_field_labels(kwargs["label"])
+        unbound_field = self.convert(model, field.field, field_args)
+        unacceptable = {
+            "validators": [],
+            "filters": [],
+        }
+        kwargs.update(unacceptable)
+        return MapFormField(unbound_field, **kwargs)
+
+    @converts("ReferenceField")
     def conv_Reference(self, model, field, kwargs):
-        kwargs['allow_blank'] = not field.required
+        kwargs["allow_blank"] = not field.required
         return ModelSelectField(model=field.document_type, **kwargs)
 
-    @converts('URLField')
+    @converts("URLField")
     def conv_URL(self, model, field, kwargs):
-        kwargs['validators'].append(v.URL())
+        kwargs["validators"].append(v.URL())
         self._string_common(model, field, kwargs)
-        kwargs.setdefault('widget', html5.URLInput())  # Set if not set from before
+        kwargs.setdefault("widget", html5.URLInput())  # Set if not set from before
         return NoneStringField(**kwargs)
 
-    @converts('EmailField')
+    @converts("EmailField")
     def conv_Email(self, model, field, kwargs):
-        kwargs['validators'].append(v.Email())
+        kwargs["validators"].append(v.Email())
         self._string_common(model, field, kwargs)
-        kwargs.setdefault('widget', html5.EmailInput())  # Set if not set from before
+        kwargs.setdefault("widget", html5.EmailInput())  # Set if not set from before
         return NoneStringField(**kwargs)
 
-    @converts('IntField')
+    @converts("IntField")
     def conv_Int(self, model, field, kwargs):
         self._number_common(model, field, kwargs)
-        kwargs.setdefault('widget', html5.NumberInput(step='1'))  # Set if not set from before
+        kwargs.setdefault("widget", html5.NumberInput(step="1"))  # Set if not set from before
         return f.IntegerField(**kwargs)
 
     # Temporarily not used. datetime HTML5 inputs are in unclear support and cant handle seconds
@@ -827,28 +919,136 @@ class ImprovedModelConverter(ModelConverter):
     #   kwargs.setdefault('widget', html5.DateTimeInput()) # Set if not set from before
     #   return f.DateTimeField(**kwargs)
 
-    @converts('FileField')
+    @converts("FileField")
     def conv_File(self, model, field, kwargs):
         # TODO add validators
         #     FileRequired(),
         #       FileAllowed(['jpg', 'png'], 'Images only!')
         return f.FileField(**kwargs)
 
-    @converts('StringField')
+    @converts("StringField")
     def conv_String(self, model, field, kwargs):
         if field.regex:
-            kwargs['validators'].append(v.Regexp(regex=field.regex))
+            kwargs["validators"].append(v.Regexp(regex=field.regex))
         self._string_common(model, field, kwargs)
-        if 'password' in kwargs:
-            if kwargs.pop('password'):
+        if "password" in kwargs:
+            if kwargs.pop("password"):
                 return f.PasswordField(**kwargs)
         if field.max_length and field.max_length < 100:  # changed from original code
             return f.StringField(**kwargs)
         return f.TextAreaField(**kwargs)
 
-    @converts('DynamicField')
+    @converts("DynamicField")
     def conv_DynamicField(self, model, field, kwargs):
         return JSONField(**kwargs)
+
+
+class MapFormField(f.Field):
+    """A field that holds a dict of fields within it.
+
+     Arguments:
+         f {[type]} -- [description]
+    """
+
+    def __init__(self, unbound_field, label=None, validators=None, default=None, sub_labels=None, **kwargs):
+        super(MapFormField, self).__init__(label, validators, default=default, **kwargs)
+        if self.filters:
+            raise TypeError("MapFormField does not accept any filters. Instead, define them on the enclosed field.")
+        assert isinstance(unbound_field, UnboundField), "Field must be unbound, not a field class"
+        self.unbound_field = unbound_field
+        self.sub_labels = sub_labels
+        self._prefix = kwargs.get("_prefix", "")
+
+    def process(self, formdata, dict_data=unset_value):
+        """Takes incoming formdata and optional start data to populate the inner fields with.
+        Formdata overrides start data.
+        Start data is built by provided dict_data (usually from a database object) but it will
+        be updated if there is additional data in default data for this field.
+
+        Arguments:
+            formdata {[type]} -- [description]
+
+        Keyword Arguments:
+            data {[type]} -- [description] (default: {unset_value})
+        """
+        # TODO how to handle empty strings and None, any special?
+
+        self.entries = {}
+        default_data = {}
+        try:
+            default_data = self.default()
+        except TypeError:
+            default_data = self.default or {}
+
+        if dict_data is unset_value or not dict_data or not isinstance(dict_data, dict):
+            dict_data = default_data
+        else:
+            # Merge default and provided data, but dict_data overrides default_data
+            dict_data = dict(default_data, **dict_data)
+
+        keys = set(self._extract_keys(self.name, formdata)) if formdata else dict_data.keys()
+
+        for key in keys:
+            self._add_entry(key, formdata, dict_data.get(key, unset_value))
+
+    def _add_entry(self, key, formdata=None, data=unset_value):
+        name = f"{self.short_name}-{key}"
+        id = f"{self.id}-{key}"
+        bind_kwargs = {
+            "form": None,
+            "name": name,
+            "prefix": self._prefix,
+            "id": id,
+            "_meta": self.meta,
+            "translations": self._translations,
+        }
+        if self.sub_labels and isinstance(self.sub_labels, dict) and key in self.sub_labels:
+            bind_kwargs["label"] = self.sub_labels[key]
+        field = self.unbound_field.bind(**bind_kwargs)
+        field.process(formdata, data)  # Populate the subfield with it's data
+        self.entries[key] = field
+        return field
+
+    def _extract_keys(self, prefix, formdata):
+        """
+        Yield indices of any keys with given prefix (name).
+
+        formdata must be an object which will produce keys when iterated.  For
+        example, if field 'foo' contains keys 'foo-0-bar', 'foo-1-baz', then
+        the numbers 0 and 1 will be yielded, but not neccesarily in order.
+        """
+        offset = len(prefix) + 1
+        for k in formdata:
+            if k.startswith(prefix):
+                k = k[offset:].split("-", 1)[0]
+                if k:
+                    yield k
+
+    def populate_obj(self, obj, name):
+        _fake = type(str("_fake"), (object,), {})
+
+        output = {}
+        for key in self.entries:
+            fake_obj = _fake()
+            fake_obj.data = None
+            self.entries[key].populate_obj(fake_obj, "data")
+            output[key] = fake_obj.data
+        setattr(obj, name, output)
+
+    def __iter__(self):
+        return iter(self.entries.values())
+
+    def __len__(self):
+        return len(self.entries)
+
+    def __getitem__(self, key):
+        return self.entries[key]
+
+    @property
+    def data(self):
+        return {k: f.data for k, f in self.entries.items()}
+
+    widget = widgets.TableWidget()
 
 
 class ResourceError(Exception):
@@ -857,19 +1057,19 @@ class ResourceError(Exception):
         401: _("Unauthorized access, please login"),
         403: _("Forbidden, this is not an allowed operation"),
         404: _("Resource not found"),
-        500: _("Internal server error")
+        500: _("Internal server error"),
     }
 
     def __init__(self, status_code, message=None, r=None, field_errors=None, template=None, template_vars=None):
-        message = message if message else self.default_messages.get(status_code, u"%s" % _('Unknown error'))
+        message = message if message else self.default_messages.get(status_code, "%s" % _("Unknown error"))
         self.r = r
         if r:
-            form = getattr(r, 'form', None)
+            form = getattr(r, "form", None)
             self.field_errors = form.errors if form else None
-            self.template = getattr(r, 'template', None)
+            self.template = getattr(r, "template", None)
             self.template_vars = r
         if status_code == 400 and field_errors:
-            message += u", invalid fields: \n%s" % pprint.pformat(field_errors)
+            message += ", invalid fields: \n%s" % pprint.pformat(field_errors)
         self.message = message
         self.status_code = status_code
 
@@ -880,14 +1080,18 @@ class ResourceError(Exception):
         if template_vars:
             self.template_vars = template_vars
 
-        logger.warning(u"%d: %s%s", self.status_code, self.message,
-                       u"\n%s\nin resource: \n%s\nwith formdata:\n%s" %
-                       (request.url, pprint.pformat(self.r), pprint.pformat(dict(request.form))))
+        logger.warning(
+            "%d: %s%s",
+            self.status_code,
+            self.message,
+            "\n%s\nin resource: \n%s\nwith formdata:\n%s"
+            % (request.url, pprint.pformat(self.r), pprint.pformat(dict(request.form))),
+        )
         Exception.__init__(self, "%i: %s" % (status_code, message))
 
 
 class Authorization(object):
-    def __init__(self, is_authorized, message='', privileged=False, only_fields=None, error_code=403):
+    def __init__(self, is_authorized, message="", privileged=False, only_fields=None, error_code=403):
         self.is_authorized = is_authorized
         self.message = message
         self.error_code = error_code
@@ -898,8 +1102,10 @@ class Authorization(object):
         self.only_fields = only_fields
 
     def __repr__(self):
-        return u"%s%s" % (
-            "Authorized" if self.is_authorized else "UNAUTHORIZED", u": %s" % self.message if self.message else "")
+        return "%s%s" % (
+            "Authorized" if self.is_authorized else "UNAUTHORIZED",
+            ": %s" % self.message if self.message else "",
+        )
 
     def is_privileged(self):
         return self.privileged
@@ -910,29 +1116,30 @@ class Authorization(object):
 
 # Checks if user is authorized to access this resource
 class ResourceAccessPolicy(object):
-    translate = {'post': 'new', 'patch': 'edit', 'put': 'edit', 'index': 'list', 'delete': 'edit', 'get': 'view'}
-    new_allowed = Authorization(False, _('Creating new resource is not allowed'), error_code=403)
+    translate = {"post": "new", "patch": "edit", "put": "edit", "index": "list", "delete": "edit", "get": "view"}
+    new_allowed = Authorization(False, _("Creating new resource is not allowed"), error_code=403)
 
     def authorize(self, op, user=None, res=None):
         op = self.translate.get(op, op)  # TODO temporary translation between old and new op words, e.g. patch vs edit
         if not user:
             user = g.user
 
-        if op == 'list':
+        if op == "list":
             return Authorization(True, _("List is allowed"))
 
-        if op == 'new':
+        if op == "new":
             return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.new_allowed)
 
-        if op == 'view':  # If list, resource refers to a parent resource
+        if op == "view":  # If list, resource refers to a parent resource
             if not res:
                 return Authorization(True, _("Viewing an empty form is allowed"))
-            return self.is_resource_public(op, res) or self.is_user(op, user, res) and (
-                   self.is_admin(op, user, res) or
-                   self.is_editor(op, user, res) or
-                   self.is_reader(op, user, res))
+            return (
+                self.is_resource_public(op, res)
+                or self.is_user(op, user, res)
+                and (self.is_admin(op, user, res) or self.is_editor(op, user, res) or self.is_reader(op, user, res))
+            )
 
-        if op == 'edit' or op == 'delete':
+        if op == "edit" or op == "delete":
             if not res:
                 return Authorization(False, _("Can't edit/delete a None resource"), error_code=403)
             return self.is_user(op, user, res) and (self.is_admin(op, user, res) or self.is_editor(op, user, res))

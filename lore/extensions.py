@@ -25,14 +25,17 @@ from werkzeug.urls import url_decode
 
 toolbar = DebugToolbarExtension()
 
-class PatchedRouteListDebugPanel(RouteListDebugPanel):    
+
+class PatchedRouteListDebugPanel(RouteListDebugPanel):
     # Patches the Route List Panel to include a template that shows hosts
     def content(self):
         return render_template("includes/patched_route_list.html", routes=self.routes)
 
+
 # Monkey patch to only show toolbar if in request args
 def new_show_toolbar(self):
-    return 'debug' in request.args
+    return "debug" in request.args
+
 
 toolbar._show_toolbar = types.MethodType(new_show_toolbar, toolbar)
 
@@ -41,6 +44,7 @@ class PrefixMiddleware(object):
     """
     Runs this Lore instance after a prefix in the URI, e.g. domain.com/prefix/<normal site>
     """
+
     def __init__(self, app, prefix):
         self.app = app
         self.prefix = prefix
@@ -49,12 +53,12 @@ class PrefixMiddleware(object):
 
     def __call__(self, environ, start_response):
         # Adds a prefix before all URLs consumed and produced
-        if environ['PATH_INFO'].startswith(self.prefix):
-            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
-            environ['SCRIPT_NAME'] = self.prefix
+        if environ["PATH_INFO"].startswith(self.prefix):
+            environ["PATH_INFO"] = environ["PATH_INFO"][len(self.prefix) :]
+            environ["SCRIPT_NAME"] = self.prefix
             return self.app(environ, start_response)
         else:
-            start_response('404', [('Content-Type', 'text/plain')])
+            start_response("404", [("Content-Type", "text/plain")])
             return ["This url does not belong to the app.".encode()]
 
 
@@ -62,23 +66,23 @@ class MethodRewriteMiddleware(object):
     """Rewrites POST with ending url /patch /put /delete into a proper PUT, PATCH, DELETE.
     Also has potential to add a prefix"""
 
-    applied_methods = ['PUT', 'PATCH', 'DELETE']
+    applied_methods = ["PUT", "PATCH", "DELETE"]
 
     def __init__(self, app):
         self.app = app
 
     def __call__(self, environ, start_response):
-        if environ['REQUEST_METHOD'] == 'POST':
-            args = url_decode(environ['QUERY_STRING'])
-            method = args.get('method', '').upper()
+        if environ["REQUEST_METHOD"] == "POST":
+            args = url_decode(environ["QUERY_STRING"])
+            method = args.get("method", "").upper()
             try:
                 # ensure UTF-8 not byte
-                method = method.decode('utf-8')
+                method = method.decode("utf-8")
             except AttributeError:
-                pass 
+                pass
             if method and method in self.applied_methods:
                 # method = method.encode('ascii', 'replace')
-                environ['REQUEST_METHOD'] = method
+                environ["REQUEST_METHOD"] = method
         return self.app(environ, start_response)
 
 
@@ -114,10 +118,24 @@ class MethodRewriteMiddleware(object):
 #         return self.default if self.default else value
 
 
+class NotAnyConverter(BaseConverter):
+    """Matches if one of the items are not provided.  Items can either be Python
+    identifiers or strings::
+        Rule('/<not(about, help, imprint, class, "foo,bar"):page_name>')
+    :param map: the :class:`Map`.
+    :param items: this function accepts the possible items as positional
+                  arguments.
+    """
+
+    def __init__(self, map, *items):
+        BaseConverter.__init__(self, map)
+        self.regex = f"(?!{'|'.join([re.escape(x) for x in items])}).+"
+
+
 class LoreRule(Rule):
     allow_domains = False
     default_host = None
-    re_sortkey = re.compile(r'[^/<]')
+    re_sortkey = re.compile(r"[^/<]")
     match_order = None
 
     def bind(self, map, rebind=False):
@@ -135,13 +153,13 @@ class LoreRule(Rule):
 
         if thehost and not self.allow_domains:
             self.rule = "/host_" + thehost + "/" + self.rule.lstrip("/")
-            self.subdomain = ''  # Hack, parent bind will check if None, '' will be read as having one
-            self.host = ''
+            self.subdomain = ""  # Hack, parent bind will check if None, '' will be read as having one
+            self.host = ""
         else:
-            self.host = thehost or '<pub_host>'
+            self.host = thehost or "<pub_host>"
             # self.host = thehost or self.default_host
 
-        self.match_order = LoreRule.re_sortkey.sub('', self.rule)
+        self.match_order = LoreRule.re_sortkey.sub("", self.rule)
         # print(self.host + '|' + self.rule)
         super(LoreRule, self).bind(map, rebind)
 
@@ -163,7 +181,7 @@ class LoreRule(Rule):
 
 def db_config_string(app):
     # Clean to remove password
-    return re.sub(r':([^/]+?)@', ':<REMOVED_PASSWORD>@', app.config['MONGODB_HOST'])
+    return re.sub(r":([^/]+?)@", ":<REMOVED_PASSWORD>@", app.config["MONGODB_HOST"])
 
 
 def is_db_empty(the_db):
@@ -180,57 +198,83 @@ class MongoJSONEncoder(JSONEncoder):
         elif isinstance(o, ObjectId):
             return str(o)
         elif isinstance(o, Pagination):
-            return {'page': o.page, 'per_page': o.per_page, 'pages': o.pages, 'total': o.total}
+            return {"page": o.page, "per_page": o.per_page, "pages": o.pages, "total": o.total}
         if isinstance(o, _LazyString):  # i18n Babel uses lazy strings, need to be treated as string here
             return str(o)
         return JSONEncoder.default(self, o)
 
 
 babel = Babel()
-configured_locales = set()
+
+configured_locales = {}
+configured_langs = {}
+lang_prefix_rule = ""
+not_lang_prefix_rule = ""
+
+
+def setup_locales(app):
+    global configured_locales
+    global configured_langs
+    global lang_prefix_rule
+    global not_lang_prefix_rule
+
+    configured_locales = {k: Locale.parse(k) for k in app.config.get("BABEL_AVAILABLE_LOCALES")}
+    configured_langs = {k.split("_")[0]: loc for k, loc in configured_locales.items()}
+    lang_prefix_rule = "<any(" + ",".join(configured_langs.keys()) + "):lang>"
+    not_lang_prefix_rule = "<not(" + ",".join(configured_langs.keys()) + "):"
+
 
 
 def pick_locale():
-    """
-    Called by Flask Babel on each request to determine which locale to use, subsequently cached during request.
+    g.configured_locales = configured_locales
+    g.configured_langs = configured_langs
+    if request and g and "lang" in g:
+        if g.lang in configured_langs:
+            return configured_langs[g.lang]
+    return None  # Makes babel choose it's default locale
 
-    - There are two types of available locales - the content and the interface.
-    - No content locale means it can be assumed that there is no content to localize (only interface)
-    - Content locales need to be set in g object before any translation happens, or you need to call refresh() on Babel to
-      run this function again
-    - User locale preference is either a single choice from URL or cookie, otherwise from HTTP request lang.
-    - Never allow mismatch of interface and content locale.
-    - If not match can be made, return 404 if the locale was specified in URL, otherwise fallback to default locale
-    (consider always making locale part of URL to have no ambiguity)
 
-    :return:
-    """
+# def pick_locale():
+#     """
+#     Called by Flask Babel on each request to determine which locale to use, subsequently cached during request.
 
-    if not request or not g:
-        return current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
+#     - There are two types of available locales - the content and the interface.
+#     - No content locale means it can be assumed that there is no content to localize (only interface)
+#     - Content locales need to be set in g object before any translation happens, or you need to call refresh() on Babel to
+#       run this function again
+#     - User locale preference is either a single choice from URL or cookie, otherwise from HTTP request lang.
+#     - Never allow mismatch of interface and content locale.
+#     - If not match can be made, return 404 if the locale was specified in URL, otherwise fallback to default locale
+#     (consider always making locale part of URL to have no ambiguity)
 
-    content_locales = g.get('content_locales', None)
-    g.available_locales = {k: Locale.parse(k).language_name.capitalize() for k in
-                           (configured_locales & content_locales if content_locales else configured_locales)}
+#     :return:
+#     """
 
-    if 'locale' in request.args:
-        preferred_locale = request.args['locale']
-        if preferred_locale not in g.available_locales:
-            # Hard abort as URL specified an unavailable locale
-            request.babel_locale = babel.default_locale # Need to set this as the exception will terminate the locale flow early
-            abort(404,
-                  u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
-        else:
-            session['locale'] = preferred_locale
-    elif 'locale' in session:
-        preferred_locale = session.get('locale')
-    else:
-        preferred_locale = request.accept_languages.best_match(list(g.available_locales.keys()))
-    if preferred_locale not in g.available_locales:
-        return None  # Babel will go to its default
+#     if not request or not g:
+#         return current_app.config.get('BABEL_DEFAULT_LOCALE', 'en')
 
-    # print "Got lang %s, available_locale %s" % (preferred_locale, g.available_locales)
-    return preferred_locale
+#     content_locales = g.get('content_locales', None)
+#     g.available_locales = {k: Locale.parse(k).language_name.capitalize() for k in
+#                            (configured_locales & content_locales if content_locales else configured_locales)}
+
+#     if 'locale' in request.args:
+#         preferred_locale = request.args['locale']
+#         if preferred_locale not in g.available_locales:
+#             # Hard abort as URL specified an unavailable locale
+#             request.babel_locale = babel.default_locale  # Need to set this as the exception will terminate the locale flow early
+#             abort(404,
+#                   u"Unsupported locale %s for this resource (supports %s)" % (preferred_locale, g.available_locales))
+#         else:
+#             session['locale'] = preferred_locale
+#     elif 'locale' in session:
+#         preferred_locale = session.get('locale')
+#     else:
+#         preferred_locale = request.accept_languages.best_match(list(g.available_locales.keys()))
+#     if preferred_locale not in g.available_locales:
+#         return None  # Babel will go to its default
+
+#     # print "Got lang %s, available_locale %s" % (preferred_locale, g.available_locales)
+#     return preferred_locale
 
 
 csrf = CSRFProtect()
@@ -239,29 +283,30 @@ csrf = CSRFProtect()
 # Inspired by flask webpack but without any cruft
 def init_assets(app):
     try:
-        with app.open_resource(app.config.get('WEBPACK_MANIFEST_PATH'), 'r') as stats_json:
+        with app.open_resource(app.config.get("WEBPACK_MANIFEST_PATH"), "r") as stats_json:
             app.assets = load(stats_json)
     except IOError as io:
         raise RuntimeError(
             "Asset management requires 'WEBPACK_MANIFEST_PATH' to be set and "
-            "it must point to a valid json file. It was %s. %s" % (app.config.get('WEBPACK_MANIFEST_PATH'), io))
+            "it must point to a valid json file. It was %s. %s" % (app.config.get("WEBPACK_MANIFEST_PATH"), io)
+        )
 
 
 class GalleryList(Treeprocessor):
     def run(self, root):
-        for ul in root.findall('ul'):
+        for ul in root.findall("ul"):
             if len(ul) and ul[0].text:
                 h_text = ul[0].text.strip()
-                if h_text in ['gallery-center', 'gallery-wide', 'gallery-card']:
-                    ul.set('class', 'gallery %s' % h_text)
-                    ul[0].set('class', 'hide')
+                if h_text in ["gallery-center", "gallery-wide", "gallery-card"]:
+                    ul.set("class", "gallery %s" % h_text)
+                    ul[0].set("class", "hide")
                     for li in list(ul)[1:]:
-                        li.set('class', 'gallery-item')
-                        img = li.find('.//img')
+                        li.set("class", "gallery-item")
+                        img = li.find(".//img")
                         if img is not None:
-                            alt = img.get('alt', None)
+                            alt = img.get("alt", None)
                             if alt:
-                                li.set('title', alt)
+                                li.set("title", alt)
                                 # a_el = etree.Element('a')
                                 # a_el.set('href', '#')
                                 # a_el.set('class', 'zoomable')
@@ -276,6 +321,7 @@ class GalleryList(Treeprocessor):
                                 # # however, they may be nested in other tags, e.g. a
                                 # if ''.join(txts).strip() == '':  # All text nodes empty in the list
 
+
 # Simpler version that only looks for lists of images
 # class GalleryList(Treeprocessor):
 #     def run(self, root):
@@ -289,14 +335,14 @@ class GalleryList(Treeprocessor):
 
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
-        md.treeprocessors['gallery'] = GalleryList()
+        md.treeprocessors["gallery"] = GalleryList()
 
 
 def build_md_filter(md_instance):
     @evalcontextfilter
     def markdown_filter(eval_ctx, stream):
         if not stream:
-            return Markup('')
+            return Markup("")
         elif eval_ctx.autoescape:
             return Markup(md_instance.convert(jinja2.escape(stream)))
         else:
@@ -306,19 +352,16 @@ def build_md_filter(md_instance):
 
 
 def enhance_jinja_loader(app):
-    plugin_loader = jinja2.FileSystemLoader(['plugins'])
-    plugins = [p.split('/')[0] for p in plugin_loader.list_templates() if p.endswith("index.html")]
+    plugin_loader = jinja2.FileSystemLoader(["plugins"])
+    plugins = [p.split("/")[0] for p in plugin_loader.list_templates() if p.endswith("index.html")]
     app.logger.debug("Loaded templates: %s" % plugins)
     app.plugins = plugins
-    return jinja2.ChoiceLoader([
-        app.jinja_loader,
-        plugin_loader
-    ])
+    return jinja2.ChoiceLoader([app.jinja_loader, plugin_loader])
 
 
 class SilentUndefined(Undefined):
     def _fail_with_undefined_error(self, *args, **kwargs):
-        current_app.logger.warning(f'JINJA2: undefined in template {request.url}!')
+        current_app.logger.warning(f"JINJA2: undefined in template {request.url}!")
         return None
 
 
@@ -335,6 +378,7 @@ def dict_with(value, **kwargs):
     z = value.copy()
     z.update(kwargs)
     return z
+
 
 def first_p_length(string):
     string = string.strip()

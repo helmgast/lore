@@ -10,7 +10,7 @@
 
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new', res=publisher)) %}
-        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', id='post'), 'New world') }}
+        {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', id='post'), _('New world')) }}
     {% endcall %}
 {% endblock %}
 

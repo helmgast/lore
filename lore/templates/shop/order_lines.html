@@ -3,7 +3,7 @@
 <tr>
     <td>
 
-        <h3>{{ _('Products') }}</h3>
+        <h3 id="products">{{ _('Products') }}</h3>
         <table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if args and args['view'] == 'cart' and order_form and order_form.order_lines }}>
             <tr>
                 <th colspan=2></th>
@@ -11,23 +11,30 @@
                 <th style="text-align:left; vertical-align:bottom">{{ _('Price') }}</th>
             </tr>
             {% for line in order.order_lines %}
-                {% if line.product.status != 'hidden' %}
-                    <tr class="product">
-                        <td>{% if line.product.get_feature_image %}
-                            <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}"><img
-                                    class="product-image"
-                                    src="{{ line.product.get_feature_image.feature_url(_external=true, _scheme='') }}"></a>{% endif %}
+                    <tr class="product{{ ' subproduct' if not line.has_price else '' }}">
+                        {% if line.product.get_feature_image %}
+                        <td>
+                            <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">
+                            <img class="media-object" src="{{ line.product.get_feature_image.feature_url(transform='w_160,h_160,c_limit,q_auto') }}">
+                            </a>
                         </td>
                         <td>
-                            <h3>
+                        {% else %}
+                        <td colspan=2>
+                        {% endif %}
+                            <h4>
+                                {% if line.product %}
                                 <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">{{ line.product.title }}</a>
-                                <small>{{ line.product.get_type_display() }}</small>
-                            </h3>
-                            <p>{{ line.product.description|markdown }}</p>
+                                {% else %}
+                                    {{ line.get_title }}
+                                {% endif %}
+                                {# <small>{{ line.product.get_type_display() }}</small> #}
+                            </h4>
+                            {# <p>{{ line.product.description|markdown }}</p> #}
                             {% if order and order.is_paid_or_shipped() %}
-                                {% if line.product.downloadable_files %}
-                                    <div><strong>{{ _('Downloadable files') }}</strong>
-                                        {% for file_asset in line.product.downloadable_files %}
+                                {% if line.product.downloads %}
+                                    <div><strong>{{ _('Downloads') }}</strong>
+                                        {% for file_asset in line.product.downloads %}
                                             <div>
                                                 <a href="{{ url_for('download', fileasset=file_asset.slug, _external=true, _scheme='') }}"><span
                                                         class="glyphicon glyphicon-download"></span>
@@ -62,20 +69,21 @@
                                 {{ line.quantity }}
                             {% endif %}
                         </td>
-                        <td class="product-price">{{ (line.product.get_price() if order.status=='cart' else line.price)|currencyformat(order.currency.upper()) }}</td>
+                        <td class="product-price">{% if line.has_price %}{{ line.price|currencyformat(order.currency.upper()) }}{% endif %}</td>
                     </tr>
-                {% endif %}
             {% endfor %}
             {% if order.status != 'cart' or (args and args['view'] == 'pay') %}
+            {% if order.shipping_line %}
             <tr>
                 <td colspan=2 style="text-align:right">
-                    <small>{{ _('Shipping') if not order.shipping else order.shipping.title }}</small>
+                    <small>{{ _('Shipping') if order.shipping_line.title == "Shipping" else order.shipping_line.title }}</small>
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{{ (order.shipping.get_price() if order.shipping else 0)|currencyformat(order.currency.upper()) }}</small>
+                    <small>{% if order.shipping_line.has_price %}{{ order.shipping_line.price|currencyformat(order.currency.upper()) }}{% endif %}</small>
                 </td>
             </tr>
+            {% endif %}
             <tr>
                 <td colspan=2 style="border-top: none; text-align:right">
                     <small>{{ _('Including tax') }}</small>

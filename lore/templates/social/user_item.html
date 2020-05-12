@@ -1,9 +1,11 @@
 {% extends "social/_root.html" if not parent_template else parent_template %}
 {% import 'includes/macros.html' as MACRO %}
 
-
-{% block content_title %}{{ user }}{% endblock %}
-{% block content_tagline %}{{ user.xp }} XP{% endblock %}
+{% block header_title %}
+<h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">{% block content_title %}{{ user }}{% endblock %}
+    <small>{% block content_tagline %}{{user.xp}} XP{% endblock %}</small>
+</h1>
+{% endblock %}
 
 {% block cssimports %}
     {{ super() }}
@@ -18,7 +20,7 @@
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.homepage'), _('Home')),
-        (url_for('social.UsersView:index'), _('Users')),
+        (url_for('social.UsersView:get', id=user.id), _('Users')),
         (url_for('social.UsersView:get', id=user.id), self.content_title())
     ) }}{% endblock %}
 
@@ -47,13 +49,6 @@
     {#    {% endcall %}#}
 {% endblock %}
 
-{% block header %}
-    {{ super() }}
-    {% if user_form %}
-        <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
-    {% endif %}
-{% endblock %}
-
 {% block post_content %}
     {% if user_form %}
         </form>
@@ -67,12 +62,23 @@
     {% if user_form and user.status == 'invited' %}
         <div class="well">
             <strong>{% trans %}This user is not yet active!{% endtrans %}</strong> {% trans %}Save to complete the user and make it active.{% endtrans %}<br>
-            {% trans %}If you've had an account before and don't wish to create this new user, press Cancel, log in with the old user, and then click "Merge" below to add more login methods.{% endtrans %}
+            {% trans %}If you've had an account before and don't wish to create this new user, press Cancel, log in with the old user, and then click "Link other email" below to add more login methods.{% endtrans %}
         </div>
         
     {% endif %}
 
     {% if user_form %}
+        {% if not user.newsletter %}
+            {% include "includes/mailchimp.html" %}
+        {% endif %}
+
+        <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
+
+        {% if user and user==g.user %}
+            {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
+        {% endif %}
+        {{ MACRO.FORM_FIELD(user_form.realname, labelclass="col-sm-3", controlwrap="col-sm-9") }}
+        {{ MACRO.FORM_FIELD(user_form.location, labelclass="col-sm-3", controlwrap="col-sm-9") }}
         <div class="form-group">
             <label class="control-label col-sm-3" for="auth_sources">{% trans %}Linked accounts{% endtrans %}</label>
             <div class="col-sm-9">
@@ -85,23 +91,11 @@
                 {% endfor %}
             </table>
             {% if user_form %}
-                {# {% if user.status == 'invited' %}
-                    <button type="button" class="btn btn-small btn-primary" id="lock-mail">
-                        {% trans %}Merge with existing user{% endtrans %}</button>
-                {% else %} #}
-                    <a href="{{auth0_url(callback_args={'link': user.email, 'next': request.url}, prompt='login')}}"  class="btn btn-small btn-primary" id="lock-activate">
-                    {% trans %}Link other email{% endtrans %}</a>
-                {# {% endif %} #}
+                <a href="{{auth0_url(callback_args={'link': user.email, 'next': request.url}, prompt='login')}}"  class="btn btn-small btn-primary" id="lock-activate">
+                {% trans %}Link other email{% endtrans %}</a>
             {% endif %}
             </div>
         </div>
-        {% if user and user==g.user %}
-            {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-        {% endif %}
-        {{ MACRO.FORM_FIELD(user_form.realname, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-        {{ MACRO.FORM_FIELD(user_form.location, labelclass="col-sm-3", controlwrap="col-sm-9") }}
-        {{ MACRO.FORM_FIELD(user_form.description, labelclass="col-sm-3", controlwrap="col-sm-9", controlclass="content-editor") }}
-        {{ MACRO.FORM_FIELD(user_form.newsletter, labelclass="col-sm-3", controlwrap="col-sm-9") }}
 
     {% else %}
         <table class="table">       
@@ -156,7 +150,7 @@
     <td><span class="badge">N/A</span></td></tr>
     #}
         </table>
-        <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div>
+        {# <div class="well">{{ user.description|default(_('No data'), true)|markdown }}</div> #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
 
             <h3>{{ _('History') }}</h3>
@@ -216,6 +210,12 @@
     <script type="text/javascript">
 
     {% if user_form %}
+
+    $("#newsletter").change(function() {
+        if(this.checked) {
+            $('#interests input[type=checkbox]').prop("checked", true);
+        }
+    });
 
     var avatarWidget = cloudinary.createUploadWidget({
         cloud_name: 'helmgast',

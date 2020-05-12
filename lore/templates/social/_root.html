@@ -7,17 +7,16 @@
 
 {% block subnavbar %}
 
+     {% call(privileged) MACRO.IS_ADMIN() %}
     <li><a class="{{ privileged }}" href="{{ url_for('social.UsersView:index') }}"><span
             class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+    {% endcall %}
 
 {% endblock %}
 
 {% block content %}
     <p>
-        {% if g.user %}
-            {{ _('Welcome') }} <strong>{{ g.user }}</strong>!
-        {% endif %}
-        {{ _('Here you will be able to interact with other gamers, create and manage your game groups,
-  events, etc.') }}</p>
+        {% if g.user %}{{ _('Welcome') }} <strong>{{ g.user }}</strong>!{% endif %}
+        {{ _('Here you will be able to interact with other gamers, create and manage your game groups, events, etc.') }}</p>
 
 {% endblock %}

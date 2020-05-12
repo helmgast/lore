@@ -242,6 +242,11 @@
         {% endif %}
         <table class="table" id="tour-worlddetails">
             <tr>
+                <td colspan=2>
+                    <a href="{{url_for('shop.ProductsView:index', world=world.slug)}}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Product Catalogue') }}</a>
+                </td>
+            </tr>               
+            <tr>
                 <th>{{ _('Publisher') }}</th>
                 <td>
                     <small>{{ world.publisher|default(_('No data'), true) }}</small>
@@ -257,7 +262,7 @@
             {% endif %}
             {% if world.publishing_year %}
             <tr>
-                <th>{{ _('Print year') }}</th>
+                <th>{{ _('Created') }}</th>
                 <td>
                     <small class="nobr">{{ world.publishing_year|default(_('No data'), true) }}</small>
                 </td>

@@ -252,17 +252,17 @@
     </div>
 {%- endmacro -%}
 
-{%- macro ARG_LINK(name, argdict, combine=False, full_url=False) -%}
-    {#    {{ 'req ' +request.args|urlencode+' vs new '+url_with}}#}
-    {% do argdict.update({'page':none}) %} {# Remote page reference as may not be valid after filtering #}
-    {% if in_current_args(argdict) %} {# all non-zero argdict in query_string #}
-        {# query_string without all parameters in argdict #}
-        <a href="{{ current_url(combine, full_url=full_url, **dict.fromkeys(argdict.keys(), none)) }}"
-           class="btn btn-info btn-xs">{{ name }} &times;</a>
-
+{%- macro ARG_LINK(name, argdict, combine=false) -%}
+    {# combine means we ADD given args to current URL. If not, we replace.
+    We want a link with added args from argdict, unless they already exist, then we want to invert them. #}
+    {% do argdict.update({'page':none}) %} {# Remove page reference as may not be valid after filtering #}
+    {% set url = current_url(merge=combine, toggle=true, **argdict) %}
+    {% if in_current_args(argdict) %} {# new query in old query, we have added something #}
+        <a href="{{ url }}" class="btn btn-info btn-xs">{{ name }} &times;</a>
+        {# We want an URL removing args in argdict (but only that instance in case arg is a list). So we set all argdict to none values #}
     {% else %}
-        {# query_string with all parameters in argdict added #}
-        <a href="{{ current_url(combine, full_url=full_url, **argdict) }}" class="btn btn-default btn-xs">{{ name }}</a>
+        <a href="{{ url }}" class="btn btn-default btn-xs">{{ name }}</a>
+        {# We want an URL adding args in argdict (but only that instance in case arg is a list) #}
     {% endif %}
 {%- endmacro -%}
 

@@ -91,7 +91,8 @@ class LoreTestCase(unittest.TestCase):
         form.populate_obj(obj)
         print("Obj1 \n%s\n" % obj.to_mongo())
         #   print "Obj2 \n%s\n" % obj2.to_mongo()
-        self.assertEqual(expected_obj.to_mongo(), obj.to_mongo())
+        self.assertEqual(
+            expected_obj.to_mongo(), obj.to_mongo())
 
     def setUp(self):
         # PRESERVE_CONTEXT... needed for avoiding context pop error, see

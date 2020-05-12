@@ -10,10 +10,22 @@
 
 import datetime
 import os
+import re
 from logging import DEBUG, INFO, Formatter, StreamHandler, getLogger
 
-from flask import (Flask, flash, g, got_request_exception, logging, redirect,
-                   render_template, request, current_app, url_for, send_from_directory)
+from flask import (
+    Flask,
+    flash,
+    g,
+    got_request_exception,
+    logging,
+    redirect,
+    render_template,
+    request,
+    current_app,
+    url_for,
+    send_from_directory,
+)
 from flask.config import Config
 from markdown import Markdown
 from mongoengine.connection import ConnectionFailure
@@ -22,30 +34,32 @@ from werkzeug.routing import Map
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
+
 def create_app(**kwargs):
-    
+
     # Creates new flask instance
-    the_app = Flask('lore', static_folder='../static')
-    
+    the_app = Flask("lore", static_folder="../static")
+
     config_string = "config from:"
     from . import default_config
+
     the_app.config.from_object(default_config.Config)  # Default config that applies to all deployments
     the_app.config.from_object(default_config.SecretConfig)  # Add dummy secrets
-        
+
     # 1. Load specific configuration in the following order, so that last applies local config.py
     fileconfig = Config(the_app.root_path)
-    fileconfig.from_pyfile('../config.py', silent=True)
+    fileconfig.from_pyfile("../config.py", silent=True)
     the_app.config.update(fileconfig)
 
     # 2. Environment variables (only if exist in default)
     # TODO there could be name collision with env variables, and this may be unsafe
     envconfig = Config(the_app.root_path)
     for k in the_app.config.keys():
-        env_k = 'LORE_%s' % k
+        env_k = "LORE_%s" % k
         if env_k in os.environ:
             env_v = os.environ[env_k]
-            if str(env_v).lower() in ['true', 'false']:
-                env_v = str(env_v).lower() == 'true'
+            if str(env_v).lower() in ["true", "false"]:
+                env_v = str(env_v).lower() == "true"
             envconfig[k] = env_v
     the_app.config.update(envconfig)
 
@@ -58,29 +72,35 @@ def create_app(**kwargs):
 
     config_msg = ""
     # 4. Check if running in production or not
-    if the_app.config['PRODUCTION']:
+    if the_app.config["PRODUCTION"]:
         # Make sure we don't debug in production
         the_app.debug = False
         # Show a sanitized config output in justified columns
-        width = max(map(len, (argconfig.keys() | envconfig.keys() | fileconfig.keys() | {''})))
+        width = max(map(len, (argconfig.keys() | envconfig.keys() | fileconfig.keys() | {""})))
 
-        def sanitize(k,v):
+        def sanitize(k, v):
             return "***" if getattr(default_config.SecretConfig, k, None) else v
+
         for k in the_app.config:
             if k in argconfig:
                 config_msg += f"{k.ljust(width)}(args) = {sanitize(k, argconfig[k])}\n"
             elif k in envconfig:
                 config_msg += f"{k.ljust(width)}(env)  = {sanitize(k, envconfig[k])}\n"
             elif k in fileconfig:
-                config_msg += f"{k.ljust(width)}(file) = {sanitize(k, fileconfig[k])}\n" 
+                config_msg += f"{k.ljust(width)}(file) = {sanitize(k, fileconfig[k])}\n"
 
     # the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
     configure_logging(the_app)
     if not the_app.testing:
-        the_app.logger.info("Lore (%s) started. Mode: %s%s:\n%s"
-                            % (the_app.config.get('VERSION', None), 
-                            "Prod" if the_app.config['PRODUCTION'] else 'Dev',
-                            " (Debug)" if the_app.debug else "", config_msg))
+        the_app.logger.info(
+            "Lore (%s) started. Mode: %s%s:\n%s"
+            % (
+                the_app.config.get("VERSION", None),
+                "Prod" if the_app.config["PRODUCTION"] else "Dev",
+                " (Debug)" if the_app.debug else "",
+                config_msg,
+            )
+        )
 
     # Configure all extensions
     configure_extensions(the_app)
@@ -92,29 +112,30 @@ def create_app(**kwargs):
 
     return the_app
 
+
 def configure_logging(app):
     # Custom logging that always goes to stderr
     logger = getLogger(app.logger_name)
 
     class RequestFormatter(logging.Formatter):
         def format(self, record):
-            record.url = request.url if request else ''
+            record.url = request.url if request else ""
             return super().format(record)
 
     handler = StreamHandler(logging._proxy_stream)
-    handler.setFormatter(RequestFormatter('[%(asctime)s %(levelname)s in %(module)s:%(lineno)d] %(message)s (%(url)s)'))
+    handler.setFormatter(
+        RequestFormatter("[%(asctime)s %(levelname)s in %(module)s:%(lineno)d] %(message)s (%(url)s)")
+    )
     logger.addHandler(handler)
     logger.setLevel(DEBUG if app.debug else INFO)
     app._logger = logger  # Replace the otherwise auto-configured logger
-    sentry_dsn = app.config['SENTRY_DSN']
+    sentry_dsn = app.config["SENTRY_DSN"]
 
-    if app.config['PRODUCTION']:
-        if sentry_dsn and sentry_dsn != 'SECRET':  # SECRET is default, non-set state
+    if app.config["PRODUCTION"]:
+        if sentry_dsn and sentry_dsn != "SECRET":  # SECRET is default, non-set state
             sentry_sdk.init(
-                dsn=sentry_dsn,
-                integrations=[FlaskIntegration(transaction_style="url")],
-                send_default_pii=True
-            )  
+                dsn=sentry_dsn, integrations=[FlaskIntegration(transaction_style="url")], send_default_pii=True
+            )
         else:
             app.logger.warning("Running without Sentry error monitoring; no SENTRY_DSN in config")
 
@@ -127,39 +148,46 @@ def configure_logging(app):
 
 def configure_extensions(app):
     from . import extensions
-    
+
     # URL and routing
-    prefix = app.config.get('URL_PREFIX', '')
+    prefix = app.config.get("URL_PREFIX", "")
     if prefix:
         app.wsgi_app = extensions.PrefixMiddleware(app.wsgi_app, prefix)
     # Fixes IP address etc assuming we run behind proxy
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     # Rewrites POSTs with specific methods into the real method, to allow HTML forms to send PUT, DELETE, etc
     app.wsgi_app = extensions.MethodRewriteMiddleware(app.wsgi_app)
-    if not app.config['PRODUCTION']:
-        app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0 # Don't cache files in development mode
+    if not app.config["PRODUCTION"]:
+        app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0  # Don't cache files in development mode
 
     app.url_rule_class = extensions.LoreRule
 
     # default_hosts = ['localhost:5000', app.config['DEFAULT_HOST']]
     # t = '","'.join(default_hosts)
     # app.default_host = f'<any("{t}"):pub_host>'
-    app.default_host = app.config['DEFAULT_HOST']
+    app.default_host = app.config["DEFAULT_HOST"]
     app.url_rule_class.allow_domains = True
-    app.url_rule_class.default_host = app.config['DEFAULT_HOST']
+    app.url_rule_class.default_host = app.config["DEFAULT_HOST"]
     app.url_map = Map(host_matching=True)
+    app.url_map.converters["not"] = extensions.NotAnyConverter
+
     # Re-add the static rule
 
-    app.add_url_rule(app.static_url_path + '/<path:filename>', endpoint='static',
-                        view_func=app.send_static_file, host=app.default_host)
-    app.logger.info('Doing host matching and default host is {host}{prefix}'.format(
-        host=app.default_host, prefix=prefix or ''))
+    app.add_url_rule(
+        app.static_url_path + "/<path:filename>",
+        endpoint="static",
+        view_func=app.send_static_file,
+        host=app.default_host,
+    )
+    app.logger.info(
+        "Doing host matching and default host is {host}{prefix}".format(host=app.default_host, prefix=prefix or "")
+    )
 
     # Special static function that serves from plugin/ instead of static/
     def send_plugin_file(filename):
-        return send_from_directory('../plugins', filename, cache_timeout=current_app.get_send_file_max_age(filename))
+        return send_from_directory("../plugins", filename, cache_timeout=current_app.get_send_file_max_age(filename))
 
-    app.add_url_rule('/plugins/<path:filename>', endpoint='plugins', view_func=send_plugin_file, host=app.default_host)
+    app.add_url_rule("/plugins/<path:filename>", endpoint="plugins", view_func=send_plugin_file, host=app.default_host)
 
     # Debug toolbar, will stop if DEBUG_TB_ENABLED = False or if not else if DEBUG=False
     extensions.toolbar.init_app(app)
@@ -178,11 +206,9 @@ def configure_extensions(app):
     except AssertionError as ae:
         app.logger.warning(ae)
 
-    extensions.configured_locales = set(app.config.get('BABEL_AVAILABLE_LOCALES'))
-    if not extensions.configured_locales or app.config.get('BABEL_DEFAULT_LOCALE') not in extensions.configured_locales:
-        app.logger.warning('Incorrectly configured: BABEL_DEFAULT_LOCALE %s not in BABEL_AVAILABLE_LOCALES %s' %
-                           app.config.get('BABEL_DEFAULT_LOCALE'), app.config.get('BABEL_AVAILABLE_LOCALES'))
-        extensions.configured_locales = set(app.config.get('BABEL_DEFAULT_LOCALE'))
+    extensions.setup_locales(app)
+    if (app.config.get("BABEL_DEFAULT_LOCALE") not in extensions.configured_locales):
+        raise ValueError("Incorrectly configured locales")
 
     # Secure forms
     extensions.csrf.init_app(app)
@@ -193,17 +219,21 @@ def configure_extensions(app):
     # app.md = FlaskMarkdown(app, extensions=['attr_list'])
     # app.md.register_extension(extensions.AutolinkedImage)
 
-    app.md = Markdown(extensions=['markdown.extensions.attr_list',
-                                  'markdown.extensions.smarty',
-                                  'markdown.extensions.tables',
-                                  extensions.AutolinkedImage()])
+    app.md = Markdown(
+        extensions=[
+            "markdown.extensions.attr_list",
+            "markdown.extensions.smarty",
+            "markdown.extensions.tables",
+            extensions.AutolinkedImage(),
+        ]
+    )
 
-    app.jinja_env.filters['markdown'] = extensions.build_md_filter(app.md)
-    app.jinja_env.filters['dict_with'] = extensions.dict_with
-    app.jinja_env.filters['dict_without'] = extensions.dict_without
-    app.jinja_env.filters['currentyear'] = extensions.currentyear
-    app.jinja_env.filters['first_p_length'] = extensions.first_p_length
-    app.jinja_env.add_extension('jinja2.ext.do')  # "do" command in jinja to run code
+    app.jinja_env.filters["markdown"] = extensions.build_md_filter(app.md)
+    app.jinja_env.filters["dict_with"] = extensions.dict_with
+    app.jinja_env.filters["dict_without"] = extensions.dict_without
+    app.jinja_env.filters["currentyear"] = extensions.currentyear
+    app.jinja_env.filters["first_p_length"] = extensions.first_p_length
+    app.jinja_env.add_extension("jinja2.ext.do")  # "do" command in jinja to run code
     app.jinja_loader = extensions.enhance_jinja_loader(app)
     app.json_encoder = extensions.MongoJSONEncoder
     if not app.debug:
@@ -220,10 +250,14 @@ def identity(ob):
 def configure_blueprints(app):
     with app.app_context():
         from .api.auth import auth_app
-        app.register_blueprint(auth_app, url_prefix='/auth')
+        from .extensions import lang_prefix_rule
+
+        app.register_blueprint(auth_app, url_prefix="/auth")
         app.access_policy = {}
 
         from .api.world import world_app as world
+        from flask_babel import lazy_gettext as _
+        world.plugin_choices = [('None', _('None'))] + [(v, v) for v in app.plugins]
         from .api.asset import asset_app as asset_app
         from .api.social import social
         from .api.generator import generator
@@ -231,15 +265,25 @@ def configure_blueprints(app):
         from .api.shop import shop_app as shop
         from .api.mailer import mail_app as mail
 
-        app.register_blueprint(world)  # No url_prefix as we build it up as /<world>/<article>
-        app.register_blueprint(generator, url_prefix='/generator')
-        app.register_blueprint(admin, url_prefix='/admin')
-        app.register_blueprint(social, url_prefix='/social')
-        app.register_blueprint(shop, url_prefix='/shop')
-        app.register_blueprint(asset_app, url_prefix='/assets')
-        app.register_blueprint(mail, url_prefix='/mail')
+        app.register_blueprint(world, url_defaults={"lang": "sv"})
+        app.register_blueprint(world, url_prefix=f"/{lang_prefix_rule}")  # No url_prefix as we build it up as /<world>/<article>
+
+        app.register_blueprint(generator, url_prefix="/generator")
+        app.register_blueprint(admin, url_prefix="/admin")
+
+        app.register_blueprint(social, url_prefix=f"/social", url_defaults={"lang": "sv"})
+        app.register_blueprint(social, url_prefix=f"/{lang_prefix_rule}/social")
+
+        app.register_blueprint(shop, url_prefix=f"/shop", url_defaults={"lang": "sv"})
+        app.register_blueprint(shop, url_prefix=f"/{lang_prefix_rule}/shop")
+
+        app.register_blueprint(asset_app, url_prefix="/assets")
+
+        app.register_blueprint(mail, url_prefix=f"/mail", url_defaults={"lang": "sv"})
+        app.register_blueprint(mail, url_prefix=f"/{lang_prefix_rule}/mail")
+
         from sparkpost import SparkPost
-        mail.sparkpost_client = SparkPost(app.config['SPARKPOST_API_KEY'])
+        mail.sparkpost_client = SparkPost(app.config["SPARKPOST_API_KEY"])
 
     return auth_app
 
@@ -247,6 +291,7 @@ def configure_blueprints(app):
 def configure_hooks(app):
 
     from flask_babel import get_locale
+
     app.add_template_global(get_locale)
 
     # @app.before_request
@@ -258,29 +303,37 @@ def configure_hooks(app):
         # Lazily start the database connection at first request.
         from lore import extensions
         from flask_mongoengine.connection import get_connection_settings, _connect
+
         # TODO A hack, that bypasses the config sanitization of Flask-Mongoengine so we can add custom Mongo config
         # https://github.com/MongoEngine/flask-mongoengine/issues/327
-        extensions.db.init_app(app, config={'MONGODB_SETTINGS':[]})
+        extensions.db.init_app(app, config={"MONGODB_SETTINGS": []})
         db_settings = get_connection_settings(app.config)
-        db_settings['serverSelectionTimeoutMS'] = 5000  # Shortened from 30000 default
+        db_settings["serverSelectionTimeoutMS"] = 5000  # Shortened from 30000 default
         try:
-            app.extensions['mongoengine'][extensions.db] = {'app':app, 'conn': _connect(db_settings)}
+            app.extensions["mongoengine"][extensions.db] = {"app": app, "conn": _connect(db_settings)}
         except ConnectionFailure as err:
             pass  # We need to leave this method without an exception, as the request finishes, the exception will raise again
 
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
     @app.url_value_preprocessor
-    def get_pub_host(endpoint, values):
-        ph = values.pop('pub_host', None) if values else None
+    def get_global_url_vars(endpoint, values):
+        ph = values.pop("pub_host", None) if values else None
         if not ph:
             ph = request.host
+        if not app.config["PRODUCTION"]:
+            # TODO use a better test domain pattern where we know original top domain, e.g. helmgast.setest
+            ph = re.sub(r"\.test$", ".se", ph)
         g.pub_host = ph
+        lang = values.pop("lang", None) if values else None
+        g.lang = lang
 
     # Adds pub_host when building URL if it was not provided and expected by the route
     @app.url_defaults
-    def set_pub_host(endpoint, values):
-        if app.url_map.is_endpoint_expecting(endpoint, 'pub_host'):
-            values.setdefault('pub_host', g.pub_host)
+    def set_global_url_vars(endpoint, values):
+        if app.url_map.is_endpoint_expecting(endpoint, "pub_host"):
+            values.setdefault("pub_host", g.pub_host if app.config["PRODUCTION"] else re.sub(r"\.se$", ".test", g.pub_host))
+        if app.url_map.is_endpoint_expecting(endpoint, "lang") and "lang" in g:
+            values.setdefault("lang", g.lang)
 
     @app.context_processor
     def inject_access():
@@ -289,6 +342,7 @@ def configure_hooks(app):
     from lore.model.misc import current_url, in_current_args, slugify, delta_date
     from lore.api.auth import auth0_url
     from sentry_sdk import last_event_id, capture_exception
+
     app.add_template_global(auth0_url)
     app.add_template_global(current_url)
     app.add_template_global(in_current_args)
@@ -298,18 +352,22 @@ def configure_hooks(app):
 
     @app.errorhandler(401)  # Unauthorized or unauthenticated, e.g. not logged in
     def unauthorized(err):
-        if request.method == 'GET':  # Only do sso on GET requests
-            return redirect(url_for('auth.sso', next=request.url))
+        if request.method == "GET":  # Only do sso on GET requests
+            return redirect(url_for("auth.sso", next=request.url))
         else:
             app.logger.warning(
-                'Could not handle 401 Unauthorized for "{url}" as it was not a GET'.format(url=request.url))
-            capture_exception(err)  # Explitily capture exception to Sentry
+                'Could not handle 401 Unauthorized for "{url}" as it was not a GET'.format(url=request.url)
+            )
+            capture_exception(err)  # Explicitly capture exception to Sentry
             return err, 401
-    
+
     @app.errorhandler(403)
     def forbidden(err):
-        capture_exception(err)  # Explitily capture exception to Sentry
-        return render_template("error/403.html", root_template='_root.html', error=err, sentry_event_id=last_event_id()), 403
+        capture_exception(err)  # Explicitly capture exception to Sentry
+        return (
+            render_template("error/403.html", root_template="_root.html", error=err, sentry_event_id=last_event_id()),
+            403,
+        )
 
     @app.errorhandler(404)
     def not_found(err):
@@ -317,12 +375,19 @@ def configure_hooks(app):
         #     # We want to show debug toolbar if we get 404, but needs to return an HTML page with status 200 for it
         #     # to activate
         #     return render_template("error/404.html", root_template='_root.html', error=f"{request.path} not found at host {request.host}"), 200
-        return render_template("error/404.html", root_template='_root.html', error=err.description or f"{request.path} not found at host {request.host}"), 404
+        return (
+            render_template(
+                "error/404.html",
+                root_template="_root.html",
+                error=err.description or f"{request.path} not found at host {request.host}",
+            ),
+            404,
+        )
 
     @app.errorhandler(ConnectionFailure)
     def db_error(err):
         app.logger.error("Database Connection Failure: {err}".format(err=err))
-        return render_template('error/nodb.html', root_template='_root.html'), 500
+        return render_template("error/nodb.html", root_template="_root.html"), 500
 
     from lore.api.resource import ResourceError, get_root_template
 
@@ -333,18 +398,17 @@ def configure_hooks(app):
 
         if err.status_code == 400:  # bad request
             if err.template:
-                flash(err.message, 'warning')
-                err.template_vars['root_template'] = get_root_template(request.args.get('out', None))
+                flash(err.message, "warning")
+                err.template_vars["root_template"] = get_root_template(request.args.get("out", None))
                 return render_template(err.template, **err.template_vars), err.status_code
         raise err  # re-raise if we don't have a template
 
     @app.errorhandler(500)
     def server_error(err):
-        return render_template("error/500.html", err=err, root_template='_root.html', sentry_event_id=last_event_id()), 500
-
-
-    # for rule in sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()):
-    #     print(rule.__repr__(), rule.subdomain, rule.match_compare_key())
+        return (
+            render_template("error/500.html", err=err, root_template="_root.html", sentry_event_id=last_event_id()),
+            500,
+        )
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

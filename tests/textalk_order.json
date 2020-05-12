@@ -1,0 +1,175 @@
+{
+  "uid": 156818955,
+  "ordered": "2020-04-17T11:54:44Z",
+  "changed": "2020-04-18T16:17:04Z",
+  "customer": {
+    "info": {
+      "type": "individual",
+      "email": "user@email.com",
+      "nin": ""
+    },
+    "address": {
+      "firstName": "FirstName",
+      "lastName": "LastName",
+      "address": "Streename 1",
+      "postcode": "03001",
+      "town": "Alicante",
+      "country": "ES",
+      "phoneMobile": "11123321"
+    },
+    "deliveryAddress": {
+      "copyAddress": true,
+      "name": "FirstName LastName",
+      "address": "Streename 1",
+      "postcode": "03001",
+      "town": "Alicante",
+      "country": "ES"
+    }
+  },
+  "currency": "EUR",
+  "exchangeRate": 0.091939,
+  "items": [
+    {
+      "uid": 203202969,
+      "order": 156818955,
+      "costs": {
+        "total": {
+          "currency": "EUR",
+          "exVat": 12.8,
+          "incVat": 16,
+          "vat": 3.2,
+          "vatRate": 0.25
+        },
+        "unit": {
+          "currency": "EUR",
+          "exVat": 6.4,
+          "incVat": 8,
+          "vat": 1.6,
+          "vatRate": 0.25
+        }
+      },
+      "revenueShare": {
+        "suborder": 1106951,
+        "supplier": 7904,
+        "exVat": 0.54,
+        "incVat": 0.67,
+        "vat": 0.13,
+        "vatRate": 0.24074074
+      },
+      "discountInfo": {
+        "name": "",
+        "discount": 138843,
+        "exVat": 3.84,
+        "incVat": 4.8,
+        "vatRate": 0.25,
+        "vat": 0.96,
+        "rate": 0.3
+      },
+      "article": 166434453,
+      "articleNumber": "KDL-121l",
+      "articleName": "KULT: Divinity Lost T-shirt",
+      "choices": {
+        "4125185": "70617857",
+        "quantity": 2
+      }
+    },
+    {
+      "uid": 203202987,
+      "order": 156818955,
+      "costs": {
+        "total": {
+          "currency": "EUR",
+          "exVat": 3.78,
+          "incVat": 4,
+          "vat": 0.22,
+          "vatRate": 0.06
+        },
+        "unit": {
+          "currency": "EUR",
+          "exVat": 1.89,
+          "incVat": 2,
+          "vat": 0.11,
+          "vatRate": 0.06
+        }
+      },
+      "discountInfo": {
+        "name": "",
+        "discount": 138843,
+        "exVat": 1.13,
+        "incVat": 1.2,
+        "vatRate": 0.06,
+        "vat": 0.07,
+        "rate": 0.3
+      },
+      "article": 166412217,
+      "articleNumber": "KDL-132",
+      "articleName": "And the Rockets  Red Glare [DIGITAL PDF]",
+      "choices": {
+        "quantity": 1
+      },
+      "download": "http://shop.textalk.se/sv/dl.php?id=49251&od=199639"
+    }
+  ],
+  "costs": {
+    "total": {
+      "currency": "EUR",
+      "exVat": 28.69,
+      "incVat": 32.1,
+      "vat": 3.41,
+      "vatRate": 0.11885674
+    },
+    "cart": {
+      "currency": "EUR",
+      "exVat": 11.61,
+      "incVat": 14,
+      "vat": 2.39,
+      "vatRate": 0.20585702
+    },
+    "payment": {
+      "currency": "EUR",
+      "exVat": 0,
+      "incVat": 0,
+      "vat": 0,
+      "vatRate": 0
+    },
+    "shipment": {
+      "currency": "EUR",
+      "exVat": 17.08,
+      "incVat": 18.1,
+      "vat": 1.02,
+      "vatRate": 0.06
+    }
+  },
+  "language": "en",
+  "note": "",
+  "discarded": false,
+  "hasVat": true,
+  "payments": [79539515],
+  "delivery": {
+    "method": 66233
+  },
+  "paymentStatus": "paid",
+  "deliveryStatus": "sent",
+  "discountInfo": [
+    {
+      "name": "",
+      "discount": 138843,
+      "type": null,
+      "exVat": 1.13,
+      "incVat": 1.2,
+      "vat": 0.07,
+      "vatRate": 0.06,
+      "rate": 0.3
+    },
+    {
+      "name": "",
+      "discount": 138843,
+      "type": null,
+      "exVat": 3.84,
+      "incVat": 4.8,
+      "vat": 0.96,
+      "vatRate": 0.25,
+      "rate": 0.3
+    }
+  ]
+}

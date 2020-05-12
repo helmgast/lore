@@ -188,7 +188,7 @@ def job_wikitext_to_markdown(job, data):
     else:
         all_pages[id] = (title, is_redirect)
     if job.context.get('filter', None) and job.context['filter'] not in id and not job.is_bugreport:
-        #print(f"filter={job.context['filter']}, id={id}, in it={job.context['filter'] in id}")
+        # print(f"filter={job.context['filter']}, id={id}, in it={job.context['filter'] in id}")
         job.success = JobSuccess.SKIP
         return
 
