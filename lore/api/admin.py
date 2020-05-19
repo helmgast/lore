@@ -152,7 +152,7 @@ def import_webhook(model):
         and event_class == "Article"
         and event_name == "created"
         or event_name == "changed"
-        and webshop in current_app.config["LORE_TEXTALK_URL"]
+        and webshop in current_app.config["TEXTALK_URL"]
         and uid
     ):
         try:

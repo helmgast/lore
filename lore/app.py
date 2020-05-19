@@ -207,7 +207,7 @@ def configure_extensions(app):
         app.logger.warning(ae)
 
     extensions.setup_locales(app)
-    if (app.config.get("BABEL_DEFAULT_LOCALE") not in extensions.configured_locales):
+    if app.config.get("BABEL_DEFAULT_LOCALE") not in extensions.configured_locales:
         raise ValueError("Incorrectly configured locales")
 
     # Secure forms
@@ -257,7 +257,8 @@ def configure_blueprints(app):
 
         from .api.world import world_app as world
         from flask_babel import lazy_gettext as _
-        world.plugin_choices = [('None', _('None'))] + [(v, v) for v in app.plugins]
+
+        world.plugin_choices = [("None", _("None"))] + [(v, v) for v in app.plugins]
         from .api.asset import asset_app as asset_app
         from .api.social import social
         from .api.generator import generator
@@ -266,7 +267,9 @@ def configure_blueprints(app):
         from .api.mailer import mail_app as mail
 
         app.register_blueprint(world, url_defaults={"lang": "sv"})
-        app.register_blueprint(world, url_prefix=f"/{lang_prefix_rule}")  # No url_prefix as we build it up as /<world>/<article>
+        app.register_blueprint(
+            world, url_prefix=f"/{lang_prefix_rule}"
+        )  # No url_prefix as we build it up as /<world>/<article>
 
         app.register_blueprint(generator, url_prefix="/generator")
         app.register_blueprint(admin, url_prefix="/admin")
@@ -283,6 +286,7 @@ def configure_blueprints(app):
         app.register_blueprint(mail, url_prefix=f"/{lang_prefix_rule}/mail")
 
         from sparkpost import SparkPost
+
         mail.sparkpost_client = SparkPost(app.config["SPARKPOST_API_KEY"])
 
     return auth_app
@@ -331,7 +335,9 @@ def configure_hooks(app):
     @app.url_defaults
     def set_global_url_vars(endpoint, values):
         if app.url_map.is_endpoint_expecting(endpoint, "pub_host"):
-            values.setdefault("pub_host", g.pub_host if app.config["PRODUCTION"] else re.sub(r"\.se$", ".test", g.pub_host))
+            values.setdefault(
+                "pub_host", g.pub_host if app.config["PRODUCTION"] else re.sub(r"\.se$", ".test", g.pub_host)
+            )
         if app.url_map.is_endpoint_expecting(endpoint, "lang") and "lang" in g:
             values.setdefault("lang", g.lang)
 
@@ -352,20 +358,22 @@ def configure_hooks(app):
 
     @app.errorhandler(401)  # Unauthorized or unauthenticated, e.g. not logged in
     def unauthorized(err):
-        if request.method == "GET":  # Only do sso on GET requests
-            return redirect(url_for("auth.sso", next=request.url))
-        else:
-            app.logger.warning(
-                'Could not handle 401 Unauthorized for "{url}" as it was not a GET'.format(url=request.url)
-            )
-            capture_exception(err)  # Explicitly capture exception to Sentry
-            return err, 401
+        # capture_exception(err)  # Explicitly capture exception to Sentry
+        return render_template(
+            "error/401.html", root_template="_root.html", publisher_theme=g.get("publisher_theme", None)
+        )
 
     @app.errorhandler(403)
     def forbidden(err):
         capture_exception(err)  # Explicitly capture exception to Sentry
         return (
-            render_template("error/403.html", root_template="_root.html", error=err, sentry_event_id=last_event_id()),
+            render_template(
+                "error/403.html",
+                root_template="_root.html",
+                error=err,
+                publisher_theme=g.get("publisher_theme", None),
+                sentry_event_id=last_event_id(),
+            ),
             403,
         )
 
@@ -380,6 +388,7 @@ def configure_hooks(app):
                 "error/404.html",
                 root_template="_root.html",
                 error=err.description or f"{request.path} not found at host {request.host}",
+                publisher_theme=g.get("publisher_theme", None),
             ),
             404,
         )
@@ -409,6 +418,7 @@ def configure_hooks(app):
             render_template("error/500.html", err=err, root_template="_root.html", sentry_event_id=last_event_id()),
             500,
         )
+
 
 # @current_app.template_filter('dictreplace')
 # def dictreplace(s, d):

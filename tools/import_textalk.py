@@ -50,6 +50,7 @@ product_default_fields_to_return = [
     "introductionText",
     "price",
     "url",
+    "stock",
     "images",
     "hidden",
     "weight",

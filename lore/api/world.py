@@ -229,6 +229,7 @@ class WorldsView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
         r = ListResponse(WorldsView, [('worlds', World.objects().order_by('title')), ('publisher', publisher)])
+        r.set_theme('publisher', publisher.theme)
 
         r.auth_or_abort(res=publisher)
 
@@ -238,7 +239,6 @@ class WorldsView(ResourceView):
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher))
         r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
         return r
 
     def get(self, id):
@@ -247,6 +247,7 @@ class WorldsView(ResourceView):
         if id == 'post':
             set_lang_options(publisher)
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.set_theme('publisher', publisher.theme)
             r.set_theme('world')  # Will pick from args if exist
             r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         else:
@@ -257,9 +258,9 @@ class WorldsView(ResourceView):
 
             set_lang_options(world, publisher)
             r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)])
-            r.auth_or_abort()
+            r.set_theme('publisher', publisher.theme)
             r.set_theme('world', world.theme)
-        r.set_theme('publisher', publisher.theme)
+            r.auth_or_abort()
         return r
 
     def post(self):
@@ -267,8 +268,8 @@ class WorldsView(ResourceView):
         set_lang_options(publisher)
 
         r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], method='post')
-        r.auth_or_abort(res=publisher)
         r.set_theme('publisher', publisher.theme)
+        r.auth_or_abort(res=publisher)
         world = World()
         if not r.validate():
             return r.error_response(status=400)
@@ -286,8 +287,8 @@ class WorldsView(ResourceView):
         set_lang_options(world, publisher)
 
         r = ItemResponse(WorldsView, [('world', world), ('publisher', publisher)], method='patch')
-        r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
+        r.auth_or_abort()
         if not r.validate():
             return r.error_response(status=400)
 
@@ -334,6 +335,7 @@ class ArticlesView(ResourceView):
         r = ListResponse(ArticlesView, [('articles', articles), ('world', world), ('publisher', publisher)],
                          formats=['html'])
         r.auth_or_abort(res=publisher)
+        r.set_theme('publisher', publisher.theme)
         r.template = 'world/publisher_home.html'
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -341,10 +343,10 @@ class ArticlesView(ResourceView):
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world())
+        # Ensure we only show worlds with an image
         r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published())
         r.query = r.query.limit(8)
         r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
         return r
 
     @route('/<not(en,sv):world_>/', route_base='/')
@@ -353,6 +355,7 @@ class ArticlesView(ResourceView):
         if world_ == 'post':
             set_lang_options(publisher)
             r = ItemResponse(WorldsView, [('world', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort(res=publisher)  # check auth scoped to publisher, as we want to create new
         if world_ == 'meta':
             return redirect(url_for('world.ArticlesView:publisher_home', pub_host=publisher.slug))
@@ -362,6 +365,7 @@ class ArticlesView(ResourceView):
 
             r = ItemResponse(WorldsView,
                              [('world', world), ('publisher', publisher)])
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort()
             if world.external_host:
                 return redirect(world.external_host)
@@ -371,7 +375,6 @@ class ArticlesView(ResourceView):
                 filter_authorized() |
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world(world))
-        r.set_theme('publisher', publisher.theme)
         r.template = 'world/world_home.html'
         return r
 
@@ -383,6 +386,7 @@ class ArticlesView(ResourceView):
         set_lang_options(publisher)
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
+        r.set_theme('publisher', publisher.theme)
         r.auth_or_abort(res=publisher)
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -391,7 +395,6 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world())
         r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
         r.template = 'world/article_search.html'
         return r
 
@@ -408,6 +411,8 @@ class ArticlesView(ResourceView):
 
         r = ListResponse(ArticlesView,
                          [('articles', articles), ('world', world), ('publisher', publisher)])
+        r.set_theme('publisher', publisher.theme)
+        r.set_theme('world', world.theme)
         r.auth_or_abort(res=(world if world_ != 'meta' else publisher))
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -417,8 +422,6 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_world(world))  # If world is meta will count as None
 
         r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
-        r.set_theme('world', world.theme)
         return r
 
     def blog(self, world_):
@@ -482,6 +485,7 @@ class ArticlesView(ResourceView):
                              extra_args={'intent': 'post'})
             # check auth scoped to world or publisher, as we want to create new and use them as parent
 
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort(res=world if world_ != 'meta' else publisher)
             r.set_theme('article')  # Will pick from args if exist
 
@@ -489,10 +493,10 @@ class ArticlesView(ResourceView):
             r = ItemResponse(ArticlesView,
                              [('article', Article.objects(slug=id).first_or_404()), ('world', world),
                               ('publisher', publisher)])
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort()
             r.set_theme('article', r.article.theme)
 
-        r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
 
         return r
@@ -505,10 +509,10 @@ class ArticlesView(ResourceView):
         r = ItemResponse(ArticlesView,
                          [('article', None), ('world', world), ('publisher', publisher)],
                          method='post')
-        # Check auth scoped to world or publisher, as we want to create new and use them as parent
-        r.auth_or_abort(res=world if world_ != 'meta' else publisher)
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
+        # Check auth scoped to world or publisher, as we want to create new and use them as parent
+        r.auth_or_abort(res=world if world_ != 'meta' else publisher)
 
         article = Article()
         if not r.validate():
@@ -533,10 +537,11 @@ class ArticlesView(ResourceView):
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='patch')
-        r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
         r.set_theme('article', r.article.theme)
+        r.auth_or_abort()
+
 
         if not r.validate():
             return r.error_response(status=400)
@@ -557,10 +562,10 @@ class ArticlesView(ResourceView):
         r = ItemResponse(ArticlesView,
                          [('article', article), ('world', world), ('publisher', publisher)],
                          method='delete')
-        r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
         r.set_theme('world', world.theme)
         r.set_theme('article', r.article.theme)
+        r.auth_or_abort()
 
         r.commit()
         return redirect(

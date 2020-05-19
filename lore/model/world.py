@@ -50,6 +50,7 @@ GenderTypes = Choices(
 # Generate the choices at runtime instead of import time
 plugin_choices = []
 
+
 def secure_css(css):
     if css:
         css = re.sub(r'<.*', '', css, flags=re.IGNORECASE)

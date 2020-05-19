@@ -3,7 +3,8 @@
 {% block content_title %}{% trans %}Please login to continue{% endtrans %}{% endblock %}
 {% block content %}
 <p>{% trans %}This page requires a logged in user. Don't worry if you don't have an account, 
-it will be automatically created for you, you won't even need a password.{% endtrans %}<p>
+it will be automatically created for you based on your social accounts (recommended) or a one-time code. 
+Try to use same email as in webshop or Kickstarter (if applicable).{% endtrans %}<p>
 <a class="btn btn-lg btn-info" href="{{ url_for('auth.sso', next=request.url) }}">
-{% trans %}Click to login{% endtrans %}</a>
+{% trans %}Sign in{% endtrans %}</a>
 {% endblock %}

@@ -101,12 +101,12 @@ class ProductsView(ResourceView):
             r.query = r.query.filter(
                 filter_product_published() |
                 filter_authorized_by_publisher(publisher))
+        r.set_theme('publisher', publisher.theme)
         r.auth_or_abort(res=publisher)
         r.prepare_query()
         if r.args.get('fields', None) and r.args['fields'].get('world', None):
             world = World.objects(slug=r.args['fields'].get('world', "")).first()
             r.world = world
-        r.set_theme('publisher', publisher.theme)
 
         return r
 
@@ -130,12 +130,12 @@ class ProductsView(ResourceView):
         #     r.query = r.query.filter(
         #         filter_product_published() |
         #         filter_authorized_by_publisher(publisher))
+        r.set_theme('publisher', publisher.theme)
         r.auth_or_abort(res=publisher)
         r.template = "shop/my_products.html"
         r.my_products = grouped
 
         # r.prepare_query()
-        r.set_theme('publisher', publisher.theme)
 
         return r
 
@@ -145,6 +145,7 @@ class ProductsView(ResourceView):
 
         if id == 'post':
             r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], extra_args={'intent': 'post'})
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort(res=publisher)
         else:
             product = Product.objects(slug=id).first_or_404()
@@ -154,8 +155,8 @@ class ProductsView(ResourceView):
             # extra_form_args = {} if stock_count is None else {'stock_count': stock_count}
             r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)])
             # r.stock = stock
+            r.set_theme('publisher', publisher.theme)
             r.auth_or_abort()
-        r.set_theme('publisher', publisher.theme)
 
         return r
 
@@ -164,10 +165,10 @@ class ProductsView(ResourceView):
         set_lang_options(publisher)
 
         r = ItemResponse(ProductsView, [('product', None), ('publisher', publisher)], method='post')
+        r.set_theme('publisher', publisher.theme)
         r.auth_or_abort(res=publisher)
         # r.stock = get_or_create_stock(publisher)
         product = Product()
-        r.set_theme('publisher', publisher.theme)
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
         r.form.populate_obj(product)
@@ -191,9 +192,9 @@ class ProductsView(ResourceView):
 
         product = Product.objects(slug=id).first_or_404()
         r = ItemResponse(ProductsView, [('product', product), ('publisher', publisher)], method='patch')
+        r.set_theme('publisher', publisher.theme)
         r.auth_or_abort()
         # r.stock = get_or_create_stock(publisher)
-        r.set_theme('publisher', publisher.theme)
 
         if not r.validate():
             return r, 400  # Respond with same page, including errors highlighted
@@ -377,6 +378,7 @@ class OrdersView(ResourceView):
         orders = Order.objects().order_by('-updated')  # last updated will show paid highest
 
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)])
+        r.set_theme('publisher', publisher.theme if publisher else None)
 
         r.auth_or_abort(res=publisher)
         if not (g.user and g.user.admin):
@@ -394,7 +396,6 @@ class OrdersView(ResourceView):
         }))
         r.aggregate = aggregate[0] if aggregate else None
 
-        r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
     def my_orders(self):
@@ -403,6 +404,7 @@ class OrdersView(ResourceView):
 
         orders = Order.objects(user=g.user).order_by('-created')  # last created shown first
         r = ListResponse(OrdersView, [('orders', orders), ('publisher', publisher)], method='my_orders', extra_args={"view": "cards"})
+        r.set_theme('publisher', publisher.theme if publisher else None)
         r.auth_or_abort(res=publisher)
         if not (g.user and g.user.admin):
             r.query = r.query.filter(
@@ -410,7 +412,6 @@ class OrdersView(ResourceView):
                 filter_authorized_by_publisher(publisher))
         r.prepare_query()
         r.template = "shop/my_orders.html"
-        r.set_theme('publisher', publisher.theme if publisher else None)
         return r
 
     def get(self, id):
@@ -422,8 +423,8 @@ class OrdersView(ResourceView):
         #     r = ItemResponse(OrdersView, [('order', None), ('publisher', publisher)], extra_args={'intent': 'post'})
         order = Order.objects(id=id).get_or_404()  # get_or_404 handles exception if not a valid object ID
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], form_class=PostPaymentForm)
-        r.auth_or_abort()
         r.set_theme('publisher', publisher.theme)
+        r.auth_or_abort()
         return r
 
     @route('/key/<code>', methods=['GET', 'PATCH'])
@@ -437,7 +438,7 @@ class OrdersView(ResourceView):
         r = ItemResponse(OrdersView, [('order', order), ('publisher', publisher)], method='key', extra_args={'intent': 'patch'})
         r.set_theme('publisher', publisher.theme)
         if not g.user:
-            return render_template("error/needlogin.html", root_template='_root.html', publisher_theme=r.publisher_theme)
+            return render_template("error/401.html", root_template='_root.html', publisher_theme=r.publisher_theme)
         r.auth_or_abort()
         r.template = "shop/order_peek.html"
         r.code = code

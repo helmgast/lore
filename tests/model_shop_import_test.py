@@ -424,19 +424,36 @@ def test_textalk_product_update(mongomock, app_client, db_loaded_product_data, t
 
     textalk_product["images"][0] = mock_urls["google_png"].url
     # To cover more variation, remove SOLD OUT from title, to ensure we also get available status
-    textalk_product["name"] =  {
+    textalk_product["name"] = {
       "en": "Neotech Edge Pearl River Delta",
       "sv": "Neotech Edge Pearl River Delta"
     }
 
     product = import_product(textalk_product, commit=True)
-    assert product.status == "available"
+    assert product.status == "available"  # No out of stock in title anymore
 
     pnum = textalk_product["articleNumber"]
 
     changed = {"articleNumber": pnum, "images": [mock_urls["textalk_png1"].url]}
     updated_product = import_product(changed, commit=False, if_newer=False)
     assert set(updated_product._changed_fields) == {"images", "feature_image"}
+
+
+def test_textalk_product_outofstock(mongomock, app_client, db_loaded_product_data, textalk_product, mocked_responses):
+    mocked_responses.add(mock_urls["google_png"])
+    mocked_responses.add(mock_urls["textalk_png1"])
+    mocked_responses.add(mock_urls["textalk_png2"])
+
+    textalk_product["images"][0] = mock_urls["google_png"].url
+    textalk_product["name"] = {
+      "en": "Neotech Edge Pearl River Delta",
+      "sv": "Neotech Edge Pearl River Delta"
+    }
+
+    textalk_product["stock"]["useStock"] = True
+    product = import_product(textalk_product, commit=True)
+    assert product.status == "out_of_stock"
+
 
 
 @pytest.fixture

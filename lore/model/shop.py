@@ -131,7 +131,7 @@ class Product(Document):
     # Note URLField doesn't accept None or empty strings, so we should only set when we have
     shop_url_i18n = MapField(field=URLField(), verbose_name=_("Product webshop URL"))
     downloads = ListField(ReferenceField(FileAsset, reverse_delete_rule=DENY), verbose_name=_("Downloads"))
-    status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.hidden, verbose_name=_("Status"))
+    status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.available, verbose_name=_("Status"))
     images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_("Product Images"))
 
     # TODO DEPRECATE in DB version 3
@@ -145,8 +145,6 @@ class Product(Document):
     # Executes before saving
     def clean(self):
         self.updated = datetime.utcnow()
-        if request and request.values.get("downloads", None) is None:
-            self.downloads = []
         self.slug = slugify(self.product_number)
 
     def slug_path(self):
@@ -962,11 +960,16 @@ def import_product(data, job=None, commit=False, create=True, if_newer=True):
     if not product.publisher and not is_updating:  # Early validation to stop if no publisher
         raise ValueError("A publisher slug/domain is required when importing.")
 
-    hidden = get(data, "hidden", None)
-    if hidden is True:
-        product.status = ProductStatus.hidden
-    elif hidden is False:
-        product.status = ProductStatus.available
+    # Ignore hidden for the moment, for the most part, we want products to be visible in Lore
+    # hidden = get(data, "hidden", None)
+    # if hidden is True:
+    #     product.status = ProductStatus.hidden
+    # elif hidden is False:
+    #     product.status = ProductStatus.available
+    stock = get(data, "stock", "")
+    if stock and stock.get("useStock", False) and stock.get("stock", None) == 0:
+        product.status = ProductStatus.out_of_stock
+
     status = get(data, "status", "")
     if status and status in ProductStatus:
         product.status = status

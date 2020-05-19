@@ -73,6 +73,7 @@
         {% endif %}
 
         <form id="userform" class="form-horizontal" role="form" method="post" action="{{ action_url }}">
+        {{ user_form.newsletter(class="hidden")}}
 
         {% if user and user==g.user %}
             {{ MACRO.FORM_FIELD(user_form.username, labelclass="col-sm-3", controlwrap="col-sm-9") }}
@@ -100,6 +101,7 @@
     {% else %}
         <table class="table">       
             {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('edit', res=user)) %}
+            {% if user.active %} {# Only active users can link accounts #}
             <tr><th>{{ _('Linked accounts') }}</th>
                 <td>
                 <table class="table" id="authsources">
@@ -111,13 +113,14 @@
                     {% endfor %}
                 </table>
                 <td>
-            </tr>  
-                <tr>
-                    <th>{{ _('Email') }}</th>
-                    <td>
-                        <small>{{ user.email }}</small>
-                    </td>
-                </tr>
+            </tr>
+            {% endif %}
+            <tr>
+                <th>{{ _('Email') }}</th>
+                <td>
+                    <small>{{ user.email }}</small>
+                </td>
+            </tr>
             {% endcall %}
 
             <tr>
@@ -211,10 +214,12 @@
 
     {% if user_form %}
 
-    $("#newsletter").change(function() {
+    // Toggle newsletter in other form as well
+    $(".content__gdpr input[type=checkbox]").change(function() {
         if(this.checked) {
             $('#interests input[type=checkbox]').prop("checked", true);
         }
+        $('#newsletter').prop("checked", this.checked)
     });
 
     var avatarWidget = cloudinary.createUploadWidget({

@@ -202,6 +202,20 @@ def get_root_template(out_value):
         return current_app.jinja_env.get_or_select_template("_root.html")
 
 
+def set_theme(obj, type, *paths):
+    if type and paths:
+        # != 'None' as this string may mean None in Mongoengine
+        templates = ["%s/index.html" % secure_filename(p) for p in paths if p and p != "None"]
+        if templates:
+            try:
+                theme = current_app.jinja_env.select_template(templates)
+                name = f"{type}_theme"
+                setattr(obj, name, theme)
+                return theme
+            except TemplatesNotFound as err:
+                logger.warning(f"Can't find named themes {paths} at {templates}")
+
+
 class ResourceResponse(Response):
     arg_parser = {
         # none should remain for subsequent requests
@@ -248,14 +262,8 @@ class ResourceResponse(Response):
             and ("fields" in self.args and self.args["fields"].get("theme", None))
         ):
             paths += (self.args["fields"]["theme"],)
-        if type and paths:
-            # != 'None' as this string may mean None in Mongoengine
-            templates = ["%s/index.html" % secure_filename(p) for p in paths if p and p != "None"]
-            if templates:
-                try:
-                    setattr(self, "%s_theme" % type, current_app.jinja_env.select_template(templates))
-                except TemplatesNotFound as err:
-                    logger.warning(f"Can't find named themes {paths} at {templates}")
+        theme = set_theme(self, type, *paths)
+        setattr(g, f"{type}_theme", theme)
 
     def auth_or_abort(self, res=None):
         res = res or getattr(self, "instance", None)

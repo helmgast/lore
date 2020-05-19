@@ -39,8 +39,8 @@
             </div>
         </div>
         {% for world in worlds %}
+            {% if world and world.get_header_image %}
             <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">
-
                 <div class="page-header page-header-hero parallax-border {{ 'page-header-hide-text' if world.hide_header_text }}"
                      style="background-image: url({{world.get_header_image.feature_url(transform='w_2400') }})">
                     <div class="container">
@@ -51,6 +51,7 @@
                     </div>
                 </div>
             </a>
+            {% endif %}
 
         {% endfor %}
         {#        <div id="homepage-carousel" class="carousel slide" data-ride="carousel">#}

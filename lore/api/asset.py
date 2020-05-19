@@ -13,17 +13,7 @@ from werkzeug.utils import secure_filename
 from flask_classy import route
 
 from lore.api.pdf import fingerprint_pdf
-from lore.api.resource import (
-    ImprovedModelConverter,
-    ResourceAccessPolicy,
-    ResourceView,
-    ListResponse,
-    ItemResponse,
-    ImprovedBaseForm,
-    filterable_fields_parser,
-    prefillable_fields_parser,
-    Authorization,
-)
+from lore.api.resource import Authorization, ImprovedBaseForm, ImprovedModelConverter, ItemResponse, ListResponse, ResourceAccessPolicy, ResourceView, filterable_fields_parser, prefillable_fields_parser, set_theme
 
 from lore.model.asset import FileAccessType, FileAsset, get_google_urls
 from lore.model.misc import set_lang_options, filter_is_owner
@@ -90,6 +80,10 @@ def send_gridfs_file(
 
 def authorize_and_return(fileasset_slug, as_attachment=False):
     asset = FileAsset.objects(slug=fileasset_slug).first_or_404()
+    publisher = Publisher.objects(slug=g.pub_host).first()
+    if publisher:
+        # For better error pages
+        set_theme(g, "publisher", publisher.theme)
 
     if asset.file_data_exists():
         attachment_filename = asset.get_attachment_filename() if as_attachment else None
@@ -187,8 +181,8 @@ class FileAssetsView(ResourceView):
             [("files", FileAsset.objects().order_by("-created_date")), ("publisher", publisher)],
             extra_args=kwargs,
         )
-        r.auth_or_abort()
         r.set_theme("publisher", publisher.theme if publisher else None)
+        r.auth_or_abort()
 
         if not (g.user and g.user.admin):
             r.query = r.query.filter(filter_is_owner() | filter_authorized_by_publisher(publisher))
@@ -214,12 +208,13 @@ class FileAssetsView(ResourceView):
 
         if id == "post":
             r = ItemResponse(FileAssetsView, [("fileasset", None)], extra_args={"intent": "post"})
+            r.set_theme("publisher", publisher.theme if publisher else None)
             r.auth_or_abort(res=None)
         else:
             fileasset = FileAsset.objects(slug=id).first_or_404()
             r = ItemResponse(FileAssetsView, [("fileasset", fileasset)])
+            r.set_theme("publisher", publisher.theme if publisher else None)
             r.auth_or_abort()
-        r.set_theme("publisher", publisher.theme if publisher else None)
         return r
 
     @route("<path:id>", methods=["GET"])
@@ -230,8 +225,8 @@ class FileAssetsView(ResourceView):
         fileasset = FileAsset.objects(slug=id).first_or_404()
 
         r = ItemResponse(FileAssetsView, [("fileasset", fileasset)], method="patch")
-        r.auth_or_abort()
         r.set_theme("publisher", publisher.theme if publisher else None)
+        r.auth_or_abort()
 
         if not r.validate():
             # return same page but with form errors?
@@ -250,8 +245,8 @@ class FileAssetsView(ResourceView):
         set_lang_options(publisher)
 
         r = ItemResponse(FileAssetsView, [("fileasset", None)], method="post")
-        r.auth_or_abort()
         r.set_theme("publisher", publisher.theme if publisher else None)
+        r.auth_or_abort()
 
         fileasset = FileAsset()
         if not r.validate():
