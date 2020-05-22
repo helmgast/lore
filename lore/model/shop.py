@@ -196,11 +196,18 @@ class Product(Document):
             raise ValidationError("Cannot delete product %r as it's referenced by Orders" % self)
         super(Product, self).delete()
 
-    def __str__(self):
-        return f"{self.title} [{self.product_number}] ({self.world or self.family})"
-
     def is_owned_by_current_user(self):
         return g.user and self in products_owned_by_user(g.user)
+
+    def __str__(self):
+        """A string representation suitable for display to end users. Call with !s after variable in f-strings.
+        """
+        return f"{self.title} [{self.product_number}] ({self.world or self.family})"
+
+    def __repr__(self):
+        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings.
+        """
+        return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.product_number}', '{self.world!r}', '{self.publisher!r}')"
 
 
 Product.world.filter_options = reference_options("world", Product)
@@ -230,7 +237,7 @@ class OrderLine(EmbeddedDocument):
         return isinstance(self.price, float)
 
     def __str__(self):
-        return f"{self.quantity}x{self.title or self.product}@{self.price}"
+        return f"{self.quantity}x{self.get_title}@{self.price}"
 
 
 OrderStatus = Choices(
@@ -304,6 +311,8 @@ class Order(Document):
     shipping_address = EmbeddedDocumentField(Address)
 
     def __str__(self):
+        """A string representation suitable for display to end users. Call with !s after variable in f-strings.
+        """
         if self.title:
             return self.title
         max_line, max_price = None, -1
@@ -317,6 +326,11 @@ class Order(Document):
         else:
             s = f"{_('Empty order')}"
         return s
+
+    def __repr__(self):
+        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings.
+        """
+        return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.external_key}', '{self.user!r}', '{self.publisher!r}')"
 
     @staticmethod
     def calc_vat(price, rate):
@@ -501,6 +515,7 @@ def parse_url_assets(urls, document, commit=False, slug_prefix="", locked_to_pro
 
         fa_list.append(fa)
     return fa_list
+
 
 # https://regex101.com/r/4HgdwB/1/. match string like 100xNNN-123@12*0.25 where
 # 100 is qty, NNN-123 is product, 12 is price and 0.25 is vatRate. Missing price is

@@ -241,6 +241,13 @@
             </a>
         {% endif %}
         <table class="table" id="tour-worlddetails">
+            {% if world.external_host %}
+            <tr>
+                <td colspan=2>
+                    <a href="{{world.external_host}}"><span class="glyphicon glyphicon-globe"></span> {{ _('External homepage') }}</a>
+                </td>
+            </tr>   
+            {% endif %}   
             <tr>
                 <td colspan=2>
                     <a href="{{url_for('shop.ProductsView:index', world=world.slug)}}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Product Catalogue') }}</a>

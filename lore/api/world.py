@@ -345,6 +345,7 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_world())
         # Ensure we only show worlds with an image
         r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published())
+        r.query = r.query.order_by('-publishing_year', '-created')
         r.query = r.query.limit(8)
         r.prepare_query()
         return r
@@ -367,8 +368,8 @@ class ArticlesView(ResourceView):
                              [('world', world), ('publisher', publisher)])
             r.set_theme('publisher', publisher.theme)
             r.auth_or_abort()
-            if world.external_host:
-                return redirect(world.external_host)
+            # if world.external_host:
+            #     return redirect(world.external_host)
             r.set_theme('world', world.theme)
             r.articles = Article.objects(world=world).filter(
                 filter_published() |

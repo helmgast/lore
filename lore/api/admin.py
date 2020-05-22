@@ -105,15 +105,6 @@ class ShortcutsView(ResourceView):
 ShortcutsView.register_with_access(admin, "shortcut")
 
 
-def safeget(dct, *keys):
-    for key in keys:
-        try:
-            dct = dct[key]
-        except KeyError:
-            return None
-    return dct
-
-
 @csrf.exempt
 @admin.route("/import_textalk/<model>", methods=["POST"])
 def import_webhook(model):
@@ -140,7 +131,7 @@ def import_webhook(model):
             job = Job()
             order = import_order(data, job=job, commit=True)
             if order is not None:
-                logger.info(f"Imported {order}, {job}")
+                logger.info(f"Imported {order!r} from {uid}, {job}")
             else:
                 logger.info(f"Skipped importing order {uid}, {job}")
             return "OK", 200
@@ -161,7 +152,7 @@ def import_webhook(model):
             job = Job()
             product = import_product(data, job=job, commit=True)
             if product is not None:
-                logger.info(f"Imported {product}, {job}")
+                logger.info(f"Imported {product!r} from {uid}, {job}")
             else:
                 logger.info(f"Skipped importing product {uid}, {job}")
             return "OK", 200
