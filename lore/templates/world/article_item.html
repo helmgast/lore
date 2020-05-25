@@ -84,7 +84,7 @@
     {% if article and article.get_header_image %}
     <style>
         .page-header-hero {
-            background-image: url({{ url_for('image', slug = article.get_header_image.slug)}})
+            background-image: url( {{ article.get_header_image.feature_url(format='wide') }} )
         }
     </style>
     {% endif %}

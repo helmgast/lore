@@ -1,6 +1,6 @@
 <div class="card{{ ' status-unpublished' if not article.is_published() }}"
         {%- if article.get_feature_image -%}
-     style="background: url({{ article.get_feature_image.feature_url(crop=(516,726)) }}) center top/cover;"
+     style="background: url({{ article.get_feature_image.feature_url(format='card') }}) center top/cover;"
         {%- endif -%}>
     <a class="card-cover icon150px"
        href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">

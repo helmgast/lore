@@ -185,6 +185,14 @@ def get_google_urls(url):
     return urls
 
 
+cloudinary_transforms = {
+    "wide": "w_2400,c_limit,q_auto,fl_lossy,f_auto",
+    "center": "w_1600,c_limit,q_auto,fl_lossy,f_auto",
+    "card": "w_800,c_limit,q_auto,fl_lossy,f_auto",
+    "icon": "w_200,c_limit,q_auto,fl_lossy,f_auto",
+    "fix": "q_auto,fl_lossy,f_auto"
+}
+
 class FileAsset(Document):
     slug = StringField(max_length=99, unique=True)
     meta = {
@@ -238,8 +246,9 @@ class FileAsset(Document):
         return md5.hexdigest()
 
     def feature_url(self, **kwargs):
-        crop = kwargs.pop("crop", None)
+        format = kwargs.pop("format", None)
         transform = kwargs.pop("transform", "")
+        transform += cloudinary_transforms.get(format, "")
         cloudinary = current_app.config.get("CLOUDINARY_DOMAIN")
         if cloudinary:
             if self.source_file_url:
@@ -250,10 +259,6 @@ class FileAsset(Document):
                     logger.debug("Force swapping URL to use helmgast.se instead of test")
                     kwargs["pub_host"] = "helmgast.se"
                 url = url_for("image_thumb", slug=self.slug, **kwargs)
-            if crop and len(crop) >= 2:
-                # https://res.cloudinary.com/demo/image/upload/w_250,h_250,c_limit/sample.jpg
-                crop_type = "lfill" if len(crop) != 3 else crop[2]
-                transform = f"w_{crop[0]},h_{crop[1]},c_{crop_type},g_auto/"
             if transform and not transform.endswith("/"):
                 transform += "/"
             # Google Drive URLs doesn't resolve for Cloudinary, but the thumb might

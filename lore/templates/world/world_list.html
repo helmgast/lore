@@ -24,7 +24,7 @@
         {% for world in worlds %}
             <div class="card{{ ' status-unpublished' if not world.is_published() }}"
                     {%- if world.get_feature_image -%}
-                 style="background: url({{ world.get_feature_image.feature_url(crop=(516,726)) }}) center top/cover;"
+                 style="background: url({{ world.get_feature_image.feature_url(format='card') }}) center top/cover;"
                     {%- endif -%}>
                 <a class="card-cover icon150px"
                    href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">

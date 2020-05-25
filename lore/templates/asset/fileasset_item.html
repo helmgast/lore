@@ -50,8 +50,8 @@
                 </div>
                 <div class="col-md-4">
                     {% if fileasset %}
-                    <a class="gallery-item" href="{{ fileasset.feature_url(transform='w_1280,h_1280,c_limit') }}">
-                        <img class="img-responsive zoomable" src="{{ fileasset.feature_url(transform='w_1280,h_1280,c_limit') }}">
+                    <a class="gallery-item" href="{{ fileasset.feature_url(format='card') }}">
+                        <img class="img-responsive zoomable" src="{{ fileasset.feature_url(format='card') }}">
                     </a>
                     {% endif %}
                 </div>
@@ -156,8 +156,8 @@
             </div>
             <div class="col-md-4">
                 <div class="gallery">
-                    <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}" href="{{ fileasset.feature_url(transform='w_1280,h_1280,c_limit') }}">
-                        <img class="img-responsive zoomable" src="{{ fileasset.feature_url(transform='w_1280,h_1280,c_limit') }}">
+                    <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(fileasset.aspect_ratio()) }}" href="{{ fileasset.feature_url(format='card') }}">
+                        <img class="img-responsive zoomable" src="{{ fileasset.feature_url(format='card') }}">
                     </a>
                 </div>
             </div>

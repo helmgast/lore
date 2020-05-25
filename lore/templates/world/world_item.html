@@ -23,7 +23,7 @@
     {% if world and world.get_header_image %}
         <style>
             .page-header-hero {
-                background-image: url({{ url_for('image', slug = world.get_header_image.slug)}})
+                background-image: url({{ world.get_header_image.feature_url(format='wide') }})
             }
             {% if world.custom_css %}
                 {{ world.custom_css|safe|replace('style>','') }}

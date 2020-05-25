@@ -195,8 +195,8 @@
                 <br>
                 <div class="gallery feature-images">
                     {% for img in product.images %}
-                        <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(img.aspect_ratio()) }}" href="{{ img.feature_url(transform='w_1280,h_1280,c_limit') }}">
-                            <img class="zoomable" src="{{ img.feature_url(transform='w_1280,h_1280,c_limit') }}">
+                        <a class="gallery-item" style="{{ MACRO.GALLERY_ITEM_STYLE(img.aspect_ratio()) }}" href="{{ img.feature_url(format='card') }}">
+                            <img class="zoomable" src="{{ img.feature_url(format='card') }}">
                         </a>
                     {% else %}
                         <span class="glyphicon glyphicon-{{ MACRO.product_icons[product.type] }} icon150px"></span>

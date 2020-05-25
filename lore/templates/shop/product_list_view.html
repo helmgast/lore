@@ -3,7 +3,7 @@
         {% if product.get_feature_image %}
             <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">
                 <img class="media-object"
-                     src="{{ product.get_feature_image.feature_url(transform='w_80,h_80,c_fill') }}">
+                     src="{{ product.get_feature_image.feature_url(format='icon') }}">
             </a>
         {% else %}
             <a class="media-object icon64px"

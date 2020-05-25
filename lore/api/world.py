@@ -344,8 +344,8 @@ class ArticlesView(ResourceView):
                 filter_authorized_by_publisher(publisher) |
                 filter_authorized_by_world())
         # Ensure we only show worlds with an image
-        r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published())
-        r.query = r.query.order_by('-publishing_year', '-created')
+        r.worlds = publisher.worlds().filter(__raw__={'images': {'$gt': []}}).filter(filter_published()).order_by('-publishing_year', '-created_date')
+        r.query = r.query
         r.query = r.query.limit(8)
         r.prepare_query()
         return r

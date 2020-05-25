@@ -3,7 +3,7 @@
         {% if article.get_feature_image %}
             <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
                 <img class="media-object"
-                     src="{{ article.get_feature_image.feature_url(crop=(160,160)) }}">
+                     src="{{ article.get_feature_image.feature_url(format='icon') }}">
             </a>
         {% else %}
             <a class="media-object icon64px"

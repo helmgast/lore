@@ -15,7 +15,7 @@
                         {% if line.product.get_feature_image %}
                         <td>
                             <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">
-                            <img class="media-object" src="{{ line.product.get_feature_image.feature_url(transform='w_160,h_160,c_limit,q_auto') }}">
+                            <img class="media-object" src="{{ line.product.get_feature_image.feature_url(format='icon') }}">
                             </a>
                         </td>
                         <td>
