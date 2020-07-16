@@ -15,7 +15,7 @@
     "intro.js": "^2.9.3",
     "jquery": "^3.4.1",
     "list.js": "^1.2.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "marked": "^0.8.2",
     "selectize": "^0.12.6",
     "snabbt.js": "^0.6.4",
