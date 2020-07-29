@@ -411,6 +411,7 @@ class CampaignData(EmbeddedDocument):
 #   subbranch = EmbeddedDocumentListField('self')
 ArticleTypes = Choices(
     default=_("Default"),
+    topic=_("Topic"),
     blogpost=_("Blog Post"),
     material=_("Material"),
     person=_("Person"),

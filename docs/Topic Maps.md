@@ -11,15 +11,21 @@ The real power in topic maps comes in associations, that is, how topics relate t
 - [TAO of Topic Maps](https://ontopia.net/topicmaps/materials/tao.html)
 - [A Practical Introduction to Topic Maps](http://techquila.com/tech/topic-maps-intro/)
 - [Topic Maps on MSDN](https://docs.microsoft.com/en-us/previous-versions/aa480048(v=msdn.10))
+- [Topic maps dead?](https://www.strehle.de/tim/weblog/archives/2015/06/14/1763)
+- [Topic maps as file systems](http://www.garshol.priv.no/blog/200.html) _shows that topic maps can be understood as a file-system_
 
 ## Why so obscure?
 
-Topic maps are a great theoretical construct but if you search around, you quickly realize they are pretty obscure. Very few references exist and the software and sources tend to be very dated. Almost the same fate seem to have happened to _semantic web_. For some reason organizing our knowledge and idea worlds does not attract a lot of interest. I think there are a few reasons:
+Topic maps are a great theoretical construct but if you search around, you quickly realize they are pretty obscure. Very few references exist and the software and sources tend to be very dated. Almost the same fate seem to have happened to _semantic web_ [more here](http://www.garshol.priv.no/blog/261.html). For some reason organizing our knowledge and idea worlds does not attract a lot of interest. I think there are a few reasons:
 
 1. Topic maps, semantic webs and similar all tend to come with a lot of abstraction and a lack of realistic examples of use.
 2. It's very powerful to describe everything as a topic, even the relations with other topics, but it also makes it hard to get started. You might feel you need to create dozens of topics just to get the most basic of ideas represented properly. It can feel like trying to fill a swimming pool with a teaspoon.
 3. Virtually all user interfaces in this space are old and poor. They use abstract terms, requires a lot of user input (e.g. limited auto-complete) and don't look sexy.
 4. Ultimately, however useful these types of maps are in theory, in practice human knowledge and social graphs seems to be fairly well represented by tools we have today, like social networks, Google search and Wikipedia. Sure, they all use some graph databases or semantic technologies under the hood but in general, they more use brute force methods like text search (and lately, deep neural networks) that seem enough to get some value out of large amount of unstructured social and textual data. In other words, the topic maps have not yet proven their value.
+
+## Other methods of semantic graphs or knowledge graphs
+
+Topic maps plays in a fuzzy, messy area of research and standards where nothing really has become mainstream or de facto. In a broad sense, there are two competing concepts for representing graphs of knowledge: _topic maps_ and _resource description framework_ (RDF). Topic maps is a bit more complete, including scoping and bi-directional associations, whereas basic RDF is centered around subject-predicate-object, e.g. one-directional relationships. To read more about the differences and standards, [see here](http://www.garshol.priv.no/blog/92.html). In general, Topic Maps can be converted to RDFs and vice versa [see here](http://lingo.uib.no/trond/TopicMaps/Moore%20-%20RDF%20and%20Topic%20Maps%20An%20Exercise%20in%20Convergence.pdf)
 
 ## Why use topic maps for game worlds?
 
@@ -66,46 +72,11 @@ All importing needs to be made safe to re-import, so that we can "throw" many so
 
 ## Data Model of a Topic Map
 
-```py
-
-class Name(EmbeddedDocument):
-    name = StringField()
-    scopes = ListField(ReferenceField('Topic'))
-    #! TopicDB only has a single scope, and treats language as a special field
-
-
-class Occurrence(EmbeddedDocument):
-    uri = URLField()
-    description = StringField()  # Could be any inline data?
-    occurrence_type = ReferenceField('Topic')
-    scopes = ListField(ReferenceField('Topic'))
-
-
-class Association(EmbeddedDocument):
-    this_topic = ReferenceField('Topic')
-    this_role = ReferenceField('Topic')  # E.g. employs
-    association_type = ReferenceField('Topic')  # E.g. Employment (association types should be nouns to make them unidirectional)
-    other_role = ReferenceField('Topic')  # E.g. employed by
-    other_topic = ReferenceField('Topic')
-    scopes = ListField(ReferenceField('Topic'))
-    #! TopicDB and standard groups source and source_role into a Member object first
-
-
-class Topic(Document):
-    id = StringField(primary_key=True)  # Should for us be a URI :publisher/:scope-path/:slug
-    description = StringField()  # Should be multi-language
-    topic_type = ReferenceField('Topic')  # Can have multiple in the standard?
-    names = ListField(EmbeddedDocumentField(Name))
-    occurrences = ListField(EmbeddedDocumentField(Occurrence))
-    # Occurrences might not be a list, but a dict, e.g. dynamic object. The order of the Occurrences doesn't matter, and we can adress them by key instead of index. Downside is that we need to handle them as Dynamic Types as they would all have different keys.
-    # Topics themselves currently lack scopes, don't they need that to work with the Lore model of canon vs community?
-    associations = ListField(EmbeddedDocumentField(Association))
-
-```
+See `lore/model/topic.py`.
 
 ## Pre-loaded topics
 
-It's important to pre-load some topics with Lore, as the interface will expect some of them to exist (but not break if not!). They all come under the `lore.pub/docs/` namespace, below we just refer to the slug part.
+It's important to pre-load some topics with Lore, as the interface will expect some of them to exist (but not break if not!). They all come under the `lore.pub/meta/` namespace, below we just refer to the slug part.
 
 ### Associations
 ``` 
@@ -210,11 +181,11 @@ Example Topic maps:
 
 An optimal ID/URI for a fictional world topic would be `:publisher/:world/:topic`.
 
-This would not support hononyms, e.g. Gondor the King and Gondor the country, but to keep it simple, that can be solved by the naming of the topic itself (thereby changing the slug).
+This would not support homonyms, e.g. Gondor the King and Gondor the country, but to keep it simple, that can be solved by the naming of the topic itself (thereby changing the id). It's also fully possible to create a topic representing the homonym itself, and then link to other topics that it refers to.
 
 While pre-established Lore meta-topics (e.g. Person, etc) could be identified by `lore.pub/meta/:topic`. This may not actually be an URL that serves any content (but it could also list all associated topics). Note that the lore.pub domain is shared across all publishers, e.g. they share the same meta-topics (they come with the Lore software). That doesn't exclude the possibility of `:publisher:/meta/:topic`.
 
-Note that for topics, these URLs are only identifiers. The actual Topic object would be fetched from the GraphQL endpoint. When a user visits the URL of the topic `helmgast.se/eon/drunok`, we are instead fetching contents from a CMS, but the contents are considered the canonical description of the Topic `Drunok`. We just need to ensure this URL is as permanent as possible.
+Although the ID is an URI, it may not match to an actual page to serve. That is up to a CMS that uses the Lore API.
 
 Canoncial topic descriptions won't be the only type of content a publisher produces. They might produce blog posts, perhaps at an URL like `:publisher/blog/:some_post_slug` or `:publisher/:world:/blog/:some_post_slug`, and these would be referenced as any other occurrence (just not considered canonical). It's also likely that a publisher want to write about their products at e.g. `:publisher/products/eon` or they might create an online book. It doesn't really matter, except to avoid collisions.
 
@@ -222,43 +193,51 @@ Canoncial topic descriptions won't be the only type of content a publisher produ
 
 Like a wiki, we want as many people as possible to have the possibility to add to our world (topic map). But we also need to control access to avoid spamming and destroying data (especially as we probably won't have a revisions system on the topics). Additionally, it's great if we can handle if that there is not one unified source of truth about a fictional world. Some content is considered canonical, other is community. 
 
-To start with, any editing of data requires a logged in user. But a user can have roles defined with paths, meaning that the role applies to interactions on that path (or below the path):
+In Lore's Topic model, we don't track creators or editors of individual topics, they are all considered a common resource. After all, the Topic itself has almost no data. The valuable data lies in Occurrences (and less so in other characteristics). And each characteristic can have ownership as it will be scoped by the publishing user. Additionally, external occurrences of course have ownership that lies outside of Lore.
 
-- Contributor
-- Editor
-- Owner
+While reading any data on Lore is public, editing requires a logged in user. Any user is given one or more claims in a format like `role|publisher.com/world`. An action is permitted IF the role permits the action, AND the claim path is a prefix to either the ID of the topic OR the ID of a scope that exists on the characteristic being edited. A characteristic is a Name, an Occurrence or an Association.
 
 ### Contributor
 
 A contributor is a user that is allowed to add content but not change or delete. Additionally, contributor content gets a special scope that requires editor action to approve before it becomes part of the general content.
 
-- Can add occurrences, scoped as `contributed`
-- Can propose edit to existing occurrence, by duplicating existing occurrence and setting scope as `contributed`
-- Can add association between two topics, scoped as `contributed`.
-- Can propose edit to association, by duplicating existing association and setting scope as `contributed`
-- Can create new topics within their permitted path.
+- Can add a characteristic, scoped with `contributed-content`, if the claim matches the topic ID
+- Can propose edit to a characterstic, by duplicating the characteristic and setting scope as `contributed-content`
+- Can create a new topic, if the ID it would get matches the claim
 - Later feature: Can propose words to be marked as topics in the text. Tricky as it would require some addressing of words in the text or ability to change the text.
 
-In addition to contributed scope, we would also add the user-id to the scope. Users by default see their own scope, regardless, while other’s won’t see any community-proposed unless they explicitly add it to the filter. When showing contributed edits, if they match another occurrence/association in the topic (using some heuristic), we would show them as overriding the previous in some way, e.g. a simple diff, or showing them next to each other in red and green.
+In addition to contributed scope, we would also add the user-id to the scope. Users by default see their own scope, regardless, while other’s won’t see any community-proposed unless they explicitly add it to the filter. Also, users have editing rights to their own ID, which means they can edit characteristics they've added. When showing contributed edits, if they match another occurrence/association in the topic (using some heuristic), we would show them as overriding the previous in some way, e.g. a simple diff, or showing them next to each other in red and green.
 
 ### Editor
 
-- Can edit any topic, occurrence, association within path
-- Has a special action for marking a community-proposed edit to be either community (that is, accepted but not canon) or canon.
+- Can edit any characteristic, including an approval action for `contributed-content` (which just means to change the scope to `community-content` or `canon`).
 
 ### Owner
 
-- An owner can edit anything in the path. The only difference to an Editor is that an Owner can delete topics.
+- Same as editor, but can also delete topics.
 
-### Paths
+## Multiple publishers and worlds
 
-All roles applies to a path, and a topic is considered applicable if it's ID path begins with the role's path. If multiple roles apply to a path, the highest role will apply. Role/path pairs will be added to individual users outside of the topic system. They could be added to the JWT (but it might make it too big), otherwise they are fetched from DB/API.
+When a publisher digitizes their world, a first step is to create as many topics as possible that represents topics in the world, which obviously then are considered canon. The topics might be bare (not many characteristics), but that's something the community can help with adding.
 
-### Principles
+Eventually, we will get the case that contributors want to add new topics, such as their own created character or place, to a world controlled by another publisher.
 
-In Lore's Topic model, we don't track creators or editors of individual topics, they are all considered a shared resource. Occurrences is really what has ownership, which is marked by scope (or implicitly based on who controls editing rights on the external resource). We are also very careful with deleting data, so once something is contributed, it cannot immediately be removed again without an Owner.
+The first step is to associate the topic to a world created by original publisher, e.g. associate to topic Eon (`helmgast.se/eon`) with an association that is scoped as `contributed-content`. This would mean it shows up in listings of topics under Helmgast's Eon page, but not marked as canon. The downside is that the Eon topic might become extremely large. If we use the path component `eon` we don't need to create an association, but we have to assume that `eon` path is unique among all publishers.
 
-All creations/edits create a special scope that is identified with your user / publisher identity. This is so you and others can easily see what you have contributed. You can also add a custom scope to denote that your edits are part of a subset of the total world/topic map that is yours. For example, one gaming group can in their gaming world have created new associations that are neither considered canonical nor community.
+By default, new topics are created under the contributor's own domain at a selected path, e.g. `mypub.lore.pub/eon/x`. This means if a user visits X, they might leave the Helmgast domain and enter the Mypub domain.
+
+It's also possible to propose a topic to belong to another publisher, e.g. give it the id `helmgast.se/eon/x`. That means giving up any control as the topic id domain determines access rights as well as accessible URL, domain, theming, etc. You could do this by a setting when creating the topic. All the characteristics would still be scoped as `contributed-content` and to the publishing user that created it (`user@mybpub.lore.pub`). We would default to not showing topics that only have contributed titles, as we would consider them unapproved, but once a user with access to Helmgast approves it, it can show up in listings.
+
+### Questions
+
+- [ ] Can contributors use their own URLs and ID schemes, e.g. random page at their site?
+- [ ] What are the queries needed to perform listings considering above scheme? There are e.g. two ways to query topics in a world - all topics linked to "MyWorld" or all topics with an ID containing "myworld".
+- [ ] Associating all articles to a specific world will make that world topic have an very large association list. MongoDB has a max size Document size of 16 MB (maybe implying 100k associations as limit). Solutions:
+  a) Create one-directional associations specifically for worlds, but we need logic to know when to search the DB for inbound associations instead of just reading the association list.
+  b) Create a faux association built from the path components, e.g. a topic is automatically "part of" any path component in it's ID. Problem is, those part components are not globally unique as they lack a domain, so `eon` would have to be unique globally, or we can't assume `mypub.lore.pub/eon/x` is part of `helmgast.se/eon/` (which is hard to argue logically anyway)
+  c) Create a collection of associations, so each association is a document. This however creates extra fetching (one query with many documents)
+  d) Force publishers giving away control of their topics to link it to another world.
+- Language is full of disambiguities. One such kind is aliases, where multiple names are associated with the same topic. The easy way to handle alias would simply be to create a new topic for each alias and link them using associations. Problem is that associations and textual links between topics gets fragmented: some might point to an alias and some to the original. It would be easy to lose info, or you'd need to graph search all aliases at display time. A better approach is to merge them, listing each alternative name as scope alias in the names list. You could even leave the text links untouched if you could search alternative names when resolving a link. It gets a bit more tricky however when we have multiple publishers. 
 
 ## Combining topic maps with existing CMS
 
@@ -356,6 +335,7 @@ video
 website
 ```
 
+
 ## OccurrenceAdapters
 
 - Schema of the adapter's fields (list of labels and field types)
@@ -375,15 +355,52 @@ website
 
 For the queries to be efficient, we may need to add extra indexed (denormalized) fields either on Topic or on a separate collection, e.g. to do geoqueries.
 
+We often want to filter characteristics of a Topic through scope, for example to translate. We provide a list of ids and request to filter characteristics by them. It means, return any characteristic with a scope that matches either one of the provided, or all of the provided. 
+
+We could also set an association pointing to a wildcard ID. This means it resolves to a query, not an individual topic.
+
+
 ## Open questions
 
-1. Custom IDs in MongoDB
-2. Unique IDs for Topics (slugs) and their relation to Name
-3. Shorthand function for creating topics and associations
-4. Handling of thumbnails and icons for topics
-5. Metadata we want to store on each topic. created_at, updated_at, owner?
-6. How to use scopes. In the standard, they are considered a limitation, and lack of scope means no limitation. But we might want to have scopes also as a way of tagging or filtering topics, not just limiting. E.g. you might add a scope "MartinAuthored" just to be able to note who edited what. Basic idea is to use it for both depending on context.
-7. If a publisher/user bob creates content for the world Eon owned by publisher carl, how do we signify this? The ID path could be listed under a) carl.com/eon/* or b) bob.com/eon/ . If a), we use the scope to denote that bob contributed this. Somewhere in Bob's interface, you'd want to see a list of all his contributions, so need to find them by scope. If b), it's easy to find bob's contributions on his page, but tricky to display them when browsing carl.com/eon. Probably a) is slightly better than b).
+[x] Custom IDs in MongoDB 
+[ ] Unique IDs for Topics (slugs) and their relation to Name
+[ ] Shorthand function for creating topics and associations
+[ ] Handling of thumbnails and icons for topics
+[x] Metadata we want to store on each topic. created_at, updated_at, owner?
+[ ] How to use scopes. In the standard, they are considered a limitation, and lack of scope means no limitation. But we might want to have scopes also as a way of tagging or filtering topics, not just limiting. E.g. you might add a scope "MartinAuthored" just to be able to note who edited what. Basic idea is to use it for both depending on context.
+
+
+## Personal knowledge management
+
+There is an active trend for building personal knowledge systems that is very similar to Topic Maps. It's usually represented as a folder of interlinked Markdown, or as an app with a cloud database behind. Lore Topic Maps are intended to be shared, not personal, but apart from that, there are many similarities. So we should consider:
+- Ability to import common formats of linked markdown from these apps
+- Maybe ability to have a Markdown folder backend to represent the topic map
+- Look through these apps for good concepts on usability for large knowledge graphs
+
+## Import sources
+
+### Mundanapedia
+Import from Mediawiki-source to Markdown repo.
+`flask wikitext-to-markdown ~/dev/src/encyclopedia-mundana/eon_dump.xml ~/dev/src/encyclopedia-mundana/`
+Considered canon, no named author, published by Helmgast, in Swedish.
+`flask import-markdown-topics ~/dev/src/encyclopedia-mundana -b lore.pub/t -b helmgast.se/eon -s lore.pub/t/sv -s lore.pub/t/canon_content -a existence( this:concept, helmgast.se/eon:world)`
+
+### Drängopedia
+Import from Mediawiki-source to Markdown repo.
+Considered community content, authored by Ola or other author, published by Drängopedia, in Swedish.
+`flask import-markdown-topcics ~/dev/src/drangopedia -b lore.pub/t -b helmgast.se/eon -b drangopedia.lore.pub/eon -s lore.pub/t/sv -s lore.pub/t/community_content -s ola@drangopedia.lore.pub`
+
+### Neotech terms
+Import from Sheets.
+Considered canon, authorless, published by Helmgast, in Swedish or English (depending).
+
+### Kampanj
+Import from Wordpress archive to Markdown repo.
+Considered community, authored by Martin et al, published by Kampanj, in Swedish.
+
+### Nogo
+Import from Joomla archive to Markdown repo.
+Considered community, auhtored by Martin et al, published by Nogo, in Swedish.
 
 ## World hierarchy (old)
 

@@ -90,6 +90,57 @@ footer a {
   padding-right: 10px;
 }
 
+// @btn-default-color:              #fff;
+// @btn-default-bg:                 @gray-light;
+// @btn-default-border:             @btn-default-bg;
+
+// @btn-primary-color:              @btn-default-color;
+// @btn-primary-bg:                 @brand-primary;
+// @btn-primary-border:             @btn-primary-bg;
+
+// @btn-success-color:              @btn-default-color;
+// @btn-success-bg:                 @brand-success;
+// @btn-success-border:             @btn-success-bg;
+
+// @btn-info-color:                 @btn-default-color;
+// @btn-info-bg:                    @brand-info;
+// @btn-info-border:                @btn-info-bg;
+
+// @btn-warning-color:              @btn-default-color;
+// @btn-warning-bg:                 @brand-warning;
+// @btn-warning-border:             @btn-warning-bg;
+
+// @btn-danger-color:               @btn-default-color;
+// @btn-danger-bg:                  @brand-danger;
+// @btn-danger-border:              @btn-danger-bg;
+
+.nav > li > .btn-default:hover, .nav > li > .btn-default:focus {
+  background-color: darken(@btn-default-bg, 15%);
+  border-color: darken(@btn-default-bg, 15%);
+}
+
+.nav > li > .btn-warning:hover, .nav > li > .btn-warning:focus {
+  background-color: darken(@btn-warning-bg, 15%);
+  border-color: darken(@btn-warning-bg, 15%);
+}
+
+.nav > li > .btn-success:hover, .nav > li > .btn-success:focus {
+  background-color: darken(@btn-success-bg, 15%);
+  border-color: darken(@btn-success-bg, 15%);
+}
+
+.nav-xs > li > a {
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.5;
+  margin-bottom: 1px; // Need to lift buttons up one pixel to show the nav-tabs border
+}
+
+.nav-xs > li.active > a, .nav-xs > li.active > a:hover, .nav-xs > li.active > a:focus {
+  color: #fff;
+  background-color: #222;
+}
+
 .animated-move {
   transition: all 0.5s ease-out;
   display: block;

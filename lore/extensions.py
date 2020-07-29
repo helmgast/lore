@@ -347,6 +347,7 @@ class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
         md.treeprocessors["gallery"] = GalleryList()
 
+
 # Hack to support removing markdown from text
 def unmark_element(element, stream=None):
     if stream is None:
@@ -404,3 +405,7 @@ def dict_with(value, **kwargs):
 
 def first_p_length(string):
     return len(string.strip().splitlines()[0]) if string else 0
+
+
+def lookup(s, dct, default=None):
+    return dct.get(s, s or default)

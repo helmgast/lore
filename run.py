@@ -6,7 +6,7 @@ import sys
 import click
 
 from lore.app import create_app
-from tools.batch import Batch, LogLevel
+from tools.batch import Batch, Column, LogLevel, bulk_update
 
 
 # from https://blog.theodo.com/2020/05/debug-flask-vscode/
@@ -284,23 +284,80 @@ def import_textalk(model, **kwargs):
 
 
 @app.cli.command()
-@click.argument("path", required=True)
-@click.option("--dry-run", is_flag=True)
-@click.option("--log-level", default="WARN")
-def import_markdown_topics(path, dry_run, log_level):
-    from tools.import_markdown import doc_generator, job_import_topic
+def setup_topics():
+    from mongoengine.connection import get_db
+    from lore import extensions
+    from lore.model.topic import Topic, create_basic_topics
 
-    # from mongoengine.connection import get_db
+    extensions.db.init_app(app)
+    db = get_db()
+
+    basic_topics = create_basic_topics()
+    bulk_update(Topic, basic_topics.values())
+
+
+@app.cli.command()
+@click.argument("path", required=True)
+@click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
+@click.option("--log-level", default="WARN")
+@click.option("--ignore-dates", is_flag=True, help="Ignores dates from YAML in import Markdown")
+@click.option("-l", "--limit", default=0, help="Only process this many jobs")
+@click.option("-m", "--match", default="", help="Only process jobs with this match string in id")
+@click.option(
+    "-b",
+    "--default-bases",
+    multiple=True,
+    default=[],
+    help="If an ID lacks base URI, search for it in these bases in order. If no match, add last one as base.",
+)
+@click.option(
+    "-s",
+    "--default-scopes",
+    multiple=True,
+    default=[],
+    help="Comma separated list of scope id:s to add to all imported characteristics, e.g. user, lang, etc.",
+)
+@click.option(
+    "-a",
+    "--default-associations",
+    multiple=True,
+    default=[],
+    help="Comma separated list of association statements as per LTM. 'This topic' part will be ignored.",
+)
+def import_markdown_topics(path, **kwargs):
+    from tools.import_markdown import doc_generator, job_import_topic
+    from lore.model.topic import LORE_BASE, Topic, TopicFactory
+    from mongoengine.connection import get_db
     from lore import extensions
 
-    # extensions.db.init_app(app)
-    # db = get_db()
-    # original_dates True/False
-    # url_prefix = ""
-    b = Batch(f"Import markdown files from path {path}", level=LogLevel[log_level], dry_run=dry_run, all_topics={})
-    b.process(doc_generator(path), job_import_topic)
-    for t in b.context["all_topics"].values():
-        print(repr(t))
+    extensions.db.init_app(app)
+    db = get_db()
+
+    columns = [
+        Column("ID", "id", "id"),
+        Column("TITLE", "title", "name"),
+        Column("CREATED", "created_at", "created_at"),
+    ]
+
+    all_topics = {t.pk: t for t in Topic.objects()}
+    # Adds list of scopes to all characteristics, e.g. "community-content" or a specific author.
+    commit = kwargs.pop("commit", False)
+    match = kwargs.pop("match")
+    default_bases = kwargs.pop("default_bases")
+    default_scopes = kwargs.pop("default_scopes")
+    default_associations = kwargs.pop("default_associations")
+    factory = TopicFactory(default_bases, default_scopes, default_associations, all_topics)
+
+    b = Batch(
+        f"Import markdown files from path {path}",
+        table_columns=columns,
+        dry_run=not commit,
+        topic_factory=factory,
+        **kwargs,
+    )
+    b.process(doc_generator(path, match), job_import_topic)
+    if commit:
+        bulk_update(Topic, all_topics.values())
 
     print(b.summary_str())
 

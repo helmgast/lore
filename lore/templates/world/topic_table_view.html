@@ -1,0 +1,27 @@
+<table class="table table-hover">
+    <thead>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'names') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'kind') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created_at') }}</th>
+    <th>{{_('Associations')}}</th>
+    <th>{{_('Occurrences')}}</th>
+    </thead>
+    <tbody>
+
+    {% for topic in topics %}
+        <tr>
+            <td>
+                <a href="{{ topic.as_article_url() }}">{{ topic.name }}</a>
+            </td>
+            <td>{{ topic.kind.pk|default("None") }}</td>
+            
+            <td>{{ topic.created_at|datetimeformat(format='short') }}</td>
+            
+            <td>{{ topic.associations|length }}</td>
+            
+            <td>{{ topic.occurrences|length }}</td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>

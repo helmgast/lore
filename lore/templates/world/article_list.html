@@ -103,6 +103,10 @@
 {% set groups = articles|dummygrouper %}
 
 {% block content %}
+    <ul class="nav nav-tabs">
+        <li role="presentation" class="{{'active' if '/articles' in request.url}}"><a href="{{url_for('world.ArticlesView:index', world_=world.slug)}}">{% trans %}Articles{% endtrans %}</a></li>
+        <li role="presentation" class="{{'active' if '/topics' in request.url}}"><a href="{{url_for('world.ArticlesView:topics', world_=world.slug)}}">{% trans %}Topics{% endtrans %}</a></li>
+    </ul>
     {% for group in groups %}
         {% set articles = group.list %}
         {% if group.grouper %}

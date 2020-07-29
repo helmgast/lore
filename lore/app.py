@@ -244,6 +244,7 @@ def configure_extensions(app):
     app.jinja_env.filters["dict_without"] = extensions.dict_without
     app.jinja_env.filters["currentyear"] = extensions.currentyear
     app.jinja_env.filters["first_p_length"] = extensions.first_p_length
+    app.jinja_env.filters["lookup"] = extensions.lookup
     app.jinja_env.add_extension("jinja2.ext.do")  # "do" command in jinja to run code
     app.jinja_loader = extensions.enhance_jinja_loader(app)
     app.json_encoder = extensions.MongoJSONEncoder

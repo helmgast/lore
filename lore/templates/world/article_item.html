@@ -65,7 +65,10 @@
 {% endblock %}
 
 {% block actionbar %}
-    {% if args.get('intent', None) == 'patch' %}
+    {% if article and article.type=='topic' %}
+        {# Can't edit topics at the moment so don't show those buttons #}
+        {% include "world/new_article_menu.html" %}
+    {% elif args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit', res=article)) %}
         {{ MACRO.SAVE_BUTTON('articleform') }}
@@ -195,12 +198,18 @@
                     href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
         </article>
     {% else %}
-        <article class="article-text {{ 'drop-caps' if article.content|first_p_length >300 else ''}}">
-            {{ article.content|default(_('No data'), true)|safe|markdown }}
-            {% if article.type == 'blogpost' %}
-                {% include 'includes/disqus.html' %}
-            {% endif %}
+        {# <div style="width: 100%; border-bottom: 1px solid #333"><span class="label label-default">{% trans %}Canon{% endtrans %}</span></div> #}
+        {% if not topic.articles or article.content %}
+        {# <div class="tab"><span class="label label-default">{% trans %}Canon:{% endtrans %}</span></div> #}
+        <article id="canon" class="article-text {{ 'drop-caps' if article.content|first_p_length >300 else ''}}">
+            {{ article.content|default(_('No content yet'), true)|safe|markdown }}
         </article>
+        {% endif %}
+        {% if topic.articles %}
+        <article>
+            {{ topic.articles[0].content|default(_('No content yet'), true)|safe|markdown }}
+        </article>
+        {% endif %}
 
     {% endif %}
     {% if args.get('intent', None) %}
@@ -291,35 +300,52 @@
         </div>
         </div>
     {% else %}
-        <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
-            {%- if article.type=='place' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Lon') }}</span>{{ article.placedata.coordinate_x }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Lat') }}</span>{{ article.placedata.coordinate_y }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Type') }}</span>{{ article.placedata.location_type }}</li>
-            {%- elif article.type=='image' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Type') }}</span>{{ article.imagedata.mime_type }}</li>
-                <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a
-                        href="{{ article.imagedata.url }}">{{ article.imagedata.url|truncate(30, true) }}</a></li>
-            {%- elif article.type=='event' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Started') }}</span>{{ article.eventdata.from_date }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Ended') }}</span>{{ article.eventdata.to_date }}</li>
-            {%- elif article.type=='person' and article.persondata -%}
-                <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{ article.persondata.born }}
+        {% if topic %}
+            {# <ul class="nav nav-pills nav-xs">
+                <li role="presentation" class="active"><a class="btn btn-default btn-xs" href="#canon" data-toggle="tab">Canon</a></li>
+                <li role="presentation"><a class="btn btn-success btn-xs" href="#community" data-toggle="tab">Ola</a></li>
+                <li role="presentation"><a class="btn btn-warning btn-xs" href="#suggest" data-toggle="tab">Joel</a></li>
+            </ul> #}
+
+            {% if topic.kind %}
+            <h5>{{_("Type")}}: {{topic.kind.pk|lookup(topic_names)}}</h5>
+            {% endif %}
+            {% set alt_names = topic.alt_names(topic.name) %}
+            {% if alt_names %}
+            <h5>{{_("Alternative names")}}</h5>
+            <ul>
+            {% for n in alt_names %}
+                <li>{{n.name}}
+                {%if n.scopes %} 
+                [{% for s in n.scopes %}{{s.pk|lookup(topic_names)|attr("name")}}{{ ', ' if not loop.last }}{% endfor %}]
+                {% endif %}</li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+            {% if topic.occurrences %}
+            <h5>{{_("Resources")}}</h5>
+            <ul class="nav imprint">
+            {% for o in topic.occurrences %}
+                <li title="{{o.kind.pk|lookup(topic_names)}}"><span
+                    class="glyphicon glyphicon-{{ MACRO.topic_icons[o.kind.pk] }}"></span> {% if o.uri %}<a href="{{o.uri}}">{% endif %}
+                    {% if o.content %}: {{o.content|md2plain|truncate(35, true)}}{%else%}{{o.kind.pk|lookup(topic_names)|attr("name")}}{%endif%}
+                    {% if o.uri %}</a>{% endif %}
                 </li>
-                <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{ article.persondata.died }}
-                </li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Gender') }}</span>{{ article.persondata.gender_name() }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Occupation') }}</span>{{ article.persondata.occupation }}</li>
-            {%- endif -%}
-        </ul>
+            {% endfor %}
+            </ul>
+            {% endif %}
+            {% set ass_dict = topic.associations_by_r1() %}
+            {% for role, ass in ass_dict.items() %}
+                {% set role_title = ass[0].kind.pk|lookup(topic_names) %}
+                <h5>{{role_title.find_names(scopes=[role.pk])[0].name}}</h5>
+                <div class="btn-set">
+                {% for a in ass %}
+                    {% set at = a.t2.pk|lookup(topic_names) %}
+                    <a title="{{at}}" href="{{at.as_article_url()}}" class="btn btn-default btn-xs">{{at.name}}</a>
+                {% endfor %}
+                </div>
+            {% endfor %}
+        {% endif %}
     {% endif %}
 {% endblock %}
 

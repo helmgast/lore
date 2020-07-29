@@ -7,7 +7,10 @@ import json
 
 
 def pretty_dict(dct):
-    return json.dumps(dct, indent=2)
+    if isinstance(dct, dict):
+        return json.dumps(dct, indent=2)
+    else:
+        return dct.__repr__()
 
 
 class JobSuccess(Enum):
@@ -102,7 +105,7 @@ class Job:
 
         for i, item in enumerate(results):
             col_width = int(TERMINAL_WIDTH * self.batch.col_weights[i])
-            out += str(item)[0 : col_width - 1].ljust(col_width, " ")
+            out += str(item)[0: col_width - 1].ljust(col_width, " ")
         if self.success == JobSuccess.FAIL:
             errors = "\n    ".join(map(str, self.get_log(LogLevel.ERROR)))
             out += f"\n    {Color.FAIL}{errors}{Color.ENDC}"
@@ -138,6 +141,26 @@ class Job:
         self.log.append((LogLevel.DEBUG, s))
 
 
+def bulk_update(doc_class, docs):
+    from pymongo import UpdateOne
+    from mongoengine import Document, ValidationError
+    bulk_operations = []
+
+    for doc in docs:
+        try:
+            doc.validate()
+            doc.clean()
+            bulk_operations.append(
+                UpdateOne({'_id': doc.id}, {'$set': doc.to_mongo().to_dict()}, upsert=True))
+        except ValidationError as ve:
+            print(ve)
+
+    if bulk_operations:
+        return doc_class._get_collection().bulk_write(bulk_operations, ordered=False)
+    else:
+        return None
+
+
 class Batch:
     def __init__(
         self,
@@ -147,6 +170,7 @@ class Batch:
         bugreport=False,
         table_columns=None,
         no_metadata=False,
+        limit=0,
         **kwargs,
     ):
         self.name = name
@@ -156,6 +180,7 @@ class Batch:
         self.is_bugreport = bugreport
         self.is_debug = self.log_level is LogLevel.DEBUG or bugreport
         self.is_dry_run = dry_run
+        self.limit = int(limit)
 
         # if table_columns is not None and (
         #     not isinstance(table_columns, list) or len(table_columns) == 0 or not isinstance(table_columns[0], Column)
@@ -198,6 +223,8 @@ class Batch:
         print(intro)
 
         for i, data in enumerate(generator):
+            if self.limit > 0 and i > self.limit:
+                break
             job = Job(i, self)
             self.jobs.append(job)
             try:

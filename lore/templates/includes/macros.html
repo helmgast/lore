@@ -4,6 +4,7 @@
     'place':"\ue062", 'event':"\ue101", 'campaign':"\ue034", 'chronicle':"\ue044", 'character':"\ue005"} %}
 {% set article_glyphicons = {
     'default': 'record',
+    'topic': 'tag',
     'blogpost': 'comment',
     'material': 'briefcase',
     'person': 'eye-open',
@@ -14,6 +15,57 @@
     'chronicle': 'bookmark',
     'character': 'heart'
 } %}
+
+{% set topic_icons = {
+    'lore.pub/t/article': 'align-left',
+    'lore.pub/t/image': 'picture',
+    'lore.pub/t/audio': 'headphones',
+    'lore.pub/t/video': 'film',
+    'lore.pub/t/bibref': 'tags',
+    'lore.pub/t/comment': 'comment',
+    'lore.pub/t/description': 'info-sign',
+    'lore.pub/t/website': 'link',
+    'lore.pub/t/qr_code': 'qrcode',
+    'lore.pub/t/prev': 'chevron-left',
+    'lore.pub/t/next': 'chevron-right',
+    'lore.pub/t/gallery': 'th-large',
+    'lore.pub/t/started_at': 'log-out',
+    'lore.pub/t/stopped_at': 'log-in',
+    'lore.pub/t/license': 'copyright-mark',
+    'lore.pub/t/map_point': 'map-marker',
+    'lore.pub/t/map_geopoint': 'map-marker',
+    'lore.pub/t/map_polygon': 'fullscreen',
+    'lore.pub/t/map_geopolygon': 'fullscreen',
+
+} %}
+
+{# 
+    T("article", "Article")
+    T("audio", "Audio")
+    T("bibref", "Bibliographic reference")
+    T("comment", "Comment")
+    T("date_of_birth", "Date of birth")
+    T("date_of_death", "Date of death")
+    T("started_at", "Started at")
+    T("stopped_at", "Stopped at")
+    T("description", "Description")
+    T("gallery", "Gallery")
+    T("image", "Image")
+    T("video", "Video")
+    T("website", "Website")
+    T("google_doc", "Google Document")  # Special GDoc occurrence to populate the article
+    T("qr_code", "QR Code")
+    T("prev", "Previous")
+    T("next", "Next")
+    T("pdf", "PDF")
+    T("3d_model", "3D model")
+    T("map_point", "Map point")
+    T("map_geopoint", "Map geopoint")
+    T("map_polygon", "Map polygon")
+    T("map_geopolygon", "Map geopolygon")
+    T("version", "Version")
+    T("creator", "Creator")
+    T("license", "License") #}
 
 {% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 

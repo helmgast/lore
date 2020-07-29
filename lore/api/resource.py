@@ -312,9 +312,9 @@ class ResourceResponse(Response):
         if best_type == "text/html":
             template_args = self.get_template_args()
             template_args["root_template"] = get_root_template(self.args.get("out", None))
-            # mark_time_since_request("Before render")
+            mark_time_since_request("Before render")
             self.set_data(render_template(self.template, **template_args))
-            # mark_time_since_request("After render")
+            mark_time_since_request("After render")
             return self
         elif best_type == "application/json":
             # TODO this will create a new response, which is a bit of waste
@@ -500,7 +500,7 @@ class ListResponse(ResourceResponse):
         setattr(self, self.resource_queries[0], x)
 
     def slug_to_id(self, field, slug):
-        if objid_matcher.match(slug):
+        if isinstance(slug, str) and objid_matcher.match(slug):
             return slug  # Is already Object ID
         elif isinstance(field, ReferenceField):
             try:
@@ -518,7 +518,9 @@ class ListResponse(ResourceResponse):
     # sortable?
     # filterable?
 
-    def finalize_query(self, aggregation=None, paginate=True):  # also filter by authorization, paginate
+    def finalize_query(
+        self, aggregation=None, paginate=True, select_related=True
+    ):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
         # mark_time_since_request("Before finalize")
@@ -604,7 +606,7 @@ class ListResponse(ResourceResponse):
             agg_results = self.query._collection.aggregate(aggregation, cursor={})
             # Note, turns query into a static list
             self.query = [self.model._from_son(a) for a in agg_results]
-        else:
+        elif select_related:
             self.query.select_related()
 
 

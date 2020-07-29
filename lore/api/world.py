@@ -24,6 +24,7 @@ from mongoengine import NotUniqueError, ValidationError
 from mongoengine.context_managers import query_counter
 from mongoengine.queryset import Q
 from werkzeug.contrib.atom import AtomFeed
+from tools.unicode_slugify import SLUG_OK, slugify as uslugify
 
 from lore.api.resource import (
     FilterableFields,
@@ -33,6 +34,7 @@ from lore.api.resource import (
     ImprovedBaseForm,
     ResourceView,
     filterable_fields_parser,
+    mark_time_since_request,
     prefillable_fields_parser,
     ListResponse,
     ItemResponse,
@@ -40,6 +42,7 @@ from lore.api.resource import (
 )
 from lore.model.misc import EMPTY_ID, set_lang_options
 from lore.model.world import Article, World, PublishStatus, Publisher, WorldMeta, Shortcut
+from lore.model.topic import Topic
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -344,6 +347,15 @@ def if_not_meta(doc):
         return doc
 
 
+class TopicsView(ResourceView):
+    subdomain = "<pub_host>"
+    route_base = "/<not(en,sv):world_>"
+    access_policy = ResourceAccessPolicy()
+    model = Topic
+    list_template = "world/topic_list.html"
+    filterable_fields = FilterableFields(Topic, ["names", "kind", "associations", "occurrences", "created_at"],)
+
+
 class ArticlesView(ResourceView):
     subdomain = "<pub_host>"
     route_base = "/<not(en,sv):world_>"
@@ -498,18 +510,47 @@ class ArticlesView(ResourceView):
         if not r.args["order_by"]:
             r.args["order_by"] = ["-created_date"]
         r.finalize_query()  # order by creator.realname
-        # Sorting on an object ID field by looking it up looks like this in Robomongo
-        # Note that it would be nice to keep the creator_user to avoid dereferencing operations
-        # but it goes outside the Mongoengine behaviour
-        # r.prepare_query()
-        # aggregation = r.query.aggregate(
-        #     [
-        #         {"$lookup": {"from": "user", "localField": "creator", "foreignField": "_id", "as": "creator_user"}},
-        #         {"$sort": {"creator_user.realname": 1}},
-        #         {"$unset": "creator_user"},
-        #     ]
-        # )
-        # r.articles = [Article._from_son(a) for a in aggregation]
+        return r
+
+    def topics(self, world_):
+        publisher = Publisher.objects(slug=g.pub_host).comment("Current publisher").first_or_404()
+        world = (
+            World.objects(slug=world_).comment("Current world").first_or_404()
+            if world_ != "meta"
+            else WorldMeta(publisher)
+        )
+        set_lang_options(world, publisher)
+
+        # Calling len or length on a listfield in Mongoengine unexpectedly starts de-referencing,
+        # so changing the query to not have it, which should include all actions in the template
+        topics = Topic.objects(id__startswith=g.pub_host).comment("All topics").no_dereference()
+
+        # if world_ == "meta":
+        #     articles = Article.objects(publisher=publisher).order_by("-created_date")  # All articles from publisher
+        # else:
+        #     articles = Article.objects(world=world).order_by("-created_date")
+
+        r = ListResponse(TopicsView, [("topics", topics), ("world", world), ("publisher", publisher)])
+        r.set_theme("publisher", publisher.theme)
+        r.set_theme("world", world.theme)
+        r.auth_or_abort(res=(world if world_ != "meta" else publisher))
+        r.args["per_page"] = 60
+        r.finalize_query(select_related=False)
+        #     topic_names = {
+        # t.pk: t
+        # for t in topic.query_all_referenced_topics()
+        # .no_dereference()
+        # .only("names")
+        # .comment("Names of referenced topics")
+        set_of_kinds = set()
+        for t in r.query:
+            if t.kind:
+                set_of_kinds.add(t.kind.pk)
+        r.topic_names = (
+            {t.pk: t for t in Topic.objects(id__in=set_of_kinds).only("names").comment("Names of referenced topics")}
+            if set_of_kinds
+            else {}
+        )
 
         return r
 
@@ -591,6 +632,7 @@ class ArticlesView(ResourceView):
     def get(self, world_, id):
 
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+
         world = World.objects(slug=world_).first_or_404() if world_ != "meta" else WorldMeta(publisher)
 
         set_lang_options(world, publisher)
@@ -609,10 +651,39 @@ class ArticlesView(ResourceView):
             r.set_theme("article")  # Will pick from args if exist
 
         else:
+            article = Article.objects(slug=id).first()
+            topic: Topic = Topic.objects(id=f"{g.pub_host}/{world_}/{id}").no_dereference().first()
+            topic_names = {}
+            if not article and topic:
+                if topic:
+                    # Create a dummy article to make the template work
+                    article = Article(
+                        slug=topic.id,
+                        world=world,
+                        publisher=publisher,
+                        created_date=topic.created_at,
+                        title=topic.name,
+                        content="",
+                        type="topic",
+                    )
+                    # Executing this will cache all topics, hopefully in just one call? TODO check
+                    # cache = {t.pk: t for t in topic.query_all_referenced_topics()}
+                    topic_names = {
+                        t.pk: t
+                        for t in topic.query_all_referenced_topics()
+                        .no_dereference()
+                        .only("names")
+                        .comment("Names of referenced topics")
+                    }
+            elif not article and not topic:
+                return redirect(url_for("world.ArticlesView:get", id=uslugify(id), pub_host=g.pub_host, world_=world_))
+
             r = ItemResponse(
-                ArticlesView,
-                [("article", Article.objects(slug=id).first_or_404()), ("world", world), ("publisher", publisher)],
+                ArticlesView, [("article", article), ("world", world), ("publisher", publisher), ("topic", topic)]
             )
+            if topic:
+                setattr(r, "topic_names", topic_names)
+
             r.set_theme("publisher", publisher.theme)
             r.auth_or_abort()
             r.set_theme("article", r.article.theme)

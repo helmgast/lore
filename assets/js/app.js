@@ -254,6 +254,7 @@ function init_dom(e) {
     require('bootstrap/js/dropdown');
     require('bootstrap/js/modal');
     require('bootstrap/js/alert');
+    require('bootstrap/js/tab');
     require('bootstrap/js/collapse');
     require('bootstrap/js/button');
     require('bootstrap/js/transition');
