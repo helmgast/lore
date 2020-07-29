@@ -233,8 +233,13 @@ def configure_extensions(app):
             extensions.AutolinkedImage(),
         ]
     )
+    # A small hack to let us output "unmarkdownified" text.
+    Markdown.output_formats["plain"] = extensions.unmark_element
+    app.md_plain = Markdown(output_format="plain")
+    app.md_plain.stripTopLevelTags = False
 
     app.jinja_env.filters["markdown"] = extensions.build_md_filter(app.md)
+    app.jinja_env.filters["md2plain"] = extensions.build_md_filter(app.md_plain)
     app.jinja_env.filters["dict_with"] = extensions.dict_with
     app.jinja_env.filters["dict_without"] = extensions.dict_without
     app.jinja_env.filters["currentyear"] = extensions.currentyear
@@ -322,7 +327,7 @@ def configure_hooks(app):
         db_settings["serverSelectionTimeoutMS"] = 5000  # Shortened from 30000 default
         try:
             app.extensions["mongoengine"][extensions.db] = {"app": app, "conn": _connect(db_settings)}
-        except ConnectionFailure as err:
+        except ConnectionFailure:
             pass  # We need to leave this method without an exception, as the request finishes, the exception will raise again
 
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args

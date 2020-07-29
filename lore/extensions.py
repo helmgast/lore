@@ -6,6 +6,7 @@ from datetime import datetime
 import jinja2
 from babel import Locale
 from bson.objectid import ObjectId
+from io import StringIO
 
 from flask import abort, request, session, current_app, g, render_template
 from flask_babel import Babel
@@ -345,6 +346,18 @@ class GalleryList(Treeprocessor):
 class AutolinkedImage(Extension):
     def extendMarkdown(self, md, md_globals):
         md.treeprocessors["gallery"] = GalleryList()
+
+# Hack to support removing markdown from text
+def unmark_element(element, stream=None):
+    if stream is None:
+        stream = StringIO()
+    if element.text:
+        stream.write(element.text)
+    for sub in element:
+        unmark_element(sub, stream)
+    if element.tail:
+        stream.write(element.tail)
+    return stream.getvalue()
 
 
 def build_md_filter(md_instance):
