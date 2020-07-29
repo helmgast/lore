@@ -47,14 +47,18 @@ def db_loaded_product_data(app_client):
 
 def test_basic_import_order(mongomock, app_client, db_loaded_product_data):
     o = import_order(
-        {"key": "a", "orderLines": "KDL-132|KDL-121l|Random title@12*0.25", "publisher": "helmgast.se", "currency": "sek"}, commit=True
+        {"key": "a", "orderLines": "KDL-132|KDL-121l|Random title#comment@12*0.25\nJust a message", "publisher": "helmgast.se", "currency": "sek"}, commit=True
     )
+    # An order can be separated in lines by either | or line feed
     assert o.external_key == "a"
     assert o.order_lines[0].product.product_number == "KDL-132"
     assert o.order_lines[1].product.product_number == "KDL-121l"
     assert o.order_lines[2].title == "Random title"
     assert o.order_lines[2].price == 12.0
+    assert o.order_lines[2].comment == "comment"
     assert o.order_lines[2].vat == Order.calc_vat(12.0, 0.25)
+    assert o.order_lines[3].title == "Just a message"
+    assert o.order_lines[3].price is None
 
 
 def test_basic_error_import_order(mongomock, app_client, db_loaded_product_data):
@@ -73,7 +77,7 @@ def test_basic_error_import_order(mongomock, app_client, db_loaded_product_data)
 def textalk_order():
     # Imports a JSON representing an Order object.
     # References to OrderItems has been replaced with actual OrderItem data.
-    with open("tests/textalk_order.json") as f:
+    with open("tests/testdata/textalk_order.json") as f:
         data = json.load(f)
 
     # Enhance data with global options as we would at actual import
@@ -85,7 +89,7 @@ def textalk_order():
 @pytest.fixture
 def textalk_product():
     # Imports a JSON representing a Product object.
-    with open("tests/textalk_product.json") as f:
+    with open("tests/testdata/textalk_product.json") as f:
         data = json.load(f)
 
     # Enhance data with global options as we would at actual import

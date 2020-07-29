@@ -8,11 +8,12 @@ from lore.model.misc import get
 if "TEXTALK_URL" in current_app.config:
     rpc_client = HTTPClient(current_app.config.get("TEXTALK_URL"))
 
+
 def rpc_get(method, *args):
     r = Request(method, *args)
     response = rpc_client.send(r)
     return response.data.result
-    
+
 
 def rpc_list(method, *args, **kwargs):
     # "params": [["uid", "name"], {"filters": {"/draft": false}, "limit": 10, "offset": 0}]
@@ -119,7 +120,7 @@ def import_orders(fields_to_return=None, commit=False, log_level=LogLevel.INFO, 
         fields_to_return = order_default_fields_to_return
     if "publisher" not in kwargs:
         raise ValueError("Requires a publisher domain")
-    data = rpc(
+    data = rpc_list(
         "Order.list",
         fields_to_return,
         filters={"/discarded": False, "/customer/info/type": {"equals": "individual"}},

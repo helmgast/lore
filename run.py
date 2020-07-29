@@ -32,6 +32,7 @@ def initdb():
 @click.option("-m", "--method", required=False, default="GET", help="Method to test")
 def show_routes(url, method):
     from urllib.parse import urlparse
+
     rows = [
         (str(i), rule.__repr__().replace("LoreRule ", ""), str(rule.match_compare_key()))
         for i, rule in enumerate(sorted(app.url_map.iter_rules(), key=lambda rule: rule.match_compare_key()))
@@ -42,13 +43,13 @@ def show_routes(url, method):
         parts = urlparse(url)
         adapter = app.url_map.bind(parts.netloc, path_info=parts.path, url_scheme=parts.scheme, query_args=parts.query)
         matched_rule, arguments = adapter.match(return_rule=True)
-        print('\n', matched_rule.__repr__(), arguments, '\n')
-    rows.insert(0, ("","", "No arg?, static parts, static lenghts, arg parts, arg weights"))
+        print("\n", matched_rule.__repr__(), arguments, "\n")
+    rows.insert(0, ("", "", "No arg?, static parts, static lenghts, arg parts, arg weights"))
     for row in rows:
         test = ""
         if adapter:
             test = "Y " if matched_rule.__repr__().replace("LoreRule ", "") == row[1] else "N "
-        print(test+"  ".join((val.ljust(width) for val, width in zip(row, widths))))
+        print(test + "  ".join((val.ljust(width) for val, width in zip(row, widths))))
 
 
 # @app.cli.command()
@@ -297,24 +298,31 @@ def import_markdown_topics(path, dry_run, log_level):
 @click.option("--bugreport", is_flag=True)
 @click.option("--no-metadata", is_flag=True)
 def wikitext_to_markdown(wiki_xml_file, output_folder, filter, dry_run, log_level, bugreport, no_metadata):
-    from tools.batch import Batch, LogLevel
+    from tools.batch import Batch, Column
     from tools.import_mediawiki import wikitext_generator, job_wikitext_to_markdown
 
     # from mongoengine.connection import get_db
     # from lore import extensions
     # extensions.db.init_app(app)
     # db = get_db()
-    out_folder = os.path.join(output_folder, os.path.splitext(os.path.basename(wiki_xml_file))[0])
-    os.makedirs(out_folder, exist_ok=True)
+
+    # No need, let user pick their exact folder instead
+    out_folder = os.path.abspath(output_folder)
+    # out_folder = os.path.join(output_folder, os.path.splitext(os.path.basename(wiki_xml_file))[0])
+    # os.makedirs(out_folder, exist_ok=True)
+    columns = [
+        Column(header="Title", import_key="title"), Column(header="Path", result_key="path")
+    ]
     b = Batch(
         f"Wikitext to Markdown: {wiki_xml_file}",
-        level=LogLevel[log_level],
+        log_level=log_level,
         dry_run=dry_run,
+        table_columns=columns,
         bugreport=bugreport,
         no_metadata=no_metadata,
+        filter=filter,
         all_pages={},
         out_folder=out_folder,
-        filter=filter,
     )
     b.process(wikitext_generator(wiki_xml_file), job_wikitext_to_markdown)
     print(b.summary_str())

@@ -24,7 +24,7 @@
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
-        (url_for('shop.shop_home'), _('Shop')),
+        (url_for('shop.shop_home'), _('Catalogue')),
         (url_for('shop.ProductsView:index'), _('Products')),
         (url_for('shop.ProductsView:get', id=product.slug if product else 'post'), self.content_title())
     ) }}{% endblock %}

@@ -15,7 +15,7 @@
                 <td>
                     <a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">{{ product.title }}</a>
                 </td>
-                <td>{{ product.product_number }}</td>
+                <td><a href="{{ url_for('shop.ProductsView:get', id=product.slug) }}">{{ product.product_number }}</a></td>
                 <td>{{ product.description|default(_('No description'), true)|markdown }}</td>
                 <td>{{ product.get_type_display() }}</td>
                 <td>{{ product.world|default(_('No data'),true) }}</td>

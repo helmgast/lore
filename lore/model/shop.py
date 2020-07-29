@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, date
-import dateutil
 import re
 from html2text import html2text
 
@@ -39,6 +38,7 @@ from .misc import (
     extract,
     get,
     set_if,
+    parse_datetime
 )
 from .user import User, user_from_email
 from .world import Publisher, World
@@ -156,7 +156,7 @@ class Product(Document):
             if (currency is None) or (currency and currency == self.currency):
                 return self.price
             else:
-                raise ValueError(f"No price defined for %{currency}")
+                raise ValueError(f"No price defined for {currency}")
         else:
             currency = currency or self.currency or Currencies.sek
             priceline = next(x for x in self.prices if x.currency == currency)
@@ -281,6 +281,7 @@ class Stock(Document):
 
 class Order(Document):
     meta = {
+        # "strict": False,
         "indexes": [
             {
                 "fields": ["external_key"],  # Does unique but not for null fields
@@ -306,6 +307,7 @@ class Order(Document):
     status = StringField(choices=OrderStatus.to_tuples(), default=OrderStatus.cart, verbose_name=_("Status"))
     shipping_line = EmbeddedDocumentField(OrderLine)
     source_url = URLField(verbose_name=_("Source URL"))
+    message = StringField(verbose_name=_("Customer message"))
     charge_id = StringField()  # Stores the Stripe charge id
     internal_comment = StringField(verbose_name=_("Internal Comment"))
     shipping_address = EmbeddedDocumentField(Address)
@@ -343,7 +345,7 @@ class Order(Document):
             if ol.price and ol.vat is not None:
                 acc += ol.price*ol.vat/(ol.price-ol.vat)
                 tot_price += ol.price
-        return acc/tot_price
+        return acc/tot_price if tot_price > 0.0 else 0.0
 
     def is_paid_or_shipped(self):
         return self.status in [OrderStatus.paid, OrderStatus.shipped]
@@ -455,14 +457,6 @@ def user_has_asset(user, asset):
     return False
 
 
-def parse_datetime(dt_string):
-    # Parses any type of date string, ISO or other
-    try:
-        return dateutil.parser.parse(dt_string) if isinstance(dt_string, str) else None
-    except ValueError:
-        return None
-
-
 def parse_price(p_string):
     rv = {}
     if p_string:
@@ -520,13 +514,13 @@ def parse_url_assets(urls, document, commit=False, slug_prefix="", locked_to_pro
 # https://regex101.com/r/4HgdwB/1/. match string like 100xNNN-123@12*0.25 where
 # 100 is qty, NNN-123 is product, 12 is price and 0.25 is vatRate. Missing price is
 # interpeted as no price (not zero price).
-ol_pattern = re.compile(r"^(?:(\d+)x)?([^@]+)(?:@([\d.,]+)\*([\d.,]+))?$")
+ol_pattern = re.compile(r"^(?:(\d+)x)?([^@#]+)(?:#([^@]+))?(?:@([\d.,]+)\*([\d.,]+))?$")
 
 
 def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
     """Parses a string into a list of OrderLines. Accepts strings like:
-    2xNNN-123@12*0.25|NNN-123|Some product title row@100*0.25. Format is:
-    {quantity}x{product}@{price}*{vatRate}. Quantity and price together with vatRate are optional.
+    2xNNN-123#comment@12*0.25|NNN-123|Some product title row@100*0.25. Format is:
+    {quantity}x{product}#{comment}@{price}*{vatRate}. Quantity, comment and price with vatRate are optional.
     Will attempt to get price and VAT from the product in database, unless defaults have been provided.
 
     Arguments:
@@ -543,13 +537,13 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
     """
 
     if isinstance(order_lines, str):
-        order_lines = [ol.strip() for ol in order_lines.split("|")]
+        order_lines = [ol.strip() for ol in re.split(r'[|\n]', order_lines)]
     if not isinstance(order_lines, list):
         raise ValueError(f"Incorrect string or list of orderlines: {order_lines}")
 
     ols = []
     for ol in order_lines:
-        matches = extract(ol, ol_pattern, default=None, groups=4)
+        matches = extract(ol, ol_pattern, default=None, groups=5)
         ol = OrderLine()
         product = Product.objects(product_number=matches[1]).first()
         if product:
@@ -563,8 +557,11 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
 
         # OrderLine price and vat is total for the line, so multiply prices by quantity
         if matches[2] is not None:
-            ol.price = ol.quantity*float(matches[2])
-            ol.vat = Order.calc_vat(ol.price, float(matches[3]))
+            ol.comment = matches[2]
+        
+        if matches[3] is not None:
+            ol.price = ol.quantity*float(matches[3])
+            ol.vat = Order.calc_vat(ol.price, float(matches[4]))
         elif product and lookup_product_with_currency:
             ol.price = ol.quantity*product.get_price(lookup_product_with_currency)
             ol.vat = Order.calc_vat(ol.price, product.tax)
@@ -695,12 +692,16 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
                 or parse_datetime(get(data, "updated", None))
                 or parse_datetime(get(data, "imported", None))
             )
-            if not changed:
-                if job:
-                    job.warn("Couldn't get valid changed/updated time from input data to decide to update the data")
-                return None
+            # Commented out as this means we can't update without setting imported to a future date.
+            # Downside is that because we don't write import timestamps by default back to sheets, this makes it easier
+            # to accidentally re-import and overwrite
+            # if not changed:
+            #     if job:
+            #         job.warn("Couldn't get valid changed/updated time from input data to decide to update the data")
+            #     return None
+
             # We expect both datetimes to be in UTC. But Python might still have created them as timezone naive dt-objects.
-            if changed.replace(tzinfo=None) <= order.updated:
+            if changed and changed.replace(tzinfo=None) <= order.updated:
                 if job:
                     job.info("Skipped import as order not newer than what's already in database")
                     job.success = JobSuccess.SKIP
@@ -751,7 +752,7 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
 
         deliveryMethod = get(data, "deliveryMethod", None)
         totPrice = parse_price(get(data, "pledgeAmount", None))
-        rewardPrice = parse_price(get(data, "rewardMinimum", None))
+        rewardPrice = parse_price(get(data, "rewardMinimum", None) or get(data, "backingMinimum", None))
         shipping_price = parse_price(get(data, "shippingAmount", None))
         if not cur:
             # Attempt to read currency from first encountered price
@@ -767,7 +768,7 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
 
         vatRate = get(data, "vatRate", 0)
         if isinstance(vatRate, str):
-            vatRate = float("0"+vatRate)  # Small trick that makes a blank string into a float 0
+            vatRate = float("0"+vatRate)  # Small trick that makes even a blank string into a float
 
         if rewardTitle:
             # It's kickstarter
@@ -878,6 +879,10 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
     source_url = get(data, "sourceUrl", None)
     if source_url:
         order.source_url = source_url
+
+    message = get(data, "message", None)
+    if message:
+        order.message = message
 
     if commit:
         order.save()

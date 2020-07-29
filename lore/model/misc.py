@@ -16,6 +16,7 @@ from collections import namedtuple, OrderedDict
 from datetime import timedelta, date
 from urllib.parse import urlparse
 import hashlib
+import dateutil
 
 
 import flask_mongoengine
@@ -72,6 +73,14 @@ def set_lang_options(*args):
         if resource and getattr(resource, "languages", None):
             g.content_locales = set(getattr(resource, "languages", None))
             return
+
+
+def parse_datetime(dt_string) -> datetime.datetime:
+    # Parses any type of date string, ISO or other
+    try:
+        return dateutil.parser.parse(dt_string) if isinstance(dt_string, str) else None
+    except ValueError:
+        return None
 
 
 stops = {}

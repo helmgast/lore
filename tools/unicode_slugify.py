@@ -15,7 +15,7 @@ def _sanitize(text, ok):
     return ''.join(rv).strip()
 
 
-# Extra characters outside of alphanumerics that we'll allow.
+# Extra characters outside of unicode alphanumerics that we'll allow.
 SLUG_OK = '-_~'
 
 
@@ -50,7 +50,7 @@ def slugify(s, ok=SLUG_OK, lower=True, spaces=False, only_ascii=False, space_rep
             raise ValueError(('You can not use "only_ascii=True" with '
                               'a non ascii available chars in "ok" ("%s" given)') % ok)
 
-    new = _sanitize(unicodedata.normalize('NFKC', s), ok)
+    new = _sanitize(unicodedata.normalize('NFKC', str(s)), ok)
     if only_ascii:
         new = _sanitize(unidecode(new), ok)
     if not spaces:

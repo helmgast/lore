@@ -17,7 +17,7 @@
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
-        (url_for('shop.shop_home'), _('Shop')),
+        (url_for('shop.shop_home'), _('Catalogue')),
         (url_for('shop.OrdersView:index'), _('Orders')),
         ('', order)
     ) }}{% endblock %}

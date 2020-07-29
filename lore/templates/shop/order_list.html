@@ -8,6 +8,9 @@
         (url_for('shop.OrdersView:index'), _('Orders'))
     ) }}{% endblock %}
 
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+
 {% block asides %}{{ super() }}
     {% if filter_options %}
         {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}

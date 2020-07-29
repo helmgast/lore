@@ -42,6 +42,7 @@ WARN = f"{Color.WARN}⚠"
 
 TERMINAL_WIDTH = 160
 
+
 @dataclass
 class Column:
     header: str = ""
@@ -101,14 +102,14 @@ class Job:
 
         for i, item in enumerate(results):
             col_width = int(TERMINAL_WIDTH * self.batch.col_weights[i])
-            out += str(item)[0:col_width-1].ljust(col_width, " ")
+            out += str(item)[0 : col_width - 1].ljust(col_width, " ")
         if self.success == JobSuccess.FAIL:
-            errors = "\n".join(map(str, self.get_log(LogLevel.ERROR)))
+            errors = "\n    ".join(map(str, self.get_log(LogLevel.ERROR)))
             out += f"\n    {Color.FAIL}{errors}{Color.ENDC}"
             if self.is_debug:
                 out += pretty_dict(self.data)
         if self.success == JobSuccess.WARN:
-            warnings = "\n".join(map(str, self.get_log(LogLevel.WARN)))
+            warnings = "\n    ".join(map(str, self.get_log(LogLevel.WARN)))
             out += f"\n    {warnings}"
         info = "\n".join(map(str, self.get_log(LogLevel.INFO)))
         if info:
@@ -156,6 +157,10 @@ class Batch:
         self.is_debug = self.log_level is LogLevel.DEBUG or bugreport
         self.is_dry_run = dry_run
 
+        # if table_columns is not None and (
+        #     not isinstance(table_columns, list) or len(table_columns) == 0 or not isinstance(table_columns[0], Column)
+        # ):
+
         if (
             table_columns is not None
             and not isinstance(table_columns, list)
@@ -183,11 +188,11 @@ class Batch:
             intro += "       "
             for i, col in enumerate(self.table_columns):
                 col_width = int(TERMINAL_WIDTH * self.col_weights[i])
-                intro += col.header[:col_width-1].ljust(col_width, " ")
+                intro += col.header[: col_width - 1].ljust(col_width, " ")
             intro += "\n       "
             for i, col in enumerate(self.table_columns):
                 col_width = int(TERMINAL_WIDTH * self.col_weights[i])
-                intro += "".ljust(col_width-1, "-") + " "
+                intro += "".ljust(col_width - 1, "-") + " "
         else:
             intro += f"{self.name}{' DRY RUN' if self.is_dry_run else ''}{' DEBUG' if self.is_debug else ''}\n"
         print(intro)

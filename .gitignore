@@ -20,3 +20,5 @@ __pycache__/
 static/dist
 static/dev
 static/manifest.json
+
+Lore.code-workspace

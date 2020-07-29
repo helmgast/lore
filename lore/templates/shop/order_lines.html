@@ -2,7 +2,9 @@
 <!-- Items -->
 <tr>
     <td>
-
+        {% if order.message %}
+            <div class="well">{{order.message|markdown}}</div>
+        {% endif %}
         <h3 id="products">{{ _('Products') }}</h3>
         <table class="table table-condensed" {{ 'data-editable data-option-add=off data-each-item=.product' if args and args['view'] == 'cart' and order_form and order_form.order_lines }}>
             <tr>
@@ -26,7 +28,7 @@
                                 {% if line.product %}
                                 <a href="{{ url_for('shop.ProductsView:get', id=line.product.slug, _external=true, _scheme='') }}">{{ line.product.title }}</a>
                                 {% else %}
-                                    {{ line.get_title }}
+                                    {{ line.get_title }}                                    
                                 {% endif %}
                                 {# <small>{{ line.product.get_type_display() }}</small> #}
                             </h4>
@@ -59,7 +61,7 @@
                                     </div>
                                 {% endif %}
                             {% elif line.comment %}
-                                {{ _('Name')+': '+line.comment }}
+                                <pre>{{ line.comment }}</pre>
                             {% endif %}
                         </td>
                         <td class="product-price">
