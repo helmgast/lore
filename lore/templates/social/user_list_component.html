@@ -27,13 +27,13 @@
     <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'username') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'realname') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'status') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'xp') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'location') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'join_date') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'last_login') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'username') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'realname') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'status') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'xp') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'location') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'join_date') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'last_login') }}</th>
         </thead>
         <tbody>
         {% for user in users %}

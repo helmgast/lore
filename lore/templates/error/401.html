@@ -1,4 +1,4 @@
-{% extends root_template if not publisher_theme else publisher_theme %}
+{% extends "world/publisher_root.html" if not publisher_theme else publisher_theme %}
 
 {% block content_title %}{% trans %}Please login to continue{% endtrans %}{% endblock %}
 {% block content %}

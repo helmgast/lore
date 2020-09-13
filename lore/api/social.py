@@ -20,7 +20,21 @@ from mongoengine import NotUniqueError, ValidationError, Q
 from wtforms import Form
 
 from lore.api.auth import get_logged_in_user
-from lore.api.resource import Authorization, CheckboxListWidget, HiddenModelField, ImprovedBaseForm, ImprovedModelConverter, ItemResponse, ListResponse, OrderedModelSelectMultipleField, ResourceAccessPolicy, ResourceView, filterable_fields_parser, prefillable_fields_parser
+from lore.api.resource import (
+    Authorization,
+    CheckboxListWidget,
+    FilterableFields,
+    HiddenModelField,
+    ImprovedBaseForm,
+    ImprovedModelConverter,
+    ItemResponse,
+    ListResponse,
+    OrderedModelSelectMultipleField,
+    ResourceAccessPolicy,
+    ResourceView,
+    filterable_fields_parser,
+    prefillable_fields_parser,
+)
 from lore.extensions import csrf
 from lore.model.misc import EMPTY_ID, set_lang_options
 from lore.model.user import Event, Group, User
@@ -74,7 +88,7 @@ class UsersView(ResourceView):
     subdomain = "<pub_host>"
     model = User
     list_template = "social/user_list.html"
-    list_arg_parser = filterable_fields_parser(["username", "status", "xp", "location", "join_date", "last_login"])
+    filterable_fields = FilterableFields(User, ["username", "status", "xp", "location", "join_date", "last_login"])
     item_template = "social/user_item.html"
     item_arg_parser = prefillable_fields_parser(["username", "realname", "location", "description"])
 
@@ -99,7 +113,9 @@ class UsersView(ResourceView):
         only=["username", "realname", "location", "images", "newsletter", "avatar_url", "interests"],
         converter=ImprovedModelConverter(),
     )
-    form_class.interests = ModelSelectMultipleField(model=World, label=_("Interests"), allow_blank=True, widget=CheckboxListWidget(), option_widget=CheckboxInput())
+    form_class.interests = ModelSelectMultipleField(
+        model=World, label=_("Interests"), allow_blank=True, widget=CheckboxListWidget(), option_widget=CheckboxInput()
+    )
 
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first()
@@ -112,7 +128,7 @@ class UsersView(ResourceView):
 
         if not (g.user and g.user.admin):
             r.query = r.query.filter(filter_authorized())
-        r.prepare_query()
+        r.finalize_query()
         return r
 
     def get(self, id):
@@ -126,7 +142,7 @@ class UsersView(ResourceView):
         else:
             # get_or_404 handles exception if not a valid object ID
             user = User.objects(id=id).get_or_404()
-            
+
             # user.follow_consents.setdefault(publisher.id, FollowConsent())
             r = ItemResponse(UsersView, [("user", user)])
             if not getattr(g, "user", None):
@@ -192,7 +208,7 @@ class GroupsView(ResourceView):
     access_policy = UserAccessPolicy()
     model = Group
     list_template = "social/group_list.html"
-    list_arg_parser = filterable_fields_parser(["type", "location", "created", "updated"])
+    filterable_fields = FilterableFields(Group, ["type", "location", "created", "updated"])
     item_template = "social/group_item.html"
     item_arg_parser = prefillable_fields_parser(["title", "location", "description"])
     form_class = model_form(
@@ -203,7 +219,7 @@ class GroupsView(ResourceView):
         groups = Group.objects().order_by("-updated")
         r = ListResponse(GroupsView, [("groups", groups)])
         r.auth_or_abort(res=None)
-        r.prepare_query()
+        r.finalize_query()
         return r
 
     def get(self, id):

@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ get_locale().language }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>{% block title %}{{ self.content_title() }}{% endblock %}</title>
     {% for locale in g.configured_locales.values() %}
@@ -29,7 +29,7 @@
     {%- block googlefonts -%}{%- endblock -%}">
 
     {% block cssimports %}
-        <link rel="stylesheet" href="{{url_for('static', filename=assets['app.css'])}}">
+    <link rel="stylesheet" href="{{url_for('static', filename=assets['app.css'])}}" />
     {% endblock %}
 </head>
 
@@ -116,7 +116,7 @@
             </button>
             <div class="navbar-brand my-collapse collapse in">
                 {% block publisher_brand %}
-                    <a href="{{ url_for('world.homepage') }}">
+                    <a href="/">
                         <svg class="lore-icon" style="fill: #a00; width: 60px; height: 60px;">
                             <use xlink:href="#lore-lore"></use>
                         </svg>
@@ -128,14 +128,14 @@
             <ul class="nav navbar-nav navbar-nav-top">
                 {% block navbar_left %}
                     {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=user)) %}
-                        <li{% block publishers_active %}{% endblock %}>
+                        <li {% block publishers_active %}{% endblock %}>
                             <a href="{{ url_for('world.PublishersView:index') }}">
                                 <span class="glyphicon glyphicon-asterisk"></span> {{ _('Publishers') }}
                             </a>
                         </li>
                     {% endcall %}
                     {% call(privileged) MACRO.AUTHORIZED(access_policy['user'].authorize('list', res=user)) %}
-                        <li{% block social_active %}{% endblock %}>
+                        <li {% block social_active %}{% endblock %}>
                             <a href="{{ url_for('social.UsersView:index') }}">
                                 <span class="glyphicon glyphicon-user"></span> {{ _('Users') }} </a>
                         </li>
@@ -144,7 +144,9 @@
             </ul>
 
             <ul class="nav navbar-nav navbar-nav-top navbar-right">
-                {% block navbar_right %}
+                {% block search %}                 
+                {% endblock %}
+                {% block navbar_right %}   
                     {% include 'includes/language_chooser.html' %}
                     {% if not g.user %}
                         <li>
@@ -182,7 +184,6 @@
                                     </li>
                                 {% endcall %}
 
-
                                 <li role="separator" class="divider"></li>
                                 <li>
                                     <a href="{{ url_for('auth.logout', next='/') }}">{{ _('Log Out') }}</a>
@@ -204,65 +205,58 @@
                 {% endblock actionbar %}
             </ul>
         </div>
-
     </nav>
-    <button class="betaribbon" id="feedback-ribbon">
-        <span class="glyphicon glyphicon-exclamation-sign"></span> {% trans %}Give feedback{% endtrans %}!<br><span
-            style="font-variant: small-caps">Beta</span>
-    </button>
     {% include "includes/flash.html" %}
-
 {% endblock navbar %}
 
 {% block header %}
-    <div class="page-header margin-below-large {% block header_class %}{% endblock %}">
+    <header class="page-header margin-below-large {% block header_class %}{% endblock %}">
         <div class="container">
             <div class="row">
                 {% block header_title %}
-                    <h1 class="col-lg-12 col-md-12 col-sm-12">{% block content_title %}{% endblock %}
+                    <h1 class="{% block title_class %}col-lg-12 col-md-12 col-sm-12{% endblock %}">{% block content_title %}{% endblock %}
                         <small>{% block content_tagline %}{% endblock %}</small>
                     </h1>
                 {% endblock header_title %}
             </div>
         </div>
-    </div>
+    </header>
 {% endblock header %}
 
-{% block main %}{% block mainsub %}
+{% block main %}
     <div class="container">
         <div class="row">
             {% block intro_parent %}
-            <aside class="{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside{% endblock %}">
+            <aside class="{% block intro_class %}hide intro-aside{% endblock %}">
                 {% block intro %}
                 {% endblock intro %}
             </aside>
             {% endblock intro_parent %}
 
-            <div class="{% block content_class %}col-lg-7 col-md-8 col-sm-10 content{% endblock %}">
+            <div class="{% block content_class %}col-lg-12 col-md-12 col-sm-12 content{% endblock %}">
                 {% block content %}{% endblock content %}
             </div>
 
-            <aside class="{% block asides_class %}col-lg-3 col-md-4 col-sm-10{% endblock %}">
+            <aside class="{% block asides_class %}hide{% endblock %}">
                 {% block asides %}
                 {% endblock asides %}
             </aside>
         </div>
         {% block post_content %}{% endblock post_content %}
     </div>
-{% endblock mainsub %}{% endblock main %}
+{% endblock main %}
 
 <footer>
     <div class="container">
         {% block footer %}{% endblock %}
         <div class="row">
-            {# <div class="col-sm-6">
-                <ul class="list-unstyled">{% include 'includes/language_chooser.html' %}</ul>
-            </div> #}
             <div class="col-sm-offset-6 col-sm-6"><p class="pull-right">
                 {% trans %}Design and code{% endtrans %} © {{ now().strftime("%Y") }} Helmgast AB<br>
                 {% trans %}Built using {% endtrans %}<a
                     href="{{ url_for('world.homepage', _external=true, _scheme='') }}">Lore</a>,
-                version {{ config['VERSION'] }}
+                version {{ config['VERSION'] }}<br>
+                {% trans %}Something broken?{% endtrans %} <a href="#" id="feedback-ribbon">
+                {% trans %}Tell us{% endtrans %}!</a>
             </p>
             </div>
         </div>

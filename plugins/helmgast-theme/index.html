@@ -1,4 +1,4 @@
-{% extends root_template %}
+{% extends "world/publisher_root.html" %}
 
 {% block googlefonts %}{{ super() }}|Eczar:700|Gentium+Book+Basic:400,400italic,700,700italic{% endblock %}
 
@@ -22,7 +22,6 @@
             font-weight: 400;
             text-transform: uppercase;
         }
-
     </style>
 {% endblock %}
 
@@ -43,15 +42,10 @@
     <li><a href="https://webshop.helmgast.se" target="_blank">
         <span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Shop') }}
     </a></li>
-    <li><a href="http://www.rollspel.nu/forum/neogames" target="_blank">
+    <li><a href="https://www.rollspel.nu/forums/helmgast.130/" target="_blank">
         <span class="glyphicon glyphicon-bullhorn"></span> {{ _('Forum') }}
     </a></li>
 {% endblock navbar_left %}
-
-{% block navbar_right %}
-    {{ super() }}
-{% endblock navbar_right %}
-
 
 {% block footer %}
     <div class="row">

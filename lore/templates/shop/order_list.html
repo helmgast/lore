@@ -1,6 +1,6 @@
 {% extends "shop/_root.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{ _('Orders') }}{% endblock %}
+{# NAV #}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
@@ -8,12 +8,40 @@
         (url_for('shop.OrdersView:index'), _('Orders'))
     ) }}{% endblock %}
 
+{# LAYOUT #}
+
 {% block intro_class %}hide{% endblock %}
-{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-12 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-12{% endblock %}
+
+{# CONTENT #}
+
+{% block content_title %}{{ _('Orders') }}{% endblock %}
+
+{% block content_tagline %}
+    {% if aggregate %}
+    <div class="privileged list-stats">
+        <table class="table">
+            <thead>
+                {# <th>{{ _('Total value') }}</th> #}
+                <th>{{ _('First') }}</th>
+                <th>{{ _('Last') }}</th>
+            </thead>
+            <tbody>
+                <tr>
+                    {# <td>{{ aggregate['total_value'] }}</td> #}
+                    <td>{{ aggregate['min_created']|dateformat(format='short') }}</td>
+                    <td>{{ aggregate['max_created']|dateformat(format='short') }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+{% endblock %}
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
-        {{ MACRO.LIST_CONTROLS(model, args, ['id','user', 'created', 'updated', 'status', 'total_price']) }}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args) }}
 
         <h5>{% trans %}By updated{% endtrans %}</h5>
         <div class="btn-set">
@@ -47,29 +75,10 @@
         <div class="btn-set">
             {% for opt in filter_options['status'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% else %}
+                <button disabled class="btn btn-default btn-xs">{{ _('None') }}</button>
             {% endfor %}
         </div>
-    {% endif %}
-{% endblock %}
-
-{% block content_tagline %}
-    {% if aggregate %}
-    <div class="privileged list-stats">
-        <table class="table">
-            <thead>
-                {# <th>{{ _('Total value') }}</th> #}
-                <th>{{ _('First') }}</th>
-                <th>{{ _('Last') }}</th>
-            </thead>
-            <tbody>
-                <tr>
-                    {# <td>{{ aggregate['total_value'] }}</td> #}
-                    <td>{{ aggregate['min_created']|dateformat(format='short') }}</td>
-                    <td>{{ aggregate['max_created']|dateformat(format='short') }}</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
     {% endif %}
 {% endblock %}
 
@@ -105,13 +114,13 @@
             <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'user') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'updated') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'status') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'total_price') }}</th>
-                <th class="nobr">{{ MACRO.ORDER_BY_LINK(model, args, 'total_items') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'id') }}</th>
+                <th>{% trans %}User{% endtrans %}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'updated') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'status') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'total_price') }}</th>
+                <th class="nobr">{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'total_items') }}</th>
                 </thead>
                 <tbody>
                 {% for order in orders %}

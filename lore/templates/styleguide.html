@@ -1,4 +1,5 @@
-{% extends root_template if not publisher_theme else publisher_theme %}
+{% extends "world/publisher_root.html" if not publisher_theme else publisher_theme %}
+
 {% import 'includes/macros.html' as MACRO %}
 
 {#{% block navbar %}#}
@@ -53,6 +54,7 @@
 {#{% endblock navbar %}#}
 
 {% block header_class %}page-header-hero{% endblock %}
+{% block title_class %}col-lg-offset-2 col-lg-10 col-md-12 col-sm-12{% endblock %}
 
 {#{% block header %}#}
 {% block content_title %}Content title {% endblock %}
@@ -78,9 +80,9 @@
 
 
 {% block actionbar %}
-        <li><a class="btn btn-info" href="#"><span class="glyphicon glyphicon-plus-sign"></span> New</a></li>
-        <li><a class="btn btn-success" href="#"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
-        <li><a class="btn btn-danger" href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
+    <li><a class="btn btn-info" href="#"><span class="glyphicon glyphicon-plus-sign"></span> New</a></li>
+    <li><a class="btn btn-success" href="#"><span class="glyphicon glyphicon-edit"></span> Edit</a></li>
+    <li><a class="btn btn-danger" href="#"><span class="glyphicon glyphicon-trash"></span> Delete</a></li>
 {% endblock actionbar %}
 
 {% block home %}

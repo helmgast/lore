@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, date
 import re
+from typing import Sequence
 from html2text import html2text
 
 from flask import g, request
@@ -38,7 +39,7 @@ from .misc import (
     extract,
     get,
     set_if,
-    parse_datetime
+    parse_datetime,
 )
 from .user import User, user_from_email
 from .world import Publisher, World
@@ -108,9 +109,7 @@ class Product(Document):
     title_i18n = MapField(
         field=StringField(max_length=99), verbose_name=_("Title"), default=default_translated_strings
     )
-    description_i18n = MapField(
-        field=StringField(), verbose_name=_("Description"), default=default_translated_strings
-    )
+    description_i18n = MapField(field=StringField(), verbose_name=_("Description"), default=default_translated_strings)
     publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, required=True, verbose_name=_("Publisher"))
     publish_date = StringField(max_length=20, verbose_name=_("Publishing Date"))
     world = ReferenceField(World, reverse_delete_rule=DENY, verbose_name=_("World"))
@@ -343,9 +342,9 @@ class Order(Document):
         tot_price = 0.0
         for ol in self.order_lines:
             if ol.price and ol.vat is not None:
-                acc += ol.price*ol.vat/(ol.price-ol.vat)
+                acc += ol.price * ol.vat / (ol.price - ol.vat)
                 tot_price += ol.price
-        return acc/tot_price if tot_price > 0.0 else 0.0
+        return acc / tot_price if tot_price > 0.0 else 0.0
 
     def is_paid_or_shipped(self):
         return self.status in [OrderStatus.paid, OrderStatus.shipped]
@@ -469,7 +468,7 @@ def parse_price(p_string):
                 cur = cur.lower()
                 if not cur or cur not in Currencies:
                     continue
-                rv[cur] = float("0"+price.replace(",", ""))  # The "0"+ is a trick to coerce empty string to float
+                rv[cur] = float("0" + price.replace(",", ""))  # The "0"+ is a trick to coerce empty string to float
         except Exception as e:
             raise ValueError(f"Couldn't parse price string '{p_string}'") from e
     return rv
@@ -537,7 +536,7 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
     """
 
     if isinstance(order_lines, str):
-        order_lines = [ol.strip() for ol in re.split(r'[|\n]', order_lines)]
+        order_lines = [ol.strip() for ol in re.split(r"[|\n]", order_lines)]
     if not isinstance(order_lines, list):
         raise ValueError(f"Incorrect string or list of orderlines: {order_lines}")
 
@@ -558,12 +557,12 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
         # OrderLine price and vat is total for the line, so multiply prices by quantity
         if matches[2] is not None:
             ol.comment = matches[2]
-        
+
         if matches[3] is not None:
-            ol.price = ol.quantity*float(matches[3])
+            ol.price = ol.quantity * float(matches[3])
             ol.vat = Order.calc_vat(ol.price, float(matches[4]))
         elif product and lookup_product_with_currency:
-            ol.price = ol.quantity*product.get_price(lookup_product_with_currency)
+            ol.price = ol.quantity * product.get_price(lookup_product_with_currency)
             ol.vat = Order.calc_vat(ol.price, product.tax)
         else:
             pass  # Means we set no price and vat, because no currency was given. This can be intentional.
@@ -586,9 +585,13 @@ def parse_i18n_field(data, field):
 def job_import_order(job, data, **kwargs):
     if "publisher" not in data and "publisher" in job.context:
         data["publisher"] = job.context["publisher"]
-    if "vatRate" not in data and "vatrate" in job.context:  # Note small r, it's because keys are normalized from command line
+    if (
+        "vatRate" not in data and "vatrate" in job.context
+    ):  # Note small r, it's because keys are normalized from command line
         data["vatRate"] = job.context["vatrate"]
-    if "sourceUrl" not in data and "sourceurl" in job.context:  # Note small r, it's because keys are normalized from command line
+    if (
+        "sourceUrl" not in data and "sourceurl" in job.context
+    ):  # Note small r, it's because keys are normalized from command line
         data["sourceUrl"] = job.context["sourceurl"]
     if "title" not in data and "title" in job.context:
         data["title"] = job.context["title"]
@@ -768,7 +771,7 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
 
         vatRate = get(data, "vatRate", 0)
         if isinstance(vatRate, str):
-            vatRate = float("0"+vatRate)  # Small trick that makes even a blank string into a float
+            vatRate = float("0" + vatRate)  # Small trick that makes even a blank string into a float
 
         if rewardTitle:
             # It's kickstarter
@@ -781,7 +784,9 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
             order_lines.insert(
                 0,
                 OrderLine(
-                    title=rewardTitle, price=rewardPrice.get(cur, 0), vat=Order.calc_vat(rewardPrice.get(cur, 0), vatRate)
+                    title=rewardTitle,
+                    price=rewardPrice.get(cur, 0),
+                    vat=Order.calc_vat(rewardPrice.get(cur, 0), vatRate),
                 ),
             )
             if extra_pledge > 0:
@@ -829,7 +834,7 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
         raise ValueError("No order-lines created, won't proceed.")  # Early validation
 
     email = get(data, "email", "") or get(data, "customer.info.email", "")
-    if email:  # Only allow non-emtpy emails to be set
+    if email:  # Only set email if non-empty, e.g. can't update to unset email
         # This looks for users with primary email, with secondary emails in identities and in auth_keys
         # (only used by old users that haven't upgraded yet)
         realname = get(data, "shippingName", "")
@@ -854,7 +859,7 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
     pledgedStatus = get(data, "pledgedStatus", None)
     if status in OrderStatus.keys():
         order.status = status
-    elif order.email and deliveryStatus == 'sent':
+    elif order.email and deliveryStatus == "sent":
         order.status = OrderStatus.shipped
     elif order.email and (paymentStatus == "paid" or pledgedStatus == "collected"):
         order.status = OrderStatus.paid
@@ -863,7 +868,9 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
             order.status = OrderStatus.ordered
         elif deliveryStatus == "unsent":
             order.status = OrderStatus.paid
-    elif not (deliveryStatus or paymentStatus or pledgedStatus) and (not order.status or order.status == OrderStatus.cart):
+    elif not (deliveryStatus or paymentStatus or pledgedStatus) and (
+        not order.status or order.status == OrderStatus.cart
+    ):
         # We have no input at all and current order is set to defaults
         # Assume we want to set status as ordered or paid
         order.status = OrderStatus.paid if (order.email and paymentStatus != "unsent") else OrderStatus.ordered
@@ -886,12 +893,14 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
 
     if commit:
         order.save()
-        if order.user and (not is_updating or 'order_fields' in order._changed_fields or 'shipping_line' in order._changed_fields):
+        if order.user and (
+            not is_updating or "order_fields" in order._changed_fields or "shipping_line" in order._changed_fields
+        ):
             # We might have affected the total price, and need to create or regenerate a new Event
             ev = Event.objects(resource=order).first()
             if not ev:
                 ev = Event()
-            ev.action = 'purchase'
+            ev.action = "purchase"
             ev.user = order.user
             ev.resource = order
             ev.metric = order.total_price_sek()
@@ -1030,7 +1039,7 @@ def import_product(data, job=None, commit=False, create=True, if_newer=True):
         product.prices = price_objects
         vatRate = get(data, "vatRate", product.tax)
         if isinstance(vatRate, str):
-            vatRate = float("0"+vatRate)  # Small trick that makes a blank string into a float 0
+            vatRate = float("0" + vatRate)  # Small trick that makes a blank string into a float 0
         product.tax = vatRate
 
     created = parse_datetime(get(data, "created", None))

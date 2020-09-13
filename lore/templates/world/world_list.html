@@ -1,4 +1,4 @@
-{% extends "world/_root.html" %}
+{% extends "world/publisher_root.html" if not publisher_theme else publisher_theme %}
 
 {% block content_title %}{{ _('Game Worlds') }}{% endblock %}
 {% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
@@ -62,7 +62,10 @@
                     </ul>
                 </div>
             </div>
-
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _("No worlds found") }}</h2>
+            </div>
         {% endfor %}
     </div>
     {% include "includes/pagination.html" %}

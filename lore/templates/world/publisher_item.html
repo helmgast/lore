@@ -60,7 +60,7 @@
                 <div class="col-md-4">
                     {# data_end becomes data-end automatically #}
                     {{ MACRO.FORM_FIELD(publisher_form.images, controlclass="fileselect", data_endpoint=
-                        url_for('assets.FileAssetsView:file_selector', pub_host=publisher.slug, type='image', choice='multiple'), data_class='image feature-images') }}
+                        url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
                 </div>
             </div>
             <div class="row form-actions">
@@ -71,7 +71,6 @@
                         </ul>
                     {% endif %}
                 </div>
-
             </div>
         </form>
     {% else %}

@@ -4,6 +4,6 @@
     {% if self.home %}
         {{ self.home() }}  {# Replace all of main with home block from theme #}
     {% else %}
-        {{ self.mainsub() }} {# Normal mode by re-printing all inherited content of mainsub #}
+        {{ super()}}
     {% endif %}
 {% endblock %}

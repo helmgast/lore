@@ -20,14 +20,14 @@
 {% endblock %}
 
 {% block intro_class %}hide{% endblock %}
-{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-12 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-12{% endblock %}
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
         <div class="filter-options">
 
-        {{ MACRO.LIST_CONTROLS(model, args, ['username', 'status', 'xp', 'location', 'join_date', 'last_login'],
-        show=['card','table', 'order','page'])}}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args, show=['card','table', 'order','page'])}}
 
         <h5>{% trans %}By username{% endtrans %}</h5>
         <div class="btn-set">
@@ -40,6 +40,8 @@
         <div class="btn-set">
             {% for opt in filter_options['status'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% else %}
+                <button disabled class="btn btn-default btn-xs">{{ _('None') }}</button>
             {% endfor %}
         </div>
 

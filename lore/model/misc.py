@@ -60,7 +60,7 @@ def slugify(title, max_length=62):
 
 # LOCALE RELATED PROPERTIES
 default_translated_nones = {l: None for l in configured_langs.keys()}
-default_translated_strings = {l: '' for l in configured_langs.keys()}
+default_translated_strings = {l: "" for l in configured_langs.keys()}
 configured_langs_tuples = [(lang, locale.language_name.capitalize()) for lang, locale in configured_langs.items()]
 
 
@@ -75,7 +75,7 @@ def set_lang_options(*args):
             return
 
 
-def parse_datetime(dt_string) -> datetime.datetime:
+def parse_datetime(dt_string: str) -> datetime.datetime:
     # Parses any type of date string, ISO or other
     try:
         return dateutil.parser.parse(dt_string) if isinstance(dt_string, str) else None
@@ -318,9 +318,14 @@ def numerical_options(field_name, spans=None, labels=None):
     return return_function
 
 
-def reference_options(field_name, model):
-    def return_function(*args):
-        return [FilterOption(kwargs={field_name: o.slug}, label=o.title) for o in model.objects().distinct(field_name)]
+def reference_options(field_name, model, id_attr="slug", name_attr="title"):
+    def return_function(query=None):
+        if not query:
+            query = model.objects()
+        return [
+            FilterOption(kwargs={field_name: getattr(o, id_attr, str(o))}, label=getattr(o, name_attr, str(o)))
+            for o in query.distinct(field_name)
+        ]
 
     return return_function
 
@@ -407,21 +412,22 @@ from7to365 = [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedel
 
 
 def distinct_options(field_name, model):
-    def return_function(*args):
-        values = model.objects().distinct(field_name)
-        rv = [FilterOption(kwargs={field_name: v}, label=v) for v in values]
+    def return_function(query):
+        if not query:
+            query = model.objects()
+        rv = [FilterOption(kwargs={field_name: v}, label=v) for v in query.distinct(field_name)]
         return rv
 
     return return_function
 
 
 class Address(EmbeddedDocument):
-    name = StringField(max_length=60, required=True, verbose_name=_("Name"))
-    street = StringField(max_length=60, required=True, verbose_name=_("Street"))
-    zipcode = StringField(max_length=8, required=True, verbose_name=_("ZIP Code"))
-    city = StringField(max_length=60, required=True, verbose_name=_("City"))
+    name = StringField(max_length=60, verbose_name=_("Name"))
+    street = StringField(max_length=60, verbose_name=_("Street"))
+    zipcode = StringField(max_length=8, verbose_name=_("ZIP Code"))
+    city = StringField(max_length=60, verbose_name=_("City"))
     # Tuples come unsorted, let's sort first
-    country = StringField(choices=CountryChoices(), required=True, default="SE", verbose_name=_("Country"))
+    country = StringField(choices=CountryChoices(), default="SE", verbose_name=_("Country"))
     mobile = StringField(max_length=14, verbose_name=_("Cellphone Number"))
 
 
@@ -464,7 +470,7 @@ def current_url(merge=False, toggle=False, **kwargs):
                 elif merge:
                     l.append(v)
                     kwargs[k] = l
-    url = ''
+    url = ""
     if request:
         url = url_for(request.endpoint, **{**request.view_args, **request.args, **kwargs})
     return url

@@ -1,6 +1,6 @@
-{% extends "shop/_root.html" if not parent_template else parent_template %}
+{% extends "shop/order_list.html" if not parent_template else parent_template %}
 
-{% block content_title %}{{ _('My orders') }}{% endblock %}
+{# NAV #}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
@@ -8,10 +8,15 @@
         (url_for('shop.OrdersView:index'), _('Orders'))
     ) }}{% endblock %}
 
-{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+{# LAYOUT #}
+
+{% block asides_class %}hide{% endblock %}
+
+{# CONTENT #}
+
+{% block content_title %}{{ _('My orders') }}{% endblock %}
 
 {% block content %}
-
     <p><em>{{ _('Here are all orders you\'ve done with Helmgast. It includes crowdfunders and <a href="%(webshop)s">webshop</a>.', webshop="https://webshop.helmgast.se")}}<br>
     {{_('Check <a href="%(href)s">My library</a> for an easy overview of all your books.', href=url_for('shop.ProductsView:my_products'))}}</em></p>
     <p><strong>{%trans%}Many orders include digital files, click through to download them!{%endtrans%}</strong></p>
@@ -45,12 +50,12 @@
             <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'id') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'external_key') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'status') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'total_price') }}</th>
-                <th class="nobr">{{ MACRO.ORDER_BY_LINK(model, args, 'total_items') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'id') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'external_key') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'status') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'total_price') }}</th>
+                <th class="nobr">{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'total_items') }}</th>
                 </thead>
                 <tbody>
                 {% for order in orders %}

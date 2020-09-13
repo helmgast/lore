@@ -1,6 +1,6 @@
 {% extends root_template %}
 
-{% block content_title %}{{ _('Shortcuts') }}{% endblock %}
+{# NAV #}
 
 {% block subnavbar %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=none)) %}
@@ -10,14 +10,24 @@
 {% endblock %}
 
 {% block actionbar %}
-        {{ MACRO.NEW_BUTTON(url_for('admin.ShortcutsView:get', id='post'), 'New shortcut') }}
+        {{ MACRO.NEW_BUTTON(url_for('admin.ShortcutsView:get', id='post'), _('New shortcut')) }}
 {% endblock %}
 
+{# LAYOUT #}
+
+{% block title_class %}col-lg-9 col-md-8 col-sm-12{% endblock %}
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-12 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-12{% endblock %}
+
+{# CONTENT #}
+
+{% block content_title %}{{ _('Shortcuts') }}{% endblock %}
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
         <div class="filter-options">
-        {{ MACRO.LIST_CONTROLS(model, args, ['created_date']) }}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args) }}
 
         <h5>{% trans %}By created date{% endtrans %}</h5>
         <div class="btn-set">
@@ -41,15 +51,13 @@
     {% endif %}
 {% endblock %}
 
-
-{% block content %}
-    
+{% block content %}    
     <table class="table table-hover">
     <thead>
-    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'slug') }}</th>
-    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'url') }}</th>
-    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'article') }}</th>
-    <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created_date') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'slug') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'url') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'article') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created_date') }}</th>
     </thead>
     <tbody>
 

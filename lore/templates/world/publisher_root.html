@@ -1,0 +1,19 @@
+{% extends root_template %}
+
+{% block navbar_left %}
+    <li id="tour-gameworlds"><a href="{{ url_for('world.WorldsView:index') }}">
+        <span class="glyphicon glyphicon-globe"></span> {{ _('Game Worlds') }}
+    </a></li>
+    <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
+        <span class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}
+    </a></li>
+    <li><a href="{{ url_for('shop.ProductsView:index') }}">
+        <span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Products') }}
+    </a></li>
+{% endblock %}
+
+{% block search %}
+    <li><a href="{{ url_for('world.ArticlesView:search') }}">
+        <span class="glyphicon glyphicon-search"></span> {{ _('Search') }}
+    </a></li>
+{% endblock %}

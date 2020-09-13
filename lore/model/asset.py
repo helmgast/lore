@@ -82,6 +82,7 @@ def guess_content_type(filename):
                 return k
     return None
 
+
 # title - text description of asset
 # filename - e.g. the slug, automatically created from URL
 # source_url - remote source
@@ -116,7 +117,9 @@ def sniff_remote_file(url):
     # Content-Disposition	examples
     # attachment;filename="anon_2d-1200px.png";filename*=UTF-8''anon_2d-1200px.png
     # inline;filename="v_rldstr_dets-grenar-20200423.pdf";filename*=UTF-8\'\'v%C3%A4rldstr%C3%A4dets-grenar-20200423.pdf
-    fname, fnameutf = extract(r.headers.get("content-disposition", ""), r'filename="(.*?)";(?:filename\*=UTF-8\'\'([^;]+))?', groups=2)
+    fname, fnameutf = extract(
+        r.headers.get("content-disposition", ""), r'filename="(.*?)";(?:filename\*=UTF-8\'\'([^;]+))?', groups=2
+    )
     fnameutf = unquote(fnameutf)
     fname = fnameutf or fname or os.path.basename(urlparse(url).path)
     length = int(extract(r.headers.get("content-range", ""), r"bytes \d+-\d+\/(.*)", 0))
@@ -175,7 +178,10 @@ class Attachment(EmbeddedDocument):
 
 
 def get_google_urls(url):
-    g_id = extract(url, r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)")
+    g_id = extract(
+        url,
+        r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)",
+    )
     if not g_id:
         return {}
     urls = {"google_id": g_id}
@@ -190,8 +196,9 @@ cloudinary_transforms = {
     "center": "w_1600,c_limit,q_auto,fl_lossy,f_auto",
     "card": "w_800,c_limit,q_auto,fl_lossy,f_auto",
     "icon": "w_200,c_limit,q_auto,fl_lossy,f_auto",
-    "fix": "q_auto,fl_lossy,f_auto"
+    "fix": "q_auto,fl_lossy,f_auto",
 }
+
 
 class FileAsset(Document):
     slug = StringField(max_length=99, unique=True)
@@ -214,7 +221,7 @@ class FileAsset(Document):
     source_filename = StringField(max_length=60, verbose_name=_("Filename"))
     created_date = DateTimeField(default=datetime.utcnow, verbose_name=_("Uploaded on"))
     content_type = StringField()
-    length = IntField()
+    length = IntField(verbose_name=_("File size"))
     width = IntField()
     height = IntField()
     md5 = StringField()
@@ -255,10 +262,9 @@ class FileAsset(Document):
                 url = self.source_file_url
             else:
                 kwargs["_external"] = True
-                if not current_app.config["PRODUCTION"]:
-                    logger.debug("Force swapping URL to use helmgast.se instead of test")
-                    kwargs["pub_host"] = "helmgast.se"
                 url = url_for("image_thumb", slug=self.slug, **kwargs)
+                if not current_app.config["PRODUCTION"]:
+                    url = url.replace(".test", "")
             if transform and not transform.endswith("/"):
                 transform += "/"
             # Google Drive URLs doesn't resolve for Cloudinary, but the thumb might
@@ -346,7 +352,7 @@ class FileAsset(Document):
         ):
             # A cloudinary URL
             return
-        elif (self.source_file_url and not self.file_data) and (not self.source_filename or self.content_type) :
+        elif (self.source_file_url and not self.file_data) and (not self.source_filename or self.content_type):
             metadata = sniff_remote_file(self.source_file_url)
             self.source_filename = metadata["fname"]
             self.content_type = metadata["content_type"]

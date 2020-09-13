@@ -352,8 +352,8 @@ msgid ""
 "typed it correctly, otherwise contact your publisher for more "
 "information."
 msgstr ""
-"Denna kod existerar inte eller har inte lagts till ännu. Kontakta ditt "
-"förlag för mer information."
+"Denna kod existerar inte eller har inte lagts till ännu. Kontrollera att du "
+"skrev in den exakt som angivits. Kontakta ditt förlag för mer information."
 
 #: lore/api/social.py:58
 #, python-format
@@ -1079,7 +1079,7 @@ msgstr ""
 
 #: lore/model/world.py:83
 msgid "Activate webshop"
-msgstr "Aktivera webshopp"
+msgstr "Aktivera webshop"
 
 #: lore/model/world.py:85 lore/model/world.py:148 lore/model/world.py:386
 msgid "Editors"

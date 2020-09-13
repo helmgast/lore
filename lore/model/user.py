@@ -82,12 +82,12 @@ class UserEvent(EmbeddedDocument):
         except DoesNotExist:
             return self.action
 
+
 # class UserNotice(EmbeddedDocument):
 #   """Could be used to show messages when a user logs in"""
 #     last_login = DateTimeField(verbose_name=_("Created"))
 #     redirect_to = URLField(verbose_name=_("Redirect to"))
 #     msg = StringField(max_length=60, verbose_name=_("Message"))
-
 
 
 # A user in the system
@@ -144,18 +144,39 @@ class User(Document, BaseUser):
     identities = DynamicField()
     access_token = StringField()
 
-    images = ListField(ReferenceField('FileAsset'), verbose_name=_('Images'))  # Reverse delete rule in asset.py
-    following = ListField(ReferenceField('self', reverse_delete_rule=NULLIFY), verbose_name=_('Following'))
+    images = ListField(ReferenceField("FileAsset"), verbose_name=_("Images"))  # Reverse delete rule in asset.py
+    following = ListField(ReferenceField("self", reverse_delete_rule=NULLIFY), verbose_name=_("Following"))
 
     # TODO deprecated
-    publishers_newsletters = ListField(ReferenceField('Publisher'))  # Reverse delete rule in world.py
-    world_newsletters = ListField(ReferenceField('World'))  # Reverse delete rule in world.py
+    publishers_newsletters = ListField(ReferenceField("Publisher"))  # Reverse delete rule in world.py
+    world_newsletters = ListField(ReferenceField("World"))  # Reverse delete rule in world.py
     password = StringField(max_length=60, verbose_name=_("Password"))
     newsletter = BooleanField(default=False, verbose_name=_("Consent to newsletters"))
     google_auth = EmbeddedDocumentField(ExternalAuth)
     auth_keys = ListField(StringField(max_length=100, unique=True), verbose_name=_("Authentication sources"))
     facebook_auth = EmbeddedDocumentField(ExternalAuth)
     event_log = ListField(EmbeddedDocumentField(UserEvent))
+
+    def merge_in_user(self, remove_user):
+        changed_orders = Order.objects(user=remove_user).update(multi=True, user=self)
+        changed_events = Event.objects(user=remove_user).update(multi=True, user=self)
+        if remove_user.description and not self.description:
+            self.description = remove_user.description
+        if remove_user.realname and not self.realname:
+            self.realname = remove_user.realname
+        if remove_user.location and not self.location:
+            self.location = remove_user.location
+        if remove_user.join_date and remove_user.join_date < self.join_date:
+            self.join_date = remove_user.join_date
+        remove_user.status = "deleted"
+        remove_user.identities = None
+        remove_user.save()
+        msg = (
+            f"User '{self.email}' ({self.id}) merged in user '{remove_user.email}' ({remove_user.id}), moving "
+            + f"{len(changed_orders)} orders and {len(changed_events)} events"
+        )
+        logger.warning(msg)
+        # keep_user will be saved when we return out of this func
 
     def clean(self):
         # if self.username and self.location and self.description and self.images:
@@ -234,7 +255,11 @@ class User(Document, BaseUser):
         #     {"identities.profileData.email": f"/^{email}$/i"}, # Match from start to end of string
         #     {"auth_keys":f"/^{email}\|/i"} # Find from start to |
         # ]})
-        part_q = Q(email__iexact=email) | Q(__raw__={"identities.profileData.email": re.compile(f"^{email}$", re.IGNORECASE)}) | Q(auth_keys__istartswith=email)
+        part_q = (
+            Q(email__iexact=email)
+            | Q(__raw__={"identities.profileData.email": re.compile(f"^{email}$", re.IGNORECASE)})
+            | Q(auth_keys__istartswith=email)
+        )
         if not return_deleted:  # Remove deleted from results
             part_q = part_q & Q(status__ne="deleted")
         q = User.objects(part_q)
@@ -417,7 +442,7 @@ def user_from_email(*emails, realname="", create=False, commit=False):
 
 
 def import_user(job, data, commit=False, create=True, if_newer=True):
-    email = get(data, "email", '').lower()
+    email = get(data, "email", "").lower()
     if not email:
         if job:
             job.warn("Missing email from this import, can't proceed")

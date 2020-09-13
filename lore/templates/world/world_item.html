@@ -1,22 +1,4 @@
-{% extends "world/_root.html" if not world_theme else world_theme %}
-
-{% block content_title %}{{ world.title if world else _("New world") }}{% endblock %}
-{% block content_tagline -%}
-    {% if world %}
-        {% if world.tagline %}
-            {{ world.tagline }}
-        {% else %}
-            {{ _('by %(publisher)s', publisher=world.publisher) }}
-        {% endif %}
-    {% else %}
-        {{ _('by %(publisher)s', publisher=world_form.publisher.data) }}
-    {% endif %}
-{%- endblock %}
-
-{% block header_class -%}
-    {% if world and world.get_header_image %}page-header-hero{% endif %}
-    {% if world and world.hide_header_text %}page-header-hide-text{% endif %}
-{%- endblock %}
+{% extends "world/world_list.html" if not world_theme else world_theme  %}
 
 {% block cssimports %}
     {{ super() }}
@@ -35,6 +17,8 @@
               href="{{ url_for('world.ArticlesView:feed', world_=world.slug, _external=true, _scheme='') }}"/>
     {% endif %}
 {% endblock %}
+
+{# NAV #}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
@@ -74,9 +58,33 @@
     {% endif %}
 {% endblock %}
 
-{% block intro_class %}col-lg-2 col-md-12 col-sm-10 intro-aside margin-below{% endblock %}
-{% block content_class %}col-lg-9 col-md-12 col-sm-10 content{% endblock %}
+{# LAYOUT #}
+
+{% block header_class -%}
+    {% if world and world.get_header_image %}page-header-hero{% endif %}
+    {% if world and world.hide_header_text %}page-header-hide-text{% endif %}
+{%- endblock %}
+
+{% block title_class %}col-lg-offset-2 col-lg-10 col-md-12 col-sm-12{% endblock %}
+{% block intro_class %}col-lg-2 col-md-12 col-sm-12 intro-aside margin-below{% endblock %}
+{% block content_class %}col-lg-9 col-md-12 col-sm-12 content{% endblock %}
 {% block asides_class %}hide{% endblock %}
+
+{# CONTENT #}
+
+{% block content_title %}{{ world.title if world else _("New world") }}{% endblock %}
+
+{% block content_tagline -%}
+    {% if world %}
+        {% if world.tagline %}
+            {{ world.tagline }}
+        {% else %}
+            {{ _('by %(publisher)s', publisher=world.publisher) }}
+        {% endif %}
+    {% else %}
+        {{ _('by %(publisher)s', publisher=world_form.publisher.data) }}
+    {% endif %}
+{%- endblock %}
 
 {% block content %}
     {% if world_form %}
@@ -105,7 +113,6 @@
                     {{ MACRO.FORM_FIELD(world_form.editors, controlclass='selectize') }}
                     {{ MACRO.FORM_FIELD(world_form.readers, controlclass='selectize', helptext=_('Empty means public read access')) }}
                     {{ MACRO.FORM_FIELD(world_form.custom_css) }}
-
 
                     {{ world_form.csrf_token }}
                 </div>
@@ -226,7 +233,6 @@
 
 {% block intro %}
     {% if world and world.slug!='meta' and not world_form %}
-        <hr>
         {% if world.product_url or world.publisher.webshop_activated %}
         <p class="text-center">
             <a class="btn btn-lg btn-info"

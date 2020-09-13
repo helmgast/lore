@@ -1,5 +1,5 @@
 // IMPORTANT. This sets the STATIC_PATH to that of the server, in a global var (_root.html), so we don't need to hardcode it.
-__webpack_public_path__ = STATIC_URL.split("/static")[0]+__webpack_public_path__;
+__webpack_public_path__ = STATIC_URL.split("/static")[0] + __webpack_public_path__;
 
 // Needed for all pages, and should be loaded first
 var jQuery = require('jquery');
@@ -11,23 +11,25 @@ window.$ = window.jQuery = jQuery;  // Set global access to jquery object
 
 // Load early in case of error below
 let Sentry;
-window.sentryReport = function(c) {}
+window.sentryReport = function (c) { }
 if (typeof SENTRY_DSN !== 'undefined' && SENTRY_DSN) {
     Sentry = require('@sentry/browser');
-    Sentry.init({dsn: SENTRY_DSN, 
+    Sentry.init({
+        dsn: SENTRY_DSN,
         beforeSend(event) {
             // Check if it is an exception, if so, show the report dialog
             if (event.exception) {
-              Sentry.showReportDialog();
+                Sentry.showReportDialog();
             }
             return event;
-          }});
+        }
+    });
     Sentry.configureScope((scope) => {
         scope.setUser(SENTRY_USER);
     });
-    window.sentryReport = function(config) {
+    window.sentryReport = function (config) {
         if (!config.user && SENTRY_USER && 'email' in SENTRY_USER && 'username' in SENTRY_USER) {
-            config.user = {email: SENTRY_USER.email, name: SENTRY_USER.username}
+            config.user = { email: SENTRY_USER.email, name: SENTRY_USER.username }
         }
         Sentry.showReportDialog(config);
     }
@@ -90,23 +92,23 @@ $modal.on('click', 'button[type="submit"]', function (e) {
 });
 
 $(document).on('click', '.shortcut-save', function (e) {
-    var data = {slug: $('#shortcut').val(), article: $(this).data('article')}
+    var data = { slug: $('#shortcut').val(), article: $(this).data('article') }
     if (data.slug && data.article) {
         var jqxhr = $.ajax({
             url: $(this).data('post'),
             type: 'post',
             data: data,
-            headers: {'X-CSRFToken': CSRF_TOKEN},
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
             dataType: 'json',
             success: function (data) {
                 utils.flash_error("Short URL created", 'success');
                 $(".shortcut-save").attr("disabled", "disabled");
-                $('#shortcut').attr('readonly','readonly');
+                $('#shortcut').attr('readonly', 'readonly');
             }
         })
-        .fail(function (jqXHR, textStatus, errorThrown) {
-            utils.flash_error(jqXHR.responseJSON, 'danger')
-        });
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                utils.flash_error(jqXHR.responseJSON, 'danger')
+            });
     }
     e.preventDefault();
 });
@@ -115,8 +117,8 @@ $(document).on('click', '.buy-link', function (e) {
     var jqxhr = $.ajax({
         url: SHOP_URL,
         type: 'patch',
-        data: {product: this.id},
-        headers: {'X-CSRFToken': CSRF_TOKEN},
+        data: { product: this.id },
+        headers: { 'X-CSRFToken': CSRF_TOKEN },
         dataType: 'json',
         success: function (data) {
             $c = $('#cart-counter')
@@ -168,7 +170,7 @@ $(document).on('click', '.setval', function (e) {
 //     return false;
 // });
 
-$('#feedback-ribbon').on('click', function(e) {
+$('#feedback-ribbon').on('click', function (e) {
     if (Sentry) {
         Sentry.captureMessage("User report");
         sentryReport({
@@ -176,7 +178,6 @@ $('#feedback-ribbon').on('click', function(e) {
             subtitle: "",
             labelComments: "What's not working?"
         })
-
     }
     return false;
 });
@@ -226,14 +227,18 @@ $(document).on('click', '.zoomable', function (e) {
 
 // Smooth scroll for anchor links
 $(document).on('click', 'a[href*=\\#]', function (event) {
-    if (this.hash && (this.href == this.hash || this.href.indexOf(window.location.pathname+this.hash) > 0)) {
+    if (this.hash && (this.href == this.hash || this.href.indexOf(window.location.pathname + this.hash) > 0)) {
         let $offset = $(this.hash).offset();
         if ($offset) {
             event.preventDefault();
-            $('html,body').animate({scrollTop: $offset.top}, 500);
+            $('html,body').animate({ scrollTop: $offset.top }, 500);
         }
     }
+});
 
+$(document).on('click', '#q-btn', function (event) {
+    // Modify the search url with the latest query input value before continuing the click
+    this.href = utils.modify_url(this.href, { q: $('#q').val() });
 });
 
 /* ========================================================================
@@ -318,11 +323,11 @@ function init_dom(e) {
 
     // File upload plugin for file upload forms
     require('fileuploader.js')
-    scope.find('.file-upload').fileupload({static_url: __webpack_public_path__, image_url: IMAGE_URL});
+    scope.find('.file-upload').fileupload({ static_url: __webpack_public_path__, image_url: IMAGE_URL });
 
     // File select plugin (activates the jquery part, the trumbowyg part loads with trumbowyg later)
     require('fileselect.js')
-    scope.find('.fileselect').fileselect({image_url: IMAGE_URL, link_url: LINK_URL});
+    scope.find('.fileselect').fileselect({ image_url: IMAGE_URL, link_url: LINK_URL });
 
     // Calculatable plugin
     require('calculatable.js')
@@ -334,7 +339,7 @@ function init_dom(e) {
     var zoombrand = scope.find('.animated-move');
     if (zoombrand.length) {
         // var frombox = $('#zoombrand-from').get(0).getBoundingClientRect()
-        utils.match_pos(zoombrand, '#zoombrand-from', {opacity: '1', position: 'absolute'})
+        utils.match_pos(zoombrand, '#zoombrand-from', { opacity: '1', position: 'absolute' })
         // zoombrand.css({opacity: '1', top: frombox.top+"px", left: frombox.left+"px", width: frombox.width+"px", height: frombox.height+"px"})
 
         // var from = zoombrand.get(0), to = $(zoombrand.data('to')).get(0)
@@ -359,7 +364,7 @@ function init_dom(e) {
                 }
             } else {
                 if (toggled) {
-                    utils.match_pos(zoombrand, '#zoombrand-from', {}, add_scroll=true)
+                    utils.match_pos(zoombrand, '#zoombrand-from', {}, add_scroll = true)
                     toggled = false;
                 }
             }

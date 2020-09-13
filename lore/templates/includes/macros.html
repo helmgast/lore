@@ -169,7 +169,7 @@
 {%- endmacro -%}
 
 
-{%- macro LIST_CONTROLS(model_class, args, fields, show=['card','table', 'list', 'order','page'], set_view=None, default='table') -%}
+{%- macro LIST_CONTROLS(filterable_fields, args, show=['card','table', 'list', 'order','page'], set_view=None, default='table') -%}
     <div class="btn-set">
         {% if 'view' in show or 'table' in show or 'list' in show %}
             <h5>{% trans %}View{% endtrans %}</h5>
@@ -190,31 +190,29 @@
                    class="btn btn-default btn-sm{{ ' active' if view=='list' }}"><span
                         class="glyphicon glyphicon-align-justify"></span></a>
                 {% endif %}
-            </div></br>
+            </div><br>
         {% endif %}
 
         {% if 'order' in show %}
             <div class="btn-group">
-                {% if in_current_args(['order_by']) and args['order_by'] %}
-                    {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
+                {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
+                {% if in_current_args(['order_by']) and clean_order_by in filterable_fields.filter_dict %}
+                    {# TODO only considers first order_by arg #}
                     <a href="{{ current_url(order_by=none) }}"
                        title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info btn-xs">
                         {% trans %}Order by{% endtrans %}
-                        : {{ model_class._fields[clean_order_by].verbose_name }} &times;</a>
+                        : {{ filterable_fields.filter_dict[clean_order_by] }} &times;</a>
                 {% else %}
                     <button type="button" title="{% trans %}Select ordering{% endtrans %}"
                             class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"
                             aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu" role="menu">
-                        {% for f in fields %}
-                            {% set name = model_class._fields[f].verbose_name %}
-                            {% if name %}
-                                <li><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
-                                        class="caret"></span></a></li>
-                                <li><a href="{{ current_url(order_by=f) }}">{{ name }} <span
-                                        class="caret caret-up"></span></a></li>
-                            {% endif %}
+                        {% for f, name in filterable_fields.filter_dict.items() %}
+                            <li><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
+                                    class="caret"></span></a></li>
+                            <li><a href="{{ current_url(order_by=f) }}">{{ name }} <span
+                                    class="caret caret-up"></span></a></li>
                         {% endfor %}
                     </ul>
                 {% endif %}
@@ -267,13 +265,13 @@
 {%- endmacro -%}
 
 
-{%- macro ORDER_BY_LINK(model_class, args, field_name) -%}
+{%- macro ORDER_BY_LINK(filterable_fields, args, field_name) -%}
     {% set order_by = args['order_by'] %}
-    {% set name = model_class._fields[field_name].verbose_name %}
+    {% set name = filterable_fields.filter_dict[field_name] %}
     {% if field_name in order_by %}
-        <a href="{{ current_url(order_by='-'+field_name) }}">{{ name }} <span class="caret caret-up"></span></a>
+        <a class="nobr" href="{{ current_url(order_by='-'+field_name) }}">{{ name }} <span class="caret caret-up"></span></a>
     {% elif '-'+field_name in order_by %}
-        <a href="{{ current_url(order_by=field_name) }}">{{ name }} <span class="caret"></span></a>
+        <a class="nobr" href="{{ current_url(order_by=field_name) }}">{{ name }} <span class="caret"></span></a>
     {% else %}
         <a href="{{ current_url(order_by=field_name) }}">{{ name }} </a>
     {% endif %}

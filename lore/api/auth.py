@@ -98,21 +98,6 @@ def populate_user(user, user_info, token_info=None):
     return user
 
 
-def merge_users(keep_user, remove_user):
-    if remove_user.status == "active":
-        msg = f"User 1 {keep_user.id} wants to link in user 2 {remove_user.id}, but 2 is also an active user. Resolve manually!"
-        logger.warning(msg)
-        flash(_("The email you tried to add has an active user account. This need to be resolved manually to link. Contact support."), "warning")
-        capture_message(msg)
-        abort(400)
-    else:  # Invited or deleted, doesn't matter although we expect second to be empty
-        changed_orders = Order.objects(user=remove_user).update(multi=True, user=keep_user)
-        changed_events = Event.objects(user=remove_user).update(multi=True, user=keep_user)
-        remove_user.status = "deleted"
-        remove_user.identities = None
-        remove_user.save()
-        # keep_user will be saved when we return out of this func
-
 @auth_app.route("/callback", subdomain="<pub_host>")
 def callback():
     # Note: This callback applies both to login and signup, there is no difference.
@@ -205,7 +190,7 @@ def callback():
             # Authenticating user is empty or different from logged in user
             if session_user != auth_user and session_user.email != user_info["email"]:
                 if auth_user:
-                    merge_users(session_user, auth_user)
+                    session_user.merge_in_user(auth_user)
                 primary_id = f"{session_user.identities[0]['provider']}|{session_user.identities[0]['user_id']}"
                 identities = get_mgmt_api().users.link_user_account(
                     primary_id,

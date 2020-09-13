@@ -5,7 +5,6 @@
 {% block content_title %}{{ _('Publisher') }}{% endblock %}
 {% block content_tagline %}{{ _('working hard to imagine') }}{% endblock %}
 
-
 {% block subnavbar %}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('list', res=none)) %}
             <li><a class="{{ privileged }}" href="{{ url_for('world.PublishersView:index') }}"><span
@@ -18,7 +17,6 @@
         {{ MACRO.NEW_BUTTON(url_for('world.PublishersView:get', id='post'), 'New publisher') }}
     {% endcall %}
 {% endblock %}
-
 
 {% block content %}
     <div class="cards">
@@ -39,13 +37,16 @@
                         <a href="{{ url_for('.PublishersView:get', id=publisher.slug) }}">{{ publisher.title }}</a>
                     </h3>
                     <div class="card-description">
-
                         {{ description|default(_('No data'), true)|markdown }}
                     </div>
                     <ul class="card-details">
                         <li class="product-type">{% trans %}Created{% endtrans %}: {{ publisher.created_date|dateformat(format='short') }}</li>
                     </ul>
                 </div>
+            </div>
+        {% else %}
+            <div class="jumbotron text-center">
+                <h2>{{ _('No publishers available') }}</h2>
             </div>
         {% endfor %}
     </div>

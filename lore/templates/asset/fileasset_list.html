@@ -8,12 +8,14 @@
 {% endblock %}
 
 {% block intro_class %}hide{% endblock %}
-{% block content_class %}col-lg-9 col-md-8 col-sm-10 content{% endblock %}
+{% block content_class %}col-lg-9 col-md-8 col-sm-12 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-12{% endblock %}
+
 
 {% block asides %}{{ super() }}
     {% if filter_options %}
         <div class="filter-options">
-        {{ MACRO.LIST_CONTROLS(model, args, ['slug', 'owner', 'access_type', 'tags']) }}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args) }}
 
         <h5>{% trans %}By owner{% endtrans %}</h5>
         <div class="btn-set">
@@ -69,10 +71,10 @@
                 <table class="table">
                     <thead>
                     <tr>
-                        <th>{{ _('File') }}</th>
+                        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'slug') }}</th>
                         <th>{{ _('Tags') }}</th>
-                        <th>{{ _('Access type') }}</th>
-                        <th>{{ _('File size') }}</th>
+                        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'access_type') }}</th>
+                        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'length') }}</th>
                         <th>{{ _('Actions') }}</th>
                         <th>{{ _('Publisher') }}</th>
                     </tr>

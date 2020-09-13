@@ -1,11 +1,4 @@
 {% extends "social/_root.html" if not parent_template else parent_template %}
-{% import 'includes/macros.html' as MACRO %}
-
-{% block header_title %}
-<h1 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">{% block content_title %}{{ user }}{% endblock %}
-    <small>{% block content_tagline %}{{user.xp}} XP{% endblock %}</small>
-</h1>
-{% endblock %}
 
 {% block cssimports %}
     {{ super() }}
@@ -48,6 +41,14 @@
     {#    <li role="presentation"><a class="{{privileged}}" data-toggle="modal" data-target="#themodal" role="menuitem" tabindex="-1" href="{{url_for('mail.mail_view', mail_type='remind', user=user.id, intent='post')}}"><span class="glyphicon glyphicon-hand-right"></span> {{_('Remind login')}}</a></li>#}
     {#    {% endcall %}#}
 {% endblock %}
+
+{% block title_class %}col-lg-offset-2 col-lg-7 col-md-12 col-sm-12{% endblock %}
+{% block intro_class %}hide{% endblock %}
+{% block content_class %}col-lg-offset-2 col-lg-7 col-md-12 col-sm-12 content{% endblock %}
+{% block asides_class %}hide{% endblock %}
+
+{% block content_title %}{{ user }}{% endblock %}
+{% block content_tagline %}{{user.xp}} XP{% endblock %}
 
 {% block post_content %}
     {% if user_form %}

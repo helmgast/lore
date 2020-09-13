@@ -8,8 +8,10 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
+from os import name
 import types
 from itertools import chain
+from typing import Dict, Sequence
 
 from jinja2 import TemplatesNotFound
 import logging
@@ -28,6 +30,7 @@ from flask import Response
 from flask.json import jsonify
 from mongoengine import ReferenceField, Q, OperationError, InvalidQueryError
 from mongoengine.errors import ValidationError, NotUniqueError
+from mongoengine.queryset.queryset import QuerySet
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
@@ -36,7 +39,7 @@ from wtforms import fields as f, validators as v, widgets
 from wtforms.utils import unset_value
 from wtforms.widgets import html5, HTMLString, html_params, Select
 
-from lore.model.misc import METHODS, localized_field_labels, safe_next_url
+from lore.model.misc import METHODS, extract, localized_field_labels, safe_next_url
 from lore.model.world import EMBEDDED_TYPES, Article
 from wtforms.fields.core import UnboundField
 from wtforms.widgets.core import HiddenInput
@@ -167,7 +170,7 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 
 def filterable_fields_parser(fields=None, **kwargs):
-    fields = frozenset(fields or [])
+    fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
     forbidden = fields & common_args
     if forbidden:
         msg = f"Cannot allow field names colliding with common args names: {forbidden}"
@@ -386,6 +389,32 @@ class ResourceResponse(Response):
         return args
 
 
+# class FilterableField2:
+
+#     key = ""
+#     name = ""
+#     description = ""
+
+#     def apply_to_query(self, query):
+#         # Applies query to filter_options
+#         return query
+
+#     def filter_options(self):
+#         return [("value", "Display")]
+
+# class SortableField:
+
+#     key = ""
+#     name = ""
+#     description = ""
+
+#     def parse_order_by(self):
+#         pass
+
+#     def apply_to_query(self, query):
+#         return query
+
+
 class ListResponse(ResourceResponse):
     """index, listing of resources"""
 
@@ -404,6 +433,11 @@ class ListResponse(ResourceResponse):
 
     def __init__(self, resource_view, queries, method="list", formats=None, extra_args=None):
         list_arg_parser = getattr(resource_view, "list_arg_parser", None)
+        if not list_arg_parser:
+            filterable_fields = getattr(resource_view, "filterable_fields", None)
+            if filterable_fields is not None:
+                list_arg_parser = filterable_fields.list_arg_parser
+                self.filterable_fields = filterable_fields
         if list_arg_parser:
             self.arg_parser = list_arg_parser
         super(ListResponse, self).__init__(resource_view, queries, method, formats, extra_args)
@@ -423,7 +457,7 @@ class ListResponse(ResourceResponse):
         elif isinstance(field, ReferenceField):
             try:
                 instance = field.document_type.objects(slug=slug).only("id").first()
-            except InvalidQueryError as err:
+            except InvalidQueryError:
                 instance = None
             if instance:
                 return instance.id
@@ -432,15 +466,24 @@ class ListResponse(ResourceResponse):
         else:
             return slug
 
-    def render(self):
-        self.paginate()
-        return super(ListResponse, self).render()
+    # queryable fields
+    # sortable?
+    # filterable?
 
-    def prepare_query(self):  # also filter by authorization, paginate
+    def finalize_query(self, aggregation=None, paginate=True):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
-        if self.args["order_by"]:  # is a list
-            self.query = self.query.order_by(*self.args["order_by"])
+        if aggregation is None:
+            aggregation = []
+
+        self.pagination = ResponsePagination(self)
+
+        # Apply text search
+        if self.args["q"]:
+            self.query = self.query.search_text(self.args["q"])
+            self.args["order_by"].append("$text_score")
+
+        # Apply filters
         if self.args["fields"]:
             built_query = None
             for k, values in self.args["fields"].lists():
@@ -450,41 +493,141 @@ class ListResponse(ResourceResponse):
                 if len(values) > 1:  # multiple values for this field, combine with or
                     for v in values[1:]:
                         q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
-                if not built_query:
-                    built_query = q
-                else:
-                    built_query = built_query._combine(q, QNode.AND)
+                built_query = built_query._combine(q, QNode.AND) if built_query else q
+
             self.query = self.query.filter(built_query)
-        if self.args["q"]:
-            # Doing this twice will throw error, but we cannot guarantee we won't runt prepare_query twice
-            try:
-                self.query = self.query.search_text(self.args["q"]).order_by("$text_score")
-            except OperationError:
-                pass
 
-        for f in list(self.model._fields.keys()):
-            field = self.model._fields[f]
-            if hasattr(field, "filter_options"):
-                self.filter_options[f] = field.filter_options(self.model)
+        # Populate filter options, options may be reduced by current query
+        for field in self.filterable_fields.filter_dict.keys():
+            # Fields may be composite like field.subfield, which we don't support with filter options
+            field = field.split(".", 1)[0]
+            fieldObj = self.model._fields.get(field, None)
+            if fieldObj and hasattr(fieldObj, "filter_options"):
+                self.filter_options[field] = fieldObj.filter_options(self.query)
 
-    def paginate(self):
-        # TODO max query size 10000 implied here
-        per_page = int(self.args["per_page"])
-        page = int(self.args["page"])
+        # Filterable fields
+
+        # Apply sort / order, overruling any previous
+        if self.args["order_by"]:  # is a list
+            sort_aggregation = []
+            order_by = []
+            for ob in self.args["order_by"]:
+                parts = ob.split(".")
+                if len(parts) > 1:
+                    field = self.model._fields.get(parts[0].replace("-", ""), None)
+                    # Allow sort by reference fields by doing aggregation lookup on them for sorting
+                    if isinstance(field, ReferenceField) and not field.dbref:
+                        sort_aggregation.append(
+                            {
+                                "$lookup": {
+                                    "from": field.document_type._get_collection_name(),
+                                    "localField": field.name,
+                                    "foreignField": "_id",
+                                    "as": f"{field.name}_lookup",
+                                }
+                            }
+                        )
+                        order_by.append(f"{'-' if ob.startswith('-') else ''}{field.name}_lookup.{parts[1]}")
+                        continue
+                order_by.append(ob)
+            if sort_aggregation:
+                sort_aggregation.append({"$sort": dict(self.query._get_order_by(order_by))})
+                if self.pagination:
+                    # Best performance if we add the limit and skip here
+                    self.pagination.apply_to_aggregation(sort_aggregation)
+
+                sort_aggregation.append(
+                    {"$unset": [dct["$lookup"]["as"] for dct in sort_aggregation if "$lookup" in dct]}
+                )
+                aggregation += sort_aggregation
+            else:
+                self.query = self.query.order_by(*self.args["order_by"])
+
+        self.query = self.pagination.apply_to_query(self.query)
+        if aggregation:
+            if self.query._query:
+                aggregation.insert(0, {"$match": self.query._query})
+            agg_results = self.query._collection.aggregate(aggregation, cursor={})
+            # Note, turns query into a static list
+            self.query = [self.model._from_son(a) for a in agg_results]
+
+
+class ResponsePagination(Pagination):
+    def __init__(self, r):
+
+        per_page = int(r.args["per_page"])
+        page = int(r.args["page"])
         if per_page < 0:
-            per_page = 10000
+            per_page = 10000  # Max page size
+
         # TODO, a fix because pagination will otherwise reset any previous .limit() set on the query.
         # https://github.com/MongoEngine/flask-mongoengine/issues/310
-        if getattr(self.query, "_limit", None):
-            per_page = min(per_page, self.query._limit)
-            page = min(page, math.ceil(self.query._limit // per_page))  # // is integer division
+        if getattr(r.query, "_limit", None):
+            per_page = min(per_page, r.query._limit)
+            page = min(page, math.ceil(r.query._limit // per_page))  # // is integer division
 
-        # TODO, this is a fix for an issue in MongoEngine https://github.com/MongoEngine/mongoengine/issues/1522
-        try:
-            self.pagination = Pagination(iterable=self.query, page=page, per_page=per_page)
-        except TypeError:  # Try again, as a race condition might stop first one
-            self.pagination = Pagination(iterable=self.query, page=page, per_page=per_page)
-        self.query = self.pagination.items  # set default query as the paginated one
+        if page < 1:
+            abort(404)
+
+        self.page = page
+        self.per_page = per_page
+        self.count = 0
+        self.response = r
+        self.skip = (page - 1) * per_page
+
+    def apply_to_aggregation(self, pipeline):
+        if self.per_page and {"$limit": self.per_page} not in pipeline:
+            pipeline.append({"$limit": self.per_page})
+        if self.skip and {"$skip": self.per_page} not in pipeline:
+            pipeline.append({"$skip": self.per_page})
+        return pipeline
+
+    def apply_to_query(self, query):
+        self.count = query.count()
+        return query.skip(self.skip).limit(self.per_page)
+
+    @property
+    def pages(self):
+        """The total number of pages"""
+        return int(math.ceil(self.count / float(self.per_page)))
+
+    def iter_pages(self, left_edge=2, left_current=2, right_current=5, right_edge=2):
+        """Iterates over the page numbers in the pagination.  The four
+        parameters control the thresholds how many numbers should be produced
+        from the sides.  Skipped page numbers are represented as `None`.
+        This is how you could render such a pagination in the templates:
+
+        .. sourcecode:: html+jinja
+
+            {% macro render_pagination(pagination, endpoint) %}
+              <div class=pagination>
+              {%- for page in pagination.iter_pages() %}
+                {% if page %}
+                  {% if page != pagination.page %}
+                    <a href="{{ url_for(endpoint, page=page) }}">{{ page }}</a>
+                  {% else %}
+                    <strong>{{ page }}</strong>
+                  {% endif %}
+                {% else %}
+                  <span class=ellipsis>…</span>
+                {% endif %}
+              {%- endfor %}
+              </div>
+            {% endmacro %}
+        """
+        last = 0
+        for num in range(1, self.pages + 1):
+            if (
+                num <= left_edge
+                or num > self.pages - right_edge
+                or (num >= self.page - left_current and num <= self.page + right_current)
+            ):
+                if last + 1 != num:
+                    yield None
+                yield num
+                last = num
+        if last != self.pages:
+            yield None
 
 
 class ItemResponse(ResourceResponse):
@@ -618,12 +761,28 @@ class ResourceView(FlaskView):
         current_app.access_policy[domain] = cls.access_policy
         return cls.register(app)
 
+    # @classmethod
+    # def set_prefillable_fields(cls, fields, **kwargs):
+
 
 def route_subdomain(app, rule, **options):
     # if not current_app.config.get('ALLOW_SUBDOMAINS', False) and 'subdomain' in options:
     #     sub = options.pop('subdomain')
     #     rule = "/sub_" + sub + "/" + rule.lstrip("/")
     return app.route(rule, **options)
+
+
+class FilterableFields(Dict):
+    def __init__(self, model, fields, **kwargs):
+        self.filter_dict = {}
+        for field in fields:
+            if isinstance(field, tuple):
+                self.filter_dict[field[0]] = field[1]
+            elif field in model._fields and hasattr(model._fields[field], "verbose_name"):
+                self.filter_dict[field] = model._fields[field].verbose_name
+            else:
+                self.filter_dict[field] = field
+        self.list_arg_parser = filterable_fields_parser(self.filter_dict.keys(), **kwargs)
 
 
 # WTForm Basics to remember
@@ -732,14 +891,14 @@ class ThumbSelectWidget(Select):
     # Modofied __call__ that takes all arguments returned from field.iter_choices,
     # allowing custom data-attributes for example
     def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
+        kwargs.setdefault("id", field.id)
         if self.multiple:
-            kwargs['multiple'] = True
-        html = ['<select %s>' % html_params(name=field.name, **kwargs)]
+            kwargs["multiple"] = True
+        html = ["<select %s>" % html_params(name=field.name, **kwargs)]
         for val, label, selected, option_kwargs in field.iter_choices():
             html.append(self.render_option(val, label, selected, **option_kwargs))
-        html.append('</select>')
-        return HTMLString(''.join(html))
+        html.append("</select>")
+        return HTMLString("".join(html))
 
 
 class HiddenModelField(ModelSelectField):
@@ -747,6 +906,7 @@ class HiddenModelField(ModelSelectField):
 
     def _value(self):
         return self.data.id if self.data else None
+
 
 class OrderedModelSelectMultipleField(ModelSelectMultipleField):
 
@@ -777,7 +937,9 @@ class OrderedModelSelectMultipleField(ModelSelectMultipleField):
                 yield (obj.id, label, True, kwargs)
             else:
                 yield (obj.id, label, True)
-        for obj in self.queryset[:100]:  # TODO crazy hack. Some query sets result in too many objects, so we cap it at 100
+        for obj in self.queryset[
+            :100
+        ]:  # TODO crazy hack. Some query sets result in too many objects, so we cap it at 100
             label = self.label_attr and getattr(obj, self.label_attr) or obj
             kwargs = {}
             if hasattr(obj, "thumb_url"):
@@ -809,13 +971,13 @@ class CheckboxListWidget(object):
     """
 
     def __call__(self, field, **kwargs):
-        kwargs.setdefault('id', field.id)
-        kwargs.setdefault('class', 'form-group')
-        html = ['<%s %s>' % ('div', html_params(**kwargs))]
+        kwargs.setdefault("id", field.id)
+        kwargs.setdefault("class", "form-group")
+        html = ["<%s %s>" % ("div", html_params(**kwargs))]
         for subfield in field:
             html.append('<div class="checkbox-inline">%s %s</div>' % (subfield(), subfield.label))
-        html.append('</div>')
-        return HTMLString(''.join(html))
+        html.append("</div>")
+        return HTMLString("".join(html))
 
 
 class DisabledField(StringField):
@@ -860,13 +1022,13 @@ class ImprovedModelConverter(ModelConverter):
                 exclude=exclude,
                 converter=ImprovedModelConverter(),
                 base_class=OrigForm,
-                field_args=field_args
+                field_args=field_args,
             )
         return f.FormField(form_class, **kwargs)
 
     @converts("ListField")
     def conv_List(self, model, field, kwargs):
-        list_type = kwargs.pop('list_type', "")
+        list_type = kwargs.pop("list_type", "")
         if field.name == "tags" or list_type == "tags":
             return TagField(model=model, **kwargs)
         # elif kwargs.get('list_type', "") == "multicheck":
@@ -886,7 +1048,12 @@ class ImprovedModelConverter(ModelConverter):
     @converts("MapField")
     def conv_MapField(self, model, field, kwargs):
         field_args = kwargs.pop("field_args", {})
-        if field.name.endswith("_i18n") or field.name.endswith("_translated") and "sub_labels" not in kwargs and "label" in kwargs:
+        if (
+            field.name.endswith("_i18n")
+            or field.name.endswith("_translated")
+            and "sub_labels" not in kwargs
+            and "label" in kwargs
+        ):
             kwargs["sub_labels"] = localized_field_labels(kwargs["label"])
         unbound_field = self.convert(model, field.field, field_args)
         unacceptable = {

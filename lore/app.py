@@ -177,7 +177,7 @@ def configure_extensions(app):
         app.static_url_path + "/<path:filename>",
         endpoint="static",
         view_func=app.send_static_file,
-        host=app.default_host,
+        # host=app.default_host,
     )
     app.logger.info(
         "Doing host matching and default host is {host}{prefix}".format(host=app.default_host, prefix=prefix or "")
@@ -187,7 +187,12 @@ def configure_extensions(app):
     def send_plugin_file(filename):
         return send_from_directory("../plugins", filename, cache_timeout=current_app.get_send_file_max_age(filename))
 
-    app.add_url_rule("/plugins/<path:filename>", endpoint="plugins", view_func=send_plugin_file, host=app.default_host)
+    app.add_url_rule(
+        "/plugins/<path:filename>",
+        endpoint="plugins",
+        view_func=send_plugin_file,
+        # host=app.default_host
+    )
 
     # Debug toolbar, will stop if DEBUG_TB_ENABLED = False or if not else if DEBUG=False
     extensions.toolbar.init_app(app)
@@ -325,8 +330,7 @@ def configure_hooks(app):
         if not ph:
             ph = request.host
         if not app.config["PRODUCTION"]:
-            # TODO use a better test domain pattern where we know original top domain, e.g. helmgast.setest
-            ph = re.sub(r"\.test$", ".se", ph)
+            ph = re.sub(r"\.test$", "", ph)
         g.pub_host = ph
         lang = values.pop("lang", None) if values else None
         g.lang = lang
@@ -335,9 +339,15 @@ def configure_hooks(app):
     @app.url_defaults
     def set_global_url_vars(endpoint, values):
         if app.url_map.is_endpoint_expecting(endpoint, "pub_host"):
-            values.setdefault(
-                "pub_host", g.pub_host if app.config["PRODUCTION"] else re.sub(r"\.se$", ".test", g.pub_host)
-            )
+            if app.config["PRODUCTION"]:
+                values.setdefault("pub_host", g.pub_host)
+            elif "pub_host" not in values:
+                # No pub_host given so we will default to the current pub_host plus test
+                values["pub_host"] = g.pub_host + ".test"
+            elif not values.get("_external", False):
+                # pub_host was given, and _external is False, so we can add .test
+                # (if external is True we assume the URL is for actual use and must resolve outside dev )
+                values["pub_host"] = values["pub_host"] + ".test"
         if app.url_map.is_endpoint_expecting(endpoint, "lang") and "lang" in g:
             values.setdefault("lang", g.lang)
 

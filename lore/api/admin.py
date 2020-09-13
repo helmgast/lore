@@ -15,7 +15,7 @@ from mongoengine import NotUniqueError, ValidationError
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
 from lore.api.resource import (
-    ImprovedBaseForm,
+    FilterableFields, ImprovedBaseForm,
     ImprovedModelConverter,
     ItemResponse,
     ListResponse,
@@ -59,17 +59,18 @@ class ShortcutAccessPolicy(ResourceAccessPolicy):
 
 
 class ShortcutsView(ResourceView):
+    # TODO make themable by publisher
     list_template = "world/shortcut_list.html"
     item_template = "world/shortcut_item.html"
     form_class = model_form(Shortcut, base_class=ImprovedBaseForm, converter=ImprovedModelConverter())
     access_policy = ShortcutAccessPolicy()
     model = Shortcut
-    list_arg_parser = filterable_fields_parser(["created_date"])
+    filterable_fields = FilterableFields(Shortcut, ["created_date"])
 
     def index(self):
         r = ListResponse(ShortcutsView, [("shortcuts", Shortcut.objects())])
         r.auth_or_abort()
-        r.prepare_query()
+        r.finalize_query()
         return r
 
     def get(self, id):

@@ -47,7 +47,14 @@ def db_loaded_product_data(app_client):
 
 def test_basic_import_order(mongomock, app_client, db_loaded_product_data):
     o = import_order(
-        {"key": "a", "orderLines": "KDL-132|KDL-121l|Random title#comment@12*0.25\nJust a message", "publisher": "helmgast.se", "currency": "sek"}, commit=True
+        {
+            "key": "a",
+            "email": "test@test.com",
+            "orderLines": "KDL-132|KDL-121l|Random title#comment@12*0.25\nJust a message",
+            "publisher": "helmgast.se",
+            "currency": "sek",
+        },
+        commit=True,
     )
     # An order can be separated in lines by either | or line feed
     assert o.external_key == "a"
@@ -59,6 +66,21 @@ def test_basic_import_order(mongomock, app_client, db_loaded_product_data):
     assert o.order_lines[2].vat == Order.calc_vat(12.0, 0.25)
     assert o.order_lines[3].title == "Just a message"
     assert o.order_lines[3].price is None
+    assert o.email == "test@test.com"
+    assert o.status == "paid"
+
+
+def test_activation_code_order(mongomock, app_client, db_loaded_product_data):
+    o = import_order(
+        {"key": "https://lore.pub/xyz", "orderLines": "KDL-132", "publisher": "helmgast.se", "currency": "sek"},
+        commit=True,
+    )
+    assert o.external_key == "xyz"
+    assert o.order_lines[0].product.product_number == "KDL-132"
+    assert o.order_lines[0].price == 0.0
+    assert o.order_lines[0].vat == 0.0
+    assert o.email is None
+    assert o.status == "ordered"
 
 
 def test_basic_error_import_order(mongomock, app_client, db_loaded_product_data):
@@ -114,7 +136,7 @@ def test_textalk_order_import(mongomock, app_client, db_loaded_product_data, tex
 
     ev = Event.objects(resource=order).first()
     assert ev is not None
-    assert ev.xp == int(textalk_order["costs"]["total"]["incVat"] * FX_IN_SEK['eur'])
+    assert ev.xp == int(textalk_order["costs"]["total"]["incVat"] * FX_IN_SEK["eur"])
 
     # Check that a re-import of similar data, same key, will update the existing order object with new data
     textalk_order["title"] = "New title"
@@ -344,6 +366,7 @@ def test_ks_order_update(mongomock, app_client, db_loaded_product_data, kickstar
     new_order.save()
     assert new_order.updated > original_order.updated
 
+
 def test_orderline(mongomock, app_client, db_loaded_product_data):
     order = Order()
     order.order_lines = []
@@ -357,34 +380,35 @@ def test_orderline(mongomock, app_client, db_loaded_product_data):
 
 mock_urls = {
     "google_png": responses.Response(
-        method='GET',
+        method="GET",
         url="https://drive.google.com/uc?export=view&id=1zrZTkPr5BxLSrNdg9dwvOLoVDLkR_tOO",
         content_type="image/png",
         headers={
             "Content-Disposition": 'attachment;filename="anon_2d-1200px.png";filename*=UTF-8' "anon_2d-1200px.png",
             "content-range": "bytes 0-100/767041",
-        }
+        },
     ),
     "google_pdf": responses.Response(
-        method='GET',
+        method="GET",
         url="https://drive.google.com/uc?export=view&id=1tiK06Lhwe66Wi8SRvYHgXvGMoGnw9fWs",
         content_type="application/pdf",
         headers={
             "Content-Disposition": 'attachment;filename="Aspekt_biotropi.pdf";',
             "content-range": "bytes 0-100/767041",
-        }
+        },
     ),
     "textalk_png1": responses.Response(
-        method='GET',
+        method="GET",
         url="https://shopcdn.textalk.se/shop/ws51/49251/art51/h1595/171461595-origpic-dc1758.png",
-        content_type="image/png"
+        content_type="image/png",
     ),
     "textalk_png2": responses.Response(
-        method='GET',
+        method="GET",
         url="https://shopcdn.textalk.se/shop/ws51/49251/art51/h1595/171461595-origpic-15fa6c.png",
-        content_type="image/png"
-    )
+        content_type="image/png",
+    ),
 }
+
 
 def test_textalk_product_import(mongomock, app_client, db_loaded_product_data, textalk_product, mocked_responses):
 
@@ -428,10 +452,7 @@ def test_textalk_product_update(mongomock, app_client, db_loaded_product_data, t
 
     textalk_product["images"][0] = mock_urls["google_png"].url
     # To cover more variation, remove SOLD OUT from title, to ensure we also get available status
-    textalk_product["name"] = {
-      "en": "Neotech Edge Pearl River Delta",
-      "sv": "Neotech Edge Pearl River Delta"
-    }
+    textalk_product["name"] = {"en": "Neotech Edge Pearl River Delta", "sv": "Neotech Edge Pearl River Delta"}
 
     product = import_product(textalk_product, commit=True)
     assert product.status == "available"  # No out of stock in title anymore
@@ -449,15 +470,11 @@ def test_textalk_product_outofstock(mongomock, app_client, db_loaded_product_dat
     mocked_responses.add(mock_urls["textalk_png2"])
 
     textalk_product["images"][0] = mock_urls["google_png"].url
-    textalk_product["name"] = {
-      "en": "Neotech Edge Pearl River Delta",
-      "sv": "Neotech Edge Pearl River Delta"
-    }
+    textalk_product["name"] = {"en": "Neotech Edge Pearl River Delta", "sv": "Neotech Edge Pearl River Delta"}
 
     textalk_product["stock"]["useStock"] = True
     product = import_product(textalk_product, commit=True)
     assert product.status == "out_of_stock"
-
 
 
 @pytest.fixture
@@ -504,7 +521,7 @@ def test_product_import(mongomock, app_client, db_loaded_product_data, mocked_re
     assert product.prices[0].currency == "sek"
     assert product.prices[0].price == 1750.5
     assert product.created.replace(tzinfo=None) == datetime(2018, 10, 16, 9, 0, 0, 0)
-    assert (product.images[0].source_file_url == mock_urls["textalk_png1"].url)
-    assert (product.downloads[0].source_file_url == mock_urls["google_pdf"].url)
+    assert product.images[0].source_file_url == mock_urls["textalk_png1"].url
+    assert product.downloads[0].source_file_url == mock_urls["google_pdf"].url
     assert product.downloads[0].title == "Aspekt Biotropi.pdf"
     assert product.downloads[0].slug == "neotech/abc-123/aspekt_biotropi.pdf"

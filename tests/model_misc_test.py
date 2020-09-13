@@ -52,21 +52,21 @@ def test_current_url(app_client):
         assert request.endpoint == "world.ArticlesView:index"
         assert request.view_args == {"lang": "en", "world_": "eon", "pub_host": "helmgast.test"}
 
-        assert current_url() == '/en/eon/articles/?type=default'
-        assert current_url(_external=True) == 'http://helmgast.test/en/eon/articles/?type=default'
-        assert current_url(type='different') == '/en/eon/articles/?type=different'
-        assert current_url(type=None) == '/en/eon/articles/'
-        assert current_url(lang='sv') == '/eon/articles/?type=default'  # sv defaults to no lang code
-        assert current_url(pub_host='lore.test') == 'http://lore.test/en/eon/articles/?type=default'
-        assert current_url(view=['a','b'], type=None) == '/en/eon/articles/?view=a&view=b'
+        assert current_url() == "/en/eon/articles/?type=default"
+        assert current_url(_external=True) == "http://helmgast.se.test/en/eon/articles/?type=default"
+        assert current_url(type="different") == "/en/eon/articles/?type=different"
+        assert current_url(type=None) == "/en/eon/articles/"
+        assert current_url(lang="sv") == "/eon/articles/?type=default"  # sv defaults to no lang code
+        assert current_url(pub_host="lore.pub.test") == "http://lore.pub.test/en/eon/articles/?type=default"
+        assert current_url(view=["a", "b"], type=None) == "/en/eon/articles/?view=a&view=b"
 
-    with app_client.application.test_request_context("https://helmgast.test/en/eon/articles/?view=a&view=b"):
-        g.pub_host = "helmgast.test"
+    with app_client.application.test_request_context("https://helmgast.se.test/en/eon/articles/?view=a&view=b"):
+        g.pub_host = "helmgast.se.test"
         g.lang = "en"
-        assert current_url(view="c") == '/en/eon/articles/?view=c'
-        assert current_url(view="b", toggle=True) == '/en/eon/articles/?view=a'
-        assert current_url(view="b", merge=True, toggle=True) == '/en/eon/articles/?view=a'
-        assert current_url(view="c", merge=True, toggle=True) == '/en/eon/articles/?view=a&view=b&view=c'
+        assert current_url(view="c") == "/en/eon/articles/?view=c"
+        assert current_url(view="b", toggle=True) == "/en/eon/articles/?view=a"
+        assert current_url(view="b", merge=True, toggle=True) == "/en/eon/articles/?view=a"
+        assert current_url(view="c", merge=True, toggle=True) == "/en/eon/articles/?view=a&view=b&view=c"
 
         # assert request.view_args ==
 

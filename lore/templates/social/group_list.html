@@ -17,12 +17,14 @@
     {% if filter_options %}
         <div class="filter-options">
 
-        {{ MACRO.LIST_CONTROLS(model, args, ['type', 'location', 'created', 'updated']) }}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args) }}
 
         <h5>{% trans %}By type{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['type'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% else %}
+                <button disabled class="btn btn-default btn-xs">{{ _('None') }}</button>
             {% endfor %}
         </div>
 
@@ -86,11 +88,11 @@
             <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'title') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'location') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
-                <th>{{ MACRO.ORDER_BY_LINK(model, args, 'updated') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'title') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'type') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'location') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created') }}</th>
+                <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'updated') }}</th>
                 </thead>
                 <tbody>
                 {% for group in groups %}

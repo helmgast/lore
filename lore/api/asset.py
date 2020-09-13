@@ -13,7 +13,19 @@ from werkzeug.utils import secure_filename
 from flask_classy import route
 
 from lore.api.pdf import fingerprint_pdf
-from lore.api.resource import Authorization, ImprovedBaseForm, ImprovedModelConverter, ItemResponse, ListResponse, ResourceAccessPolicy, ResourceView, filterable_fields_parser, prefillable_fields_parser, set_theme
+from lore.api.resource import (
+    Authorization,
+    FilterableFields,
+    ImprovedBaseForm,
+    ImprovedModelConverter,
+    ItemResponse,
+    ListResponse,
+    ResourceAccessPolicy,
+    ResourceView,
+    filterable_fields_parser,
+    prefillable_fields_parser,
+    set_theme,
+)
 
 from lore.model.asset import FileAccessType, FileAsset, get_google_urls
 from lore.model.misc import set_lang_options, filter_is_owner
@@ -91,7 +103,10 @@ def authorize_and_return(fileasset_slug, as_attachment=False):
 
         if asset.is_public():
             rv = send_gridfs_file(
-                asset.file_data.get(), mimetype=mime, as_attachment=as_attachment, attachment_filename=attachment_filename
+                asset.file_data.get(),
+                mimetype=mime,
+                as_attachment=as_attachment,
+                attachment_filename=attachment_filename,
             )
             return rv
 
@@ -163,8 +178,17 @@ class FileAssetsView(ResourceView):
         base_class=ImprovedBaseForm,
         converter=ImprovedModelConverter(),
     )
-    list_arg_parser = filterable_fields_parser(
-        ["slug", "owner", "access_type", "content_type", "tags", "length"],
+    filterable_fields = FilterableFields(
+        FileAsset,
+        [
+            ("slug", _("File")),
+            "owner",
+            "access_type",
+            "content_type",
+            "tags",
+            "length",
+            ("publisher.title", FileAsset.publisher.verbose_name),
+        ],
         choice=lambda x: x if x in ["single", "multiple"] else "multiple",
         select=lambda x: x.split(","),
         position=lambda x: x if x in ["gallery-center", "gallery-card", "gallery-wide"] else "gallery-center",
@@ -187,7 +211,7 @@ class FileAssetsView(ResourceView):
         if not (g.user and g.user.admin):
             r.query = r.query.filter(filter_is_owner() | filter_authorized_by_publisher(publisher))
 
-        r.prepare_query()
+        r.finalize_query()
 
         # This will re-order so that any selected files are guaranteed to show first
         if r.args["select"] and len(r.args["select"]) > 0:

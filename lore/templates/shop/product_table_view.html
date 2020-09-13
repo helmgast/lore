@@ -2,12 +2,12 @@
     <table class="table table-hover">
         <thead>
         <th>{{_('Title')}}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'product_number') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'product_number') }}</th>
         <th>{{_('Description')}}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'type') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'world') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'created') }}</th>
-        <th>{{ MACRO.ORDER_BY_LINK(model, args, 'price') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'type') }}</th>
+        <th>{{_('World')}}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created') }}</th>
+        <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'price') }}</th>
         </thead>
         <tbody>
         {% for product in products %}

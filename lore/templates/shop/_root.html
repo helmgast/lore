@@ -1,8 +1,6 @@
-{% extends root_template if not publisher_theme else publisher_theme %}
-{% import 'includes/macros.html' as MACRO %}
+{% extends "world/publisher_root.html" if not publisher_theme else publisher_theme %}
 
-{% block content_title %}{{ _('Shop') }}{% endblock %}
-{% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
+{# NAV #}
 
 {% block navbar_right %}
     {% if publisher.webshop_activated %}
@@ -33,6 +31,13 @@
                 class="glyphicon glyphicon-book"></span> {{ _('My library') }}</a></li>
     {% endcall %}
 {% endblock %}
+
+{# LAYOUT #}
+
+{# CONTENT #}
+
+{% block content_title %}{{ _('Shop') }}{% endblock %}
+{% block content_tagline %}{{ _('get your inspiration') }}{% endblock %}
 
 {% block content %}
     <div class="row">

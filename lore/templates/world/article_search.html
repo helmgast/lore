@@ -1,11 +1,15 @@
 {% extends "world/article_list.html" if not parent_template else parent_template %}
 
+{# NAV #}
+
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
         (url_for('world.ArticlesView:search'), _('Search'))
     ) }}{% endblock %}
 
-{% block content_title %}{{ _('Search results:') }}{% endblock %}
+{# CONTENT #}
+
+{% block content_title %}{{ _('Search results:') if args['q'] else _('Search')}}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
 {% block content %}

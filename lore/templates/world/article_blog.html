@@ -1,5 +1,7 @@
 {% extends "world/world_item.html" if not parent_template else parent_template %}
 
+{# NAV #}
+
 {% block breadcrumbs %}
     {% if world.slug=='meta' %}
     {{ MACRO.BREADCRUMBS(
@@ -15,6 +17,10 @@
     ) }}
     {% endif %}
 {% endblock %}
+
+{# LAYOUT #}
+
+{# CONTENT #}
 
 {% block content_title %}{{ _('The %(world)s blog', world=world.title) }}{% endblock %}
 {% block content_tagline %} {{ _('by') }} {{ world.publisher }}{% endblock %}
