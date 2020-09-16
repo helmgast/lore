@@ -348,6 +348,7 @@ class FileAsset(Document):
         if new_file_obj is not None and new_file_obj.filename:
             self.set_file(new_file_obj, filename=new_file_obj.filename)
         elif self.source_file_url and self.source_file_url.startswith(
+            # TODO, hard coded URL
             "https://res.cloudinary.com/helmgast/image/upload/"
         ):
             # A cloudinary URL

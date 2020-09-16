@@ -1,7 +1,7 @@
 {% extends "shop/_root.html" %}
 
 {% block header_title %}
-    <h2 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">Activation code: <code>{{code}}</code></h2>
+    <h2 class="col-lg-offset-2 col-lg-10 col-md-12 col-sm-12">Activation code: <code>{{key}}</code></h2>
 {% endblock header_title %}
 
 {% block breadcrumbs %}
@@ -17,7 +17,7 @@
     {{ super() }}
     <li>
         <a class="btn btn-default" data-toggle="modal" data-target="#themodal" href="{{ url_for('mail.mail_view', mail_type='compose', user=user.id,
-            from_field=user.email, intent='post', subject=gettext('Regarding activation key %(key)s', key=code)) }}">
+            from_field=user.email, intent='post', subject=gettext('Regarding activation key %(key)s', key=key)) }}">
             {{ _('Contact Us') }}</a>
     </li>
     {% if order.status != 'cart' %}

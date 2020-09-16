@@ -279,17 +279,8 @@ def logout():
     return redirect(url)
 
 
-@auth_app.route("/login", subdomain="<pub_host>")
-def login():
-    publisher = Publisher.objects(slug=g.pub_host).first()
-    set_lang_options(publisher)
-    return render_template("auth/login.html")
-
-
-@auth_app.route("/join")
-def join():
-    # TODO redirect to the Auth0 screen?
-    abort(404)
+auth_app.add_url_rule("/login", endpoint="login", redirect_to="/auth/sso")
+auth_app.add_url_rule("/join", endpoint="join", redirect_to="/auth/sso")
 
 
 def auth0_url(action="login", callback_args=None, **kwargs):

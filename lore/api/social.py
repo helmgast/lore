@@ -179,21 +179,6 @@ class UsersView(ResourceView):
             return r.error_response(err)
         return redirect(r.args["next"] or url_for("social.UsersView:get", id=user.id, intent="patch"))
 
-    @route("/finish_tour", methods=["PATCH", "GET"])
-    @csrf.exempt
-    def finish_tour(self):
-        user = g.user
-        if not user:
-            logger.warning(_("No user to finish tour for"))
-            abort(404)
-
-        r = ItemResponse(UsersView, [("user", user)], method="patch", form_class=FinishTourForm)
-        r.auth_or_abort()
-
-        user.tourdone = True
-        user.save()
-        return r
-
     def post(self, id):
         abort(501)  # Not implemented
 

@@ -275,7 +275,7 @@ class FixedFieldList(FieldList):
     # This should be fixed by wtforms!
 
     def process(self, formdata, data=unset_value):
-        print("FieldList process formdata %s, data %s" % (formdata, data))
+        # print("FieldList process formdata %s, data %s" % (formdata, data))
         self.entries = []
         if data is unset_value or not data:
             try:
@@ -466,13 +466,13 @@ class OrdersView(ResourceView):
         r.auth_or_abort()
         return r
 
-    @route("/key/<code>", methods=["GET", "PATCH"])
-    def key(self, code):
+    @route("/key/<key>", methods=["GET", "PATCH"])
+    def key(self, key):
         # Custom authentication
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
 
-        order = Order.objects(external_key=code).get_or_404()  # get_or_404 handles exception if not a valid object ID
+        order = Order.objects(external_key=key).get_or_404()  # get_or_404 handles exception if not a valid object ID
 
         r = ItemResponse(
             OrdersView, [("order", order), ("publisher", publisher)], method="key", extra_args={"intent": "patch"}
@@ -482,7 +482,7 @@ class OrdersView(ResourceView):
             return render_template("error/401.html", root_template="_root.html", publisher_theme=r.publisher_theme)
         r.auth_or_abort()
         r.template = "shop/order_peek.html"
-        r.code = code
+        r.key = key
         if request.method in ["PATCH"] and not (
             order.user or order.email
         ):  # Key hasn't already been activated for this order
@@ -717,11 +717,11 @@ def get_cart_order():
 
 
 # The main entry point for keys at lore.pub, before routing to publisher
-@current_app.route("/key/<code>", subdomain=current_app.default_host)
-def key(code):
-    order = Order.objects(external_key=code).first()
+@current_app.route("/key/<key>", subdomain=current_app.default_host)
+def key(key):
+    order = Order.objects(external_key=key).first()
     if order and order.publisher:
-        return redirect(url_for("shop.OrdersView:key", code=code, pub_host=order.publisher.slug))
+        return redirect(url_for("shop.OrdersView:key", key=key, pub_host=order.publisher.slug))
     else:
         abort(
             404,

@@ -224,7 +224,6 @@ def setup_locales(app):
     not_lang_prefix_rule = "<not(" + ",".join(configured_langs.keys()) + "):"
 
 
-
 def pick_locale():
     g.configured_locales = configured_locales
     g.configured_langs = configured_langs
@@ -381,5 +380,4 @@ def dict_with(value, **kwargs):
 
 
 def first_p_length(string):
-    string = string.strip()
-    return len(string.splitlines()[0]) if string else 0
+    return len(string.strip().splitlines()[0]) if string else 0

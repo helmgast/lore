@@ -241,7 +241,7 @@ class FileAssetsView(ResourceView):
             r.auth_or_abort()
         return r
 
-    @route("<path:id>", methods=["GET"])
+    @route("<path:id>", methods=["PATCH"])
     def patch(self, id):
         publisher = Publisher.objects(slug=g.pub_host).first()
         set_lang_options(publisher)
@@ -319,7 +319,7 @@ def index():
     return redirect(url_for("assets.FileAssetsView:index"))
 
 
-@current_app.route("/asset/link/<fileasset>")
+@current_app.route("/asset/link/<path:fileasset>")
 def link(fileasset):
     return authorize_and_return(fileasset)
 
@@ -341,7 +341,7 @@ def download(fileasset):
     return authorize_and_return(fileasset, as_attachment=True)
 
 
-@current_app.route("/asset/image/<slug>")
+@current_app.route("/asset/image/<path:slug>")
 def image(slug):
     asset = FileAsset.objects(slug=slug).first_or_404()
     if asset.content_type and asset.content_type.startswith("image/"):
@@ -357,7 +357,7 @@ def image(slug):
     return r
 
 
-@current_app.route("/asset/image/thumbs/<slug>")
+@current_app.route("/asset/image/thumbs/<path:slug>")
 def image_thumb(slug):
     return image(slug.lower())  # thumbs temporarily out of play
     # asset = FileAsset.objects(slug=slug).first_or_404()

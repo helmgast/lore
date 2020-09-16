@@ -65,13 +65,13 @@
                             {% endif %}
                         </td>
                         <td class="product-price">
-                            {% if order_form and order.status=='cart' and order_form.order_lines[loop.index0].quantity %}
+                            {% if order_form and order.status=='cart' and order_form.order_lines and order_form.order_lines[loop.index0].quantity %}
                                 {{ order_form.order_lines[loop.index0].quantity(type="number", min="0", max="100", style="width: 40px", class="product-quantity") }}
                             {% else %}
                                 {{ line.quantity }}
                             {% endif %}
                         </td>
-                        <td class="product-price">{% if line.has_price %}{{ line.price|currencyformat(order.currency.upper()) }}{% endif %}</td>
+                        <td class="product-price">{% if line.has_price %}{{ line.price|currencyformat(order.currency.upper() if order.currency else "") }}{% endif %}</td>
                     </tr>
             {% endfor %}
             {% if order.status != 'cart' or (args and args['view'] == 'pay') %}
@@ -82,7 +82,7 @@
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{% if order.shipping_line.has_price %}{{ order.shipping_line.price|currencyformat(order.currency.upper()) }}{% endif %}</small>
+                    <small>{% if order.shipping_line.has_price %}{{ order.shipping_line.price|currencyformat(order.currency.upper() if order.currency else "") }}{% endif %}</small>
                 </td>
             </tr>
             {% endif %}
@@ -92,14 +92,14 @@
                 </td>
                 <td></td>
                 <td class="product-price">
-                    <small>{{ order.total_tax|currencyformat(order.currency.upper()) }}</small>
+                    <small>{{ order.total_tax|currencyformat(order.currency.upper() if order.currency else "") }}</small>
                 </td>
             </tr>
             {% endif %}
             <tr>
                 <td colspan=2 style="border-top: none; text-align:right">{{ _('Total') }}</td>
                 <td></td>
-                <td class="product-price">{{ order.total_price|currencyformat(order.currency.upper()) }}</td>
+                <td class="product-price">{{ order.total_price|currencyformat(order.currency.upper() if order.currency else "") }}</td>
             </tr>
         </table>
     </td>

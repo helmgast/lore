@@ -369,8 +369,11 @@ def configure_hooks(app):
     @app.errorhandler(401)  # Unauthorized or unauthenticated, e.g. not logged in
     def unauthorized(err):
         # capture_exception(err)  # Explicitly capture exception to Sentry
-        return render_template(
-            "error/401.html", root_template="_root.html", publisher_theme=g.get("publisher_theme", None)
+        return (
+            render_template(
+                "error/401.html", root_template="_root.html", publisher_theme=g.get("publisher_theme", None)
+            ),
+            401,
         )
 
     @app.errorhandler(403)

@@ -206,17 +206,19 @@ def get_root_template(out_value):
 
 
 def set_theme(obj, type, *paths):
+    name = f"{type}_theme"
     if type and paths:
         # != 'None' as this string may mean None in Mongoengine
         templates = ["%s/index.html" % secure_filename(p) for p in paths if p and p != "None"]
         if templates:
             try:
                 theme = current_app.jinja_env.select_template(templates)
-                name = f"{type}_theme"
                 setattr(obj, name, theme)
                 return theme
             except TemplatesNotFound as err:
                 logger.warning(f"Can't find named themes {paths} at {templates}")
+    setattr(obj, name, None)
+    return None
 
 
 class ResourceResponse(Response):
