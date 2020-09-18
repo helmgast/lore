@@ -44,6 +44,15 @@
             {% endfor %}
         </div>
 
+        <h5>{% trans %}By language{% endtrans %}</h5>
+        <div class="btn-set" id="tour-filter">
+            {% for opt in filter_options['language'] %}
+                {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% else %}
+                <button disabled class="btn btn-default btn-xs">{{ _('None') }}</button>
+            {% endfor %}
+        </div>
+
         <h5>{% trans %}By type{% endtrans %}</h5>
         <div class="btn-set">
             {% for opt in filter_options['type'] %}

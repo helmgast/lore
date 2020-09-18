@@ -8,41 +8,41 @@
 
   :copyright: (c) 2014 by Helmgast AB
 """
-from os import name
+import itertools
+import logging
+import math
+import pprint
+import re
 import types
 from itertools import chain
 from typing import Dict, Sequence
 
-from jinja2 import TemplatesNotFound
-import logging
-import pprint
-import re
-import math
-from flask import request, render_template, flash, url_for, abort, g, current_app, session
+from flask import Response, abort, current_app, flash, g, render_template, request, session, url_for
+from flask.json import jsonify
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
 from flask_mongoengine import Pagination
 from flask_mongoengine.wtf import model_form
-from flask_mongoengine.wtf.fields import ModelSelectField, NoneStringField, ModelSelectMultipleField, JSONField
+from flask_mongoengine.wtf.fields import JSONField, ModelSelectField, ModelSelectMultipleField, NoneStringField
 from flask_mongoengine.wtf.models import ModelForm
 from flask_mongoengine.wtf.orm import ModelConverter, converts
-from flask import Response
-from flask.json import jsonify
-from mongoengine import ReferenceField, Q, OperationError, InvalidQueryError
-from mongoengine.errors import ValidationError, NotUniqueError
-from mongoengine.queryset.queryset import QuerySet
+from jinja2 import TemplatesNotFound
+from mongoengine import InvalidQueryError, OperationError, Q, ReferenceField
+from mongoengine.errors import NotUniqueError, ValidationError
 from mongoengine.queryset.visitor import QNode
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
-from wtforms import Form as OrigForm, StringField, SelectMultipleField
-from wtforms import fields as f, validators as v, widgets
+from wtforms import Form as OrigForm
+from wtforms import SelectMultipleField, StringField
+from wtforms import fields as f
+from wtforms import validators, widgets
+from wtforms.fields.core import UnboundField
 from wtforms.utils import unset_value
-from wtforms.widgets import html5, HTMLString, html_params, Select
+from wtforms.widgets import HTMLString, Select, html5, html_params
+from wtforms.widgets.core import HiddenInput
 
 from lore.model.misc import METHODS, extract, localized_field_labels, safe_next_url
 from lore.model.world import EMBEDDED_TYPES, Article
-from wtforms.fields.core import UnboundField
-from wtforms.widgets.core import HiddenInput
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
@@ -326,7 +326,9 @@ class ResourceResponse(Response):
             abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
-        unknown_errors = []
+        general_errors = []
+        # TODO better parse errors and link to the correct form field, so that we can display errors
+        # next to them. This should work even with EmbeddedDocuments or MapFields.
         if isinstance(err, NotUniqueError):
             # This error comes from PyMongo with only a text message denoting which field was not unique
             # We need to parse it to allocate it back to the right field
@@ -343,25 +345,18 @@ class ResourceResponse(Response):
                     found = True
                     break
             if not found:
-                unknown_errors.append(msg)
+                general_errors.append(msg)
 
         elif isinstance(err, ValidationError):
-            # TODO checkout ValidationError._format_errors()
-            for k, v in list(err.errors.items()):
-                msg = v.message if hasattr(v, "message") and v.message else str(v)
-                if k in self.form:  # We have a field, append the error there
-                    errors = self.form[k].errors
-                    if isinstance(errors, dict):
-                        errors = v
-                    else:
-                        errors.append(msg)
-                else:
-                    unknown_errors.append(msg)
+            set_form_fields_errors(err.errors, self.form, general_errors)
         elif err:
-            unknown_errors.append(str(err))
-        unknown_string = ",".join(unknown_errors) if unknown_errors else ""
-
-        flash(_("Errors in form") + f" [{','.join(self.form.errors.keys())}] {unknown_string}", "danger")
+            general_errors.append(str(err))
+        general_errors = ", ".join(general_errors) if general_errors else ""
+        error_field_names = [
+            str(self.form[f].label.text) if self.form[f].label else self.form[f].name.capitalize()
+            for f in self.form.errors.keys()
+        ]
+        flash(_("Check errors in form") + f": {', '.join(error_field_names)}, {general_errors}", "danger")
         return self, status or 400
 
     @staticmethod
@@ -389,6 +384,46 @@ class ResourceResponse(Response):
                             args["fields"].add(q, w)
         # print args, arg_parser
         return args
+
+
+def set_form_fields_errors(error_dict, form, general_errors=None, error_path=""):
+    """Sets errors from dict on fields in a WTForm. If we can't find the field on the form, we let it be a general error.
+    WARNING, this is highly specific to WTForm internal details, due to WTForm not implemented with external errors in mind.
+
+    Args:
+        error_dict (dict): a (possibly nested) dict with keys as field names and values as error strings
+        form (any): typically a WTForms, but just need to have a dict like structure with an errors list.
+
+    Returns:
+        [type]: [description]
+    """
+    if general_errors is None:
+        general_errors = []
+    for k, v in error_dict.items():
+        try:
+            field = form[k]
+        except Exception as e1:
+            field = None
+
+        if field:
+            error_path += f"{field.label if field.label else field.name}/"
+        else:
+            error_path += f"{k}/"
+
+        if isinstance(v, dict):
+            # We need to go deeper for the error
+            set_form_fields_errors(v, field if field is not None else form, general_errors, error_path)
+        elif field and isinstance(field, f.Field):
+            # A tuple as errors means no validation has been done yet, WTForm internal details
+            if isinstance(field.errors, tuple):
+                raise ValueError("Run validation() on the form before attempting to add errors to it")
+            try:
+                field.errors.append(str(v))
+            except Exception as e2:
+                general_errors.append(f"{error_path}: {v}")
+        else:
+            general_errors.append(f"{error_path}: {v}")
+    return general_errors
 
 
 # class FilterableField2:
@@ -552,6 +587,8 @@ class ListResponse(ResourceResponse):
             agg_results = self.query._collection.aggregate(aggregation, cursor={})
             # Note, turns query into a static list
             self.query = [self.model._from_son(a) for a in agg_results]
+        else:
+            self.query.select_related()
 
 
 class ResponsePagination(Pagination):
@@ -1057,11 +1094,9 @@ class ImprovedModelConverter(ModelConverter):
             and "label" in kwargs
         ):
             kwargs["sub_labels"] = localized_field_labels(kwargs["label"])
+
         unbound_field = self.convert(model, field.field, field_args)
-        unacceptable = {
-            "validators": [],
-            "filters": [],
-        }
+        unacceptable = {"validators": [], "filters": []}
         kwargs.update(unacceptable)
         return MapFormField(unbound_field, **kwargs)
 
@@ -1072,14 +1107,14 @@ class ImprovedModelConverter(ModelConverter):
 
     @converts("URLField")
     def conv_URL(self, model, field, kwargs):
-        kwargs["validators"].append(v.URL())
+        kwargs["validators"].append(validators.URL())
         self._string_common(model, field, kwargs)
         kwargs.setdefault("widget", html5.URLInput())  # Set if not set from before
         return NoneStringField(**kwargs)
 
     @converts("EmailField")
     def conv_Email(self, model, field, kwargs):
-        kwargs["validators"].append(v.Email())
+        kwargs["validators"].append(validators.Email())
         self._string_common(model, field, kwargs)
         kwargs.setdefault("widget", html5.EmailInput())  # Set if not set from before
         return NoneStringField(**kwargs)
@@ -1106,12 +1141,14 @@ class ImprovedModelConverter(ModelConverter):
     @converts("StringField")
     def conv_String(self, model, field, kwargs):
         if field.regex:
-            kwargs["validators"].append(v.Regexp(regex=field.regex))
+            kwargs["validators"].append(validators.Regexp(regex=field.regex))
         self._string_common(model, field, kwargs)
         if "password" in kwargs:
             if kwargs.pop("password"):
                 return f.PasswordField(**kwargs)
-        if field.max_length and field.max_length < 100:  # changed from original code
+        if (
+            field.max_length and field.max_length < 100 or getattr(field, "form", None) == "StringField"
+        ):  # changed from original code
             return f.StringField(**kwargs)
         return f.TextAreaField(**kwargs)
 
@@ -1135,6 +1172,9 @@ class MapFormField(f.Field):
         self.unbound_field = unbound_field
         self.sub_labels = sub_labels
         self._prefix = kwargs.get("_prefix", "")
+        self._errors = None
+        if validators:
+            raise TypeError("FormField does not accept any validators. Instead, define them on the enclosed form.")
 
     def process(self, formdata, dict_data=unset_value):
         """Takes incoming formdata and optional start data to populate the inner fields with.
@@ -1163,7 +1203,13 @@ class MapFormField(f.Field):
             # Merge default and provided data, but dict_data overrides default_data
             dict_data = dict(default_data, **dict_data)
 
-        keys = set(self._extract_keys(self.name, formdata)) if formdata else dict_data.keys()
+        # Subfields, e.g. entries, are defined by formdata, or by pre-configured labels (see MapField converter)
+        if formdata:
+            keys = set(self._extract_keys(self.name, formdata))
+        elif self.sub_labels:
+            keys = self.sub_labels.keys()
+        else:
+            keys = dict_data.keys()
 
         for key in keys:
             self._add_entry(key, formdata, dict_data.get(key, unset_value))
@@ -1209,8 +1255,29 @@ class MapFormField(f.Field):
             fake_obj = _fake()
             fake_obj.data = None
             self.entries[key].populate_obj(fake_obj, "data")
-            output[key] = fake_obj.data
+            if fake_obj.data is not None:  # Skip None values and their keys, will cause Mongoengine problem anyway
+                output[key] = fake_obj.data
         setattr(obj, name, output)
+
+    def validate(self, form, extra_validators=tuple()):
+        """
+        Validate this MapFormField. Cannot have own validators, will just run validators on subfields.
+        """
+        if extra_validators:
+            raise TypeError("FormField does not accept in-line validators, as it gets errors from the enclosed form.")
+        # Run validators on all entries within
+        error_count = 0
+        for subfield in self:
+            if not subfield.validate(form):
+                error_count += 1
+
+        return error_count == 0
+
+    @property
+    def errors(self):
+        if self._errors is None:
+            self._errors = dict((name, f.errors) for name, f in self.entries.items() if f.errors)
+        return self._errors
 
     def __iter__(self):
         return iter(self.entries.values())

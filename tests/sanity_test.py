@@ -1,5 +1,4 @@
 from typing import Dict
-from lore import app
 from itertools import product
 import pytest
 import base64
@@ -65,7 +64,7 @@ def db_basic_data(app_client, mongomock):
         pub2 = Publisher(slug="otherpub.com", title="OtherPub").save()
 
         # Worlds
-        w1 = World(slug="neotech", title="Neotech", publisher=pub).save()
+        w1 = World(slug="neotech", title_i18n={"en": "Neotech"}, publisher=pub).save()
 
         # Articles
         a1 = Article(type=ArticleTypes.blogpost, title="Great blog post", publisher=pub2).save()
@@ -182,6 +181,7 @@ def test_all_routes(app_client, db_basic_data):
         "session.uid": [str(db_basic_data["u1"].pk), None],
         "pub_host": "helmgast.se",
         "code": ["abcdef", "ghijkl"],
+        "intent": [None, "patch"],
         "key": "test",
         "type": "image",
         "lang": "en",

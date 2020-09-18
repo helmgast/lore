@@ -208,18 +208,28 @@ babel = Babel()
 
 configured_locales = {}
 configured_langs = {}
+default_locale = None
 lang_prefix_rule = ""
 not_lang_prefix_rule = ""
+
+predefined_lang_displays = {
+    "en": {"display_in": "in English", "read_in": "Read in English", "available_in": "Available in English"},
+    "sv": {"display_in": "på svenska", "read_in": "Läs på svenska", "available_in": "Tillgänglig på svenska"},
+}
 
 
 def setup_locales(app):
     global configured_locales
     global configured_langs
+    global default_locale
     global lang_prefix_rule
     global not_lang_prefix_rule
 
+    default_locale = Locale.parse(app.config.get("BABEL_DEFAULT_LOCALE", "en_US"))
     configured_locales = {k: Locale.parse(k) for k in app.config.get("BABEL_AVAILABLE_LOCALES")}
     configured_langs = {k.split("_")[0]: loc for k, loc in configured_locales.items()}
+    for k, v in configured_langs.items():
+        setattr(v, "phrases", predefined_lang_displays.get(k, predefined_lang_displays["en"]))
     lang_prefix_rule = "<any(" + ",".join(configured_langs.keys()) + "):lang>"
     not_lang_prefix_rule = "<not(" + ",".join(configured_langs.keys()) + "):"
 

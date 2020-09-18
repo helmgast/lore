@@ -169,6 +169,13 @@
                         <span class="badge">{{ t }}</span></a>
                 {%- endfor -%}</li>
             {% endif %}
+            {% for loc in article.available_languages().values() %}
+                {% if article.translations_i18n.get(loc.language, none) %}
+                <li title="{{ loc.phrases['read_in'] }}">
+                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}"><img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
         </ul>
         {% if article.shortcut %}
@@ -206,7 +213,7 @@
 {% block asides %}
     {% if args.get('intent', None) %}
         <div class="article-aside">
-        <div class="form-horizontal">
+        <div class="form-compact">
             {#  <li class="active"><a href="#focus" data-toggle="tab"><span class="glyphicon glyphicon-eject"></span></a></li>
       <li><a href="#metadata" data-toggle="tab">{{ _('Metadata') }}</a></li>
       <li><a href="#relations" data-toggle="tab"><span class="glyphicon glyphicon-transfer"></span> {{ _('Relations') }}</a></li>
@@ -219,28 +226,34 @@
             {##}
             {#            <button type="submit" class="btn btn-sm btn-primary btn-block">{{ _('Save changes') }}</button>#}
 
-            {{ MACRO.FORM_FIELD(article_form.type, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.type, controlclass='input-sm') }}
 
 
-            {{ MACRO.FORM_FIELD(article_form.status, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.status, controlclass='input-sm') }}
 
-            {{ MACRO.FORM_FIELD(article_form.created_date, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm flatpickr-datetime',
+            {{ MACRO.FORM_FIELD(article_form.created_date, controlclass='input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
 
-            {{ MACRO.FORM_FIELD(article_form.publisher, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.world, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.license, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.theme, labelclass='col-sm-3', controlwrap='col-sm-9', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-5', controlwrap='col-sm-7', controlclass='input-sm') }}
-            {{ MACRO.FORM_FIELD(article_form.hide_header_text, labelclass='col-sm-5', controlwrap='col-sm-7', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.publisher, controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.world, controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.language, controlclass='input-sm') }}
 
-            {{ MACRO.FORM_FIELD(article_form.tags, groupclass='form-group-noncolumn', controlclass=' input-sm selectize-tags col-sm-12') }}
+            {{ MACRO.I18N_FORM_FIELD(article_form.translations_i18n, controlclass='input-sm selectize', skip_key="sv") }}
 
-            {{ MACRO.FORM_FIELD(article_form.editors, groupclass='form-group-noncolumn', controlclass=' input-sm selectize col-sm-12') }}
-            {{ MACRO.FORM_FIELD(article_form.readers, groupclass='form-group-noncolumn',
-                controlclass=' input-sm selectize col-sm-12', helptext=_('Empty means public read access')) }}
+            {{ MACRO.FORM_FIELD(article_form.license, controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.theme, controlclass='input-sm') }}
+            <div class="form-horizontal">
+            {{ MACRO.FORM_FIELD(article_form.sort_priority, labelclass='col-sm-8', controlwrap='col-sm-4', controlclass='input-sm') }}
+            {{ MACRO.FORM_FIELD(article_form.hide_header_text, labelclass='col-sm-8', controlwrap='col-sm-4', controlclass='input-sm') }}
+            </div>
 
-            {{ MACRO.FORM_FIELD(article_form.images, groupclass='form-group-noncolumn', controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
+            {{ MACRO.FORM_FIELD(article_form.tags, labelclass="compact-above-label", controlclass=' input-sm selectize-tags') }}
+
+            {{ MACRO.FORM_FIELD(article_form.editors, controlclass=' input-sm selectize') }}
+            {{ MACRO.FORM_FIELD(article_form.readers, 
+                controlclass=' input-sm selectize', helptext=_('Empty means public read access')) }}
+
+            {{ MACRO.FORM_FIELD(article_form.images, controlclass="fileselect", labeltext=_('Thumbnail'), data_endpoint=
                url_for('assets.FileAssetsView:file_selector', type='image', choice='multiple'), data_class='image feature-images') }}
             
             <small><em><a target="_blank" href="{{ url_for('world.styleguide') }}">{{_('Help on format and image sizes')}}</a></em></small>
@@ -250,13 +263,13 @@
 
             {% if article %}
                 {% if article.shortcut %}
-                <div class="form-group form-group-noncolumn">
+                <div class="form-group">
                 <label class="control-label" for="shortcut">{% trans %}Short URL / QR{% endtrans %}</label>
                 <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{url_for('world.shorturl', code=article.shortcut.slug, _external=true)}}"/>
                 <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
                 </div>
                 {% else %}
-                <div class="form-group form-group-noncolumn">
+                <div class="form-group">
                 <label class="control-label" for="shortcut">{% trans %}Create short URL{% endtrans %}</label>
                 <div class="">
                     <div class="input-group input-group-sm">

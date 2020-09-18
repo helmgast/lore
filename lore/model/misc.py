@@ -68,6 +68,17 @@ def localized_field_labels(field_label):
     return {code: f"{field_label}: {name}" for (code, name) in configured_langs_tuples}
 
 
+def pick_i18n(dct, default=None):
+    if not dct:
+        return default
+    locale = get_locale()
+    lang = locale.language if locale else "en"
+    available = [k for k, v in dct.items() if v]
+    if available and lang not in available:
+        lang = available[0]  # Pick first available if not preferred is available
+    return dct.get(lang, None)
+
+
 def set_lang_options(*args):
     for resource in args:
         if resource and getattr(resource, "languages", None):

@@ -649,6 +649,38 @@ li:hover .btn-delete {
   font-size: 12px;
 }
 
+.form-compact :not(.form-horizontal) label {
+  font-size: 13px;
+  position: relative;
+  left: 6px;
+  z-index: 10;
+  margin-bottom: 0px;
+}
+
+.form-compact .form-group {
+  margin-bottom: 8px;
+}
+
+// .form-horizontal .form-group > input {
+//   margin-left: 15px;
+//   margin-right: 15px;
+// }
+
+.form-control[type="checkbox"] {
+  box-shadow: none;
+}
+
+.input-group-addon.input-group-addon-xs {
+  font-size: 12px;
+  padding-right: 0px;
+}
+
+// Removes a margin from within the trumbowyg css, to fit other form fields
+.trumbowyg-box,
+.trumbowyg-editor {
+  margin-top: 0px;
+}
+
 /* ------------------- Table --------------------- */
 
 .list-stats {
@@ -1066,6 +1098,7 @@ top-shadow {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  position: relative;
 }
 
 .card:hover,
@@ -1142,6 +1175,21 @@ top-shadow {
 .card-details li {
   display: inline-block;
   padding-right: 5px;
+}
+
+.flag-list {
+  list-style: none;
+  display: flex;
+  position: absolute;
+  top: 0px;
+  margin: 2px;
+  padding: 0px;
+  right: 2px;
+}
+
+.flag-list li {
+  line-height: 16px;
+  height: 16px;
 }
 
 .product {
@@ -1266,29 +1314,6 @@ top-shadow {
   background-color: @gray-lighter;
 }
 
-.form-horizontal .form-group-noncolumn {
-  // .form-horizontal .form-group has countering margins. This selector allows us to
-  // use .col-adjust to have a form element span the whole width without getting
-  // messed up left margin
-  padding-left: 15px;
-  padding-right: 15px;
-  margin-bottom: 0px;
-}
-
-// .form-horizontal .form-group > input {
-//   margin-left: 15px;
-//   margin-right: 15px;
-// }
-
-.form-control[type="checkbox"] {
-  box-shadow: none;
-}
-
-.input-group-addon.input-group-addon-xs {
-  font-size: 12px;
-  padding-right: 0px;
-}
-
 #shortcut {
   padding: 5px;
 }
@@ -1317,13 +1342,16 @@ article {
     padding-right: 0px;
   }
   .trumbowyg-box {
-    margin-top: 0px;
     border: none;
   }
   .trumbowyg-button-pane {
     border-radius: 4px;
     border: 1px solid #ddd;
   }
+}
+
+.trumbowyg-box.trumbowyg-editor {
+  margin: 0px;
 }
 
 .trumbowyg-editor {
@@ -1874,6 +1902,19 @@ img.zoomable.zoomed {
   font-weight: 400;
   font-size: 16px;
   border: none;
+}
+
+.nav-formfield {
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: none;
+  margin-top: -23px; // Negate it's own height so that a form label can overlap it
+}
+
+.nav-formfield > li > a {
+  padding-top: 5px;
+  padding-bottom: 0px;
+  font-size: 12px;
 }
 
 //

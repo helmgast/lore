@@ -258,6 +258,7 @@ function init_dom(e) {
     require('bootstrap/js/button');
     require('bootstrap/js/transition');
     require('bootstrap/js/carousel');
+    require('bootstrap/js/tab');
 
     // Bootstrap tooltip
     require('bootstrap/js/tooltip');

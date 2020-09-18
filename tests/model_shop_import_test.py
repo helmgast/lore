@@ -33,7 +33,7 @@ def db_loaded_product_data(app_client):
     p2 = Product(product_number="KDL-121l", title_i18n={"en": "T-shirt"}, publisher=pub, type=ProductTypes.item)
     p3 = Product(product_number="EON-808", title_i18n={"en": "Strid Helmgast"}, publisher=pub, type=ProductTypes.book)
     p4 = Product(product_number="EON-080", title_i18n={"en": "Strid"}, publisher=pub, type=ProductTypes.book)
-    w1 = World(slug="neotech", title="Neotech", publisher=pub)
+    w1 = World(slug="neotech", title_i18n={"en": "Neotech"}, publisher=pub)
 
     with app_client.application.test_request_context():
         pub.save()

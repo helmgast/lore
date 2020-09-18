@@ -1,53 +1,56 @@
-from datetime import datetime, timedelta, date
 import re
+from datetime import date, datetime, timedelta
 from typing import Sequence
-from html2text import html2text
 
 from flask import g, request
-from flask_babel import lazy_gettext as _, gettext, get_locale
+from flask_babel import get_locale, gettext
+from flask_babel import lazy_gettext as _
+from html2text import html2text
 from mongoengine import (
-    EmbeddedDocument,
-    StringField,
-    DateTimeField,
-    FloatField,
-    ReferenceField,
-    BooleanField,
-    ListField,
-    IntField,
-    URLField,
-    EmailField,
-    EmbeddedDocumentField,
-    MapField,
-    NULLIFY,
-    DENY,
     CASCADE,
+    DENY,
+    NULLIFY,
+    BooleanField,
+    DateTimeField,
+    EmailField,
+    EmbeddedDocument,
+    EmbeddedDocumentField,
+    FloatField,
+    IntField,
+    ListField,
+    MapField,
+    ReferenceField,
+    StringField,
+    URLField,
 )
-from mongoengine.errors import ValidationError, DoesNotExist
+from mongoengine.errors import DoesNotExist, ValidationError
+from mongoengine.fields import DictField
 
-from .asset import FileAsset, FileAccessType
+from lore.model.asset import get_google_urls, guess_content_type
+from lore.model.misc import default_translated_nones, default_translated_strings
+from lore.model.user import Event
+from tools.batch import JobSuccess
+
+from .asset import FileAccessType, FileAsset
+from .misc import Document  # Enhanced document
 from .misc import (
-    Document,  # Enhanced document
-    datetime_month_options,
-    slugify,
-    Choices,
     Address,
-    reference_options,
+    Choices,
     choice_options,
-    numerical_options,
     datetime_delta_options,
-    from7to365,
+    datetime_month_options,
     extract,
+    from7to365,
     get,
-    set_if,
+    numerical_options,
     parse_datetime,
+    pick_i18n,
+    reference_options,
+    set_if,
+    slugify,
 )
 from .user import User, user_from_email
 from .world import Publisher, World
-from mongoengine.fields import DictField
-from lore.model.misc import default_translated_nones, default_translated_strings
-from tools.batch import JobSuccess
-from lore.model.user import Event
-from lore.model.asset import get_google_urls, guess_content_type
 
 ProductTypes = Choices(book=_("Book"), item=_("Item"), digital=_("Digital"), shipping=_("Shipping fee"))
 
@@ -88,17 +91,6 @@ class Price(EmbeddedDocument):
     )
 
 
-def pick_i18n(dct, default=None):
-    if not dct:
-        return default
-    locale = get_locale()
-    lang = locale.language if locale else "en"
-    available = [k for k, v in dct.items() if v]
-    if available and lang not in available:
-        lang = available[0]  # Pick first available if not preferred is available
-    return dct.get(lang, None)
-
-
 class Product(Document):
     # Allows us to have a deprecated title field in DB that is not reflected here without errors
     meta = {"strict": False, "indexes": ["product_number"]}
@@ -107,9 +99,8 @@ class Product(Document):
     product_number = StringField(max_length=10, sparse=True, unique=True, verbose_name=_("Product Number"))
     project_code = StringField(max_length=10, sparse=True, verbose_name=_("Project Code"))
     title_i18n = MapField(
-        field=StringField(max_length=99), verbose_name=_("Title"), default=default_translated_strings
-    )
-    description_i18n = MapField(field=StringField(), verbose_name=_("Description"), default=default_translated_strings)
+        field=StringField(max_length=99), verbose_name=_("Title"))
+    description_i18n = MapField(field=StringField(), verbose_name=_("Description"))
     publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, required=True, verbose_name=_("Publisher"))
     publish_date = StringField(max_length=20, verbose_name=_("Publishing Date"))
     world = ReferenceField(World, reverse_delete_rule=DENY, verbose_name=_("World"))
@@ -119,6 +110,7 @@ class Product(Document):
     type = StringField(choices=ProductTypes.to_tuples(), required=True, verbose_name=_("Type"))
     # TODO should be required=True, but that currently maps to Required, not InputRequired validator
     # Required will check the value and 0 is determined as false, which blocks prices for 0
+    # TODO price as a MapField, similar to i18n
     price = FloatField(min_value=0, default=0, verbose_name=_("Price"))
     prices = ListField(EmbeddedDocumentField(Price))
     tax = FloatField(
@@ -127,8 +119,10 @@ class Product(Document):
     currency = StringField(
         required=True, choices=Currencies.to_tuples(), default=Currencies.sek, verbose_name=_("Currency")
     )
-    # Note URLField doesn't accept None or empty strings, so we should only set when we have
-    shop_url_i18n = MapField(field=URLField(), verbose_name=_("Product webshop URL"))
+    # Not a URLField because it wouldn't accept empty strings
+    shop_url_i18n = MapField(
+        field=StringField(), verbose_name=_("Product webshop URL"), default=default_translated_strings
+    )
     downloads = ListField(ReferenceField(FileAsset, reverse_delete_rule=DENY), verbose_name=_("Downloads"))
     status = StringField(choices=ProductStatus.to_tuples(), default=ProductStatus.available, verbose_name=_("Status"))
     images = ListField(ReferenceField(FileAsset, reverse_delete_rule=NULLIFY), verbose_name=_("Product Images"))
@@ -171,14 +165,18 @@ class Product(Document):
 
     @property  # For convenience
     def description(self):
-        return pick_i18n(self.title_i18n)
+        return pick_i18n(self.description_i18n)
+
+    @description.setter
+    def set_description(self):
+        raise NotImplementedError()
 
     @property  # For convenience
     def shop_url(self):
         return pick_i18n(self.shop_url_i18n)
 
-    @description.setter
-    def set_description(self):
+    @shop_url.setter
+    def set_shop_url(self):
         raise NotImplementedError()
 
     @property  # For convenience

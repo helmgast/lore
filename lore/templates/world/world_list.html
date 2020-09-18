@@ -1,7 +1,7 @@
 {% extends "world/publisher_root.html" if not publisher_theme else publisher_theme %}
 
-{% block content_title %}{{ _('Game Worlds') }}{% endblock %}
-{% block content_tagline %}{{ _('any fictional world at your fingertips') }}{% endblock %}
+{% block content_title %}{{ _('Our Game Worlds') }}{% endblock %}
+{% block content_tagline %}{{ _('for your next adventure') }}{% endblock %}
 
 {% block breadcrumbs %}{{ MACRO.BREADCRUMBS(
     (url_for('world.ArticlesView:publisher_home'), _('Home')),
@@ -61,6 +61,12 @@
                         {% endcall %}
                     </ul>
                 </div>
+                {% set locales = world.available_languages() %}
+                {% if locales %}
+                <ul class="flag-list">
+                {% for loc in locales.values() %}<li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>{% endfor %}
+                </ul>
+                {% endif %}
             </div>
         {% else %}
             <div class="jumbotron text-center">

@@ -248,9 +248,9 @@ class WorldsView(ResourceView):
     access_policy = WorldAccessPolicy()
     model = World
     list_template = "world/world_list.html"
-    filterable_fields = FilterableFields(World, ["title", "publisher", "creator", "created_date"])
+    filterable_fields = FilterableFields(World, ["title_i18n.sv", "publisher", "creator", "created_date"])
     item_template = "world/world_item.html"
-    item_arg_parser = prefillable_fields_parser(["title", "publisher", "creator", "created_date"])
+    item_arg_parser = prefillable_fields_parser(["title_i18n.sv", "publisher", "creator", "created_date"])
     form_class = model_form(World, base_class=ImprovedBaseForm, exclude=["slug"], converter=ImprovedModelConverter())
     # @route('/worlds/')
 
@@ -258,7 +258,11 @@ class WorldsView(ResourceView):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
         r = ListResponse(
-            WorldsView, [("worlds", World.objects(publisher=publisher).order_by("title")), ("publisher", publisher)]
+            WorldsView,
+            [
+                ("worlds", World.objects(publisher=publisher).order_by("-publishing_year", "-created")),
+                ("publisher", publisher),
+            ],
         )
         r.set_theme("publisher", publisher.theme)
 
@@ -353,9 +357,10 @@ class ArticlesView(ResourceView):
             "type",
             ("creator.realname", Article.creator.verbose_name),
             "created_date",
+            "language",
             "tags",
             "status",
-            ("world.title", Article.world.verbose_name),
+            ("world.title.sv", Article.world.verbose_name),
         ],
     )
     # list_arg_parser = filterable_fields_parser(["title", "type", "creator.realname", "created_date", "tags", "status", "world"])

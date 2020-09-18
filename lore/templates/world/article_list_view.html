@@ -36,6 +36,13 @@
                     class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span> {{ article.get_status_display() }}
             </li>
             {% endif %}
+            {% if article.available_languages() %}
+            <ul class="flag-list">
+            {% for loc in article.available_languages().values() %}
+                <li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>
+            {% endfor %}
+            </ul>
+            {% endif %}
         </ul>
         <p class="dobr">
         {% if article.description %}{{ article.description|markdown }}{% elif article.content %}

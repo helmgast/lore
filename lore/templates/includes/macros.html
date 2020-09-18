@@ -47,6 +47,33 @@
 
 {%- endmacro -%}
 
+{%- macro I18N_FORM_FIELD(i18n_field, skip_key="", controlclass="") -%}
+    {% set fieldargs = {'class':'form-control '+controlclass} %}
+    {% do fieldargs.update(kwargs) if kwargs %}
+    <div class="form-group {{ ' has-error has-feedback' if i18n_field.errors }}">
+    {{i18n_field.label}}
+        <ul class="nav nav-tabs nav-formfield" role="tablist">
+        {% for lang in g.configured_langs.keys()|reject("equalto",skip_key) %}
+            <li class="{{'active' if loop.first }}""><a href="#tab-{{i18n_field.id}}-{{lang}}" data-toggle="tab">{{ lang }}</a></li>
+        {% endfor %}
+        </ul>
+
+        <div class="tab-content">
+        {% for field in i18n_field|rejectattr("id", "equalto", i18n_field.id+"-"+skip_key) %}
+            <div class="tab-pane fade {{'in active' if loop.first}}" id="tab-{{field.id}}">{{ field(**fieldargs) }}
+            {%- if field.errors -%}
+                <span class="glyphicon glyphicon-warning-sign form-control-feedback"></span>
+                <span class="help-block">{{ field.errors|join(' ') }}</span>
+            {%- elif helptext -%}
+                <span class="help-block">{{ helptext }}</span>
+            {%- endif -%}
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+{%- endmacro -%}
+
+
 {%- macro FORM_FIELD(field, controlclass="", labelclass="", groupclass="", controlwrap="", inline=false, formgroup=true, labeltext="", helptext="") -%}
     {% set fieldargs = {'class':'form-control '+controlclass} %}
     {% do fieldargs.update({'required':true}) if field.flags.required %}

@@ -92,11 +92,11 @@
             <div class="row">
                 <div class="col-md-8">
                     <div id="tour-editworld">
-                        {{ MACRO.FORM_FIELD(world_form.title) }}
-                        {{ MACRO.FORM_FIELD(world_form.tagline) }}
-                        {{ MACRO.FORM_FIELD(world_form.description) }}
+                        {{ MACRO.I18N_FORM_FIELD(world_form.title_i18n) }}
+                        {{ MACRO.I18N_FORM_FIELD(world_form.tagline_i18n) }}
+                        {{ MACRO.I18N_FORM_FIELD(world_form.description_i18n) }}
                     </div>
-                    {{ MACRO.FORM_FIELD(world_form.content, controlclass=' content-editor') }}
+                    {{ MACRO.I18N_FORM_FIELD(world_form.content_i18n, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(world_form.publisher) }}
                     {{ MACRO.FORM_FIELD(world_form.created_date, controlclass='input-sm flatpickr-datetime',
                         data_enabletime='true', data_enableseconds='true', data_timeFormat="h:i:S") }}
@@ -253,18 +253,18 @@
                     <a href="{{world.external_host}}"><span class="glyphicon glyphicon-globe"></span> {{ _('External homepage') }}</a>
                 </td>
             </tr>   
-            {% endif %}   
+            {% endif %}
             <tr>
                 <td colspan=2>
                     <a href="{{url_for('shop.ProductsView:index', world=world.slug)}}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Product Catalogue') }}</a>
                 </td>
-            </tr>               
-            <tr>
+            </tr>
+            {# <tr>
                 <th>{{ _('Publisher') }}</th>
                 <td>
                     <small>{{ world.publisher|default(_('No data'), true) }}</small>
                 </td>
-            </tr>
+            </tr> #}
             {% if world.rule_system %}
             <tr>
                 <th>{{ _('Rule System') }}</th>
@@ -281,14 +281,14 @@
                 </td>
             </tr>
             {% endif %}
-            {% if world.contribution %}
+            {# {% if world.contribution %}
             <tr>
                 <th>{{ _('Open for contribution') }}</th>
                 <td>
                     <small>{{ _('Yes') if world.contribution else _('No') }}</small>
                 </td>
             </tr>
-            {% endif %}
+            {% endif %} #}
             {% call(privileged) MACRO.IS_ADMIN() %}
             <tr>
                 <th class="privileged">{{ _('Status') }}</th>

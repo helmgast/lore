@@ -20,7 +20,15 @@
             </td>
             <td>{{ article.world|default('Meta', true) }}</td>
             <td>{{ article.creator if article.creator else _('Admin') }}</td>
-            <td>{{ article.created_date|datetimeformat(format='short') }}</td>
+            <td style="position: relative">{{ article.created_date|datetimeformat(format='short') }}
+                {% if article.available_languages() %}
+                <ul class="flag-list">
+                {% for loc in article.available_languages().values() %}
+                    <li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            </td>
         </tr>
     {% endfor %}
 

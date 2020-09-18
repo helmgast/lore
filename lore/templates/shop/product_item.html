@@ -35,16 +35,14 @@
         <form id="productform" method="post" action="{{ action_url }}">
             <div class="row">
                 <div class="col-md-8">
-                    {# {{ MACRO.FORM_FIELD(product_form.title) }} #}
-                    {% for field in product_form.title_i18n %}
-                        {{ MACRO.FORM_FIELD(field) }}
-                    {% endfor %}
+
+                    {{ MACRO.I18N_FORM_FIELD(product_form.title_i18n) }}
+
                     {{ MACRO.FORM_FIELD(product_form.product_number) }}
                     {{ MACRO.FORM_FIELD(product_form.project_code) }}
-                    {% for field in product_form.description_i18n %}
-                        {{ MACRO.FORM_FIELD(field, controlclass=' content-editor') }}
-                    {% endfor %}
+                    {{ MACRO.I18N_FORM_FIELD(product_form.description_i18n, controlclass=' content-editor') }}
                     {{ MACRO.FORM_FIELD(product_form.publisher) }}
+                    {{ MACRO.I18N_FORM_FIELD(product_form.shop_url_i18n) }}
                     {{ MACRO.FORM_FIELD(product_form.world) }}
                     {{ MACRO.FORM_FIELD(product_form.family) }}
                     {{ MACRO.FORM_FIELD(product_form.created, controlclass="flatpickr-datetime") }}
