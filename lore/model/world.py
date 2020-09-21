@@ -101,7 +101,7 @@ class Publisher(Document):
     email = EmailField(max_length=60, min_length=6, verbose_name=_("Email"))
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_("Status"))
     contribution = BooleanField(default=False, verbose_name=_("Publisher accepts contributions"))
-    theme = StringField(choices=plugin_choices, null=True, verbose_name=_("Theme"))
+    theme = StringField(choices=plugin_choices, null=True, verbose_name=_("Theme"), form="StringField")
 
     # TODO DEPRECATE in DB version 3
     feature_image = ReferenceField(FileAsset, reverse_delete_rule=NULLIFY, verbose_name=_("Feature Image"))
@@ -157,10 +157,12 @@ def filter_authorized_by_publisher(publisher=None):
 
 class World(Document):
     meta = {"strict": False}
-    # db.getCollection('world').update(
-    #   {},
-    #   { $rename: { "title": "title_i18n.sv",  "description": "description_i18n.sv", "tagline": "tagline_i18n.sv", "content": "content_i18n.sv"} } ,
-    #   {multi:true})
+    """
+    db.getCollection('world').update(
+        {},
+        { $rename: { "title": "title_i18n.sv",  "description": "description_i18n.sv", "tagline": "tagline_i18n.sv", "content": "content_i18n.sv"} } ,
+        {multi:true})
+    """
 
     slug = StringField(unique=True, max_length=62)  # URL-friendly name
     # TODO should have required and min_length, but fails with our MapField implementation
@@ -460,7 +462,7 @@ class Article(Document):
     content = StringField(verbose_name=_("Content"))  # TODO i18n
     status = StringField(choices=PublishStatus.to_tuples(), default=PublishStatus.published, verbose_name=_("Status"))
     tags = ListField(StringField(max_length=60), verbose_name=_("Tags"))
-    theme = StringField(choices=plugin_choices, null=True, verbose_name=_("Theme"))
+    theme = StringField(choices=plugin_choices, null=True, verbose_name=_("Theme"), form="StringField")
     hide_header_text = BooleanField(default=False, verbose_name=_("Hide header text"))
 
     # Sort higher numbers first, lower later. Top 5 highest numbers used to
@@ -593,7 +595,7 @@ class Shortcut(Document):
             self.article = None
 
     def short_url(self):
-        return url_for("world.shorturl", code=self.slug, _external=True)
+        return url_for("shorturl", code=self.slug, _external=True)
 
 
 Shortcut.created_date.filter_options = datetime_delta_options(

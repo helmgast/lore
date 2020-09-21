@@ -210,7 +210,7 @@ def test_all_routes(app_client, db_basic_data):
             "shop.OrdersView:get": 200 if input.get("session.uid", None) else 401,
             "shop.OrdersView:index": 200 if input.get("session.uid", None) else 401,
             "key": 302,
-            "world.shorturl": 302,
+            "shorturl": 302,
             "world.WorldsView:get": 302,
             "world.ArticlesView:random": 302,
             "admin.ShortcutsView:index": 403,

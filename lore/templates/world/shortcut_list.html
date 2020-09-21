@@ -64,7 +64,7 @@
     {% for shortcut in shortcuts %}
         <tr>
             <td>
-                <a href="{{ url_for('admin.ShortcutsView:get', id=shortcut.slug) }}">{{url_for('world.shorturl', code=shortcut.slug, _external=true)}}</a>
+                <a href="{{ url_for('admin.ShortcutsView:get', id=shortcut.slug) }}">{{url_for('shorturl', code=shortcut.slug, _external=true)}}</a>
             </td>
             <td>{% if shortcut.url %}<a href="{{ shortcut.url }}">{{ shortcut.url }}</a>{% endif%}</td>
             <td>{% if shortcut.article %}<a href="{{url_for('world.ArticlesView:get', 

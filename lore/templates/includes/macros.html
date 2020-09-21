@@ -53,7 +53,7 @@
     <div class="form-group {{ ' has-error has-feedback' if i18n_field.errors }}">
     {{i18n_field.label}}
         <ul class="nav nav-tabs nav-formfield" role="tablist">
-        {% for lang in g.configured_langs.keys()|reject("equalto",skip_key) %}
+        {% for lang in g.configured_langs.keys()|reject("equalto", skip_key) %}
             <li class="{{'active' if loop.first }}""><a href="#tab-{{i18n_field.id}}-{{lang}}" data-toggle="tab">{{ lang }}</a></li>
         {% endfor %}
         </ul>
@@ -222,7 +222,7 @@
 
         {% if 'order' in show %}
             <div class="btn-group">
-                {% set clean_order_by = args['order_by'][0]|replace('-','')|replace('+','') %}
+                {% set clean_order_by = args['order_by'][0]|trim('-+') %}
                 {% if in_current_args(['order_by']) and clean_order_by in filterable_fields.filter_dict %}
                     {# TODO only considers first order_by arg #}
                     <a href="{{ current_url(order_by=none) }}"

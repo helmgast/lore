@@ -2,9 +2,10 @@
     <thead>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'title') }}</th>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'type') }}</th>
-    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'world.title') }}</th>
+    <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'world.title_i18n.sv') }}</th>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'creator.realname') }}</th>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created_date') }}</th>
+    <th></th>
     </thead>
     <tbody>
 
@@ -20,7 +21,9 @@
             </td>
             <td>{{ article.world|default('Meta', true) }}</td>
             <td>{{ article.creator if article.creator else _('Admin') }}</td>
-            <td style="position: relative">{{ article.created_date|datetimeformat(format='short') }}
+            <td>{{ article.created_date|datetimeformat(format='short') }}
+            </td>
+            <td style="position: relative">
                 {% if article.available_languages() %}
                 <ul class="flag-list">
                 {% for loc in article.available_languages().values() %}

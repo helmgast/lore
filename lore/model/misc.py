@@ -333,10 +333,14 @@ def reference_options(field_name, model, id_attr="slug", name_attr="title"):
     def return_function(query=None):
         if not query:
             query = model.objects()
-        return [
-            FilterOption(kwargs={field_name: getattr(o, id_attr, str(o))}, label=getattr(o, name_attr, str(o)))
-            for o in query.distinct(field_name)
-        ]
+        try:
+            return [
+                FilterOption(kwargs={field_name: getattr(o, id_attr, str(o))}, label=getattr(o, name_attr, str(o)))
+                for o in query.distinct(field_name)
+            ]
+        except:
+            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'")
+            return []
 
     return return_function
 

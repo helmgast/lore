@@ -360,7 +360,8 @@ class ArticlesView(ResourceView):
             "language",
             "tags",
             "status",
-            ("world.title.sv", Article.world.verbose_name),
+            ("world.title_i18n.sv", Article.world.verbose_name),
+            ("world.title_i18n.en", Article.world.verbose_name),
         ],
     )
     # list_arg_parser = filterable_fields_parser(["title", "type", "creator.realname", "created_date", "tags", "status", "world"])
@@ -689,7 +690,7 @@ class ArticlesView(ResourceView):
 #         abort(501)  # Not implemented
 
 
-@world_app.route("/+<code>", subdomain=current_app.default_host)
+@current_app.route("/+<code>", subdomain=current_app.default_host)
 def shorturl(code):
     shortcut = Shortcut.objects(slug=code.lower()).first()
     url = ""
@@ -698,7 +699,7 @@ def shorturl(code):
             url = url_for(
                 "world.ArticlesView:get",
                 pub_host=shortcut.article.publisher.slug,
-                world_=shortcut.article.world.slug,
+                world_=shortcut.article.world.slug if shortcut.article.world else "meta",
                 id=shortcut.article.slug,
             )
         elif shortcut.url:

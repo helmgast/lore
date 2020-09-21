@@ -170,13 +170,16 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 
 def filterable_fields_parser(fields=None, **kwargs):
-    fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
+    filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
     forbidden = fields & common_args
     if forbidden:
         msg = f"Cannot allow field names colliding with common args names: {forbidden}"
         current_app.logger.error(msg)
         exit(1)
-    extend = {"order_by": lambda x: [y for y in x.lower().split(",") if y.lstrip("+-") in fields], "fields": fields}
+    extend = {
+        "order_by": lambda x: [y for y in x.lower().split(",") if y.lstrip("+-") in fields],
+        "fields": filterable_fields,
+    }
     extend.update(kwargs)
     return dict(ListResponse.arg_parser, **extend)
 
@@ -551,7 +554,7 @@ class ListResponse(ResourceResponse):
             for ob in self.args["order_by"]:
                 parts = ob.split(".")
                 if len(parts) > 1:
-                    field = self.model._fields.get(parts[0].replace("-", ""), None)
+                    field = self.model._fields.get(parts[0].lstrip("-+"), None)
                     # Allow sort by reference fields by doing aggregation lookup on them for sorting
                     if isinstance(field, ReferenceField) and not field.dbref:
                         sort_aggregation.append(
@@ -564,7 +567,9 @@ class ListResponse(ResourceResponse):
                                 }
                             }
                         )
-                        order_by.append(f"{'-' if ob.startswith('-') else ''}{field.name}_lookup.{parts[1]}")
+                        order_by.append(
+                            f"{'-' if ob.startswith('-') else ''}{field.name}_lookup.{'.'.join(parts[1:])}"
+                        )
                         continue
                 order_by.append(ob)
             if sort_aggregation:
@@ -615,10 +620,16 @@ class ResponsePagination(Pagination):
         self.skip = (page - 1) * per_page
 
     def apply_to_aggregation(self, pipeline):
-        if self.per_page and {"$limit": self.per_page} not in pipeline:
-            pipeline.append({"$limit": self.per_page})
-        if self.skip and {"$skip": self.per_page} not in pipeline:
-            pipeline.append({"$skip": self.per_page})
+        # Below comment from base.py in MongoEngine:
+        #
+        # As per MongoDB Documentation (https://docs.mongodb.com/manual/reference/operator/aggregation/limit/),
+        # keeping limit stage right after sort stage is more efficient. But this leads to wrong set of documents
+        # for a skip stage that might succeed these. So we need to maintain more documents in memory in such a
+        # case (https://stackoverflow.com/a/24161461).
+        if self.per_page and {"$limit": self.per_page + (self.skip or 0)} not in pipeline:
+            pipeline.append({"$limit": self.per_page + (self.skip or 0)})
+        if self.skip and {"$skip": self.skip} not in pipeline:
+            pipeline.append({"$skip": self.skip})
         return pipeline
 
     def apply_to_query(self, query):

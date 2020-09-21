@@ -85,18 +85,17 @@
         </div>
         <div class="col-xs-4">
             <ul class="list-unstyled">
-                <li><a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}">
-                    {% trans %}Blog{% endtrans %}
-                    </a></li>
                 <li>
                     <a href="{{ url_for('world.ArticlesView:get', world_='meta', 
                     id='om-helmgast' if get_locale().language == 'sv' else 'about-helmgast') }}">
                         {% trans %}About{% endtrans %}
                     </a></li>
                 <li>
-                    <a href="{{ url_for('world.ArticlesView:get', world_='meta', 
-                    id='arbeta-med-oss' if get_locale().language == 'sv' else 'work-with-us') }}">
+                    <a href="{{ url_for('world.ArticlesView:get', world_='meta', id='work-with-us') }}">
                         {% trans %}Work with us{% endtrans %}
+                    </a></li>
+                <li><a href="{{ url_for('world.ArticlesView:get', world_='meta', id='fan-content-policy') }}">
+                    {% trans %}Fan Content Policy{% endtrans %}
                     </a></li>
             </ul>
         </div>
@@ -113,7 +112,7 @@
                         {% trans %}Terms of Service{% endtrans %}</a></li>
                 <li>
                     <a href="{{ url_for('world.ArticlesView:get', world_='meta', 
-                        id='sakerhet-och-kakor' if get_locale().language == 'sv' else 'security-and-cookies') }}">
+                        id='sakerhet-och-kakor' if get_locale().language == 'sv' else 'security-and-privacy') }}">
                         {% trans %}Security and cookie policy{% endtrans %}</a></li>
             </ul>
         </div>

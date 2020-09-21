@@ -238,7 +238,7 @@
             {{ MACRO.FORM_FIELD(article_form.world, controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.language, controlclass='input-sm') }}
 
-            {{ MACRO.I18N_FORM_FIELD(article_form.translations_i18n, controlclass='input-sm selectize', skip_key="sv") }}
+            {{ MACRO.I18N_FORM_FIELD(article_form.translations_i18n, controlclass='input-sm selectize', skip_key=article_form.language.data) }}
 
             {{ MACRO.FORM_FIELD(article_form.license, controlclass='input-sm') }}
             {{ MACRO.FORM_FIELD(article_form.theme, controlclass='input-sm') }}
@@ -265,7 +265,7 @@
                 {% if article.shortcut %}
                 <div class="form-group">
                 <label class="control-label" for="shortcut">{% trans %}Short URL / QR{% endtrans %}</label>
-                <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{url_for('world.shorturl', code=article.shortcut.slug, _external=true)}}"/>
+                <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{url_for('shorturl', code=article.shortcut.slug, _external=true)}}"/>
                 <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
                 </div>
                 {% else %}
@@ -273,7 +273,7 @@
                 <label class="control-label" for="shortcut">{% trans %}Create short URL{% endtrans %}</label>
                 <div class="">
                     <div class="input-group input-group-sm">
-                    <span class="input-group-addon input-group-addon-xs">{{url_for('world.shorturl', code='', _external=true)}}</span>
+                    <span class="input-group-addon input-group-addon-xs">{{url_for('shorturl', code='', _external=true)}}</span>
                     <input class="form-control" type="text" id="shortcut" maxlength=7 minlength=2 size=7 value=""/>
                     <span class="input-group-btn">
                         <button class="btn btn-primary shortcut-save" type="button" data-post="{{url_for('admin.ShortcutsView:post')}}" data-article="{{article.id}}">{%trans%}Set{%endtrans%}</button>
