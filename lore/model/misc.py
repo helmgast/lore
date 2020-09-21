@@ -48,7 +48,7 @@ Document = flask_mongoengine.Document
 
 EMPTY_ID = ObjectId("000000000000000000000000")  # Needed to make empty non-matching Query objects
 
-
+# TODO replace with tools.unicode_slugify and replace ext_slugify dependency
 def slugify(title, max_length=62):
     slug = ext_slugify(title)
     if slug.upper() in METHODS:
@@ -487,7 +487,10 @@ def current_url(merge=False, toggle=False, **kwargs):
                     kwargs[k] = l
     url = ""
     if request:
-        url = url_for(request.endpoint, **{**request.view_args, **request.args, **kwargs})
+        if request.endpoint is not None and request.view_args is not None:
+            url = url_for(request.endpoint, **{**request.view_args, **request.args, **kwargs})
+        else:
+            url = request.url
     return url
 
 

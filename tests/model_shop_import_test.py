@@ -524,4 +524,4 @@ def test_product_import(mongomock, app_client, db_loaded_product_data, mocked_re
     assert product.images[0].source_file_url == mock_urls["textalk_png1"].url
     assert product.downloads[0].source_file_url == mock_urls["google_pdf"].url
     assert product.downloads[0].title == "Aspekt Biotropi.pdf"
-    assert product.downloads[0].slug == "neotech/abc-123/aspekt_biotropi.pdf"
+    assert product.downloads[0].slug == "neotech/abc-123/aspekt-biotropi.pdf"

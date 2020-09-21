@@ -171,11 +171,9 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 def filterable_fields_parser(fields=None, **kwargs):
     filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
-    forbidden = fields & common_args
+    forbidden = filterable_fields & common_args
     if forbidden:
-        msg = f"Cannot allow field names colliding with common args names: {forbidden}"
-        current_app.logger.error(msg)
-        exit(1)
+        raise Exception(f"Cannot allow field names colliding with common args names: {forbidden}")
     extend = {
         "order_by": lambda x: [y for y in x.lower().split(",") if y.lstrip("+-") in fields],
         "fields": filterable_fields,

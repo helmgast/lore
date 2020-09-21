@@ -72,20 +72,4 @@ def test_current_url(app_client):
         # assert request.view_args ==
 
 
-# def test_mapdict(app_client):
-#     from lore.model.misc import get, Test
-
-#     from lore import extensions
-#     from mongoengine.connection import get_db
-
-#     extensions.db.init_app(app_client.application)
-#     db = get_db()
-
-#     t = Test()
-#     # t.mapfield = {}
-#     t.mapfield["a"] = "b"
-#     assert "a" in t.mapfield
-#     t.dictfield["d"] = "e"
-#     t.dictfield["f"] = 7
-#     assert "f" in t.dictfield
-#     t.save()
+# TEST current_url for no request and no request.endpoint

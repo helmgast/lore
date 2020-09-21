@@ -1,0 +1,10 @@
+-c requirements.txt
+black==19.10b0
+flake8
+mongomock
+pylint
+pylint-django
+pylint-mongoengine
+pytest
+responses
+rope
