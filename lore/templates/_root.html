@@ -8,7 +8,9 @@
     {% for locale in g.configured_locales.values() %}
         <link rel="alternate" hreflang="{{locale.language}}" href="{{current_url(lang=locale.language, _external=true)}}" />
     {% endfor %}
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
+    {% block icons %}
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='img/icon/favicon.ico') }}">
+    {% endblock %}
     {% if args and args.get('intent',None) %}
         {#            Turn off Pinterest pinning from image galleries on editable pages#}
         <meta name="pinterest" content="nopin"/>

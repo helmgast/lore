@@ -1,5 +1,14 @@
 {% extends "world/publisher_root.html" %}
 
+{% block icons %}
+{# Made with https://realfavicongenerator.net/ #}
+<link rel="shortcut icon" href="{{ url_for('plugins', filename='helmgast-theme/favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('plugins', filename='helmgast-theme/apple-touch-icon.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('plugins', filename='helmgast-theme/favicon-32x32.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('plugins', filename='helmgast-theme/favicon-16x16.png') }}">
+<link rel="mask-icon" href="{{ url_for('plugins', filename='helmgast-theme/safari-pinned-tab.svg') }}" color="#5bbad5">
+{% endblock %}
+
 {% block googlefonts %}{{ super() }}|Eczar:700|Gentium+Book+Basic:400,400italic,700,700italic{% endblock %}
 
 {% block cssimports %}

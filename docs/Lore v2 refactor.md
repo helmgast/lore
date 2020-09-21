@@ -40,6 +40,17 @@ _Only one thing is constant, and that is the desire to refactor_
 - Markdown or WYSIWYG editing
 - Schema based REST or Graphql API
 
+### Tricky areas
+
+Areas that are more tricky than it first looks, which should set the bar for what a new system can handle.
+
+- Form validation (currently done by WTForms, but tricky with complex fields like lists, dicts, embedded)
+- Form generation from model data (flask-wtf generates forms from a model class, saves lots of plumbing but makes it also hard to follow)
+- Form processing for lists, maps, etc. For example order of lists, should maps with empty values but keys be set, pre-populate keys, but values, etc
+- Customizing queries for what select fields should show as choices
+- Internationalization
+- Multi/wildcard domain behaviour
+
 ## CMS Comparison
 
 ### Paid CMS:
