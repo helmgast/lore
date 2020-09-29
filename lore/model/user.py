@@ -158,6 +158,8 @@ class User(Document, BaseUser):
     event_log = ListField(EmbeddedDocumentField(UserEvent))
 
     def merge_in_user(self, remove_user):
+        from lore.model.shop import Order  # Do here to avoid circular import
+
         changed_orders = Order.objects(user=remove_user).update(multi=True, user=self)
         changed_events = Event.objects(user=remove_user).update(multi=True, user=self)
         if remove_user.description and not self.description:

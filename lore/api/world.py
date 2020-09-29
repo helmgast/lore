@@ -356,6 +356,7 @@ class ArticlesView(ResourceView):
             "title",
             "type",
             ("creator.realname", Article.creator.verbose_name),
+            "content",
             "created_date",
             "language",
             "tags",
@@ -434,6 +435,26 @@ class ArticlesView(ResourceView):
 
     @route("/search", route_base="/")
     def search(self):
+        publisher = Publisher.objects(slug=g.pub_host).first_or_404()
+        world = WorldMeta(publisher)
+        articles = Article.objects(publisher=publisher)
+        set_lang_options(publisher)
+        r = ListResponse(ArticlesView, [("articles", articles), ("world", world), ("publisher", publisher)])
+        r.set_theme("publisher", publisher.theme)
+        r.auth_or_abort(res=publisher)
+        if not (g.user and g.user.admin):
+            r.query = r.query.filter(
+                filter_published()
+                | filter_authorized()
+                | filter_authorized_by_publisher(publisher)
+                | filter_authorized_by_world()
+            )
+        r.finalize_query()
+        r.template = "world/article_search.html"
+        return r
+
+    @route("/mentions", route_base="/")
+    def mentions(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         world = WorldMeta(publisher)
         articles = Article.objects(publisher=publisher)

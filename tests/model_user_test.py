@@ -8,6 +8,10 @@ def test_user_query(app_client):
 
     extensions.db.init_app(app_client.application)
     db = get_db()
-    users = User.query_user_by_email('martinfrojd@outlook.com', return_deleted=False)
+    users = User.query_user_by_email("martinfrojd@outlook.com", return_deleted=False)
 
     assert len(users) == 1
+
+
+def test_merge_users(app_client):
+    pass

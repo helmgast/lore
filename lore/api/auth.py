@@ -25,11 +25,10 @@ from werkzeug.urls import url_encode, url_quote
 from sentry_sdk import configure_scope, capture_message, capture_exception
 
 from lore.model.misc import safe_next_url, set_lang_options
-from lore.model.user import Event, User, UserStatus
+from lore.model.user import User, UserStatus
 from lore.model.world import Publisher
 from auth0.v3.management import Auth0
 from auth0.v3.authentication import GetToken
-from lore.model.shop import Order
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
