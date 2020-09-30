@@ -363,7 +363,7 @@ def build_md_filter(md_instance):
 def enhance_jinja_loader(app):
     plugin_loader = jinja2.FileSystemLoader(["plugins"])
     plugins = [p.split("/")[0] for p in plugin_loader.list_templates() if p.endswith("index.html")]
-    app.logger.debug("Loaded templates: %s" % plugins)
+    # app.logger.debug("Loaded templates: %s" % plugins)
     app.plugins = plugins
     return jinja2.ChoiceLoader([app.jinja_loader, plugin_loader])
 

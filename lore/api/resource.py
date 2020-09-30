@@ -372,7 +372,7 @@ class ResourceResponse(Response):
             req_args.add(k, v)
         # Iterate over arg_parser keys, so that we are guaranteed to have all default keys present
         for k in arg_parser:
-            if k is not "fields":
+            if k != "fields":
                 # Defaults to empty string to ensure all keys exists
                 args[k] = arg_parser[k](req_args.get(k, ""))
             else:

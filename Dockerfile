@@ -10,16 +10,18 @@ RUN npm install
 RUN npm run build
 
 # Second stage, copy over static resources and start the python
-FROM python:3.7-alpine
+FROM python:3.8-alpine
 RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl tar
 LABEL maintainer="martin@helmgast.se"
+EXPOSE 5000
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV FLASK_APP=run.py
+
 WORKDIR /usr/src/app
 COPY --from=0 /usr/src/app/static/ static/
 COPY requirements.txt run.py /usr/src/app/
-ENV FLASK_APP=run.py
 RUN pip install -r requirements.txt
-#ENV PATH="/usr/src/app/.venv/bin:${PATH}"
-#RUN pipenv graph
 COPY tools/ tools/
 COPY lore/ lore/
 COPY plugins/ plugins/
@@ -27,11 +29,5 @@ COPY config.py config.py
 
 RUN flask lang-compile
 
-# provide from git or by Docker autobild
-# ARG SOURCE_COMMIT=no_ver
-# provide from git or by Docker autobild
-# ARG SOURCE_BRANCH=no_branch
-# ENV LORE_VERSION ${SOURCE_BRANCH}-${SOURCE_COMMIT}
-
 # This format runs executable without bash/shell, faster
-CMD ["flask","run"]
+CMD ["gunicorn","-b","0.0.0.0:8080",]

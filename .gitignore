@@ -12,7 +12,7 @@ front/
 .idea/
 .vscode/
 .pydevproject/
-.venv/
+venv/
 .env
 node_modules/
 __pycache__/

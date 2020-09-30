@@ -1,16 +1,29 @@
-import sys
 import os
 import re
-import click
 import shlex
 import subprocess as sp
-
-from flask.cli import pass_script_info, DispatchingApp
-from flask.helpers import get_debug_flag
+import sys
+import click
 
 from lore.app import create_app
 from tools.batch import Batch, LogLevel
 
+
+# from https://blog.theodo.com/2020/05/debug-flask-vscode/
+def initialize_flask_server_debugger_if_needed():
+    if os.getenv("LORE_DEBUG") == "True":
+        import multiprocessing
+
+        if multiprocessing.current_process().pid > 1:
+            import debugpy
+
+            debugpy.listen(("0.0.0.0", 10001))
+            print("⏳ VS Code debugger can now be attached, press F5 in VS Code ⏳", flush=True)
+            # debugpy.wait_for_client()
+            # print("🎉 VS Code debugger attached, enjoy debugging 🎉", flush=True)
+
+
+initialize_flask_server_debugger_if_needed()
 app = create_app()
 
 
@@ -310,9 +323,7 @@ def wikitext_to_markdown(wiki_xml_file, output_folder, filter, dry_run, log_leve
     out_folder = os.path.abspath(output_folder)
     # out_folder = os.path.join(output_folder, os.path.splitext(os.path.basename(wiki_xml_file))[0])
     # os.makedirs(out_folder, exist_ok=True)
-    columns = [
-        Column(header="Title", import_key="title"), Column(header="Path", result_key="path")
-    ]
+    columns = [Column(header="Title", import_key="title"), Column(header="Path", result_key="path")]
     b = Batch(
         f"Wikitext to Markdown: {wiki_xml_file}",
         log_level=log_level,

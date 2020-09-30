@@ -9,7 +9,7 @@ front/
 .idea/
 .vscode/
 .pydevproject/
-.venv/
+venv/
 node_modules/
 
 # Dockerignore

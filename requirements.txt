@@ -14,6 +14,7 @@ certifi==2020.6.20        # via cloudinary, requests, sentry-sdk
 chardet==3.0.4            # via requests
 click==7.1.2              # via flask, jsonrpcclient, nltk, panflute
 cloudinary==1.22.0        # via -r requirements.in
+debugpy==1.0.0rc2         # via -r requirements.in
 flask-babel==2.0.0        # via -r requirements.in
 git+https://github.com/ripperdoc/flask-classy#egg=flask-classy  # via -r requirements.in
 flask-debugtoolbar==0.11.0  # via -r requirements.in
