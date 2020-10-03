@@ -1,0 +1,26 @@
+<table id="debug_toolbar_profiler_table" class="tablesorter">
+  <thead>
+    <tr>
+      <th data-sorter="text">Collection</th>
+      <th>Type</th>
+      <th data-sorter="digit">Keys</th>
+      <th data-sorter="digit">Docs examined</th>
+      <th data-sorter="digit">Docs returned</th>
+      <th data-sorter="digit">Response length</th>
+      <th>Command</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr class="{{ loop.cycle('flDebugOdd', 'flDebugEven') }}">
+        <td>{{ row["ns"] }}</td>
+        <td>{{ row["op"] }}</td>
+        <td>{{ row["keysExamined"] }}</td>
+        <td>{{ row["docsExamined"] }}</td>
+        <td>{{ row["nreturned"] }}</td>
+        <td>{{ row["responseLength"] }}</td>
+        <td><pre>{{ row["command"]|pprint }}</pre></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

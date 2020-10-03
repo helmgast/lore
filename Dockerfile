@@ -29,5 +29,4 @@ COPY config.py config.py
 
 RUN flask lang-compile
 
-# This format runs executable without bash/shell, faster
-CMD ["gunicorn","-b","0.0.0.0:8080",]
+CMD gunicorn -b :5000 run:app

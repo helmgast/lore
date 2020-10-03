@@ -11,8 +11,10 @@
 import itertools
 import logging
 import math
+from time import time
 import pprint
 import re
+from tools.profiler_decorator import profile
 import types
 from itertools import chain
 from typing import Dict, Sequence
@@ -55,6 +57,11 @@ def generate_flash(action, name, model_identifiers, dest=""):
     s = _("%(name)s was %(action)s", action=action, name=name)
     flash(s, "success")
     return s
+
+
+def mark_time_since_request(text):
+    if hasattr(g, "start"):
+        print(text, int(round((time() - g.start) * 1000)))
 
 
 mime_types = {"html": "text/html", "json": "application/json", "csv": "text/csv"}
@@ -294,6 +301,7 @@ class ResourceResponse(Response):
                 rv[k] = arg
         return rv
 
+    # @profile()
     def render(self):
         if not self.auth:
             abort(403, _("Authorization not performed"))
@@ -304,7 +312,9 @@ class ResourceResponse(Response):
         if best_type == "text/html":
             template_args = self.get_template_args()
             template_args["root_template"] = get_root_template(self.args.get("out", None))
+            # mark_time_since_request("Before render")
             self.set_data(render_template(self.template, **template_args))
+            # mark_time_since_request("After render")
             return self
         elif best_type == "application/json":
             # TODO this will create a new response, which is a bit of waste
@@ -511,6 +521,8 @@ class ListResponse(ResourceResponse):
     def finalize_query(self, aggregation=None, paginate=True):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
+        # mark_time_since_request("Before finalize")
+
         if aggregation is None:
             aggregation = []
 
@@ -527,6 +539,8 @@ class ListResponse(ResourceResponse):
             for k, values in self.args["fields"].lists():
                 # Field name is string until first __ (operators are after)
                 field = self.model._fields[k.split("__", 1)[0]]
+                if k.endswith("__size"):
+                    values = [int(v) for v in values]
                 q = Q(**{k: self.slug_to_id(field, values[0])})
                 if len(values) > 1:  # multiple values for this field, combine with or
                     for v in values[1:]:

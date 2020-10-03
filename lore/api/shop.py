@@ -519,7 +519,7 @@ class OrdersView(ResourceView):
                 if g.user:
                     cart_order.user = g.user
                 cart_order.save()  # Need to save to get an id
-                session["cart_id"] = str(cart_order.id)
+                session["cart_id"] = str(cart_order.pk)
                 r.instance = cart_order  # set it in the response as well
             found = False
             for ol in cart_order.order_lines:

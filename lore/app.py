@@ -12,6 +12,7 @@ import datetime
 import os
 import re
 from logging import DEBUG, INFO, Formatter, StreamHandler, getLogger
+from time import time
 
 from flask import (
     Flask,
@@ -300,12 +301,13 @@ def configure_blueprints(app):
 def configure_hooks(app):
 
     from flask_babel import get_locale
+    from lore.api.resource import mark_time_since_request
 
     app.add_template_global(get_locale)
 
-    # @app.before_request
-    # def load_locale():
-    #     g.available_locales = available_locales_tuple
+    @app.before_request
+    def start_time():
+        g.start = time()
 
     @app.before_first_request
     def start_db():
@@ -350,6 +352,7 @@ def configure_hooks(app):
                 values["pub_host"] = values["pub_host"] + ".test"
         if app.url_map.is_endpoint_expecting(endpoint, "lang") and "lang" in g:
             values.setdefault("lang", g.lang)
+        # mark_time_since_request(f"URL defaults for {endpoint}")
 
     @app.context_processor
     def inject_access():

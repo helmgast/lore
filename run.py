@@ -153,7 +153,8 @@ def db_setup(reset=False):
     db = get_db()
     # Check if DB is empty
     # If empty, insert an admin user and a default world
-    from lore.model.user import User, UserStatus, World
+    from lore.model.user import User, UserStatus
+    from lore.model.world import World
 
     if len(User.objects(admin=True)) == 0:  # consider the database empty
         admin_password = app.config["SECRET_KEY"]
@@ -176,7 +177,7 @@ def db_setup(reset=False):
             status=UserStatus.active,
         )
         u.save()
-        World.create(title="Helmgast")  # Create the default world
+        World(title="Helmgast")  # Create the default world
 
     # Else, if reset, drop all collections
     elif reset:
@@ -196,6 +197,8 @@ def db_setup(reset=False):
 
 @app.cli.command()
 def validate_model():
+    from mongoengine import Document
+
     is_ok = True
     # Look for model classes in these packages
     pkgs = ["model.misc", "model.user", "model.world"]
