@@ -23,7 +23,7 @@ from flask import Response, abort, current_app, flash, g, render_template, reque
 from flask.json import jsonify
 from flask_babel import lazy_gettext as _
 from flask_classy import FlaskView
-from flask_mongoengine import Pagination
+from flask_mongoengine import BaseQuerySet, Pagination
 from flask_mongoengine.wtf import model_form
 from flask_mongoengine.wtf.fields import JSONField, ModelSelectField, ModelSelectMultipleField, NoneStringField
 from flask_mongoengine.wtf.models import ModelForm
@@ -492,7 +492,7 @@ class ListResponse(ResourceResponse):
         self.template = resource_view.list_template
 
     @property  # For convenience
-    def query(self):
+    def query(self) -> BaseQuerySet:
         return getattr(self, self.resource_queries[0])  # first queried item is the query
 
     @query.setter
@@ -605,7 +605,8 @@ class ListResponse(ResourceResponse):
             # Note, turns query into a static list
             self.query = [self.model._from_son(a) for a in agg_results]
         else:
-            self.query.select_related()
+            pass
+            # self.query.select_related()
 
 
 class ResponsePagination(Pagination):

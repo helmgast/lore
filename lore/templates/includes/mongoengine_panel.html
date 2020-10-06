@@ -6,7 +6,8 @@
       <th data-sorter="digit">Keys</th>
       <th data-sorter="digit">Docs examined</th>
       <th data-sorter="digit">Docs returned</th>
-      <th data-sorter="digit">Response length</th>
+      <th data-sorter="digit">Bytes</th>
+      <th data-sorter="digit">ms</th>
       <th>Command</th>
     </tr>
   </thead>
@@ -19,6 +20,7 @@
         <td>{{ row["docsExamined"] }}</td>
         <td>{{ row["nreturned"] }}</td>
         <td>{{ row["responseLength"] }}</td>
+        <td>{{ row["millis"] }}</td>
         <td><pre>{{ row["command"]|pprint }}</pre></td>
       </tr>
     {% endfor %}
