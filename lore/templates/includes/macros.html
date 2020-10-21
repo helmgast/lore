@@ -37,7 +37,19 @@
     'lore.pub/t/map_polygon': 'fullscreen',
     'lore.pub/t/map_geopolygon': 'fullscreen',
 
+    'lore.pub/t/world': 'globe',
+    'lore.pub/t/user': 'user',
+    'lore.pub/t/publisher': 'book',
+    'lore.pub/t/agent': 'eye-open',
+    'lore.pub/t/character': 'heart',
+    'lore.pub/t/domain': 'flag',
+    'lore.pub/t/place': 'map-marker',
+    'lore.pub/t/concept': 'asterisk',
+    'lore.pub/t/faction': 'certificate',
+    'lore.pub/t/item': 'wrench',
+    'lore.pub/t/event': 'exclamation-sign',
 } %}
+
 
 {# 
     T("article", "Article")
@@ -65,7 +77,23 @@
     T("map_geopolygon", "Map geopolygon")
     T("version", "Version")
     T("creator", "Creator")
-    T("license", "License") #}
+    T("license", "License")
+
+    T("world", "World")  # How to link all topics to a world? It has to use a basic association. Or we use the id path?
+    T("user", "User")
+    T("publisher", "Publisher")
+    T("agent", "Agent", "An entity that can act, such as a person, monster, god, etc")
+    T("character", "Character", "A player character")
+    T("domain", "Domain", "A country, state, area on a map")
+    T("place", "Place", "A specific location, a point on a map")
+    T("concept", "Concept", "A term or something intangible")
+    T("faction", "Faction", "A group of people with an agenda")
+    T("item", "Item")
+    T("event", "Event")
+    
+#}
+
+    
 
 {% set product_icons = {'book':"\ue043",'item':"\ue102",'digital':"\ue172",'shipping':"\ue040"} %}
 
@@ -248,74 +276,67 @@
 {%- endmacro -%}
 
 
-{%- macro LIST_CONTROLS(filterable_fields, args, show=['card','table', 'list', 'order','page'], set_view=None, default='table') -%}
+{%- macro LIST_CONTROLS(filterable_fields, args, show=['card','table', 'list', 'index', 'order','page'], set_view=None, default='table') -%}
     <div class="btn-set">
+        <h5>{% trans %}View{% endtrans %}</h5>
         {% if 'view' in show or 'table' in show or 'list' in show %}
-            <h5>{% trans %}View{% endtrans %}</h5>
             {% set view = set_view or request.args.get('view', default) %}
             <div class="btn-group">
                 {% if 'card' in show %}
                 <a href="{{ current_url(view='card') }}" title="{% trans %}Card view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='card' }}"><span
-                        class="glyphicon glyphicon-th-large"></span></a>
+                        class="glyphicon glyphicon-th-large"></span> {% trans %}Cards{% endtrans %}</a>
                 {% endif %}
                 {% if 'table' in show %}
-                <a href="{{ current_url(view='table') }}" title="{% trans %}Table view{% endtrans %}"
+                <a href="{{ current_url(view='table') }}"title="{% trans %}Table view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='table' }}"><span
-                        class="glyphicon glyphicon-list-alt"></span></a>
+                        class="glyphicon glyphicon-list-alt"></span> {% trans %}Table{% endtrans %}</a>
                 {% endif %}
                 {% if 'list' in show %}
                 <a href="{{ current_url(view='list') }}" title="{% trans %}List view{% endtrans %}"
                    class="btn btn-default btn-sm{{ ' active' if view=='list' }}"><span
-                        class="glyphicon glyphicon-align-justify"></span></a>
+                        class="glyphicon glyphicon-align-justify"></span> {% trans %}List{% endtrans %}</a>
                 {% endif %}
+                {% if 'index' in show %}
+                <a href="{{ current_url(view='index') }}" title="{% trans %}Index view{% endtrans %}"
+                   class="btn btn-default btn-sm{{ ' active' if view=='index' }}"><span
+                        class="glyphicon glyphicon-text-background"></span> {% trans %}Index{% endtrans %}</a>
+                {% endif %}                
             </div><br>
         {% endif %}
 
         {% if 'order' in show %}
             <div class="btn-group">
                 {% set clean_order_by = args['order_by'][0]|trim('-+') %}
-                {% if in_current_args(['order_by']) and clean_order_by in filterable_fields.filter_dict %}
-                    {# TODO only considers first order_by arg #}
-                    <a href="{{ current_url(order_by=none) }}"
-                       title="{% trans %}Click to reset current ordering{% endtrans %}" class="btn btn-info btn-xs">
-                        {% trans %}Order by{% endtrans %}
-                        : {{ filterable_fields.filter_dict[clean_order_by] }} &times;</a>
-                {% else %}
-                    <button type="button" title="{% trans %}Select ordering{% endtrans %}"
-                            class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"
-                            aria-expanded="false">{% trans %}Order by{% endtrans %} <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        {% for f, name in filterable_fields.filter_dict.items() %}
-                            <li><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
-                                    class="caret"></span></a></li>
-                            <li><a href="{{ current_url(order_by=f) }}">{{ name }} <span
-                                    class="caret caret-up"></span></a></li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                <button type="button" title="{% trans %}Select ordering{% endtrans %}"
+                        class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"
+                        aria-expanded="false">{% trans %}Ordered by{% endtrans %}: {{ filterable_fields.filter_dict[clean_order_by] }} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    {% for f, name in filterable_fields.filter_dict.items() %}
+                        <li class="{{'disabled' if args['order_by'][0]=='-'+f}}"><a href="{{ current_url(order_by='-'+f) }}">{{ name }} <span
+                                class="caret"></span></a></li>
+                        <li class="{{'disabled' if args['order_by'][0]==f}}"><a href="{{ current_url(order_by=f) }}">{{ name }} <span
+                                class="caret caret-up"></span></a></li>
+                    {% endfor %}
+                </ul>
             </div>
         {% endif %}
 
         {% if 'page' in show %}
             <div class="btn-group">
-                {% if in_current_args(['per_page']) %}
-                    <a href="{{ current_url(per_page=none) }}"
-                       title="{% trans %}Click to reset items per page{% endtrans %}" class="btn btn-info  btn-xs">
-                        {% trans %}Per page{% endtrans %}: {{ args['per_page'] }} &times;</a>
-                {% else %}
-                    <button type="button" title="{% trans %}Choose number of items per page{% endtrans %}"
-                            class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"
-                            aria-expanded="false">{% trans %}Per page{% endtrans %}: 15 <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a href="{{ current_url(per_page=30, page=1) }}">30</a></li>
-                        <li><a href="{{ current_url(per_page=60, page=1) }}">60</a></li>
-                        <li><a href="{{ current_url(per_page=90, page=1) }}">90</a></li>
-                        <li><a href="{{ current_url(per_page=-1, page=1) }}">{% trans %}All{% endtrans %}</a></li>
-                    </ul>
-                {% endif %}
+                <button type="button" title="{% trans %}Choose number of items per page{% endtrans %}"
+                        class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown"
+                        aria-expanded="false">{% trans %}Per page{% endtrans %}: {{ args['per_page']}} <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu" role="menu">
+                    <li class="{{'disabled' if args['per_page']==30}}"><a href="{{ current_url(per_page=30, page=1) }}">30</a></li>
+                    <li class="{{'disabled' if args['per_page']==60}}"><a href="{{ current_url(per_page=60, page=1) }}">60 </a></li>
+                    <li class="{{'disabled' if args['per_page']==90}}" ><a href="{{ current_url(per_page=90, page=1) }}">90</a></li>
+                    <li class="{{'disabled' if args['per_page']==-1}}" ><a href="{{ current_url(per_page=-1, page=1) }}">{% trans %}All{% endtrans %}</a></li>
+                    <li><a href="{{ current_url(per_page=none, page=none) }}">{% trans %}Reset{% endtrans %}</a></li>
+                </ul>
             </div>
         {% endif %}
 

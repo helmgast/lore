@@ -19,6 +19,12 @@ def _sanitize(text, ok):
 SLUG_OK = "-_~"
 
 
+def capitalize(s):
+    m = re.search(r"[\W\d]+", s)
+    end = m.end() if m else 0
+    return s[0:end] + s[end : end + 1].upper() + s[end + 1 :]
+
+
 def slugify(s, ok=SLUG_OK, lower=True, spaces=False, only_ascii=False, space_replacement="_"):
     """
     Creates a unicode slug for given string with several options.

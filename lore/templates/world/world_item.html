@@ -26,7 +26,7 @@
         (url_for('world.WorldsView:get', id=world.slug if world else 'post'), self.content_title())
     ) }}{% endblock %}
 
-{% block subnavbar %}{{ super() }}
+{% block subnavbar %}
     <li id="tour-browse">
         <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
                 class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>

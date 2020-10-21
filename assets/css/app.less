@@ -114,17 +114,24 @@ footer a {
 // @btn-danger-bg:                  @brand-danger;
 // @btn-danger-border:              @btn-danger-bg;
 
-.nav > li > .btn-default:hover, .nav > li > .btn-default:focus {
+.btn-xs-square {
+  width: 18px; // Based on font-size is 12 px and line height is 1.5
+}
+
+.nav > li > .btn-default:hover,
+.nav > li > .btn-default:focus {
   background-color: darken(@btn-default-bg, 15%);
   border-color: darken(@btn-default-bg, 15%);
 }
 
-.nav > li > .btn-warning:hover, .nav > li > .btn-warning:focus {
+.nav > li > .btn-warning:hover,
+.nav > li > .btn-warning:focus {
   background-color: darken(@btn-warning-bg, 15%);
   border-color: darken(@btn-warning-bg, 15%);
 }
 
-.nav > li > .btn-success:hover, .nav > li > .btn-success:focus {
+.nav > li > .btn-success:hover,
+.nav > li > .btn-success:focus {
   background-color: darken(@btn-success-bg, 15%);
   border-color: darken(@btn-success-bg, 15%);
 }
@@ -136,7 +143,9 @@ footer a {
   margin-bottom: 1px; // Need to lift buttons up one pixel to show the nav-tabs border
 }
 
-.nav-xs > li.active > a, .nav-xs > li.active > a:hover, .nav-xs > li.active > a:focus {
+.nav-xs > li.active > a,
+.nav-xs > li.active > a:hover,
+.nav-xs > li.active > a:focus {
   color: #fff;
   background-color: #222;
 }
@@ -239,6 +248,10 @@ footer a {
   border-bottom: 1px solid grey;
   background: transparent;
   height: 23px;
+}
+
+#q {
+  font-size: 18px;
 }
 
 .nav .breadcrumb-item {
@@ -797,6 +810,33 @@ a.highlight {
   background-color: #a00;
 }
 
+.book-index {
+  // https://css-tricks.com/guide-responsive-friendly-css-columns/
+  column-count: 2;
+  column-width: 250px;
+}
+
+.book-index .index-row {
+  display: flex;
+  font-size: 14px;
+  margin-left: 20px;
+}
+
+.book-index .index-row::after {
+  content: "";
+  border-bottom: 1px dotted;
+  flex-grow: 1;
+  order: 2;
+}
+
+.book-index .index-row .index-term {
+  order: 1;
+}
+
+.book-index .index-row .index-page {
+  order: 3;
+}
+
 /* ------------------- Messages --------------------- */
 
 .message {
@@ -1028,6 +1068,65 @@ article,
   box-shadow: none;
   border: 1px dashed #ccc;
   border-radius: 5px;
+}
+
+.nav-occurrence {
+  font-family: @font-family-sans-serif;
+  font-size: 14px;
+  // line-height: 14px;
+  // margin-top: 21px;
+  // margin-bottom: 21px;
+  // border: 0;
+  // border-bottom: 1px solid #ddd;
+  padding-left: 5px;
+  margin-top: 21px;
+  margin-bottom: 10px;
+}
+
+.nav-occurrence>li.nav-info {
+    font-weight: 700;
+    margin-right: 2px;
+    line-height: 1.42857143;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    display: block;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+}
+
+.canon {
+  background-color: @gray-light;
+}
+
+.community {
+  background-color: @light-accent;
+}
+
+a.community:hover {
+  background-color: darken(@light-accent, 15%);
+}
+
+.contrib {
+  background-color: @dark-accent;
+  color: white;
+}
+
+.nav-occurrence>li>a, .nav-occurrence>li.nav-info {
+  padding: 2px 8px;
+}
+
+.map-square {
+  position: relative;
+}
+
+.map-square .glyphicon {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  top: 40%;
+  color: darkred;
+  font-size: 30px;
+  font-weight: 500;
 }
 
 /* ------------------- Helpers --------------------- */
@@ -1966,6 +2065,15 @@ img.zoomable.zoomed {
   padding-top: 5px;
   padding-bottom: 0px;
   font-size: 12px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-right {
+  flex-basis: 60%;
+  margin-left: auto;
 }
 
 //

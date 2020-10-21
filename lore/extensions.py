@@ -388,6 +388,9 @@ class SilentUndefined(Undefined):
         return None
 
 
+# Jinja Filters
+
+
 def currentyear(nada):
     return datetime.utcnow()
     # return datetime.utcnow().strftime('%Y')
@@ -409,3 +412,10 @@ def first_p_length(string):
 
 def lookup(s, dct, default=None):
     return dct.get(s, s or default)
+
+
+def safe_id(s):
+    # Replaces character not safe for HTML ID:s https://www.w3.org/TR/html4/types.html#type-id
+    s = re.sub(r"^[^A-Za-z]", "", s)
+    s = re.sub(r"[^A-Za-z0-9-_:]+", "-", s)
+    return s

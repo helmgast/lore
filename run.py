@@ -303,6 +303,7 @@ def setup_topics():
 @click.option("--ignore-dates", is_flag=True, help="Ignores dates from YAML in import Markdown")
 @click.option("-l", "--limit", default=0, help="Only process this many jobs")
 @click.option("-m", "--match", default="", help="Only process jobs with this match string in id")
+@click.option("--github-wiki", default="", help="The path to a github wiki where this is sourced")
 @click.option(
     "-b",
     "--default-bases",

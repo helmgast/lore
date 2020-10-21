@@ -30,7 +30,13 @@ from mongoengine.base import LazyReference
 from mongoengine.errors import DoesNotExist
 from mongoengine.queryset.queryset import QuerySet
 
-from lore.model.misc import datetime_delta_options, distinct_options, extract, numerical_options
+from lore.model.misc import (
+    RegexQueriableStringField,
+    datetime_delta_options,
+    distinct_options,
+    extract,
+    numerical_options,
+)
 from tools.unicode_slugify import SLUG_OK, slugify
 
 logger = current_app.logger if current_app else logging.getLogger(__name__)
@@ -60,7 +66,7 @@ LORE_BASE = "lore.pub/t/"
 
 
 class Name(EmbeddedDocument):
-    name = StringField()
+    name = RegexQueriableStringField()
     scopes = ListField(LazyReferenceField("Topic"))  # Expected to always be sorted
 
     def __repr__(self):
@@ -72,6 +78,15 @@ class Occurrence(EmbeddedDocument):
     content = StringField()  # Could be any inline data?
     kind = LazyReferenceField("Topic")
     scopes = ListField(LazyReferenceField("Topic"))  # Expected to always be sorted
+
+    def creator(self):
+        # TODO stupid way of getting a user. What if more users?
+        users = [s for s in self.scopes if "@" in s.pk]
+        return users[0] if users else None
+
+    def contribution_scope(self):
+        contributions = [s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}]
+        return contributions[0] if contributions else None
 
     def __repr__(self):
         out = self.kind.pk if self.kind else "occurrence"
@@ -90,6 +105,10 @@ class Association(EmbeddedDocument):
     r2 = LazyReferenceField("Topic")  # E.g. employed by
     t2 = LazyReferenceField("Topic")
     scopes = ListField(LazyReferenceField("Topic"))  # Expected to always be sorted
+
+    def contribution_scope(self):
+        contributions = [s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}]
+        return contributions[0] if contributions else None
 
     def __repr__(self):
         out = f"this ({self.r1.pk}) -> {self.t2.pk} ({self.r2.pk})"
@@ -127,7 +146,7 @@ unset = "UNSET"
 
 class Topic(Document):
     meta = {
-        "indexes": ["kind", "names", {"fields": ["$names.name", "$occurrences.content"]}],
+        "indexes": ["kind", "names.name", {"fields": ["$names.name", "$occurrences.content"]}],
         # 'auto_create_index': True
     }
 
@@ -151,8 +170,27 @@ class Topic(Document):
             return self.id.rsplit("/")[-1]
 
     @property  # For convenience
-    def articles(self):
-        return self.find_occurrences(kind=f"{LORE_BASE}article")
+    def article(self):
+        article = self.find_occurrences(kind=f"{LORE_BASE}article", first=True)
+        return article.content if article else ""
+
+    @property  # For convenience
+    def bibrefs(self):
+        return self.find_occurrences(kind=f"{LORE_BASE}bibref")
+
+    @property  # For convenience
+    def description(self):
+        desc = self.find_occurrences(kind=f"{LORE_BASE}description")
+        if not desc:
+            desc = [
+                o
+                for o in self.occurrences
+                if o.kind.pk in {f"{LORE_BASE}article", f"{LORE_BASE}website", f"{LORE_BASE}google_doc"} and o.content
+            ]
+        return desc[0] if len(desc) > 0 else ""
+
+    def occurrences_except_content(self, except_content):
+        return [o for o in self.occurrences if o.content not in except_content]
 
     def alt_names(self, exclude_name):
         return [name_obj for name_obj in self.names if name_obj.name != exclude_name]
@@ -160,12 +198,20 @@ class Topic(Document):
     def as_article_url(self, **kwargs):
         """Temporary function needed to make a topic id into the parts needed to go to an Article.
         """
-        parts = self.id.split("/")
-        if len(parts) > 2:
+        parts: List[str] = self.id.split("/")
+        pub, world, article = "", "", ""
+        if len(parts) > 0:
             pub = parts[0]
+        if len(parts) > 1:
             world = parts[1]
-            slug = "/".join(parts[2:])
-            return url_for("world.ArticlesView:get", id=slug, world_=world, pub_host=pub)
+        if len(parts) > 2:
+            article = "/".join(parts[2:])
+        if article:
+            return url_for("world.ArticlesView:get", id=article, world_=world, pub_host=pub)
+        elif world:
+            return url_for("world.ArticlesView:world_home", world_=world, pub_host=pub)
+        elif pub:
+            return url_for("world.ArticlesView:publisher_home", pub_host=pub)
         else:
             return self.id
 
@@ -206,9 +252,9 @@ class Topic(Document):
             if (name == unset or name == x.name) and (scopes == unset or scopes <= set(map(get_id, x.scopes))):
                 found.append((i, x)) if indices else found.append(x)
                 if first:  # Return early for speed
-                    return found
+                    return found[0]
 
-        return found
+        return found if not first else None
 
     def find_occurrences(
         self,
@@ -235,8 +281,8 @@ class Topic(Document):
             ):
                 found.append((i, x)) if indices else found.append(x)
                 if first:  # Return early for speed
-                    return found
-        return found
+                    return found[0]
+        return found if not first else None
 
     def find_associations(
         self,
@@ -265,13 +311,16 @@ class Topic(Document):
             ):
                 found.append((i, x)) if indices else found.append(x)
                 if first:  # Return early for speed
-                    return found
-        return found
+                    return found[0]
+        return found if not first else None
 
-    def associations_by_r1(self):
+    def associations_by_r1(self, topic_dict=None):
         out = {}
         for a in self.associations:
             out.setdefault(a.r1 or "none", []).append(a)
+        if topic_dict:  # TODO, we need this to cheaply look up names, but it's not very clean to pass it in here
+            for ass in out.values():
+                ass.sort(key=lambda a: topic_dict.get(a.t2.pk).name if a.t2.pk in topic_dict else a.t2.pk)
         return out
 
     def query_all_referenced_topics(self) -> QuerySet:
@@ -363,7 +412,7 @@ class Topic(Document):
 
 
 Topic.created_at.filter_options = datetime_delta_options(
-    "created_at", [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedelta(days=365)]
+    "created_at", [timedelta(days=7), timedelta(days=30), timedelta(days=365), timedelta(days=1825)]
 )
 # Topic.kind.filter_options = distinct_options("kind", Topic)
 
@@ -432,12 +481,14 @@ class TopicFactory:
         # We assume id with / or @ is a full domain, which implicitly excludes basifying ids that have path components but no domain
         if not id:
             raise ValueError("Empty ID given")
-        elif not self.default_bases or re.search(r"[@\/]", id):
-            return str(id)
+        elif not self.default_bases or re.match(r"^[^\/@]+@[^\/]+$", id) or "/" in id:
+            return str(id)  # Already a full ID
         else:
             joined = ""
+            user = "@" in id
             for base in self.default_bases:
-                joined = join(base, id)
+                # if @ in id, it's a user, so id@base.com . Otherwise base.com/id
+                joined = id + base.split("/", 1)[0] if user else join(base, id)
                 if joined in self.topic_dict:
                     break
             return joined  # Will intentionally be the last one if none of the bases existed
@@ -468,6 +519,10 @@ class TopicFactory:
             topic = Topic(id=id)
             self.topic_dict[id] = topic
 
+        if id.startswith(LORE_BASE) and not creating:
+            # Don't modify LORE_BASE topics, they should always exist in correct format from before
+            return topic
+
         # WARNING, from here on we need to be idempotent. We can get here both on a new and an existing topic,
         # and shouldn't duplicate any content not here. At the same time, we might want to update some fields.
         # Maybe would be better to split this into separate method to call on a topic explicitly.
@@ -496,6 +551,7 @@ class TopicFactory:
 
         if created_at and (not topic.created_at or created_at < topic.created_at):
             # Will write created_at if it's earlier than what's here
+            # Todo, this will make topics with
             topic.created_at = created_at
 
         if creating:  # Only do first time
@@ -522,9 +578,9 @@ def create_basic_topics():
     # Scope topics
     T("en", [("English", "en"), ("Engelska", "sv")])
     T("sv", [("Swedish", "en"), ("Svenska", "sv")])
-    T("canon_content", "Canon content", "Denotes a characteristic as canon")
-    T("contrib_content", "Contributed content", "Denotes a characteristic as contributed, not yet approved")
-    T("community_content", "Community content", "Denotes a characteristic as approved community material")
+    T("canon", "Canon content", "Denotes a characteristic as canon")
+    T("contrib", "Contributed content", "Denotes a characteristic as contributed, not yet approved")
+    T("community", "Community content", "Denotes a characteristic as approved community material")
 
     # Scope topics for names
     # sort_name, a string to used for sorting instead of basename, can also be combined with language

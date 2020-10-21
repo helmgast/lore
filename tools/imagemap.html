@@ -1,0 +1,101 @@
+<html>
+
+<style>
+#cursor {
+    width: 800px;
+    height: 800px;
+    position: absolute;
+    border: 1px red solid;
+    top: 0;
+    left: 0;
+    transform: translateX(-50%) translateY(-50%);
+    pointer-events: none;
+    transition: background-color .1s; /* .5s how long transitions shoould take */
+}
+</style>
+
+<div id="cursor"></div>
+
+<img id="map" src="https://res.cloudinary.com/helmgast/image/upload/v1603129757/uploaded/Mundana-extra.jpg">
+
+<script type="application/javascript">
+
+const cursor = document.getElementById('cursor');
+
+let size = 800;
+
+let mouseX = 0;
+let mouseY = 0;
+
+let cursorX = 0;
+let cursorY = 0;
+
+let speed = 1; // reduce to lag the square after pointer
+
+function animate() {
+    let distX = mouseX - cursorX;
+    let distY = mouseY - cursorY;
+
+    cursorX = cursorX + (distX * speed);
+    cursorY = cursorY + (distY * speed);
+
+    cursor.style.left = cursorX + 'px';
+    cursor.style.top = cursorY + 'px';
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+document.addEventListener('mousemove', (event) => {
+    mouseX = event.pageX;
+    mouseY = event.pageY;
+})
+
+document.addEventListener('keydown', (event) => {
+    if (event.code === "ArrowUp") { // up
+        size += 50;
+        cursor.style.width = size + "px";
+        cursor.style.height = size + "px";
+    } else if (event.code === "ArrowDown") {  // down
+        size -= 50;
+        if (size < 50) {
+            size = 50;
+        }
+        cursor.style.width = size + "px";
+        cursor.style.height = size + "px";
+    }
+})
+
+function clickHotspotImage(event) {
+    var xCoordinate = event.offsetX;
+    var yCoordinate = event.offsetY;
+    const w = size, h = size, x = xCoordinate - w/2; y = yCoordinate - h/2;
+    let url = `https://res.cloudinary.com/helmgast/image/upload/x_${x},y_${y},w_${w},h_${h},c_crop/v1603129757/uploaded/Mundana-extra.jpg`;
+
+    navigator.permissions.query({ name: 'clipboard-write' }).then(result => {
+        if (result.state === 'granted') {
+            var blob = new Blob([url], {type: 'text/plain'});
+            var item = new ClipboardItem({'text/plain': blob});
+            navigator.clipboard.write([item]).then(function() {
+                cursor.style["background-color"] = "white";
+                setTimeout(function(){ cursor.style["background-color"] = "unset"; }, 100);
+                console.log("Copied to clipboard successfully!");
+            }, function(error) {
+                console.error("unable to write to clipboard. Error:");
+                console.log(error);
+                alert(url);
+            });
+        } else {
+            alert(url);
+            console.log("clipboard-permissoin not granted: " + result);
+        }
+    });
+}
+
+const map = document.getElementById('map');
+map.addEventListener("click", clickHotspotImage)
+
+</script>
+
+</html>

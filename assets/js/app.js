@@ -241,6 +241,12 @@ $(document).on('click', '#q-btn', function (event) {
     this.href = utils.modify_url(this.href, { q: $('#q').val() });
 });
 
+$(document).on('keyup', '#q', function (event) {
+    if (event.key === "Enter") {
+        $("#q-btn")[0].click();
+    }
+});
+
 /* ========================================================================
  * All events that should run on DOM first ready and at update.
  * ========================================================================
@@ -263,7 +269,7 @@ function init_dom(e) {
 
     // Bootstrap tooltip
     require('bootstrap/js/tooltip');
-    scope.find("a[data-toggle='tooltip']").tooltip(); // Need to activate manually
+    scope.find("[data-toggle='tooltip']").tooltip(); // Need to activate manually
 
     if (typeof TOUR_OPTIONS !== "undefined" && TOUR_OPTIONS) {
         var params = utils.decompose_url(window.location.href).params

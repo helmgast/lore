@@ -7,6 +7,7 @@
 - [Fantasy grounds](https://www.fantasygrounds.com/home/home.php). Similar to Roll20. Paid, premium at 60 USD/y.
 - [World Anvil](https://www.worldanvil.com/). Online, paid up to 150 USD/y. The most capable, something for Lore to aspire to.
 - [Fandom.com](https://fandom.com). Has most of the content for books, movies and games already.
+- [Legend Keeper](https://www.legendkeeper.com/). New and stylish, focused around maps, still in beta.
 
 # Some user's own game wikis with content
 

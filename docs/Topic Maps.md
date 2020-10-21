@@ -383,16 +383,31 @@ There is an active trend for building personal knowledge systems that is very si
 Import from Mediawiki-source to Markdown repo.
 `flask wikitext-to-markdown ~/dev/src/encyclopedia-mundana/eon_dump.xml ~/dev/src/encyclopedia-mundana/`
 Considered canon, no named author, published by Helmgast, in Swedish.
-`flask import-markdown-topics ~/dev/src/encyclopedia-mundana -b lore.pub/t -b helmgast.se/eon -s lore.pub/t/sv -s lore.pub/t/canon_content -a existence( this:concept, helmgast.se/eon:world)`
+`flask import-markdown-topics ~/dev/src/encyclopedia-mundana -b lore.pub/t -b helmgast.se/eon -s sv -s canon -a existence( this:concept, helmgast.se/eon:world) --github-wiki https://github.com/helmgast/encyclopedia-mundana/wiki/`
 
 ### Drängopedia
 Import from Mediawiki-source to Markdown repo.
 Considered community content, authored by Ola or other author, published by Drängopedia, in Swedish.
-`flask import-markdown-topcics ~/dev/src/drangopedia -b lore.pub/t -b helmgast.se/eon -b drangopedia.lore.pub/eon -s lore.pub/t/sv -s lore.pub/t/community_content -s ola@drangopedia.lore.pub`
+`flask import-markdown-topics ~/dev/src/drangopedia -b lore.pub/t -b helmgast.se/eon -b drangopedia.lore.pub/eon -s sv -s community -a existence( this:concept, helmgast.se/eon:world) --github-wiki https://github.com/helmgast/drangopedia/wiki/`
 
 ### Neotech terms
 Import from Sheets.
 Considered canon, authorless, published by Helmgast, in Swedish or English (depending).
+
+### Neotech eqip list
+Import from Sheets.
+Considered canon, authorless, published by Helmgast, in Swedish.
+
+### PRD Zones
+Import from Sheets, plus add map-functionality.
+Considered canon, authorless, published by Helmgast, in Swedish or English (depending).
+
+### Kartor från kartpaket
+Already imported online, but without any visual assets. Needs the shortlink to connect to topics to not break existing QR-kodes!
+Considered canon, authorless, published by Helmgast, in Swedish.
+
+### Neotech chargen
+Already imported (not as topics), but need new data sheet and checking on it.
 
 ### Kampanj
 Import from Wordpress archive to Markdown repo.
@@ -401,6 +416,11 @@ Considered community, authored by Martin et al, published by Kampanj, in Swedish
 ### Nogo
 Import from Joomla archive to Markdown repo.
 Considered community, auhtored by Martin et al, published by Nogo, in Swedish.
+
+### Noir
+Import from Joomla archive to Markdown repo.
+Considered community, auhtored by various, published by Helmgast, in Swedish.
+
 
 ## World hierarchy (old)
 

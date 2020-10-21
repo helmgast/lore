@@ -133,12 +133,25 @@
 {% block content_title %}{{ title }}{% endblock %}
 {% block content_tagline %}{% endblock %}
 
+{% if topic %}
+{# need to remove occurrences not used #}
+{% set creator = topic.find_occurrences(kind="lore.pub/t/creator", first=True) %}
+{% set topic_article = topic.article %}
+{% set map_point = topic.find_occurrences(kind="lore.pub/t/map_point", first=True) %}
+{% set rest_of_content = topic.occurrences_except_content([creator.content, topic_article, map_point.content]) %}
+{% endif %}
+
 {% block intro %}
     {% if not args.get('intent', None) %}
         <ul class="nav imprint">
-            <li title="{{ _('Article type') }}"><span
-                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
-                <span class="imprint-info">{{ article.get_type_display() }}</span>
+            <li title="{{ _('Article type') }}">
+                {% if topic.kind %}
+                    <span class="glyphicon glyphicon-{{ MACRO.topic_icons[topic.kind.pk]|default('tag') }}"></span>
+                    <span class="imprint-info">{{ topic.kind.pk|lookup(topic_names)|attr("name") }}</span>
+                {% else %}
+                    <span class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
+                    <span class="imprint-info">{{ article.get_type_display() }}</span>
+                {% endif %}
             </li>
             {% if article.world %}
             <li title="{{ _('World') }}"><span class="glyphicon glyphicon-globe }}"></span>
@@ -153,7 +166,10 @@
                     {% else %}
                         <a>{{ article.creator }}</a>
                     {% endif %}
-                {%- else -%}<span class="imprint-info">&nbsp;{{ _('Admin') }}</span>
+                {%- else -%}
+                    {% if topic %}
+                    {% endif %}
+                    <span class="imprint-info">&nbsp;{{ creator.content if creator else _('Admin') }}</span>
                 {%- endif -%}</li>
             <li title="{{ _('Created') }}"><span
                     class="glyphicon glyphicon-calendar"></span>
@@ -175,10 +191,12 @@
             {% for loc in article.available_languages().values() %}
                 {% if article.translations_i18n.get(loc.language, none) %}
                 <li title="{{ loc.phrases['read_in'] }}">
-                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}"><img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}</a>
+                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}">
+                        <img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}
+                    </a>
                 </li>
                 {% endif %}
-            {% endfor %}
+            {% endfor %}            
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
         </ul>
         {% if article.shortcut %}
@@ -198,18 +216,43 @@
                     href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
         </article>
     {% else %}
-        {# <div style="width: 100%; border-bottom: 1px solid #333"><span class="label label-default">{% trans %}Canon{% endtrans %}</span></div> #}
-        {% if not topic.articles or article.content %}
-        {# <div class="tab"><span class="label label-default">{% trans %}Canon:{% endtrans %}</span></div> #}
-        <article id="canon" class="article-text {{ 'drop-caps' if article.content|first_p_length >300 else ''}}">
+        <article class="article-text">
+        {% if not topic.article or article.content %}
+        <section class="{{ 'drop-caps' if article.content|first_p_length >300 }}">
             {{ article.content|default(_('No content yet'), true)|safe|markdown }}
-        </article>
+        </section>
         {% endif %}
-        {% if topic.articles %}
-        <article>
-            {{ topic.articles[0].content|default(_('No content yet'), true)|safe|markdown }}
-        </article>
+        {% if topic.article %}
+        <section>
+            <ul class="nav nav-tabs nav-occurrence">
+                <li role="presentation" class="nav-info canon">{% trans %}Canon content{% endtrans %}</li>
+            </ul>
+            {{ topic.article|default(_('No content yet'), true)|safe|markdown }}
+        </section>
         {% endif %}
+
+        {% for o in rest_of_content %}
+            <section>
+            <ul class="nav nav-tabs nav-occurrence">
+                <li role="presentation" class="nav-info {{o.contribution_scope().pk.rsplit('/')[-1]}}">{% trans %}Community content{% endtrans %} {% if o.creator() -%} {% trans %}by{% endtrans %} {{o.creator().pk|lookup(topic_names)|attr("name")|replace("@", "")}}{% endif %}</li>
+                <li role="presentation" class="pull-right">{%- if o.uri -%}<a href="{{o.uri}}">source</a>{%- endif -%}</li>
+            </ul>
+
+            {% if o.content %}
+            {{o.content|safe|markdown }}
+            {% elif o.kind.pk == "lore.pub/t/image" %}
+            <img src="{{o.uri}}">
+            {% else %}
+            <p>
+            <span class="glyphicon glyphicon-{{ MACRO.topic_icons[o.kind.pk] }}"></span> 
+                {% if o.uri %}<a href="{{o.uri}}">{% endif %}
+                {{o.kind.pk|lookup(topic_names)|attr("name")}}
+                {% if o.uri %}</a>{% endif %}
+            </p>
+            {% endif %}
+            </section>
+        {% endfor %}
+        </article>
 
     {% endif %}
     {% if args.get('intent', None) %}
@@ -301,48 +344,48 @@
         </div>
     {% else %}
         {% if topic %}
+            <div class="well"><small><em>{% trans %}This is a read-only preview of Helmgast's Lore, a database of Helmgast's worlds{% endtrans %}</em></small></div>
             {# <ul class="nav nav-pills nav-xs">
                 <li role="presentation" class="active"><a class="btn btn-default btn-xs" href="#canon" data-toggle="tab">Canon</a></li>
                 <li role="presentation"><a class="btn btn-success btn-xs" href="#community" data-toggle="tab">Ola</a></li>
                 <li role="presentation"><a class="btn btn-warning btn-xs" href="#suggest" data-toggle="tab">Joel</a></li>
             </ul> #}
 
-            {% if topic.kind %}
-            <h5>{{_("Type")}}: {{topic.kind.pk|lookup(topic_names)}}</h5>
-            {% endif %}
             {% set alt_names = topic.alt_names(topic.name) %}
             {% if alt_names %}
             <h5>{{_("Alternative names")}}</h5>
             <ul>
             {% for n in alt_names %}
-                <li>{{n.name}}
-                {%if n.scopes %} 
-                [{% for s in n.scopes %}{{s.pk|lookup(topic_names)|attr("name")}}{{ ', ' if not loop.last }}{% endfor %}]
-                {% endif %}</li>
-            {% endfor %}
-            </ul>
-            {% endif %}
-            {% if topic.occurrences %}
-            <h5>{{_("Resources")}}</h5>
-            <ul class="nav imprint">
-            {% for o in topic.occurrences %}
-                <li title="{{o.kind.pk|lookup(topic_names)}}"><span
-                    class="glyphicon glyphicon-{{ MACRO.topic_icons[o.kind.pk] }}"></span> {% if o.uri %}<a href="{{o.uri}}">{% endif %}
-                    {% if o.content %}: {{o.content|md2plain|truncate(35, true)}}{%else%}{{o.kind.pk|lookup(topic_names)|attr("name")}}{%endif%}
-                    {% if o.uri %}</a>{% endif %}
+                <li title="{%if n.scopes -%} 
+                [{%- for s in n.scopes -%}{{s.pk|lookup(topic_names)|attr("name")}}{{ ', ' if not loop.last }}{%- endfor -%}]
+                {%- endif -%}">{{n.name}}
                 </li>
             {% endfor %}
             </ul>
             {% endif %}
-            {% set ass_dict = topic.associations_by_r1() %}
+            {% if map_point %}
+            <div class="map-square"><img class="img-responsive" src="{{map_point.uri}}"><span class="glyphicon glyphicon-map-marker"></span></div>
+            {% endif %}
+
+            {% set ass_dict = topic.associations_by_r1(topic_names) %}
             {% for role, ass in ass_dict.items() %}
                 {% set role_title = ass[0].kind.pk|lookup(topic_names) %}
                 <h5>{{role_title.find_names(scopes=[role.pk])[0].name}}</h5>
                 <div class="btn-set">
                 {% for a in ass %}
                     {% set at = a.t2.pk|lookup(topic_names) %}
-                    <a title="{{at}}" href="{{at.as_article_url()}}" class="btn btn-default btn-xs">{{at.name}}</a>
+                    {% if loop.index == 30 %}  {# hide more than 30 associations under more button #}
+                        <a role="button" data-toggle="collapse" href="#{{role.pk|safe_id}}" class="btn btn-primary btn-xs">{{_("more ...")}}</a>
+                        <div class="collapse" id="{{role.pk|safe_id}}">
+                    {% endif %}
+                    <a title="{{at}}" {%- if at.as_article_url is defined -%}href="{{at.as_article_url()}}"{%- endif -%} class="btn btn-default btn-xs {{a.contribution_scope().pk.rsplit('/')[-1]}}">
+                    {%- if at.kind.pk in MACRO.topic_icons -%}
+                    <span class="glyphicon glyphicon-{{ MACRO.topic_icons[at.kind.pk] }}"></span>
+                    {%- endif -%}
+                    {{at.name or at}}
+                    </a>
                 {% endfor %}
+                {% if ass|length >= 30 %}</div>{% endif %}
                 </div>
             {% endfor %}
         {% endif %}

@@ -33,7 +33,15 @@
 {% block asides %}{{ super() }}
     {% if filter_options %}
         <div class="filter-options">
-        {{ MACRO.LIST_CONTROLS(filterable_fields, args, show=['order','page']) }}
+        {{ MACRO.LIST_CONTROLS(filterable_fields, args, show=['table', 'index', 'order','page']) }}
+        
+        <h5>{% trans %}By initial{% endtrans %}</h5>
+        <div class="btn-set">
+            {%- for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ' %}
+            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith=letter) }}">{{ letter }}</a>
+            {%- endfor %}
+            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith='[^A-ZÅÄÖ]') }}">#</a>
+        </div>
 
         {% if not world %}
         <h5>{% trans %}By world{% endtrans %}</h5>
@@ -48,14 +56,16 @@
         <div class="btn-set">
             {% for opt in filter_options['kind'] %}
                 {{ MACRO.ARG_LINK(opt.label, opt.kwargs) }}
+            {% else %}
+                <button disabled class="btn btn-default btn-xs">{{ _('None') }}</button>
             {% endfor %}
         </div>
 
-        <h5>{% trans %}By # of occurrences{% endtrans %}</h5>
+        {# <h5>{% trans %}By # of content{% endtrans %}</h5>
         <div class="btn-set">
-            {{ MACRO.ARG_LINK(_("No occurrences"), {"occurrences__size": 0}) }}
-            {{ MACRO.ARG_LINK(_("1 occurrence"), {"occurrences__size": 1}) }}
-        </div>
+            {{ MACRO.ARG_LINK(_("No content"), {"occurrences__size": 0}) }}
+            {{ MACRO.ARG_LINK(_("1 content"), {"occurrences__size": 1}) }}
+        </div> #}
 
         <h5>{% trans %}By created date{% endtrans %}</h5>
         <div class="btn-set">
@@ -64,16 +74,6 @@
             {% endfor %}
         </div>
 
-        <h5>{% trans %}Search text{% endtrans %}</h5>
-        <form method="get">
-            <div class="input-group{{ ' has-success' if args['q'] }}">
-                <input class="form-control input-sm" type="search" id='q' name='q'
-                       placeholder="{{ _('Text') }}" value="{{ args['q']|escape }}">
-                <span class="input-group-btn">
-            <button class="btn btn-default btn-sm" type="submit">{% trans %}Search{% endtrans %}</button></span>
-            </div>
-        </form>
-        </span>
         </div>
     {% endif %}
 {% endblock %}
@@ -84,19 +84,34 @@
         {% if group.grouper %}
             <h3>{{ _(group.grouper|capitalize) }}</h3>
         {% endif %} #}
-    <ul class="nav nav-tabs">
+    <div class="well"><small><em>{% trans %}This is a read-only preview of Helmgast's Lore, a database of Helmgast's worlds{% endtrans %}</em></small></div>
+
+    <ul class="nav nav-tabs flex">
         <li role="presentation" class="{{'active' if '/articles' in request.url}}"><a href="{{url_for('world.ArticlesView:index', world_=world.slug)}}">{% trans %}Articles{% endtrans %}</a></li>
         <li role="presentation" class="{{'active' if '/topics' in request.url}}"><a href="{{url_for('world.ArticlesView:topics', world_=world.slug)}}">{% trans %}Topics{% endtrans %}</a></li>
-    </ul>
-        {% if not topics %}
-            <div class="jumbotron text-center">
-                <h2>{{ _('No topics found') }}</h2>
+        <li class="flex-right" role="search">
+            <div class="input-group">
+                <input type="text" class="form-control" id='q' name='q' placeholder="{{ _('Search for ...') }}" value="{{ args['q']|escape }}">
+                <span class="input-group-btn">
+                    <a id="q-btn" href="{{ current_url(q=none, page=none) }}" class="btn btn-default">{% trans %}Search{% endtrans %}</a>
+                </span>
             </div>
+        </li>
+    </ul>
+    {% if not topics %}
+        <div class="jumbotron text-center">
+            <h2>{{ _('No topics found') }}</h2>
+        </div>
+    {% else %}
+        {% if args["view"] == "index" %}
+            {% include "world/topic_index_view.html" %}
         {% else %}
             {% include "world/topic_table_view.html" %}
         {% endif %}
+    {% endif %}
     {# {% endfor %} #}
     {% include "includes/pagination.html" %}
+
 {% endblock %}
 
 {% block post_content %}{% endblock %}

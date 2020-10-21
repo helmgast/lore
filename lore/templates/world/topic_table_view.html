@@ -3,24 +3,38 @@
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'names') }}</th>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'kind') }}</th>
     <th>{{ MACRO.ORDER_BY_LINK(filterable_fields, args, 'created_at') }}</th>
-    <th>{{_('Associations')}}</th>
-    <th>{{_('Occurrences')}}</th>
+    <th><span data-toggle="tooltip" title="{{_('# connections')}}" class="glyphicon glyphicon-link"></span></th>
+    <th><span data-toggle="tooltip" title="{{_('# content')}}" class="glyphicon glyphicon-file"></span></th>
+    <th>{% trans %}Text{% endtrans %}</th>    
     </thead>
     <tbody>
 
     {% for topic in topics %}
         <tr>
             <td>
-                <a href="{{ topic.as_article_url() }}">{{ topic.name }}</a>
+                <a title="{{topic}}" href="{{ topic.as_article_url() }}">{{ topic.name }}</a>
             </td>
-            <td>{{ topic.kind.pk|default("None") }}</td>
-            
+
+            <td>{% if topic.kind and topic.kind.pk %}
+                <span title="{{topic.kind.pk}}" class="glyphicon glyphicon-{{ MACRO.topic_icons[topic.kind.pk]|default('tag') }}"></span> {{ topic.kind.pk|lookup(topic_names)|attr("name") }}
+                {%- else -%}
+                <span class="text-muted">{% trans %}None yet{% endtrans %}</span>
+                {%- endif -%}
+            </td>
+
             <td>{{ topic.created_at|datetimeformat(format='short') }}</td>
             
             <td>{{ topic.associations|length }}</td>
             
             <td>{{ topic.occurrences|length }}</td>
-        </tr>
+
+            <td>
+            {% if topic.description and topic.description.content %}
+                {{ topic.description.content|md2plain|truncate(40, true) }}
+                {%- else -%}
+                <span class="text-muted">{% trans %}None yet{% endtrans %}</span>
+                {%- endif -%}
+            </td>
     {% endfor %}
 
     </tbody>

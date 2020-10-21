@@ -260,13 +260,40 @@ class WorldsView(ResourceView):
     def index(self):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
         set_lang_options(publisher)
+        owned_worlds = World.objects(publisher=publisher).order_by("-publishing_year", "-created")
+        distinct_world_associations = Topic.objects().aggregate(
+            [
+                {
+                    "$match": {
+                        "_id": {"$regex": "^drangopedia.lore.pub"},
+                        "associations.r2": "lore.pub/t/world",
+                        "associations.kind": "lore.pub/t/existence",
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "associations": {
+                            "$filter": {
+                                "input": "$associations",
+                                "cond": {"$eq": ["$$this.kind", "lore.pub/t/existence"]},
+                            }
+                        },
+                    }
+                },
+                {"$group": {"_id": "$associations.t2"}},
+            ]
+        )
+        distinct_world_associations = [w["_id"][0].rsplit("/")[-1] for w in distinct_world_associations]
+        # TODO this is a hack to bridge topic world ids (helmgast.se/eon) with the World slug (eon)
+        contribution_worlds = World.objects(slug__in=distinct_world_associations).order_by(
+            "-publishing_year", "-created"
+        )
         r = ListResponse(
             WorldsView,
-            [
-                ("worlds", World.objects(publisher=publisher).order_by("-publishing_year", "-created")),
-                ("publisher", publisher),
-            ],
+            [("worlds", owned_worlds), ("publisher", publisher), ("contribution_worlds", contribution_worlds)],
         )
+
         r.set_theme("publisher", publisher.theme)
 
         r.auth_or_abort(res=publisher)
@@ -514,16 +541,18 @@ class ArticlesView(ResourceView):
 
     def topics(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).comment("Current publisher").first_or_404()
-        world = (
-            World.objects(slug=world_).comment("Current world").first_or_404()
-            if world_ != "meta"
-            else WorldMeta(publisher)
-        )
+        if world_ != "meta":
+            world = World.objects(slug=world_).comment("Current world").first_or_404()
+            topic_path = f"{publisher.slug}/{world.slug}"
+        else:
+            world = WorldMeta(publisher)
+            topic_path = f"{publisher.slug}"
+
         set_lang_options(world, publisher)
 
         # Calling len or length on a listfield in Mongoengine unexpectedly starts de-referencing,
         # so changing the query to not have it, which should include all actions in the template
-        topics = Topic.objects(id__startswith=g.pub_host).comment("All topics").no_dereference()
+        topics = Topic.objects(id__startswith=topic_path).comment("All topics").no_dereference()
 
         # if world_ == "meta":
         #     articles = Article.objects(publisher=publisher).order_by("-created_date")  # All articles from publisher
@@ -535,6 +564,10 @@ class ArticlesView(ResourceView):
         r.set_theme("world", world.theme)
         r.auth_or_abort(res=(world if world_ != "meta" else publisher))
         r.args["per_page"] = 60
+        if r.args["view"] == "index" and "names__0__name__istartswith" not in r.args["fields"]:
+            # Set default index letter to A
+            r.args["fields"]["names__0__name__istartswith"] = "A"
+
         r.finalize_query(select_related=False)
         #     topic_names = {
         # t.pk: t
@@ -585,19 +618,28 @@ class ArticlesView(ResourceView):
 
     def random(self, world_):
         publisher = Publisher.objects(slug=g.pub_host).first_or_404()
-        world = World.objects(slug=world_).first_or_404() if world_ != "meta" else WorldMeta(publisher)
-        articles = Article.objects(
-            world=if_not_meta(world),
-            publisher=publisher,
-            status=PublishStatus.published,
-            created_date__lte=datetime.utcnow(),
-        )
+        # world = World.objects(slug=world_).first_or_404() if world_ != "meta" else WorldMeta(publisher)
+        # articles = Article.objects(
+        #     world=if_not_meta(world),
+        #     publisher=publisher,
+        #     status=PublishStatus.published,
+        #     created_date__lte=datetime.utcnow(),
+        # )
+        if world_ != "meta":
+            world = World.objects(slug=world_).comment("Current world").first_or_404()
+            topic_path = f"{publisher.slug}/{world.slug}"
+        else:
+            world = WorldMeta(publisher)
+            topic_path = f"{publisher.slug}"
+
+        # Calling len or length on a listfield in Mongoengine unexpectedly starts de-referencing,
+        # so changing the query to not have it, which should include all actions in the template
+        topics = Topic.objects(id__startswith=topic_path).comment("All topics").no_dereference()
         # Uses efficient MongoDB aggregate. Returns a dict, not a MongoEngine object
-        sample = list(articles.aggregate({"$sample": {"size": 1}}))
+        sample = list(topics.aggregate({"$sample": {"size": 1}}))
         if sample:
-            return redirect(
-                url_for("world.ArticlesView:get", pub_host=publisher.slug, world_=world.slug, id=sample[0]["slug"])
-            )
+            t = Topic._from_son(sample[0])
+            return redirect(t.as_article_url())
         else:
             return redirect(url_for("world.ArticlesView:index", pub_host=publisher.slug, world_=world.slug))
 
@@ -655,28 +697,38 @@ class ArticlesView(ResourceView):
             topic: Topic = Topic.objects(id=f"{g.pub_host}/{world_}/{id}").no_dereference().first()
             topic_names = {}
             if not article and topic:
-                if topic:
-                    # Create a dummy article to make the template work
-                    article = Article(
-                        slug=topic.id,
-                        world=world,
-                        publisher=publisher,
-                        created_date=topic.created_at,
-                        title=topic.name,
-                        content="",
-                        type="topic",
-                    )
-                    # Executing this will cache all topics, hopefully in just one call? TODO check
-                    # cache = {t.pk: t for t in topic.query_all_referenced_topics()}
-                    topic_names = {
-                        t.pk: t
-                        for t in topic.query_all_referenced_topics()
-                        .no_dereference()
-                        .only("names")
-                        .comment("Names of referenced topics")
-                    }
+                # Create a dummy article to make the template work
+                article = Article(
+                    slug=topic.id,
+                    world=world,
+                    publisher=publisher,
+                    created_date=topic.created_at,
+                    title=topic.name,
+                    content="",
+                    type="topic",
+                )
+                # Executing this will cache all topics, hopefully in just one call? TODO check
+                # cache = {t.pk: t for t in topic.query_all_referenced_topics()}
+                topic_names = {
+                    t.pk: t
+                    for t in topic.query_all_referenced_topics()
+                    .no_dereference()
+                    .only("names", "kind")
+                    .comment("Names of referenced topics")
+                }
             elif not article and not topic:
-                return redirect(url_for("world.ArticlesView:get", id=uslugify(id), pub_host=g.pub_host, world_=world_))
+                if "redirected" not in request.url:
+                    return redirect(
+                        url_for(
+                            "world.ArticlesView:get",
+                            id=uslugify(id),
+                            pub_host=g.pub_host,
+                            world_=world_,
+                            redirected=True,
+                        )
+                    )
+                else:
+                    abort(404)
 
             r = ItemResponse(
                 ArticlesView, [("article", article), ("world", world), ("publisher", publisher), ("topic", topic)]

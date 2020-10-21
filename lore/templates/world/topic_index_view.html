@@ -1,0 +1,11 @@
+{% set initial = args["fields"]["names__0__name__istartswith"][0] %}
+<h1 class="drop-cap">
+{{ initial if not initial == "[" else "#"}}
+</h1>
+<dl class="book-index">
+    {% for topic in topics %}
+        <dt><a title="{{topic}}" href="{{ topic.as_article_url() }}">{{ topic.name }}</a></dt>
+        {# <dd class="index-row"><span class="index-term">PRD</span><span class="index-page">pp 11-20</span></dd>
+        <dd class="index-row"><span class="index-term">anon</span><span class="index-page">p 98</span></dd> #}
+    {% endfor %}
+</dl>

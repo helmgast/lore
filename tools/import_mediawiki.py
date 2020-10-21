@@ -67,9 +67,13 @@ def wikitext_generator(wiki_xml_file):
         # Pandoc doesn't recognize localized or incorrectly cased namespaces as image links, e.g.
         # `[[Fil:`, `[[image:`, `[[file:` will become just a normal link.
         text = simplify_image_links.sub(r"[[Image", text)
+        title_el = page.find(f"{ns}title")
+        created_at_el = page.find(f".//{ns}timestamp")
+        author_el = page.find(f".//{ns}username")
         yield {
-            "title": page.find(f"{ns}title").text or "",
-            "created_at": page.find(f".//{ns}timestamp").text or "",
+            "title": title_el.text if title_el is not None else "",
+            "created_at": created_at_el.text if created_at_el is not None else "",
+            "author": author_el.text if author_el is not None else "",
             "text": text,
         }
 
@@ -215,6 +219,8 @@ def job_wikitext_to_markdown(job, data):
         if data["created_at"]:
             doc.metadata["created_at"] = data["created_at"]
             file_birthtime = parse_datetime(data["created_at"])
+        if data["author"]:
+            doc.metadata["author"] = data["author"]
         # Sort all metadata and wrap every item in RawInline to avoid markdown escaping
         doc.metadata["links"] = {
             key: list(map(lambda x: pf.RawInline(x), sorted(subset))) for (key, subset) in doc.links.items()
@@ -233,7 +239,7 @@ def job_wikitext_to_markdown(job, data):
             "-implicit_figures",  # Don't assume images with alt is a figure
             "-raw_attribute",  # Don't give attributes to raw content
             "-smart"
-            # Smart would normally convert md straight quotes to curly unicode in HTML. 
+            # Smart would normally convert md straight quotes to curly unicode in HTML.
             # ' to ‘ ’
             # "	to “ ”
             # << >>	to « »

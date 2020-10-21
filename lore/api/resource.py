@@ -177,7 +177,8 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 
 def filterable_fields_parser(fields=None, **kwargs):
-    filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
+    # filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
+    filterable_fields = frozenset(fields or [])
     forbidden = filterable_fields & common_args
     if forbidden:
         raise Exception(f"Cannot allow field names colliding with common args names: {forbidden}")
@@ -471,7 +472,7 @@ class ListResponse(ResourceResponse):
         **{
             "page": lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
             "per_page": lambda x: int(x) if x.lstrip("-").isdigit() and int(x) >= -1 else 15,
-            "view": lambda x: x.lower() if x.lower() in ["card", "table", "list"] else None,
+            "view": lambda x: x.lower() if x.lower() in ["card", "table", "list", "index"] else None,
             "order_by": lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
             "q": lambda x: x,
         },
@@ -540,14 +541,16 @@ class ListResponse(ResourceResponse):
             built_query = None
             for k, values in self.args["fields"].lists():
                 # Field name is string until first __ (operators are after)
-                field = self.model._fields[k.split("__", 1)[0]]
-                if k.endswith("__size"):
-                    values = [int(v) for v in values]
-                q = Q(**{k: self.slug_to_id(field, values[0])})
-                if len(values) > 1:  # multiple values for this field, combine with or
-                    for v in values[1:]:
-                        q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
-                built_query = built_query._combine(q, QNode.AND) if built_query else q
+                # field = self.model._fields[k.split("__", 1)[0]]
+                # if k.endswith("__size"):
+                #     values = [int(v) for v in values]
+                # q = Q(**{k: self.slug_to_id(field, values[0])})                    
+                q = Q(**{k: values[0]})
+                # if len(values) > 1:  # multiple values for this field, combine with or
+                #     for v in values[1:]:
+                #         q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
+                # built_query = built_query._combine(q, QNode.AND) if built_query else q
+                built_query = q
 
             self.query = self.query.filter(built_query)
 
