@@ -16,13 +16,14 @@ def _sanitize(text, ok):
 
 
 # Extra characters outside of unicode alphanumerics that we'll allow.
-SLUG_OK = "-_~"
+SLUG_OK = "-_~:."
 
 
 def capitalize(s):
     m = re.search(r"[\W\d]+", s)
     end = m.end() if m else 0
-    return s[0:end] + s[end : end + 1].upper() + s[end + 1 :]
+    rv = s[0:end] + s[end : end + 1].upper() + s[end + 1 :]
+    return rv
 
 
 def slugify(s, ok=SLUG_OK, lower=True, spaces=False, only_ascii=False, space_replacement="_"):

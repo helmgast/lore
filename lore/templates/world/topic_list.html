@@ -35,12 +35,27 @@
         <div class="filter-options">
         {{ MACRO.LIST_CONTROLS(filterable_fields, args, show=['table', 'index', 'order','page']) }}
         
+        <h5>{% trans %}Random{% endtrans %}</h5>
+        <div class="btn-set">
+            <div class="btn-group">
+                <button type="button" title="{% trans %}Pick at random{% endtrans %}"
+                        class="btn btn-default  btn-xs dropdown-toggle" data-toggle="dropdown"
+                        aria-expanded="false">🎲 &nbsp;{% trans %}Roll at random{% endtrans %} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li class="{{'disabled' if args['random']==1}}"><a href="{{ current_url(random=1) }}">1</a></li>
+                    <li class="{{'disabled' if args['random']==5}}"><a href="{{ current_url(random=5) }}">5</a></li>
+                    <li class="{{'disabled' if args['random']==10}}"><a href="{{ current_url(random=10) }}">10</span></a></li>
+                </ul>
+            </div>
+        </div>
+        
         <h5>{% trans %}By initial{% endtrans %}</h5>
         <div class="btn-set">
             {%- for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ' %}
-            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith=letter) }}">{{ letter }}</a>
+            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith=letter,page=none,q=none,random=none) }}">{{ letter }}</a>
             {%- endfor %}
-            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith='[^A-ZÅÄÖ]') }}">#</a>
+            <a class="btn btn-default btn-xs btn-xs-square" href="{{ current_url(names__0__name__istartswith='[^A-ZÅÄÖ]',page=none,q=none,random=none) }}">#</a>
         </div>
 
         {% if not world %}
@@ -84,7 +99,7 @@
         {% if group.grouper %}
             <h3>{{ _(group.grouper|capitalize) }}</h3>
         {% endif %} #}
-    <div class="well"><small><em>{% trans %}This is a read-only preview of Helmgast's Lore, a database of Helmgast's worlds{% endtrans %}</em></small></div>
+    <div class="well"><small><em>{{ _("This is a read-only preview of <a href=\"%(url)s\">Helmgast's Lore</a>, a database of Helmgast's worlds", url="https://docs.google.com/presentation/d/10eiuf4RGQXO7J6DVP3xWVH91XBhJHI6-9Y9y-GWn9_s") }}</em></small></div>
 
     <ul class="nav nav-tabs flex">
         <li role="presentation" class="{{'active' if '/articles' in request.url}}"><a href="{{url_for('world.ArticlesView:index', world_=world.slug)}}">{% trans %}Articles{% endtrans %}</a></li>
@@ -113,5 +128,3 @@
     {% include "includes/pagination.html" %}
 
 {% endblock %}
-
-{% block post_content %}{% endblock %}

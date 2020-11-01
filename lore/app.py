@@ -246,6 +246,8 @@ def configure_extensions(app):
     app.jinja_env.filters["first_p_length"] = extensions.first_p_length
     app.jinja_env.filters["lookup"] = extensions.lookup
     app.jinja_env.filters["safe_id"] = extensions.safe_id
+    app.jinja_env.filters["filter_by_all_scopes"] = extensions.filter_by_all_scopes
+    app.jinja_env.filters["filter_by_any_scopes"] = extensions.filter_by_any_scopes
     app.jinja_env.add_extension("jinja2.ext.do")  # "do" command in jinja to run code
     app.jinja_loader = extensions.enhance_jinja_loader(app)
     app.json_encoder = extensions.MongoJSONEncoder
@@ -367,8 +369,10 @@ def configure_hooks(app):
 
     from lore.model.misc import current_url, in_current_args, slugify, delta_date
     from lore.api.auth import auth0_url
+    from lore.model.asset import cloudinary_url
     from sentry_sdk import last_event_id, capture_exception
 
+    app.add_template_global(cloudinary_url)
     app.add_template_global(auth0_url)
     app.add_template_global(current_url)
     app.add_template_global(in_current_args)

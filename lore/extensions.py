@@ -1,5 +1,6 @@
 import re
 import types
+from operator import attrgetter
 
 from datetime import datetime
 
@@ -419,3 +420,33 @@ def safe_id(s):
     s = re.sub(r"^[^A-Za-z]", "", s)
     s = re.sub(r"[^A-Za-z0-9-_:]+", "-", s)
     return s
+
+
+def filter_by_any_scopes(items, *scopes_to_match):
+    """Filters a list of items based on if their scopes match any of the provided scopes.
+    An item matches if it has no scope (valid for any scope) or if the intersection
+    of item's scopes and scopes to match is at least one (e.g at least one scope in both).
+
+    Args:
+        items ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    scopes_to_match = set(scopes_to_match)
+    return [i for i in items if not i.scopes or set(map(attrgetter("pk"), i.scopes)) & scopes_to_match]
+
+
+def filter_by_all_scopes(items, *scopes_to_match):
+    """Filters a list of items based on if their scopes match all the provided scopes.
+    An item matches if it has no scope (valid for any scope) or if scopes to match is
+    a subset of the items scopes.
+
+    Args:
+        items ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    scopes_to_match = set(scopes_to_match)
+    return [i for i in items if not i.scopes or set(map(attrgetter("pk"), i.scopes)) >= scopes_to_match]

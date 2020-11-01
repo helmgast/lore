@@ -4,8 +4,9 @@
 </h1>
 <dl class="book-index">
     {% for topic in topics %}
-        <dt><a title="{{topic}}" href="{{ topic.as_article_url() }}">{{ topic.name }}</a></dt>
-        {# <dd class="index-row"><span class="index-term">PRD</span><span class="index-page">pp 11-20</span></dd>
-        <dd class="index-row"><span class="index-term">anon</span><span class="index-page">p 98</span></dd> #}
+        <dt><a data-toggle="tooltip" title="{{ topic.description.content }}" href="{{ topic.as_article_url() }}">{{ topic.name }}</a></dt>
+        {% for bibref in topic.bibrefs %}
+        <dd class="index-row"><span class="index-term">{{bibref.content|replace(": ", '</span><span class="index-page">')|safe}}</span></dd>
+        {% endfor %}
     {% endfor %}
 </dl>

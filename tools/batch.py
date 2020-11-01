@@ -54,7 +54,9 @@ class Column:
 
 
 class Job:
-    def __init__(self, i=0, batch=None, is_debug=False, is_dry_run=False):
+    def __init__(
+        self, i: int = 0, batch=None, is_debug: bool = False, is_dry_run: bool = False, test_context: dict = None
+    ):
         self.i = i
         self.data = {}
         self.log = []
@@ -62,6 +64,7 @@ class Job:
         self.result = None
         self.success = JobSuccess.SUCCESS
         self.batch = batch
+        self.test_context = test_context if test_context else {}
         self.is_debug = batch.is_debug if batch else is_debug
         self.is_dry_run = batch.is_dry_run if batch else is_dry_run
         self.is_bugreport = batch.is_bugreport if batch else False
@@ -69,7 +72,7 @@ class Job:
 
     @property
     def context(self):
-        return self.batch.context if self.batch else {}
+        return self.batch.context if self.batch else self.test_context
 
     def get_str(self, target_level=LogLevel.INFO):
         logs = "\n" + "\n".join(f"{level.name}: {msg}" for (level, msg) in self.log if level >= target_level)
@@ -81,6 +84,7 @@ class Job:
         It will use the item in that column (or item.result_key) to populate the table row from the
         job.result property (so it needs to have the column values as fields or dict keys).
         If warnings/error it will print additional indented rows"""
+
         columns = columns or self.batch.context.get("columns", None)
         if not columns:
             raise ValueError("Needs a columns iterable to print as table")
@@ -105,7 +109,7 @@ class Job:
 
         for i, item in enumerate(results):
             col_width = int(TERMINAL_WIDTH * self.batch.col_weights[i])
-            out += str(item)[0: col_width - 1].ljust(col_width, " ")
+            out += str(item)[0 : col_width - 1].ljust(col_width, " ")
         if self.success == JobSuccess.FAIL:
             errors = "\n    ".join(map(str, self.get_log(LogLevel.ERROR)))
             out += f"\n    {Color.FAIL}{errors}{Color.ENDC}"
@@ -144,16 +148,17 @@ class Job:
 def bulk_update(doc_class, docs):
     from pymongo import UpdateOne
     from mongoengine import Document, ValidationError
+
     bulk_operations = []
 
     for doc in docs:
-        try:
-            doc.validate()
-            doc.clean()
-            bulk_operations.append(
-                UpdateOne({'_id': doc.id}, {'$set': doc.to_mongo().to_dict()}, upsert=True))
-        except ValidationError as ve:
-            print(ve)
+        if doc:
+            try:
+                doc.validate()
+                doc.clean()
+                bulk_operations.append(UpdateOne({"_id": doc.id}, {"$set": doc.to_mongo().to_dict()}, upsert=True))
+            except ValidationError as ve:
+                print(ve)
 
     if bulk_operations:
         return doc_class._get_collection().bulk_write(bulk_operations, ordered=False)
@@ -182,15 +187,8 @@ class Batch:
         self.is_dry_run = dry_run
         self.limit = int(limit)
 
-        # if table_columns is not None and (
-        #     not isinstance(table_columns, list) or len(table_columns) == 0 or not isinstance(table_columns[0], Column)
-        # ):
-
-        if (
-            table_columns is not None
-            and not isinstance(table_columns, list)
-            or len(table_columns) == 0
-            or not isinstance(table_columns[0], Column)
+        if table_columns is not None and (
+            not isinstance(table_columns, list) or len(table_columns) == 0 or not isinstance(table_columns[0], Column)
         ):
             raise ValueError(f"Invalid column data provided {table_columns}")
         self.table_columns = table_columns

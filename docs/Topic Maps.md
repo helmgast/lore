@@ -384,30 +384,51 @@ Import from Mediawiki-source to Markdown repo.
 `flask wikitext-to-markdown ~/dev/src/encyclopedia-mundana/eon_dump.xml ~/dev/src/encyclopedia-mundana/`
 Considered canon, no named author, published by Helmgast, in Swedish.
 `flask import-markdown-topics ~/dev/src/encyclopedia-mundana -b lore.pub/t -b helmgast.se/eon -s sv -s canon -a existence( this:concept, helmgast.se/eon:world) --github-wiki https://github.com/helmgast/encyclopedia-mundana/wiki/`
+Server:
+`flask import-markdown-topics /data/www/github/helmgast/encyclopedia-mundana -b lore.pub/t -b helmgast.se/eon -s sv -s canon -a "existence( this:concept, helmgast.se/eon:world)" --github-wiki https://github.com/helmgast/encyclopedia-mundana/wiki/ -c`
 
 ### Drängopedia
 Import from Mediawiki-source to Markdown repo.
 Considered community content, authored by Ola or other author, published by Drängopedia, in Swedish.
 `flask import-markdown-topics ~/dev/src/drangopedia -b lore.pub/t -b helmgast.se/eon -b drangopedia.lore.pub/eon -s sv -s community -a existence( this:concept, helmgast.se/eon:world) --github-wiki https://github.com/helmgast/drangopedia/wiki/`
+Server:
+`flask import-markdown-topics /data/www/github/helmgast/drangopedia -b lore.pub/t -b helmgast.se/eon -b drangopedia.lore.pub/eon -s sv -s community -a "existence( this:concept, helmgast.se/eon:world)" --github-wiki https://github.com/helmgast/drangopedia/wiki/ -c`
 
-### Neotech terms
+### Neotech termsexit
 Import from Sheets.
 Considered canon, authorless, published by Helmgast, in Swedish or English (depending).
+
+Slang
+`flask import-sheet https://docs.google.com/spreadsheets/d/1ks8NrkSLjAEc7F2ItEdBFPC-pdeuaET0QCvKMIiabRA/edit#gid=1 topic -b lore.pub/t -b helmgast.se/neotech -s canon -a "existence( this:concept, helmgast.se/neotech:world)" -l 0 -c`
+
+Concepts
+`flask import-sheet https://docs.google.com/spreadsheets/d/1ks8NrkSLjAEc7F2ItEdBFPC-pdeuaET0QCvKMIiabRA/edit#gid=274539529 topic -b lore.pub/t -b helmgast.se/neotech -s canon -a "existence( this:concept, helmgast.se/neotech:world)" -l 0 -c`
 
 ### Neotech eqip list
 Import from Sheets.
 Considered canon, authorless, published by Helmgast, in Swedish.
 
+`flask import-sheet https://docs.google.com/spreadsheets/d/1giESsNOtvc0RcZzBsBifSlo8Y0wKiXvN7Jzn23nDLgA/edit#gid=1671999269 topic -b lore.pub/t -b helmgast.se/neotech -s canon -a "existence( this:concept, helmgast.se/neotech:world)" -l 0 -c`
+
 ### PRD Zones
 Import from Sheets, plus add map-functionality.
 Considered canon, authorless, published by Helmgast, in Swedish or English (depending).
+
+`flask import-sheet https://docs.google.com/spreadsheets/d/1AjL2A-UdD2u6wku9_xtf0dETkKvgA_OQmrKLcibzKgw/edit#gid=297890217 topic -b lore.pub/t -b helmgast.se/neotech -s canon -a "existence( this:concept, helmgast.se/neotech:world)" -l 0 -c`
+
+### Existing articles
+
+Import existing articles as topics and make things Just Work (TM). But this requires editable topics, which will take some time to fix.
+
+### Finders Keepers items
+TBD
 
 ### Kartor från kartpaket
 Already imported online, but without any visual assets. Needs the shortlink to connect to topics to not break existing QR-kodes!
 Considered canon, authorless, published by Helmgast, in Swedish.
 
 ### Neotech chargen
-Already imported (not as topics), but need new data sheet and checking on it.
+Already imported (not as topics), but need new data sheet and treat characters as topics.
 
 ### Kampanj
 Import from Wordpress archive to Markdown repo.

@@ -1,4 +1,3 @@
-from ctypes import ArgumentError
 import json
 import logging
 import re
@@ -6,28 +5,20 @@ from datetime import datetime, timedelta
 from typing import List, Union, Any
 from os.path import join
 
-from bson.dbref import DBRef
 from flask import current_app, g, url_for
 from flask_babel import lazy_gettext as _
 from mongoengine import (
     DENY,
     NULLIFY,
-    BooleanField,
     DateTimeField,
     Document,
-    DynamicField,
-    EmailField,
     EmbeddedDocument,
     EmbeddedDocumentListField,
-    FloatField,
-    IntField,
     LazyReferenceField,
     ListField,
     StringField,
-    URLField,
 )
 from mongoengine.base import LazyReference
-from mongoengine.errors import DoesNotExist
 from mongoengine.queryset.queryset import QuerySet
 
 from lore.model.misc import (
@@ -49,12 +40,12 @@ def get_id(topic):
         return str(topic)
 
 
-def clean_scopes(scopes):
+def clean_scopes(scopes, remove_scope_set=set()):
     if scopes is None:
         scopes = []
     else:
         # Remove falsy scopes, remove duplicates and sort
-        scopes = sorted(set([s for s in scopes if s]))  # Remove empty strings and similar in scopes
+        scopes = sorted(set([s for s in scopes if s]) - remove_scope_set)  # Remove empty strings and similar in scopes
     return scopes
 
 
@@ -63,6 +54,7 @@ def scopes_to_str(scopes):
 
 
 LORE_BASE = "lore.pub/t/"
+LANG_SCOPES = set([f"{LORE_BASE}sv", f"{LORE_BASE}en"])
 
 
 class Name(EmbeddedDocument):
@@ -85,8 +77,13 @@ class Occurrence(EmbeddedDocument):
         return users[0] if users else None
 
     def contribution_scope(self):
-        contributions = [s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}]
-        return contributions[0] if contributions else None
+        contributions = [
+            s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}
+        ]
+        try:
+            return contributions[0].pk.rsplit("/")[-1]
+        except Exception:
+            return None
 
     def __repr__(self):
         out = self.kind.pk if self.kind else "occurrence"
@@ -107,7 +104,9 @@ class Association(EmbeddedDocument):
     scopes = ListField(LazyReferenceField("Topic"))  # Expected to always be sorted
 
     def contribution_scope(self):
-        contributions = [s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}]
+        contributions = [
+            s for s in self.scopes if s.pk in {f"{LORE_BASE}canon", f"{LORE_BASE}community", f"{LORE_BASE}contrib"}
+        ]
         return contributions[0] if contributions else None
 
     def __repr__(self):
@@ -239,7 +238,14 @@ class Topic(Document):
     # TODO consider using https://docs.mongoengine.org/apireference.html#embedded-document-querying to query
     # lists of names, occ, ass
 
-    def find_names(self, name: str = unset, scopes: Any = unset, first: bool = False, indices: bool = False):
+    def find_names(
+        self,
+        name: str = unset,
+        scopes: Any = unset,
+        first: bool = False,
+        indices: bool = False,
+        case_insensitive=False,
+    ):
         """Finds names on this topic that matches the complete or partial arguments.
         Returns a list.
         """
@@ -249,12 +255,13 @@ class Topic(Document):
         # Scopes match if provided scopes is a subset of the name's scopes
         found = []
         for i, x in enumerate(self.names):
-            if (name == unset or name == x.name) and (scopes == unset or scopes <= set(map(get_id, x.scopes))):
+            if (name == unset or name == x.name or (case_insensitive and name.lower() == x.name.lower())) and (
+                scopes == unset or scopes <= set(map(get_id, x.scopes))
+            ):
                 found.append((i, x)) if indices else found.append(x)
                 if first:  # Return early for speed
                     return found[0]
-
-        return found if not first else None
+        return found if not first else (None if not indices else -1, None)
 
     def find_occurrences(
         self,
@@ -314,6 +321,38 @@ class Topic(Document):
                     return found[0]
         return found if not first else None
 
+    def occurrences_grouped(self):
+        groups = {
+            "wide_image": [],
+            "heading_image": [],
+            "card_image": [],
+            "description": [],
+            "article": [],
+            "bibref": [],
+            "stat": [],
+            "rest": [],
+        }
+        for occ in self.occurrences:
+            if occ.kind.pk == f"{LORE_BASE}wide_image":
+                groups["wide_image"].append(occ)
+            if occ.kind.pk == f"{LORE_BASE}heading_image":
+                groups["heading_image"].append(occ)
+            elif occ.kind.pk in [f"{LORE_BASE}card_image", f"{LORE_BASE}map_point", f"{LORE_BASE}image"]:
+                groups["card_image"].append(occ)
+            elif occ.kind.pk == f"{LORE_BASE}description":
+                groups["description"].append(occ)
+            elif occ.kind.pk == f"{LORE_BASE}article":
+                groups["article"].append(occ)
+            elif occ.kind.pk == f"{LORE_BASE}bibref":
+                groups["bibref"].append(occ)
+            elif occ.kind.pk == f"{LORE_BASE}stat" or (
+                occ.content and len(occ.content) < 150 and len(occ.content) > 0
+            ):
+                groups["stat"].append(occ)
+            else:
+                groups["rest"].append(occ)
+        return groups
+
     def associations_by_r1(self, topic_dict=None):
         out = {}
         for a in self.associations:
@@ -322,6 +361,27 @@ class Topic(Document):
             for ass in out.values():
                 ass.sort(key=lambda a: topic_dict.get(a.t2.pk).name if a.t2.pk in topic_dict else a.t2.pk)
         return out
+
+    # "nodes":[
+    # 		{"name":"node1","group":1, "url": "https://apple.com"},
+    # 		{"name":"node2","group":2, "url": "https://google.com"},
+    # 		{"name":"node3","group":2},
+    # 		{"name":"node4","group":3}
+    # 	],
+    # 	"links":[
+    # 		{"source":2,"target":1,"weight":1},
+    # 		{"source":0,"target":2,"weight":3}
+    # 	]
+    def associations_as_graph(self, topic_dict=None):
+        nodes = []
+        links = []
+        nodes.append({"id": self.pk, "name": self.name})
+        for i, a in enumerate(self.associations):
+            at: Topic = topic_dict.get(a.t2.pk, None)
+            if at:
+                nodes.append({"id": a.t2.pk, "name": at.name, "url": at.as_article_url()})
+                links.append({"source": 0, "target": i + 1})
+        return {"nodes": nodes, "links": links}
 
     def query_all_referenced_topics(self) -> QuerySet:
         topics_to_get = {self.kind.pk} if self.kind else set()
@@ -350,13 +410,18 @@ class Topic(Document):
         scopes -- a list of topic id strings
         """
         if not name:
-            raise ArgumentError("Expected a name, got nothing")
+            raise ValueError("Expected a name, got nothing")
         if not isinstance(name, str):
             name = str(name)
         scopes = clean_scopes(scopes)
 
-        found = self.find_names(name, scopes, first=True)
-        if not found:
+        at, found = self.find_names(name, scopes, first=True, case_insensitive=True, indices=True)
+        if found and name != found.name:  # found but in different case
+            if name[0].isupper() and found.name[0].islower():
+                self.names.insert(at, Name(name=name, scopes=scopes))
+            else:
+                self.names.insert(at + 1, Name(name=name, scopes=scopes))
+        elif not found:
             if index > -1:
                 self.names.insert(index, Name(name=name, scopes=scopes))
             else:
@@ -368,7 +433,7 @@ class Topic(Document):
         scopes -- a list of topic id strings
         """
         if uri is None and content is None:
-            raise ArgumentError("Need at least an URI or content")
+            raise ValueError("Need at least an URI or content")
         if kind is None:
             kind = f"{LORE_BASE}website" if uri else f"{LORE_BASE}description"
 
@@ -391,7 +456,7 @@ class Topic(Document):
         """ Add a new association from this topic to another topic.
         """
 
-        scopes = clean_scopes(scopes)
+        scopes = clean_scopes(scopes, remove_scope_set=LANG_SCOPES)
 
         found = self.find_associations(r1=r1, kind=kind, r2=r2, t2=t2 if isinstance(t2, str) else t2.id, first=True)
         if not found:
@@ -419,7 +484,9 @@ Topic.created_at.filter_options = datetime_delta_options(
 # instance( this_topic : r1, t2 : r2 ) / scope,scope2 or instance( this_topic, t2 )
 # https://regex101.com/r/VvDDdW/1/
 ltm_association_pattern = r"(.+?)\( ?(.+?)(?: ?: ?(.+?))?, ?(.+?)(?: ?: ?(.+?))? ?\)(?: ?\/ (.+))?"  # 6 capture groups
-PATH_OK = SLUG_OK + "/:.@"
+user_id = re.compile(r"^[^/@]+@[^/]+$")
+domain_id = re.compile(r"^[^./]+\.[^/]+\/")
+PATH_OK = SLUG_OK + "/@"
 
 # LTM basics https://ontopia.net/download/ltm.html
 # Topic: `[topic : instance = "Name"; "Sort-name" / norwegian @"http://www.ontopia.net/download/ltm.html"]`
@@ -446,12 +513,17 @@ class TopicFactory:
         self.default_associations = []
         # If we have default associations, parse a string like this
         # <instance>( this_topic : r1, t2 : r2 ) / scope,scope2
+        temp_default_associations = []
         for ass_string in default_associations or []:
             ass_kwargs = {}
             try:
                 parsed_ass = extract(ass_string, ltm_association_pattern, groups=6)
-                t2_id = self.basify(parsed_ass[3])
-                ass_kwargs["t2"] = topic_dict.setdefault(t2_id, Topic(id=t2_id))  # Other_topic
+
+                if domain_id.match(parsed_ass[3]) or user_id.match(parsed_ass[3]):
+                    ass_kwargs["t2"] = self.make_topic(id=parsed_ass[3]).pk
+                else:
+                    ass_kwargs["t2"] = self.make_topic(names=parsed_ass[3]).pk  # Other_topic
+
                 ass_kwargs["kind"] = self.basify(parsed_ass[0])
                 if parsed_ass[2]:
                     ass_kwargs["r1"] = self.basify(parsed_ass[2])
@@ -462,7 +534,9 @@ class TopicFactory:
                     ass_kwargs["scopes"] += [self.basify(s) for s in parsed_ass[5].split(",")]
             except Exception as e:
                 raise ValueError(f"Couldn't parse association string '{ass_string}'", e)
-            self.default_associations.append(ass_kwargs)
+            temp_default_associations.append(ass_kwargs)
+        # Copy last, as we may call make_topic within above loop that would reference self.default_associations
+        self.default_associations.extend(temp_default_associations)
 
     def basify(self, id: str) -> str:
         """Joins the ID with each string in default_bases list in order, until it matches an existing topic,
@@ -481,7 +555,7 @@ class TopicFactory:
         # We assume id with / or @ is a full domain, which implicitly excludes basifying ids that have path components but no domain
         if not id:
             raise ValueError("Empty ID given")
-        elif not self.default_bases or re.match(r"^[^\/@]+@[^\/]+$", id) or "/" in id:
+        elif not self.default_bases or domain_id.match(id) or user_id.match(id):
             return str(id)  # Already a full ID
         else:
             joined = ""
@@ -489,11 +563,20 @@ class TopicFactory:
             for base in self.default_bases:
                 # if @ in id, it's a user, so id@base.com . Otherwise base.com/id
                 joined = id + base.split("/", 1)[0] if user else join(base, id)
-                if joined in self.topic_dict:
+                if self.fetch_topic(joined) is not None:
                     break
             return joined  # Will intentionally be the last one if none of the bases existed
 
-    def make_topic(self, id=None, names=None, desc=None, kind=None, created_at=None) -> Topic:
+    def fetch_topic(self, id: str) -> Topic:
+        if id in self.topic_dict:
+            return self.topic_dict[id]
+        else:
+            t = Topic.objects(id=id).first()
+            # Even if t is None, cache it, as it will save a roundtrip to DB
+            self.topic_dict[id] = t
+            return t
+
+    def make_topic(self, id=None, names=None, desc=None, kind=None, created_at=None, is_user=False) -> Topic:
 
         if not names:
             names = []
@@ -504,22 +587,28 @@ class TopicFactory:
             if isinstance(name, tuple):
                 name = name[0]
             if name:
-                id = slugify(name, ok=PATH_OK)
+                # can't allow / in this slug, because names can include / id would then look like absolute (can't be basified)
+                id = slugify(name)
         if not id:
             raise ValueError("Missing ID: no id given, no valid name given")
         else:
-            id = slugify(id, ok=PATH_OK)  # Make sure ID uses valid characters
+            if is_user:
+                id += "@"
+            based_id = self.basify(slugify(id, ok=PATH_OK))  # Make sure ID uses valid characters
 
-        id = self.basify(id)
+        if names and based_id == names[0]:
+            # Special case, we were given a name but it was a basified ID. Therefore, don't treat it as name
+            names.pop(0)
 
         creating = False
-        topic: Topic = self.topic_dict.get(id, None)
+        topic: Topic = self.fetch_topic(based_id)
         if topic is None:
             creating = True
-            topic = Topic(id=id)
-            self.topic_dict[id] = topic
+            topic = Topic(id=based_id)
+            # TODO save it?
+            self.topic_dict[based_id] = topic
 
-        if id.startswith(LORE_BASE) and not creating:
+        if based_id.startswith(LORE_BASE) and not creating:
             # Don't modify LORE_BASE topics, they should always exist in correct format from before
             return topic
 
@@ -568,16 +657,17 @@ class TopicFactory:
         self.make_topic(id=role2_id, names=role2, kind=f"{LORE_BASE}role")
 
 
-def create_basic_topics():
-    basic_topics = {t.pk: t for t in Topic.objects(id__startswith=LORE_BASE)}
+def create_basic_topics(import_from_db=True):
+    basic_topics = {t.pk: t for t in Topic.objects(id__startswith=LORE_BASE)} if import_from_db else {}
 
     factory = TopicFactory(default_bases=[LORE_BASE], default_scopes=["en"], topic_dict=basic_topics)
     T = factory.make_topic
     A = factory.make_association
 
     # Scope topics
-    T("en", [("English", "en"), ("Engelska", "sv")])
-    T("sv", [("Swedish", "en"), ("Svenska", "sv")])
+    T("language", "Language")
+    T("en", [("English", "en"), ("Engelska", "sv")], kind="language")
+    T("sv", [("Swedish", "en"), ("Svenska", "sv")], kind="language")
     T("canon", "Canon content", "Denotes a characteristic as canon")
     T("contrib", "Contributed content", "Denotes a characteristic as contributed, not yet approved")
     T("community", "Community content", "Denotes a characteristic as approved community material")
@@ -589,37 +679,58 @@ def create_basic_topics():
     # erroneous, an incorrect alternate form of the base name
 
     # Occurrence instanceOfs
-    T("article", "Article")
-    T("audio", "Audio")
-    T("bibref", "Bibliographic reference")
-    T("comment", "Comment")
-    T("date_of_birth", "Date of birth")
-    T("date_of_death", "Date of death")
-    T("started_at", "Started at")
-    T("stopped_at", "Stopped at")
-    T("description", "Description")
-    T("gallery", "Gallery")  # This assumes to point to a normal URL that contains a gallery
-    T("image", "Image")
-    # Types of images:
-    # Cover or Card (standing), Wide, Icon
+    T("occurrence", "Occurrence")
 
-    T("video", "Video")
-    T("website", "Website")
-    T("google_doc", "Google Document")  # Special GDoc occurrence to populate the article
-    T("qr_code", "QR Code")
-    T("prev", "Previous")
-    T("next", "Next")
-    T("pdf", "PDF")
-    T("3d_model", "3D model")
-    T("map_point", "Map point")
-    T("map_geopoint", "Map geopoint")
-    T("map_polygon", "Map polygon")  # Easy support for tile?
-    T("map_geopolygon", "Map geopolygon")
-    T("version", "Version")
-    T("creator", "Creator")  # Doesn't represent the creator of other occurrences
+    T("article", "Article", kind="occurrence")
+    T("audio", "Audio", kind="occurrence")
+    T("bibref", "Bibliographic reference", kind="occurrence")
+    T("comment", "Comment", kind="occurrence")
+    T("date_of_birth", "Date of birth", kind="occurrence")
+    T("date_of_death", "Date of death", kind="occurrence")
+    T("started_at", "Started at", kind="occurrence")
+    T("stopped_at", "Stopped at", kind="occurrence")
+    T("description", "Description", kind="occurrence")
+    T("gallery", "Gallery", kind="occurrence")  # This assumes to point to a normal URL that contains a gallery
+    T("image", "Image", kind="occurrence")
+    # Types of images:
+    T("card_image", "Card", "An image to use for display as card or square.", kind="image")
+    T(
+        "wide_image",
+        "Wide",
+        "An image to use when displaying wide, such as a page header or full-width feature",
+        kind="image",
+    )
+    T(
+        "heading_image",
+        "Heading Image",
+        "A wide image that comes with text or logo such that it shouldn't be cut off or covered with text.",
+        kind="image",
+    )
+    T(
+        "icon_image",
+        "Icon",
+        "An image to use for display as square icon, typically in sizes less than 512x512 px. Otherwise Card will be used.",
+        kind="image",
+    )
+
+    T("video", "Video", kind="occurrence")
+    T("website", "Website", kind="occurrence")
+    T("google_doc", "Google Document", kind="occurrence")  # Special GDoc occurrence to populate the article
+    T("qr_code", "QR Code", kind="occurrence")
+    T("pdf", "PDF", kind="occurrence")
+    T("3d_model", "3D model", kind="occurrence")
+    T("map_point", "Map point", kind="occurrence")
+    T("map_geopoint", "Map geopoint", kind="occurrence")
+    T("map_polygon", "Map polygon", kind="occurrence")  # Easy support for tile?
+    T("map_geopolygon", "Map geopolygon", kind="occurrence")
+    T("version", "Version", kind="occurrence")
+    T("creator", "Creator", kind="occurrence")  # Doesn't represent the creator of other occurrences
+    T("credit", "Credit", kind="occurrence")
     # Maybe topics don't have a license, the resource have a license?
     # In that case, it has to be a scope or managed at the source
-    T("license", "License")
+    T("license", "License", kind="occurrence")
+    T("theme", "Theme", kind="occurrence")
+    T("stat", "Stat", "A short property or statistic for this topic", kind="occurrence")
 
     # Correct setup of association topics
     # Create an association topic, two role topics, and
@@ -644,6 +755,7 @@ def create_basic_topics():
     A("Categorization", "Sample", "Categorized as", "Category", "Includes")
     A("Existence", "Concept", "Exists in", "World", "Embodies")
     A("Inclusion", "Part", "Part of", "Whole", "Comprises")
+    A("Ownership", "Belonging", "Belongs to", "Owner", "Owns")
     A("Location", "Locale", "Located in", "Area", "Contains")
     A("Appearance", "Character", "Appears in", "Work", "Is about")
     A("Birth", "Person", "Born in", "Birthplace", "Birtplace of")
@@ -655,19 +767,68 @@ def create_basic_topics():
     A("Marriage", "Spouse", "Espouses", "Spouse", "Espouses")
     A("Rulership", "Ruler", "Rules", "Demesne", "Demesne of")
     A("Membership", "Member", "Member of", "Organization", "Includes")
+    A("Correlation", "Relation", "Often appears with", "Relation", "Often appears with")
+
     # TODO handle how to write multi-lingual association assignments
 
     # Lore topics, all world related topics should be one of these (or a subclass of them)
-    T("world", "World")  # How to link all topics to a world? It has to use a basic association. Or we use the id path?
-    T("user", "User")
-    T("publisher", "Publisher")
-    T("agent", "Agent", "An entity that can act, such as a person, monster, god, etc")
-    T("character", "Character", "A player character")
-    T("domain", "Domain", "A country, state, area on a map")
-    T("place", "Place", "A specific location, a point on a map")
-    T("concept", "Concept", "A term or something intangible")
-    T("faction", "Faction", "A group of people with an agenda")
-    T("item", "Item")
-    T("event", "Event")
+    T("kind", "Kind", "Root topic for kinds of topics, e.g. what topics can be an instance of")
+    T(
+        "world", "World", "A fictional world", kind="kind"
+    )  # How to link all topics to a world? It has to use a basic association. Or we use the id path?
+    T("user", "User", "A Lore user", kind="kind")
+    T("publisher", "Publisher", "A lore publisher", kind="kind")
+    T("agent", "Agent", "An entity that can act, such as a person, monster, god, etc", kind="kind")
+    T("entity", "Entity", "A non-humanoid agent such as a monster, a god, a robot, etc.", kind="agent")
+    T("person", "Person", "A humanoid agent", kind="agent")
+    T("character", "Character", "A player character", kind="agent")
+
+    T("domain", "Domain", "A country, state, area on a map", kind="kind")
+    T("place", "Place", "A specific location, a point on a map", kind="kind")
+    T("concept", "Concept", "A term or something intangible", kind="kind")
+    T(
+        "term",
+        "Term",
+        "A word or phrase in a particular kind of language, vernacular or field of knowledge",
+        kind="concept",
+    )
+    T("genre", "Genre", "Describing a set of creative works with common theme and style", kind="term")
+    T("music_genre", "Music genre", "Describing a style of music", kind="genre")
+    T(
+        "brand",
+        "Brand",
+        "A type of product or service by a particular producer under a particular name",
+        kind="concept",
+    )
+    T("service", "Service", "A service offering", kind="concept")
+
+    T("faction", "Faction", "A group of people with an agenda", kind="kind")  # Also "Organization"?
+    T(
+        "corporation",
+        "Corporation",
+        "A large company or group of companies acting and recognized as a single entity",
+        kind="faction",
+    )
+    T("music_group", "Music group", "A group of people playing music", kind="faction")
+
+    T("item", "Item", "An ownable item", kind="kind")  # Also "Thing"?
+    T(
+        "drug",
+        "Drug",
+        "A medicine or other substance which has a physiological effect when introduced into the body.",
+        kind="item",
+    )
+    T("weapon", "Weapon", "An item designed or used for inflicting bodily harm or physical damage.", kind="item")
+    T("armor", "Armor", "An item designed to protect the bearer from bodily harm.", kind="item")
+    T("clothing", "Clothing", "An item to be worn on the body.", kind="item")
+    T("food", "Food", "Edibles.", kind="item")
+    T(
+        "vehicle",
+        "Vehicle",
+        "A thing used for transporting people or goods, especially on land, such as a car, lorry, or cart.",
+        kind="item",
+    )
+
+    T("event", "Event", "Something that happened, with a beginning and an end", kind="kind")
 
     return basic_topics

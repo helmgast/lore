@@ -1,7 +1,8 @@
 import pytest
 
+
 @pytest.fixture()
-def basic_app_data(app_client):
+def basic_app_data(app_client, mongomock):
     from lore.model.world import Publisher, World, Article
 
     db = object()
@@ -15,5 +16,6 @@ def basic_app_data(app_client):
 
     return db
 
-def test_publishers_view(app_client, basic_app_data):
-    pass
+
+# def test_publishers_view(app_client, basic_app_data):
+#     pass

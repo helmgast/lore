@@ -472,6 +472,7 @@ class ListResponse(ResourceResponse):
         **{
             "page": lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
             "per_page": lambda x: int(x) if x.lstrip("-").isdigit() and int(x) >= -1 else 15,
+            "random": lambda x: int(x) if x.isdigit() and int(x) > 0 else 0,
             "view": lambda x: x.lower() if x.lower() in ["card", "table", "list", "index"] else None,
             "order_by": lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
             "q": lambda x: x,
@@ -544,7 +545,7 @@ class ListResponse(ResourceResponse):
                 # field = self.model._fields[k.split("__", 1)[0]]
                 # if k.endswith("__size"):
                 #     values = [int(v) for v in values]
-                # q = Q(**{k: self.slug_to_id(field, values[0])})                    
+                # q = Q(**{k: self.slug_to_id(field, values[0])})
                 q = Q(**{k: values[0]})
                 # if len(values) > 1:  # multiple values for this field, combine with or
                 #     for v in values[1:]:
@@ -601,6 +602,9 @@ class ListResponse(ResourceResponse):
                 aggregation += sort_aggregation
             else:
                 self.query = self.query.order_by(*self.args["order_by"])
+
+        if self.args["random"] > 0:
+            aggregation.append({"$sample": {"size": self.args["random"]}})
 
         self.query = self.pagination.apply_to_query(self.query)
         if aggregation:

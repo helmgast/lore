@@ -13,6 +13,11 @@
     {% set title = article.title %}
 {% endif %}
 
+{% if topic %}
+{# need to remove occurrences not used #}
+{% set occ_groups = topic.occurrences_grouped() %}
+{% endif %}
+
 {% block cssimports %}
     {{ super() }}
     {% if article and article.get_header_image %}
@@ -21,6 +26,12 @@
             background-image: url( {{ article.get_header_image.feature_url(format='wide') }} )
         }
     </style>
+    {% elif occ_groups and occ_groups["heading_image"] %}
+    <style>
+        .page-header-hero {
+            background-image: url( {{ cloudinary_url(occ_groups["heading_image"][0].uri, format='wide') }} )
+        }
+    </style>    
     {% endif %}
 {% endblock %}
 
@@ -93,7 +104,7 @@
 {# LAYOUT #}
 
 {% block header_class -%}
-    {% if article and article.get_header_image %}page-header-hero{% endif %}
+    {% if (article and article.get_header_image) or (occ_groups and (occ_groups["wide_image"] or occ_groups["heading_image"])) %}page-header-hero{% endif %}
     {% if article and not article_form and article.hide_header_text %}page-header-hide-text{% endif %}
 {%- endblock %}
 
@@ -122,7 +133,7 @@
 {% block intro_class %}col-lg-2 col-md-12 col-sm-12 intro-aside{% endblock %}
 {% block content_class %}col-lg-7 col-md-8 col-sm-12 content{% endblock %}
 
-{% block post_content %}
+{% block end_main %}
     {% if args.get('intent', None) %}
         </form>
     {% endif %}
@@ -132,14 +143,6 @@
 
 {% block content_title %}{{ title }}{% endblock %}
 {% block content_tagline %}{% endblock %}
-
-{% if topic %}
-{# need to remove occurrences not used #}
-{% set creator = topic.find_occurrences(kind="lore.pub/t/creator", first=True) %}
-{% set topic_article = topic.article %}
-{% set map_point = topic.find_occurrences(kind="lore.pub/t/map_point", first=True) %}
-{% set rest_of_content = topic.occurrences_except_content([creator.content, topic_article, map_point.content]) %}
-{% endif %}
 
 {% block intro %}
     {% if not args.get('intent', None) %}
@@ -205,6 +208,9 @@
         <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
         </div>
         {% endif %}
+        {% if topic %}
+        <div class="well" style="padding: 5px"><small><em>{{ _("This is a read-only preview of <a href=\"%(url)s\">Helmgast's Lore</a>, a database of Helmgast's worlds", url="https://docs.google.com/presentation/d/10eiuf4RGQXO7J6DVP3xWVH91XBhJHI6-9Y9y-GWn9_s") }}</em></small></div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -217,26 +223,57 @@
         </article>
     {% else %}
         <article class="article-text">
-        {% if not topic.article or article.content %}
-        <section class="{{ 'drop-caps' if article.content|first_p_length >300 }}">
-            {{ article.content|default(_('No content yet'), true)|safe|markdown }}
-        </section>
+        {% if occ_groups %}
+
+        {% for desc in occ_groups["description"]|filter_by_any_scopes("lore.pub/t/"+get_locale().language) %}
+        <section><em>
+            {# {{ MACRO.content_section_header(desc, topic_names) }} #}
+            {{ desc.content|markdown }}
+        </em></section>
+        {% endfor %}
+        {% for img in occ_groups["card_image"] %}
+        {% if img.kind.pk.endswith("map_point") %}
+        <div class="map-square"><img class="img-responsive" src="{{img.uri}}"><span class="glyphicon glyphicon-map-marker"></span></div>
+        {% else %}
+        {# <ul class="gallery gallery-card">
+            <li class="hide">gallery-card</li>
+            <li class="gallery-item" title="This is the card image, a good place to have a longer description here" style="width: 25%; flex-grow: 1;"><img alt="This is the card image, a good place to have a longer description here" src="{{cloudinary_url(img.uri, format='card')}}"></li>
+        </ul> #}
+        <ul class="gallery gallery-center">
+            <li class="gallery-item" title="{{img.content|default('', true)}}"><img alt="{{img.content|default('', true)}}" src="{{cloudinary_url(img.uri, format='card')}}"></li>
+        </ul>
         {% endif %}
-        {% if topic.article %}
-        <section>
-            <ul class="nav nav-tabs nav-occurrence">
-                <li role="presentation" class="nav-info canon">{% trans %}Canon content{% endtrans %}</li>
-            </ul>
-            {{ topic.article|default(_('No content yet'), true)|safe|markdown }}
-        </section>
+        {% endfor %}
         {% endif %}
 
-        {% for o in rest_of_content %}
+        {% if not topic.article or article.content %}
+        <section class="{{ 'drop-caps' if article.content|first_p_length >300 }}">
+            {{ article.content|safe|markdown }}
+        </section>
+        {% endif %}
+        {# TOPIC CONTENT #}
+
+        {% if occ_groups %}
+
+        {% for article in occ_groups["article"] %}
+        <section>
+            {{ MACRO.content_section_header(article, topic_names) }}
+            {{ article.content|safe|markdown }}
+        </section>
+        {% endfor %}
+
+        {% if occ_groups["bibref"] %}
+        <h3>{% trans %}References{% endtrans %}</h3>
+        <dl class="book-index">
+        {% for bibref in occ_groups["bibref"] %}
+        <dd class="index-row"><span class="index-term">{{bibref.content|replace(": ", '</span><span class="index-page">')|safe}}</span></dd>
+        {% endfor %}
+        </dl>
+        {% endif %}
+
+        {% for o in occ_groups["rest"] %}
             <section>
-            <ul class="nav nav-tabs nav-occurrence">
-                <li role="presentation" class="nav-info {{o.contribution_scope().pk.rsplit('/')[-1]}}">{% trans %}Community content{% endtrans %} {% if o.creator() -%} {% trans %}by{% endtrans %} {{o.creator().pk|lookup(topic_names)|attr("name")|replace("@", "")}}{% endif %}</li>
-                <li role="presentation" class="pull-right">{%- if o.uri -%}<a href="{{o.uri}}">source</a>{%- endif -%}</li>
-            </ul>
+            {{ MACRO.content_section_header(o, topic_names) }}
 
             {% if o.content %}
             {{o.content|safe|markdown }}
@@ -252,8 +289,13 @@
             {% endif %}
             </section>
         {% endfor %}
-        </article>
 
+        {% endif %}
+
+        </article>
+        {# <pre>
+        {{ occ_groups|pprint }}
+        </pre> #}
     {% endif %}
     {% if args.get('intent', None) %}
         <ul class="action-buttons action-buttons-footer">
@@ -344,7 +386,6 @@
         </div>
     {% else %}
         {% if topic %}
-            <div class="well"><small><em>{% trans %}This is a read-only preview of Helmgast's Lore, a database of Helmgast's worlds{% endtrans %}</em></small></div>
             {# <ul class="nav nav-pills nav-xs">
                 <li role="presentation" class="active"><a class="btn btn-default btn-xs" href="#canon" data-toggle="tab">Canon</a></li>
                 <li role="presentation"><a class="btn btn-success btn-xs" href="#community" data-toggle="tab">Ola</a></li>
@@ -363,8 +404,16 @@
             {% endfor %}
             </ul>
             {% endif %}
-            {% if map_point %}
-            <div class="map-square"><img class="img-responsive" src="{{map_point.uri}}"><span class="glyphicon glyphicon-map-marker"></span></div>
+
+            {% if occ_groups["stat"] %}
+            <table class="table table-condensed">
+                {% for stat in occ_groups["stat"] %}
+                <tr>
+                    <th scope="row">{{stat.kind.pk|lookup(topic_names)|attr("name")}}</th>
+                    <td>{{stat.content}}</td>
+                </tr>
+                {% endfor %}
+            </table>
             {% endif %}
 
             {% set ass_dict = topic.associations_by_r1(topic_names) %}
@@ -388,6 +437,8 @@
                 {% if ass|length >= 30 %}</div>{% endif %}
                 </div>
             {% endfor %}
+
+            <div id="graph"></div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -396,5 +447,91 @@
     {{ super() }}
     {% if article %}
         {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
+    {% endif %}
+    {% if topic %}
+    <script src="https://d3js.org/d3.v2.min.js?2.9.3"></script>
+    <style>
+
+    #graph {
+        border: 1px solid grey;
+        margin: 5px;
+    }
+
+    .link {
+    stroke: #aaa;
+    }
+
+    .node text {
+    stroke:#333;
+    cursos:pointer;
+    }
+
+    .node circle{
+    stroke:#fff;
+    stroke-width:3px;
+    fill:#555;
+    }
+
+    </style>
+    <script>
+
+    var json = {{ topic.associations_as_graph(topic_names)|tojson }}
+
+    var width = 250,
+        height = 400
+
+    var svg = d3.select("#graph").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var force = d3.layout.force()
+        .gravity(.05)
+        .distance(100)
+        .charge(-100)
+        .size([width-50, height]);
+
+    if (json) {
+        force
+            .nodes(json.nodes)
+            .links(json.links)
+            .start();
+
+        var link = svg.selectAll(".link")
+            .data(json.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", function(d) { return Math.sqrt(d.weight); });
+
+        var node = svg.selectAll(".node")
+            .data(json.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .style('cursor', 'pointer')
+            .call(force.drag).on("click", function (d) {
+                location.href = d.url;
+            });
+
+        node.append("circle")
+            .attr("r","5");
+
+        node.append("text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function(d) { return d.name });
+
+        force.on("tick", function() {
+            link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+    }
+    
+
+    </script>
+
+
     {% endif %}
 {% endblock %}

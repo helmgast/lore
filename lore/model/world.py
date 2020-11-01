@@ -574,7 +574,7 @@ Article.language.filter_options = choice_options("language", Article.language.ch
 Article.type.filter_options = choice_options("type", Article.type.choices)
 Article.status.filter_options = choice_options("status", Article.status.choices)
 Article.world.filter_options = reference_options(
-    "world", Article, extra_options=[FilterOption(label=_("None"), kwargs={"world": "meta"})]
+    "world", Article, id_attr="pk", extra_options=[FilterOption(label=_("None"), kwargs={"world__not__exists": "1"})]
 )
 Article.tags.filter_options = distinct_options("tags", Article)
 Article.created_date.filter_options = datetime_delta_options(

@@ -402,6 +402,7 @@ class ArticlesView(ResourceView):
             "status",
             ("world.title_i18n.sv", Article.world.verbose_name),
             ("world.title_i18n.en", Article.world.verbose_name),
+            "world",
         ],
     )
     # list_arg_parser = filterable_fields_parser(["title", "type", "creator.realname", "created_date", "tags", "status", "world"])
@@ -563,7 +564,7 @@ class ArticlesView(ResourceView):
         r.set_theme("publisher", publisher.theme)
         r.set_theme("world", world.theme)
         r.auth_or_abort(res=(world if world_ != "meta" else publisher))
-        r.args["per_page"] = 60
+        r.args["per_page"] = 90
         if r.args["view"] == "index" and "names__0__name__istartswith" not in r.args["fields"]:
             # Set default index letter to A
             r.args["fields"]["names__0__name__istartswith"] = "A"
@@ -707,6 +708,9 @@ class ArticlesView(ResourceView):
                     content="",
                     type="topic",
                 )
+                if topic_theme := topic.find_occurrences(kind="lore.pub/t/theme", first=True):
+                    article.theme = topic_theme.content
+
                 # Executing this will cache all topics, hopefully in just one call? TODO check
                 # cache = {t.pk: t for t in topic.query_all_referenced_topics()}
                 topic_names = {

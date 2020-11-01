@@ -200,6 +200,21 @@ cloudinary_transforms = {
 }
 
 
+def cloudinary_url(url, format=None, transform="", **kwargs):
+    transform += cloudinary_transforms.get(format, "")
+    cloudinary = current_app.config.get("CLOUDINARY_DOMAIN")
+    if cloudinary:
+        if not current_app.config["PRODUCTION"]:
+            url = url.replace(".test", "")
+        if transform and not transform.endswith("/"):
+            transform += "/"
+        # Google Drive URLs doesn't resolve for Cloudinary, but the thumb might
+        feature_url = f"https://res.cloudinary.com/{cloudinary}/image/fetch/{transform}{quote(url)}"
+        return feature_url
+    else:
+        return url
+
+
 class FileAsset(Document):
     slug = StringField(max_length=99, unique=True)
     meta = {
@@ -253,25 +268,32 @@ class FileAsset(Document):
         return md5.hexdigest()
 
     def feature_url(self, **kwargs):
+        kwargs["_external"] = True
         format = kwargs.pop("format", None)
         transform = kwargs.pop("transform", "")
-        transform += cloudinary_transforms.get(format, "")
-        cloudinary = current_app.config.get("CLOUDINARY_DOMAIN")
-        if cloudinary:
-            if self.source_file_url:
-                url = self.source_file_url
-            else:
-                kwargs["_external"] = True
-                url = url_for("image_thumb", slug=self.slug, **kwargs)
-                if not current_app.config["PRODUCTION"]:
-                    url = url.replace(".test", "")
-            if transform and not transform.endswith("/"):
-                transform += "/"
-            # Google Drive URLs doesn't resolve for Cloudinary, but the thumb might
-            feature_url = f"https://res.cloudinary.com/{cloudinary}/image/fetch/{transform}{quote(url)}"
-            return feature_url
-        else:
-            return url_for("image_thumb", slug=self.slug, **kwargs)
+
+        source_url = self.source_file_url or url_for("image_thumb", slug=self.slug, **kwargs)
+        return cloudinary_url(source_url, format=format, transform=transform)
+
+        # format = kwargs.pop("format", None)
+        # transform = kwargs.pop("transform", "")
+        # transform += cloudinary_transforms.get(format, "")
+        # cloudinary = current_app.config.get("CLOUDINARY_DOMAIN")
+        # if cloudinary:
+        #     if self.source_file_url:
+        #         url = self.source_file_url
+        #     else:
+        #         kwargs["_external"] = True
+        #         url = url_for("image_thumb", slug=self.slug, **kwargs)
+        #         if not current_app.config["PRODUCTION"]:
+        #             url = url.replace(".test", "")
+        #     if transform and not transform.endswith("/"):
+        #         transform += "/"
+        #     # Google Drive URLs doesn't resolve for Cloudinary, but the thumb might
+        #     feature_url = f"https://res.cloudinary.com/{cloudinary}/image/fetch/{transform}{quote(url)}"
+        #     return feature_url
+        # else:
+        #     return url_for("image_thumb", slug=self.slug, **kwargs)
 
     @property
     def thumb_url(self):

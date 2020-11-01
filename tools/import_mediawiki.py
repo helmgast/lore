@@ -163,6 +163,8 @@ def clean_headers(h):
     return h
 
 
+# TODO don't put occurences under links, should be root/occurrences/<type>
+# TODO don't hard wrap lines
 def job_wikitext_to_markdown(job, data):
     title, text = data["title"], data["text"]
     all_pages = job.context["all_pages"]
@@ -235,7 +237,7 @@ def job_wikitext_to_markdown(job, data):
             "-header_attributes",  # Don't write {#attribute} after headings
             "-simple_tables",  # Don't write simple table format
             "-link_attributes",  # Don't add attributes to links
-            "-inline_code_attributes",  # Don't add attributes toc ode
+            "-inline_code_attributes",  # Don't add attributes to code
             "-implicit_figures",  # Don't assume images with alt is a figure
             "-raw_attribute",  # Don't give attributes to raw content
             "-smart"

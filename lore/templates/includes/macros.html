@@ -100,6 +100,23 @@
 {% set status_glyphicons = {'draft':"inbox",'revision':"retweet",'published':"eye-open",'private':"lock",'archived':"folder-close"} %}
 {% set status_icons = {'draft':"\ue028",'revision':"\ue115",'published':"\ue105",'private':"\ue033",'archived':"\ue117"} %}
 
+{%- macro content_section_header(o, topic_names) -%}
+    {% set contrib_scope = o.contribution_scope() %}
+    <ul class="nav nav-tabs nav-occurrence">
+        {% if contrib_scope == "canon" %}
+            <li role="presentation" class="nav-info canon">{% trans %}Canon content{% endtrans %}
+        {% elif contrib_scope == "community" %}
+            <li role="presentation" class="nav-info community">{% trans %}Community content{% endtrans %}
+        {% else %}
+            <li role="presentation" class="nav-info community">{% trans %}Contrib content{% endtrans %}
+        {% endif %}
+        {% if o.creator() -%} {% trans %}by{% endtrans %} {{o.creator().pk|lookup(topic_names)|attr("name")|replace("@", "")}}{% endif %}</li>
+        {% if o.uri %}
+            <li role="presentation" class="pull-right">{%- if o.uri -%}<a href="{{o.uri}}">source</a>{%- endif -%}</li>
+        {% endif %}
+    </ul>
+{%- endmacro -%}
+
 {%- macro action_buttons(submit_title, cancel_title="Cancel", submit_class="primary") -%}
     <div class="actions">
         <input type="submit" class="btn {{ submit_class }}" value="{{ submit_title }}">

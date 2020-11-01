@@ -1,0 +1,391 @@
+{% extends "world/article_list.html" %}
+
+{% if topic %}
+{% set zone_id = topic.find_occurrences(kind="lore.pub/t/map_geopolygon", first=true) %}
+{% endif %}
+
+{% block cssimports %}
+    {{ super() }}
+
+<script>
+      HTMLCanvasElement.prototype.getContext = (function(origFn) {
+        return function(type, attributes) {
+          if (type === "webgl") {
+            attributes = Object.assign({}, attributes, {
+              preserveDrawingBuffer: true
+            });
+          }
+          return origFn.call(this, type, attributes);
+        };
+      })(HTMLCanvasElement.prototype.getContext);
+    </script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js"></script>
+    <script src="https://npmcdn.com/@turf/turf/turf.min.js"></script>
+    <link
+      href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+
+      #map {
+        width: 100%;
+        height: 750px;
+      }
+
+      #control {
+        display: none;
+      }
+
+    </style>
+{% endblock %}
+
+{% block post_content %}
+
+    <div id="map"></div>
+    <div id="control">
+      Type zone number on keyboard.<br>
+      Press 'a' to go to previous zone.<br>
+      Press 'd' to go to next zone.<br>
+      Press 's' to save as image.<br>
+      Zone: <span id="zone"></span><br>
+      <span id="zonename"></span><br>
+      <span id="zonedesc"></span><br>
+    </div>
+
+{% endblock %}
+
+{% block js_bottom %}
+    {{ super() }}
+
+<script>
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoicmlwcGVyZG9jIiwiYSI6ImNrMnh1b2pubTAxYXozbm52aWFjcXBhYnIifQ.5lMxnd8UNGgyJke6uOINCA";
+      var map = new mapboxgl.Map({
+        style: "mapbox://styles/mapbox/dark-v9",
+        center: [114.149, 22.286],
+        zoom: 15.5,
+        pitch: 45,
+        bearing: 0,
+        container: "map",
+        antialias: true
+      });
+
+      document.onkeydown = checkKey;
+      var key_number = '';
+      var key_timeout;
+
+      function checkKey(e) {
+
+          e = e || window.event;
+          clearTimeout(key_timeout);
+          let intkey = parseInt(e.keyCode);
+          if(intkey >= 49 && intkey <= 58) { // Number keys 0 to 9
+            key_number += (intkey-48).toString();
+            key_timeout = setTimeout( () => {
+              setZone(parseInt(key_number));
+              key_number = "";
+            },1000);
+          } else {
+            key_number = "";
+          }
+          if (intkey == 83) { // s
+            save();
+          } else if (intkey == 68) {// d
+            setZone(current_zone+1);
+          } else if (intkey == 65) {// a
+            setZone(current_zone-1);
+          }
+
+      }
+
+      var zones = {},
+        current_zone=-1;
+      var bounds = [112, 20, 116, 24]; // wsen
+      var zones_url =
+        "https://gist.githubusercontent.com/ripperdoc/451e5c36b608e665a0f2ac4be0354f97/raw/map.geojson";
+      const osmbuildings = tile =>
+        `https://data.osmbuildings.org/0.2/anonymous/tile/15/${tile[0]}/${tile[1]}.json`;
+
+      fetch(zones_url)
+        .then(r => r.json())
+        .then(r => (zones = r));
+
+      function save() {
+        map.getCanvas().toBlob(function(blob) {
+          var e = document.createEvent("MouseEvents"),
+            a = document.createElement("a");
+          a.download = `zone-${current_zone}.png`;
+          a.href = window.URL.createObjectURL(blob);
+          a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+          e.initMouseEvent(
+            "click",
+            true,
+            false,
+            window,
+            0,
+            0,
+            0,
+            0,
+            0,
+            false,
+            false,
+            false,
+            false,
+            0,
+            null
+          );
+          a.dispatchEvent(e);
+        });
+      }
+
+      function long2tile(lon) {
+        return Math.floor(((lon + 180) / 360) * Math.pow(2, 15));
+      }
+
+      function lat2tile(lat) {
+        return Math.floor(
+          ((1 -
+            Math.log(
+              Math.tan((lat * Math.PI) / 180) +
+                1 / Math.cos((lat * Math.PI) / 180)
+            ) /
+              Math.PI) /
+            2) *
+            Math.pow(2, 15)
+        );
+      }
+
+      function tileBbox(feature) {
+        var bbox = turf.bbox(feature);
+        var startx = 0,
+          starty = 0,
+          endx = 0,
+          endy = 0;
+        startx = long2tile(bbox[0]);
+        endx = long2tile(bbox[2]);
+        if (startx > endx) [startx, endx] = [endx, startx];
+        starty = lat2tile(bbox[1]);
+        endy = lat2tile(bbox[3]);
+        if (starty > endy) [starty, endy] = [endy, starty];
+        var out = [];
+        for (var x = startx; x <= endx; x++) {
+          for (var y = starty; y <= endy; y++) {
+            out.push([x, y]);
+          }
+        }
+        return out;
+      }
+
+      function fetchObj(url) {
+          return fetch(url).then(res => {
+            return (res.ok && res.status != 204) ? res.json() : {};
+          })
+      };
+
+      function randn_bm(min, max, skew) {
+        //https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+        var u = 0, v = 0;
+        while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+        while(v === 0) v = Math.random();
+        let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+
+        num = num / 10.0 + 0.5; // Translate to 0 -> 1
+        if (num > 1 || num < 0) num = randn_bm(min, max, skew); // resample between 0 and 1 if out of range
+        num = Math.pow(num, skew); // Skew
+        num *= max - min; // Stretch to fill range
+        num += min; // offset to min
+        return num;
+      }
+
+      function fixBuildings(bldg, density) {
+        let oldp = bldg.properties, newp = {};
+        if (oldp.height) {
+          newp.height = oldp.height;
+        } else if (!oldp.height && oldp.levels) {
+          newp.height = oldp.levels * 4;
+        } else {
+          // Guess between 3 and 150 meter high in total range
+          // for less than 100 blds/km2 density, average around 6 meter
+          // for 100+, average around 40m
+          newp.height = randn_bm(3,150, density>100 ? 3 : 6)
+        }
+        // Future randomizer, create some tall buildings
+        if (Math.random() < (newp.height/1000.0)) {
+          // Double the height, probability taken from current height
+          // If height at 500, 50% chance of doubling height
+          console.log(`Jackpot, increased bldg from ${newp.height} to ${newp.height * 2.5}`)
+          newp.height = newp.height * 2.5;
+        }
+        bldg.properties = newp;
+        return bldg;
+      }
+
+      function setZone(id) {
+        if (!zones || !zones.features) return;
+        current_zone = id;
+        var feature = zones.features[id];
+        // document.getElementById("zone").innerHTML = id;
+        // document.getElementById("zonename").innerHTML = feature.properties.Name || "";
+        // document.getElementById("zonedesc").innerHTML = feature.properties.description || "";
+
+        map
+          .getSource("mask")
+          .setData(turf.difference(turf.bboxPolygon(bounds), feature));
+        map.setFilter("zone-lines", ["==", "id", current_zone]);
+        let tilebox = tileBbox(feature);
+        //map.fitBounds(turf.bbox(turf.transformScale(feature,2)), {offset: [150,0]});
+
+        // Big left padding when we wanted map to appear on right side for print
+        // map.fitBounds(turf.bbox(feature), {padding: {top: 10, bottom:10, left: 542, right: 10}});
+        map.fitBounds(turf.bbox(feature), {padding: {top: 10, bottom:10, left: 10, right: 10}});
+
+        if (!tilebox) {
+          console.log("Error making tilebox");
+          return;
+        }
+        if (tilebox.length > 100) {
+          console.log("Too large zone, skipping buildings");
+          return;
+        }
+        Promise.all(tilebox.map(tile => fetchObj(osmbuildings(tile)))).then(
+          results => {
+
+            var results = results
+              .reduce((acc, cur) => acc.concat(cur.features), [])
+              .filter(x => x && turf.booleanWithin(x, feature))
+            let density = results.length / (turf.area(feature) / 1000000.0) ;
+            console.log(`Has ${density} buildings per km2`);  
+            results = results.map(x => fixBuildings(x, density));
+            map
+              .getSource("bldgs")
+              .setData({ type: "FeatureCollection", features: results });
+            //console.log(results);
+          }
+        ).catch(err => console.log(err));
+      }
+
+      // The 'building' layer in the mapbox-streets vector source contains building-height
+      // data from OpenStreetMap.
+      map.on("load", function() {
+        // Insert the layer beneath any symbol layer.
+        var layers = map.getStyle().layers;
+
+        var labelLayerId;
+        for (var i = 0; i < layers.length; i++) {
+          if (layers[i].type === "symbol" && layers[i].layout["text-field"]) {
+            // console.log(layers[i]);
+            if (layers[i].id.indexOf("poi") == 0 || layers[i].id.indexOf("road-label") == 0)
+              map.setLayoutProperty(layers[i].id, "visibility", "none");
+            if (!labelLayerId) labelLayerId = layers[i].id;
+            //break;
+          }
+        }
+
+        map.addSource('dem', {
+          "type": "raster-dem",
+          "url": "mapbox://mapbox.terrain-rgb"
+          });
+          map.addLayer({
+          "id": "hillshading",
+          "source": "dem",
+          "type": "hillshade"
+          // insert below waterway-river-canal-shadow;
+          // where hillshading sits in the Mapbox Outdoors style
+          }, 'water');
+
+        map.addSource("zones", {
+          type: "geojson",
+          data: zones_url
+        });
+
+        map.addSource("mask", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: []
+          }
+        });
+
+        map.addSource("bldgs", {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: []
+          }
+        });
+
+        map.addLayer(
+          {
+            id: "zmask",
+            source: "mask",
+            type: "fill",
+            paint: {
+              "fill-color": "white",
+              "fill-opacity": 0.7
+            }
+          },
+          labelLayerId
+        );
+
+        map.addLayer(
+          {
+            id: "zone-lines",
+            source: "zones",
+            type: "line",
+            minzoom: 6,
+            paint: {
+              "line-color": "red",
+              "line-width": 10,
+              "line-blur": 4,
+              "line-opacity": 0.3
+            }
+          },
+          labelLayerId
+        );
+
+        // map.addLayer(
+        //   {
+        //     id: "object-shadow",
+        //     source: "composite",
+        //     "source-layer": "building",
+        //     //'filter': ['==', 'extrude', 'true'],
+        //     type: "line",
+        //     minzoom: 6,
+        //     paint: {
+        //       "line-color": "#000000",
+        //       "line-width": 20,
+        //       "line-blur": 20,
+        //       "line-opacity": 0.3
+        //     }
+        //   },
+        //   labelLayerId
+        // );
+
+        map.addLayer(
+          {
+            id: "3d-buildings",
+            // source: "composite",
+            // "source-layer": "building",
+            // filter: ["==", "extrude", "true"],
+            source: "bldgs",
+            type: "fill-extrusion",
+            minzoom: 6,
+            paint: {
+              "fill-extrusion-color": "#ff33ff",
+              "fill-extrusion-height": ["*", ["get", "height"], 2],
+              "fill-extrusion-opacity": 0.8,
+              "fill-extrusion-vertical-gradient": true
+            }
+          },
+          labelLayerId
+        );
+        
+      });
+      map.once("idle", function() {
+        setZone(parseInt("{{zone_id.content}}"));
+        //if(window.location.hash)
+        //  setZone(parseInt(window.location.hash.substring(1)));
+      });
+    </script>
+
+{% endblock %}

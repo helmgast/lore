@@ -50,6 +50,7 @@ Document = flask_mongoengine.Document
 
 EMPTY_ID = ObjectId("000000000000000000000000")  # Needed to make empty non-matching Query objects
 
+
 # TODO replace with tools.unicode_slugify and replace ext_slugify dependency
 def slugify(title, max_length=62):
     slug = ext_slugify(title)
@@ -58,6 +59,12 @@ def slugify(title, max_length=62):
     if len(slug) > max_length:
         slug = slug[:max_length]
     return slug
+
+
+def to_camelcase(s):
+    # Allow colon as a separator for cases such as 'title:en'
+    # TODO fails on already camelCased input
+    return re.sub(r"[^:a-zA-Z0-9]+(.?)", lambda m: m.group(1).upper(), s.lower())
 
 
 # LOCALE RELATED PROPERTIES
