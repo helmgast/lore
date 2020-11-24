@@ -438,8 +438,7 @@ class ArticlesView(ResourceView):
                 | filter_authorized_by_world()
             )
         # Ensure we only show worlds with an image
-        r.worlds = publisher.worlds().filter(__raw__={"images": {"$gt": []}}).filter(filter_published())
-        r.query = r.query.order_by("-publishing_year", "-created")
+        r.worlds = publisher.worlds().filter(__raw__={"images": {"$gt": []}}).filter(filter_published()).order_by("-publishing_year", "-created")
         r.query = r.query.limit(8)
         r.finalize_query()
         return r
@@ -764,7 +763,7 @@ class ArticlesView(ResourceView):
             return r.error_response(status=400)
 
         r.form.populate_obj(article)
-        r.set_theme("article", article.theme)  # Incase we need to return to user for validation error
+        r.set_theme("article", article.theme)  # In case we need to return to user for validation error
 
         try:
             r.commit(new_instance=article)
