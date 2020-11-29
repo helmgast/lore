@@ -41,6 +41,7 @@ class Config(object):
     PLUGIN_PATH = "/data/www/github/"
     URL_PREFIX = None  # Set to /something to add that as URL prefix globally for the app
     CLOUDINARY_DOMAIN = None
+    SENTRY_SAMPLE_RATE = 0.2
 
 
 class SecretConfig(object):
