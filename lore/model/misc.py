@@ -369,9 +369,9 @@ def reference_options(field_name, model, id_attr="slug", name_attr="title", extr
         extra_options = []
 
     def return_function(query=None):
-        if not query:
-            query = model.objects()
         rv = []
+        if query is None:
+            query = model.objects()
         try:
             rv = [
                 FilterOption(kwargs={field_name: getattr(o, id_attr, str(o))}, label=getattr(o, name_attr, str(o)))
@@ -468,9 +468,13 @@ from7to365 = [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedel
 
 def distinct_options(field_name, model):
     def return_function(query):
-        if not query:
+        rv = []
+        if query is None:
             query = model.objects()
-        rv = [FilterOption(kwargs={field_name: v}, label=v) for v in query.distinct(field_name)]
+        try:
+            rv = [FilterOption(kwargs={field_name: v}, label=v) for v in query.distinct(field_name)]
+        except Exception as e:
+            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'", e)
         return rv
 
     return return_function

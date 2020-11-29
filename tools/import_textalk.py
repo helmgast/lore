@@ -4,6 +4,7 @@ from jsonrpcclient.requests import Request
 from lore.model.shop import import_product, job_import_product, job_import_order
 from tools.batch import Batch, LogLevel, Column
 from lore.model.misc import get
+import json
 
 if "TEXTALK_URL" in current_app.config:
     rpc_client = HTTPClient(current_app.config.get("TEXTALK_URL"))
@@ -66,8 +67,13 @@ def import_articles(fields_to_return=None, commit=False, log_level=LogLevel.INFO
         fields_to_return = product_default_fields_to_return
     if "publisher" not in kwargs:
         raise ValueError("Requires a publisher domain")
-    # TODO handle filter already at request
-    data = rpc_list("Article.list", fields_to_return, filters={"/draft": False}, total_limit=limit)
+    filters = {"/draft": False}
+    if filter:
+        try:
+            filters.update(json.loads(filter))
+        except Exception:
+            pass
+    data = rpc_list("Article.list", fields_to_return, filters=filters, total_limit=limit)
     columns = [
         Column("TITLE                                  ", "name", "title"),
         Column("ART#     ", "articleNumber", "product_number"),
@@ -120,12 +126,14 @@ def import_orders(fields_to_return=None, commit=False, log_level=LogLevel.INFO, 
         fields_to_return = order_default_fields_to_return
     if "publisher" not in kwargs:
         raise ValueError("Requires a publisher domain")
-    data = rpc_list(
-        "Order.list",
-        fields_to_return,
-        filters={"/discarded": False, "/customer/info/type": {"equals": "individual"}},
-        total_limit=limit,
-    )
+    filters = {"/discarded": False, "/customer/info/type": {"equals": "individual"}}
+    if filter:
+        try:
+            filters.update(json.loads(filter))
+        except Exception:
+            pass
+
+    data = rpc_list("Order.list", fields_to_return, filters=filters, total_limit=limit)
     # for d in data:
     #     add_delivery_method(d)
 

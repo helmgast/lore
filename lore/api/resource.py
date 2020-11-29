@@ -61,7 +61,7 @@ def generate_flash(action, name, model_identifiers, dest=""):
 
 def mark_time_since_request(text):
     if hasattr(g, "start"):
-        print(text, int(round((time() - g.start) * 1000)))
+        logger.debug(f"{text} {int(round((time() - g.start) * 1000))}")
 
 
 mime_types = {"html": "text/html", "json": "application/json", "csv": "text/csv"}
@@ -471,7 +471,7 @@ class ListResponse(ResourceResponse):
         ResourceResponse.arg_parser,
         **{
             "page": lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
-            "per_page": lambda x: int(x) if x.lstrip("-").isdigit() and int(x) >= -1 else 15,
+            "per_page": lambda x: int(x) if x.isdigit() and int(x) >= 1 else 60,
             "random": lambda x: int(x) if x.isdigit() and int(x) > 0 else 0,
             "view": lambda x: x.lower() if x.lower() in ["card", "table", "list", "index"] else None,
             "order_by": lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
@@ -501,21 +501,6 @@ class ListResponse(ResourceResponse):
     def query(self, x):
         setattr(self, self.resource_queries[0], x)
 
-    def slug_to_id(self, field, slug):
-        if isinstance(slug, str) and objid_matcher.match(slug):
-            return slug  # Is already Object ID
-        elif isinstance(field, ReferenceField):
-            try:
-                instance = field.document_type.objects(slug=slug).only("id").first()
-            except InvalidQueryError:
-                instance = None
-            if instance:
-                return instance.id
-            else:
-                return None
-        else:
-            return slug
-
     # queryable fields
     # sortable?
     # filterable?
@@ -542,16 +527,29 @@ class ListResponse(ResourceResponse):
             built_query = None
             for k, values in self.args["fields"].lists():
                 # Field name is string until first __ (operators are after)
-                # field = self.model._fields[k.split("__", 1)[0]]
-                # if k.endswith("__size"):
-                #     values = [int(v) for v in values]
-                # q = Q(**{k: self.slug_to_id(field, values[0])})
-                q = Q(**{k: values[0]})
-                # if len(values) > 1:  # multiple values for this field, combine with or
-                #     for v in values[1:]:
-                #         q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
-                # built_query = built_query._combine(q, QNode.AND) if built_query else q
-                built_query = q
+                val = values[0]
+                q = None
+                field = self.model._fields.get(k.split("__", 1)[0], None)
+                if field and isinstance(field, ReferenceField):
+                    if isinstance(val, str) and objid_matcher.match(val):
+                        q = Q(**{k: val})
+                    else:
+                        try:
+                            instance = field.document_type.objects(slug=val).only("id").first()
+                        except InvalidQueryError:
+                            instance = None
+                        if instance:
+                            q = Q(**{k: instance.id})
+                else:
+                    # if k.endswith("__size"):
+                    #     values = [int(v) for v in values]
+                    # q = Q(**{k: })
+                    q = Q(**{k: val})
+                    # if len(values) > 1:  # multiple values for this field, combine with or
+                    #     for v in values[1:]:
+                    #         q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
+                if q:
+                    built_query = built_query._combine(q, QNode.AND) if built_query else q
 
             self.query = self.query.filter(built_query)
 

@@ -368,7 +368,8 @@ def get_logged_in_user(require_active=True):
                 # py2.7 (bytes) to py 3.6 (unicode)
                 if hasattr(uid, "decode"):
                     uid = uid.decode()
-                u = User.objects(id=uid).comment("Logged in user").first()
+                # u = User.objects(id=uid).comment("Logged in user").first()
+                u = User.objects(id=uid).first()  # .comment() not supported by mongomock?
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
                         # Server has logged us out or the user is not active so cannot be considered logged in
