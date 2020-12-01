@@ -175,7 +175,7 @@ class User(Document, BaseUser):
         remove_user.save()
         msg = (
             f"User '{self.email}' ({self.id}) merged in user '{remove_user.email}' ({remove_user.id}), moving "
-            + f"{len(changed_orders)} orders and {len(changed_events)} events"
+            + f"{changed_orders} orders and {changed_events} events"
         )
         logger.warning(msg)
         # keep_user will be saved when we return out of this func
