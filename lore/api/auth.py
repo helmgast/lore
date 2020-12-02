@@ -101,6 +101,8 @@ def populate_user(user, user_info, token_info=None):
 def callback():
     # Note: This callback applies both to login and signup, there is no difference.
 
+    # TODO we might get an error here, better display that instead ?error=access_denied&error_description=ManagementClient%20is%20not%20a%20constructor#
+
     support_email = current_app.config["MAIL_DEFAULT_SENDER"]
     code = request.args.get("code", None)
     if not code:
