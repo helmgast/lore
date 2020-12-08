@@ -13,6 +13,11 @@
     {% set title = article.title %}
 {% endif %}
 
+{% if topic %}
+{# need to remove occurrences not used #}
+{% set occ_groups = topic.occurrences_grouped() %}
+{% endif %}
+
 {% block cssimports %}
     {{ super() }}
     {% if article and article.get_header_image %}
@@ -21,6 +26,12 @@
             background-image: url( {{ article.get_header_image.feature_url(format='wide') }} )
         }
     </style>
+    {% elif occ_groups and occ_groups["heading_image"] %}
+    <style>
+        .page-header-hero {
+            background-image: url( {{ cloudinary_url(occ_groups["heading_image"][0].uri, format='wide') }} )
+        }
+    </style>    
     {% endif %}
 {% endblock %}
 
@@ -65,7 +76,10 @@
 {% endblock %}
 
 {% block actionbar %}
-    {% if args.get('intent', None) == 'patch' %}
+    {% if article and article.type=='topic' %}
+        {# Can't edit topics at the moment so don't show those buttons #}
+        {% include "world/new_article_menu.html" %}
+    {% elif args.get('intent', None) == 'patch' %}
         {# We are editing #}
         {% call(privileged) MACRO.AUTHORIZED(access_policy['article'].authorize('edit', res=article)) %}
         {{ MACRO.SAVE_BUTTON('articleform') }}
@@ -90,7 +104,7 @@
 {# LAYOUT #}
 
 {% block header_class -%}
-    {% if article and article.get_header_image %}page-header-hero{% endif %}
+    {% if (article and article.get_header_image) or (occ_groups and (occ_groups["wide_image"] or occ_groups["heading_image"])) %}page-header-hero{% endif %}
     {% if article and not article_form and article.hide_header_text %}page-header-hide-text{% endif %}
 {%- endblock %}
 
@@ -119,7 +133,7 @@
 {% block intro_class %}col-lg-2 col-md-12 col-sm-12 intro-aside{% endblock %}
 {% block content_class %}col-lg-7 col-md-8 col-sm-12 content{% endblock %}
 
-{% block post_content %}
+{% block end_main %}
     {% if args.get('intent', None) %}
         </form>
     {% endif %}
@@ -133,9 +147,14 @@
 {% block intro %}
     {% if not args.get('intent', None) %}
         <ul class="nav imprint">
-            <li title="{{ _('Article type') }}"><span
-                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
-                <span class="imprint-info">{{ article.get_type_display() }}</span>
+            <li title="{{ _('Article type') }}">
+                {% if topic.kind %}
+                    <span class="glyphicon glyphicon-{{ MACRO.topic_icons[topic.kind.pk]|default('tag') }}"></span>
+                    <span class="imprint-info">{{ topic.kind.pk|lookup(topic_names)|attr("name") }}</span>
+                {% else %}
+                    <span class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span>
+                    <span class="imprint-info">{{ article.get_type_display() }}</span>
+                {% endif %}
             </li>
             {% if article.world %}
             <li title="{{ _('World') }}"><span class="glyphicon glyphicon-globe }}"></span>
@@ -150,7 +169,10 @@
                     {% else %}
                         <a>{{ article.creator }}</a>
                     {% endif %}
-                {%- else -%}<span class="imprint-info">&nbsp;{{ _('Admin') }}</span>
+                {%- else -%}
+                    {% if topic %}
+                    {% endif %}
+                    <span class="imprint-info">&nbsp;{{ creator.content if creator else _('Admin') }}</span>
                 {%- endif -%}</li>
             <li title="{{ _('Created') }}"><span
                     class="glyphicon glyphicon-calendar"></span>
@@ -172,10 +194,12 @@
             {% for loc in article.available_languages().values() %}
                 {% if article.translations_i18n.get(loc.language, none) %}
                 <li title="{{ loc.phrases['read_in'] }}">
-                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}"><img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}</a>
+                    <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}">
+                        <img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}
+                    </a>
                 </li>
                 {% endif %}
-            {% endfor %}
+            {% endfor %}            
             <li title="{{ _('Share') }}" class="social">{% include "includes/social_icons.html" %}</li>
         </ul>
         {% if article.shortcut %}
@@ -183,6 +207,9 @@
         <input class="form-control input-sm" type="text" id="shortcut" readonly value="{{article.shortcut.short_url()}}"/>
         <img src="{{ url_for('qrcode', code=article.shortcut.slug) }}">
         </div>
+        {% endif %}
+        {% if topic %}
+        <div class="well" style="padding: 5px"><small><em>{{ _("This is a read-only preview of <a href=\"%(url)s\">Helmgast's Lore</a>, a database of Helmgast's worlds", url="https://docs.google.com/presentation/d/10eiuf4RGQXO7J6DVP3xWVH91XBhJHI6-9Y9y-GWn9_s") }}</em></small></div>
         {% endif %}
     {% endif %}
 {% endblock %}
@@ -195,13 +222,80 @@
                     href="http://commonmark.org/help/" target="_blank">Markdown</a></small>
         </article>
     {% else %}
-        <article class="article-text {{ 'drop-caps' if article.content|first_p_length >300 else ''}}">
-            {{ article.content|default(_('No data'), true)|safe|markdown }}
-            {% if article.type == 'blogpost' %}
-                {% include 'includes/disqus.html' %}
-            {% endif %}
-        </article>
+        <article class="article-text">
+        {% if occ_groups %}
 
+        {% for desc in occ_groups["description"]|filter_by_any_scopes("lore.pub/t/"+get_locale().language) %}
+        <section><em>
+            {# {{ MACRO.content_section_header(desc, topic_names) }} #}
+            {{ desc.content|markdown }}
+        </em></section>
+        {% endfor %}
+        {% for img in occ_groups["card_image"] %}
+        {% if img.kind.pk.endswith("map_point") %}
+        <div class="map-square"><img class="img-responsive" src="{{img.uri}}"><span class="glyphicon glyphicon-map-marker"></span></div>
+        {% else %}
+        {# <ul class="gallery gallery-card">
+            <li class="hide">gallery-card</li>
+            <li class="gallery-item" title="This is the card image, a good place to have a longer description here" style="width: 25%; flex-grow: 1;"><img alt="This is the card image, a good place to have a longer description here" src="{{cloudinary_url(img.uri, format='card')}}"></li>
+        </ul> #}
+        <ul class="gallery gallery-center">
+            <li class="gallery-item" title="{{img.content|default('', true)}}"><img alt="{{img.content|default('', true)}}" src="{{cloudinary_url(img.uri, format='card')}}"></li>
+        </ul>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% if not topic.article or article.content %}
+        <section class="{{ 'drop-caps' if article.content|first_p_length >300 }}">
+            {{ article.content|safe|markdown }}
+        </section>
+        {% endif %}
+        {# TOPIC CONTENT #}
+
+        {% if occ_groups %}
+
+        {% for article in occ_groups["article"] %}
+        <section>
+            {{ MACRO.content_section_header(article, topic_names) }}
+            {{ article.content|safe|markdown }}
+        </section>
+        {% endfor %}
+
+        {% if occ_groups["bibref"] %}
+        <h3>{% trans %}References{% endtrans %}</h3>
+        <dl class="book-index">
+        {% for bibref in occ_groups["bibref"] %}
+        <dd class="index-row"><span class="index-term">{{bibref.content|replace(": ", '</span><span class="index-page">')|safe}}</span></dd>
+        {% endfor %}
+        </dl>
+        {% endif %}
+
+        {% for o in occ_groups["rest"] %}
+            <section>
+            {{ MACRO.content_section_header(o, topic_names) }}
+
+            {% if o.content %}
+            {{o.content|safe|markdown }}
+            {% elif o.kind.pk == "lore.pub/t/image" %}
+            <img src="{{o.uri}}">
+            {% else %}
+            <p>
+            <span class="glyphicon glyphicon-{{ MACRO.topic_icons[o.kind.pk] }}"></span> 
+                {% if o.uri %}<a href="{{o.uri}}">{% endif %}
+                {{o.kind.pk|lookup(topic_names)|attr("name")}}
+                {% if o.uri %}</a>{% endif %}
+            </p>
+            {% endif %}
+            </section>
+        {% endfor %}
+
+        {% endif %}
+
+        </article>
+        {# <pre>
+        {{ occ_groups|pprint }}
+        </pre> #}
     {% endif %}
     {% if args.get('intent', None) %}
         <ul class="action-buttons action-buttons-footer">
@@ -291,35 +385,61 @@
         </div>
         </div>
     {% else %}
-        <ul class="list-inline" style="margin-bottom: 0px;margin-left: -14px">
-            {%- if article.type=='place' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Lon') }}</span>{{ article.placedata.coordinate_x }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Lat') }}</span>{{ article.placedata.coordinate_y }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Type') }}</span>{{ article.placedata.location_type }}</li>
-            {%- elif article.type=='image' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Type') }}</span>{{ article.imagedata.mime_type }}</li>
-                <li><span class="nav-header" style="display:inline">{{ _('URL') }}</span><a
-                        href="{{ article.imagedata.url }}">{{ article.imagedata.url|truncate(30, true) }}</a></li>
-            {%- elif article.type=='event' -%}
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Started') }}</span>{{ article.eventdata.from_date }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Ended') }}</span>{{ article.eventdata.to_date }}</li>
-            {%- elif article.type=='person' and article.persondata -%}
-                <li><span class="nav-header" style="display:inline">{{ _('Born') }}</span>{{ article.persondata.born }}
+        {% if topic %}
+            {# <ul class="nav nav-pills nav-xs">
+                <li role="presentation" class="active"><a class="btn btn-default btn-xs" href="#canon" data-toggle="tab">Canon</a></li>
+                <li role="presentation"><a class="btn btn-success btn-xs" href="#community" data-toggle="tab">Ola</a></li>
+                <li role="presentation"><a class="btn btn-warning btn-xs" href="#suggest" data-toggle="tab">Joel</a></li>
+            </ul> #}
+
+            {% set alt_names = topic.alt_names(topic.name) %}
+            {% if alt_names %}
+            <h5>{{_("Alternative names")}}</h5>
+            <ul>
+            {% for n in alt_names %}
+                <li title="{%if n.scopes -%} 
+                [{%- for s in n.scopes -%}{{s.pk|lookup(topic_names)|attr("name")}}{{ ', ' if not loop.last }}{%- endfor -%}]
+                {%- endif -%}">{{n.name}}
                 </li>
-                <li><span class="nav-header" style="display:inline">{{ _('Died') }}</span>{{ article.persondata.died }}
-                </li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Gender') }}</span>{{ article.persondata.gender_name() }}</li>
-                <li><span class="nav-header"
-                          style="display:inline">{{ _('Occupation') }}</span>{{ article.persondata.occupation }}</li>
-            {%- endif -%}
-        </ul>
+            {% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if occ_groups["stat"] %}
+            <table class="table table-condensed">
+                {% for stat in occ_groups["stat"] %}
+                <tr>
+                    <th scope="row">{{stat.kind.pk|lookup(topic_names)|attr("name")}}</th>
+                    <td>{{stat.content}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+
+            {% set ass_dict = topic.associations_by_r1(topic_names) %}
+            {% for role, ass in ass_dict.items() %}
+                {% set role_title = ass[0].kind.pk|lookup(topic_names) %}
+                <h5>{{role_title.find_names(scopes=[role.pk])[0].name}}</h5>
+                <div class="btn-set">
+                {% for a in ass %}
+                    {% set at = a.t2.pk|lookup(topic_names) %}
+                    {% if loop.index == 30 %}  {# hide more than 30 associations under more button #}
+                        <a role="button" data-toggle="collapse" href="#{{role.pk|safe_id}}" class="btn btn-primary btn-xs">{{_("more ...")}}</a>
+                        <div class="collapse" id="{{role.pk|safe_id}}">
+                    {% endif %}
+                    <a title="{{at}}" {%- if at.as_article_url is defined -%}href="{{at.as_article_url()}}"{%- endif -%} class="btn btn-default btn-xs {{a.contribution_scope().pk.rsplit('/')[-1]}}">
+                    {%- if at.kind.pk in MACRO.topic_icons -%}
+                    <span class="glyphicon glyphicon-{{ MACRO.topic_icons[at.kind.pk] }}"></span>
+                    {%- endif -%}
+                    {{at.name or at}}
+                    </a>
+                {% endfor %}
+                {% if ass|length >= 30 %}</div>{% endif %}
+                </div>
+            {% endfor %}
+
+            <div id="graph"></div>
+        {% endif %}
     {% endif %}
 {% endblock %}
 
@@ -327,5 +447,91 @@
     {{ super() }}
     {% if article %}
         {{ MACRO.CONFIRM_MODAL(article.title, url_for('world.ArticlesView:delete', world_=world.slug, id=article.slug, method="DELETE"), _('delete') ) }}
+    {% endif %}
+    {% if topic %}
+    <script src="https://d3js.org/d3.v2.min.js?2.9.3"></script>
+    <style>
+
+    #graph {
+        border: 1px solid grey;
+        margin: 5px;
+    }
+
+    .link {
+    stroke: #aaa;
+    }
+
+    .node text {
+    stroke:#333;
+    cursos:pointer;
+    }
+
+    .node circle{
+    stroke:#fff;
+    stroke-width:3px;
+    fill:#555;
+    }
+
+    </style>
+    <script>
+
+    var json = {{ topic.associations_as_graph(topic_names)|tojson }}
+
+    var width = 250,
+        height = 400
+
+    var svg = d3.select("#graph").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    var force = d3.layout.force()
+        .gravity(.05)
+        .distance(100)
+        .charge(-100)
+        .size([width-50, height]);
+
+    if (json) {
+        force
+            .nodes(json.nodes)
+            .links(json.links)
+            .start();
+
+        var link = svg.selectAll(".link")
+            .data(json.links)
+            .enter().append("line")
+            .attr("class", "link")
+            .style("stroke-width", function(d) { return Math.sqrt(d.weight); });
+
+        var node = svg.selectAll(".node")
+            .data(json.nodes)
+            .enter().append("g")
+            .attr("class", "node")
+            .style('cursor', 'pointer')
+            .call(force.drag).on("click", function (d) {
+                location.href = d.url;
+            });
+
+        node.append("circle")
+            .attr("r","5");
+
+        node.append("text")
+            .attr("dx", 12)
+            .attr("dy", ".35em")
+            .text(function(d) { return d.name });
+
+        force.on("tick", function() {
+            link.attr("x1", function(d) { return d.source.x; })
+                .attr("y1", function(d) { return d.source.y; })
+                .attr("x2", function(d) { return d.target.x; })
+                .attr("y2", function(d) { return d.target.y; });
+
+            node.attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        });
+    }
+    
+
+    </script>
+
+
     {% endif %}
 {% endblock %}

@@ -90,6 +90,66 @@ footer a {
   padding-right: 10px;
 }
 
+// @btn-default-color:              #fff;
+// @btn-default-bg:                 @gray-light;
+// @btn-default-border:             @btn-default-bg;
+
+// @btn-primary-color:              @btn-default-color;
+// @btn-primary-bg:                 @brand-primary;
+// @btn-primary-border:             @btn-primary-bg;
+
+// @btn-success-color:              @btn-default-color;
+// @btn-success-bg:                 @brand-success;
+// @btn-success-border:             @btn-success-bg;
+
+// @btn-info-color:                 @btn-default-color;
+// @btn-info-bg:                    @brand-info;
+// @btn-info-border:                @btn-info-bg;
+
+// @btn-warning-color:              @btn-default-color;
+// @btn-warning-bg:                 @brand-warning;
+// @btn-warning-border:             @btn-warning-bg;
+
+// @btn-danger-color:               @btn-default-color;
+// @btn-danger-bg:                  @brand-danger;
+// @btn-danger-border:              @btn-danger-bg;
+
+.btn-xs-square {
+  width: 18px; // Based on font-size is 12 px and line height is 1.5
+}
+
+.nav > li > .btn-default:hover,
+.nav > li > .btn-default:focus {
+  background-color: darken(@btn-default-bg, 15%);
+  border-color: darken(@btn-default-bg, 15%);
+}
+
+.nav > li > .btn-warning:hover,
+.nav > li > .btn-warning:focus {
+  background-color: darken(@btn-warning-bg, 15%);
+  border-color: darken(@btn-warning-bg, 15%);
+}
+
+.nav > li > .btn-success:hover,
+.nav > li > .btn-success:focus {
+  background-color: darken(@btn-success-bg, 15%);
+  border-color: darken(@btn-success-bg, 15%);
+}
+
+.nav-xs > li > a {
+  padding: 1px 5px;
+  border-radius: 3px;
+  line-height: 1.5;
+  margin-bottom: 1px; // Need to lift buttons up one pixel to show the nav-tabs border
+}
+
+.nav-xs > li.active > a,
+.nav-xs > li.active > a:hover,
+.nav-xs > li.active > a:focus {
+  color: #fff;
+  background-color: #222;
+}
+
 .animated-move {
   transition: all 0.5s ease-out;
   display: block;
@@ -188,6 +248,10 @@ footer a {
   border-bottom: 1px solid grey;
   background: transparent;
   height: 23px;
+}
+
+#q {
+  font-size: 18px;
 }
 
 .nav .breadcrumb-item {
@@ -746,6 +810,43 @@ a.highlight {
   background-color: #a00;
 }
 
+.book-index {
+  // https://css-tricks.com/guide-responsive-friendly-css-columns/
+  column-count: 2;
+  column-width: 250px;
+}
+
+.book-index .index-row {
+  display: flex;
+  break-inside: avoid;
+  font-size: 14px;
+  margin-left: 20px;
+}
+
+// .book-index .index-row::after {
+//   content: "";
+//   border-bottom: 1px dotted;
+//   flex-grow: 1;
+//   order: 2;
+// }
+
+.book-index .index-row .index-term {
+  order: 1;
+}
+
+.book-index .index-row::after {
+  order: 2;
+  flex-grow: 1;
+  flex-basis: 20%;
+  overflow-x: hidden;
+  white-space: nowrap;
+  content: " . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ";
+}
+
+.book-index .index-row .index-page {
+  order: 3;
+}
+
 /* ------------------- Messages --------------------- */
 
 .message {
@@ -977,6 +1078,65 @@ article,
   box-shadow: none;
   border: 1px dashed #ccc;
   border-radius: 5px;
+}
+
+.nav-occurrence {
+  font-family: @font-family-sans-serif;
+  font-size: 12px;
+  // line-height: 14px;
+  // margin-top: 21px;
+  // margin-bottom: 21px;
+  // border: 0;
+  // border-bottom: 1px solid #ddd;
+  padding-left: 5px;
+  margin-top: 21px;
+  margin-bottom: 10px;
+}
+
+.nav-occurrence > li.nav-info {
+  margin-right: 2px;
+  line-height: 1.42857143;
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  display: block;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+}
+
+.canon {
+  background-color: @gray-light;
+}
+
+.community {
+  background-color: @light-accent;
+}
+
+a.community:hover {
+  background-color: darken(@light-accent, 15%);
+}
+
+.contrib {
+  background-color: @dark-accent;
+  color: white;
+}
+
+.nav-occurrence > li > a,
+.nav-occurrence > li.nav-info {
+  padding: 2px 8px;
+}
+
+.map-square {
+  position: relative;
+}
+
+.map-square .glyphicon {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  top: 40%;
+  color: darkred;
+  font-size: 30px;
+  font-weight: 500;
 }
 
 /* ------------------- Helpers --------------------- */
@@ -1534,7 +1694,8 @@ article img {
 
 @media (min-width: 768px) {
   .gallery-card {
-    margin-right: -100px;
+    // margin-right: -100px;
+    margin-right: -30px; // 100px overlapped with asides content
   }
 }
 
@@ -1915,6 +2076,15 @@ img.zoomable.zoomed {
   padding-top: 5px;
   padding-bottom: 0px;
   font-size: 12px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-right {
+  flex-basis: 60%;
+  margin-left: auto;
 }
 
 //

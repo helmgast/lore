@@ -43,6 +43,7 @@ from .misc import (
     configured_langs_tuples,
     datetime_delta_options,
     distinct_options,
+    FilterOption,
     get,
     pick_i18n,
     reference_options,
@@ -411,6 +412,7 @@ class CampaignData(EmbeddedDocument):
 #   subbranch = EmbeddedDocumentListField('self')
 ArticleTypes = Choices(
     default=_("Default"),
+    topic=_("Topic"),
     blogpost=_("Blog Post"),
     material=_("Material"),
     person=_("Person"),
@@ -571,10 +573,12 @@ class Article(Document):
 Article.language.filter_options = choice_options("language", Article.language.choices)
 Article.type.filter_options = choice_options("type", Article.type.choices)
 Article.status.filter_options = choice_options("status", Article.status.choices)
-Article.world.filter_options = reference_options("world", Article)
+Article.world.filter_options = reference_options(
+    "world", Article, id_attr="pk", extra_options=[FilterOption(label=_("None"), kwargs={"world__not__exists": "1"})]
+)
 Article.tags.filter_options = distinct_options("tags", Article)
 Article.created_date.filter_options = datetime_delta_options(
-    "created_date", [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedelta(days=365)]
+    "created_date", [timedelta(days=7), timedelta(days=30), timedelta(days=365), timedelta(days=1825)]
 )
 
 

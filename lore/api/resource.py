@@ -60,8 +60,8 @@ def generate_flash(action, name, model_identifiers, dest=""):
 
 
 def mark_time_since_request(text):
-    if hasattr(g, "start"):
-        print(text, int(round((time() - g.start) * 1000)))
+    if False and hasattr(g, "start"):
+        logger.debug(f"{text} {int(round((time() - g.start) * 1000))}")
 
 
 mime_types = {"html": "text/html", "json": "application/json", "csv": "text/csv"}
@@ -177,7 +177,8 @@ def prefillable_fields_parser(fields=None, **kwargs):
 
 
 def filterable_fields_parser(fields=None, **kwargs):
-    filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
+    # filterable_fields = frozenset([f.split(".", 1)[0] for f in fields] or [])
+    filterable_fields = frozenset(fields or [])
     forbidden = filterable_fields & common_args
     if forbidden:
         raise Exception(f"Cannot allow field names colliding with common args names: {forbidden}")
@@ -312,9 +313,9 @@ class ResourceResponse(Response):
         if best_type == "text/html":
             template_args = self.get_template_args()
             template_args["root_template"] = get_root_template(self.args.get("out", None))
-            # mark_time_since_request("Before render")
+            mark_time_since_request("Before render")
             self.set_data(render_template(self.template, **template_args))
-            # mark_time_since_request("After render")
+            mark_time_since_request("After render")
             return self
         elif best_type == "application/json":
             # TODO this will create a new response, which is a bit of waste
@@ -470,8 +471,9 @@ class ListResponse(ResourceResponse):
         ResourceResponse.arg_parser,
         **{
             "page": lambda x: int(x) if x.isdigit() and int(x) > 1 else 1,
-            "per_page": lambda x: int(x) if x.lstrip("-").isdigit() and int(x) >= -1 else 15,
-            "view": lambda x: x.lower() if x.lower() in ["card", "table", "list"] else None,
+            "per_page": lambda x: int(x) if x.isdigit() and int(x) >= 1 else 60,
+            "random": lambda x: int(x) if x.isdigit() and int(x) > 0 else 0,
+            "view": lambda x: x.lower() if x.lower() in ["card", "table", "list", "index"] else None,
             "order_by": lambda x: [],  # Will be replaced by fields using a filterable_arg_parser
             "q": lambda x: x,
         },
@@ -499,26 +501,13 @@ class ListResponse(ResourceResponse):
     def query(self, x):
         setattr(self, self.resource_queries[0], x)
 
-    def slug_to_id(self, field, slug):
-        if objid_matcher.match(slug):
-            return slug  # Is already Object ID
-        elif isinstance(field, ReferenceField):
-            try:
-                instance = field.document_type.objects(slug=slug).only("id").first()
-            except InvalidQueryError:
-                instance = None
-            if instance:
-                return instance.id
-            else:
-                return None
-        else:
-            return slug
-
     # queryable fields
     # sortable?
     # filterable?
 
-    def finalize_query(self, aggregation=None, paginate=True):  # also filter by authorization, paginate
+    def finalize_query(
+        self, aggregation=None, paginate=True, select_related=True
+    ):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
         ordering, filtering, pagination etc """
         # mark_time_since_request("Before finalize")
@@ -538,14 +527,29 @@ class ListResponse(ResourceResponse):
             built_query = None
             for k, values in self.args["fields"].lists():
                 # Field name is string until first __ (operators are after)
-                field = self.model._fields[k.split("__", 1)[0]]
-                if k.endswith("__size"):
-                    values = [int(v) for v in values]
-                q = Q(**{k: self.slug_to_id(field, values[0])})
-                if len(values) > 1:  # multiple values for this field, combine with or
-                    for v in values[1:]:
-                        q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
-                built_query = built_query._combine(q, QNode.AND) if built_query else q
+                val = values[0]
+                q = None
+                field = self.model._fields.get(k.split("__", 1)[0], None)
+                if field and isinstance(field, ReferenceField):
+                    if isinstance(val, str) and objid_matcher.match(val):
+                        q = Q(**{k: val})
+                    else:
+                        try:
+                            instance = field.document_type.objects(slug=val).only("id").first()
+                        except InvalidQueryError:
+                            instance = None
+                        if instance:
+                            q = Q(**{k: instance.id})
+                else:
+                    # if k.endswith("__size"):
+                    #     values = [int(v) for v in values]
+                    # q = Q(**{k: })
+                    q = Q(**{k: val})
+                    # if len(values) > 1:  # multiple values for this field, combine with or
+                    #     for v in values[1:]:
+                    #         q = q._combine(Q(**{k: self.slug_to_id(field, v)}), QNode.OR)
+                if q:
+                    built_query = built_query._combine(q, QNode.AND) if built_query else q
 
             self.query = self.query.filter(built_query)
 
@@ -597,6 +601,9 @@ class ListResponse(ResourceResponse):
             else:
                 self.query = self.query.order_by(*self.args["order_by"])
 
+        if self.args["random"] > 0:
+            aggregation.append({"$sample": {"size": self.args["random"]}})
+
         self.query = self.pagination.apply_to_query(self.query)
         if aggregation:
             if self.query._query:
@@ -604,9 +611,8 @@ class ListResponse(ResourceResponse):
             agg_results = self.query._collection.aggregate(aggregation, cursor={})
             # Note, turns query into a static list
             self.query = [self.model._from_son(a) for a in agg_results]
-        else:
-            pass
-            # self.query.select_related()
+        elif select_related:
+            self.query.select_related()
 
 
 class ResponsePagination(Pagination):

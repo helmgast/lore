@@ -135,7 +135,11 @@ def configure_logging(app):
     if app.config["PRODUCTION"]:
         if sentry_dsn and sentry_dsn != "SECRET":  # SECRET is default, non-set state
             sentry_sdk.init(
-                dsn=sentry_dsn, integrations=[FlaskIntegration(transaction_style="url")], send_default_pii=True
+                dsn=sentry_dsn,
+                integrations=[FlaskIntegration(transaction_style="url")],
+                send_default_pii=True,
+                release=app.config.get("VERSION", None),
+                traces_sample_rate=app.config.get("SENTRY_SAMPLE_RATE", 1.0),
             )
         else:
             app.logger.warning("Running without Sentry error monitoring; no SENTRY_DSN in config")
@@ -233,12 +237,21 @@ def configure_extensions(app):
             extensions.AutolinkedImage(),
         ]
     )
+    # A small hack to let us output "unmarkdownified" text.
+    Markdown.output_formats["plain"] = extensions.unmark_element
+    app.md_plain = Markdown(output_format="plain")
+    app.md_plain.stripTopLevelTags = False
 
     app.jinja_env.filters["markdown"] = extensions.build_md_filter(app.md)
+    app.jinja_env.filters["md2plain"] = extensions.build_md_filter(app.md_plain)
     app.jinja_env.filters["dict_with"] = extensions.dict_with
     app.jinja_env.filters["dict_without"] = extensions.dict_without
     app.jinja_env.filters["currentyear"] = extensions.currentyear
     app.jinja_env.filters["first_p_length"] = extensions.first_p_length
+    app.jinja_env.filters["lookup"] = extensions.lookup
+    app.jinja_env.filters["safe_id"] = extensions.safe_id
+    app.jinja_env.filters["filter_by_all_scopes"] = extensions.filter_by_all_scopes
+    app.jinja_env.filters["filter_by_any_scopes"] = extensions.filter_by_any_scopes
     app.jinja_env.add_extension("jinja2.ext.do")  # "do" command in jinja to run code
     app.jinja_loader = extensions.enhance_jinja_loader(app)
     app.json_encoder = extensions.MongoJSONEncoder
@@ -322,7 +335,7 @@ def configure_hooks(app):
         db_settings["serverSelectionTimeoutMS"] = 5000  # Shortened from 30000 default
         try:
             app.extensions["mongoengine"][extensions.db] = {"app": app, "conn": _connect(db_settings)}
-        except ConnectionFailure as err:
+        except ConnectionFailure:
             pass  # We need to leave this method without an exception, as the request finishes, the exception will raise again
 
     # Fetches pub_host from raw url (e.g. subdomain) and removes it from view args
@@ -360,8 +373,10 @@ def configure_hooks(app):
 
     from lore.model.misc import current_url, in_current_args, slugify, delta_date
     from lore.api.auth import auth0_url
+    from lore.model.asset import cloudinary_url
     from sentry_sdk import last_event_id, capture_exception
 
+    app.add_template_global(cloudinary_url)
     app.add_template_global(auth0_url)
     app.add_template_global(current_url)
     app.add_template_global(in_current_args)

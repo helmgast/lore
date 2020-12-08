@@ -2,14 +2,14 @@
 
 {% import 'includes/macros.html' as MACRO %}
 
-{#{% block navbar %}#}
+{#{% block navbar %}
 {% block publisher_brand %}
     <a class="navbar-brand navbar-collapse"
        href="#">
         <img id="zoombrand" data-from="#brand-target" data-to=".navbar-brand" class="img-responsive"
              src="{{ url_for('static', filename='img/logo-helmgast.svg', _external=true, _scheme='') }}">
     </a>
-{% endblock publisher_brand %}
+{% endblock publisher_brand %}#}
 
 {% block navbar_left %}
     <li>
@@ -55,6 +55,9 @@
 
 {% block header_class %}page-header-hero{% endblock %}
 {% block title_class %}col-lg-offset-2 col-lg-10 col-md-12 col-sm-12{% endblock %}
+{% block intro_class %}col-lg-2 col-md-12 col-sm-12 intro-aside{% endblock %}
+{% block content_class %}col-lg-7 col-md-8 col-sm-12 content{% endblock %}
+{% block asides_class %}col-lg-3 col-md-4 col-sm-12{% endblock %}
 
 {#{% block header %}#}
 {% block content_title %}Content title {% endblock %}
@@ -90,11 +93,12 @@
 {% endblock home %}
 
 {% block intro %}
-    <div class="well">Intro</div>
+    <div class="well">Intro. Here you typically show key details at a glance, such as date and author. On narrower screens this will be on top of article content.</div>
 {% endblock %}
 
 {% block content %}
 <article class="article-text">
+
 {% filter markdown %}
 On the other hand, we denounce with righteous indignation and dislike men who are so beguiled and demoralized by
 the charms of pleasure of the moment, so blinded by desire, that they cannot foresee the pain and trouble that are
@@ -167,7 +171,7 @@ to whatever the width of the text paragraph is. The best original size is 1600px
 
 {%- call MACRO.RENDER_MD_EXAMPLE() -%}
 - gallery-card
-- ![This is the card image, a good place to have a longer description here](http://placehold.it/800x800.png)
+- ![This is the card image, a good place to have a longer description here](http://placehold.it/800x1100.png)
 {%- endcall -%}
 {% filter markdown %}
 ### Card
@@ -227,7 +231,7 @@ And another: [File to download](http://test.com/nosuchfile.zip)
 {% endblock content %}
 
 {% block asides %}
-    <div class="well">Asides</div>
+    <div class="well">Asides. Here is a good place to add extra info, links or similar. If the page gets too narrow asides will be added to the end of the article instead.</div>
 {% endblock asides %}
 
 {#{% endblock main %}#}

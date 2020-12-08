@@ -6,7 +6,7 @@ import sys
 import click
 
 from lore.app import create_app
-from tools.batch import Batch, LogLevel
+from tools.batch import Batch, Column, LogLevel, bulk_update
 
 
 # from https://blog.theodo.com/2020/05/debug-flask-vscode/
@@ -121,10 +121,11 @@ def lang_extract():  # Run as lang-extract
     translate all empty MsgId. Then run python manage.py lang_compile
     """
 
+    # TODO use python path environment instead of venv
     runshell(
-        ".venv/bin/pybabel extract --no-wrap --sort-by-file -F lore/translations/babel.cfg -o temp.pot lore/ plugins/"
+        "venv/bin/pybabel extract --no-wrap --sort-by-file -F lore/translations/babel.cfg -o temp.pot lore/ plugins/"
     )
-    runshell(".venv/bin/pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching")
+    runshell("venv/bin/pybabel update -i temp.pot -d lore/translations -l sv --no-fuzzy-matching")
     runshell("rm temp.pot")
     print()
     print("New strings needing translation:")
@@ -242,12 +243,33 @@ def import_csv():
 )
 @click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
 @click.option("--log-level", default="INFO")
-@click.option("--limit", default=10, type=int, help="Maximum amounts of items to import")
+@click.option("-l", "--limit", default=10, type=int, help="Maximum amounts of items to import")
 @click.option("--publisher", required=False, help="Publisher domain to associate import with")
 @click.option("--vatRate", required=False, help="VAT Rate to apply to all orders")
 @click.option("--title", required=False, help="Overall import title")
 @click.option("--sourceUrl", required=False, help="Source URL to add to all orders")
 @click.option("--if-newer", required=False, type=bool, default=True, help="Only update if newer")
+@click.option(
+    "-b",
+    "--default-bases",
+    multiple=True,
+    default=[],
+    help="If an ID lacks base URI, search for it in these bases in order. If no match, add last one as base.",
+)
+@click.option(
+    "-s",
+    "--default-scopes",
+    multiple=True,
+    default=[],
+    help="Comma separated list of scope id:s to add to all imported characteristics, e.g. user, lang, etc.",
+)
+@click.option(
+    "-a",
+    "--default-associations",
+    multiple=True,
+    default=[],
+    help="Comma separated list of association statements as per LTM. 'This topic' part will be ignored.",
+)
 def import_sheet(url_or_id, model, **kwargs):
     from tools.import_sheets import import_data
     from mongoengine.connection import get_db
@@ -284,23 +306,92 @@ def import_textalk(model, **kwargs):
 
 
 @app.cli.command()
-@click.argument("path", required=True)
-@click.option("--dry-run", is_flag=True)
-@click.option("--log-level", default="WARN")
-def import_markdown_topics(path, dry_run, log_level):
-    from tools.import_markdown import doc_generator, job_import_topic
-
-    # from mongoengine.connection import get_db
+def setup_topics():
+    from mongoengine.connection import get_db
     from lore import extensions
+    from lore.model.topic import Topic, create_basic_topics
 
-    # extensions.db.init_app(app)
-    # db = get_db()
-    # original_dates True/False
-    # url_prefix = ""
-    b = Batch(f"Import markdown files from path {path}", level=LogLevel[log_level], dry_run=dry_run, all_topics={})
-    b.process(doc_generator(path), job_import_topic)
-    for t in b.context["all_topics"].values():
-        print(repr(t))
+    extensions.db.init_app(app)
+    db = get_db()
+
+    basic_topics = create_basic_topics()
+    bulk_update(Topic, basic_topics.values())
+
+
+@app.cli.command()
+@click.argument("path", required=True)
+@click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
+@click.option("--log-level", default="WARN")
+@click.option("--ignore-dates", is_flag=True, help="Ignores dates from YAML in import Markdown")
+@click.option("-l", "--limit", default=0, help="Only process this many jobs")
+@click.option("-m", "--match", default="", help="Only process jobs with this match string in id")
+@click.option("--github-wiki", default="", help="The path to a github wiki where this is sourced")
+@click.option(
+    "-b",
+    "--default-bases",
+    multiple=True,
+    default=[],
+    help="If an ID lacks base URI, search for it in these bases in order. If no match, add last one as base.",
+)
+@click.option(
+    "-s",
+    "--default-scopes",
+    multiple=True,
+    default=[],
+    help="Comma separated list of scope id:s to add to all imported characteristics, e.g. user, lang, etc.",
+)
+@click.option(
+    "-a",
+    "--default-associations",
+    multiple=True,
+    default=[],
+    help="Comma separated list of association statements as per LTM. 'This topic' part will be ignored.",
+)
+def import_markdown_topics(path, **kwargs):
+    from lore.model.topic import LORE_BASE, Topic, TopicFactory
+    from lore.model.import_topic import job_import_topic
+    from mongoengine.connection import get_db
+    from lore import extensions
+    import pathlib
+    import frontmatter
+
+    extensions.db.init_app(app)
+    db = get_db()
+
+    columns = [
+        Column("ID", "id", "id"),
+        Column("TITLE", "title", "name"),
+        Column("CREATED", "created_at", "created_at"),
+    ]
+
+    # Adds list of scopes to all characteristics, e.g. "community-content" or a specific author.
+    commit = kwargs.pop("commit", False)
+    match = kwargs.pop("match")
+    default_bases = kwargs.pop("default_bases")
+    default_scopes = kwargs.pop("default_scopes")
+    default_associations = kwargs.pop("default_associations")
+    factory = TopicFactory(default_bases, default_scopes, default_associations)
+
+    b = Batch(
+        f"Import markdown files from path {path}",
+        table_columns=columns,
+        dry_run=not commit,
+        topic_factory=factory,
+        **kwargs,
+    )
+
+    def doc_generator(markdown_files_path, match):
+        p = pathlib.Path(markdown_files_path)
+        for file in p.glob("**/*.md"):
+            doc = frontmatter.load(file)
+            if "id" not in doc.keys():
+                doc["id"] = file.stem
+            if not match or match in doc["id"]:
+                yield doc
+
+    b.process(doc_generator(path, match), job_import_topic)
+    if commit:
+        bulk_update(Topic, factory.topic_dict.values())
 
     print(b.summary_str())
 

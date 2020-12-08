@@ -29,7 +29,9 @@ from flask.json import load
 from flask_babel import lazy_gettext as _, get_locale, format_date, format_timedelta
 from jinja2 import TemplateNotFound
 from mongoengine import EmbeddedDocument, StringField, ReferenceField
+from mongoengine.base.fields import BaseField
 from mongoengine.queryset import Q
+from mongoengine.queryset.transform import STRING_OPERATORS
 from slugify import slugify as ext_slugify
 
 from lore.extensions import configured_locales, configured_langs
@@ -48,6 +50,7 @@ Document = flask_mongoengine.Document
 
 EMPTY_ID = ObjectId("000000000000000000000000")  # Needed to make empty non-matching Query objects
 
+
 # TODO replace with tools.unicode_slugify and replace ext_slugify dependency
 def slugify(title, max_length=62):
     slug = ext_slugify(title)
@@ -58,10 +61,42 @@ def slugify(title, max_length=62):
     return slug
 
 
+def to_camelcase(s):
+    # Allow colon as a separator for cases such as 'title:en'
+    # TODO fails on already camelCased input
+    return re.sub(r"[^:a-zA-Z0-9]+(.?)", lambda m: m.group(1).upper(), s.lower())
+
+
 # LOCALE RELATED PROPERTIES
 default_translated_nones = {l: None for l in configured_langs.keys()}
 default_translated_strings = {l: "" for l in configured_langs.keys()}
 configured_langs_tuples = [(lang, locale.language_name.capitalize()) for lang, locale in configured_langs.items()]
+
+
+class RegexQueriableStringField(StringField):
+    def prepare_query_value(self, op, value):
+
+        if not isinstance(op, str):
+            return value
+
+        if op in STRING_OPERATORS:
+            case_insensitive = op.startswith("i")
+            op = op.lstrip("i")
+
+            flags = re.IGNORECASE if case_insensitive else 0
+
+            regex = r"%s"
+            if op == "startswith":
+                regex = r"^%s"
+            elif op == "endswith":
+                regex = r"%s$"
+            elif op == "exact":
+                regex = r"^%s$"
+
+            # escape unsafe characters which could lead to a re.error
+            # value = re.escape(value)
+            value = re.compile(regex % value, flags)
+        return BaseField.prepare_query_value(self, op, value)
 
 
 def localized_field_labels(field_label):
@@ -329,18 +364,23 @@ def numerical_options(field_name, spans=None, labels=None):
     return return_function
 
 
-def reference_options(field_name, model, id_attr="slug", name_attr="title"):
+def reference_options(field_name, model, id_attr="slug", name_attr="title", extra_options=None):
+    if extra_options is None:
+        extra_options = []
+
     def return_function(query=None):
-        if not query:
+        rv = []
+        if query is None:
             query = model.objects()
         try:
-            return [
+            rv = [
                 FilterOption(kwargs={field_name: getattr(o, id_attr, str(o))}, label=getattr(o, name_attr, str(o)))
                 for o in query.distinct(field_name)
             ]
-        except:
-            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'")
-            return []
+            rv += extra_options
+        except Exception as e:
+            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'", e)
+        return rv
 
     return return_function
 
@@ -428,9 +468,13 @@ from7to365 = [timedelta(days=7), timedelta(days=30), timedelta(days=90), timedel
 
 def distinct_options(field_name, model):
     def return_function(query):
-        if not query:
+        rv = []
+        if query is None:
             query = model.objects()
-        rv = [FilterOption(kwargs={field_name: v}, label=v) for v in query.distinct(field_name)]
+        try:
+            rv = [FilterOption(kwargs={field_name: v}, label=v) for v in query.distinct(field_name)]
+        except Exception as e:
+            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'", e)
         return rv
 
     return return_function

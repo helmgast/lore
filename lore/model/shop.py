@@ -98,8 +98,7 @@ class Product(Document):
     slug = StringField(unique=True, max_length=62)  # URL-friendly name  # needs i18n
     product_number = StringField(max_length=10, sparse=True, unique=True, verbose_name=_("Product Number"))
     project_code = StringField(max_length=10, sparse=True, verbose_name=_("Project Code"))
-    title_i18n = MapField(
-        field=StringField(max_length=99), verbose_name=_("Title"))
+    title_i18n = MapField(field=StringField(max_length=99), verbose_name=_("Title"))
     description_i18n = MapField(field=StringField(), verbose_name=_("Description"))
     publisher = ReferenceField(Publisher, reverse_delete_rule=DENY, required=True, verbose_name=_("Publisher"))
     publish_date = StringField(max_length=20, verbose_name=_("Publishing Date"))
@@ -207,7 +206,7 @@ class Product(Document):
         return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.product_number}', '{self.world!r}', '{self.publisher!r}')"
 
 
-Product.world.filter_options = reference_options("world", Product)
+Product.world.filter_options = reference_options("world", Product, id_attr="pk")
 Product.type.filter_options = choice_options("type", Product.type.choices)
 Product.price.filter_options = numerical_options("price", [0, 50, 100, 200])
 Product.created.filter_options = datetime_delta_options("created", from7to365)
@@ -583,14 +582,15 @@ def parse_i18n_field(data, field):
 def job_import_order(job, data, **kwargs):
     if "publisher" not in data and "publisher" in job.context:
         data["publisher"] = job.context["publisher"]
-    if (
-        "vatRate" not in data and "vatrate" in job.context
-    ):  # Note small r, it's because keys are normalized from command line
+
+    if "vatRate" not in data and "vatrate" in job.context:
+        # Note small r, it's because keys are normalized from command line
         data["vatRate"] = job.context["vatrate"]
-    if (
-        "sourceUrl" not in data and "sourceurl" in job.context
-    ):  # Note small r, it's because keys are normalized from command line
+
+    if "sourceUrl" not in data and "sourceurl" in job.context:
+        # Note small r, it's because keys are normalized from command line
         data["sourceUrl"] = job.context["sourceurl"]
+
     if "title" not in data and "title" in job.context:
         data["title"] = job.context["title"]
 

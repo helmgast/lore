@@ -8,6 +8,18 @@
         (url_for('world.WorldsView:index'), _('Game Worlds'))
     ) }}{% endblock %}
 
+{% block subnavbar %}
+    <li id="tour-browse">
+        <a href="{{ url_for('world.ArticlesView:index', world_='meta') }}"><span
+                class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:blog', world_='meta') }}"><span
+                class="glyphicon glyphicon-comment"></span> {{ _('Blog') }}</a></li>
+    <li>
+        <a href="{{ url_for('world.ArticlesView:random', world_='meta') }}"><span
+                class="glyphicon glyphicon-flash"></span> {{ _('Random article') }}</a></li>
+{% endblock %}
+
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('new', res=publisher)) %}
         {{ MACRO.NEW_BUTTON(url_for('world.WorldsView:get', id='post'), _('New world')) }}
@@ -22,57 +34,19 @@
 {% block content %}
     <div class="cards">
         {% for world in worlds %}
-            <div class="card{{ ' status-unpublished' if not world.is_published() }}"
-                    {%- if world.get_feature_image -%}
-                 style="background: url({{ world.get_feature_image.feature_url(format='card') }}) center top/cover;"
-                    {%- endif -%}>
-                <a class="card-cover icon150px"
-                   href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">
-                    {% if not world.images %}
-                        <svg class="lore-icon lore-icon-stretch">
-                            <use xlink:href="#lore-earth"></use>
-                        </svg>
-                    {% endif %}
-                </a>
-                <div class="card-text">
-                    <h3 class="card-title">
-                        <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">{{ world.title }}</a>
-                    </h3>
-                    {% if world.description %}
-                        {% set desc =  (world.description|markdown|striptags|replace('gallery-center',''))|truncate(80) %}
-                    {% elif world.tagline %}
-                        {% set desc =  world.tagline|truncate(80) %}
-                    {% else %}
-                        {% set desc = _('No description') %}
-                    {% endif %}
-
-                    <div class="card-description">{{ desc }}</div>
-                    <ul class="card-details">
-                        <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
-                        {% if not world.is_published() %}
-                            <li><span
-                                    class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span>
-                            </li>
-                        {% endif %}
-                        {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
-                            <li>
-                                {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug), btnclass='btn-sm') }}
-                            </li>
-                        {% endcall %}
-                    </ul>
-                </div>
-                {% set locales = world.available_languages() %}
-                {% if locales %}
-                <ul class="flag-list">
-                {% for loc in locales.values() %}<li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>{% endfor %}
-                </ul>
-                {% endif %}
-            </div>
+            {% include "world/world_card_view.html" %}
         {% else %}
             <div class="jumbotron text-center">
-                <h2>{{ _("No worlds found") }}</h2>
+                <h2>{{ _("No worlds created") }}</h2>
             </div>
         {% endfor %}
     </div>
-    {% include "includes/pagination.html" %}
+    {% if contribution_worlds %}
+        <h2>{% trans %}Worlds contributed to:{% endtrans %}</h2>
+        <div class="cards">
+        {% for world in contribution_worlds %}
+            {% include "world/world_card_view.html" %}
+        {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}

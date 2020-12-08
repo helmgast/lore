@@ -237,6 +237,7 @@
 
             <div class="{% block content_class %}col-lg-12 col-md-12 col-sm-12 content{% endblock %}">
                 {% block content %}{% endblock content %}
+                {% block post_content %}{% endblock post_content %}
             </div>
 
             <aside class="{% block asides_class %}hide{% endblock %}">
@@ -244,7 +245,7 @@
                 {% endblock asides %}
             </aside>
         </div>
-        {% block post_content %}{% endblock post_content %}
+        {% block end_main %}{% endblock end_main %}
     </div>
 {% endblock main %}
 

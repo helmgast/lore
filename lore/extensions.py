@@ -1,11 +1,13 @@
 import re
 import types
+from operator import attrgetter
 
 from datetime import datetime
 
 import jinja2
 from babel import Locale
 from bson.objectid import ObjectId
+from io import StringIO
 
 from flask import abort, request, session, current_app, g, render_template
 from flask_babel import Babel
@@ -347,6 +349,19 @@ class AutolinkedImage(Extension):
         md.treeprocessors["gallery"] = GalleryList()
 
 
+# Hack to support removing markdown from text
+def unmark_element(element, stream=None):
+    if stream is None:
+        stream = StringIO()
+    if element.text:
+        stream.write(element.text)
+    for sub in element:
+        unmark_element(sub, stream)
+    if element.tail:
+        stream.write(element.tail)
+    return stream.getvalue()
+
+
 def build_md_filter(md_instance):
     @evalcontextfilter
     def markdown_filter(eval_ctx, stream):
@@ -374,6 +389,9 @@ class SilentUndefined(Undefined):
         return None
 
 
+# Jinja Filters
+
+
 def currentyear(nada):
     return datetime.utcnow()
     # return datetime.utcnow().strftime('%Y')
@@ -391,3 +409,44 @@ def dict_with(value, **kwargs):
 
 def first_p_length(string):
     return len(string.strip().splitlines()[0]) if string else 0
+
+
+def lookup(s, dct, default=None):
+    return dct.get(s, s or default)
+
+
+def safe_id(s):
+    # Replaces character not safe for HTML ID:s https://www.w3.org/TR/html4/types.html#type-id
+    s = re.sub(r"^[^A-Za-z]", "", s)
+    s = re.sub(r"[^A-Za-z0-9-_:]+", "-", s)
+    return s
+
+
+def filter_by_any_scopes(items, *scopes_to_match):
+    """Filters a list of items based on if their scopes match any of the provided scopes.
+    An item matches if it has no scope (valid for any scope) or if the intersection
+    of item's scopes and scopes to match is at least one (e.g at least one scope in both).
+
+    Args:
+        items ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    scopes_to_match = set(scopes_to_match)
+    return [i for i in items if not i.scopes or set(map(attrgetter("pk"), i.scopes)) & scopes_to_match]
+
+
+def filter_by_all_scopes(items, *scopes_to_match):
+    """Filters a list of items based on if their scopes match all the provided scopes.
+    An item matches if it has no scope (valid for any scope) or if scopes to match is
+    a subset of the items scopes.
+
+    Args:
+        items ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
+    scopes_to_match = set(scopes_to_match)
+    return [i for i in items if not i.scopes or set(map(attrgetter("pk"), i.scopes)) >= scopes_to_match]

@@ -101,6 +101,8 @@ def populate_user(user, user_info, token_info=None):
 def callback():
     # Note: This callback applies both to login and signup, there is no difference.
 
+    # TODO we might get an error here, better display that instead ?error=access_denied&error_description=ManagementClient%20is%20not%20a%20constructor#
+
     support_email = current_app.config["MAIL_DEFAULT_SENDER"]
     code = request.args.get("code", None)
     if not code:
@@ -368,7 +370,8 @@ def get_logged_in_user(require_active=True):
                 # py2.7 (bytes) to py 3.6 (unicode)
                 if hasattr(uid, "decode"):
                     uid = uid.decode()
-                u = User.objects(id=uid).comment("Logged in user").first()
+                # u = User.objects(id=uid).comment("Logged in user").first()
+                u = User.objects(id=uid).first()  # .comment() not supported by mongomock?
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
                         # Server has logged us out or the user is not active so cannot be considered logged in

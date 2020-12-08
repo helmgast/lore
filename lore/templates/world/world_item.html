@@ -26,7 +26,7 @@
         (url_for('world.WorldsView:get', id=world.slug if world else 'post'), self.content_title())
     ) }}{% endblock %}
 
-{% block subnavbar %}{{ super() }}
+{% block subnavbar %}
     <li id="tour-browse">
         <a href="{{ url_for('world.ArticlesView:index', world_=world.slug) }}"><span
                 class="glyphicon glyphicon-filter"></span> {{ _('Browse') }}</a></li>
@@ -236,7 +236,7 @@
         {% if world.product_url or world.publisher.webshop_activated %}
         <p class="text-center">
             <a class="btn btn-lg btn-info"
-               href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.slug) }}">
+               href="{{ world.product_url if world.product_url else url_for('shop.ProductsView:index', world=world.pk) }}">
                 {% trans %}Buy in shop{% endtrans %}
             </a>
         </p>
@@ -256,7 +256,7 @@
             {% endif %}
             <tr>
                 <td colspan=2>
-                    <a href="{{url_for('shop.ProductsView:index', world=world.slug)}}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Product Catalogue') }}</a>
+                    <a href="{{url_for('shop.ProductsView:index', world=world.pk)}}"><span class="glyphicon glyphicon-shopping-cart"></span> {{ _('Product Catalogue') }}</a>
                 </td>
             </tr>
             {# <tr>
