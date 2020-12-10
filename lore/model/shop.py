@@ -731,6 +731,8 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
     if currency is not None:
         if currency.lower() in Currencies:
             order.currency = currency.lower()
+        elif currency == "":  # An empty currency means we want to set currency blank
+            order.currency = None
         else:
             raise ValueError(f"Currency {currency} not supported")
     cur = order.currency  # Shorthand
@@ -755,8 +757,8 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
         totPrice = parse_price(get(data, "pledgeAmount", None))
         rewardPrice = parse_price(get(data, "rewardMinimum", None) or get(data, "backingMinimum", None))
         shipping_price = parse_price(get(data, "shippingAmount", None))
-        if not cur:
-            # Attempt to read currency from first encountered price
+        if not cur and (totPrice or rewardPrice or shipping_price):
+            # As we have a price, we haft to have a currency for the order, and will try to gues it
             if totPrice.keys():
                 order.currency = list(totPrice.keys())[0].lower()
             elif rewardPrice.keys():
