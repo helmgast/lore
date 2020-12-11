@@ -375,7 +375,7 @@ class FileAsset(Document):
         ):
             # A cloudinary URL
             return
-        elif (self.source_file_url and not self.file_data) and (not self.source_filename or self.content_type):
+        elif (self.source_file_url and not self.file_data) and not (self.source_filename and self.content_type):
             metadata = sniff_remote_file(self.source_file_url)
             self.source_filename = metadata["fname"]
             self.content_type = metadata["content_type"]
