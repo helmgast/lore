@@ -139,7 +139,7 @@ def configure_logging(app):
                 integrations=[FlaskIntegration(transaction_style="url")],
                 send_default_pii=True,
                 release=app.config.get("VERSION", None),
-                traces_sample_rate=app.config.get("SENTRY_SAMPLE_RATE", 1.0),
+                traces_sample_rate=float(app.config.get("SENTRY_SAMPLE_RATE", "1.0")),
             )
         else:
             app.logger.warning("Running without Sentry error monitoring; no SENTRY_DSN in config")
