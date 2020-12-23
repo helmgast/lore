@@ -16,7 +16,7 @@ markdown
 nltk
 oauth2client
 panflute==1.12.5
-Pillow>=7.0.0
+Pillow>=8.0.0
 pyphen
 pyqrcode
 python-dateutil

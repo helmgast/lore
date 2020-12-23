@@ -105,6 +105,8 @@ class ShortcutsView(ResourceView):
 
 ShortcutsView.register_with_access(admin, "shortcut")
 
+# Review EventListeners on https://shop.textalk.se/backend/jsonrpc/v1/console/ using Admin auth token
+# Query for `EventListener.list(true, {})`
 
 @csrf.exempt
 @admin.route("/import_textalk/<model>", methods=["POST"])
@@ -132,6 +134,7 @@ def import_webhook(model):
             job = Job()
             order = import_order(data, job=job, commit=True)
             if order is not None:
+                logger.info(f"Got paymentStatus={data.get('paymentStatus',None)}, deliveryStatus={data.get('deliveryStatus',None)}.")
                 logger.info(f"Imported {order!r} from {uid}, {job}")
             else:
                 logger.info(f"Skipped importing order {uid}, {job}")

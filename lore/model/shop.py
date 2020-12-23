@@ -328,7 +328,7 @@ class Order(Document):
     def __repr__(self):
         """A string representation suitable for logging and debugging. Call with !r after variable in f-strings.
         """
-        return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.external_key}', '{self.user!r}', '{self.publisher!r}')"
+        return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.external_key}', '{self.user!r}', '{self.status!r}')"
 
     @staticmethod
     def calc_vat(price, rate):

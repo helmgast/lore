@@ -8,14 +8,16 @@
 - [World Anvil](https://www.worldanvil.com/). Online, paid up to 150 USD/y. The most capable, something for Lore to aspire to.
 - [Fandom.com](https://fandom.com). Has most of the content for books, movies and games already.
 - [Legend Keeper](https://www.legendkeeper.com/). New and stylish, focused around maps, still in beta.
+- [Role](https://www.playrole.com/). New and stylish, early access. Focused on ease of finding people to play with.
 
 # Some user's own game wikis with content
 
 - http://kaigon.se/wiki/?title=Den_sj%C3%A4tte_konfluxen_(kampanj)
 - Olas Mundanapedia
-- http://www.moorcrest.se/2018/11/11/evoluotica-absurdum-zero/?fbclid=IwAR1feoxhwP2zZq4lx5yL4LnHuTuhjFuCyzRHUbEOSBqY5jAl2I9aQXvTa68
-- http://segmarian.shoutwiki.com/?fbclid=IwAR34xSNFSOidkDglXB2qnynu_6eeEXND-6xLpBc0Mujziqcm7zLLwyrz8dI
-- https://theenemywithinremixed.wordpress.com/?fbclid=IwAR1aTNB81eTv56DUNwly-8v6spXPtaXXloLBFx3Y3sVoUVtPXqAzbUcpz3w
+- http://www.moorcrest.se/2018/11/11/evoluotica-absurdum-zero/
+- http://segmarian.shoutwiki.com/
+- https://theenemywithinremixed.wordpress.com/
+- http://erebaltor.se/
 
 # How Lore can compete?
 
