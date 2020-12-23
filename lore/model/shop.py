@@ -861,7 +861,8 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
         order.status = status
     elif order.email and deliveryStatus == "sent":
         order.status = OrderStatus.shipped
-    elif order.email and (paymentStatus == "paid" or pledgedStatus == "collected"):
+    elif order.email and (paymentStatus == "paid" or paymentStatus == "reserved" or pledgedStatus == "collected"):
+        # TODO currently treating Abicart reserved as paid
         order.status = OrderStatus.paid
     elif deliveryStatus == "unsent" or paymentStatus == "unpaid":
         if paymentStatus == "unpaid":
