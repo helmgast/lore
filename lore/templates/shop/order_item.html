@@ -8,9 +8,11 @@
     {% elif args['view']=='pay' %}
         {{ _('Pay') }}
     {% else %}
-        {# {{ order }} #}
+        {# Nothing, because a content heading looks weird #}
     {% endif %}
 {% endblock %}
+
+{% block title %}{{ order if order else _('Order') }} {% endblock %}
 
 {% block content_tagline %} {% if args['view'] in ['details','pay'] %}{{ _("make sure it's correct!") }}
 {% endif %}{% endblock %}

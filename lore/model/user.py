@@ -174,10 +174,11 @@ class User(Document, BaseUser):
         remove_user.identities = None
         remove_user.save()
         msg = (
-            f"User '{self.email}' ({self.id}) merged in user '{remove_user.email}' ({remove_user.id}), moving "
+            f"User '{remove_user.email}' ({remove_user.id}) set as deleted and merged INTO user '{self.email}' ({self.id}), moving "
             + f"{changed_orders} orders and {changed_events} events"
         )
         logger.warning(msg)
+        return msg
         # keep_user will be saved when we return out of this func
 
     def clean(self):
@@ -214,6 +215,9 @@ class User(Document, BaseUser):
 
     def __str__(self):
         return self.display_name()
+
+    def __repr__(self):
+        return f"{self.__class__}('{self.pk!r}', '{self.email}', '{self.join_date}', '{self.status}', '{self.identities!r}')"
 
     def full_string(self):
         return "%s (%s)" % (self.username, self.realname)

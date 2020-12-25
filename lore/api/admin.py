@@ -107,6 +107,8 @@ ShortcutsView.register_with_access(admin, "shortcut")
 
 # Review EventListeners on https://shop.textalk.se/backend/jsonrpc/v1/console/ using Admin auth token
 # Query for `EventListener.list(true, {})`
+# To import single one from cmd line
+# flask import-textalk order --filter='{"/uid": {"equals": 173673079}}' --publisher helmgast.se --title Webshop --sourceurl 'https://webshop.helmgast.se' -c
 
 @csrf.exempt
 @admin.route("/import_textalk/<model>", methods=["POST"])
@@ -126,22 +128,23 @@ def import_webhook(model):
         and webshop in current_app.config["TEXTALK_URL"]
         and uid
     ):
-        try:
-            data = rpc_get("Order.get", uid, order_default_fields_to_return)
-            data["publisher"] = publisher
-            data["title"] = "Webshop"
-            data["sourceUrl"] = "https://webshop.helmgast.se"
-            job = Job()
-            order = import_order(data, job=job, commit=True)
-            if order is not None:
-                logger.info(f"Got paymentStatus={data.get('paymentStatus',None)}, deliveryStatus={data.get('deliveryStatus',None)}.")
-                logger.info(f"Imported {order!r} from {uid}, {job}")
-            else:
-                logger.info(f"Skipped importing order {uid}, {job}")
-            return "OK", 200
-        except Exception as e:
-            logger.error(e)
-            capture_exception(e)
+        # If we don't capture it, we get the full exception to Sentry
+        # try:
+        data = rpc_get("Order.get", uid, order_default_fields_to_return)
+        data["publisher"] = publisher
+        data["title"] = "Webshop"
+        data["sourceUrl"] = "https://webshop.helmgast.se"
+        job = Job()
+        order = import_order(data, job=job, commit=True)
+        if order is not None:
+            logger.info(f"Got paymentStatus={data.get('paymentStatus',None)}, deliveryStatus={data.get('deliveryStatus',None)}.")
+            logger.info(f"Imported {order!r} from {uid}, {job}")
+        else:
+            logger.info(f"Skipped importing order {uid}, {job}")
+        return "OK", 200
+        # except Exception as e:
+        #     logger.error(e)
+        #     capture_exception(e)
     elif (
         model.lower() == "product"
         and event_class == "Article"

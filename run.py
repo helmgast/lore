@@ -235,6 +235,54 @@ def import_csv():
 
 
 @app.cli.command()
+@click.argument("main_user", required=True)
+@click.argument("merge_in", required=True)
+@click.pass_context
+def merge_users(ctx, main_user, merge_in):
+    from lore.api.resource import objid_matcher
+    from lore.model.user import User
+    from mongoengine.connection import get_db
+    from lore import extensions
+
+    extensions.db.init_app(app)
+    db = get_db()
+    if objid_matcher.match(main_user):
+        main_u = User.objects(id=main_user).first()
+        if not main_u:
+            ctx.fail(f"Couldn't find user {main_user}")
+    else:
+        main_u = list(User.query_user_by_email(main_user))
+        if len(main_u) > 1:
+            ctx.fail(f"Got multiple users for {main_user}: {main_u}")
+        elif not main_u:
+            ctx.fail(f"Couldn't find user {main_user}")
+        else:
+            main_u = main_u[0]
+
+    if objid_matcher.match(merge_in):
+        merge_u = User.objects(id=merge_in).first()
+        if not merge_u:
+            ctx.fail(f"Couldn't find user {merge_in}")
+    else:
+        merge_u = User.query_user_by_email(merge_in)
+        if len(merge_u) > 1:
+            ctx.fail(f"Got multiple users for {merge_in}: {merge_u}")
+        elif not merge_u:
+            ctx.fail(f"Couldn't find user {merge_in}")
+        else:
+            merge_u = merge_u[0]
+
+    print(f"Main user: \n{main_u!r}\nwill have following user merged in and marked 'deleted':\n{merge_u!r}")
+    if main_u == merge_u:
+        print("Can't merge user into itself")
+        click.abort()
+    click.confirm("Do you want to continue?", abort=True)
+    rv = main_u.merge_in_user(merge_u)
+    main_u.save()
+    print(rv)
+
+
+@app.cli.command()
 @click.argument("url_or_id", required=True)
 @click.argument("model", required=True)
 @click.option("-s", "--sheet", required=False, help="Name or index of worksheet, if URL lacks #gid=x parameter")
@@ -285,7 +333,7 @@ def import_sheet(url_or_id, model, **kwargs):
 @click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
 @click.option("--log-level", default="INFO")
 @click.option("--limit", default=10, type=int, help="Maximum amounts of items to import")
-@click.option("--filter", help="Free text wildcard pattern to filter which items to import")
+@click.option("--filter", help="JSON filter object to textalk")
 @click.option("--publisher", required=False, help="Publisher domain to associate import with")
 @click.option("--vatrate", required=False, help="VAT Rate to apply to all orders")
 @click.option("--title", required=False, help="Overall import title")

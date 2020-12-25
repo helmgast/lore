@@ -128,10 +128,7 @@ def import_orders(fields_to_return=None, commit=False, log_level=LogLevel.INFO, 
         raise ValueError("Requires a publisher domain")
     filters = {"/discarded": False, "/customer/info/type": {"equals": "individual"}}
     if filter:
-        try:
-            filters.update(json.loads(filter))
-        except Exception:
-            pass
+        filters.update(json.loads(filter))
 
     data = rpc_list("Order.list", fields_to_return, filters=filters, total_limit=limit)
     # for d in data:

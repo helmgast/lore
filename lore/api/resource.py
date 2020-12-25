@@ -332,9 +332,10 @@ class ResourceResponse(Response):
                 session["_flashes"] = []
             return jsonify(rv), self.status
         else:  # csv
-            logger.warn(
-                f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
-            )
+            # To chatty in log, this happens a lot
+            # logger.warn(
+            #     f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
+            # )
             abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
