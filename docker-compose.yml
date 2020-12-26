@@ -7,7 +7,7 @@ services:
     environment:
       - LORE_AUTH0_DOMAIN=helmgast.eu.auth0.com
       - LORE_PRODUCTION=True
-      - LORE_DEFAULT_HOST=lore.pub.test
+      - LORE_DEFAULT_HOST=lore.pub
       - LORE_DEBUG_MAIL_OVERRIDE=False
       - LORE_GOOGLE_SERVICE_ACCOUNT_PATH=/data/config/google_service_account.json
       - LORE_CLOUDINARY_DOMAIN=helmgast
