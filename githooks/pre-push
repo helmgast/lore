@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+echo "Pre-push hook: build and push Docker image"
+docker-compose build
+docker-compose push

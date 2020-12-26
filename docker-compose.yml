@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  lore:
+    build: .
+    command: "/usr/local/bin/gunicorn -w 5 --threads 4 -b :5000 --enable-stdio-inheritance run:app"
+    environment:
+      - LORE_AUTH0_DOMAIN=helmgast.eu.auth0.com
+      - LORE_PRODUCTION=True
+      - LORE_DEFAULT_HOST=lore.pub.test
+      - LORE_DEBUG_MAIL_OVERRIDE=False
+      - LORE_GOOGLE_SERVICE_ACCOUNT_PATH=/data/config/google_service_account.json
+      - LORE_CLOUDINARY_DOMAIN=helmgast
+      - LORE_SENTRY_SAMPLE_RATE=0.01
+      - FLASK_APP=run.py
+    expose:
+      - "5000"
+    image: "helmgast/lore:master"
+    volumes:
+      - /data/cache
+      - /Users/martin/dev/deploy/helmgast/data/www:/data/www:delegated
+      - /Users/martin/dev/src/lore/google_service_account.json:/data/config/google_service_account.json
+    container_name: lore-1
+
+networks:
+  default:
+    external:
+      name: config_default
