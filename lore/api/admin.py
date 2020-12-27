@@ -12,10 +12,9 @@ from flask import Blueprint, abort, current_app, flash, g, json, redirect, reque
 from flask_babel import lazy_gettext as _
 from flask_mongoengine.wtf import model_form
 from mongoengine import NotUniqueError, ValidationError
-from jsonrpcclient.clients.http_client import HTTPClient
-from jsonrpcclient.requests import Request
 from lore.api.resource import (
-    FilterableFields, ImprovedBaseForm,
+    FilterableFields,
+    ImprovedBaseForm,
     ImprovedModelConverter,
     ItemResponse,
     ListResponse,
@@ -26,8 +25,7 @@ from lore.api.resource import (
 from lore.extensions import csrf
 from lore.model.world import Shortcut
 from tools.import_textalk import order_default_fields_to_return, product_default_fields_to_return, rpc_get
-import urllib.parse
-from lore.model.shop import import_order, import_product
+from lore.model.shop import Order, OrderStatus, import_order, import_product
 from sentry_sdk import capture_exception, capture_message
 from tools.batch import Job
 
@@ -110,50 +108,46 @@ ShortcutsView.register_with_access(admin, "shortcut")
 # To import single one from cmd line
 # flask import-textalk order --filter='{"/uid": {"equals": 173673079}}' --publisher helmgast.se --title Webshop --sourceurl 'https://webshop.helmgast.se' -c
 
+
 @csrf.exempt
 @admin.route("/import_textalk/<model>", methods=["POST"])
 def import_webhook(model):
     f = request.form
     # Expected formdata body: class=Order&event=discarded&uid=156748351&webshop=49251
+    model = model.lower()
     event_class = f.get("class", None)
     event_name = f.get("event", None)
     webshop = f.get("webshop", None)
-    uid = f.get("uid")
+    uid = f.get("uid", None)
     publisher = "helmgast.se"  # TODO this is currently locked to one publisher
 
-    if (
-        model.lower() == "order"
-        and event_class == "Order"
-        and event_name == "paid"
-        and webshop in current_app.config["TEXTALK_URL"]
-        and uid
-    ):
-        # If we don't capture it, we get the full exception to Sentry
-        # try:
-        data = rpc_get("Order.get", uid, order_default_fields_to_return)
-        data["publisher"] = publisher
-        data["title"] = "Webshop"
-        data["sourceUrl"] = "https://webshop.helmgast.se"
-        job = Job()
-        order = import_order(data, job=job, commit=True)
-        if order is not None:
-            logger.info(f"Got paymentStatus={data.get('paymentStatus',None)}, deliveryStatus={data.get('deliveryStatus',None)}.")
-            logger.info(f"Imported {order!r} from {uid}, {job}")
-        else:
-            logger.info(f"Skipped importing order {uid}, {job}")
-        return "OK", 200
-        # except Exception as e:
-        #     logger.error(e)
-        #     capture_exception(e)
-    elif (
-        model.lower() == "product"
-        and event_class == "Article"
-        and event_name == "created"
-        or event_name == "changed"
-        and webshop in current_app.config["TEXTALK_URL"]
-        and uid
-    ):
-        try:
+    try:
+        if not uid:
+            raise Exception("Missing/empty uid from event form data")
+        if webshop not in current_app.config["TEXTALK_URL"]:
+            raise Exception("Event received for incorrect webshop {webshop}")
+
+        if model == "order" and event_class == "Order" and event_name == "paid":
+            data = rpc_get("Order.get", uid, order_default_fields_to_return)
+            data["publisher"] = publisher
+            data["title"] = "Webshop"
+            data["sourceUrl"] = "https://webshop.helmgast.se"
+            job = Job()
+            order = import_order(data, job=job, commit=True)
+            if order is not None:
+                logger.info(f"Imported {order!r} from {uid}, {job}")
+            else:
+                logger.info(f"Skipped importing order {uid}, {job}")
+
+        elif model == "order" and event_class == "Order" and event_name == "discarded":
+            order = Order.objects(external_key=uid).first()
+            if not order:
+                raise Exception(f"Event requested to discard order with external key {uid} but no such order exists")
+            order.status = OrderStatus.discarded
+            order.save()
+            logger.info(f"Discarded {order!r} with {uid}")
+
+        elif model == "product" and event_class == "Article" and event_name in ["created", "changed"]:
             data = rpc_get("Article.get", uid, product_default_fields_to_return)
             data["publisher"] = publisher
             job = Job()
@@ -162,15 +156,14 @@ def import_webhook(model):
                 logger.info(f"Imported {product!r} from {uid}, {job}")
             else:
                 logger.info(f"Skipped importing product {uid}, {job}")
-            return "OK", 200
-        except Exception as e:
-            logger.error(e)
-            capture_exception(e)
-    else:
-        msg = f"Incorrect event data received: {request.data}"
-        logger.error(msg)
-        capture_message(msg)
-        abort(400, msg)
+
+        else:
+            raise Exception(f"Unsupported event model={model}, event_class={event_class}, event_name={event_name}")
+    except Exception as e:
+        capture_exception(e)
+        logger.error(e)
+    # Event Webhook will deactivate if too many errors thrown, better handle errors and return 200
+    return "OK", 200
 
 
 @csrf.exempt

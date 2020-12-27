@@ -1,3 +1,4 @@
+from json.decoder import JSONDecodeError
 from flask import current_app
 from jsonrpcclient.clients.http_client import HTTPClient
 from jsonrpcclient.requests import Request
@@ -13,7 +14,9 @@ if "TEXTALK_URL" in current_app.config:
 def rpc_get(method, *args):
     r = Request(method, *args)
     response = rpc_client.send(r)
-    return response.data.result
+    # Fix for https://github.com/bcb/jsonrpcclient/issues/156
+    reencoded_result = response.raw.json()["result"]
+    return reencoded_result
 
 
 def rpc_list(method, *args, **kwargs):
@@ -27,20 +30,26 @@ def rpc_list(method, *args, **kwargs):
     if kwargs:
         kwargs["limit"] = page_limit
         kwargs["offset"] = 0
-    result, returned = [], page_limit
+    results, returned = [], page_limit
     while returned == page_limit and kwargs.get("limit") > 0:
         # If not equal, we got less than we asked for and has reached the end of the list
         r = Request(method, *args, **kwargs)
         print(r)
         response = rpc_client.send(r)
-        result.extend(response.data.result)
-        returned = len(response.data.result)
+        # if response.raw.status_code == 200:
+        #     with open(f"{kwargs['filters']['/uid']['equals']}.raw", "wb") as f:
+        #         for chunk in response.raw.iter_content(1024):
+        #             f.write(chunk)
+        # Fix for https://github.com/bcb/jsonrpcclient/issues/156
+        reencoded_result = response.raw.json()["result"]
+        results.extend(reencoded_result)
+        returned = len(reencoded_result)
         if kwargs:
             kwargs["offset"] = kwargs["offset"] + page_limit
             if total_limit > 0 and kwargs["offset"] + page_limit > total_limit:
                 # We need less then another page to fulfill total, so we will set next query to be small enough
                 kwargs["limit"] = total_limit - kwargs["offset"]
-    return result
+    return results
 
 
 product_default_fields_to_return = [
@@ -65,14 +74,14 @@ def import_articles(fields_to_return=None, commit=False, log_level=LogLevel.INFO
     # args to add: filter, customizable fields_to_return, template data, replace or not
     if not fields_to_return:
         fields_to_return = product_default_fields_to_return
-    if "publisher" not in kwargs:
+    if not kwargs.get("publisher", None):
         raise ValueError("Requires a publisher domain")
     filters = {"/draft": False}
     if filter:
         try:
             filters.update(json.loads(filter))
-        except Exception:
-            pass
+        except JSONDecodeError as jde:
+            raise ValueError(f"Couldn't parse filter `{filter}`") from jde
     data = rpc_list("Article.list", fields_to_return, filters=filters, total_limit=limit)
     columns = [
         Column("TITLE                                  ", "name", "title"),
@@ -144,7 +153,7 @@ def import_orders(fields_to_return=None, commit=False, log_level=LogLevel.INFO, 
             Column("CREATED", "ordered", "created"),
             Column("PRICE", "", "total_price"),
         ],
-        **kwargs
+        **kwargs,
     )
     batch.process(data, job_import_order)
     print(batch.summary_str())

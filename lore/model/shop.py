@@ -488,6 +488,7 @@ def parse_url_assets(urls, document, commit=False, slug_prefix="", locked_to_pro
         if google_urls:
             out["source_file_url"] = google_urls["direct"]
         fa = FileAsset.objects(source_file_url=out["source_file_url"]).first()
+        # TODO may break if URL is different but slug ends up the same
         if not fa:
             fa = FileAsset(publisher=document.publisher, **out)
             if fa.title:

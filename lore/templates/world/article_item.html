@@ -419,7 +419,7 @@
             {% set ass_dict = topic.associations_by_r1(topic_names) %}
             {% for role, ass in ass_dict.items() %}
                 {% set role_title = ass[0].kind.pk|lookup(topic_names) %}
-                <h5>{{role_title.find_names(scopes=[role.pk])[0].name}}</h5>
+                <h5>{{role_title if role_title is string else role_title.find_names(scopes=[role.pk])[0].name}}</h5>
                 <div class="btn-set">
                 {% for a in ass %}
                     {% set at = a.t2.pk|lookup(topic_names) %}

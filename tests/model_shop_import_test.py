@@ -1,10 +1,12 @@
+import logging
+import re
 import pytest
 import json
 import responses
 from datetime import datetime
 
 from lore.model.user import Event, User
-from lore.model.shop import Order, OrderLine, import_order, import_product, FX_IN_SEK
+from lore.model.shop import Order, OrderLine, OrderStatus, Product, import_order, import_product, FX_IN_SEK
 from tools.import_sheets import to_camelcase
 
 # TESTS TO DO
@@ -209,7 +211,14 @@ def test_textalk_order_update(mongomock, app_client, db_loaded_product_data, tex
 
     uid = textalk_order["uid"]
 
-    changed = {"uid": uid, "customer": {"info": {"email": "user2@email.com",}}}
+    changed = {
+        "uid": uid,
+        "customer": {
+            "info": {
+                "email": "user2@email.com",
+            }
+        },
+    }
     new_order = import_order(changed, commit=False, if_newer=False)
     assert set(new_order._changed_fields) == {"user", "email"}
 
@@ -506,10 +515,11 @@ def sheets_product():
 def test_product_import(mongomock, app_client, db_loaded_product_data, mocked_responses, sheets_product):
 
     # Set up mocked responses to request, for faster test and reproducibility
-    mocked_responses.add(mock_urls["google_png"])
-    mocked_responses.add(mock_urls["google_pdf"])
     mocked_responses.add(mock_urls["textalk_png1"])
     mocked_responses.add(mock_urls["textalk_png2"])
+    # Commented out below, because we are currently bypassing content sniffing if we get a filename string in the import
+    # mocked_responses.add(mock_urls["google_png"])
+    # mocked_responses.add(mock_urls["google_pdf"])
 
     product = import_product(sheets_product, commit=True)
 
@@ -525,3 +535,98 @@ def test_product_import(mongomock, app_client, db_loaded_product_data, mocked_re
     assert product.downloads[0].source_file_url == mock_urls["google_pdf"].url
     assert product.downloads[0].title == "Aspekt Biotropi.pdf"
     assert product.downloads[0].slug == "neotech/abc-123/aspekt-biotropi.pdf"
+
+
+def test_textalk_hook_new_product(
+    caplog, app_client, mongomock, mocked_responses, db_loaded_product_data, textalk_product
+):
+
+    # Need to mock the json rpc request made by this endpoint
+    json_rpc_data = {"result": {}, "jsonrpc": "2.0", "id": 1, "result": textalk_product}
+    mocked_responses.add(
+        responses.Response(method="POST", url=app_client.application.config.get("TEXTALK_URL"), json=json_rpc_data)
+    )
+
+    # Will catch any request to sniff images
+    mocked_responses.add(responses.Response(method="GET", url=re.compile(r"^https:\/\/shopcdn\.textalk\.se")))
+
+    caplog.set_level(logging.ERROR)  # Only log at error level or higher
+    rv = app_client.post(
+        "/admin/import_textalk/product",
+        data={"class": "Article", "event": "created", "uid": "171461595", "webshop": "49251"},
+    )
+    assert rv.status_code == 200
+    assert caplog.records == []  # Check that we didn't receive any log messages at ERROR or higher
+    product = Product.objects(product_number="NEO-102").first()
+    assert product.title_i18n["en"] == "Neotech Edge Pearl River Delta"  # Removed SOLD OUT tag
+    assert product.publisher.slug == "helmgast.se"
+
+
+def test_textalk_hook_paid_order(
+    caplog, app_client, mongomock, mocked_responses, db_loaded_product_data, textalk_order
+):
+
+    # Need to mock the json rpc request made by this endpoint
+    json_rpc_data = {"result": {}, "jsonrpc": "2.0", "id": 1, "result": textalk_order}
+    mocked_responses.add(
+        responses.Response(method="POST", url=app_client.application.config.get("TEXTALK_URL"), json=json_rpc_data)
+    )
+
+    caplog.set_level(logging.ERROR)  # Only log at error level or higher
+    rv = app_client.post(
+        "/admin/import_textalk/order",
+        data={"class": "Order", "event": "paid", "uid": "156818955", "webshop": "49251"},
+    )
+    assert rv.status_code == 200
+    assert caplog.records == []  # Check that we didn't receive any log messages at ERROR or higher
+    order = Order.objects(external_key="156818955").first()
+    assert order.title == "Webshop"
+    assert order.source_url == "https://webshop.helmgast.se"
+    assert order.status == OrderStatus.shipped
+
+    caplog.clear()
+    rv = app_client.post(
+        "/admin/import_textalk/order",
+        data={"class": "Order", "event": "discarded", "uid": "156818955", "webshop": "49251"},
+    )
+    assert rv.status_code == 200
+    assert caplog.records == []  # Check that we didn't receive any log messages at ERROR or higher
+    order = Order.objects(external_key="156818955").first()
+    assert order.status == OrderStatus.discarded
+
+
+def test_textalk_hook_error_cases(caplog, app_client):
+    # We use caplog to capture the logger and assert on them, because the route is setup
+    # to always return 200 OK
+
+    rv = app_client.post(
+        "/admin/import_textalk/product",
+        data={"class": "BadClass", "event": "created", "uid": "123", "webshop": "00000"},
+    )
+    assert "incorrect webshop" in caplog.text
+    assert rv.status_code == 200
+    caplog.clear()
+
+    rv = app_client.post(
+        "/admin/import_textalk/product",
+        data={},
+    )
+    assert "empty uid" in caplog.text
+    assert rv.status_code == 200
+    caplog.clear()
+
+    rv = app_client.post(
+        "/admin/import_textalk/product",
+        data={"class": "BadClass", "event": "created", "uid": "123", "webshop": "49251"},
+    )
+    assert "Unsupported event" in caplog.text
+    assert rv.status_code == 200
+    caplog.clear()
+
+    rv = app_client.post(
+        "/admin/import_textalk/product",
+        data={"class": "Article", "event": "badevent", "uid": "123", "webshop": "49251"},
+    )
+    assert "Unsupported event" in caplog.text
+    assert rv.status_code == 200
+    caplog.clear()
