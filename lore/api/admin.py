@@ -26,7 +26,6 @@ from lore.extensions import csrf
 from lore.model.world import Shortcut
 from tools.import_textalk import order_default_fields_to_return, product_default_fields_to_return, rpc_get
 from lore.model.shop import Order, OrderStatus, import_order, import_product
-from sentry_sdk import capture_exception, capture_message
 from tools.batch import Job
 
 admin = Blueprint("admin", __name__)
@@ -123,9 +122,9 @@ def import_webhook(model):
 
     try:
         if not uid:
-            raise Exception("Missing/empty uid from event form data")
+            raise ValueError("Missing/empty uid from event form data")
         if webshop not in current_app.config["TEXTALK_URL"]:
-            raise Exception("Event received for incorrect webshop {webshop}")
+            raise ValueError("Event received for incorrect webshop {webshop}")
 
         if model == "order" and event_class == "Order" and event_name == "paid":
             data = rpc_get("Order.get", uid, order_default_fields_to_return)
@@ -141,11 +140,12 @@ def import_webhook(model):
 
         elif model == "order" and event_class == "Order" and event_name == "discarded":
             order = Order.objects(external_key=uid).first()
-            if not order:
-                raise Exception(f"Event requested to discard order with external key {uid} but no such order exists")
-            order.status = OrderStatus.discarded
-            order.save()
-            logger.info(f"Discarded {order!r} with {uid}")
+            if order:
+                order.status = OrderStatus.discarded
+                order.save()
+                logger.info(f"Discarded {order!r} with {uid}")
+            else:
+                logger.warning(f"Was asked to discard order {uid} but no such exists, ignoring")
 
         elif model == "product" and event_class == "Article" and event_name in ["created", "changed"]:
             data = rpc_get("Article.get", uid, product_default_fields_to_return)
@@ -158,10 +158,9 @@ def import_webhook(model):
                 logger.info(f"Skipped importing product {uid}, {job}")
 
         else:
-            raise Exception(f"Unsupported event model={model}, event_class={event_class}, event_name={event_name}")
+            raise ValueError(f"Unsupported event model={model}, event_class={event_class}, event_name={event_name}")
     except Exception as e:
-        capture_exception(e)
-        logger.error(e)
+        logger.exception(e)  # Also reports to Sentry
     # Event Webhook will deactivate if too many errors thrown, better handle errors and return 200
     return "OK", 200
 
@@ -251,4 +250,3 @@ def git_webhook(get_json=None):
             logger.warning("Error fetching repo for {data}, got {out}".format(data=repo_meta, out=cpe.output))
             return json.dumps({"msg": "Error fetching repo"}), 403
         return "OK commit {commit} to {path}".format(path=path, **repo_meta)
-

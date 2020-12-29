@@ -9,7 +9,7 @@
 
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['group'].authorize('new', res=publisher)) %}
-        {{ MACRO.NEW_BUTTON(url_for('social.GroupsView:get', id='post'), 'New group') }}
+        {{ MACRO.NEW_BUTTON(url_for('social.GroupsView:get', id='post'), _('New group')) }}
     {% endcall %}
 {% endblock %}
 

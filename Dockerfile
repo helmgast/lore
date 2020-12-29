@@ -10,7 +10,7 @@ RUN npm install
 RUN npm run build
 
 # Second stage, copy over static resources and start the python
-FROM python:3.8-alpine
+FROM python:3.9-alpine
 RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl tar
 LABEL maintainer="martin@helmgast.se"
 EXPOSE 5000

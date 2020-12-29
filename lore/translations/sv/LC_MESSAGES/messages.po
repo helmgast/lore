@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-11-02 10:10+0100\n"
+"POT-Creation-Date: 2020-12-28 12:07+0100\n"
 "PO-Revision-Date: 2014-06-08 13:26+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: sv\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: lore/api/admin.py:96
+#: lore/api/admin.py:94
 msgid "Short URL already in use"
 msgstr "Denna kortlänk används redan"
 
@@ -54,23 +54,30 @@ msgstr "Fil"
 msgid "Error in form"
 msgstr "Fel i formuläret"
 
-#: lore/api/auth.py:141
+#: lore/api/auth.py:143
 #, python-format
 msgid "Error logging in, contact %(email)s for support"
 msgstr "Fel vid inloggningen, kontakta %(email)s för support"
 
-#: lore/api/auth.py:149
+#: lore/api/auth.py:151
 msgid "Check your email inbox for verification link before you can login"
 msgstr "Kolla din email-inbox för verifieringslänken innan du kan logga in"
 
-#: lore/api/auth.py:163
+#: lore/api/auth.py:159
+msgid ""
+"Your login source is missing an email, which we require. Approve access "
+"to email or try a different login method."
+msgstr "Din inloggningsmetod saknar en mailadress, vilket vi behöver. Godkänn "
+"användning av din email eller använt en annan inloggningsmetod."
+
+#: lore/api/auth.py:173
 #, python-format
 msgid "This user is deleted and cannot be used. Contact %(email)s for support."
 msgstr ""
 "Denna användare är borttagen och kan ej användas. Kontakta %(email)s för "
 "support."
 
-#: lore/api/auth.py:174
+#: lore/api/auth.py:184
 #, python-format
 msgid ""
 "This user account is not correctly configured, contact %(email)s for "
@@ -79,20 +86,20 @@ msgstr ""
 "Detta användarkonto är inte korrekt konfigurerat, kontakta %(email)s för "
 "support"
 
-#: lore/api/auth.py:207
+#: lore/api/auth.py:217
 #, python-format
 msgid "You linked email %(email)s to primary %(primary)s"
 msgstr "Du kopplade ihop email %(email)s med primär email %(primary)s"
 
-#: lore/api/auth.py:231
+#: lore/api/auth.py:241
 msgid "Your new user have been created."
 msgstr "Din nya användare har skapats."
 
-#: lore/api/auth.py:239
+#: lore/api/auth.py:249
 msgid "Save your profile to activate your new user!"
 msgstr "Spara din profil för att aktivera din nya användare!\""
 
-#: lore/api/auth.py:244
+#: lore/api/auth.py:254
 #, python-format
 msgid ""
 "Welcome back %(user)s (using %(email)s)! Before proceeding, can you check"
@@ -101,12 +108,12 @@ msgstr ""
 "Välkommen tillbaka %(user)s (med %(email)s)! Innan du fortsätter, kan du"
 "  kolla om du godkänner att vi skickar nyhetsbrev?"
 
-#: lore/api/auth.py:252
+#: lore/api/auth.py:262
 #, python-format
 msgid "Welcome back %(user)s (using %(email)s)!"
 msgstr "Välkommen tillbaka %(user)s (med %(email)s)!"
 
-#: lore/api/auth.py:275
+#: lore/api/auth.py:285
 msgid "You are now logged out"
 msgstr "Du är nu utloggad"
 
@@ -125,7 +132,7 @@ msgstr "Från"
 msgid "Subject"
 msgstr "Ämne"
 
-#: lore/api/mailer.py:78 lore/model/user.py:311
+#: lore/api/mailer.py:78 lore/model/user.py:315
 #: lore/templates/mail/mail_post.html:42
 msgid "Message"
 msgstr "Meddelande"
@@ -197,99 +204,99 @@ msgstr "Utgivaren"
 msgid "The user"
 msgstr "Användaren"
 
-#: lore/api/resource.py:308 lore/api/resource.py:764
+#: lore/api/resource.py:308 lore/api/resource.py:763
 msgid "Authorization not performed"
 msgstr "Auktorisering inte utförd"
 
-#: lore/api/resource.py:355
+#: lore/api/resource.py:356
 msgid "This field needs to be unique and another resource already have this value"
 msgstr "Detta fält måste vara unikt och en annan resurs har redan detta värde"
 
-#: lore/api/resource.py:371
+#: lore/api/resource.py:372
 msgid "Check errors in form"
 msgstr "Kontrollera felen i formuläret"
 
-#: lore/api/resource.py:804 lore/api/resource.py:806
+#: lore/api/resource.py:803 lore/api/resource.py:805
 msgid "The item"
 msgstr "Artikeln"
 
-#: lore/api/resource.py:941
+#: lore/api/resource.py:940
 msgid "Invalid choice(s): one or more data inputs could not be coerced"
 msgstr ""
 "Inkorrekt val: en elelr flera parametrar kunde inte transformeras "
 "(coerced)"
 
-#: lore/api/resource.py:1332
+#: lore/api/resource.py:1331
 msgid "Bad request or invalid input"
 msgstr "Felaktigt request eller input"
 
-#: lore/api/resource.py:1333
+#: lore/api/resource.py:1332
 msgid "Unauthorized access, please login"
 msgstr "Otillåten access, logga in först"
 
-#: lore/api/resource.py:1334
+#: lore/api/resource.py:1333
 msgid "Forbidden, this is not an allowed operation"
 msgstr "Detta är inte en tillåten metod"
 
-#: lore/api/resource.py:1335
+#: lore/api/resource.py:1334
 msgid "Resource not found"
 msgstr "Resursen kan inte hittas"
 
-#: lore/api/resource.py:1336
+#: lore/api/resource.py:1335
 msgid "Internal server error"
 msgstr "Internt serverfel"
 
-#: lore/api/resource.py:1340
+#: lore/api/resource.py:1339
 msgid "Unknown error"
 msgstr "Okänt fel"
 
-#: lore/api/resource.py:1396
+#: lore/api/resource.py:1395
 msgid "Creating new resource is not allowed"
 msgstr "Skapa en ny resurs är inte tillåtet"
 
-#: lore/api/resource.py:1404
+#: lore/api/resource.py:1403
 msgid "List is allowed"
 msgstr "Listning är tillåtet"
 
-#: lore/api/resource.py:1411
+#: lore/api/resource.py:1410
 msgid "Viewing an empty form is allowed"
 msgstr "Läsa en tom form är tillåtet"
 
-#: lore/api/resource.py:1420
+#: lore/api/resource.py:1419
 msgid "Can't edit/delete a None resource"
 msgstr "Kan inte redigera/ta bort en None-resurs"
 
-#: lore/api/resource.py:1426
+#: lore/api/resource.py:1425
 #, python-format
 msgid "%(op)s requires a logged in user"
 msgstr "%(op)s kräver en inloggad användare"
 
-#: lore/api/resource.py:1434
+#: lore/api/resource.py:1433
 #, python-format
 msgid "%(user)s is an admin"
 msgstr "%(user)s är en admin"
 
-#: lore/api/resource.py:1436
+#: lore/api/resource.py:1435
 msgid "Need to be logged in with admin access"
 msgstr "Behöver vara inloggad med admin-access"
 
-#: lore/api/resource.py:1439
+#: lore/api/resource.py:1438
 msgid "This resource does not support to be public"
 msgstr "Denna resursen stödjer inte att vara publik"
 
-#: lore/api/resource.py:1442
+#: lore/api/resource.py:1441
 msgid "This resource does not support contributions"
 msgstr "Denna resurs stödjer inte bidrag"
 
-#: lore/api/resource.py:1445
+#: lore/api/resource.py:1444
 msgid "Access rules for readers are undefined and therefore denied"
 msgstr "Det saknas auktoriseringsregler för läsare så access nekas"
 
-#: lore/api/resource.py:1448
+#: lore/api/resource.py:1447
 msgid "Access rules for editors are undefined and therefore denied"
 msgstr "Det saknas auktoriseringsregler för redaktörer så access nekas"
 
-#: lore/api/resource.py:1451 lore/api/shop.py:99 lore/api/shop.py:386
+#: lore/api/resource.py:1450 lore/api/shop.py:99 lore/api/shop.py:386
 #, python-format
 msgid "No authorization implemented for %(op)s"
 msgstr "Ingen auktorisering implementerad för %(op)s"
@@ -409,21 +416,21 @@ msgstr "Världen ej öppen för artikelbidrag"
 msgid "Creating new resource is allowed"
 msgstr "Skapande av nya resurser är tillåtet"
 
-#: lore/api/world.py:657
+#: lore/api/world.py:656
 msgid "Recent Articles in "
 msgstr "Nya artiklar på "
 
-#: lore/api/world.py:857
+#: lore/api/world.py:856
 msgid "This code has not yet been created."
 msgstr "Denna kod har inte skapats ännu"
 
-#: lore/api/world.py:869
+#: lore/api/world.py:868
 msgid "This page is a rendered style guide and example of how to write an article"
 msgstr ""
 "Denna sidan är en genererad stilguide och exempel på hur man skriver en "
 "artikel"
 
-#: lore/app.py:276 lore/model/world.py:577
+#: lore/app.py:280 lore/model/world.py:577
 #: lore/templates/shop/order_list.html:79
 #: lore/templates/shop/product_list.html:34
 #: lore/templates/shop/product_list.html:50
@@ -460,7 +467,7 @@ msgid "Source File URL"
 msgstr "URL till källfil"
 
 #: lore/model/asset.py:141 lore/model/asset.py:226 lore/model/asset.py:472
-#: lore/model/shop.py:102 lore/model/user.py:114 lore/model/user.py:398
+#: lore/model/shop.py:102 lore/model/user.py:114 lore/model/user.py:402
 #: lore/model/world.py:98 lore/model/world.py:171 lore/model/world.py:393
 #: lore/model/world.py:463 lore/model/world.py:591
 #: lore/templates/asset/fileasset_item.html:94
@@ -481,7 +488,7 @@ msgid "File data"
 msgstr "Fildata"
 
 #: lore/model/asset.py:225 lore/model/asset.py:471 lore/model/shop.py:101
-#: lore/model/shop.py:290 lore/model/user.py:397 lore/model/world.py:94
+#: lore/model/shop.py:290 lore/model/user.py:401 lore/model/world.py:94
 #: lore/model/world.py:170 lore/model/world.py:392 lore/model/world.py:462
 #: lore/templates/shop/order_header.html:26
 #: lore/templates/shop/product_item.html:80
@@ -490,7 +497,7 @@ msgstr "Fildata"
 msgid "Title"
 msgstr "Titel"
 
-#: lore/model/asset.py:227 lore/model/shop.py:292 lore/model/user.py:309
+#: lore/model/asset.py:227 lore/model/shop.py:292 lore/model/user.py:313
 #: lore/templates/shop/order_list.html:118
 msgid "User"
 msgstr "Användare"
@@ -601,30 +608,30 @@ msgstr "Senaste %(delta)s"
 msgid "Older than %(delta)s"
 msgstr "Äldre än %(delta)s"
 
-#: lore/model/misc.py:480 lore/model/topic.py:157
+#: lore/model/misc.py:484 lore/model/topic.py:157
 #: lore/templates/shop/order_address.html:37
 #: lore/templates/shop/order_header.html:47
 #: lore/templates/social/user_item.html:134
 msgid "Name"
 msgstr "Namn"
 
-#: lore/model/misc.py:481 lore/templates/shop/order_address.html:42
+#: lore/model/misc.py:485 lore/templates/shop/order_address.html:42
 msgid "Street"
 msgstr "Gatuaddress"
 
-#: lore/model/misc.py:482 lore/templates/shop/order_address.html:47
+#: lore/model/misc.py:486 lore/templates/shop/order_address.html:47
 msgid "ZIP Code"
 msgstr "Postnummer"
 
-#: lore/model/misc.py:483 lore/templates/shop/order_address.html:49
+#: lore/model/misc.py:487 lore/templates/shop/order_address.html:49
 msgid "City"
 msgstr "Stad"
 
-#: lore/model/misc.py:485 lore/templates/shop/order_address.html:53
+#: lore/model/misc.py:489 lore/templates/shop/order_address.html:53
 msgid "Country"
 msgstr "Land"
 
-#: lore/model/misc.py:486 lore/templates/shop/order_address.html:58
+#: lore/model/misc.py:490 lore/templates/shop/order_address.html:58
 msgid "Cellphone Number"
 msgstr "Mobilnummer"
 
@@ -696,7 +703,7 @@ msgid "Product Family"
 msgstr "Produktfamilj"
 
 #: lore/model/shop.py:107 lore/model/shop.py:301 lore/model/topic.py:154
-#: lore/model/user.py:308 lore/model/user.py:399 lore/model/world.py:461
+#: lore/model/user.py:312 lore/model/user.py:403 lore/model/world.py:461
 #: lore/templates/shop/order_header.html:55
 #: lore/templates/shop/product_item.html:113
 #: lore/templates/shop/product_list_view.html:21
@@ -709,7 +716,7 @@ msgid "Created"
 msgstr "Skapad"
 
 #: lore/model/shop.py:108 lore/model/shop.py:258 lore/model/shop.py:302
-#: lore/model/user.py:400 lore/templates/shop/order_header.html:59
+#: lore/model/user.py:404 lore/templates/shop/order_header.html:59
 #: lore/templates/shop/product_item.html:117
 msgid "Updated"
 msgstr "Uppdaterad"
@@ -873,7 +880,7 @@ msgstr "Aktiv"
 msgid "Deleted"
 msgstr "Borttagen"
 
-#: lore/model/user.py:59 lore/model/user.py:377
+#: lore/model/user.py:59 lore/model/user.py:381
 msgid "Invited"
 msgstr "Inbjuden"
 
@@ -894,7 +901,7 @@ msgstr "Namn"
 msgid "Location"
 msgstr "Hemort"
 
-#: lore/model/user.py:115 lore/model/user.py:313
+#: lore/model/user.py:115 lore/model/user.py:317
 #: lore/templates/social/user_item.html:165
 msgid "XP"
 msgstr ""
@@ -911,7 +918,7 @@ msgstr "Senaste inloggning"
 msgid "Avatar URL"
 msgstr ""
 
-#: lore/model/user.py:147 lore/model/user.py:404 lore/model/world.py:485
+#: lore/model/user.py:147 lore/model/user.py:408 lore/model/world.py:485
 msgid "Images"
 msgstr "Bilder"
 
@@ -919,7 +926,7 @@ msgstr "Bilder"
 msgid "Following"
 msgstr "Följande"
 
-#: lore/model/user.py:153 lore/model/user.py:279
+#: lore/model/user.py:153 lore/model/user.py:283
 msgid "Password"
 msgstr "Lösenord"
 
@@ -931,7 +938,7 @@ msgstr "Tillåter nyhetsbrev"
 msgid "Authentication sources"
 msgstr "Autentiseringskällor"
 
-#: lore/model/user.py:281 lore/templates/asset/fileasset_item.html:96
+#: lore/model/user.py:285 lore/templates/asset/fileasset_item.html:96
 #: lore/templates/shop/order_address.html:34
 #: lore/templates/shop/order_address.html:39
 #: lore/templates/shop/order_address.html:44
@@ -960,40 +967,40 @@ msgstr "Autentiseringskällor"
 msgid "No data"
 msgstr "Ingen data"
 
-#: lore/model/user.py:310
+#: lore/model/user.py:314
 msgid "Resource"
 msgstr "Resurs"
 
-#: lore/model/user.py:312
+#: lore/model/user.py:316
 msgid "Metric"
 msgstr "Mätvärde"
 
-#: lore/model/user.py:334
+#: lore/model/user.py:338
 #, python-format
 msgid "%(action)s: %(xp)s XP awarded to %(user)s"
 msgstr "%(action)s: %(xp)s XP givna till %(user)s"
 
-#: lore/model/user.py:377
+#: lore/model/user.py:381
 msgid "Master"
 msgstr "Ägare"
 
-#: lore/model/user.py:377
+#: lore/model/user.py:381
 msgid "Member"
 msgstr "Medlem"
 
-#: lore/model/user.py:391
+#: lore/model/user.py:395
 msgid "Game Group"
 msgstr "Spelgrupp"
 
-#: lore/model/user.py:391
+#: lore/model/user.py:395
 msgid "World Group"
 msgstr "Världsgrupp"
 
-#: lore/model/user.py:391
+#: lore/model/user.py:395
 msgid "Article Group"
 msgstr "Artikelgrupp"
 
-#: lore/model/user.py:391 plugins/helmgast-theme/index.html:69
+#: lore/model/user.py:395 plugins/helmgast-theme/index.html:69
 #: plugins/theme_example.html:212
 msgid "Newsletter"
 msgstr "Nyhetsbrev"
@@ -2114,7 +2121,7 @@ msgid "Perks"
 msgstr "Kampanjnivåer"
 
 #: lore/templates/shop/my_orders.html:6 lore/templates/shop/my_products.html:7
-#: lore/templates/shop/order_item.html:19 lore/templates/shop/order_list.html:6
+#: lore/templates/shop/order_item.html:21 lore/templates/shop/order_list.html:6
 #: lore/templates/shop/product_item.html:26
 #: lore/templates/shop/product_list.html:7
 #: lore/templates/social/group_item.html:9
@@ -2139,13 +2146,13 @@ msgid "Home"
 msgstr "Hem"
 
 #: lore/templates/shop/my_orders.html:7 lore/templates/shop/my_products.html:8
-#: lore/templates/shop/order_item.html:20 lore/templates/shop/order_list.html:7
+#: lore/templates/shop/order_item.html:22 lore/templates/shop/order_list.html:7
 #: lore/templates/shop/product_item.html:27
 #: lore/templates/shop/product_list.html:8
 msgid "Catalogue"
 msgstr "Katalog"
 
-#: lore/templates/shop/my_orders.html:8 lore/templates/shop/order_item.html:21
+#: lore/templates/shop/my_orders.html:8 lore/templates/shop/order_item.html:23
 #: lore/templates/shop/order_list.html:8 lore/templates/shop/order_list.html:19
 msgid "Orders"
 msgstr "Ordrar"
@@ -2201,6 +2208,12 @@ msgstr ""
 msgid "Products"
 msgstr "Produkter"
 
+#: lore/templates/shop/my_products.html:14
+#: lore/templates/shop/product_item.html:3
+#: lore/templates/shop/product_list.html:14
+msgid "New product"
+msgstr "Ny produkt"
+
 #: lore/templates/shop/my_products.html:23
 #, python-format
 msgid ""
@@ -2252,69 +2265,73 @@ msgstr "Säljarinfo"
 msgid "Address"
 msgstr "Adress"
 
-#: lore/templates/shop/order_item.html:7 lore/templates/shop/order_item.html:74
-#: lore/templates/shop/order_item.html:113
+#: lore/templates/shop/order_item.html:7 lore/templates/shop/order_item.html:76
+#: lore/templates/shop/order_item.html:115
 msgid "Your details"
 msgstr "Dina uppgifter"
 
 #: lore/templates/shop/order_item.html:9
-#: lore/templates/shop/order_item.html:182
+#: lore/templates/shop/order_item.html:184
 msgid "Pay"
 msgstr "Betala"
 
 #: lore/templates/shop/order_item.html:15
+msgid "Order"
+msgstr ""
+
+#: lore/templates/shop/order_item.html:17
 msgid "make sure it's correct!"
 msgstr "se till att det är rätt!"
 
-#: lore/templates/shop/order_item.html:29
-#: lore/templates/shop/order_item.html:102
+#: lore/templates/shop/order_item.html:31
+#: lore/templates/shop/order_item.html:104
 #, python-format
 msgid "Regarding order %(order)s"
 msgstr "Gällande order %(order)s"
 
-#: lore/templates/shop/order_item.html:30
-#: lore/templates/shop/order_item.html:103
+#: lore/templates/shop/order_item.html:32
+#: lore/templates/shop/order_item.html:105
 #: lore/templates/shop/order_peek.html:21 plugins/helmgast-theme/index.html:66
 #: plugins/theme_example.html:209
 msgid "Contact Us"
 msgstr "Kontakta oss"
 
-#: lore/templates/shop/order_item.html:37
+#: lore/templates/shop/order_item.html:39
 #: lore/templates/shop/order_peek.html:28
 msgid "Send order mail"
 msgstr "Maila order"
 
-#: lore/templates/shop/order_item.html:58
+#: lore/templates/shop/order_item.html:60
 msgid "Nothing in cart, "
 msgstr "Inget i varukorg, "
 
-#: lore/templates/shop/order_item.html:59
+#: lore/templates/shop/order_item.html:61
 msgid "go shopping"
 msgstr "handla vidare"
 
-#: lore/templates/shop/order_item.html:69
+#: lore/templates/shop/order_item.html:71
 msgid "Confirm products"
 msgstr "Bekräfta produkter"
 
-#: lore/templates/shop/order_item.html:79
-#: lore/templates/shop/order_item.html:137
+#: lore/templates/shop/order_item.html:81
+#: lore/templates/shop/order_item.html:139
 msgid "Pay order"
 msgstr "Betala order"
 
-#: lore/templates/shop/order_item.html:111
+#: lore/templates/shop/order_item.html:113
 msgid "Save changes"
 msgstr "Spara ändringar"
 
-#: lore/templates/shop/order_item.html:116
+#: lore/templates/shop/order_item.html:118
 msgid "Total shipping cost will be shown after"
 msgstr "Fraktkostnad visas senare"
 
-#: lore/templates/shop/order_item.html:123
-#: lore/templates/shop/order_item.html:134
+#: lore/templates/shop/order_item.html:125
+#: lore/templates/shop/order_item.html:136
 msgid "Go back"
 msgstr "Gå tillbaka"
 
-#: lore/templates/shop/order_item.html:127
+#: lore/templates/shop/order_item.html:129
 msgid "Review payment"
 msgstr "Granska betalning"
 
@@ -2407,10 +2424,6 @@ msgstr "Bekräfta produkter"
 #: lore/templates/shop/product_item.html:191
 msgid "Add to cart"
 msgstr "Lägg i kundvagn"
-
-#: lore/templates/shop/product_item.html:3
-msgid "New product"
-msgstr "Ny produkt"
 
 #: lore/templates/shop/product_item.html:63
 msgid "Access to download file depends on per-file settings"
@@ -2519,6 +2532,10 @@ msgstr "Medlemmar"
 #: lore/templates/social/group_item.html:68
 msgid "Meetings"
 msgstr "Möten"
+
+#: lore/templates/social/group_list.html:12
+msgid "New group"
+msgstr "Ny grupp"
 
 #: lore/templates/social/group_list.html:31
 #: lore/templates/social/user_list.html:55
@@ -2689,8 +2706,9 @@ msgstr "Dela"
 msgid ""
 "This is a read-only preview of <a href=\"%(url)s\">Helmgast's Lore</a>, a"
 " database of Helmgast's worlds"
-msgstr "Detta är en preview av <a href=\"%(url)s\">Helmgasts Lore</a>, en"
-" databas över våra världar"
+msgstr ""
+"Detta är en preview av <a href=\"%(url)s\">Helmgasts Lore</a>, en databas"
+" över våra världar"
 
 #: lore/templates/world/article_item.html:220
 msgid "Start writing here!"
@@ -2804,6 +2822,7 @@ msgid "Latest news"
 msgstr "Senaste nytt"
 
 #: lore/templates/world/publisher_item.html:3
+#: lore/templates/world/publisher_list.html:17
 msgid "New publisher"
 msgstr "Ny utgivare"
 

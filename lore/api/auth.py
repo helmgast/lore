@@ -156,9 +156,14 @@ def callback():
         msg = f"Denied login due to no email in in user info {user_info}"
         logger.warning(msg)
         logout_user()
-        flash(_("Your login source is missing an email, which we require. Approve access to email or try a different login method."), "warning")
+        flash(
+            _(
+                "Your login source is missing an email, which we require. Approve access to email or try a different login method."
+            ),
+            "warning",
+        )
         capture_message(msg)
-        return redirect(next_url)  # RETURN IN ERROR    
+        return redirect(next_url)  # RETURN IN ERROR
 
     email = user_info["email"]
     session_user = get_logged_in_user(require_active=False)
@@ -396,7 +401,6 @@ def get_logged_in_user(require_active=True):
                 else:
                     logger.warning("No user in database with uid {uid}".format(uid=uid))
             except Exception as e:
-                logger.error(e)
-                capture_exception(e)
+                logger.exception(e)  # Also reports to Sentry
                 logout_user()
     return u  # Might be None if all failed above

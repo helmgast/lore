@@ -14,7 +14,7 @@
 
 {% block actionbar %}
     {% call(privileged) MACRO.AUTHORIZED(access_policy['publisher'].authorize('new', res=none)) %}
-        {{ MACRO.NEW_BUTTON(url_for('world.PublishersView:get', id='post'), 'New publisher') }}
+        {{ MACRO.NEW_BUTTON(url_for('world.PublishersView:get', id='post'), _('New publisher')) }}
     {% endcall %}
 {% endblock %}
 

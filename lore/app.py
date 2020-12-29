@@ -396,7 +396,7 @@ def configure_hooks(app):
 
     @app.errorhandler(403)
     def forbidden(err):
-        capture_exception(err)  # Explicitly capture exception to Sentry
+        app.logger.exception(err)
         return (
             render_template(
                 "error/403.html",
