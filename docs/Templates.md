@@ -8,6 +8,7 @@ When we render, we have many different scenarios to deal with. We have the follo
 
 ## Template structure
 
+```
     _root.html
         section.html
             model.html
@@ -71,6 +72,7 @@ When we render, we have many different scenarios to deal with. We have the follo
 
     resource_item.html
     {% extends _root.html if not template else template}
+```
 
 ## Themes
 

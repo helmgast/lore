@@ -1,4 +1,6 @@
-# Lore competitors 
+# Lore alternatives 
+
+Alternatives can be seen as competing for same users, but can also be seen as complementing tools or potential cooperations.
 
 - [Scabard](https://www.scabard.com/pbs/). Paid (50 USD/y), fairly basic service.
 - [Realm Works](http://www.wolflair.com/realmworks/). Paid (60 USD lifetime) desktop software with some server components.
@@ -9,6 +11,9 @@
 - [Fandom.com](https://fandom.com). Has most of the content for books, movies and games already.
 - [Legend Keeper](https://www.legendkeeper.com/). New and stylish, focused around maps, still in beta.
 - [Role](https://www.playrole.com/). New and stylish, early access. Focused on ease of finding people to play with.
+- [Tableplop](https://new.tableplop.com/). Built with Svelte, mobile-friendly?
+- [FictionBoard][https://github.com/innergnome/FictionBoard]. 
+- [Open5e](https://open5e.com/). A repository of structured rules data for D&D 5. Includes a Github repo with JSON files representing things in D&D.
 
 # Some user's own game wikis with content
 
@@ -18,6 +23,12 @@
 - http://segmarian.shoutwiki.com/
 - https://theenemywithinremixed.wordpress.com/
 - http://erebaltor.se/
+
+# Relevant research
+- [Tabletop Roleplaying Games as Procedural Content Generators](https://mkremins.github.io/publications/TTRPGs_PCG2020.pdf)
+- [Assisted Open-Domain Named Entity Recognition](https://arxiv.org/pdf/2006.15509.pdf)
+- [DocRED: A Large-Scale Document-Level Relation Extraction Dataset
+](https://arxiv.org/abs/1906.06127v3)
 
 # How Lore can compete?
 

@@ -228,6 +228,29 @@ By default, new topics are created under the contributor's own domain at a selec
 
 It's also possible to propose a topic to belong to another publisher, e.g. give it the id `helmgast.se/eon/x`. That means giving up any control as the topic id domain determines access rights as well as accessible URL, domain, theming, etc. You could do this by a setting when creating the topic. All the characteristics would still be scoped as `contributed-content` and to the publishing user that created it (`user@mybpub.lore.pub`). We would default to not showing topics that only have contributed titles, as we would consider them unapproved, but once a user with access to Helmgast approves it, it can show up in listings.
 
+## Aliases, synonyms and homonyms
+
+Synonyms are differently spelled words with the same meaning, and homonyms are words spelled the same but with different meaning. Aliases is a common way to refer to synonyms in software.
+
+In Lore, we can generalize alias to mean synonyms and name variations. In a topic map, this is represented by the list of different names that a topic can have. A user would expect the following from an alias:
+
+1. To have one place to see all variations of a name
+   1. **Implementation**: Listed in a topic
+   
+2. To search for a topic by different names (both as a user and as a machine)
+   1. **Implementation**: query topics by names, but will not guarantee a unique result, may get a list to choose from.
+   
+3. To be redirected to the true topic, when arriving at a link that points to an alias
+   1. **Implementation**: If a provided link doesn't identify a topic directly, we first search the lowercase version. Then we can search by alias (above). If we find a single topic, redirect to it. If multiple, redirect to search page.
+
+4. That edits either can't be made to an alias (you should be redirected first) or that they will automatically be merged
+   1. **Implementation**: By always redirecting, we avoid edits to aliases. When creating a new topic, we will try to fetch the true topic first.
+
+5. That two topics, that initially were created as separate, can be merged if they have been concluded to refer to the same thing (will often happen)
+   1. **Implementation**: A function that merges topics. This implies following all associations of the merged-in topic, so that other topics are updated to point to the true topic. However links can be left as-is, as the redirect function should take them to the right place.
+
+Homonyms are different. Technically you need to have different IDs to have different topics, so the id/slug has to get a variation, either based on names Paris (US), Paris (France) or based on some incremented symbol in the ID, e.g. paris-1 and paris-2. The optimal way would also be to create a disambiguation page at the homonym URL, that let's you choose the meaning and actual topic you wanted.
+
 ### Questions
 
 - [ ] Can contributors use their own URLs and ID schemes, e.g. random page at their site?

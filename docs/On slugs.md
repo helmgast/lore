@@ -44,6 +44,12 @@ We also want to stay compatible with Github Wiki, which supports using files in 
 
 - `\ / : * ? " < > |`
 
+According to [Wikipedia](https://en.wikipedia.org/wiki/Filename#Reserved_characters_and_words) reserved characters for modern file systems are:
+
+HFS+ (MacOS) `: /` # But : is ok via terminal
+Unix `/`
+NTFS/exFAT (Windows) `0x00-0x1F 0x7F` and `\ / : * ? " < > |`
+
 ## Mediawiki
 
 Although Mediawiki is not a limiting factor for Lore, they have given serious thought to what characters can or can't be in content titles. Note that when Mediawiki talks about a title, it's both what you write into documents AND the slug used in a URL. That is something Lore is aspiring too as well. Their list of illegal characters are:
