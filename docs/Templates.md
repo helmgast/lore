@@ -9,6 +9,7 @@ When we render, we have many different scenarios to deal with. We have the follo
 ## Template structure
 
 ```
+{% raw %} # needed for Jekyll to not get stuck on Jinja tags
     _root.html
         section.html
             model.html
@@ -72,6 +73,8 @@ When we render, we have many different scenarios to deal with. We have the follo
 
     resource_item.html
     {% extends _root.html if not template else template}
+
+{% endraw %} # needed for Jekyll to not get stuck on Jinja tags
 ```
 
 ## Themes
