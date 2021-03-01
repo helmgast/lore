@@ -1,3 +1,7 @@
+# Working with Mongo
+
+Some notes on how to get the most out of Mongo.
+
 ## Text search
 
 For text search, Mongo supports [these languages](https://docs.mongodb.com/manual/reference/text-search-languages/), at time of writing:
@@ -27,3 +31,14 @@ Collation is the use of language-specific rules for sorting fields (both text an
 
 You can set a collation as default on a collection (but can't change it later). You can also set a collation on an index, and on just a specific operation. But the operations collation must match the collation on the index or the collection, if set. This means, if you want to set collation as default you can't practically change it so the whole collection will have to stick with one language.
 You seem to be able to use a non-collated index with a temporarly collated operation, however. 
+
+## Query performance
+
+https://docs.mongodb.com/manual/tutorial/analyze-query-plan/
+
+https://studio3t.com/knowledge-base/articles/mongodb-query-performance/
+
+https://medium.com/@zhaoyi0113/how-to-use-explain-to-improvement-mongodb-performance-3adadb1228f1
+
+Simulate high latency to MongoDB:
+https://medium.com/@kazushi/simulate-high-latency-network-using-docker-containerand-tc-commands-a3e503ea4307

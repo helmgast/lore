@@ -42,3 +42,37 @@ Types of assets to link to:
 - However, as we generate thumbnails, we wan’t to avoid losing performance by jumping through a redirect, so we can just generate them directly on a server using a macro, which also includes img srcset.
 - In the editor, the simplest way might be to see all attachments on the side and to be able to drag and drop them into the document. When you do that, you should get an option on what crop format to apply.
 - To pick from a library of media files, simply use a Google Drive picker. This means it’s easy for Helmgast creators to re-use images directly and avoid having to build two separate libraries. For other users, they won’t necessarily have access to our library but may of course request so.
+
+# File services
+
+File services are different backends that can host an asset for Lore.
+
+## Remote file
+
+Simply a link to a remotely hosted file, no problem, but also means something else has to manage the full state of the asset.
+
+
+## Google Drive
+
+Probably simplest storage source to upload to, and supports pulling in from disk, remote URL and re-use of existing assets in e.g. Helmgast. The downside is you need a Google account separate from Lore, and that if you share a file from Gdrive it's unclear if the URL can be publically accessed.
+
+Downside is that large files on Google may get stopped from downloading.
+
+
+## Cloudinary
+
+Can upload from any user, into a shared repository. Could allow re-use of files from that storage (unclear if supported). 
+
+## Mongo GridFS
+
+Messier to deal with (upload,)
+
+
+### Types of file
+
+/static/ - uploaded by web dev or by build script
+/upload/:topic_path/file.png - uploaded by users
+
+### Authorization
+
+Some files should require authorization to be accessed. Files on Cloudinary are inherently public (?). 

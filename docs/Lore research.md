@@ -24,6 +24,11 @@ Alternatives can be seen as competing for same users, but can also be seen as co
 - https://theenemywithinremixed.wordpress.com/
 - http://erebaltor.se/
 
+# Interactive fictions
+
+- https://www.linusakesson.net/dialog/docs/index.html
+- [Storium](https://storium.com/)
+
 # Relevant research
 - [Tabletop Roleplaying Games as Procedural Content Generators](https://mkremins.github.io/publications/TTRPGs_PCG2020.pdf)
 - [Assisted Open-Domain Named Entity Recognition](https://arxiv.org/pdf/2006.15509.pdf)
