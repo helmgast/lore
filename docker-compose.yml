@@ -18,8 +18,10 @@ services:
     image: "helmgast/lore:master"
     volumes:
       - /data/cache
-      - /Users/martin/dev/deploy/helmgast/data/www:/data/www:delegated
-      - /Users/martin/dev/src/lore/google_service_account.json:/data/config/google_service_account.json
+      - /data/www:/data/www
+      - ./google_service_account.json:/data/config/google_service_account.json
+    #      - /Users/martin/dev/deploy/helmgast/data/www:/data/www:delegated
+    #      - /Users/martin/dev/src/lore/google_service_account.json:/data/config/google_service_account.json
     container_name: lore-1
 
 networks:
