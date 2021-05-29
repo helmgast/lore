@@ -19,7 +19,9 @@ services:
     volumes:
       - /data/cache
       - /data/www:/data/www
-      - ./google_service_account.json:/data/config/google_service_account.json
+      # Note, google service account should be encrypted but is not currently checked in to git
+      - /data/config/google_service_account.json:/data/config/google_service_account.json
+    # Note, this should go in a development docker-compose for only local use
     #      - /Users/martin/dev/deploy/helmgast/data/www:/data/www:delegated
     #      - /Users/martin/dev/src/lore/google_service_account.json:/data/config/google_service_account.json
     container_name: lore-1
