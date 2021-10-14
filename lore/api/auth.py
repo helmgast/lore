@@ -226,6 +226,7 @@ def callback():
                     ),
                     "info",
                 )
+                logger.info(f"Linked email {user_info['email']} to primary {session_user.email}");
             # If not, we essentially do nothing, as the user is already itself
             return redirect(next_url)
         else:  # Something went wrong, there is no valid logged in user

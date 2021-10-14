@@ -92,16 +92,18 @@ def create_app(**kwargs):
 
     # the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
     configure_logging(the_app)
-    if not the_app.testing:
-        the_app.logger.info(
-            "Lore (%s) started. Mode: %s%s:\n%s"
-            % (
-                the_app.config.get("VERSION", None),
-                "Prod" if the_app.config["PRODUCTION"] else "Dev",
-                " (Debug)" if the_app.debug else "",
-                config_msg,
-            )
-        )
+    
+    # Commented out as it pollutes the log like hell
+    # if not the_app.testing:
+    #     the_app.logger.info(
+    #         "Lore (%s) started. Mode: %s%s:\n%s"
+    #         % (
+    #             the_app.config.get("VERSION", None),
+    #             "Prod" if the_app.config["PRODUCTION"] else "Dev",
+    #             " (Debug)" if the_app.debug else "",
+    #             config_msg,
+    #         )
+    #     )
 
     # Configure all extensions
     configure_extensions(the_app)

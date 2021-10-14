@@ -14,6 +14,9 @@ Alternatives can be seen as competing for same users, but can also be seen as co
 - [Tableplop](https://new.tableplop.com/). Built with Svelte, mobile-friendly?
 - [FictionBoard][https://github.com/innergnome/FictionBoard]. 
 - [Open5e](https://open5e.com/). A repository of structured rules data for D&D 5. Includes a Github repo with JSON files representing things in D&D.
+- [Kanka.io](https://kanka.io/). Similar to World Anvil.
+- [Fantasy Archive](https://fantasiaarchive.com/). Focus on local, OSS, world building.
+- [Norn](https://norn.sauriel.net/). Build game handouts, a sort of simplified layout program.
 
 # Some user's own game wikis with content
 
@@ -28,12 +31,13 @@ Alternatives can be seen as competing for same users, but can also be seen as co
 
 - https://www.linusakesson.net/dialog/docs/index.html
 - [Storium](https://storium.com/)
+- [Markdown for screenwriters](https://fountain.io/)
 
 # Relevant research
 - [Tabletop Roleplaying Games as Procedural Content Generators](https://mkremins.github.io/publications/TTRPGs_PCG2020.pdf)
 - [Assisted Open-Domain Named Entity Recognition](https://arxiv.org/pdf/2006.15509.pdf)
-- [DocRED: A Large-Scale Document-Level Relation Extraction Dataset
-](https://arxiv.org/abs/1906.06127v3)
+- [DocRED: A Large-Scale Document-Level Relation Extraction Dataset](https://arxiv.org/abs/1906.06127v3)
+- [Chronofold paper for efficient versioning of text](https://news.ycombinator.com/item?id=28024768)
 
 # How Lore can compete?
 
