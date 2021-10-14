@@ -1,5 +1,4 @@
 -c requirements.txt
-# black==19.10b0
 black
 flake8
 mongomock
