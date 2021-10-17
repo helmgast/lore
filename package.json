@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "dependencies": {
-    "@sentry/browser": "^5.24.2",
+    "@sentry/browser": "^6.13.3",
     "autosize": "^4.0.2",
     "bootstrap": "^3.4.1",
     "fetch-jsonp": "^1.1.3",

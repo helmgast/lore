@@ -367,7 +367,6 @@ def configure_hooks(app):
                 values["pub_host"] = values["pub_host"] + ".test"
         if app.url_map.is_endpoint_expecting(endpoint, "lang") and "lang" in g:
             values.setdefault("lang", g.lang)
-        # mark_time_since_request(f"URL defaults for {endpoint}")
 
     @app.context_processor
     def inject_access():

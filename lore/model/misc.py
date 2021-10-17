@@ -379,7 +379,7 @@ def reference_options(field_name, model, id_attr="slug", name_attr="title", extr
             ]
             rv += extra_options
         except Exception as e:
-            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'", e)
+            logger.warning(f"Errors in reference option for field_name='{field_name}' and model='{model}'", exc_info=e)
         return rv
 
     return return_function

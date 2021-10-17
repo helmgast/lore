@@ -14,7 +14,7 @@ import math
 from time import time
 import pprint
 import re
-from tools.profiler_decorator import profile
+from tools.profiler_decorator import profile, sentry_span, query_representation
 import types
 from itertools import chain
 from typing import Dict, Sequence
@@ -32,6 +32,7 @@ from jinja2 import TemplatesNotFound
 from mongoengine import InvalidQueryError, OperationError, Q, ReferenceField
 from mongoengine.errors import NotUniqueError, ValidationError
 from mongoengine.queryset.visitor import QNode
+from pymongo.errors import OperationFailure
 from werkzeug.datastructures import MultiDict
 from werkzeug.utils import secure_filename
 from wtforms import Form as OrigForm
@@ -42,6 +43,7 @@ from wtforms.fields.core import UnboundField
 from wtforms.utils import unset_value
 from wtforms.widgets import HTMLString, Select, html5, html_params
 from wtforms.widgets.core import HiddenInput
+from sentry_sdk import start_span
 
 from lore.model.misc import METHODS, extract, localized_field_labels, safe_next_url
 from lore.model.world import EMBEDDED_TYPES, Article
@@ -205,6 +207,17 @@ instance_types_translated = {
 }
 
 
+def decorator(func):
+    @functools.wraps(func)
+    def wrapper_decorator(*args, **kwargs):
+        # Do something before
+        value = func(*args, **kwargs)
+        # Do something after
+        return value
+
+    return wrapper_decorator
+
+
 def get_root_template(out_value):
     if out_value == "modal":
         return current_app.jinja_env.get_or_select_template("_modal.html")
@@ -302,41 +315,43 @@ class ResourceResponse(Response):
                 rv[k] = arg
         return rv
 
-    # @profile()
     def render(self):
-        if not self.auth:
-            abort(403, _("Authorization not performed"))
-        if self.args["render"]:
-            best_type = mime_types[self.args["render"]]
-        else:
-            best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
-        if best_type == "text/html":
-            template_args = self.get_template_args()
-            template_args["root_template"] = get_root_template(self.args.get("out", None))
-            mark_time_since_request("Before render")
-            self.set_data(render_template(self.template, **template_args))
-            mark_time_since_request("After render")
-            return self
-        elif best_type == "application/json":
-            # TODO this will create a new response, which is a bit of waste
-            # Need to at least keep the status from before
-            # if self.errors:
-            #     return jsonify(errors=self.errors), self.status
-            # else:
-            rv = {k: getattr(self, k) for k in self.json_fields}
-            flashes = session.get("_flashes", [])
-            if flashes:
-                rv["errors"] = []
-                for one_flash in flashes:
-                    rv["errors"].append(one_flash[1])  # Message
-                session["_flashes"] = []
-            return jsonify(rv), self.status
-        else:  # csv
-            # To chatty in log, this happens a lot
-            # logger.warn(
-            #     f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
-            # )
-            abort(406)  # Not acceptable content available
+        with start_span(op="render", description="render()") as span:
+            if not self.auth:
+                abort(403, _("Authorization not performed"))
+
+            if self.args["render"]:
+                best_type = mime_types[self.args["render"]]
+            else:
+                best_type = request.accept_mimetypes.best_match([mime_types[m] for m in self.formats])
+
+            span.set_tag("Content-Type", best_type)
+
+            if best_type == "text/html":
+                template_args = self.get_template_args()
+                template_args["root_template"] = get_root_template(self.args.get("out", None))
+                self.set_data(render_template(self.template, **template_args))
+                return self
+            elif best_type == "application/json":
+                # TODO this will create a new response, which is a bit of waste
+                # Need to at least keep the status from before
+                # if self.errors:
+                #     return jsonify(errors=self.errors), self.status
+                # else:
+                rv = {k: getattr(self, k) for k in self.json_fields}
+                flashes = session.get("_flashes", [])
+                if flashes:
+                    rv["errors"] = []
+                    for one_flash in flashes:
+                        rv["errors"].append(one_flash[1])  # Message
+                    session["_flashes"] = []
+                return jsonify(rv), self.status
+            else:  # csv
+                # To chatty in log, this happens a lot
+                # logger.warn(
+                #     f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
+                # )
+                abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
         general_errors = []
@@ -374,8 +389,7 @@ class ResourceResponse(Response):
 
     @staticmethod
     def parse_args(arg_parser, extra_args):
-        """Parses request args through a form that sets defaults or removes invalid entries
-        """
+        """Parses request args through a form that sets defaults or removes invalid entries"""
         args = MultiDict({"fields": MultiDict()})  # ensure we always have a fields value
         # values for same URL param (e.g. key=val1&key=val2)
         # req_args = CombinedMultiDict([request.args, extra_args])
@@ -510,8 +524,12 @@ class ListResponse(ResourceResponse):
         self, aggregation=None, paginate=True, select_related=True
     ):  # also filter by authorization, paginate
         """Prepares an original query based on request args provided, such as
-        ordering, filtering, pagination etc """
-        # mark_time_since_request("Before finalize")
+        ordering, filtering, pagination etc"""
+
+        # Start instrumentation (avoid using with: to not change the whole code/indentation)
+        span = start_span(op="db", description=f"{self.resource_view}.finalize_query()")
+        span.set_tag("paginate", paginate)
+        span.set_tag("select_related", select_related)
 
         if aggregation is None:
             aggregation = []
@@ -605,15 +623,31 @@ class ListResponse(ResourceResponse):
         if self.args["random"] > 0:
             aggregation.append({"$sample": {"size": self.args["random"]}})
 
-        self.query = self.pagination.apply_to_query(self.query)
+        try:
+            self.query = self.pagination.apply_to_query(self.query)
+        except OperationFailure as of:
+            if "text index required for $text query" in of._message:
+                abort(400)  # Doesn't support the q parameter but got it anyway
+            else:
+                raise of
+
         if aggregation:
             if self.query._query:
                 aggregation.insert(0, {"$match": self.query._query})
+            span.set_tag("aggregation", True)
+            qs = query_representation(query=self.query, aggregation=aggregation)
             agg_results = self.query._collection.aggregate(aggregation, cursor={})
             # Note, turns query into a static list
             self.query = [self.model._from_son(a) for a in agg_results]
-        elif select_related:
-            self.query.select_related()
+        else:
+            span.set_tag("aggregation", False)
+            qs = query_representation(self.query)
+            if select_related:
+                self.query.select_related()
+        logger.debug(qs)
+        span.set_data("mongo_query", qs)
+        # End instrumentation
+        span.finish()
 
 
 class ResponsePagination(Pagination):
@@ -759,17 +793,19 @@ class ItemResponse(ResourceResponse):
         return self.form.validate()
 
     def commit(self, new_instance=None, flash=True):
-        if not self.auth:
-            abort(403, _("Authorization not performed"))
-        new_args = dict(request.view_args)
-        new_args.pop("id", None)
-        if self.method == "delete":
-            self.instance.delete()
-        else:
-            instance = new_instance or self.instance
-            instance.save()
-            self.instance = instance  # only save back to response if successful in case we have a post
-        log_event(self.method, self.instance, flash=flash)
+        with start_span(op="db", description="commit()") as span:
+            if not self.auth:
+                abort(403, _("Authorization not performed"))
+            new_args = dict(request.view_args)
+            new_args.pop("id", None)
+            if self.method == "delete":
+                self.instance.delete()
+            else:
+                instance = new_instance or self.instance
+                instance.save()
+                self.instance = instance  # only save back to response if successful in case we have a post
+            span.set_data("ObjectId", self.instance.pk if self.instance else "unknown")
+            log_event(self.method, self.instance, flash=flash)
 
     @property  # For convenience
     def instance(self):
@@ -1191,8 +1227,8 @@ class ImprovedModelConverter(ModelConverter):
 class MapFormField(f.Field):
     """A field that holds a dict of fields within it.
 
-     Arguments:
-         f {[type]} -- [description]
+    Arguments:
+        f {[type]} -- [description]
     """
 
     def __init__(self, unbound_field, label=None, validators=None, default=None, sub_labels=None, **kwargs):

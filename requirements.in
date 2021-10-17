@@ -23,7 +23,7 @@ python-dateutil
 python-frontmatter
 python-magic
 python-slugify
-sentry-sdk[flask]
+sentry-sdk[flask]>=1.4.3
 sparkpost
 speaklater
 stripe

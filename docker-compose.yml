@@ -11,7 +11,7 @@ services:
       - LORE_DEBUG_MAIL_OVERRIDE=False
       - LORE_GOOGLE_SERVICE_ACCOUNT_PATH=/data/config/google_service_account.json
       - LORE_CLOUDINARY_DOMAIN=helmgast
-      - LORE_SENTRY_SAMPLE_RATE=0.01
+      - LORE_SENTRY_SAMPLE_RATE=0.03
       - FLASK_APP=run.py
     expose:
       - "5000"

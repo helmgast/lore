@@ -22,7 +22,7 @@ from flask import render_template
 from flask_babel import lazy_gettext as _
 from mongoengine import MultipleObjectsReturned, DoesNotExist
 from werkzeug.urls import url_encode, url_quote
-from sentry_sdk import configure_scope, capture_message, capture_exception
+from sentry_sdk import configure_scope, capture_message, capture_exception, start_span
 
 from lore.model.misc import safe_next_url, set_lang_options
 from lore.model.user import User, UserStatus
@@ -119,9 +119,10 @@ def callback():
         "grant_type": "authorization_code",
     }
     # Verify the token
-    token_info = requests.post(
-        token_url, data=json.dumps(token_payload), headers={"content-type": "application/json"}
-    ).json()
+    with start_span(op="http", description="POST Auth0 token verification"):
+        token_info = requests.post(
+            token_url, data=json.dumps(token_payload), headers={"content-type": "application/json"}
+        ).json()
 
     if "error" in token_info:
         raise ValueError(f"Error logging in, Auth0 response: {token_info}")
@@ -131,7 +132,8 @@ def callback():
         domain=auth0_domain, access_token=token_info["access_token"]
     )
 
-    user_info = requests.get(user_url).json()
+    with start_span(op="http", description="GET Auth0 userinfo"):
+        user_info = requests.get(user_url).json()
 
     # Make sure next is a relative URL
     next_url = safe_next_url(default_url="/")
@@ -172,7 +174,8 @@ def callback():
     # Find user that matches the provided auth email
     # Will look in identities, but if Auth0 works correctly, we shouldn't arrive here with an email that is not primary (e.g. not in identities)
     try:
-        auth_user = User.query_user_by_email(email, return_deleted=True).get()
+        with start_span(op="db", description="User.query_user_by_email(email, return_deleted=True).get()"):
+            auth_user = User.query_user_by_email(email, return_deleted=True).get()
         if auth_user.status == "deleted":
             flash(
                 _("This user is deleted and cannot be used. Contact %(email)s for support.", email=support_email),
@@ -206,13 +209,14 @@ def callback():
                 if auth_user:
                     session_user.merge_in_user(auth_user)
                 primary_id = f"{session_user.identities[0]['provider']}|{session_user.identities[0]['user_id']}"
-                identities = get_mgmt_api().users.link_user_account(
-                    primary_id,
-                    {
-                        "user_id": user_info["identities"][0]["user_id"],
-                        "provider": user_info["identities"][0]["provider"],
-                    },
-                )
+                with start_span(op="http", description="Auth0 get_mgmt_api().users.link_user_account()"):
+                    identities = get_mgmt_api().users.link_user_account(
+                        primary_id,
+                        {
+                            "user_id": user_info["identities"][0]["user_id"],
+                            "provider": user_info["identities"][0]["provider"],
+                        },
+                    )
                 # As we linked auth_user to session_user, we can keep current session
                 populate_user(session_user, user_info)
                 # This needs to come after populate to correctly override the identities
@@ -226,7 +230,7 @@ def callback():
                     ),
                     "info",
                 )
-                logger.info(f"Linked email {user_info['email']} to primary {session_user.email}");
+                logger.info(f"Linked email {user_info['email']} to primary {session_user.email}")
             # If not, we essentially do nothing, as the user is already itself
             return redirect(next_url)
         else:  # Something went wrong, there is no valid logged in user
@@ -385,7 +389,8 @@ def get_logged_in_user(require_active=True):
                 if hasattr(uid, "decode"):
                     uid = uid.decode()
                 # u = User.objects(id=uid).comment("Logged in user").first()
-                u = User.objects(id=uid).first()  # .comment() not supported by mongomock?
+                with start_span(op="db", description="@get_logged_in_user > User.objects(id=uid).first()"):
+                    u = User.objects(id=uid).first()  # .comment() not supported by mongomock?
                 if u:
                     if not u.logged_in or (require_active and u.status != UserStatus.active):
                         # Server has logged us out or the user is not active so cannot be considered logged in
