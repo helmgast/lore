@@ -75,7 +75,9 @@ def create_app(**kwargs):
     # 4. Check if running in production or not
     if the_app.config["PRODUCTION"]:
         # Make sure we don't debug in production
-        the_app.debug = False
+        # CHANGED, let us control DEBUG separately
+        # the_app.debug = False
+
         # Show a sanitized config output in justified columns
         width = max(map(len, (argconfig.keys() | envconfig.keys() | fileconfig.keys() | {""})))
 
@@ -92,18 +94,11 @@ def create_app(**kwargs):
 
     # the_app.config['PROPAGATE_EXCEPTIONS'] = the_app.debug
     configure_logging(the_app)
-    
+
     # Commented out as it pollutes the log like hell
-    # if not the_app.testing:
-    #     the_app.logger.info(
-    #         "Lore (%s) started. Mode: %s%s:\n%s"
-    #         % (
-    #             the_app.config.get("VERSION", None),
-    #             "Prod" if the_app.config["PRODUCTION"] else "Dev",
-    #             " (Debug)" if the_app.debug else "",
-    #             config_msg,
-    #         )
-    #     )
+    s = f"Lore ({the_app.config.get('VERSION', None)}) started. Prod: {the_app.config['PRODUCTION']}, Debug: {the_app.debug}, Default host: {the_app.config['DEFAULT_HOST']}"
+    if not the_app.testing:
+        the_app.logger.info(s)
 
     # Configure all extensions
     configure_extensions(the_app)
@@ -185,9 +180,6 @@ def configure_extensions(app):
         endpoint="static",
         view_func=app.send_static_file,
         # host=app.default_host,
-    )
-    app.logger.info(
-        "Doing host matching and default host is {host}{prefix}".format(host=app.default_host, prefix=prefix or "")
     )
 
     # Special static function that serves from plugin/ instead of static/

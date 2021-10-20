@@ -17,6 +17,7 @@ nltk
 oauth2client
 panflute==1.12.5
 Pillow>=8.3.2
+pyinstrument
 pyphen
 pyqrcode
 python-dateutil

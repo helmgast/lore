@@ -330,7 +330,7 @@ def load_user():
     g.user = get_logged_in_user()
     if g.user:
         with configure_scope() as scope:
-            scope.user = {"email": g.user.email, "id": g.user.id}
+            scope.user = {"email": g.user.email, "id": str(g.user.id)}
 
 
 # TODO update or depcrecate

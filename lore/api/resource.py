@@ -347,10 +347,11 @@ class ResourceResponse(Response):
                     session["_flashes"] = []
                 return jsonify(rv), self.status
             else:  # csv
-                # To chatty in log, this happens a lot
+                # Too chatty in log, this happens a lot
                 # logger.warn(
                 #     f"Unsupported mime type '{best_type}' for resource request '{request}' with 'Accept: {request.accept_mimetypes}'"
                 # )
+                # This can never happen from a browser, that always sends Accept headers, so we are dealing with some bot
                 abort(406)  # Not acceptable content available
 
     def error_response(self, err=None, status=0):
@@ -578,6 +579,7 @@ class ListResponse(ResourceResponse):
             field = field.split(".", 1)[0]
             fieldObj = self.model._fields.get(field, None)
             if fieldObj and hasattr(fieldObj, "filter_options"):
+                # Popupate all filter options per field
                 self.filter_options[field] = fieldObj.filter_options(self.query)
 
         # Filterable fields

@@ -19,7 +19,9 @@ class Config(object):
         "flask_debugtoolbar.panels.template.TemplateDebugPanel",
         "flask_debugtoolbar.panels.logger.LoggingPanel",
         "lore.extensions.PatchedRouteListDebugPanel",
-        "flask_debugtoolbar.panels.profiler.ProfilerDebugPanel",
+        # "flask_debugtoolbar_flamegraph.FlamegraphPanel",
+        # "flask_debugtoolbar.panels.profiler.ProfilerDebugPanel",
+        "tools.pyinstrument_debug_toolbar.PyinstrumentDebugPanel",
         "tools.mongoengine_debug_toolbar.MongoengineToolbar",
     )
     # DEBUG_TB_HOSTS = ['127.0.0.1']  # Only allow localhost to access debug toolbar

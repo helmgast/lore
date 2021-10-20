@@ -44,6 +44,7 @@ panflute==1.12.5          # via -r requirements.in
 pillow==8.3.2             # via -r requirements.in
 pyasn1-modules==0.2.8     # via google-auth, oauth2client
 pyasn1==0.4.8             # via oauth2client, pyasn1-modules, rsa
+pyinstrument==4.0.4       # via -r requirements.in
 pymongo==3.11.0           # via mongoengine
 pyparsing==2.4.7          # via httplib2
 pyphen==0.9.5             # via -r requirements.in
