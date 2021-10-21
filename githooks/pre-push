@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if [[ $1 == "prod" ]]; then
 echo "Pre-push hook: build and push Docker image"
 docker-compose build
 docker-compose push
+else
+echo "No docker build as not pushing to prod"
+fi;
