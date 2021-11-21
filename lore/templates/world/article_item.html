@@ -195,7 +195,7 @@
                 {% if article.translations_i18n.get(loc.language, none) %}
                 <li title="{{ loc.phrases['read_in'] }}">
                     <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.translations_i18n[loc.language].slug) }}">
-                        <img src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"> {{ loc.phrases['display_in'] }}
+                        <img src="/static/img/icon/{{loc.territory}}.png"> {{ loc.phrases['display_in'] }}
                     </a>
                 </li>
                 {% endif %}

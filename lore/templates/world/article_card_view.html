@@ -1,34 +1,52 @@
-<div class="card{{ ' status-unpublished' if not article.is_published() }}"
-        {%- if article.get_feature_image -%}
-     style="background: url({{ article.get_feature_image.feature_url(format='card') }}) center top/cover;"
-        {%- endif -%}>
-    <a class="card-cover icon150px"
-       href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">
-        {{ MACRO.article_icons[article.type] if not article.get_feature_image else "&nbsp;"|safe }}
-    </a>
-    <div class="card-text">
-        <h3 class="card-title dobr">
-            <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}">{{ article.title }}</a>
-        </h3>
-        {% set desc =  (article.description|markdown|striptags|replace('gallery-center','')).split('. R') %}
+<div
+  class="card{{ ' status-unpublished' if not article.is_published() }}"
+  {%-
+  if
+  article.get_feature_image
+  -%}
+  style="background: url({{ article.get_feature_image.feature_url(format='card') }}) center top/cover;"
+  {%-
+  endif
+  -%}
+>
+  <a
+    class="card-cover icon150px"
+    href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}"
+  >
+    {{ MACRO.article_icons[article.type] if not article.get_feature_image else "&nbsp;"|safe }}
+  </a>
+  <div class="card-text">
+    <h3 class="card-title dobr">
+      <a href="{{ url_for('world.ArticlesView:get', world_=world.slug, id=article.slug) }}"
+        >{{ article.title }}</a
+      >
+    </h3>
+    {% set desc = (article.description|markdown|striptags|replace('gallery-center','')).split('. R')
+    %}
 
-        <div class="card-description">{{ desc[0] }}</div>
-        <ul class="card-details">
-            <li class="product-type"><span
-                    class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span> {{ article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}
-            </li>
-            {% if not article.is_published() %}
-            <li><span
-                    class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
-            </li>
-            {% endif %}
-        </ul>
-    </div>
-    {% if article.available_languages() %}
-    <ul class="flag-list">
-    {% for loc in article.available_languages().values() %}
-        <li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>
-    {% endfor %}
+    <div class="card-description">{{ desc[0] }}</div>
+    <ul class="card-details">
+      <li class="product-type">
+        <span class="glyphicon glyphicon-{{ MACRO.article_glyphicons[article.type] }}"></span> {{
+        article.get_type_display() }} {{ article.created_date|dateformat(format='short') }}
+      </li>
+      {% if not article.is_published() %}
+      <li>
+        <span class="glyphicon glyphicon-{{ MACRO.status_glyphicons[article.status] }}"></span>
+      </li>
+      {% endif %}
     </ul>
-    {% endif %}
+  </div>
+  {% if article.available_languages() %}
+  <ul class="flag-list">
+    {% for locale in article.available_languages().values() %}
+    <li>
+      <img
+        title="{{ locale.phrases['available_in'] }}"
+        src="/static/img/icon/{{locale.territory}}.png"
+      />
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 </div>

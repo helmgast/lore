@@ -1,44 +1,59 @@
-<div class="card{{ ' status-unpublished' if not world.is_published() }}" 
-    {%- if world.get_feature_image -%} style="background: url({{ world.get_feature_image.feature_url(format='card', pub_host=world.publisher.slug) }}) center top/cover;"{%- endif -%}>
-    <a class="card-cover icon150px"
-        href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}">
-        {% if not world.images %}
-            <svg class="lore-icon lore-icon-stretch">
-                <use xlink:href="#lore-earth"></use>
-            </svg>
-        {% endif %}
-    </a>
-    <div class="card-text">
-        <h3 class="card-title">
-            <a href="{{ url_for('world.ArticlesView:world_home', world_=world.slug, pub_host=world.publisher.slug) }}">{{ world.title }}</a><small> by {{world.publisher}}</small>
-        </h3>
-        {% if world.description %}
-            {% set desc =  (world.description|markdown|striptags|replace('gallery-center',''))|truncate(80) %}
-        {% elif world.tagline %}
-            {% set desc =  world.tagline|truncate(80) %}
-        {% else %}
-            {% set desc = _('No description') %}
-        {% endif %}
-
-        <div class="card-description">{{ desc }}</div>
-        <ul class="card-details">
-            <li class="product-type">{{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}</li>
-            {% if not world.is_published() %}
-                <li><span
-                        class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span>
-                </li>
-            {% endif %}
-            {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit', res=world)) %}
-                <li>
-                    {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug), btnclass='btn-sm') }}
-                </li>
-            {% endcall %}
-        </ul>
-    </div>
-    {% set locales = world.available_languages() %}
-    {% if locales %}
-    <ul class="flag-list">
-    {% for loc in locales.values() %}<li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>{% endfor %}
-    </ul>
+<div
+  class="card{{ ' status-unpublished' if not world.is_published() }}"
+  {%-
+  if
+  world.get_feature_image
+  -%}
+  style="background: url({{ world.get_feature_image.feature_url(format='card', pub_host=world.publisher.slug) }}) center top/cover;"
+  {%-
+  endif
+  -%}
+>
+  <a
+    class="card-cover icon150px"
+    href="{{ url_for('world.ArticlesView:world_home', world_=world.slug) }}"
+  >
+    {% if not world.images %}
+    <svg class="lore-icon lore-icon-stretch">
+      <use xlink:href="#lore-earth"></use>
+    </svg>
     {% endif %}
+  </a>
+  <div class="card-text">
+    <h3 class="card-title">
+      <a
+        href="{{ url_for('world.ArticlesView:world_home', world_=world.slug, pub_host=world.publisher.slug) }}"
+        >{{ world.title }}</a
+      ><small> by {{world.publisher}}</small>
+    </h3>
+    {% if world.description %} {% set desc =
+    (world.description|markdown|striptags|replace('gallery-center',''))|truncate(80) %} {% elif
+    world.tagline %} {% set desc = world.tagline|truncate(80) %} {% else %} {% set desc = _('No
+    description') %} {% endif %}
+
+    <div class="card-description">{{ desc }}</div>
+    <ul class="card-details">
+      <li class="product-type">
+        {{ _('Created date') }}: {{ world.created_date|dateformat(format='short') }}
+      </li>
+      {% if not world.is_published() %}
+      <li><span class="glyphicon glyphicon-{{ MACRO.status_glyphicons[world.status] }}"></span></li>
+      {% endif %} {% call(privileged) MACRO.AUTHORIZED(access_policy['world'].authorize('edit',
+      res=world)) %}
+      <li>
+        {{ MACRO.EDIT_BUTTON(url_for('world.WorldsView:get', intent='patch', id=world.slug),
+        btnclass='btn-sm') }}
+      </li>
+      {% endcall %}
+    </ul>
+  </div>
+  {% set locales = world.available_languages() %} {% if locales %}
+  <ul class="flag-list">
+    {% for loc in locales.values() %}
+    <li>
+      <img title="{{ loc.phrases['available_in'] }}" src="/static/img/icon/{{loc.territory}}.png" />
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
 </div>

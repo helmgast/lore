@@ -27,7 +27,7 @@
                 {% if article.available_languages() %}
                 <ul class="flag-list">
                 {% for loc in article.available_languages().values() %}
-                    <li><img title="{{ loc.phrases['available_in'] }}" src="https://www.countryflags.io/{{loc.territory}}/flat/16.png"></li>
+                    <li><img title="{{ loc.phrases['available_in'] }}" src="/static/img/icon/{{loc.territory}}.png"></li>
                 {% endfor %}
                 </ul>
                 {% endif %}
