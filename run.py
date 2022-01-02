@@ -329,11 +329,19 @@ def import_sheet(url_or_id, model, **kwargs):
 
 
 @app.cli.command()
+@click.argument("url_or_id", required=True)
+def import_gdrive(url_or_id):
+    from lore.model.asset import get_gdrive_metadata
+
+    print(get_gdrive_metadata(url_or_id))
+
+
+@app.cli.command()
 @click.argument("model", required=True)
 @click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
 @click.option("--log-level", default="INFO")
 @click.option("--limit", default=10, type=int, help="Maximum amounts of items to import")
-@click.option("--filter", help="JSON filter object to textalk, e.g. {\"/uid\":{\"equals\":182178425}}")
+@click.option("--filter", help='JSON filter object to textalk, e.g. {"/uid":{"equals":182178425}}')
 @click.option("--publisher", required=False, help="Publisher domain to associate import with")
 @click.option("--vatrate", required=False, help="VAT Rate to apply to all orders")
 @click.option("--title", required=False, help="Overall import title")

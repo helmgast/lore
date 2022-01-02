@@ -196,13 +196,11 @@ class Product(Document):
         return g.user and self in products_owned_by_user(g.user)
 
     def __str__(self):
-        """A string representation suitable for display to end users. Call with !s after variable in f-strings.
-        """
+        """A string representation suitable for display to end users. Call with !s after variable in f-strings."""
         return f"{self.title} [{self.product_number}] ({self.world or self.family})"
 
     def __repr__(self):
-        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings.
-        """
+        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings."""
         return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.product_number}', '{self.world!r}', '{self.publisher!r}')"
 
 
@@ -309,8 +307,7 @@ class Order(Document):
     shipping_address = EmbeddedDocumentField(Address)
 
     def __str__(self):
-        """A string representation suitable for display to end users. Call with !s after variable in f-strings.
-        """
+        """A string representation suitable for display to end users. Call with !s after variable in f-strings."""
         if self.title:
             return self.title
         max_line, max_price = None, -1
@@ -326,8 +323,7 @@ class Order(Document):
         return s
 
     def __repr__(self):
-        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings.
-        """
+        """A string representation suitable for logging and debugging. Call with !r after variable in f-strings."""
         return f"{self.__class__}('{self.pk!r}', '{self.title}', '{self.external_key}', '{self.user!r}', '{self.status!r}')"
 
     @staticmethod

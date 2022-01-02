@@ -83,6 +83,63 @@ def guess_content_type(filename):
     return None
 
 
+gdrive_api = None
+
+
+def get_gdrive_api():
+    global gdrive_api
+    if gdrive_api is None:
+        from oauth2client.service_account import ServiceAccountCredentials
+        from googleapiclient.discovery import build
+
+        scope = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            current_app.config["GOOGLE_SERVICE_ACCOUNT_PATH"], scope
+        )
+        gdrive_api = build("drive", "v3", credentials=creds)
+
+    return gdrive_api
+
+
+def get_gdrive_metadata(url_or_id):
+    gid = ""
+    if "/" in url_or_id:
+        gid = get_google_urls(url_or_id).get("google_id", "")
+    else:
+        gid = url_or_id
+    if not gid:
+        return None
+    api = get_gdrive_api()
+    if not api:
+        return None
+    try:
+        file_data = (
+            api.files()
+            .get(
+                fileId=gid,
+                # Currently not returning thumbnailLink, see https://stackoverflow.com/questions/62439434/can-not-retrieve-thumbnaillink-from-google-drive-api
+                fields="size,id,name,mimeType,md5Checksum,thumbnailLink,imageMediaMetadata/width,imageMediaMetadata/height",
+            )
+            .execute()
+        )
+        metadata = {
+            "fname": file_data.get("name", gid),
+            "content_type": file_data.get("mimeType", None),
+            "md5": file_data.get("md5Checksum", None),
+            "length": int(file_data.get("size", "0")),
+            "w": 0,
+            "h": 0,
+        }
+        image_data = file_data.get("imageMediaMetadata", None)
+        if image_data:
+            metadata["w"] = image_data["width"]
+            metadata["h"] = image_data["height"]
+
+        return metadata
+    except:
+        return None
+
+
 # title - text description of asset
 # filename - e.g. the slug, automatically created from URL
 # source_url - remote source
@@ -110,7 +167,27 @@ def guess_content_type(filename):
 # We can click an existing file asset. It will show a modal where we can rename the asset and see different formats it can be represented in.
 
 
+def get_google_urls(url):
+    g_id = extract(
+        url,
+        r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)",
+    )
+    if not g_id:
+        return {}
+    urls = {"google_id": g_id}
+    urls["direct"] = f"https://drive.google.com/uc?export=view&id={g_id}"
+    urls["dl"] = f"https://drive.google.com/uc?export=download&id={g_id}"
+    urls["view"] = f"https://drive.google.com/open?id={g_id}"
+    return urls
+
+
 def sniff_remote_file(url):
+    metadata = get_gdrive_metadata(url)  # Returns None if wasn't Google URL or didn't work
+    if metadata is not None:
+        return metadata
+
+    # Fallback to traditional sniffing, that may not work
+
     headers = {"Range": "bytes=0-100"}
     r = requests.get(url, headers=headers)
     content_type = r.headers.get("content-type", "")
@@ -175,20 +252,6 @@ class Attachment(EmbeddedDocument):
         # TODO may be risky/slow to attempt and download large remote files. a HEAD works quickly for content type but not for image size.
         # So we should not blindly attempt to set these things.
         pass
-
-
-def get_google_urls(url):
-    g_id = extract(
-        url,
-        r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)",
-    )
-    if not g_id:
-        return {}
-    urls = {"google_id": g_id}
-    urls["direct"] = f"https://drive.google.com/uc?export=view&id={g_id}"
-    urls["dl"] = f"https://drive.google.com/uc?export=download&id={g_id}"
-    urls["view"] = f"https://drive.google.com/open?id={g_id}"
-    return urls
 
 
 cloudinary_transforms = {
@@ -386,6 +449,8 @@ class FileAsset(Document):
                 )
             self.width, self.height = metadata["w"], metadata["h"]
             self.length = metadata["length"]
+            if "md5" in metadata:
+                self.md5 = metadata["md5"]
         if not self.source_filename or not self.content_type:
             raise ValidationError("No filename or content type created for FileAsset, aborting")
 

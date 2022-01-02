@@ -44,7 +44,7 @@
                         <span class="help-block">{% trans %}Max size 256 MB{% endtrans %}</span>
                     </div>
                     {{ MACRO.FORM_FIELD(fileasset_form.source_file_url) }}
-                    {{ MACRO.FORM_FIELD(fileasset_form.source_page_url) }}
+                    {# {{ MACRO.FORM_FIELD(fileasset_form.source_page_url) }} #}
                     {{ MACRO.FORM_FIELD(fileasset_form.tags, controlclass=' selectize-tags') }}
                     {{ fileasset_form.csrf_token }}
                 </div>
@@ -134,12 +134,12 @@
                             <small>{{ fileasset.source_file_url }}</small>
                         </td>
                     </tr>
-                    <tr>
+                    {# <tr>
                         <th>{{ _('Source Page URL') }}</th>
                         <td>
                             <small>{{ fileasset.source_page_url }}</small>
                         </td>
-                    </tr>
+                    </tr> #}
                     <tr>
                         <th>{{ _('Size') }}</th>
                         <td>
