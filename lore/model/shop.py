@@ -538,8 +538,10 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
     for ol in order_lines:
         matches = extract(ol, ol_pattern, default=None, groups=5)
         ol = OrderLine()
+        if not matches[1]:
+            continue
         product = Product.objects(product_number=matches[1]).first()
-        if product:
+        if product and :
             ol.product = product
         else:
             if job:
