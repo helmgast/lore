@@ -329,7 +329,7 @@ def qrcode(code):
     host = current_app.config["DEFAULT_HOST"].upper()
     code = code.upper()
     # Uppercase letters give a more compact QR code
-    qr = pyqrcode.create(f"{host}+{code}", error="L")
+    qr = pyqrcode.create(f"HTTPS://{host}/+{code}", error="L")
     out = io.BytesIO()
     qr.svg(out, scale=5)
     out.seek(0)

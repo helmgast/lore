@@ -541,7 +541,7 @@ def parse_orderlines(order_lines, lookup_product_with_currency=None, job=None):
         if not matches[1]:
             continue
         product = Product.objects(product_number=matches[1]).first()
-        if product and :
+        if product:
             ol.product = product
         else:
             if job:
@@ -1049,7 +1049,7 @@ def import_product(data, job=None, commit=False, create=True, if_newer=True):
     product_type = get(data, "type", "").lower()
     if product_type and product_type in ProductTypes:
         product.type = product_type
-    elif "weight" or "freeFreight" in data:
+    elif not product.type and "weight" or "freeFreight" in data:
         product.type = (
             ProductTypes.digital
             if get(data, "weight", 0) <= 1 and get(data, "freeFreight", False)
@@ -1070,13 +1070,13 @@ def import_product(data, job=None, commit=False, create=True, if_newer=True):
             job.info("Guessed product.stats as Out of stock based on title")
         product.status = ProductStatus.out_of_stock
     if product.status is not ProductTypes.digital and re.search(
-        f"pdf|digital", "".join(product.title_i18n.values()), re.IGNORECASE
+        "pdf|digital", "".join(product.title_i18n.values()), re.IGNORECASE
     ):
         if job:
             job.info("Guessed product.type as digital based on title")
         product.type = ProductTypes.digital
     elif product.status is not ProductTypes.shipping and re.search(
-        f"frakt|shipping", "".join(product.title_i18n.values()), re.IGNORECASE
+        "frakt|shipping", "".join(product.title_i18n.values()), re.IGNORECASE
     ):
         if job:
             job.info("Guessed product.type as shipping based on title")

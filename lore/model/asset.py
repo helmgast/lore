@@ -63,7 +63,7 @@ allowed_mimetypes = {
     "application/pdf": "pdf",
     "application/rtf": "rtf",
     "application/zip": "zip",
-    "application/x-compressed-zip": "zip",
+    "application/x-zip-compressed": "zip",
     "application/msword": "doc",
     "application/vnd.ms-excel": "xls",
     "image/jpeg": "jpg",
@@ -92,7 +92,7 @@ def get_gdrive_api():
         from oauth2client.service_account import ServiceAccountCredentials
         from googleapiclient.discovery import build
 
-        scope = ["https://www.googleapis.com/auth/drive.metadata.readonly"]
+        scope = ["https://www.googleapis.com/auth/drive"]
         creds = ServiceAccountCredentials.from_json_keyfile_name(
             current_app.config["GOOGLE_SERVICE_ACCOUNT_PATH"], scope
         )
@@ -113,6 +113,7 @@ def get_gdrive_metadata(url_or_id):
     if not api:
         return None
     try:
+        # TODO we should warn user if they use a file that is not publically available
         file_data = (
             api.files()
             .get(
@@ -129,6 +130,7 @@ def get_gdrive_metadata(url_or_id):
             "length": int(file_data.get("size", "0")),
             "w": 0,
             "h": 0,
+            "response": "gdrive api",
         }
         image_data = file_data.get("imageMediaMetadata", None)
         if image_data:
@@ -167,12 +169,17 @@ def get_gdrive_metadata(url_or_id):
 # We can click an existing file asset. It will show a modal where we can rename the asset and see different formats it can be represented in.
 
 
-def get_google_urls(url):
-    g_id = extract(
-        url,
-        r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)",
-    )
-    if not g_id:
+def get_google_urls(url=None, id=None):
+    if url:
+        g_id = extract(
+            url,
+            r"https:\/\/drive.google\.com\/(?:open\?id=|file\/d\/|thumbnail\?sz=.+?&id=|uc\?export=download&id=|uc\?export=view&id=)([^&\/]+)",
+        )
+        if not g_id:
+            return {}
+    elif id:
+        g_id = id
+    else:
         return {}
     urls = {"google_id": g_id}
     urls["direct"] = f"https://drive.google.com/uc?export=view&id={g_id}"
