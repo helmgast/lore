@@ -97,7 +97,7 @@ jinja2==2.11.3
     # via
     #   flask
     #   flask-babel
-joblib==0.16.0
+joblib==1.2.0
     # via nltk
 jsonrpcclient[requests]==3.3.6
     # via -r requirements.in
