@@ -162,6 +162,7 @@ class User(Document, BaseUser):
 
         changed_orders = Order.objects(user=remove_user).update(multi=True, user=self)
         changed_events = Event.objects(user=remove_user).update(multi=True, user=self)
+        # TODO also move FileAssets and Articles
         if remove_user.description and not self.description:
             self.description = remove_user.description
         if remove_user.realname and not self.realname:
@@ -431,6 +432,10 @@ Group.updated.filter_options = datetime_delta_options("updated", from7to365)
 
 
 def user_from_email(*emails, realname="", create=False, commit=False):
+    """Creates or finds a user from one or more emails, such as when importing or inviting users.
+    It will try each email in turn until it finds an existing user.
+    If create is true, it will create a barebones user if it doesn't exist.
+    If commit is true, it will also save it to database."""
     created = False
     user = None
     i = 0

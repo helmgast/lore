@@ -329,11 +329,30 @@ def import_sheet(url_or_id, model, **kwargs):
 
 
 @app.cli.command()
-@click.argument("url_or_id", required=True)
-def import_gdrive(url_or_id):
-    from lore.model.asset import get_gdrive_metadata
+@click.argument("folder_id", required=True)
+@click.option("-c", "--commit", is_flag=True, help="If given, will commit import.")
+@click.option(
+    "-b", "--build", is_flag=True, help="If given, will first build an index of Google Drive files. Takes time!"
+)
+@click.option("--log-level", default="INFO")
+@click.option("-l", "--limit", default=10, type=int, help="Maximum amounts of items to import")
+def import_gdrive(folder_id, **kwargs):
 
-    print(get_gdrive_metadata(url_or_id))
+    from tools.import_gdrive import import_all_gridfs
+    from mongoengine.connection import get_db
+    from lore import extensions
+
+    extensions.db.init_app(app)
+    db = get_db()
+    import_all_gridfs(folder_id, **kwargs)
+
+
+@app.cli.command()
+@click.argument("google_id", required=True)
+def check_gdrive(google_id, **kwargs):
+
+    from tools.import_gdrive import check_gdrive_id
+    check_gdrive_id(google_id, **kwargs)
 
 
 @app.cli.command()

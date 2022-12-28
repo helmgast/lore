@@ -1,0 +1,17 @@
+# Run by overriding default, e.g. docker-compose -f docker-compose.yml -f docker-compose.secrets.yml -f docker-compose.dev.yml
+version: "3.8"
+
+services:
+  lore:
+    build: .
+    # command: "/usr/local/bin/gunicorn -w 5 --threads 4 -b :5000 --enable-stdio-inheritance run:app"
+    command: "/usr/local/bin/gunicorn -b :5000 run:app"
+    environment:
+      - LORE_DEFAULT_HOST=lore.pub.test
+      - LORE_PRODUCTION=False
+    ports:
+      - 5000:5000 # This exposes it on host, so that Nginx can work both when talking to container or to lore running direct on host
+    volumes:
+      - /data/cache
+      - /Users/martin/dev/deploy/helmgast/data/www:/data/www:delegated
+      - /Users/martin/dev/src/lore/google_service_account.json:/data/config/google_service_account.json

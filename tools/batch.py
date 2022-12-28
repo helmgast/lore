@@ -3,6 +3,7 @@ from timeit import default_timer as timer
 import traceback
 from collections import Counter
 from dataclasses import dataclass
+from unicodedata import normalize
 import json
 
 
@@ -53,6 +54,13 @@ class Column:
     result_key: str = ""
 
 
+def universal_get(data, key, default=None):
+    if isinstance(data, dict):
+        return data.get(key, default)
+    else:
+        return getattr(data, key, default)
+
+
 class Job:
     def __init__(
         self, i: int = 0, batch=None, is_debug: bool = False, is_dry_run: bool = False, test_context: dict = None
@@ -101,15 +109,16 @@ class Job:
         out += f" {str(self.i).zfill(4)} "
         if self.result is None:
             # Take data from import instead, because we likely had an error in the import
-            results = [self.data.get(col.import_key, "?") for col in columns]
-        elif isinstance(self.result, dict):
-            results = [self.result.get(col.result_key, self.data.get(col.import_key, "?")) for col in columns]
+            results = [universal_get(self.data, col.import_key, "?") for col in columns]
         else:
-            results = [getattr(self.result, col.result_key, self.data.get(col.import_key, "?")) for col in columns]
+            results = [
+                universal_get(self.result, col.result_key, universal_get(self.data, col.import_key, "?"))
+                for col in columns
+            ]
 
         for i, item in enumerate(results):
             col_width = int(TERMINAL_WIDTH * self.batch.col_weights[i])
-            out += str(item)[0 : col_width - 1].ljust(col_width, " ")
+            out += normalize("NFC", str(item))[0 : col_width - 1].ljust(col_width, " ")
         if self.success == JobSuccess.FAIL:
             errors = "\n    ".join(map(str, self.get_log(LogLevel.ERROR)))
             out += f"\n    {Color.FAIL}{errors}{Color.ENDC}"

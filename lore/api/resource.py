@@ -51,6 +51,7 @@ from lore.model.world import EMBEDDED_TYPES, Article
 logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 objid_matcher = re.compile(r"^[0-9a-fA-F]{24}$")
+full_objid_matcher = re.compile(r'^ObjectId("[0-9a-fA-F]{24}")$')
 
 
 def generate_flash(action, name, model_identifiers, dest=""):
