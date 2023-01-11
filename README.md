@@ -71,7 +71,7 @@ Run `npm run watch` when developing, will continuously re-build frontend assets 
 *Running Docker means having a Virtual Machine and/or separate user space where you can run the full application, including database, with guaranteed separation from your local machine, as well as (almost) identical to the server environment*
 
 1. [Install](https://docs.docker.com/installation/) Docker if not already
-2. Run a temporary database image: `docker run --name mongo -d mongo`
+2. Run a temporary database image: `docker run -d --name mongo -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=pass -p 27018:27017 mongo`. Important to setup auth to keep it similar to how you'd run it in production.
 3. Build the image by running `docker build -t lore .` This uses the `Dockerfile` to setup the correct dependencies and environment. Rebuild any time your code has changed.
 4. Start the image by running `docker run -it --rm --link mongo:mongo lore` (--rm will remove the containers after exiting, skip that option if you want to have persistence).
 
@@ -89,9 +89,9 @@ There are 3 levels of debugging that can be done.
 Lore defaults to English but comes with a Swedish localization as well, and more can be
 added. If you add or change new messages to translate, see below:
 
-1. Run `python manage.py lang_extract` to find all strings needing translations and update the translation file.
+1. Run `python manage.py lang-extract` to find all strings needing translations and update the translation file.
 2. Search the lore/translations/[locale]/messages.po file for strings without translations, and translate in that file according to the format.
-3. Run `python manage.py lang_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
+3. Run `python manage.py lang-compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
 
 ### Deployment in production
 

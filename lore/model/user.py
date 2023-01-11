@@ -440,7 +440,7 @@ def user_from_email(*emails, realname="", create=False, commit=False):
     user = None
     i = 0
     while user is None and i < len(emails):
-        user = User.query_user_by_email(emails[i], True).first()
+        user = User.query_user_by_email(emails[i]).first()
         i += 1
     if create and not user:
         user = User(email=emails[0])
