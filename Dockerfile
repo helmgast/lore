@@ -1,5 +1,5 @@
 # First stage - build static resources using node. Required Docker CE >=17.06
-FROM node:latest
+FROM node:18
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 COPY assets/ assets/
