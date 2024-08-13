@@ -6,6 +6,7 @@ COPY assets/ assets/
 COPY static/ static/
 COPY package.json package-lock.json /usr/src/app/
 COPY webpack.config.js .
+ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN npm install
 RUN npm run build
 
