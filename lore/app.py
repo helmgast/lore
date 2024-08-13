@@ -28,7 +28,7 @@ from flask import (
     send_from_directory,
 )
 from flask.config import Config
-from markdown import Markdown
+import markdown
 from mongoengine.connection import ConnectionFailure
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.routing import Map
@@ -223,21 +223,19 @@ def configure_extensions(app):
     # app.md = FlaskMarkdown(app, extensions=['attr_list'])
     # app.md.register_extension(extensions.AutolinkedImage)
 
-    app.md = Markdown(
-        extensions=[
-            "markdown.extensions.attr_list",
-            "markdown.extensions.smarty",
-            "markdown.extensions.tables",
-            extensions.AutolinkedImage(),
-        ]
-    )
-    # A small hack to let us output "unmarkdownified" text.
-    Markdown.output_formats["plain"] = extensions.unmark_element
-    app.md_plain = Markdown(output_format="plain")
-    app.md_plain.stripTopLevelTags = False
+    # Patch Markdown to also support a plain output format
+    markdown.Markdown.output_formats["plain"] = extensions.unmark_element
+    md_extensions = [
+        "attr_list",
+        "smarty",
+        "tables",
+        extensions.AutolinkedImage(),
+    ]
 
-    app.jinja_env.filters["markdown"] = extensions.build_md_filter(app.md)
-    app.jinja_env.filters["md2plain"] = extensions.build_md_filter(app.md_plain)
+    app.md = markdown.Markdown(extensions=md_extensions)
+
+    app.jinja_env.filters["markdown"] = extensions.build_md_filter(extensions=md_extensions)
+    app.jinja_env.filters["md2plain"] = extensions.build_md_filter(output_format="plain", stripTopLevelTags=False)
     app.jinja_env.filters["dict_with"] = extensions.dict_with
     app.jinja_env.filters["dict_without"] = extensions.dict_without
     app.jinja_env.filters["currentyear"] = extensions.currentyear

@@ -17,7 +17,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_debugtoolbar.panels.route_list import RouteListDebugPanel
 from flask_wtf import CSRFProtect
 from jinja2 import Undefined, evalcontextfilter
-from markdown import Extension
+import markdown
 from markdown.treeprocessors import Treeprocessor
 from markupsafe import Markup
 from mongoengine import Document, QuerySet
@@ -344,7 +344,7 @@ class GalleryList(Treeprocessor):
 #                     ul.set('class', 'gallery')
 
 
-class AutolinkedImage(Extension):
+class AutolinkedImage(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
         md.treeprocessors["gallery"] = GalleryList()
 
@@ -362,15 +362,18 @@ def unmark_element(element, stream=None):
     return stream.getvalue()
 
 
-def build_md_filter(md_instance):
+def build_md_filter(**kwargs):
     @evalcontextfilter
     def markdown_filter(eval_ctx, stream):
         if not stream:
             return Markup("")
-        elif eval_ctx.autoescape:
-            return Markup(md_instance.convert(jinja2.escape(stream)))
         else:
-            return Markup(md_instance.convert(stream))
+            # We are creating a Markdown instance for each call, as it is not thread safe
+            md = markdown.Markdown(**kwargs)
+            if kwargs.get("stripTopLevelTags") is False:
+                md.stripTopLevelTags = False # This is not read by Markdown __init__ so set manually
+            markup = jinja2.escape(stream) if eval_ctx.autoescape else stream
+            return Markup(md.convert(markup))
 
     return markdown_filter
 
