@@ -14,8 +14,8 @@ FROM python:3.9-alpine
 RUN apk update && apk upgrade && apk add --no-cache bash git openssh zlib-dev jpeg-dev gcc musl-dev libmagic curl tar
 LABEL maintainer="martin@helmgast.se"
 EXPOSE 5000
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=run.py
 
 WORKDIR /usr/src/app

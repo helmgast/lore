@@ -40,7 +40,8 @@ function getConfig(devMode) {
         chunkFilename: devMode ? '[id].js' : '[id].[contenthash:8].js',
         // This will be prepended to URLs printed at build-time (into e.g. css files). At runtime, we will use dynamic
         // variable from server set in app.js.
-        publicPath: devMode ? '/static/dev/': '/static/dist/'
+        publicPath: devMode ? '/static/dev/': '/static/dist/',
+        hashFunction:'sha512'
     },
     module: {
         rules: [
