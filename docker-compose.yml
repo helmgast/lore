@@ -3,6 +3,7 @@ version: "3.8"
 services:
   lore:
     build: .
+    privileged: true
     command: "/usr/local/bin/gunicorn -w 5 --threads 4 -b :5000 --enable-stdio-inheritance run:app"
     environment:
       - LORE_AUTH0_DOMAIN=helmgast.eu.auth0.com
