@@ -814,8 +814,8 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
             try:
                 ol.product = Product.objects(product_number=pnum).scalar("id").as_pymongo().get()["_id"]
             except DoesNotExist as dne:
+                ol.title = pnum
                 logger.warning(f"Product number '{pnum}' doesn't exist, skipping orderline")
-                continue
             ol.quantity = get(item, "choices.quantity", 1)
             ol.price = get(item, "costs.total.incVat", 0.0)
             ol.vat = get(item, "costs.total.vat", 0.0)
