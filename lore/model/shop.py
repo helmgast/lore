@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import date, datetime, timedelta
 from typing import Sequence
@@ -30,6 +31,7 @@ from lore.model.asset import get_google_urls, guess_content_type
 from lore.model.misc import default_translated_nones, default_translated_strings
 from lore.model.user import Event
 from tools.batch import JobSuccess
+from flask import current_app
 
 from .asset import FileAccessType, FileAsset
 from .misc import Document  # Enhanced document
@@ -51,6 +53,9 @@ from .misc import (
 )
 from .user import User, user_from_email
 from .world import Publisher, World
+
+logger = current_app.logger if current_app else logging.getLogger(__name__)
+
 
 ProductTypes = Choices(book=_("Book"), item=_("Item"), digital=_("Digital"), shipping=_("Shipping fee"))
 
@@ -809,7 +814,8 @@ def import_order(data, job=None, commit=False, create=True, if_newer=True):
             try:
                 ol.product = Product.objects(product_number=pnum).scalar("id").as_pymongo().get()["_id"]
             except DoesNotExist as dne:
-                raise ValueError(f"Product number '{pnum}' ({get(item, 'articleName', '')}) doesn't exist") from dne
+                logger.warning(f"Product number '{pnum}' doesn't exist, skipping orderline")
+                continue
             ol.quantity = get(item, "choices.quantity", 1)
             ol.price = get(item, "costs.total.incVat", 0.0)
             ol.vat = get(item, "costs.total.vat", 0.0)
