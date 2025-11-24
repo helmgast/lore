@@ -90,9 +90,9 @@ There are 3 levels of debugging that can be done.
 Lore defaults to English but comes with a Swedish localization as well, and more can be
 added. If you add or change new messages to translate, see below:
 
-1. Run `python manage.py lang_extract` to find all strings needing translations and update the translation file.
+1. Run `python manage.py lang-extract` to find all strings needing translations and update the translation file.
 2. Search the lore/translations/[locale]/messages.po file for strings without translations, and translate in that file according to the format.
-3. Run `python manage.py lang_compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
+3. Run `python manage.py lang-compile` to build the binary file that is then used to do the actual translation during runtime. (note, the binary file is not added to repository so you need to compile the language on each update and host). If you run Docker, the language will be automatically compiled at Docker build time.
 
 ### Deployment in production
 
