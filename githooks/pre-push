@@ -3,8 +3,8 @@
 if [[ $1 == "prod" ]]; then
 echo "Pre-push hook: build and push Docker image"
 set -e # Fail whole command if one fail
-docker-compose build
-docker-compose push
+docker compose build
+docker compose push
 set +e
 else
 echo "No docker build as not pushing to prod"
