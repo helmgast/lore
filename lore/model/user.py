@@ -58,7 +58,7 @@ logger = current_app.logger if current_app else logging.getLogger(__name__)
 
 UserStatus = Choices(invited=_("Invited"), active=_("Active"), deleted=_("Deleted"))
 
-auth_services = {"google-oauth2": "Google", "google": "Google", "facebook": "Facebook", "email": "One-Time Code"}
+auth_services = {"google-oauth2": "Google", "google": "Google", "facebook": "Facebook", "email": "One-Time Code", "discord": "Discord"}
 
 
 # TODO deprecate
@@ -237,14 +237,31 @@ class User(Document, BaseUser):
             [dict] -- emails mapped to providers
         """
         emails = {}
-        if self.identities:
-            for id in self.identities:
-                if "profileData" in id and "email" in id["profileData"]:
-                    emails.setdefault(id["profileData"]["email"], []).append(auth_services[id["provider"]])
-                else:
-                    emails.setdefault(self.email, []).append(auth_services[id["provider"]])
+        identities = self.identities or []
+        if isinstance(identities, dict):
+            identities = [identities]
+
+        if identities:
+            for identity in identities:
+                if not isinstance(identity, dict):
+                    continue
+
+                provider = identity.get("provider")
+                connection = identity.get("connection")
+                auth_service = auth_services.get(connection or "") or auth_services.get(provider or "")
+                if not auth_service:
+                    auth_service = provider or connection or "Unknown"
+
+                profile_data = identity.get("profileData") or {}
+                email = profile_data.get("email") or self.email
+                if not email:
+                    continue
+
+                emails.setdefault(email, []).append(auth_service)
         else:  # If user has never logged in, identities would be empty
-            emails = {self.email: "default"}
+            if self.email:
+                emails = {self.email: ["default"]}
+
         return emails
 
     @staticmethod
